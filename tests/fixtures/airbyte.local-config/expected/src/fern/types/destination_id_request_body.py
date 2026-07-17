@@ -10,7 +10,9 @@ from .destination_id import DestinationId
 
 
 class DestinationIdRequestBody(UniversalBaseModel):
-    destination_id: typing_extensions.Annotated[DestinationId, FieldMetadata(alias="destinationId")]
+    destination_id: typing_extensions.Annotated[
+        DestinationId, FieldMetadata(alias="destinationId"), pydantic.Field(alias="destinationId")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -9,7 +9,11 @@ from ...core.serialization import FieldMetadata
 
 
 class PostAssetsSkewnessResponseAssetsItem(UniversalBaseModel):
-    asset_skewness: typing_extensions.Annotated[float, FieldMetadata(alias="assetSkewness")] = pydantic.Field()
+    asset_skewness: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="assetSkewness"),
+        pydantic.Field(alias="assetSkewness", description="The skewness of the asset"),
+    ]
     """
     The skewness of the asset
     """

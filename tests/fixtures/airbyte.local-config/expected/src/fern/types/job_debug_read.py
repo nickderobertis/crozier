@@ -14,14 +14,22 @@ from .source_definition_read import SourceDefinitionRead
 
 
 class JobDebugRead(UniversalBaseModel):
-    airbyte_version: typing_extensions.Annotated[str, FieldMetadata(alias="airbyteVersion")]
-    config_id: typing_extensions.Annotated[str, FieldMetadata(alias="configId")]
-    config_type: typing_extensions.Annotated[JobConfigType, FieldMetadata(alias="configType")]
+    airbyte_version: typing_extensions.Annotated[
+        str, FieldMetadata(alias="airbyteVersion"), pydantic.Field(alias="airbyteVersion")
+    ]
+    config_id: typing_extensions.Annotated[str, FieldMetadata(alias="configId"), pydantic.Field(alias="configId")]
+    config_type: typing_extensions.Annotated[
+        JobConfigType, FieldMetadata(alias="configType"), pydantic.Field(alias="configType")
+    ]
     destination_definition: typing_extensions.Annotated[
-        DestinationDefinitionRead, FieldMetadata(alias="destinationDefinition")
+        DestinationDefinitionRead,
+        FieldMetadata(alias="destinationDefinition"),
+        pydantic.Field(alias="destinationDefinition"),
     ]
     id: JobId
-    source_definition: typing_extensions.Annotated[SourceDefinitionRead, FieldMetadata(alias="sourceDefinition")]
+    source_definition: typing_extensions.Annotated[
+        SourceDefinitionRead, FieldMetadata(alias="sourceDefinition"), pydantic.Field(alias="sourceDefinition")
+    ]
     status: JobStatus
 
     if IS_PYDANTIC_V2:

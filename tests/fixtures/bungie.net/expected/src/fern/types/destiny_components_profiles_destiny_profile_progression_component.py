@@ -22,8 +22,13 @@ class DestinyComponentsProfilesDestinyProfileProgressionComponent(UniversalBaseM
     """
 
     seasonal_artifact: typing_extensions.Annotated[
-        typing.Optional[DestinyArtifactsDestinyArtifactProfileScoped], FieldMetadata(alias="seasonalArtifact")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyArtifactsDestinyArtifactProfileScoped],
+        FieldMetadata(alias="seasonalArtifact"),
+        pydantic.Field(
+            alias="seasonalArtifact",
+            description="Data related to your progress on the current season's artifact that is the same across characters.",
+        ),
+    ] = None
     """
     Data related to your progress on the current season's artifact that is the same across characters.
     """

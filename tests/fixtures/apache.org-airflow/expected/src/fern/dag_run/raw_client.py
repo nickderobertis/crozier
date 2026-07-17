@@ -8,7 +8,8 @@ from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -23,6 +24,7 @@ from ..types.dag_state import DagState
 from ..types.dataset_event_collection import DatasetEventCollection
 from ..types.error import Error
 from .types.update_dag_run_state_state import UpdateDagRunStateState
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -110,7 +112,7 @@ class RawDagRunClient:
             List of DAG runs.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns",
+            f"dags/{encode_path_param(dag_id)}/dagRuns",
             method="GET",
             params={
                 "limit": limit,
@@ -154,13 +156,17 @@ class RawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def post_dag_run(
         self,
         dag_id_: str,
         *,
-        conf: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conf: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         dag_id: typing.Optional[str] = OMIT,
         dag_run_id: typing.Optional[str] = OMIT,
         data_interval_end: typing.Optional[dt.datetime] = OMIT,
@@ -182,7 +188,7 @@ class RawDagRunClient:
         dag_id_ : str
             The DAG ID.
 
-        conf : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conf : typing.Optional[typing.Dict[str, typing.Any]]
             JSON object describing additional configuration parameters.
 
             The value of this field can be set only when creating the object. If you try to modify the
@@ -255,7 +261,7 @@ class RawDagRunClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id_)}/dagRuns",
+            f"dags/{encode_path_param(dag_id_)}/dagRuns",
             method="POST",
             json={
                 "conf": conf,
@@ -347,6 +353,10 @@ class RawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_dag_run(
@@ -370,7 +380,7 @@ class RawDagRunClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -420,6 +430,10 @@ class RawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_dag_run(
@@ -442,7 +456,7 @@ class RawDagRunClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -496,6 +510,10 @@ class RawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_dag_run_state(
@@ -531,7 +549,7 @@ class RawDagRunClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}",
             method="PATCH",
             json={
                 "state": state,
@@ -599,6 +617,10 @@ class RawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def clear_dag_run(
@@ -635,7 +657,7 @@ class RawDagRunClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/clear",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/clear",
             method="POST",
             json={
                 "dry_run": dry_run,
@@ -703,6 +725,10 @@ class RawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_dag_run_note(
@@ -738,7 +764,7 @@ class RawDagRunClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/setNote",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/setNote",
             method="PATCH",
             json={
                 "note": note,
@@ -806,6 +832,10 @@ class RawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_upstream_dataset_events(
@@ -833,7 +863,7 @@ class RawDagRunClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/upstreamDatasetEvents",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/upstreamDatasetEvents",
             method="GET",
             request_options=request_options,
         )
@@ -883,6 +913,10 @@ class RawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_dag_runs_batch(
@@ -1032,6 +1066,10 @@ class RawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1117,7 +1155,7 @@ class AsyncRawDagRunClient:
             List of DAG runs.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns",
+            f"dags/{encode_path_param(dag_id)}/dagRuns",
             method="GET",
             params={
                 "limit": limit,
@@ -1161,13 +1199,17 @@ class AsyncRawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def post_dag_run(
         self,
         dag_id_: str,
         *,
-        conf: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conf: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         dag_id: typing.Optional[str] = OMIT,
         dag_run_id: typing.Optional[str] = OMIT,
         data_interval_end: typing.Optional[dt.datetime] = OMIT,
@@ -1189,7 +1231,7 @@ class AsyncRawDagRunClient:
         dag_id_ : str
             The DAG ID.
 
-        conf : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conf : typing.Optional[typing.Dict[str, typing.Any]]
             JSON object describing additional configuration parameters.
 
             The value of this field can be set only when creating the object. If you try to modify the
@@ -1262,7 +1304,7 @@ class AsyncRawDagRunClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id_)}/dagRuns",
+            f"dags/{encode_path_param(dag_id_)}/dagRuns",
             method="POST",
             json={
                 "conf": conf,
@@ -1354,6 +1396,10 @@ class AsyncRawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_dag_run(
@@ -1377,7 +1423,7 @@ class AsyncRawDagRunClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1427,6 +1473,10 @@ class AsyncRawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_dag_run(
@@ -1449,7 +1499,7 @@ class AsyncRawDagRunClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1503,6 +1553,10 @@ class AsyncRawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_dag_run_state(
@@ -1538,7 +1592,7 @@ class AsyncRawDagRunClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}",
             method="PATCH",
             json={
                 "state": state,
@@ -1606,6 +1660,10 @@ class AsyncRawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def clear_dag_run(
@@ -1642,7 +1700,7 @@ class AsyncRawDagRunClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/clear",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/clear",
             method="POST",
             json={
                 "dry_run": dry_run,
@@ -1710,6 +1768,10 @@ class AsyncRawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_dag_run_note(
@@ -1745,7 +1807,7 @@ class AsyncRawDagRunClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/setNote",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/setNote",
             method="PATCH",
             json={
                 "note": note,
@@ -1813,6 +1875,10 @@ class AsyncRawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_upstream_dataset_events(
@@ -1840,7 +1906,7 @@ class AsyncRawDagRunClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/upstreamDatasetEvents",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/upstreamDatasetEvents",
             method="GET",
             request_options=request_options,
         )
@@ -1890,6 +1956,10 @@ class AsyncRawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_dag_runs_batch(
@@ -2039,4 +2109,8 @@ class AsyncRawDagRunClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

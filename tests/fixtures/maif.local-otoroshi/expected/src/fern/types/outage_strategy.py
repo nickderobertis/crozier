@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OutageStrategy(str, enum.Enum):
+class OutageStrategy(enum.StrEnum):
     ONE_SERVICE_PER_GROUP = "OneServicePerGroup"
     ALL_SERVICES_PER_GROUP = "AllServicesPerGroup"
 

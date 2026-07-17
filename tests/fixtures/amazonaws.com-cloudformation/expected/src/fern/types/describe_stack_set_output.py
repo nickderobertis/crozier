@@ -11,8 +11,10 @@ from .describe_stack_set_output_stack_set import DescribeStackSetOutputStackSet
 
 class DescribeStackSetOutput(UniversalBaseModel):
     stack_set: typing_extensions.Annotated[
-        typing.Optional[DescribeStackSetOutputStackSet], FieldMetadata(alias="StackSet")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DescribeStackSetOutputStackSet],
+        FieldMetadata(alias="StackSet"),
+        pydantic.Field(alias="StackSet", description="The specified stack set."),
+    ] = None
     """
     The specified stack set.
     """

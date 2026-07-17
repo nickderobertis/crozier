@@ -11,19 +11,29 @@ from .tokens_partner_offer_history_response import TokensPartnerOfferHistoryResp
 
 
 class TokensPartnerOfferSkuHistoryResponse(UniversalBaseModel):
-    all_offers_applied: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="AllOffersApplied")] = (
-        None
-    )
-    claim_date: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="ClaimDate")] = None
+    all_offers_applied: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="AllOffersApplied"), pydantic.Field(alias="AllOffersApplied")
+    ] = None
+    claim_date: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="ClaimDate"), pydantic.Field(alias="ClaimDate")
+    ] = None
     localized_description: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="LocalizedDescription")
+        typing.Optional[str], FieldMetadata(alias="LocalizedDescription"), pydantic.Field(alias="LocalizedDescription")
     ] = None
-    localized_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="LocalizedName")] = None
-    sku_identifier: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="SkuIdentifier")] = None
+    localized_name: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="LocalizedName"), pydantic.Field(alias="LocalizedName")
+    ] = None
+    sku_identifier: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="SkuIdentifier"), pydantic.Field(alias="SkuIdentifier")
+    ] = None
     sku_offers: typing_extensions.Annotated[
-        typing.Optional[typing.List[TokensPartnerOfferHistoryResponse]], FieldMetadata(alias="SkuOffers")
+        typing.Optional[typing.List[TokensPartnerOfferHistoryResponse]],
+        FieldMetadata(alias="SkuOffers"),
+        pydantic.Field(alias="SkuOffers"),
     ] = None
-    transaction_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TransactionId")] = None
+    transaction_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="TransactionId"), pydantic.Field(alias="TransactionId")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

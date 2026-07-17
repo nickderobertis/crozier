@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class StackEventHookInvocationPoint(str, enum.Enum):
+class StackEventHookInvocationPoint(enum.StrEnum):
     """
     Invocation points are points in provisioning logic where hooks are initiated.
     """

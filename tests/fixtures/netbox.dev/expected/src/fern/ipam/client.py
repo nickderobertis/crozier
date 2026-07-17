@@ -390,7 +390,7 @@ class IpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -415,7 +415,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -481,7 +481,7 @@ class IpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -506,7 +506,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -597,7 +597,7 @@ class IpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -622,7 +622,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -720,7 +720,7 @@ class IpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -748,7 +748,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -847,7 +847,7 @@ class IpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -875,7 +875,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -1260,7 +1260,7 @@ class IpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1286,7 +1286,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1352,7 +1352,7 @@ class IpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1378,7 +1378,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1469,7 +1469,7 @@ class IpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1495,7 +1495,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1593,7 +1593,7 @@ class IpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1622,7 +1622,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1721,7 +1721,7 @@ class IpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1750,7 +1750,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2058,7 +2058,7 @@ class IpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -2082,7 +2082,7 @@ class IpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -2135,7 +2135,7 @@ class IpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -2159,7 +2159,7 @@ class IpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -2237,7 +2237,7 @@ class IpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -2261,7 +2261,7 @@ class IpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -2348,7 +2348,7 @@ class IpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -2375,7 +2375,7 @@ class IpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -2463,7 +2463,7 @@ class IpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -2490,7 +2490,7 @@ class IpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -2861,7 +2861,7 @@ class IpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -2889,7 +2889,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2956,7 +2956,7 @@ class IpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -2984,7 +2984,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3076,7 +3076,7 @@ class IpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -3104,7 +3104,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3203,7 +3203,7 @@ class IpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -3234,7 +3234,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3334,7 +3334,7 @@ class IpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -3365,7 +3365,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3876,12 +3876,12 @@ class IpamClient:
         self,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -3906,7 +3906,7 @@ class IpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -3916,7 +3916,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3999,12 +3999,12 @@ class IpamClient:
         self,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -4029,7 +4029,7 @@ class IpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -4039,7 +4039,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4147,12 +4147,12 @@ class IpamClient:
         self,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -4177,7 +4177,7 @@ class IpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -4187,7 +4187,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4302,12 +4302,12 @@ class IpamClient:
         id_: int,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -4335,7 +4335,7 @@ class IpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -4345,7 +4345,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4461,12 +4461,12 @@ class IpamClient:
         id_: int,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -4494,7 +4494,7 @@ class IpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -4504,7 +4504,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4910,7 +4910,7 @@ class IpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -4942,7 +4942,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5021,7 +5021,7 @@ class IpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -5053,7 +5053,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5157,7 +5157,7 @@ class IpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -5189,7 +5189,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5300,7 +5300,7 @@ class IpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -5335,7 +5335,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5447,7 +5447,7 @@ class IpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -5482,7 +5482,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5980,9 +5980,9 @@ class IpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -6001,11 +6001,11 @@ class IpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6060,9 +6060,9 @@ class IpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -6081,11 +6081,11 @@ class IpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6165,9 +6165,9 @@ class IpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -6186,11 +6186,11 @@ class IpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6279,9 +6279,9 @@ class IpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -6303,11 +6303,11 @@ class IpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6395,9 +6395,9 @@ class IpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -6419,11 +6419,11 @@ class IpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6919,7 +6919,7 @@ class IpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -6947,7 +6947,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7019,7 +7019,7 @@ class IpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -7047,7 +7047,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7144,7 +7144,7 @@ class IpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -7172,7 +7172,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7276,7 +7276,7 @@ class IpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -7307,7 +7307,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7412,7 +7412,7 @@ class IpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -7443,7 +7443,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8034,7 +8034,7 @@ class IpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -8068,7 +8068,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8157,7 +8157,7 @@ class IpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -8191,7 +8191,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8305,7 +8305,7 @@ class IpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -8339,7 +8339,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8460,7 +8460,7 @@ class IpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -8497,7 +8497,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8619,7 +8619,7 @@ class IpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -8656,7 +8656,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9216,7 +9216,7 @@ class IpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -9239,7 +9239,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9300,7 +9300,7 @@ class IpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -9323,7 +9323,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9409,7 +9409,7 @@ class IpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -9432,7 +9432,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9525,7 +9525,7 @@ class IpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -9551,7 +9551,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9645,7 +9645,7 @@ class IpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -9671,7 +9671,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10050,7 +10050,7 @@ class IpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10073,7 +10073,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10137,7 +10137,7 @@ class IpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10160,7 +10160,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10249,7 +10249,7 @@ class IpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10272,7 +10272,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10368,7 +10368,7 @@ class IpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10394,7 +10394,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10491,7 +10491,7 @@ class IpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10517,7 +10517,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10925,7 +10925,7 @@ class IpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10947,7 +10947,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11004,7 +11004,7 @@ class IpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -11026,7 +11026,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11108,7 +11108,7 @@ class IpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -11130,7 +11130,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11219,7 +11219,7 @@ class IpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -11244,7 +11244,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11334,7 +11334,7 @@ class IpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -11359,7 +11359,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11642,7 +11642,7 @@ class IpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -11666,7 +11666,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11726,7 +11726,7 @@ class IpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -11750,7 +11750,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11835,7 +11835,7 @@ class IpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -11859,7 +11859,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11953,7 +11953,7 @@ class IpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -11980,7 +11980,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -12073,7 +12073,7 @@ class IpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -12100,7 +12100,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -12499,7 +12499,7 @@ class IpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -12526,7 +12526,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -12595,7 +12595,7 @@ class IpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -12622,7 +12622,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -12716,7 +12716,7 @@ class IpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -12743,7 +12743,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -12844,7 +12844,7 @@ class IpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -12874,7 +12874,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -12976,7 +12976,7 @@ class IpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -13006,7 +13006,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -13527,14 +13527,14 @@ class IpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -13553,7 +13553,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -13569,7 +13569,7 @@ class IpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -13628,14 +13628,14 @@ class IpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -13654,7 +13654,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -13670,7 +13670,7 @@ class IpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -13754,14 +13754,14 @@ class IpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -13780,7 +13780,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -13796,7 +13796,7 @@ class IpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -13887,14 +13887,14 @@ class IpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -13916,7 +13916,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -13932,7 +13932,7 @@ class IpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -14024,14 +14024,14 @@ class IpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -14053,7 +14053,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -14069,7 +14069,7 @@ class IpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -14162,7 +14162,7 @@ class IpamClient:
         id: int,
         *,
         name: str,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         role: typing.Optional[int] = OMIT,
         site: typing.Optional[int] = OMIT,
@@ -14181,7 +14181,7 @@ class IpamClient:
 
         name : str
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -14708,7 +14708,7 @@ class IpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -14737,7 +14737,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -14815,7 +14815,7 @@ class IpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -14844,7 +14844,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -14947,7 +14947,7 @@ class IpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -14976,7 +14976,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -15086,7 +15086,7 @@ class IpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -15118,7 +15118,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -15229,7 +15229,7 @@ class IpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -15261,7 +15261,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -15742,7 +15742,7 @@ class IpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -15769,7 +15769,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -15846,7 +15846,7 @@ class IpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -15873,7 +15873,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -15975,7 +15975,7 @@ class IpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -16002,7 +16002,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -16111,7 +16111,7 @@ class IpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -16141,7 +16141,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -16251,7 +16251,7 @@ class IpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -16281,7 +16281,7 @@ class IpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -16692,7 +16692,7 @@ class AsyncIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -16717,7 +16717,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -16791,7 +16791,7 @@ class AsyncIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -16816,7 +16816,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -16923,7 +16923,7 @@ class AsyncIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -16948,7 +16948,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -17062,7 +17062,7 @@ class AsyncIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -17090,7 +17090,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -17205,7 +17205,7 @@ class AsyncIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -17233,7 +17233,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -17634,7 +17634,7 @@ class AsyncIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -17660,7 +17660,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -17734,7 +17734,7 @@ class AsyncIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -17760,7 +17760,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -17867,7 +17867,7 @@ class AsyncIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -17893,7 +17893,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -18007,7 +18007,7 @@ class AsyncIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -18036,7 +18036,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -18151,7 +18151,7 @@ class AsyncIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -18180,7 +18180,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -18504,7 +18504,7 @@ class AsyncIpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -18528,7 +18528,7 @@ class AsyncIpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -18589,7 +18589,7 @@ class AsyncIpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -18613,7 +18613,7 @@ class AsyncIpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -18709,7 +18709,7 @@ class AsyncIpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -18733,7 +18733,7 @@ class AsyncIpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -18836,7 +18836,7 @@ class AsyncIpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -18863,7 +18863,7 @@ class AsyncIpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -18967,7 +18967,7 @@ class AsyncIpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -18994,7 +18994,7 @@ class AsyncIpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -19381,7 +19381,7 @@ class AsyncIpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -19409,7 +19409,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -19484,7 +19484,7 @@ class AsyncIpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -19512,7 +19512,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -19620,7 +19620,7 @@ class AsyncIpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -19648,7 +19648,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -19763,7 +19763,7 @@ class AsyncIpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -19794,7 +19794,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -19910,7 +19910,7 @@ class AsyncIpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -19941,7 +19941,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -20468,12 +20468,12 @@ class AsyncIpamClient:
         self,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -20498,7 +20498,7 @@ class AsyncIpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -20508,7 +20508,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -20599,12 +20599,12 @@ class AsyncIpamClient:
         self,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -20629,7 +20629,7 @@ class AsyncIpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -20639,7 +20639,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -20763,12 +20763,12 @@ class AsyncIpamClient:
         self,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -20793,7 +20793,7 @@ class AsyncIpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -20803,7 +20803,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -20934,12 +20934,12 @@ class AsyncIpamClient:
         id_: int,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -20967,7 +20967,7 @@ class AsyncIpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -20977,7 +20977,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -21109,12 +21109,12 @@ class AsyncIpamClient:
         id_: int,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -21142,7 +21142,7 @@ class AsyncIpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -21152,7 +21152,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -21574,7 +21574,7 @@ class AsyncIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -21606,7 +21606,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -21693,7 +21693,7 @@ class AsyncIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -21725,7 +21725,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -21845,7 +21845,7 @@ class AsyncIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -21877,7 +21877,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -22004,7 +22004,7 @@ class AsyncIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -22039,7 +22039,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -22167,7 +22167,7 @@ class AsyncIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -22202,7 +22202,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -22732,9 +22732,9 @@ class AsyncIpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -22753,11 +22753,11 @@ class AsyncIpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -22820,9 +22820,9 @@ class AsyncIpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -22841,11 +22841,11 @@ class AsyncIpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -22941,9 +22941,9 @@ class AsyncIpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -22962,11 +22962,11 @@ class AsyncIpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -23071,9 +23071,9 @@ class AsyncIpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -23095,11 +23095,11 @@ class AsyncIpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -23205,9 +23205,9 @@ class AsyncIpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -23229,11 +23229,11 @@ class AsyncIpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -23745,7 +23745,7 @@ class AsyncIpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -23773,7 +23773,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -23853,7 +23853,7 @@ class AsyncIpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -23881,7 +23881,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -23994,7 +23994,7 @@ class AsyncIpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -24022,7 +24022,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -24142,7 +24142,7 @@ class AsyncIpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -24173,7 +24173,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -24294,7 +24294,7 @@ class AsyncIpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -24325,7 +24325,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -24932,7 +24932,7 @@ class AsyncIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -24966,7 +24966,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -25063,7 +25063,7 @@ class AsyncIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -25097,7 +25097,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -25227,7 +25227,7 @@ class AsyncIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -25261,7 +25261,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -25398,7 +25398,7 @@ class AsyncIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -25435,7 +25435,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -25573,7 +25573,7 @@ class AsyncIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -25610,7 +25610,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26218,7 +26218,7 @@ class AsyncIpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -26241,7 +26241,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26310,7 +26310,7 @@ class AsyncIpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -26333,7 +26333,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26435,7 +26435,7 @@ class AsyncIpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -26458,7 +26458,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26567,7 +26567,7 @@ class AsyncIpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -26593,7 +26593,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26703,7 +26703,7 @@ class AsyncIpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -26729,7 +26729,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -27124,7 +27124,7 @@ class AsyncIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -27147,7 +27147,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -27219,7 +27219,7 @@ class AsyncIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -27242,7 +27242,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -27347,7 +27347,7 @@ class AsyncIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -27370,7 +27370,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -27482,7 +27482,7 @@ class AsyncIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -27508,7 +27508,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -27621,7 +27621,7 @@ class AsyncIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -27647,7 +27647,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -28071,7 +28071,7 @@ class AsyncIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -28093,7 +28093,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -28158,7 +28158,7 @@ class AsyncIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -28180,7 +28180,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -28278,7 +28278,7 @@ class AsyncIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -28300,7 +28300,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -28407,7 +28407,7 @@ class AsyncIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -28432,7 +28432,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -28538,7 +28538,7 @@ class AsyncIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -28563,7 +28563,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -28862,7 +28862,7 @@ class AsyncIpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -28886,7 +28886,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -28954,7 +28954,7 @@ class AsyncIpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -28978,7 +28978,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -29079,7 +29079,7 @@ class AsyncIpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -29103,7 +29103,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -29213,7 +29213,7 @@ class AsyncIpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -29240,7 +29240,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -29351,7 +29351,7 @@ class AsyncIpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -29378,7 +29378,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -29793,7 +29793,7 @@ class AsyncIpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -29820,7 +29820,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -29897,7 +29897,7 @@ class AsyncIpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -29924,7 +29924,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -30034,7 +30034,7 @@ class AsyncIpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -30061,7 +30061,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -30178,7 +30178,7 @@ class AsyncIpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -30208,7 +30208,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -30326,7 +30326,7 @@ class AsyncIpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -30356,7 +30356,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -30893,14 +30893,14 @@ class AsyncIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -30919,7 +30919,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -30935,7 +30935,7 @@ class AsyncIpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -31002,14 +31002,14 @@ class AsyncIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -31028,7 +31028,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -31044,7 +31044,7 @@ class AsyncIpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -31144,14 +31144,14 @@ class AsyncIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -31170,7 +31170,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -31186,7 +31186,7 @@ class AsyncIpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -31293,14 +31293,14 @@ class AsyncIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -31322,7 +31322,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -31338,7 +31338,7 @@ class AsyncIpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -31446,14 +31446,14 @@ class AsyncIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -31475,7 +31475,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -31491,7 +31491,7 @@ class AsyncIpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -31600,7 +31600,7 @@ class AsyncIpamClient:
         id: int,
         *,
         name: str,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         role: typing.Optional[int] = OMIT,
         site: typing.Optional[int] = OMIT,
@@ -31619,7 +31619,7 @@ class AsyncIpamClient:
 
         name : str
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -32162,7 +32162,7 @@ class AsyncIpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -32191,7 +32191,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -32277,7 +32277,7 @@ class AsyncIpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -32306,7 +32306,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -32425,7 +32425,7 @@ class AsyncIpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -32454,7 +32454,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -32580,7 +32580,7 @@ class AsyncIpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -32612,7 +32612,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -32739,7 +32739,7 @@ class AsyncIpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -32771,7 +32771,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -33268,7 +33268,7 @@ class AsyncIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -33295,7 +33295,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -33380,7 +33380,7 @@ class AsyncIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -33407,7 +33407,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -33525,7 +33525,7 @@ class AsyncIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -33552,7 +33552,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -33677,7 +33677,7 @@ class AsyncIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -33707,7 +33707,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -33833,7 +33833,7 @@ class AsyncIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -33863,7 +33863,7 @@ class AsyncIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 

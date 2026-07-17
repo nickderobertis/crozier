@@ -11,16 +11,24 @@ from .user_user_info_card import UserUserInfoCard
 
 class UserUserSearchResponseDetail(UniversalBaseModel):
     bungie_global_display_name: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="bungieGlobalDisplayName")
+        typing.Optional[str],
+        FieldMetadata(alias="bungieGlobalDisplayName"),
+        pydantic.Field(alias="bungieGlobalDisplayName"),
     ] = None
     bungie_global_display_name_code: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="bungieGlobalDisplayNameCode")
+        typing.Optional[int],
+        FieldMetadata(alias="bungieGlobalDisplayNameCode"),
+        pydantic.Field(alias="bungieGlobalDisplayNameCode"),
     ] = None
     bungie_net_membership_id: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="bungieNetMembershipId")
+        typing.Optional[int],
+        FieldMetadata(alias="bungieNetMembershipId"),
+        pydantic.Field(alias="bungieNetMembershipId"),
     ] = None
     destiny_memberships: typing_extensions.Annotated[
-        typing.Optional[typing.List[UserUserInfoCard]], FieldMetadata(alias="destinyMemberships")
+        typing.Optional[typing.List[UserUserInfoCard]],
+        FieldMetadata(alias="destinyMemberships"),
+        pydantic.Field(alias="destinyMemberships"),
     ] = None
 
     if IS_PYDANTIC_V2:

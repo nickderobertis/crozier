@@ -17,7 +17,7 @@ class WebhookSupportVirtualWebhooks(UniversalBaseModel):
     The rate at which requests for resources will be made to downstream.
     """
 
-    resources: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    resources: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     The resources that will be requested from downstream.
     """

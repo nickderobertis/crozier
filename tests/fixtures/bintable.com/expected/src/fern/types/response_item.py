@@ -7,7 +7,7 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
 class ResponseItem(UniversalBaseModel):
-    data: typing.Dict[str, typing.Optional[typing.Any]]
+    data: typing.Dict[str, typing.Any]
     message: str
     result: int
 

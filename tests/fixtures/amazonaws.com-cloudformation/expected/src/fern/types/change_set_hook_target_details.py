@@ -16,15 +16,21 @@ class ChangeSetHookTargetDetails(UniversalBaseModel):
     """
 
     target_type: typing_extensions.Annotated[
-        typing.Optional[ChangeSetHookTargetDetailsTargetType], FieldMetadata(alias="TargetType")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ChangeSetHookTargetDetailsTargetType],
+        FieldMetadata(alias="TargetType"),
+        pydantic.Field(alias="TargetType", description="The name of the type."),
+    ] = None
     """
     The name of the type.
     """
 
     resource_target_details: typing_extensions.Annotated[
-        typing.Optional[ChangeSetHookTargetDetailsResourceTargetDetails], FieldMetadata(alias="ResourceTargetDetails")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ChangeSetHookTargetDetailsResourceTargetDetails],
+        FieldMetadata(alias="ResourceTargetDetails"),
+        pydantic.Field(
+            alias="ResourceTargetDetails", description="Required if <code>TargetType</code> is <code>RESOURCE</code>."
+        ),
+    ] = None
     """
     Required if <code>TargetType</code> is <code>RESOURCE</code>.
     """

@@ -9,9 +9,14 @@ from ...core.serialization import FieldMetadata
 
 
 class GeneratePresignedPutRequestMetadata(UniversalBaseModel):
-    sha1checksum: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="sha1-checksum")] = (
-        pydantic.Field(default=None)
-    )
+    sha1checksum: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="sha1-checksum"),
+        pydantic.Field(
+            alias="sha1-checksum",
+            description="The SHA1 checksum of the upload binary blob. Optionally\nbe provided and serves as an additional security check when\nlater processing the file in complete-external-upload endpoint.",
+        ),
+    ] = None
     """
     The SHA1 checksum of the upload binary blob. Optionally
     be provided and serves as an additional security check when

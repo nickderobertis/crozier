@@ -34,15 +34,25 @@ class DestinyDefinitionsPresentationDestinyPresentationNodeDefinition(UniversalB
     """
 
     completion_record_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="completionRecordHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="completionRecordHash"),
+        pydantic.Field(
+            alias="completionRecordHash",
+            description='If this presentation node has an associated "Record" that you can accomplish for completing its children, this is the identifier of that Record.',
+        ),
+    ] = None
     """
     If this presentation node has an associated "Record" that you can accomplish for completing its children, this is the identifier of that Record.
     """
 
     disable_child_subscreen_navigation: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="disableChildSubscreenNavigation")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="disableChildSubscreenNavigation"),
+        pydantic.Field(
+            alias="disableChildSubscreenNavigation",
+            description="If this presentation node has children, but the game doesn't let you inspect the details of those children, that is indicated here.",
+        ),
+    ] = None
     """
     If this presentation node has children, but the game doesn't let you inspect the details of those children, that is indicated here.
     """
@@ -50,10 +60,16 @@ class DestinyDefinitionsPresentationDestinyPresentationNodeDefinition(UniversalB
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
-    display_style: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="displayStyle")] = (
-        pydantic.Field(default=None)
-    )
+    display_style: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="displayStyle"),
+        pydantic.Field(
+            alias="displayStyle",
+            description="A hint for how to display this presentation node when it's shown in a list.",
+        ),
+    ] = None
     """
     A hint for how to display this presentation node when it's shown in a list.
     """
@@ -70,32 +86,50 @@ class DestinyDefinitionsPresentationDestinyPresentationNodeDefinition(UniversalB
     """
 
     max_category_record_score: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="maxCategoryRecordScore")
+        typing.Optional[int],
+        FieldMetadata(alias="maxCategoryRecordScore"),
+        pydantic.Field(alias="maxCategoryRecordScore"),
     ] = None
-    node_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="nodeType")] = None
-    objective_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="objectiveHash")] = (
-        pydantic.Field(default=None)
-    )
+    node_type: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="nodeType"), pydantic.Field(alias="nodeType")
+    ] = None
+    objective_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="objectiveHash"),
+        pydantic.Field(
+            alias="objectiveHash",
+            description="If this presentation node shows a related objective (for instance, if it tracks the progress of its children), the objective being tracked is indicated here.",
+        ),
+    ] = None
     """
     If this presentation node shows a related objective (for instance, if it tracks the progress of its children), the objective being tracked is indicated here.
     """
 
-    original_icon: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="originalIcon")] = (
-        pydantic.Field(default=None)
-    )
+    original_icon: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="originalIcon"),
+        pydantic.Field(
+            alias="originalIcon", description="The original icon for this presentation node, before we futzed with it."
+        ),
+    ] = None
     """
     The original icon for this presentation node, before we futzed with it.
     """
 
     parent_node_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="parentNodeHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="parentNodeHashes"),
+        pydantic.Field(
+            alias="parentNodeHashes",
+            description="A quick reference to presentation nodes that have this node as a child. Presentation nodes can be parented under multiple parents.",
+        ),
+    ] = None
     """
     A quick reference to presentation nodes that have this node as a child. Presentation nodes can be parented under multiple parents.
     """
 
     presentation_node_type: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="presentationNodeType")
+        typing.Optional[int], FieldMetadata(alias="presentationNodeType"), pydantic.Field(alias="presentationNodeType")
     ] = None
     redacted: typing.Optional[bool] = pydantic.Field(default=None)
     """
@@ -109,9 +143,14 @@ class DestinyDefinitionsPresentationDestinyPresentationNodeDefinition(UniversalB
     The requirements for being able to interact with this presentation node and its children.
     """
 
-    root_view_icon: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="rootViewIcon")] = (
-        pydantic.Field(default=None)
-    )
+    root_view_icon: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="rootViewIcon"),
+        pydantic.Field(
+            alias="rootViewIcon",
+            description='Some presentation nodes are meant to be explicitly shown on the "root" or "entry" screens for the feature to which they are related. You should use this icon when showing them on such a view, if you have a similar "entry point" view in your UI. If you don\'t have a UI, then I guess it doesn\'t matter either way does it?',
+        ),
+    ] = None
     """
     Some presentation nodes are meant to be explicitly shown on the "root" or "entry" screens for the feature to which they are related. You should use this icon when showing them on such a view, if you have a similar "entry point" view in your UI. If you don't have a UI, then I guess it doesn't matter either way does it?
     """
@@ -121,17 +160,24 @@ class DestinyDefinitionsPresentationDestinyPresentationNodeDefinition(UniversalB
     Indicates whether this presentation node's state is determined on a per-character or on an account-wide basis.
     """
 
-    screen_style: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="screenStyle")] = (
-        pydantic.Field(default=None)
-    )
+    screen_style: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="screenStyle"),
+        pydantic.Field(
+            alias="screenStyle",
+            description="A hint for how to display this presentation node when it's shown in its own detail screen.",
+        ),
+    ] = None
     """
     A hint for how to display this presentation node when it's shown in its own detail screen.
     """
 
-    trait_hashes: typing_extensions.Annotated[typing.Optional[typing.List[int]], FieldMetadata(alias="traitHashes")] = (
-        None
-    )
-    trait_ids: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="traitIds")] = None
+    trait_hashes: typing_extensions.Annotated[
+        typing.Optional[typing.List[int]], FieldMetadata(alias="traitHashes"), pydantic.Field(alias="traitHashes")
+    ] = None
+    trait_ids: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]], FieldMetadata(alias="traitIds"), pydantic.Field(alias="traitIds")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

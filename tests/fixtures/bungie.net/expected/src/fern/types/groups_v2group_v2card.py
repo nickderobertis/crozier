@@ -16,17 +16,29 @@ class GroupsV2GroupV2Card(UniversalBaseModel):
     """
 
     about: typing.Optional[str] = None
-    avatar_path: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="avatarPath")] = None
+    avatar_path: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="avatarPath"), pydantic.Field(alias="avatarPath")
+    ] = None
     capabilities: typing.Optional[int] = None
     clan_info: typing_extensions.Annotated[
-        typing.Optional[GroupsV2GroupV2ClanInfo], FieldMetadata(alias="clanInfo")
+        typing.Optional[GroupsV2GroupV2ClanInfo], FieldMetadata(alias="clanInfo"), pydantic.Field(alias="clanInfo")
     ] = None
-    creation_date: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="creationDate")] = None
-    group_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="groupId")] = None
-    group_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="groupType")] = None
+    creation_date: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="creationDate"), pydantic.Field(alias="creationDate")
+    ] = None
+    group_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="groupId"), pydantic.Field(alias="groupId")
+    ] = None
+    group_type: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="groupType"), pydantic.Field(alias="groupType")
+    ] = None
     locale: typing.Optional[str] = None
-    member_count: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="memberCount")] = None
-    membership_option: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="membershipOption")] = None
+    member_count: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="memberCount"), pydantic.Field(alias="memberCount")
+    ] = None
+    membership_option: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="membershipOption"), pydantic.Field(alias="membershipOption")
+    ] = None
     motto: typing.Optional[str] = None
     name: typing.Optional[str] = None
     theme: typing.Optional[str] = None

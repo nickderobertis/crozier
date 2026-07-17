@@ -27,7 +27,11 @@ class DestinyDefinitionsDestinyTalentGridDefinition(UniversalBaseModel):
     exclusive_sets: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyTalentNodeExclusiveSetDefinition]],
         FieldMetadata(alias="exclusiveSets"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="exclusiveSets",
+            description='Talent Nodes can exist in "exclusive sets": these are sets of nodes in which only a single node in the set can be activated at any given time. Activating a node in this set will automatically deactivate the other nodes in the set (referred to as a "Swap").\r\nIf a node in the exclusive set has already been activated, the game will not charge you materials to activate another node in the set, even if you have never activated it before, because you already paid the cost to activate one node in the set.\r\nNot to be confused with Exclusive Groups. (how the heck do we NOT get confused by that? Jeez) See the groups property for information about that only-tangentially-related concept.',
+        ),
+    ] = None
     """
     Talent Nodes can exist in "exclusive sets": these are sets of nodes in which only a single node in the set can be activated at any given time. Activating a node in this set will automatically deactivate the other nodes in the set (referred to as a "Swap").
     If a node in the exclusive set has already been activated, the game will not charge you materials to activate another node in the set, even if you have never activated it before, because you already paid the cost to activate one node in the set.
@@ -35,8 +39,13 @@ class DestinyDefinitionsDestinyTalentGridDefinition(UniversalBaseModel):
     """
 
     grid_level_per_column: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="gridLevelPerColumn")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="gridLevelPerColumn"),
+        pydantic.Field(
+            alias="gridLevelPerColumn",
+            description='The meaning of this has been lost in the sands of time: it still exists as a property, but appears to be unused in the modern UI of talent grids. It used to imply that each visual "column" of talent nodes required identical progression levels in order to be activated. Returning this value in case it is still useful to someone? Perhaps it\'s just a bit of interesting history.',
+        ),
+    ] = None
     """
     The meaning of this has been lost in the sands of time: it still exists as a property, but appears to be unused in the modern UI of talent grids. It used to imply that each visual "column" of talent nodes required identical progression levels in order to be activated. Returning this value in case it is still useful to someone? Perhaps it's just a bit of interesting history.
     """
@@ -56,8 +65,13 @@ class DestinyDefinitionsDestinyTalentGridDefinition(UniversalBaseModel):
     """
 
     independent_node_indexes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="independentNodeIndexes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="independentNodeIndexes"),
+        pydantic.Field(
+            alias="independentNodeIndexes",
+            description="This is a quick reference to the indexes of nodes that are not part of exclusive sets. Handy for knowing which talent nodes can only be activated directly, rather than via swapping.",
+        ),
+    ] = None
     """
     This is a quick reference to the indexes of nodes that are not part of exclusive sets. Handy for knowing which talent nodes can only be activated directly, rather than via swapping.
     """
@@ -67,16 +81,26 @@ class DestinyDefinitionsDestinyTalentGridDefinition(UniversalBaseModel):
     The index of the entity as it was found in the investment tables.
     """
 
-    max_grid_level: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="maxGridLevel")] = (
-        pydantic.Field(default=None)
-    )
+    max_grid_level: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="maxGridLevel"),
+        pydantic.Field(
+            alias="maxGridLevel",
+            description="The maximum possible level of the Talent Grid: at this level, any nodes are allowed to be activated.",
+        ),
+    ] = None
     """
     The maximum possible level of the Talent Grid: at this level, any nodes are allowed to be activated.
     """
 
     node_categories: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinyDefinitionsDestinyTalentNodeCategory]], FieldMetadata(alias="nodeCategories")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[DestinyDefinitionsDestinyTalentNodeCategory]],
+        FieldMetadata(alias="nodeCategories"),
+        pydantic.Field(
+            alias="nodeCategories",
+            description='BNet wants to show talent nodes grouped by similar purpose with localized titles. This is the ordered list of those categories: if you want to show nodes by category, you can iterate over this list, render the displayProperties for the category as the title, and then iterate over the talent nodes referenced by the category to show the related nodes.\r\nNote that this is different from Exclusive Groups or Sets, because these categories also incorporate "Independent" nodes that belong to neither sets nor groups. These are purely for visual grouping of nodes rather than functional grouping.',
+        ),
+    ] = None
     """
     BNet wants to show talent nodes grouped by similar purpose with localized titles. This is the ordered list of those categories: if you want to show nodes by category, you can iterate over this list, render the displayProperties for the category as the title, and then iterate over the talent nodes referenced by the category to show the related nodes.
     Note that this is different from Exclusive Groups or Sets, because these categories also incorporate "Independent" nodes that belong to neither sets nor groups. These are purely for visual grouping of nodes rather than functional grouping.
@@ -87,9 +111,14 @@ class DestinyDefinitionsDestinyTalentGridDefinition(UniversalBaseModel):
     The list of Talent Nodes on the Grid (recall that Nodes themselves are really just locations in the UI to show whatever their current Step is. You will only know the current step for a node by retrieving instanced data through platform calls to the API that return DestinyItemTalentGridComponent).
     """
 
-    progression_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="progressionHash")] = (
-        pydantic.Field(default=None)
-    )
+    progression_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="progressionHash"),
+        pydantic.Field(
+            alias="progressionHash",
+            description="The hash identifier of the Progression (DestinyProgressionDefinition) that drives whether and when Talent Nodes can be activated on the Grid. Items will have instances of this Progression, and will gain experience that will eventually cause the grid to increase in level. As the grid's level increases, it will cross the threshold where nodes can be activated. See DestinyTalentGridStepDefinition's activation requirements for more information.",
+        ),
+    ] = None
     """
     The hash identifier of the Progression (DestinyProgressionDefinition) that drives whether and when Talent Nodes can be activated on the Grid. Items will have instances of this Progression, and will gain experience that will eventually cause the grid to increase in level. As the grid's level increases, it will cross the threshold where nodes can be activated. See DestinyTalentGridStepDefinition's activation requirements for more information.
     """

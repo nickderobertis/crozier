@@ -9,11 +9,13 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyDefinitionsMilestonesDestinyMilestoneChallengeActivityGraphNodeEntry(UniversalBaseModel):
-    activity_graph_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="activityGraphHash")] = (
-        None
-    )
+    activity_graph_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="activityGraphHash"), pydantic.Field(alias="activityGraphHash")
+    ] = None
     activity_graph_node_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="activityGraphNodeHash")
+        typing.Optional[int],
+        FieldMetadata(alias="activityGraphNodeHash"),
+        pydantic.Field(alias="activityGraphNodeHash"),
     ] = None
 
     if IS_PYDANTIC_V2:

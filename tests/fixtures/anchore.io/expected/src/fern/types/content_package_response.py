@@ -16,7 +16,9 @@ class ContentPackageResponse(UniversalBaseModel):
 
     content: typing.Optional[typing.List[ContentPackageResponseContentItem]] = None
     content_type: typing.Optional[str] = None
-    image_digest: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="imageDigest")] = None
+    image_digest: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="imageDigest"), pydantic.Field(alias="imageDigest")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

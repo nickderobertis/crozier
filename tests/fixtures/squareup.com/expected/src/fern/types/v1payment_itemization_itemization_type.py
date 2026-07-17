@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class V1PaymentItemizationItemizationType(str, enum.Enum):
+class V1PaymentItemizationItemizationType(enum.StrEnum):
     """ """
 
     ITEM = "ITEM"

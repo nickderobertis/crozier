@@ -10,8 +10,13 @@ from ...core.serialization import FieldMetadata
 
 class PostPortfolioAnalysisSharpeRatioProbabilisticResponsePortfoliosItem(UniversalBaseModel):
     portfolio_probabilistic_sharpe_ratio: typing_extensions.Annotated[
-        float, FieldMetadata(alias="portfolioProbabilisticSharpeRatio")
-    ] = pydantic.Field()
+        float,
+        FieldMetadata(alias="portfolioProbabilisticSharpeRatio"),
+        pydantic.Field(
+            alias="portfolioProbabilisticSharpeRatio",
+            description="The probabilistic Sharpe ratio of the portfolio, in percentage",
+        ),
+    ]
     """
     The probabilistic Sharpe ratio of the portfolio, in percentage
     """

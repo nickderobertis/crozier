@@ -15,6 +15,7 @@ class DestinyVendorSaleItemSetComponentOfDestinyVendorSaleItemComponent(Universa
     sale_items: typing_extensions.Annotated[
         typing.Optional[typing.Dict[str, DestinyEntitiesVendorsDestinyVendorSaleItemComponent]],
         FieldMetadata(alias="saleItems"),
+        pydantic.Field(alias="saleItems"),
     ] = None
 
     if IS_PYDANTIC_V2:

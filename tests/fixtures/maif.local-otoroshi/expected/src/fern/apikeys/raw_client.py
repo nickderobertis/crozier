@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -18,6 +19,7 @@ from ..types.deleted import Deleted
 from ..types.group import Group
 from ..types.patch import Patch
 from ..types.quotas import Quotas
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -62,9 +64,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -73,9 +75,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -84,9 +86,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -94,6 +96,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def api_keys_from_group(
@@ -116,7 +122,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys",
+            f"api/groups/{encode_path_param(group_id)}/apikeys",
             method="GET",
             request_options=request_options,
         )
@@ -134,9 +140,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -145,9 +151,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -156,9 +162,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -166,6 +172,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_api_key_from_group(
@@ -227,7 +237,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys",
+            f"api/groups/{encode_path_param(group_id)}/apikeys",
             method="POST",
             json={
                 "authorizedEntities": authorized_entities,
@@ -260,9 +270,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -271,9 +281,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -282,9 +292,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -292,6 +302,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def api_key_from_group(
@@ -317,7 +331,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys/{jsonable_encoder(client_id)}",
+            f"api/groups/{encode_path_param(group_id)}/apikeys/{encode_path_param(client_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -335,9 +349,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -346,9 +360,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -357,9 +371,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -367,6 +381,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_api_key_from_group(
@@ -432,7 +450,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys/{jsonable_encoder(client_id_)}",
+            f"api/groups/{encode_path_param(group_id)}/apikeys/{encode_path_param(client_id_)}",
             method="PUT",
             json={
                 "authorizedEntities": authorized_entities,
@@ -465,9 +483,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -476,9 +494,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -487,9 +505,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -497,6 +515,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_api_key_from_group(
@@ -522,7 +544,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys/{jsonable_encoder(client_id)}",
+            f"api/groups/{encode_path_param(group_id)}/apikeys/{encode_path_param(client_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -540,9 +562,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -551,9 +573,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -562,9 +584,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -572,6 +594,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def patch_api_key_from_group(
@@ -599,7 +625,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys/{jsonable_encoder(client_id)}",
+            f"api/groups/{encode_path_param(group_id)}/apikeys/{encode_path_param(client_id)}",
             method="PATCH",
             json=convert_and_respect_annotation_metadata(object_=request, annotation=Patch, direction="write"),
             headers={
@@ -622,9 +648,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -633,9 +659,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -644,9 +670,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -654,6 +680,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def api_key_from_group_quotas(
@@ -679,7 +709,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys/{jsonable_encoder(client_id)}/quotas",
+            f"api/groups/{encode_path_param(group_id)}/apikeys/{encode_path_param(client_id)}/quotas",
             method="GET",
             request_options=request_options,
         )
@@ -697,9 +727,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -708,9 +738,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -719,9 +749,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -729,6 +759,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def reset_api_key_from_group_quotas(
@@ -754,7 +788,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys/{jsonable_encoder(client_id)}/quotas",
+            f"api/groups/{encode_path_param(group_id)}/apikeys/{encode_path_param(client_id)}/quotas",
             method="DELETE",
             request_options=request_options,
         )
@@ -772,9 +806,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -783,9 +817,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -794,9 +828,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -804,6 +838,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def api_keys(
@@ -826,7 +864,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys",
+            f"api/services/{encode_path_param(service_id)}/apikeys",
             method="GET",
             request_options=request_options,
         )
@@ -844,9 +882,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -855,9 +893,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -866,9 +904,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -876,6 +914,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_api_key(
@@ -937,7 +979,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys",
+            f"api/services/{encode_path_param(service_id)}/apikeys",
             method="POST",
             json={
                 "authorizedEntities": authorized_entities,
@@ -970,9 +1012,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -981,9 +1023,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -992,9 +1034,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1002,6 +1044,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def api_key(
@@ -1027,7 +1073,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys/{jsonable_encoder(client_id)}",
+            f"api/services/{encode_path_param(service_id)}/apikeys/{encode_path_param(client_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1045,9 +1091,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1056,9 +1102,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1067,9 +1113,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1077,6 +1123,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_api_key(
@@ -1142,7 +1192,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys/{jsonable_encoder(client_id_)}",
+            f"api/services/{encode_path_param(service_id)}/apikeys/{encode_path_param(client_id_)}",
             method="PUT",
             json={
                 "authorizedEntities": authorized_entities,
@@ -1175,9 +1225,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1186,9 +1236,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1197,9 +1247,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1207,6 +1257,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_api_key(
@@ -1232,7 +1286,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys/{jsonable_encoder(client_id)}",
+            f"api/services/{encode_path_param(service_id)}/apikeys/{encode_path_param(client_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1250,9 +1304,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1261,9 +1315,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1272,9 +1326,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1282,6 +1336,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def patch_api_key(
@@ -1314,7 +1372,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys/{jsonable_encoder(client_id)}",
+            f"api/services/{encode_path_param(service_id)}/apikeys/{encode_path_param(client_id)}",
             method="PATCH",
             json=convert_and_respect_annotation_metadata(object_=request, annotation=Patch, direction="write"),
             headers={
@@ -1337,9 +1395,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1348,9 +1406,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1359,9 +1417,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1369,6 +1427,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def api_key_group(
@@ -1394,7 +1456,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys/{jsonable_encoder(client_id)}/group",
+            f"api/services/{encode_path_param(service_id)}/apikeys/{encode_path_param(client_id)}/group",
             method="GET",
             request_options=request_options,
         )
@@ -1412,9 +1474,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1423,9 +1485,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1434,9 +1496,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1444,6 +1506,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def api_key_quotas(
@@ -1469,7 +1535,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys/{jsonable_encoder(client_id)}/quotas",
+            f"api/services/{encode_path_param(service_id)}/apikeys/{encode_path_param(client_id)}/quotas",
             method="GET",
             request_options=request_options,
         )
@@ -1487,9 +1553,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1498,9 +1564,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1509,9 +1575,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1519,6 +1585,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def reset_api_key_quotas(
@@ -1544,7 +1614,7 @@ class RawApikeysClient:
             Successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys/{jsonable_encoder(client_id)}/quotas",
+            f"api/services/{encode_path_param(service_id)}/apikeys/{encode_path_param(client_id)}/quotas",
             method="DELETE",
             request_options=request_options,
         )
@@ -1562,9 +1632,9 @@ class RawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1573,9 +1643,9 @@ class RawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1584,9 +1654,9 @@ class RawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1594,6 +1664,10 @@ class RawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1636,9 +1710,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1647,9 +1721,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1658,9 +1732,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1668,6 +1742,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def api_keys_from_group(
@@ -1690,7 +1768,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys",
+            f"api/groups/{encode_path_param(group_id)}/apikeys",
             method="GET",
             request_options=request_options,
         )
@@ -1708,9 +1786,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1719,9 +1797,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1730,9 +1808,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1740,6 +1818,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_api_key_from_group(
@@ -1801,7 +1883,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys",
+            f"api/groups/{encode_path_param(group_id)}/apikeys",
             method="POST",
             json={
                 "authorizedEntities": authorized_entities,
@@ -1834,9 +1916,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1845,9 +1927,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1856,9 +1938,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1866,6 +1948,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def api_key_from_group(
@@ -1891,7 +1977,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys/{jsonable_encoder(client_id)}",
+            f"api/groups/{encode_path_param(group_id)}/apikeys/{encode_path_param(client_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1909,9 +1995,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1920,9 +2006,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1931,9 +2017,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1941,6 +2027,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_api_key_from_group(
@@ -2006,7 +2096,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys/{jsonable_encoder(client_id_)}",
+            f"api/groups/{encode_path_param(group_id)}/apikeys/{encode_path_param(client_id_)}",
             method="PUT",
             json={
                 "authorizedEntities": authorized_entities,
@@ -2039,9 +2129,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2050,9 +2140,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2061,9 +2151,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2071,6 +2161,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_api_key_from_group(
@@ -2096,7 +2190,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys/{jsonable_encoder(client_id)}",
+            f"api/groups/{encode_path_param(group_id)}/apikeys/{encode_path_param(client_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2114,9 +2208,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2125,9 +2219,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2136,9 +2230,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2146,6 +2240,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def patch_api_key_from_group(
@@ -2173,7 +2271,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys/{jsonable_encoder(client_id)}",
+            f"api/groups/{encode_path_param(group_id)}/apikeys/{encode_path_param(client_id)}",
             method="PATCH",
             json=convert_and_respect_annotation_metadata(object_=request, annotation=Patch, direction="write"),
             headers={
@@ -2196,9 +2294,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2207,9 +2305,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2218,9 +2316,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2228,6 +2326,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def api_key_from_group_quotas(
@@ -2253,7 +2355,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys/{jsonable_encoder(client_id)}/quotas",
+            f"api/groups/{encode_path_param(group_id)}/apikeys/{encode_path_param(client_id)}/quotas",
             method="GET",
             request_options=request_options,
         )
@@ -2271,9 +2373,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2282,9 +2384,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2293,9 +2395,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2303,6 +2405,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def reset_api_key_from_group_quotas(
@@ -2328,7 +2434,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/groups/{jsonable_encoder(group_id)}/apikeys/{jsonable_encoder(client_id)}/quotas",
+            f"api/groups/{encode_path_param(group_id)}/apikeys/{encode_path_param(client_id)}/quotas",
             method="DELETE",
             request_options=request_options,
         )
@@ -2346,9 +2452,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2357,9 +2463,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2368,9 +2474,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2378,6 +2484,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def api_keys(
@@ -2400,7 +2510,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys",
+            f"api/services/{encode_path_param(service_id)}/apikeys",
             method="GET",
             request_options=request_options,
         )
@@ -2418,9 +2528,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2429,9 +2539,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2440,9 +2550,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2450,6 +2560,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_api_key(
@@ -2511,7 +2625,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys",
+            f"api/services/{encode_path_param(service_id)}/apikeys",
             method="POST",
             json={
                 "authorizedEntities": authorized_entities,
@@ -2544,9 +2658,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2555,9 +2669,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2566,9 +2680,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2576,6 +2690,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def api_key(
@@ -2601,7 +2719,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys/{jsonable_encoder(client_id)}",
+            f"api/services/{encode_path_param(service_id)}/apikeys/{encode_path_param(client_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -2619,9 +2737,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2630,9 +2748,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2641,9 +2759,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2651,6 +2769,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_api_key(
@@ -2716,7 +2838,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys/{jsonable_encoder(client_id_)}",
+            f"api/services/{encode_path_param(service_id)}/apikeys/{encode_path_param(client_id_)}",
             method="PUT",
             json={
                 "authorizedEntities": authorized_entities,
@@ -2749,9 +2871,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2760,9 +2882,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2771,9 +2893,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2781,6 +2903,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_api_key(
@@ -2806,7 +2932,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys/{jsonable_encoder(client_id)}",
+            f"api/services/{encode_path_param(service_id)}/apikeys/{encode_path_param(client_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2824,9 +2950,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2835,9 +2961,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2846,9 +2972,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2856,6 +2982,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def patch_api_key(
@@ -2888,7 +3018,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys/{jsonable_encoder(client_id)}",
+            f"api/services/{encode_path_param(service_id)}/apikeys/{encode_path_param(client_id)}",
             method="PATCH",
             json=convert_and_respect_annotation_metadata(object_=request, annotation=Patch, direction="write"),
             headers={
@@ -2911,9 +3041,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2922,9 +3052,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2933,9 +3063,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2943,6 +3073,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def api_key_group(
@@ -2968,7 +3102,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys/{jsonable_encoder(client_id)}/group",
+            f"api/services/{encode_path_param(service_id)}/apikeys/{encode_path_param(client_id)}/group",
             method="GET",
             request_options=request_options,
         )
@@ -2986,9 +3120,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2997,9 +3131,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3008,9 +3142,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3018,6 +3152,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def api_key_quotas(
@@ -3043,7 +3181,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys/{jsonable_encoder(client_id)}/quotas",
+            f"api/services/{encode_path_param(service_id)}/apikeys/{encode_path_param(client_id)}/quotas",
             method="GET",
             request_options=request_options,
         )
@@ -3061,9 +3199,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3072,9 +3210,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3083,9 +3221,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3093,6 +3231,10 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def reset_api_key_quotas(
@@ -3118,7 +3260,7 @@ class AsyncRawApikeysClient:
             Successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/services/{jsonable_encoder(service_id)}/apikeys/{jsonable_encoder(client_id)}/quotas",
+            f"api/services/{encode_path_param(service_id)}/apikeys/{encode_path_param(client_id)}/quotas",
             method="DELETE",
             request_options=request_options,
         )
@@ -3136,9 +3278,9 @@ class AsyncRawApikeysClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3147,9 +3289,9 @@ class AsyncRawApikeysClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3158,9 +3300,9 @@ class AsyncRawApikeysClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3168,4 +3310,8 @@ class AsyncRawApikeysClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

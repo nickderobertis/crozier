@@ -11,7 +11,9 @@ from .destiny_destiny_item_quantity import DestinyDestinyItemQuantity
 
 class DestinyDefinitionsRecordsDestinyRecordIntervalRewards(UniversalBaseModel):
     interval_reward_items: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinyDestinyItemQuantity]], FieldMetadata(alias="intervalRewardItems")
+        typing.Optional[typing.List[DestinyDestinyItemQuantity]],
+        FieldMetadata(alias="intervalRewardItems"),
+        pydantic.Field(alias="intervalRewardItems"),
     ] = None
 
     if IS_PYDANTIC_V2:

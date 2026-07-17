@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">connect</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">connect</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -27,8 +27,12 @@ Initiate a connection to a specified peer.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.connect(
     endpoint="endpoint",
 )
@@ -67,7 +71,7 @@ client.connect(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">connections</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">connections</a>() -> typing.List[ConnectionsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -95,8 +99,12 @@ Returns an array of all peer connection statuses.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.connections()
 
 ```
@@ -125,7 +133,7 @@ client.connections()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">disconnect</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">disconnect</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -153,8 +161,12 @@ Initiate disconnection from a specified peer.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.disconnect(
     endpoint="endpoint",
 )
@@ -193,7 +205,7 @@ client.disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">status</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">status</a>(...) -> StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -221,8 +233,12 @@ Retrieves the connection status for a specified peer.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.status(
     endpoint="endpoint",
 )

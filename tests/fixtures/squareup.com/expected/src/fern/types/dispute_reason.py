@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DisputeReason(str, enum.Enum):
+class DisputeReason(enum.StrEnum):
     """
     The list of possible reasons why a cardholder might initiate a
     dispute with their bank.

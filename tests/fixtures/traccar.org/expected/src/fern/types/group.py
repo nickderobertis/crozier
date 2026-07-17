@@ -11,7 +11,9 @@ from .group_attributes import GroupAttributes
 
 class Group(UniversalBaseModel):
     attributes: typing.Optional[GroupAttributes] = None
-    group_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="groupId")] = None
+    group_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="groupId"), pydantic.Field(alias="groupId")
+    ] = None
     id: typing.Optional[int] = None
     name: typing.Optional[str] = None
 

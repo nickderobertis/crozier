@@ -9,9 +9,13 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyDefinitionsDestinyVendorGroupReference(UniversalBaseModel):
-    vendor_group_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="vendorGroupHash")] = (
-        pydantic.Field(default=None)
-    )
+    vendor_group_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="vendorGroupHash"),
+        pydantic.Field(
+            alias="vendorGroupHash", description="The DestinyVendorGroupDefinition to which this Vendor can belong."
+        ),
+    ] = None
     """
     The DestinyVendorGroupDefinition to which this Vendor can belong.
     """

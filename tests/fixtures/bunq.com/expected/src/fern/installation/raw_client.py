@@ -6,13 +6,15 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.installation_create import InstallationCreate
 from ..types.installation_listing import InstallationListing
 from ..types.installation_read import InstallationRead
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -57,9 +59,9 @@ class RawInstallationClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -67,6 +69,10 @@ class RawInstallationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_installation(
@@ -115,9 +121,9 @@ class RawInstallationClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -125,6 +131,10 @@ class RawInstallationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_installation(
@@ -147,7 +157,7 @@ class RawInstallationClient:
             Installation is used to tell the server about the public key of your key pair. The server uses this key to verify your subsequent calls, which need to be signed with your own private key. Additionally, you can use the token you get from an Installation to authenticate the registration of a new device.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"installation/{jsonable_encoder(item_id)}",
+            f"installation/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -165,9 +175,9 @@ class RawInstallationClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -175,6 +185,10 @@ class RawInstallationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -217,9 +231,9 @@ class AsyncRawInstallationClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -227,6 +241,10 @@ class AsyncRawInstallationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_installation(
@@ -275,9 +293,9 @@ class AsyncRawInstallationClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -285,6 +303,10 @@ class AsyncRawInstallationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_installation(
@@ -307,7 +329,7 @@ class AsyncRawInstallationClient:
             Installation is used to tell the server about the public key of your key pair. The server uses this key to verify your subsequent calls, which need to be signed with your own private key. Additionally, you can use the token you get from an Installation to authenticate the registration of a new device.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"installation/{jsonable_encoder(item_id)}",
+            f"installation/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -325,9 +347,9 @@ class AsyncRawInstallationClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -335,4 +357,8 @@ class AsyncRawInstallationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

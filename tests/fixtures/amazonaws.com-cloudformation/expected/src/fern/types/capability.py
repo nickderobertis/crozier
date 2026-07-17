@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class Capability(str, enum.Enum):
+class Capability(enum.StrEnum):
     CAPABILITY_IAM = "CAPABILITY_IAM"
     CAPABILITY_NAMED_IAM = "CAPABILITY_NAMED_IAM"
     CAPABILITY_AUTO_EXPAND = "CAPABILITY_AUTO_EXPAND"

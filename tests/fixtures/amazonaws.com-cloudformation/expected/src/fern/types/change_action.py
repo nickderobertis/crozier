@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ChangeAction(str, enum.Enum):
+class ChangeAction(enum.StrEnum):
     ADD = "Add"
     MODIFY = "Modify"
     REMOVE = "Remove"

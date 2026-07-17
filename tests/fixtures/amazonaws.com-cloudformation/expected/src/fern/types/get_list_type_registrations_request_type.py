@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetListTypeRegistrationsRequestType(str, enum.Enum):
+class GetListTypeRegistrationsRequestType(enum.StrEnum):
     RESOURCE = "RESOURCE"
     MODULE = "MODULE"
     HOOK = "HOOK"

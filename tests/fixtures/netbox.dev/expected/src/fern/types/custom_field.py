@@ -19,7 +19,7 @@ class CustomField(UniversalBaseModel):
     content_types: typing.List[str]
     created: typing.Optional[dt.datetime] = None
     data_type: typing.Optional[str] = None
-    default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    default: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
     """

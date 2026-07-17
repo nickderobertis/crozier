@@ -9,7 +9,7 @@ from ..core.serialization import FieldMetadata
 
 
 class OAuthConsentRead(UniversalBaseModel):
-    consent_url: typing_extensions.Annotated[str, FieldMetadata(alias="consentUrl")]
+    consent_url: typing_extensions.Annotated[str, FieldMetadata(alias="consentUrl"), pydantic.Field(alias="consentUrl")]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

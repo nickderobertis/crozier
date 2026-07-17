@@ -9,9 +9,11 @@ from ..core.serialization import FieldMetadata
 
 
 class ValidationError(UniversalBaseModel):
-    message: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Message")] = pydantic.Field(
-        default=None
-    )
+    message: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Message"),
+        pydantic.Field(alias="Message", description="Validation error message"),
+    ] = None
     """
     Validation error message
     """

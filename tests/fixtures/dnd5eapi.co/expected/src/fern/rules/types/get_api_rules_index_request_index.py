@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetApiRulesIndexRequestIndex(str, enum.Enum):
+class GetApiRulesIndexRequestIndex(enum.StrEnum):
     ADVENTURING = "adventuring"
     APPENDIX = "appendix"
     COMBAT = "combat"

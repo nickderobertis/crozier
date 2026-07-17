@@ -20,8 +20,13 @@ class DestinyDefinitionsDestinyEntitySearchResult(UniversalBaseModel):
     """
 
     suggested_words: typing_extensions.Annotated[
-        typing.Optional[typing.List[str]], FieldMetadata(alias="suggestedWords")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="suggestedWords"),
+        pydantic.Field(
+            alias="suggestedWords",
+            description="A list of suggested words that might make for better search results, based on the text searched for.",
+        ),
+    ] = None
     """
     A list of suggested words that might make for better search results, based on the text searched for.
     """

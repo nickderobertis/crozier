@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.api_reference_list import ApiReferenceList
@@ -14,6 +15,7 @@ from ..types.subrace import Subrace
 from .types.get_api_subraces_index_proficiencies_request_index import GetApiSubracesIndexProficienciesRequestIndex
 from .types.get_api_subraces_index_request_index import GetApiSubracesIndexRequestIndex
 from .types.get_api_subraces_index_traits_request_index import GetApiSubracesIndexTraitsRequestIndex
+from pydantic import ValidationError
 
 
 class RawSubracesClient:
@@ -40,7 +42,7 @@ class RawSubracesClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/subraces/{jsonable_encoder(index)}",
+            f"api/subraces/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -57,6 +59,10 @@ class RawSubracesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_proficiences_available_for_a_subrace(
@@ -80,7 +86,7 @@ class RawSubracesClient:
             List of proficiences for the subrace.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/subraces/{jsonable_encoder(index)}/proficiencies",
+            f"api/subraces/{encode_path_param(index)}/proficiencies",
             method="GET",
             request_options=request_options,
         )
@@ -97,6 +103,10 @@ class RawSubracesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_traits_available_for_a_subrace(
@@ -117,7 +127,7 @@ class RawSubracesClient:
             List of traits for the subrace.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/subraces/{jsonable_encoder(index)}/traits",
+            f"api/subraces/{encode_path_param(index)}/traits",
             method="GET",
             request_options=request_options,
         )
@@ -134,6 +144,10 @@ class RawSubracesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -161,7 +175,7 @@ class AsyncRawSubracesClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/subraces/{jsonable_encoder(index)}",
+            f"api/subraces/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -178,6 +192,10 @@ class AsyncRawSubracesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_proficiences_available_for_a_subrace(
@@ -201,7 +219,7 @@ class AsyncRawSubracesClient:
             List of proficiences for the subrace.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/subraces/{jsonable_encoder(index)}/proficiencies",
+            f"api/subraces/{encode_path_param(index)}/proficiencies",
             method="GET",
             request_options=request_options,
         )
@@ -218,6 +236,10 @@ class AsyncRawSubracesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_traits_available_for_a_subrace(
@@ -238,7 +260,7 @@ class AsyncRawSubracesClient:
             List of traits for the subrace.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/subraces/{jsonable_encoder(index)}/traits",
+            f"api/subraces/{encode_path_param(index)}/traits",
             method="GET",
             request_options=request_options,
         )
@@ -255,4 +277,8 @@ class AsyncRawSubracesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

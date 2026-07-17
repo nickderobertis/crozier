@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LoyaltyProgramAccrualRuleType(str, enum.Enum):
+class LoyaltyProgramAccrualRuleType(enum.StrEnum):
     """
     The type of the accrual rule that defines how buyers can earn points.
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableDeviceWithConfigContextAirflow(str, enum.Enum):
+class WritableDeviceWithConfigContextAirflow(enum.StrEnum):
     FRONT_TO_REAR = "front-to-rear"
     REAR_TO_FRONT = "rear-to-front"
     LEFT_TO_RIGHT = "left-to-right"

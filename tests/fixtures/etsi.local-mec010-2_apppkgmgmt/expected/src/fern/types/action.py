@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class Action(str, enum.Enum):
+class Action(enum.StrEnum):
     """
     'Identifies the action of the MEC host data plane, when a packet matches the trafficFilter.'
     """

@@ -126,7 +126,7 @@ class CategoriesClient:
         name: str,
         allow_badges: typing.Optional[bool] = OMIT,
         color: typing.Optional[str] = OMIT,
-        form_template_ids: typing.Optional[typing.Sequence[typing.Optional[typing.Any]]] = OMIT,
+        form_template_ids: typing.Optional[typing.Sequence[typing.Any]] = OMIT,
         parent_category_id: typing.Optional[int] = OMIT,
         permissions: typing.Optional[CreateCategoryRequestPermissions] = OMIT,
         search_priority: typing.Optional[int] = OMIT,
@@ -144,7 +144,7 @@ class CategoriesClient:
 
         color : typing.Optional[str]
 
-        form_template_ids : typing.Optional[typing.Sequence[typing.Optional[typing.Any]]]
+        form_template_ids : typing.Optional[typing.Sequence[typing.Any]]
 
         parent_category_id : typing.Optional[int]
 
@@ -197,7 +197,7 @@ class CategoriesClient:
         name: str,
         allow_badges: typing.Optional[bool] = OMIT,
         color: typing.Optional[str] = OMIT,
-        form_template_ids: typing.Optional[typing.Sequence[typing.Optional[typing.Any]]] = OMIT,
+        form_template_ids: typing.Optional[typing.Sequence[typing.Any]] = OMIT,
         parent_category_id: typing.Optional[int] = OMIT,
         permissions: typing.Optional[UpdateCategoryRequestPermissions] = OMIT,
         search_priority: typing.Optional[int] = OMIT,
@@ -217,7 +217,7 @@ class CategoriesClient:
 
         color : typing.Optional[str]
 
-        form_template_ids : typing.Optional[typing.Sequence[typing.Optional[typing.Any]]]
+        form_template_ids : typing.Optional[typing.Sequence[typing.Any]]
 
         parent_category_id : typing.Optional[int]
 
@@ -401,7 +401,7 @@ class AsyncCategoriesClient:
         name: str,
         allow_badges: typing.Optional[bool] = OMIT,
         color: typing.Optional[str] = OMIT,
-        form_template_ids: typing.Optional[typing.Sequence[typing.Optional[typing.Any]]] = OMIT,
+        form_template_ids: typing.Optional[typing.Sequence[typing.Any]] = OMIT,
         parent_category_id: typing.Optional[int] = OMIT,
         permissions: typing.Optional[CreateCategoryRequestPermissions] = OMIT,
         search_priority: typing.Optional[int] = OMIT,
@@ -419,7 +419,7 @@ class AsyncCategoriesClient:
 
         color : typing.Optional[str]
 
-        form_template_ids : typing.Optional[typing.Sequence[typing.Optional[typing.Any]]]
+        form_template_ids : typing.Optional[typing.Sequence[typing.Any]]
 
         parent_category_id : typing.Optional[int]
 
@@ -480,7 +480,7 @@ class AsyncCategoriesClient:
         name: str,
         allow_badges: typing.Optional[bool] = OMIT,
         color: typing.Optional[str] = OMIT,
-        form_template_ids: typing.Optional[typing.Sequence[typing.Optional[typing.Any]]] = OMIT,
+        form_template_ids: typing.Optional[typing.Sequence[typing.Any]] = OMIT,
         parent_category_id: typing.Optional[int] = OMIT,
         permissions: typing.Optional[UpdateCategoryRequestPermissions] = OMIT,
         search_priority: typing.Optional[int] = OMIT,
@@ -500,7 +500,7 @@ class AsyncCategoriesClient:
 
         color : typing.Optional[str]
 
-        form_template_ids : typing.Optional[typing.Sequence[typing.Optional[typing.Any]]]
+        form_template_ids : typing.Optional[typing.Sequence[typing.Any]]
 
         parent_category_id : typing.Optional[int]
 

@@ -6,11 +6,13 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.config_proxy import ConfigProxy
+from pydantic import ValidationError
 
 
 class RawProxyClient:
@@ -19,7 +21,7 @@ class RawProxyClient:
 
     def protocol_proxy_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> HttpResponse[typing.Dict[str, typing.Any]]:
         """
         Agent's PROXY configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -33,20 +35,20 @@ class RawProxyClient:
 
         Returns
         -------
-        HttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]
+        HttpResponse[typing.Dict[str, typing.Any]]
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/get/args",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/get/args",
             method="GET",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.Dict[str, typing.Optional[typing.Any]],
+                    typing.Dict[str, typing.Any],
                     parse_obj_as(
-                        type_=typing.Dict[str, typing.Optional[typing.Any]],
+                        type_=typing.Dict[str, typing.Any],
                         object_=_response.json(),
                     ),
                 )
@@ -55,9 +57,9 @@ class RawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -65,6 +67,10 @@ class RawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_proxy_get_config(
@@ -87,7 +93,7 @@ class RawProxyClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/get/config",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/get/config",
             method="GET",
             request_options=request_options,
         )
@@ -105,9 +111,9 @@ class RawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -115,6 +121,10 @@ class RawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_proxy_get_statistics(
@@ -137,7 +147,7 @@ class RawProxyClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/get/statistics",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/get/statistics",
             method="GET",
             request_options=request_options,
         )
@@ -155,9 +165,9 @@ class RawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -165,6 +175,10 @@ class RawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_proxy_get_trace(
@@ -187,7 +201,7 @@ class RawProxyClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/get/trace",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/get/trace",
             method="GET",
             request_options=request_options,
         )
@@ -205,9 +219,9 @@ class RawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -215,6 +229,10 @@ class RawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_proxy_port_add(
@@ -249,7 +267,7 @@ class RawProxyClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/port/add/{jsonable_encoder(port)}/{jsonable_encoder(target)}/{jsonable_encoder(target_port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/port/add/{encode_path_param(port)}/{encode_path_param(target)}/{encode_path_param(target_port)}",
             method="POST",
             request_options=request_options,
         )
@@ -267,9 +285,9 @@ class RawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -277,6 +295,10 @@ class RawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_proxy_port_isstarted(
@@ -301,7 +323,7 @@ class RawProxyClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/port/isStarted/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/port/isStarted/{encode_path_param(port)}",
             method="GET",
             request_options=request_options,
         )
@@ -319,9 +341,9 @@ class RawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -329,6 +351,10 @@ class RawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_proxy_port_list(
@@ -349,7 +375,7 @@ class RawProxyClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/port/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/port/list",
             method="GET",
             request_options=request_options,
         )
@@ -367,9 +393,9 @@ class RawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -377,6 +403,10 @@ class RawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_proxy_port_remove(
@@ -401,7 +431,7 @@ class RawProxyClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/port/remove/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/port/remove/{encode_path_param(port)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -419,9 +449,9 @@ class RawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -429,6 +459,10 @@ class RawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_proxy_port_start(
@@ -453,7 +487,7 @@ class RawProxyClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/port/start/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/port/start/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -471,9 +505,9 @@ class RawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -481,6 +515,10 @@ class RawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_proxy_port_stop(
@@ -505,7 +543,7 @@ class RawProxyClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/port/stop/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/port/stop/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -523,9 +561,9 @@ class RawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -533,6 +571,10 @@ class RawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_proxy_set_config(
@@ -561,7 +603,7 @@ class RawProxyClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/set/config/{jsonable_encoder(argument)}/{jsonable_encoder(value)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/set/config/{encode_path_param(argument)}/{encode_path_param(value)}",
             method="PUT",
             request_options=request_options,
         )
@@ -579,9 +621,9 @@ class RawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -589,6 +631,10 @@ class RawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_proxy_set_trace(
@@ -614,7 +660,7 @@ class RawProxyClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/set/trace/{jsonable_encoder(enable_or_not)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/set/trace/{encode_path_param(enable_or_not)}",
             method="PUT",
             request_options=request_options,
         )
@@ -632,9 +678,9 @@ class RawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -642,6 +688,10 @@ class RawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_proxy_get_stats_hdr(
@@ -679,9 +729,9 @@ class RawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -689,6 +739,10 @@ class RawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -698,7 +752,7 @@ class AsyncRawProxyClient:
 
     async def protocol_proxy_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> AsyncHttpResponse[typing.Dict[str, typing.Any]]:
         """
         Agent's PROXY configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -712,20 +766,20 @@ class AsyncRawProxyClient:
 
         Returns
         -------
-        AsyncHttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]
+        AsyncHttpResponse[typing.Dict[str, typing.Any]]
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/get/args",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/get/args",
             method="GET",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.Dict[str, typing.Optional[typing.Any]],
+                    typing.Dict[str, typing.Any],
                     parse_obj_as(
-                        type_=typing.Dict[str, typing.Optional[typing.Any]],
+                        type_=typing.Dict[str, typing.Any],
                         object_=_response.json(),
                     ),
                 )
@@ -734,9 +788,9 @@ class AsyncRawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -744,6 +798,10 @@ class AsyncRawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_proxy_get_config(
@@ -766,7 +824,7 @@ class AsyncRawProxyClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/get/config",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/get/config",
             method="GET",
             request_options=request_options,
         )
@@ -784,9 +842,9 @@ class AsyncRawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -794,6 +852,10 @@ class AsyncRawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_proxy_get_statistics(
@@ -816,7 +878,7 @@ class AsyncRawProxyClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/get/statistics",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/get/statistics",
             method="GET",
             request_options=request_options,
         )
@@ -834,9 +896,9 @@ class AsyncRawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -844,6 +906,10 @@ class AsyncRawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_proxy_get_trace(
@@ -866,7 +932,7 @@ class AsyncRawProxyClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/get/trace",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/get/trace",
             method="GET",
             request_options=request_options,
         )
@@ -884,9 +950,9 @@ class AsyncRawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -894,6 +960,10 @@ class AsyncRawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_proxy_port_add(
@@ -928,7 +998,7 @@ class AsyncRawProxyClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/port/add/{jsonable_encoder(port)}/{jsonable_encoder(target)}/{jsonable_encoder(target_port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/port/add/{encode_path_param(port)}/{encode_path_param(target)}/{encode_path_param(target_port)}",
             method="POST",
             request_options=request_options,
         )
@@ -946,9 +1016,9 @@ class AsyncRawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -956,6 +1026,10 @@ class AsyncRawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_proxy_port_isstarted(
@@ -980,7 +1054,7 @@ class AsyncRawProxyClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/port/isStarted/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/port/isStarted/{encode_path_param(port)}",
             method="GET",
             request_options=request_options,
         )
@@ -998,9 +1072,9 @@ class AsyncRawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1008,6 +1082,10 @@ class AsyncRawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_proxy_port_list(
@@ -1028,7 +1106,7 @@ class AsyncRawProxyClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/port/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/port/list",
             method="GET",
             request_options=request_options,
         )
@@ -1046,9 +1124,9 @@ class AsyncRawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1056,6 +1134,10 @@ class AsyncRawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_proxy_port_remove(
@@ -1080,7 +1162,7 @@ class AsyncRawProxyClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/port/remove/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/port/remove/{encode_path_param(port)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1098,9 +1180,9 @@ class AsyncRawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1108,6 +1190,10 @@ class AsyncRawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_proxy_port_start(
@@ -1132,7 +1218,7 @@ class AsyncRawProxyClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/port/start/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/port/start/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1150,9 +1236,9 @@ class AsyncRawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1160,6 +1246,10 @@ class AsyncRawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_proxy_port_stop(
@@ -1184,7 +1274,7 @@ class AsyncRawProxyClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/port/stop/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/port/stop/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1202,9 +1292,9 @@ class AsyncRawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1212,6 +1302,10 @@ class AsyncRawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_proxy_set_config(
@@ -1240,7 +1334,7 @@ class AsyncRawProxyClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/set/config/{jsonable_encoder(argument)}/{jsonable_encoder(value)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/set/config/{encode_path_param(argument)}/{encode_path_param(value)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1258,9 +1352,9 @@ class AsyncRawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1268,6 +1362,10 @@ class AsyncRawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_proxy_set_trace(
@@ -1293,7 +1391,7 @@ class AsyncRawProxyClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/proxy/set/trace/{jsonable_encoder(enable_or_not)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/proxy/set/trace/{encode_path_param(enable_or_not)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1311,9 +1409,9 @@ class AsyncRawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1321,6 +1419,10 @@ class AsyncRawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_proxy_get_stats_hdr(
@@ -1358,9 +1460,9 @@ class AsyncRawProxyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1368,4 +1470,8 @@ class AsyncRawProxyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

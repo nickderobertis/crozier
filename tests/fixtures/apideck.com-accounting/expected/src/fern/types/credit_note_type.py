@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CreditNoteType(str, enum.Enum):
+class CreditNoteType(enum.StrEnum):
     """
     Type of payment
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PowerOutletTemplateFeedLegLabel(str, enum.Enum):
+class PowerOutletTemplateFeedLegLabel(enum.StrEnum):
     A = "A"
     B = "B"
     C = "C"

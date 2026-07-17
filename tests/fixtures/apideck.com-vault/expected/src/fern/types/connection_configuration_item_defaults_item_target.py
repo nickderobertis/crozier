@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ConnectionConfigurationItemDefaultsItemTarget(str, enum.Enum):
+class ConnectionConfigurationItemDefaultsItemTarget(enum.StrEnum):
     CUSTOM_FIELDS = "custom_fields"
     RESOURCE = "resource"
 

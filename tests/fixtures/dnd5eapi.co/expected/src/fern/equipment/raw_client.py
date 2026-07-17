@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.equipment import Equipment
@@ -14,6 +15,7 @@ from ..types.equipment_category import EquipmentCategory
 from ..types.magic_item import MagicItem
 from ..types.weapon_property import WeaponProperty
 from .types.get_api_weapon_properties_index_request_index import GetApiWeaponPropertiesIndexRequestIndex
+from pydantic import ValidationError
 
 
 class RawEquipmentClient:
@@ -42,7 +44,7 @@ class RawEquipmentClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/equipment-categories/{jsonable_encoder(index)}",
+            f"api/equipment-categories/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -59,6 +61,10 @@ class RawEquipmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_an_equipment_item_by_index(
@@ -88,7 +94,7 @@ class RawEquipmentClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/equipment/{jsonable_encoder(index)}",
+            f"api/equipment/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -105,6 +111,10 @@ class RawEquipmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_a_magic_item_by_index(
@@ -129,7 +139,7 @@ class RawEquipmentClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/magic-items/{jsonable_encoder(index)}",
+            f"api/magic-items/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -146,6 +156,10 @@ class RawEquipmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_a_weapon_property_by_index(
@@ -166,7 +180,7 @@ class RawEquipmentClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/weapon-properties/{jsonable_encoder(index)}",
+            f"api/weapon-properties/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -183,6 +197,10 @@ class RawEquipmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -212,7 +230,7 @@ class AsyncRawEquipmentClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/equipment-categories/{jsonable_encoder(index)}",
+            f"api/equipment-categories/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -229,6 +247,10 @@ class AsyncRawEquipmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_an_equipment_item_by_index(
@@ -258,7 +280,7 @@ class AsyncRawEquipmentClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/equipment/{jsonable_encoder(index)}",
+            f"api/equipment/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -275,6 +297,10 @@ class AsyncRawEquipmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_a_magic_item_by_index(
@@ -299,7 +325,7 @@ class AsyncRawEquipmentClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/magic-items/{jsonable_encoder(index)}",
+            f"api/magic-items/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -316,6 +342,10 @@ class AsyncRawEquipmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_a_weapon_property_by_index(
@@ -336,7 +366,7 @@ class AsyncRawEquipmentClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/weapon-properties/{jsonable_encoder(index)}",
+            f"api/weapon-properties/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -353,4 +383,8 @@ class AsyncRawEquipmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

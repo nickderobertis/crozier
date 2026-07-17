@@ -12,9 +12,14 @@ from .post_portfolio_analysis_drawdowns_response_portfolios_item_portfolio_worst
 
 
 class PostPortfolioAnalysisDrawdownsResponsePortfoliosItem(UniversalBaseModel):
-    portfolio_drawdowns: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="portfolioDrawdowns")] = (
-        pydantic.Field()
-    )
+    portfolio_drawdowns: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="portfolioDrawdowns"),
+        pydantic.Field(
+            alias="portfolioDrawdowns",
+            description="portfolioDrawdowns[t] is the value of the drawdown function at the time t",
+        ),
+    ]
     """
     portfolioDrawdowns[t] is the value of the drawdown function at the time t
     """
@@ -22,6 +27,7 @@ class PostPortfolioAnalysisDrawdownsResponsePortfoliosItem(UniversalBaseModel):
     portfolio_worst_drawdowns: typing_extensions.Annotated[
         typing.List[PostPortfolioAnalysisDrawdownsResponsePortfoliosItemPortfolioWorstDrawdownsItem],
         FieldMetadata(alias="portfolioWorstDrawdowns"),
+        pydantic.Field(alias="portfolioWorstDrawdowns"),
     ]
 
     if IS_PYDANTIC_V2:

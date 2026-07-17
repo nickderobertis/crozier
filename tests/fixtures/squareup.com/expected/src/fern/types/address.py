@@ -40,9 +40,14 @@ class Address(UniversalBaseModel):
     Japanese for an address in Japan, and so on.
     """
 
-    address_line1: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="address_line_1")] = (
-        pydantic.Field(default=None)
-    )
+    address_line1: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="address_line_1"),
+        pydantic.Field(
+            alias="address_line_1",
+            description="The first line of the address.\n\nFields that start with `address_line` provide the address's most specific\ndetails, like street number, street name, and building name. They do *not*\nprovide less specific details like city, state/province, or country (these\ndetails are provided in other fields).",
+        ),
+    ] = None
     """
     The first line of the address.
     
@@ -52,39 +57,58 @@ class Address(UniversalBaseModel):
     details are provided in other fields).
     """
 
-    address_line2: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="address_line_2")] = (
-        pydantic.Field(default=None)
-    )
+    address_line2: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="address_line_2"),
+        pydantic.Field(alias="address_line_2", description="The second line of the address, if any."),
+    ] = None
     """
     The second line of the address, if any.
     """
 
-    address_line3: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="address_line_3")] = (
-        pydantic.Field(default=None)
-    )
+    address_line3: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="address_line_3"),
+        pydantic.Field(alias="address_line_3", description="The third line of the address, if any."),
+    ] = None
     """
     The third line of the address, if any.
     """
 
     administrative_district_level1: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="administrative_district_level_1")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="administrative_district_level_1"),
+        pydantic.Field(
+            alias="administrative_district_level_1",
+            description="A civil entity within the address's country. In the US, this\nis the state.",
+        ),
+    ] = None
     """
     A civil entity within the address's country. In the US, this
     is the state.
     """
 
     administrative_district_level2: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="administrative_district_level_2")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="administrative_district_level_2"),
+        pydantic.Field(
+            alias="administrative_district_level_2",
+            description="A civil entity within the address's `administrative_district_level_1`.\nIn the US, this is the county.",
+        ),
+    ] = None
     """
     A civil entity within the address's `administrative_district_level_1`.
     In the US, this is the county.
     """
 
     administrative_district_level3: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="administrative_district_level_3")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="administrative_district_level_3"),
+        pydantic.Field(
+            alias="administrative_district_level_3",
+            description="A civil entity within the address's `administrative_district_level_2`,\nif any.",
+        ),
+    ] = None
     """
     A civil entity within the address's `administrative_district_level_2`,
     if any.
@@ -125,16 +149,22 @@ class Address(UniversalBaseModel):
     A civil region within the address's `locality`, if any.
     """
 
-    sublocality2: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="sublocality_2")] = (
-        pydantic.Field(default=None)
-    )
+    sublocality2: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="sublocality_2"),
+        pydantic.Field(alias="sublocality_2", description="A civil region within the address's `sublocality`, if any."),
+    ] = None
     """
     A civil region within the address's `sublocality`, if any.
     """
 
-    sublocality3: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="sublocality_3")] = (
-        pydantic.Field(default=None)
-    )
+    sublocality3: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="sublocality_3"),
+        pydantic.Field(
+            alias="sublocality_3", description="A civil region within the address's `sublocality_2`, if any."
+        ),
+    ] = None
     """
     A civil region within the address's `sublocality_2`, if any.
     """

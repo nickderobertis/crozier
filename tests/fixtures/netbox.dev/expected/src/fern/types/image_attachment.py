@@ -18,7 +18,7 @@ class ImageAttachment(UniversalBaseModel):
     last_updated: typing.Optional[dt.datetime] = None
     name: typing.Optional[str] = None
     object_id: int
-    parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    parent: typing.Optional[typing.Dict[str, typing.Any]] = None
     url: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

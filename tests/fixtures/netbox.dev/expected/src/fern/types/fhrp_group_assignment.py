@@ -13,7 +13,7 @@ class FhrpGroupAssignment(UniversalBaseModel):
     display: typing.Optional[str] = None
     group: NestedFhrpGroup
     id: typing.Optional[int] = None
-    interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    interface: typing.Optional[typing.Dict[str, typing.Any]] = None
     interface_id: int
     interface_type: str
     last_updated: typing.Optional[dt.datetime] = None

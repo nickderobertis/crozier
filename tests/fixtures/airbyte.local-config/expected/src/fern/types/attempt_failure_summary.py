@@ -11,9 +11,14 @@ from .attempt_failure_reason import AttemptFailureReason
 
 class AttemptFailureSummary(UniversalBaseModel):
     failures: typing.List[AttemptFailureReason]
-    partial_success: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="partialSuccess")] = (
-        pydantic.Field(default=None)
-    )
+    partial_success: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="partialSuccess"),
+        pydantic.Field(
+            alias="partialSuccess",
+            description="True if the number of committed records for this attempt was greater than 0. False if 0 records were committed. If not set, the number of committed records is unknown.",
+        ),
+    ] = None
     """
     True if the number of committed records for this attempt was greater than 0. False if 0 records were committed. If not set, the number of committed records is unknown.
     """

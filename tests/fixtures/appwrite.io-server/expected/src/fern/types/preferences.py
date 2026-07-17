@@ -2,4 +2,7 @@
 
 import typing
 
-Preferences = typing.Dict[str, typing.Optional[typing.Any]]
+Preferences = typing.Dict[str, typing.Any]
+"""
+Preferences
+"""

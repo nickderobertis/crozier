@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class V1PaymentSurchargeType(str, enum.Enum):
+class V1PaymentSurchargeType(enum.StrEnum):
     """ """
 
     UNKNOWN = "UNKNOWN"

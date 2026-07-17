@@ -13,7 +13,9 @@ class User(UniversalBaseModel):
     User
     """
 
-    id: typing_extensions.Annotated[str, FieldMetadata(alias="$id")] = pydantic.Field()
+    id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="$id"), pydantic.Field(alias="$id", description="User ID.")
+    ]
     """
     User ID.
     """
@@ -23,7 +25,11 @@ class User(UniversalBaseModel):
     User email address.
     """
 
-    email_verification: typing_extensions.Annotated[bool, FieldMetadata(alias="emailVerification")] = pydantic.Field()
+    email_verification: typing_extensions.Annotated[
+        bool,
+        FieldMetadata(alias="emailVerification"),
+        pydantic.Field(alias="emailVerification", description="Email verification status."),
+    ]
     """
     Email verification status.
     """
@@ -33,12 +39,16 @@ class User(UniversalBaseModel):
     User name.
     """
 
-    password_update: typing_extensions.Annotated[int, FieldMetadata(alias="passwordUpdate")] = pydantic.Field()
+    password_update: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="passwordUpdate"),
+        pydantic.Field(alias="passwordUpdate", description="Unix timestamp of the most recent password update"),
+    ]
     """
     Unix timestamp of the most recent password update
     """
 
-    prefs: typing.Dict[str, typing.Optional[typing.Any]] = pydantic.Field()
+    prefs: typing.Dict[str, typing.Any] = pydantic.Field()
     """
     User preferences as a key-value object
     """

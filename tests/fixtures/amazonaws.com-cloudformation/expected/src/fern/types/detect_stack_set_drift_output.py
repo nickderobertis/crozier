@@ -9,9 +9,14 @@ from ..core.serialization import FieldMetadata
 
 
 class DetectStackSetDriftOutput(UniversalBaseModel):
-    operation_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="OperationId")] = (
-        pydantic.Field(default=None)
-    )
+    operation_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="OperationId"),
+        pydantic.Field(
+            alias="OperationId",
+            description="<p>The ID of the drift detection stack set operation.</p> <p>You can use this operation ID with <code> <a>DescribeStackSetOperation</a> </code> to monitor the progress of the drift detection operation.</p>",
+        ),
+    ] = None
     """
     <p>The ID of the drift detection stack set operation.</p> <p>You can use this operation ID with <code> <a>DescribeStackSetOperation</a> </code> to monitor the progress of the drift detection operation.</p>
     """

@@ -1,6 +1,6 @@
 # Reference
 ## Drive Groups
-<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py">all</a>(...) -> GetDriveGroupsResponse</code></summary>
 <dl>
 <dd>
 
@@ -28,13 +28,15 @@ List DriveGroups
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.drive_groups.all_(
     fields="id,updated_at",
 )
@@ -105,7 +107,7 @@ client.drive_groups.all_(
 </dl>
 </details>
 
-<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py">add</a>(...) -> CreateDriveGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -133,13 +135,15 @@ Create DriveGroup
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.drive_groups.add(
     name="accounting",
 )
@@ -158,7 +162,7 @@ client.drive_groups.add(
 <dl>
 <dd>
 
-**name:** `str` — The name of the drive group
+**request:** `DriveGroup` 
     
 </dd>
 </dl>
@@ -167,62 +171,6 @@ client.drive_groups.add(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[Description]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**display_name:** `typing.Optional[str]` — The display name of the drive group
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[UpdatedBy]` 
     
 </dd>
 </dl>
@@ -242,7 +190,7 @@ client.drive_groups.add(
 </dl>
 </details>
 
-<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py">one</a>(...) -> GetDriveGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -270,13 +218,15 @@ Get DriveGroup
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.drive_groups.one(
     id="id",
     fields="id,updated_at",
@@ -332,7 +282,7 @@ client.drive_groups.one(
 </dl>
 </details>
 
-<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py">delete</a>(...) -> DeleteDriveGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -360,13 +310,15 @@ Delete DriveGroup
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.drive_groups.delete(
     id="id",
 )
@@ -413,7 +365,7 @@ client.drive_groups.delete(
 </dl>
 </details>
 
-<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py">update</a>(...) -> UpdateDriveGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -441,13 +393,15 @@ Update DriveGroup
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.drive_groups.update(
     id_="id",
     name="accounting",
@@ -467,7 +421,7 @@ client.drive_groups.update(
 <dl>
 <dd>
 
-**id_:** `str` — ID of the record you are acting upon.
+**id:** `str` — ID of the record you are acting upon.
     
 </dd>
 </dl>
@@ -475,7 +429,7 @@ client.drive_groups.update(
 <dl>
 <dd>
 
-**name:** `str` — The name of the drive group
+**request:** `DriveGroup` 
     
 </dd>
 </dl>
@@ -484,62 +438,6 @@ client.drive_groups.update(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[Description]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**display_name:** `typing.Optional[str]` — The display name of the drive group
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[UpdatedBy]` 
     
 </dd>
 </dl>
@@ -560,7 +458,7 @@ client.drive_groups.update(
 </details>
 
 ## Drives
-<details><summary><code>client.drives.<a href="src/fern/drives/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.drives.<a href="src/fern/drives/client.py">all</a>(...) -> GetDrivesResponse</code></summary>
 <dl>
 <dd>
 
@@ -588,13 +486,15 @@ List Drives
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.drives.all_(
     fields="id,updated_at",
 )
@@ -665,7 +565,7 @@ client.drives.all_(
 </dl>
 </details>
 
-<details><summary><code>client.drives.<a href="src/fern/drives/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.drives.<a href="src/fern/drives/client.py">add</a>(...) -> CreateDriveResponse</code></summary>
 <dl>
 <dd>
 
@@ -693,13 +593,15 @@ Create Drive
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.drives.add(
     name="Project Resources",
 )
@@ -718,7 +620,7 @@ client.drives.add(
 <dl>
 <dd>
 
-**name:** `str` — The name of the drive
+**request:** `Drive` 
     
 </dd>
 </dl>
@@ -727,54 +629,6 @@ client.drives.add(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[Description]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[UpdatedBy]` 
     
 </dd>
 </dl>
@@ -794,7 +648,7 @@ client.drives.add(
 </dl>
 </details>
 
-<details><summary><code>client.drives.<a href="src/fern/drives/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.drives.<a href="src/fern/drives/client.py">one</a>(...) -> GetDriveResponse</code></summary>
 <dl>
 <dd>
 
@@ -822,13 +676,15 @@ Get Drive
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.drives.one(
     id="id",
     fields="id,updated_at",
@@ -884,7 +740,7 @@ client.drives.one(
 </dl>
 </details>
 
-<details><summary><code>client.drives.<a href="src/fern/drives/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.drives.<a href="src/fern/drives/client.py">delete</a>(...) -> DeleteDriveResponse</code></summary>
 <dl>
 <dd>
 
@@ -912,13 +768,15 @@ Delete Drive
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.drives.delete(
     id="id",
 )
@@ -965,7 +823,7 @@ client.drives.delete(
 </dl>
 </details>
 
-<details><summary><code>client.drives.<a href="src/fern/drives/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.drives.<a href="src/fern/drives/client.py">update</a>(...) -> UpdateDriveResponse</code></summary>
 <dl>
 <dd>
 
@@ -993,13 +851,15 @@ Update Drive
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.drives.update(
     id_="id",
     name="Project Resources",
@@ -1019,7 +879,7 @@ client.drives.update(
 <dl>
 <dd>
 
-**id_:** `str` — ID of the record you are acting upon.
+**id:** `str` — ID of the record you are acting upon.
     
 </dd>
 </dl>
@@ -1027,7 +887,7 @@ client.drives.update(
 <dl>
 <dd>
 
-**name:** `str` — The name of the drive
+**request:** `Drive` 
     
 </dd>
 </dl>
@@ -1036,54 +896,6 @@ client.drives.update(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[Description]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[UpdatedBy]` 
     
 </dd>
 </dl>
@@ -1104,7 +916,7 @@ client.drives.update(
 </details>
 
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py">all</a>(...) -> GetFilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1132,13 +944,15 @@ List Files
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.files.all_(
     fields="id,updated_at",
 )
@@ -1225,7 +1039,7 @@ client.files.all_(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">upload</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py">upload</a>(...) -> CreateFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -1253,13 +1067,15 @@ Upload file (max 100MB). Please use the [Upload Sessions API](#operation/uploadS
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.files.upload(
     apideck_metadata="x-apideck-metadata",
     request="string",
@@ -1315,7 +1131,7 @@ client.files.upload(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">search</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py">search</a>(...) -> GetFilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1343,13 +1159,15 @@ Search Files
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.files.search(
     fields="id,updated_at",
     query="logo jpg",
@@ -1413,7 +1231,7 @@ client.files.search(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py">one</a>(...) -> GetFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -1441,13 +1259,15 @@ Get File
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.files.one(
     id="id",
     fields="id,updated_at",
@@ -1503,7 +1323,7 @@ client.files.one(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py">delete</a>(...) -> DeleteFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -1531,13 +1351,15 @@ Delete File
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.files.delete(
     id="id",
 )
@@ -1584,7 +1406,7 @@ client.files.delete(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py">update</a>(...) -> UpdateFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -1612,13 +1434,15 @@ Rename or move File
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.files.update(
     id="id",
 )
@@ -1689,7 +1513,7 @@ client.files.update(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">download</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py">download</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1717,13 +1541,15 @@ Download File
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.files.download()
 
 ```
@@ -1756,7 +1582,7 @@ client.files.download()
 <dl>
 <dd>
 
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
 </dl>
@@ -1769,7 +1595,7 @@ client.files.download()
 </details>
 
 ## Folders
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py">add</a>(...) -> CreateFolderResponse</code></summary>
 <dl>
 <dd>
 
@@ -1797,13 +1623,15 @@ Create Folder
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.folders.add(
     fields="id,updated_at",
     name="Documents",
@@ -1884,7 +1712,7 @@ client.folders.add(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py">one</a>(...) -> GetFolderResponse</code></summary>
 <dl>
 <dd>
 
@@ -1912,13 +1740,15 @@ Get Folder
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.folders.one(
     id="id",
     fields="id,updated_at",
@@ -1974,7 +1804,7 @@ client.folders.one(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py">delete</a>(...) -> DeleteFolderResponse</code></summary>
 <dl>
 <dd>
 
@@ -2002,13 +1832,15 @@ Delete Folder
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.folders.delete(
     id="id",
 )
@@ -2055,7 +1887,7 @@ client.folders.delete(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py">update</a>(...) -> UpdateFolderResponse</code></summary>
 <dl>
 <dd>
 
@@ -2083,13 +1915,15 @@ Rename or move Folder
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.folders.update(
     id="id",
 )
@@ -2160,7 +1994,7 @@ client.folders.update(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">copy</a>(...)</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py">copy</a>(...) -> UpdateFolderResponse</code></summary>
 <dl>
 <dd>
 
@@ -2188,13 +2022,15 @@ Copy Folder
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.folders.copy(
     id="id",
     fields="id,updated_at",
@@ -2268,7 +2104,7 @@ client.folders.copy(
 </details>
 
 ## Shared Links
-<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py">all</a>(...) -> GetSharedLinksResponse</code></summary>
 <dl>
 <dd>
 
@@ -2296,13 +2132,15 @@ List SharedLinks
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shared_links.all_(
     fields="id,updated_at",
 )
@@ -2365,7 +2203,7 @@ client.shared_links.all_(
 </dl>
 </details>
 
-<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py">add</a>(...) -> CreateSharedLinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -2393,13 +2231,15 @@ Create Shared Link
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shared_links.add(
     target_id="target_id",
 )
@@ -2418,7 +2258,7 @@ client.shared_links.add(
 <dl>
 <dd>
 
-**target_id:** `str` — The ID of the file or folder to link.
+**request:** `SharedLink` 
     
 </dd>
 </dl>
@@ -2427,78 +2267,6 @@ client.shared_links.add(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**download_url:** `typing.Optional[str]` — The URL that can be used to download the file.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**expires_at:** `typing.Optional[ExpiresAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**password:** `typing.Optional[str]` — Optional password for the shared link.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**password_protected:** `typing.Optional[bool]` — Indicated if the shared link is password protected.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scope:** `typing.Optional[SharedLinkScope]` — The scope of the shared link.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**target:** `typing.Optional[SharedLinkTarget]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**url:** `typing.Optional[str]` — The URL that can be used to view the file.
     
 </dd>
 </dl>
@@ -2518,7 +2286,7 @@ client.shared_links.add(
 </dl>
 </details>
 
-<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py">one</a>(...) -> GetSharedLinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -2546,13 +2314,15 @@ Get Shared Link
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shared_links.one(
     id="id",
     fields="id,updated_at",
@@ -2608,7 +2378,7 @@ client.shared_links.one(
 </dl>
 </details>
 
-<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py">delete</a>(...) -> DeleteSharedLinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -2636,13 +2406,15 @@ Delete Shared Link
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shared_links.delete(
     id="id",
 )
@@ -2689,7 +2461,7 @@ client.shared_links.delete(
 </dl>
 </details>
 
-<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py">update</a>(...) -> UpdateSharedLinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -2717,13 +2489,15 @@ Update Shared Link
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shared_links.update(
     id="id",
     target_id="target_id",
@@ -2751,7 +2525,7 @@ client.shared_links.update(
 <dl>
 <dd>
 
-**target_id:** `str` — The ID of the file or folder to link.
+**request:** `SharedLink` 
     
 </dd>
 </dl>
@@ -2760,78 +2534,6 @@ client.shared_links.update(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**download_url:** `typing.Optional[str]` — The URL that can be used to download the file.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**expires_at:** `typing.Optional[ExpiresAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**password:** `typing.Optional[str]` — Optional password for the shared link.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**password_protected:** `typing.Optional[bool]` — Indicated if the shared link is password protected.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scope:** `typing.Optional[SharedLinkScope]` — The scope of the shared link.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**target:** `typing.Optional[SharedLinkTarget]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**url:** `typing.Optional[str]` — The URL that can be used to view the file.
     
 </dd>
 </dl>
@@ -2852,7 +2554,7 @@ client.shared_links.update(
 </details>
 
 ## Upload Sessions
-<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py">add</a>(...) -> CreateUploadSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2880,13 +2582,15 @@ Start an Upload Session. Upload sessions are used to upload large files, use the
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.upload_sessions.add(
     name="Documents",
     parent_folder_id="1234",
@@ -2959,7 +2663,7 @@ client.upload_sessions.add(
 </dl>
 </details>
 
-<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py">one</a>(...) -> GetUploadSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2987,13 +2691,15 @@ Get Upload Session. Use the `part_size` to split your file into parts. Upload th
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.upload_sessions.one(
     id="id",
     fields="id,updated_at",
@@ -3049,7 +2755,7 @@ client.upload_sessions.one(
 </dl>
 </details>
 
-<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py">upload</a>(...)</code></summary>
+<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py">upload</a>(...) -> UpdateUploadSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3077,17 +2783,19 @@ Upload part of File to Upload Session (max 100MB). Get `part_size` from [Get Upl
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.upload_sessions.upload(
     id="id",
+    part_number=0,
     digest="sha=fpRyg5eVQletdZqEKaFlqwBXJzM=",
-    part_number=0.0,
     request="<binary string>",
 )
 
@@ -3157,7 +2865,7 @@ client.upload_sessions.upload(
 </dl>
 </details>
 
-<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py">delete</a>(...) -> DeleteUploadSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3185,13 +2893,15 @@ Abort Upload Session. Note that the base URL is upload.apideck.com instead of un
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.upload_sessions.delete(
     id="id",
 )
@@ -3238,7 +2948,7 @@ client.upload_sessions.delete(
 </dl>
 </details>
 
-<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py">finish</a>(...)</code></summary>
+<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py">finish</a>(...) -> GetFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -3266,13 +2976,15 @@ Finish Upload Session. Only call this endpoint after all File parts have been up
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.upload_sessions.finish(
     id="id",
     digest="sha=fpRyg5eVQletdZqEKaFlqwBXJzM=",

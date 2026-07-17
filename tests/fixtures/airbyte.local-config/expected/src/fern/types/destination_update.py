@@ -12,9 +12,13 @@ from .destination_id import DestinationId
 
 class DestinationUpdate(UniversalBaseModel):
     connection_configuration: typing_extensions.Annotated[
-        DestinationConfiguration, FieldMetadata(alias="connectionConfiguration")
+        DestinationConfiguration,
+        FieldMetadata(alias="connectionConfiguration"),
+        pydantic.Field(alias="connectionConfiguration"),
     ]
-    destination_id: typing_extensions.Annotated[DestinationId, FieldMetadata(alias="destinationId")]
+    destination_id: typing_extensions.Annotated[
+        DestinationId, FieldMetadata(alias="destinationId"), pydantic.Field(alias="destinationId")
+    ]
     name: str
 
     if IS_PYDANTIC_V2:

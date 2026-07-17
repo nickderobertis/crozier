@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InvoiceRequestMethod(str, enum.Enum):
+class InvoiceRequestMethod(enum.StrEnum):
     """
     Specifies the action for Square to take for processing the invoice. For example,
     email the invoice, charge a customer's card on file, or do nothing. DEPRECATED at

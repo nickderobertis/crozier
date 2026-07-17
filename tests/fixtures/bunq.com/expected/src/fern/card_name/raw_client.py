@@ -6,11 +6,13 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.card_name_listing import CardNameListing
+from pydantic import ValidationError
 
 
 class RawCardNameClient:
@@ -37,7 +39,7 @@ class RawCardNameClient:
             Endpoint for getting all the accepted card names for a user. As bunq do not allow total freedom in choosing the name that is going to be printed on the card, the following formats are accepted: Name Surname, N. Surname, N Surname or Surname.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card-name",
+            f"user/{encode_path_param(user_id)}/card-name",
             method="GET",
             request_options=request_options,
         )
@@ -55,9 +57,9 @@ class RawCardNameClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -65,6 +67,10 @@ class RawCardNameClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -92,7 +98,7 @@ class AsyncRawCardNameClient:
             Endpoint for getting all the accepted card names for a user. As bunq do not allow total freedom in choosing the name that is going to be printed on the card, the following formats are accepted: Name Surname, N. Surname, N Surname or Surname.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card-name",
+            f"user/{encode_path_param(user_id)}/card-name",
             method="GET",
             request_options=request_options,
         )
@@ -110,9 +116,9 @@ class AsyncRawCardNameClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -120,4 +126,8 @@ class AsyncRawCardNameClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

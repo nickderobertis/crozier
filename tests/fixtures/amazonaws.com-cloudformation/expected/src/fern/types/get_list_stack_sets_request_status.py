@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetListStackSetsRequestStatus(str, enum.Enum):
+class GetListStackSetsRequestStatus(enum.StrEnum):
     ACTIVE = "ACTIVE"
     DELETED = "DELETED"
 

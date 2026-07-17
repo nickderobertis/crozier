@@ -12,8 +12,13 @@ the rest.
 Add one numbered [`CORPUS.md`](CORPUS.md) row and source URL per feature branch,
 then wire a `Corpus { api, package_name, project_name, matched: &[] }` into
 `tests/e2e.rs`. Start `matched` **empty**. Push the branch and manually dispatch
-the **Fern goldens** workflow for that fixture; red comparison is expected until
-Crozier is repaired. The complete selection, provenance, partial-success,
+the **Fern goldens** workflow on that branch for the fixture; red comparison is
+expected until Crozier is repaired. A Monday 05:17 UTC run from `main` leaves
+both inputs blank to check the latest Fern against every managed golden. Do Fern
+upgrade work on an expected-red feature branch, retain the workflow's
+best-effort successful commits and exact known-failure evidence, then rerun with
+the resolved exact version until the final run is green with no changes to
+generate or publish. The complete selection, provenance, partial-success,
 publication, and rerun contract is in
 [`../../docs/fern-goldens.md`](../../docs/fern-goldens.md).
 

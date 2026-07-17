@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ShiftSortField(str, enum.Enum):
+class ShiftSortField(enum.StrEnum):
     """
     Enumerates the `Shift` fields to sort on.
     """

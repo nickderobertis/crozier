@@ -14,6 +14,13 @@ REPO = Path(__file__).resolve().parent.parent
 TOOL = REPO / "scripts" / "fern-goldens"
 STATE = ".crozier-fern-golden.json"
 ALIASES = REPO / "tests" / "fixtures" / "corpus-aliases.tsv"
+KNOWN_FAILURE = (
+    REPO
+    / "tests"
+    / "fixtures"
+    / "calorieninjas.com"
+    / "known-fern-failure.json"
+)
 
 
 @unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
@@ -36,6 +43,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             r"""
             #!/usr/bin/env python3
             import os
+            import json
             import pathlib
             import sys
 
@@ -45,6 +53,26 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 calls.write(f"{fixture} {version} {spec} {destination}\n")
             output = pathlib.Path(destination)
             (output / "src" / "fern").mkdir(parents=True)
+            if fixture in os.environ.get("KNOWN_FAILURE_FIXTURES", "").split(","):
+                manifest = json.loads(
+                    (root / "tests" / "fixtures" / fixture / "known-fern-failure.json")
+                    .read_text(encoding="utf-8")
+                )
+                fingerprint = manifest["fingerprint"]
+                blocks = []
+                for diagnostic in fingerprint["diagnostics"]:
+                    blocks.append(
+                        f"fern/output/{diagnostic['path']}:{diagnostic['line']}:"
+                        f"{diagnostic['column']}: {diagnostic['message']}\n"
+                        f"{diagnostic['line']} | {diagnostic['source']}"
+                    )
+                summary = fingerprint["ruff_summary"]
+                if os.environ.get("MUTATE_KNOWN_FAILURE") == "1":
+                    summary = "Found 12 errors (5 fixed, 7 remaining)."
+                payload = "\n\n".join([*blocks, summary]) + "\n"
+                print(f"Failed to run command: {fingerprint['failed_command']}")
+                print(repr(payload.encode()))
+                raise SystemExit(int(os.environ.get("KNOWN_FAILURE_EXIT_CODE", "1")))
             if fixture in os.environ.get("FAIL_FIXTURES", "").split(","):
                 (output / "src" / "fern" / "partial.py").write_text("partial\n")
                 raise SystemExit(19)
@@ -81,26 +109,40 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             self.root / "fake-bin" / "just",
             r"""
             #!/usr/bin/env python3
+            import json
             import os
             import pathlib
             import signal
+            import subprocess
             import sys
 
             args = sys.argv[1:]
             if "fetch-corpus" in args:
                 fixture = args[args.index("--fixture") + 1]
                 root = pathlib.Path(os.environ["CROZIER_FERN_GOLDENS_ROOT"])
-                destination = root / ".local" / "corpus" / fixture / "openapi.json"
                 with (root / ".fetch-calls").open("a", encoding="utf-8") as calls:
                     calls.write(" ".join(args[args.index("fetch-corpus"):]) + "\n")
-                if fixture in os.environ.get("FAIL_FETCH", "").split(","):
-                    print("synthetic fetch failure", file=sys.stderr)
-                    raise SystemExit(22)
-                if "--if-missing" not in args or not destination.is_file():
-                    destination.parent.mkdir(parents=True, exist_ok=True)
-                    destination.write_text('{"openapi":"3.0.3"}\n', encoding="utf-8")
-                print(destination)
-                raise SystemExit(0)
+                command = [
+                    root / "scripts" / "fetch-corpus.sh",
+                    *args[args.index("fetch-corpus") + 1:],
+                ]
+                result = subprocess.run(
+                    command,
+                    cwd=root,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                stdout = result.stdout
+                reported_name = os.environ.get("FETCH_REPORTED_NAME")
+                if result.returncode == 0 and reported_name:
+                    fetched = pathlib.Path(stdout.strip())
+                    reported = fetched.with_name(reported_name)
+                    fetched.replace(reported)
+                    stdout = f"{reported}\n"
+                sys.stdout.write(stdout)
+                sys.stderr.write(result.stderr)
+                raise SystemExit(result.returncode)
 
             root = pathlib.Path(os.environ["CROZIER_FERN_GOLDENS_ROOT"])
             fixture = os.environ.get("CROZIER_DIFF_CORPUS", "")
@@ -117,6 +159,16 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 raise SystemExit(9)
             with (root / ".compare-calls").open("a", encoding="utf-8") as calls:
                 calls.write(fixture + "\n")
+            known_failure = (
+                root / "tests" / "fixtures" / fixture / "known-fern-failure.json"
+            )
+            if known_failure.is_file():
+                manifest = json.loads(known_failure.read_text(encoding="utf-8"))
+                print(
+                    f"KNOWN UPSTREAM FERN FAILURE: {fixture} at "
+                    f"{manifest['generator']}:{manifest['generator_version']}; "
+                    "Crozier generation succeeded."
+                )
             mode = os.environ.get("COMPARE_MODE", "green")
             if mode == "terminated" and fixture == "alpha":
                 os.kill(os.getpid(), signal.SIGTERM)
@@ -177,6 +229,27 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         (self.root / "tests" / "fixtures" / "CORPUS.md").write_text(
             textwrap.dedent(manifest), encoding="utf-8"
         )
+
+    def write_known_failure(self, fixture: str = "alpha", version: str = "5.20.0") -> Path:
+        payload = json.loads(KNOWN_FAILURE.read_text(encoding="utf-8"))
+        identities = {
+            "alpha": ("1", "https://example.test/alpha/openapi.json"),
+            "beta": ("1", "https://example.test/beta/openapi.json"),
+            "new-fixture": ("1", "https://example.test/new-fixture/openapi.json"),
+        }
+        ref, url = identities[fixture]
+        payload.update(
+            {
+                "generator_version": version,
+                "corpus_spec_name": fixture,
+                "corpus_spec_ref": ref,
+                "corpus_spec_url": url,
+            }
+        )
+        path = self.root / "tests" / "fixtures" / fixture / "known-fern-failure.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        return path
 
     @staticmethod
     def write_executable(path: Path, source: str) -> None:
@@ -388,9 +461,30 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(len(self.calls()), 3)
         self.assertEqual(self.state("alpha")["corpus_spec_ref"], "2")
         self.assertTrue(
-            (self.root / ".local" / "corpus" / "alpha" / "openapi.json").is_file()
+            (self.root / ".local" / "corpus" / "alpha" / "openapi.yaml").is_file()
         )
         self.assertTrue(all("fetch-corpus --fixture alpha" in call for call in self.fetch_calls()))
+
+    def test_generation_uses_the_path_reported_by_fetch_corpus(self) -> None:
+        self.run_tool(
+            "generate",
+            "--version",
+            "4.9.0",
+            "--fixture",
+            "alpha",
+            check=True,
+            FETCH_REPORTED_NAME="authoritative-spec.yaml",
+        )
+
+        reported = (
+            self.root
+            / ".local"
+            / "corpus"
+            / "alpha"
+            / "authoritative-spec.yaml"
+        )
+        self.assertTrue(reported.is_file())
+        self.assertIn(str(reported), self.calls()[0])
 
     def test_incomplete_exact_state_is_not_treated_as_current(self) -> None:
         self.run_tool(
@@ -415,37 +509,43 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(len(self.calls()), 2)
         self.assertTrue(generated.is_file())
 
-    def test_shared_fetch_command_uses_canonical_cache_and_reuses_it(self) -> None:
+    def test_shared_fetch_command_preserves_source_suffix_and_reuses_cache(self) -> None:
         destination = Path(self.temporary.name) / "corpus-cache"
-        command = self.script_command(
-            REPO / "scripts" / "fetch-corpus.sh",
-            "--fixture",
-            "apideck.com-crm",
-            str(destination),
+        cases = (
+            ("apideck.com-crm", "openapi.json", "api.apis.guru"),
+            ("redocly.com-museum", "openapi.yaml", "raw.githubusercontent.com"),
         )
-        first = subprocess.run(
-            command,
-            cwd=REPO,
-            env=self.environment(),
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-        self.assertEqual(first.returncode, 0, first.stderr)
-        canonical = destination / "apideck.com-crm" / "openapi.json"
-        self.assertEqual(first.stdout, f"{canonical}\n")
-        self.assertTrue(canonical.is_file())
+        for fixture, filename, failed_host in cases:
+            with self.subTest(fixture=fixture):
+                command = self.script_command(
+                    REPO / "scripts" / "fetch-corpus.sh",
+                    "--fixture",
+                    fixture,
+                    str(destination),
+                )
+                first = subprocess.run(
+                    command,
+                    cwd=REPO,
+                    env=self.environment(),
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                self.assertEqual(first.returncode, 0, first.stderr)
+                canonical = destination / fixture / filename
+                self.assertEqual(first.stdout, f"{canonical}\n")
+                self.assertTrue(canonical.is_file())
 
-        second = subprocess.run(
-            [*command[:-1], "--if-missing", command[-1]],
-            cwd=REPO,
-            env=self.environment(FAIL_FETCH="api.apis.guru"),
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-        self.assertEqual(second.returncode, 0, second.stderr)
-        self.assertEqual(second.stdout, f"{canonical}\n")
+                second = subprocess.run(
+                    [*command[:-1], "--if-missing", command[-1]],
+                    cwd=REPO,
+                    env=self.environment(FAIL_FETCH=failed_host),
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                self.assertEqual(second.returncode, 0, second.stderr)
+                self.assertEqual(second.stdout, f"{canonical}\n")
 
     def test_partial_failures_preserve_prior_goldens_and_state(self) -> None:
         self.run_tool(
@@ -484,6 +584,109 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             (self.root / "tests" / "fixtures" / "beta" / "expected" / STATE).exists()
         )
         self.assertFalse(list((self.root / "tests" / "fixtures" / "alpha").glob(".fern-goldens-stage.*")))
+
+    def test_exact_known_upstream_failure_is_revalidated_and_retry_is_deterministic(self) -> None:
+        self.write_known_failure()
+        expected = self.root / "tests" / "fixtures" / "alpha" / "expected"
+        before = {
+            path.relative_to(expected).as_posix(): path.read_bytes()
+            for path in expected.rglob("*")
+            if path.is_file()
+        }
+
+        reports = []
+        for _ in range(2):
+            result = self.run_tool(
+                "generate",
+                "--version",
+                "5.20.0",
+                "--fixture",
+                "alpha",
+                KNOWN_FAILURE_FIXTURES="alpha",
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("exact known upstream Fern failure reproduced", result.stdout)
+            self.assertIn(
+                "0 generated, 0 current, 0 failed, 1 exact known upstream Fern failure(s)",
+                result.stdout,
+            )
+            report = self.root / ".local" / "fern-goldens"
+            reports.append(
+                (
+                    (report / "generation-summary.txt").read_bytes(),
+                    (report / "generated.txt").read_bytes(),
+                    (report / "current.txt").read_bytes(),
+                    (report / "generation-failures.txt").read_bytes(),
+                    (report / "known-upstream-failures.txt").read_bytes(),
+                )
+            )
+
+        self.assertEqual(reports[0], reports[1])
+        self.assertEqual(reports[0][-1], b"alpha\n")
+        self.assertEqual(len(self.calls()), 2, "known failures must be retried every run")
+        after = {
+            path.relative_to(expected).as_posix(): path.read_bytes()
+            for path in expected.rglob("*")
+            if path.is_file()
+        }
+        self.assertEqual(after, before)
+        self.assertFalse(list(expected.parent.glob(".fern-goldens-stage.*")))
+
+        comparison = self.run_tool("compare")
+        self.assertEqual(comparison.returncode, 0, comparison.stderr)
+        self.assertIn("1 exact known upstream Fern failure(s)", comparison.stdout)
+        known_report = (
+            self.root
+            / ".local"
+            / "fern-goldens"
+            / "comparison-known-upstream-failures.txt"
+        )
+        self.assertEqual(known_report.read_text(encoding="utf-8"), "alpha\n")
+
+    def test_changed_known_failure_and_unexpected_success_remain_fatal(self) -> None:
+        self.write_known_failure()
+        expected = self.root / "tests" / "fixtures" / "alpha" / "expected"
+        before = {
+            path.relative_to(expected).as_posix(): path.read_bytes()
+            for path in expected.rglob("*")
+            if path.is_file()
+        }
+
+        changed = self.run_tool(
+            "generate",
+            "--version",
+            "5.20.0",
+            "--fixture",
+            "alpha",
+            KNOWN_FAILURE_FIXTURES="alpha",
+            MUTATE_KNOWN_FAILURE="1",
+        )
+        self.assertEqual(changed.returncode, 1)
+        self.assertIn("fingerprint changed", changed.stderr)
+
+        changed_exit = self.run_tool(
+            "generate",
+            "--version",
+            "5.20.0",
+            "--fixture",
+            "alpha",
+            KNOWN_FAILURE_FIXTURES="alpha",
+            KNOWN_FAILURE_EXIT_CODE="2",
+        )
+        self.assertEqual(changed_exit.returncode, 1)
+        self.assertIn("exit changed from 1 to 2", changed_exit.stderr)
+
+        succeeded = self.run_tool(
+            "generate", "--version", "5.20.0", "--fixture", "alpha"
+        )
+        self.assertEqual(succeeded.returncode, 1)
+        self.assertIn("unexpectedly succeeded", succeeded.stderr)
+        after = {
+            path.relative_to(expected).as_posix(): path.read_bytes()
+            for path in expected.rglob("*")
+            if path.is_file()
+        }
+        self.assertEqual(after, before)
 
     def test_compare_aggregates_differences_and_generation_failures(self) -> None:
         green = self.run_tool("compare")
@@ -563,10 +766,14 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             "success",
             "--publication",
             "success",
+            "--generation-summary",
+            "success",
             "--generation-evidence",
             "success",
             "--comparison",
             "failure",
+            "--comparison-summary",
+            "success",
             "--comparison-evidence",
             "success",
         )
@@ -595,9 +802,13 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             "success",
             "--publication",
             "success",
+            "--generation-summary",
+            "success",
             "--generation-evidence",
             "success",
             "--comparison",
+            "success",
+            "--comparison-summary",
             "success",
             "--comparison-evidence",
             "success",
@@ -650,9 +861,13 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             "failure",
             "--publication",
             "success",
+            "--generation-summary",
+            "success",
             "--generation-evidence",
             "success",
             "--comparison",
+            "success",
+            "--comparison-summary",
             "success",
             "--comparison-evidence",
             "success",

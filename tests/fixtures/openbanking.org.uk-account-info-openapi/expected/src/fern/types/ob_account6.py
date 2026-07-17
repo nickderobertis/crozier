@@ -33,33 +33,57 @@ class ObAccount6(UniversalBaseModel):
     """
 
     account: typing_extensions.Annotated[
-        typing.Optional[typing.List[ObAccount6AccountItem]], FieldMetadata(alias="Account")
+        typing.Optional[typing.List[ObAccount6AccountItem]],
+        FieldMetadata(alias="Account"),
+        pydantic.Field(alias="Account"),
     ] = None
-    account_id: typing_extensions.Annotated[AccountId, FieldMetadata(alias="AccountId")]
+    account_id: typing_extensions.Annotated[
+        AccountId, FieldMetadata(alias="AccountId"), pydantic.Field(alias="AccountId")
+    ]
     account_sub_type: typing_extensions.Annotated[
-        typing.Optional[ObExternalAccountSubType1Code], FieldMetadata(alias="AccountSubType")
+        typing.Optional[ObExternalAccountSubType1Code],
+        FieldMetadata(alias="AccountSubType"),
+        pydantic.Field(alias="AccountSubType"),
     ] = None
     account_type: typing_extensions.Annotated[
-        typing.Optional[ObExternalAccountType1Code], FieldMetadata(alias="AccountType")
+        typing.Optional[ObExternalAccountType1Code],
+        FieldMetadata(alias="AccountType"),
+        pydantic.Field(alias="AccountType"),
     ] = None
     currency: typing_extensions.Annotated[
-        typing.Optional[ActiveOrHistoricCurrencyCode0], FieldMetadata(alias="Currency")
+        typing.Optional[ActiveOrHistoricCurrencyCode0],
+        FieldMetadata(alias="Currency"),
+        pydantic.Field(alias="Currency"),
     ] = None
-    description: typing_extensions.Annotated[typing.Optional[Description0], FieldMetadata(alias="Description")] = None
-    maturity_date: typing_extensions.Annotated[typing.Optional[MaturityDate], FieldMetadata(alias="MaturityDate")] = (
-        None
-    )
-    nickname: typing_extensions.Annotated[typing.Optional[Nickname], FieldMetadata(alias="Nickname")] = None
-    opening_date: typing_extensions.Annotated[typing.Optional[OpeningDate], FieldMetadata(alias="OpeningDate")] = None
+    description: typing_extensions.Annotated[
+        typing.Optional[Description0], FieldMetadata(alias="Description"), pydantic.Field(alias="Description")
+    ] = None
+    maturity_date: typing_extensions.Annotated[
+        typing.Optional[MaturityDate], FieldMetadata(alias="MaturityDate"), pydantic.Field(alias="MaturityDate")
+    ] = None
+    nickname: typing_extensions.Annotated[
+        typing.Optional[Nickname], FieldMetadata(alias="Nickname"), pydantic.Field(alias="Nickname")
+    ] = None
+    opening_date: typing_extensions.Annotated[
+        typing.Optional[OpeningDate], FieldMetadata(alias="OpeningDate"), pydantic.Field(alias="OpeningDate")
+    ] = None
     servicer: typing_extensions.Annotated[
-        typing.Optional[ObBranchAndFinancialInstitutionIdentification50], FieldMetadata(alias="Servicer")
+        typing.Optional[ObBranchAndFinancialInstitutionIdentification50],
+        FieldMetadata(alias="Servicer"),
+        pydantic.Field(alias="Servicer"),
     ] = None
-    status: typing_extensions.Annotated[typing.Optional[ObAccountStatus1Code], FieldMetadata(alias="Status")] = None
+    status: typing_extensions.Annotated[
+        typing.Optional[ObAccountStatus1Code], FieldMetadata(alias="Status"), pydantic.Field(alias="Status")
+    ] = None
     status_update_date_time: typing_extensions.Annotated[
-        typing.Optional[StatusUpdateDateTime], FieldMetadata(alias="StatusUpdateDateTime")
+        typing.Optional[StatusUpdateDateTime],
+        FieldMetadata(alias="StatusUpdateDateTime"),
+        pydantic.Field(alias="StatusUpdateDateTime"),
     ] = None
     switch_status: typing_extensions.Annotated[
-        typing.Optional[ObExternalSwitchStatusCode], FieldMetadata(alias="SwitchStatus")
+        typing.Optional[ObExternalSwitchStatusCode],
+        FieldMetadata(alias="SwitchStatus"),
+        pydantic.Field(alias="SwitchStatus"),
     ] = None
 
     if IS_PYDANTIC_V2:

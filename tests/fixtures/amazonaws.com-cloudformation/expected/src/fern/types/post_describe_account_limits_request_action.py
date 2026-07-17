@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostDescribeAccountLimitsRequestAction(str, enum.Enum):
+class PostDescribeAccountLimitsRequestAction(enum.StrEnum):
     DESCRIBE_ACCOUNT_LIMITS = "DescribeAccountLimits"
 
     def visit(self, describe_account_limits: typing.Callable[[], T_Result]) -> T_Result:

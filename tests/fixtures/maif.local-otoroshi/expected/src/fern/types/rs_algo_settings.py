@@ -13,14 +13,20 @@ class RsAlgoSettings(UniversalBaseModel):
     Settings for an HMAC + SHA signing algorithm
     """
 
-    private_key: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="privateKey")] = pydantic.Field(
-        default=None
-    )
+    private_key: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="privateKey"),
+        pydantic.Field(alias="privateKey", description="The private key for the RSA function"),
+    ] = None
     """
     The private key for the RSA function
     """
 
-    public_key: typing_extensions.Annotated[str, FieldMetadata(alias="publicKey")] = pydantic.Field()
+    public_key: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="publicKey"),
+        pydantic.Field(alias="publicKey", description="The public key for the RSA function"),
+    ]
     """
     The public key for the RSA function
     """

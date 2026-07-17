@@ -200,6 +200,7 @@ if typing.TYPE_CHECKING:
         system,
         user_management,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .images import (
@@ -266,6 +267,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CredentialList": ".types",
     "Cvssv2Scores": ".types",
     "Cvssv3Scores": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "DeleteImageResponse": ".types",
     "DeleteImageResponseList": ".types",
     "DeleteImageResponseStatus": ".types",
@@ -497,6 +500,8 @@ __all__ = [
     "CredentialList",
     "Cvssv2Scores",
     "Cvssv3Scores",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "DeleteImageResponse",
     "DeleteImageResponseList",
     "DeleteImageResponseStatus",

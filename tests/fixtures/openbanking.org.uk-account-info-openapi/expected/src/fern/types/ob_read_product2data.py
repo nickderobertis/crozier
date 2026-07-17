@@ -15,7 +15,9 @@ class ObReadProduct2Data(UniversalBaseModel):
     """
 
     product: typing_extensions.Annotated[
-        typing.Optional[typing.List[ObReadProduct2DataProductItem]], FieldMetadata(alias="Product")
+        typing.Optional[typing.List[ObReadProduct2DataProductItem]],
+        FieldMetadata(alias="Product"),
+        pydantic.Field(alias="Product"),
     ] = None
 
     if IS_PYDANTIC_V2:

@@ -14,15 +14,25 @@ from .destiny_components_collectibles_destiny_collectible_component import (
 class DestinyComponentsCollectiblesDestinyCollectiblesComponent(UniversalBaseModel):
     collectibles: typing.Optional[typing.Dict[str, DestinyComponentsCollectiblesDestinyCollectibleComponent]] = None
     collection_badges_root_node_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="collectionBadgesRootNodeHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="collectionBadgesRootNodeHash"),
+        pydantic.Field(
+            alias="collectionBadgesRootNodeHash",
+            description="The hash for the root presentation node definition of Collection Badges.",
+        ),
+    ] = None
     """
     The hash for the root presentation node definition of Collection Badges.
     """
 
     collection_categories_root_node_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="collectionCategoriesRootNodeHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="collectionCategoriesRootNodeHash"),
+        pydantic.Field(
+            alias="collectionCategoriesRootNodeHash",
+            description="The hash for the root presentation node definition of Collection categories.",
+        ),
+    ] = None
     """
     The hash for the root presentation node definition of Collection categories.
     """

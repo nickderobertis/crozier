@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
 from .types.post_listings_request_categories_item import PostListingsRequestCategoriesItem
@@ -27,6 +28,7 @@ from .types.put_listings_slug_request_price import PutListingsSlugRequestPrice
 from .types.put_listings_slug_request_seller import PutListingsSlugRequestSeller
 from .types.put_listings_slug_request_shipping import PutListingsSlugRequestShipping
 from .types.put_listings_slug_request_videos_item import PutListingsSlugRequestVideosItem
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -194,7 +196,9 @@ class RawListingsClient:
                 "auction_price_max": auction_price_max,
                 "category": category,
                 "product_type": product_type,
-                "conditions": conditions,
+                "conditions": ",".join(map(str, conditions))
+                if isinstance(conditions, (list, tuple, set))
+                else conditions,
                 "decade": decade,
                 "finish": finish,
                 "handmade": handmade,
@@ -202,7 +206,7 @@ class RawListingsClient:
                 "item_country": item_country,
                 "item_region": item_region,
                 "item_state": item_state,
-                "make": make,
+                "make": ",".join(map(str, make)) if isinstance(make, (list, tuple, set)) else make,
                 "model": model,
                 "must_not": must_not,
                 "price_max": price_max,
@@ -219,7 +223,7 @@ class RawListingsClient:
                 "exclude_auctions": exclude_auctions,
                 "accepts_payment_plans": accepts_payment_plans,
                 "watchers_count_min": watchers_count_min,
-                "not_ids": not_ids,
+                "not_ids": ",".join(map(str, not_ids)) if isinstance(not_ids, (list, tuple, set)) else not_ids,
                 "local_pickup": local_pickup,
                 "page": page,
                 "per_page": per_page,
@@ -233,6 +237,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_a_listing(
@@ -440,6 +448,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def all_listings_including_used_handmade_and_brand_new(
@@ -600,7 +612,9 @@ class RawListingsClient:
                 "auction_price_max": auction_price_max,
                 "category": category,
                 "product_type": product_type,
-                "conditions": conditions,
+                "conditions": ",".join(map(str, conditions))
+                if isinstance(conditions, (list, tuple, set))
+                else conditions,
                 "decade": decade,
                 "finish": finish,
                 "handmade": handmade,
@@ -608,7 +622,7 @@ class RawListingsClient:
                 "item_country": item_country,
                 "item_region": item_region,
                 "item_state": item_state,
-                "make": make,
+                "make": ",".join(map(str, make)) if isinstance(make, (list, tuple, set)) else make,
                 "model": model,
                 "must_not": must_not,
                 "price_max": price_max,
@@ -625,7 +639,7 @@ class RawListingsClient:
                 "exclude_auctions": exclude_auctions,
                 "accepts_payment_plans": accepts_payment_plans,
                 "watchers_count_min": watchers_count_min,
-                "not_ids": not_ids,
+                "not_ids": ",".join(map(str, not_ids)) if isinstance(not_ids, (list, tuple, set)) else not_ids,
                 "local_pickup": local_pickup,
                 "page": page,
                 "per_page": per_page,
@@ -639,6 +653,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def individual_facets(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -665,6 +683,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def returns_the_latest_negotiation_for_the_requesting_user_given_a_listing_id(
@@ -685,7 +707,7 @@ class RawListingsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(id)}/negotiation",
+            f"listings/{encode_path_param(id)}/negotiation",
             method="GET",
             request_options=request_options,
         )
@@ -695,6 +717,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def make_an_offer_to_the_seller_of_a_listing(
@@ -730,7 +756,7 @@ class RawListingsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(id)}/offer",
+            f"listings/{encode_path_param(id)}/offer",
             method="POST",
             json={
                 "message": message,
@@ -749,6 +775,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def view_available_bump_tiers_and_stats_for_a_listing(
@@ -769,7 +799,7 @@ class RawListingsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(listing_id)}/bump",
+            f"listings/{encode_path_param(listing_id)}/bump",
             method="GET",
             request_options=request_options,
         )
@@ -779,6 +809,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def bump_a_listing(
@@ -801,7 +835,7 @@ class RawListingsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(listing_id)}/bump/{jsonable_encoder(budget_type)}",
+            f"listings/{encode_path_param(listing_id)}/bump/{encode_path_param(budget_type)}",
             method="POST",
             request_options=request_options,
         )
@@ -811,6 +845,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def start_a_conversation_with_a_seller(
@@ -833,7 +871,7 @@ class RawListingsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(listing_id)}/conversations",
+            f"listings/{encode_path_param(listing_id)}/conversations",
             method="POST",
             json={
                 "body": body,
@@ -850,6 +888,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def view_the_images_associated_with_a_particular_listing(
@@ -870,7 +912,7 @@ class RawListingsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(listing_id)}/images",
+            f"listings/{encode_path_param(listing_id)}/images",
             method="GET",
             request_options=request_options,
         )
@@ -880,6 +922,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_an_image_from_a_listing(
@@ -902,7 +948,7 @@ class RawListingsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(listing_id)}/images/{jsonable_encoder(image_id)}",
+            f"listings/{encode_path_param(listing_id)}/images/{encode_path_param(image_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -912,6 +958,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def see_all_sales_that_include_a_listing(
@@ -932,7 +982,7 @@ class RawListingsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(listing_id)}/sales",
+            f"listings/{encode_path_param(listing_id)}/sales",
             method="GET",
             request_options=request_options,
         )
@@ -942,6 +992,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def listing_details(
@@ -962,7 +1016,7 @@ class RawListingsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(slug)}/similar_listings",
+            f"listings/{encode_path_param(slug)}/similar_listings",
             method="GET",
             request_options=request_options,
         )
@@ -972,6 +1026,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_a_listing(
@@ -1118,7 +1176,7 @@ class RawListingsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(slug)}",
+            f"listings/{encode_path_param(slug)}",
             method="PUT",
             json={
                 "categories": convert_and_respect_annotation_metadata(
@@ -1184,6 +1242,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_a_draft_listing_cannot_be_used_on_non_drafts(
@@ -1204,7 +1266,7 @@ class RawListingsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(slug)}",
+            f"listings/{encode_path_param(slug)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1214,6 +1276,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def edit_listing(self, slug: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -1232,7 +1298,7 @@ class RawListingsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(slug)}/edit",
+            f"listings/{encode_path_param(slug)}/edit",
             method="GET",
             request_options=request_options,
         )
@@ -1242,6 +1308,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def flag_a_listing_for_inappropriate_content_or_fraud(
@@ -1273,7 +1343,7 @@ class RawListingsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(slug)}/flag",
+            f"listings/{encode_path_param(slug)}/flag",
             method="POST",
             json={
                 "description": description,
@@ -1291,6 +1361,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def view_reviews_of_a_listing(
@@ -1311,7 +1385,7 @@ class RawListingsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(slug)}/reviews",
+            f"listings/{encode_path_param(slug)}/reviews",
             method="GET",
             request_options=request_options,
         )
@@ -1321,6 +1395,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_a_review_for_a_listing(
@@ -1341,7 +1419,7 @@ class RawListingsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(slug)}/reviews",
+            f"listings/{encode_path_param(slug)}/reviews",
             method="POST",
             request_options=request_options,
         )
@@ -1351,6 +1429,10 @@ class RawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1516,7 +1598,9 @@ class AsyncRawListingsClient:
                 "auction_price_max": auction_price_max,
                 "category": category,
                 "product_type": product_type,
-                "conditions": conditions,
+                "conditions": ",".join(map(str, conditions))
+                if isinstance(conditions, (list, tuple, set))
+                else conditions,
                 "decade": decade,
                 "finish": finish,
                 "handmade": handmade,
@@ -1524,7 +1608,7 @@ class AsyncRawListingsClient:
                 "item_country": item_country,
                 "item_region": item_region,
                 "item_state": item_state,
-                "make": make,
+                "make": ",".join(map(str, make)) if isinstance(make, (list, tuple, set)) else make,
                 "model": model,
                 "must_not": must_not,
                 "price_max": price_max,
@@ -1541,7 +1625,7 @@ class AsyncRawListingsClient:
                 "exclude_auctions": exclude_auctions,
                 "accepts_payment_plans": accepts_payment_plans,
                 "watchers_count_min": watchers_count_min,
-                "not_ids": not_ids,
+                "not_ids": ",".join(map(str, not_ids)) if isinstance(not_ids, (list, tuple, set)) else not_ids,
                 "local_pickup": local_pickup,
                 "page": page,
                 "per_page": per_page,
@@ -1555,6 +1639,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_a_listing(
@@ -1762,6 +1850,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def all_listings_including_used_handmade_and_brand_new(
@@ -1922,7 +2014,9 @@ class AsyncRawListingsClient:
                 "auction_price_max": auction_price_max,
                 "category": category,
                 "product_type": product_type,
-                "conditions": conditions,
+                "conditions": ",".join(map(str, conditions))
+                if isinstance(conditions, (list, tuple, set))
+                else conditions,
                 "decade": decade,
                 "finish": finish,
                 "handmade": handmade,
@@ -1930,7 +2024,7 @@ class AsyncRawListingsClient:
                 "item_country": item_country,
                 "item_region": item_region,
                 "item_state": item_state,
-                "make": make,
+                "make": ",".join(map(str, make)) if isinstance(make, (list, tuple, set)) else make,
                 "model": model,
                 "must_not": must_not,
                 "price_max": price_max,
@@ -1947,7 +2041,7 @@ class AsyncRawListingsClient:
                 "exclude_auctions": exclude_auctions,
                 "accepts_payment_plans": accepts_payment_plans,
                 "watchers_count_min": watchers_count_min,
-                "not_ids": not_ids,
+                "not_ids": ",".join(map(str, not_ids)) if isinstance(not_ids, (list, tuple, set)) else not_ids,
                 "local_pickup": local_pickup,
                 "page": page,
                 "per_page": per_page,
@@ -1961,6 +2055,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def individual_facets(
@@ -1989,6 +2087,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def returns_the_latest_negotiation_for_the_requesting_user_given_a_listing_id(
@@ -2009,7 +2111,7 @@ class AsyncRawListingsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(id)}/negotiation",
+            f"listings/{encode_path_param(id)}/negotiation",
             method="GET",
             request_options=request_options,
         )
@@ -2019,6 +2121,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def make_an_offer_to_the_seller_of_a_listing(
@@ -2054,7 +2160,7 @@ class AsyncRawListingsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(id)}/offer",
+            f"listings/{encode_path_param(id)}/offer",
             method="POST",
             json={
                 "message": message,
@@ -2073,6 +2179,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def view_available_bump_tiers_and_stats_for_a_listing(
@@ -2093,7 +2203,7 @@ class AsyncRawListingsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(listing_id)}/bump",
+            f"listings/{encode_path_param(listing_id)}/bump",
             method="GET",
             request_options=request_options,
         )
@@ -2103,6 +2213,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def bump_a_listing(
@@ -2125,7 +2239,7 @@ class AsyncRawListingsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(listing_id)}/bump/{jsonable_encoder(budget_type)}",
+            f"listings/{encode_path_param(listing_id)}/bump/{encode_path_param(budget_type)}",
             method="POST",
             request_options=request_options,
         )
@@ -2135,6 +2249,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def start_a_conversation_with_a_seller(
@@ -2157,7 +2275,7 @@ class AsyncRawListingsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(listing_id)}/conversations",
+            f"listings/{encode_path_param(listing_id)}/conversations",
             method="POST",
             json={
                 "body": body,
@@ -2174,6 +2292,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def view_the_images_associated_with_a_particular_listing(
@@ -2194,7 +2316,7 @@ class AsyncRawListingsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(listing_id)}/images",
+            f"listings/{encode_path_param(listing_id)}/images",
             method="GET",
             request_options=request_options,
         )
@@ -2204,6 +2326,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_an_image_from_a_listing(
@@ -2226,7 +2352,7 @@ class AsyncRawListingsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(listing_id)}/images/{jsonable_encoder(image_id)}",
+            f"listings/{encode_path_param(listing_id)}/images/{encode_path_param(image_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2236,6 +2362,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def see_all_sales_that_include_a_listing(
@@ -2256,7 +2386,7 @@ class AsyncRawListingsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(listing_id)}/sales",
+            f"listings/{encode_path_param(listing_id)}/sales",
             method="GET",
             request_options=request_options,
         )
@@ -2266,6 +2396,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def listing_details(
@@ -2286,7 +2420,7 @@ class AsyncRawListingsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(slug)}/similar_listings",
+            f"listings/{encode_path_param(slug)}/similar_listings",
             method="GET",
             request_options=request_options,
         )
@@ -2296,6 +2430,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_a_listing(
@@ -2442,7 +2580,7 @@ class AsyncRawListingsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(slug)}",
+            f"listings/{encode_path_param(slug)}",
             method="PUT",
             json={
                 "categories": convert_and_respect_annotation_metadata(
@@ -2508,6 +2646,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_a_draft_listing_cannot_be_used_on_non_drafts(
@@ -2528,7 +2670,7 @@ class AsyncRawListingsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(slug)}",
+            f"listings/{encode_path_param(slug)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2538,6 +2680,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def edit_listing(
@@ -2558,7 +2704,7 @@ class AsyncRawListingsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(slug)}/edit",
+            f"listings/{encode_path_param(slug)}/edit",
             method="GET",
             request_options=request_options,
         )
@@ -2568,6 +2714,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def flag_a_listing_for_inappropriate_content_or_fraud(
@@ -2599,7 +2749,7 @@ class AsyncRawListingsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(slug)}/flag",
+            f"listings/{encode_path_param(slug)}/flag",
             method="POST",
             json={
                 "description": description,
@@ -2617,6 +2767,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def view_reviews_of_a_listing(
@@ -2637,7 +2791,7 @@ class AsyncRawListingsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(slug)}/reviews",
+            f"listings/{encode_path_param(slug)}/reviews",
             method="GET",
             request_options=request_options,
         )
@@ -2647,6 +2801,10 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_a_review_for_a_listing(
@@ -2667,7 +2825,7 @@ class AsyncRawListingsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"listings/{jsonable_encoder(slug)}/reviews",
+            f"listings/{encode_path_param(slug)}/reviews",
             method="POST",
             request_options=request_options,
         )
@@ -2677,4 +2835,8 @@ class AsyncRawListingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

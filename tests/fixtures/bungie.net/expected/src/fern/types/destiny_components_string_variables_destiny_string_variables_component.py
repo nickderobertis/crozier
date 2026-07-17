@@ -10,7 +10,9 @@ from ..core.serialization import FieldMetadata
 
 class DestinyComponentsStringVariablesDestinyStringVariablesComponent(UniversalBaseModel):
     integer_values_by_hash: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, int]], FieldMetadata(alias="integerValuesByHash")
+        typing.Optional[typing.Dict[str, int]],
+        FieldMetadata(alias="integerValuesByHash"),
+        pydantic.Field(alias="integerValuesByHash"),
     ] = None
 
     if IS_PYDANTIC_V2:

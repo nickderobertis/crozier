@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetApiAbilityScoresIndexRequestIndex(str, enum.Enum):
+class GetApiAbilityScoresIndexRequestIndex(enum.StrEnum):
     CHA = "cha"
     CON = "con"
     DEX = "dex"

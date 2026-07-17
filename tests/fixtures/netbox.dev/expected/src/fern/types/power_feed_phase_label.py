@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PowerFeedPhaseLabel(str, enum.Enum):
+class PowerFeedPhaseLabel(enum.StrEnum):
     SINGLE_PHASE = "Single phase"
     THREE_PHASE = "Three-phase"
 

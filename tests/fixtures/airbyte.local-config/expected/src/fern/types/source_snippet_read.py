@@ -13,9 +13,11 @@ from .source_id import SourceId
 class SourceSnippetRead(UniversalBaseModel):
     icon: typing.Optional[str] = None
     name: str
-    source_definition_id: typing_extensions.Annotated[SourceDefinitionId, FieldMetadata(alias="sourceDefinitionId")]
-    source_id: typing_extensions.Annotated[SourceId, FieldMetadata(alias="sourceId")]
-    source_name: typing_extensions.Annotated[str, FieldMetadata(alias="sourceName")]
+    source_definition_id: typing_extensions.Annotated[
+        SourceDefinitionId, FieldMetadata(alias="sourceDefinitionId"), pydantic.Field(alias="sourceDefinitionId")
+    ]
+    source_id: typing_extensions.Annotated[SourceId, FieldMetadata(alias="sourceId"), pydantic.Field(alias="sourceId")]
+    source_name: typing_extensions.Annotated[str, FieldMetadata(alias="sourceName"), pydantic.Field(alias="sourceName")]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -27,7 +27,11 @@ class DestinyDefinitionsDestinyDestinationDefinition(UniversalBaseModel):
     activity_graph_entries: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyActivityGraphListEntryDefinition]],
         FieldMetadata(alias="activityGraphEntries"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="activityGraphEntries",
+            description='If the Destination has default Activity Graphs (i.e. "Map") that should be shown in the director, this is the list of those Graphs. At most, only one should be active at any given time for a Destination: these would represent, for example, different variants on a Map if the Destination is changing on a macro level based on game state.',
+        ),
+    ] = None
     """
     If the Destination has default Activity Graphs (i.e. "Map") that should be shown in the director, this is the list of those Graphs. At most, only one should be active at any given time for a Destination: these would represent, for example, different variants on a Map if the Destination is changing on a macro level based on game state.
     """
@@ -35,7 +39,11 @@ class DestinyDefinitionsDestinyDestinationDefinition(UniversalBaseModel):
     bubble_settings: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyDestinationBubbleSettingDefinition]],
         FieldMetadata(alias="bubbleSettings"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="bubbleSettings",
+            description="A Destination may have many \"Bubbles\" zones with human readable properties.\r\nWe don't get as much info as I'd like about them - I'd love to return info like where on the map they are located - but at least this gives you the name of those bubbles. bubbleSettings and bubbles both have the identical number of entries, and you should match up their indexes to provide matching bubble and bubbleSettings data.\r\nDEPRECATED - Just use bubbles, it now has this data.",
+        ),
+    ] = None
     """
     A Destination may have many "Bubbles" zones with human readable properties.
     We don't get as much info as I'd like about them - I'd love to return info like where on the map they are located - but at least this gives you the name of those bubbles. bubbleSettings and bubbles both have the identical number of entries, and you should match up their indexes to provide matching bubble and bubbleSettings data.
@@ -49,8 +57,13 @@ class DestinyDefinitionsDestinyDestinationDefinition(UniversalBaseModel):
     """
 
     default_freeroam_activity_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="defaultFreeroamActivityHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="defaultFreeroamActivityHash"),
+        pydantic.Field(
+            alias="defaultFreeroamActivityHash",
+            description="If this Destination has a default Free-Roam activity, this is the hash for that Activity. Use it to look up the DestinyActivityDefintion.",
+        ),
+    ] = None
     """
     If this Destination has a default Free-Roam activity, this is the hash for that Activity. Use it to look up the DestinyActivityDefintion.
     """
@@ -58,6 +71,7 @@ class DestinyDefinitionsDestinyDestinationDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
@@ -70,9 +84,14 @@ class DestinyDefinitionsDestinyDestinationDefinition(UniversalBaseModel):
     The index of the entity as it was found in the investment tables.
     """
 
-    place_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="placeHash")] = pydantic.Field(
-        default=None
-    )
+    place_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="placeHash"),
+        pydantic.Field(
+            alias="placeHash",
+            description='The place that "owns" this Destination. Use this hash to look up the DestinyPlaceDefinition.',
+        ),
+    ] = None
     """
     The place that "owns" this Destination. Use this hash to look up the DestinyPlaceDefinition.
     """

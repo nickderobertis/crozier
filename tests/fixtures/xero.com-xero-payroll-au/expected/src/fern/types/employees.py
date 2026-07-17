@@ -10,9 +10,9 @@ from .employee import Employee
 
 
 class Employees(UniversalBaseModel):
-    employees: typing_extensions.Annotated[typing.Optional[typing.List[Employee]], FieldMetadata(alias="Employees")] = (
-        None
-    )
+    employees: typing_extensions.Annotated[
+        typing.Optional[typing.List[Employee]], FieldMetadata(alias="Employees"), pydantic.Field(alias="Employees")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

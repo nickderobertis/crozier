@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "apicurio.local-registry",
+  "corpus_spec_ref": "2.4.x",
+  "corpus_spec_url": "https://api.apis.guru/v2/specs/apicurio.local/registry/2.4.x/openapi.json"
+}

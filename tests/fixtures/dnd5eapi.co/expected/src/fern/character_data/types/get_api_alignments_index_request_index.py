@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetApiAlignmentsIndexRequestIndex(str, enum.Enum):
+class GetApiAlignmentsIndexRequestIndex(enum.StrEnum):
     CHAOTIC_NEUTRAL = "chaotic-neutral"
     CHAOTIC_EVIL = "chaotic-evil"
     CHAOTIC_GOOD = "chaotic-good"

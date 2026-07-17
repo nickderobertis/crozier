@@ -13,16 +13,20 @@ class QueueMessage(UniversalBaseModel):
     A Queue Message
     """
 
-    content_type: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="contentType")] = (
-        pydantic.Field(default=None)
-    )
+    content_type: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="contentType"),
+        pydantic.Field(alias="contentType", description="Content-type of data associated with QueueMessage."),
+    ] = None
     """
     Content-type of data associated with QueueMessage.
     """
 
-    create_date: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="createDate")] = pydantic.Field(
-        default=None
-    )
+    create_date: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="createDate"),
+        pydantic.Field(alias="createDate", description="Date that message was received by system."),
+    ] = None
     """
     Date that message was received by system.
     """
@@ -37,35 +41,47 @@ class QueueMessage(UniversalBaseModel):
     URL of data associated with Queue Message (if not embedded JSON)
     """
 
-    message_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="messageId")] = pydantic.Field(
-        default=None
-    )
+    message_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="messageId"),
+        pydantic.Field(alias="messageId", description="UUID of Message Data associated with this Queue Message"),
+    ] = None
     """
     UUID of Message Data associated with this Queue Message
     """
 
-    queue_message_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="queueMessageId")] = (
-        pydantic.Field(default=None)
-    )
+    queue_message_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="queueMessageId"),
+        pydantic.Field(alias="queueMessageId", description="UUID of Queue Message in local region."),
+    ] = None
     """
     UUID of Queue Message in local region.
     """
 
-    queue_name: typing_extensions.Annotated[str, FieldMetadata(alias="queueName")] = pydantic.Field()
+    queue_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="queueName"),
+        pydantic.Field(alias="queueName", description="Name of Queue for message."),
+    ]
     """
     Name of Queue for message.
     """
 
-    receiving_region: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="receivingRegion")] = (
-        pydantic.Field(default=None)
-    )
+    receiving_region: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="receivingRegion"),
+        pydantic.Field(alias="receivingRegion", description="Regions to which message will be sent"),
+    ] = None
     """
     Regions to which message will be sent
     """
 
-    sending_region: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="sendingRegion")] = (
-        pydantic.Field(default=None)
-    )
+    sending_region: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="sendingRegion"),
+        pydantic.Field(alias="sendingRegion", description="Region from which was sent"),
+    ] = None
     """
     Region from which was sent
     """

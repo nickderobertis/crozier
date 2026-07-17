@@ -13,7 +13,9 @@ class RetrievedFile(UniversalBaseModel):
     The retrieved file entry including content (b64 encoded)
     """
 
-    b64content: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="b64_content")] = None
+    b64content: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="b64_content"), pydantic.Field(alias="b64_content")
+    ] = None
     path: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

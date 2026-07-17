@@ -11,8 +11,10 @@ from .describe_stack_set_operation_output_stack_set_operation import DescribeSta
 
 class DescribeStackSetOperationOutput(UniversalBaseModel):
     stack_set_operation: typing_extensions.Annotated[
-        typing.Optional[DescribeStackSetOperationOutputStackSetOperation], FieldMetadata(alias="StackSetOperation")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DescribeStackSetOperationOutputStackSetOperation],
+        FieldMetadata(alias="StackSetOperation"),
+        pydantic.Field(alias="StackSetOperation", description="The specified stack set operation."),
+    ] = None
     """
     The specified stack set operation.
     """

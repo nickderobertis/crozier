@@ -11,8 +11,12 @@ from .stream_descriptor import StreamDescriptor
 
 
 class StreamState(UniversalBaseModel):
-    stream_descriptor: typing_extensions.Annotated[StreamDescriptor, FieldMetadata(alias="streamDescriptor")]
-    stream_state: typing_extensions.Annotated[typing.Optional[StateBlob], FieldMetadata(alias="streamState")] = None
+    stream_descriptor: typing_extensions.Annotated[
+        StreamDescriptor, FieldMetadata(alias="streamDescriptor"), pydantic.Field(alias="streamDescriptor")
+    ]
+    stream_state: typing_extensions.Annotated[
+        typing.Optional[StateBlob], FieldMetadata(alias="streamState"), pydantic.Field(alias="streamState")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

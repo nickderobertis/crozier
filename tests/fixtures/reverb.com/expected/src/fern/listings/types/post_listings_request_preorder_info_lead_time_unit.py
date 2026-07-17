@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostListingsRequestPreorderInfoLeadTimeUnit(str, enum.Enum):
+class PostListingsRequestPreorderInfoLeadTimeUnit(enum.StrEnum):
     """
     The unit of time which lead_time is measured in
     """

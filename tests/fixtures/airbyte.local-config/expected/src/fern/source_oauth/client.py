@@ -37,7 +37,7 @@ class SourceOauthClient:
         source_definition_id: SourceDefinitionId,
         workspace_id: WorkspaceId,
         o_auth_input_configuration: typing.Optional[OAuthInputConfiguration] = OMIT,
-        query_params: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        query_params: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         redirect_url: typing.Optional[str] = OMIT,
         source_id: typing.Optional[SourceId] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -51,7 +51,7 @@ class SourceOauthClient:
 
         o_auth_input_configuration : typing.Optional[OAuthInputConfiguration]
 
-        query_params : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        query_params : typing.Optional[typing.Dict[str, typing.Any]]
             The query parameters present in the redirect URL after a user granted consent e.g auth code
 
         redirect_url : typing.Optional[str]
@@ -148,14 +148,14 @@ class SourceOauthClient:
     def set_instancewide_source_oauth_params(
         self,
         *,
-        params: typing.Dict[str, typing.Optional[typing.Any]],
+        params: typing.Dict[str, typing.Any],
         source_definition_id: SourceDefinitionId,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
         Parameters
         ----------
-        params : typing.Dict[str, typing.Optional[typing.Any]]
+        params : typing.Dict[str, typing.Any]
 
         source_definition_id : SourceDefinitionId
 
@@ -205,7 +205,7 @@ class AsyncSourceOauthClient:
         source_definition_id: SourceDefinitionId,
         workspace_id: WorkspaceId,
         o_auth_input_configuration: typing.Optional[OAuthInputConfiguration] = OMIT,
-        query_params: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        query_params: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         redirect_url: typing.Optional[str] = OMIT,
         source_id: typing.Optional[SourceId] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -219,7 +219,7 @@ class AsyncSourceOauthClient:
 
         o_auth_input_configuration : typing.Optional[OAuthInputConfiguration]
 
-        query_params : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        query_params : typing.Optional[typing.Dict[str, typing.Any]]
             The query parameters present in the redirect URL after a user granted consent e.g auth code
 
         redirect_url : typing.Optional[str]
@@ -332,14 +332,14 @@ class AsyncSourceOauthClient:
     async def set_instancewide_source_oauth_params(
         self,
         *,
-        params: typing.Dict[str, typing.Optional[typing.Any]],
+        params: typing.Dict[str, typing.Any],
         source_definition_id: SourceDefinitionId,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
         Parameters
         ----------
-        params : typing.Dict[str, typing.Optional[typing.Any]]
+        params : typing.Dict[str, typing.Any]
 
         source_definition_id : SourceDefinitionId
 

@@ -107,7 +107,7 @@ class DatabaseClient:
         self,
         collection_id: str,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         parent_document: typing.Optional[str] = OMIT,
         parent_property: typing.Optional[str] = OMIT,
         parent_property_type: typing.Optional[str] = OMIT,
@@ -123,7 +123,7 @@ class DatabaseClient:
         collection_id : str
             Collection unique ID. You can create a new collection with validation rules using the Database service [server integration](/docs/server/database#createCollection).
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
             Document data as JSON object.
 
         parent_document : typing.Optional[str]
@@ -257,7 +257,7 @@ class DatabaseClient:
         collection_id: str,
         document_id: str,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         read: typing.Optional[typing.Sequence[str]] = OMIT,
         write: typing.Optional[typing.Sequence[str]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -273,7 +273,7 @@ class DatabaseClient:
         document_id : str
             Document unique ID.
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
             Document data as JSON object.
 
         read : typing.Optional[typing.Sequence[str]]
@@ -414,7 +414,7 @@ class AsyncDatabaseClient:
         self,
         collection_id: str,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         parent_document: typing.Optional[str] = OMIT,
         parent_property: typing.Optional[str] = OMIT,
         parent_property_type: typing.Optional[str] = OMIT,
@@ -430,7 +430,7 @@ class AsyncDatabaseClient:
         collection_id : str
             Collection unique ID. You can create a new collection with validation rules using the Database service [server integration](/docs/server/database#createCollection).
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
             Document data as JSON object.
 
         parent_document : typing.Optional[str]
@@ -588,7 +588,7 @@ class AsyncDatabaseClient:
         collection_id: str,
         document_id: str,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         read: typing.Optional[typing.Sequence[str]] = OMIT,
         write: typing.Optional[typing.Sequence[str]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -604,7 +604,7 @@ class AsyncDatabaseClient:
         document_id : str
             Document unique ID.
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
             Document data as JSON object.
 
         read : typing.Optional[typing.Sequence[str]]

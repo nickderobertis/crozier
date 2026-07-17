@@ -13,21 +13,27 @@ class MailerSettings(UniversalBaseModel):
     Configuration for mailgun api client
     """
 
-    api_key: typing_extensions.Annotated[str, FieldMetadata(alias="apiKey")] = pydantic.Field()
+    api_key: typing_extensions.Annotated[
+        str, FieldMetadata(alias="apiKey"), pydantic.Field(alias="apiKey", description="Mailgun mailer api key")
+    ]
     """
     Mailgun mailer api key
     """
 
-    api_key_private: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="apiKeyPrivate")] = (
-        pydantic.Field(default=None)
-    )
+    api_key_private: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="apiKeyPrivate"),
+        pydantic.Field(alias="apiKeyPrivate", description="Mailjet mailer private api key"),
+    ] = None
     """
     Mailjet mailer private api key
     """
 
-    api_key_public: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="apiKeyPublic")] = (
-        pydantic.Field(default=None)
-    )
+    api_key_public: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="apiKeyPublic"),
+        pydantic.Field(alias="apiKeyPublic", description="Mailjet mailer public api key"),
+    ] = None
     """
     Mailjet mailer public api key
     """

@@ -13,23 +13,34 @@ class DestinyDefinitionsItemsDestinyEnergyCapacityEntry(UniversalBaseModel):
     Items can have Energy Capacity, and plugs can provide that capacity such as on a piece of Armor in Armor 2.0. This is how much "Energy" can be spent on activating plugs for this item.
     """
 
-    capacity_value: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="capacityValue")] = (
-        pydantic.Field(default=None)
-    )
+    capacity_value: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="capacityValue"),
+        pydantic.Field(alias="capacityValue", description="How much energy capacity this plug provides."),
+    ] = None
     """
     How much energy capacity this plug provides.
     """
 
-    energy_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="energyType")] = pydantic.Field(
-        default=None
-    )
+    energy_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="energyType"),
+        pydantic.Field(
+            alias="energyType", description="The Energy Type for this energy capacity, in enum form for easy use."
+        ),
+    ] = None
     """
     The Energy Type for this energy capacity, in enum form for easy use.
     """
 
-    energy_type_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="energyTypeHash")] = (
-        pydantic.Field(default=None)
-    )
+    energy_type_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="energyTypeHash"),
+        pydantic.Field(
+            alias="energyTypeHash",
+            description="Energy provided by a plug is always of a specific type - this is the hash identifier for the energy type for which it provides Capacity.",
+        ),
+    ] = None
     """
     Energy provided by a plug is always of a specific type - this is the hash identifier for the energy type for which it provides Capacity.
     """

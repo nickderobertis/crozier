@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EcosystemMenuStyle(str, enum.Enum):
+class EcosystemMenuStyle(enum.StrEnum):
     LIST = "LIST"
     PILL = "PILL"
     FILTER = "FILTER"

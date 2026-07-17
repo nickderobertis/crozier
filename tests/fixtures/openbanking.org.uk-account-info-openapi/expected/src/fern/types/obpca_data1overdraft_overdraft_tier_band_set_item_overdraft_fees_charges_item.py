@@ -24,7 +24,11 @@ class ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftFeesChargesItem(Univer
             typing.List[ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftFeesChargesItemOverdraftFeeChargeCapItem]
         ],
         FieldMetadata(alias="OverdraftFeeChargeCap"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="OverdraftFeeChargeCap",
+            description="Details about any caps (maximum charges) that apply to a particular fee/charge",
+        ),
+    ] = None
     """
     Details about any caps (maximum charges) that apply to a particular fee/charge
     """
@@ -32,7 +36,8 @@ class ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftFeesChargesItem(Univer
     overdraft_fee_charge_detail: typing_extensions.Annotated[
         typing.List[ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItem],
         FieldMetadata(alias="OverdraftFeeChargeDetail"),
-    ] = pydantic.Field()
+        pydantic.Field(alias="OverdraftFeeChargeDetail", description="Details about the fees/charges"),
+    ]
     """
     Details about the fees/charges
     """

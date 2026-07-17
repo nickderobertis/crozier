@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -34,6 +35,7 @@ from ..types.unprocessable_response import UnprocessableResponse
 from ..types.update_connection_response import UpdateConnectionResponse
 from ..types.webhook_subscription import WebhookSubscription
 from .types.connection_import_data_credentials import ConnectionImportDataCredentials
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -88,7 +90,7 @@ class RawConnectionsClient:
             Unexpected error
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"vault/authorize/{jsonable_encoder(service_id)}/{jsonable_encoder(application_id)}",
+            f"vault/authorize/{encode_path_param(service_id)}/{encode_path_param(application_id)}",
             method="GET",
             params={
                 "state": state,
@@ -165,6 +167,10 @@ class RawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def callback(
@@ -268,6 +274,10 @@ class RawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def all_(
@@ -382,6 +392,10 @@ class RawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def one(
@@ -415,7 +429,7 @@ class RawConnectionsClient:
             Connection
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api)}/{jsonable_encoder(service_id)}",
+            f"vault/connections/{encode_path_param(unified_api)}/{encode_path_param(service_id)}",
             method="GET",
             headers={
                 "x-apideck-consumer-id": str(apideck_consumer_id) if apideck_consumer_id is not None else None,
@@ -490,6 +504,10 @@ class RawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def add(
@@ -510,14 +528,14 @@ class RawConnectionsClient:
         id: typing.Optional[str] = OMIT,
         integration_state: typing.Optional[IntegrationState] = OMIT,
         logo: typing.Optional[str] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         name: typing.Optional[str] = OMIT,
         oauth_grant_type: typing.Optional[OAuthGrantType] = OMIT,
         resource_schema_support: typing.Optional[typing.Sequence[str]] = OMIT,
         resource_settings_support: typing.Optional[typing.Sequence[str]] = OMIT,
         revoke_url: typing.Optional[str] = OMIT,
         service_id: typing.Optional[str] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         settings_required_for_authorization: typing.Optional[typing.Sequence[str]] = OMIT,
         state: typing.Optional[ConnectionState] = OMIT,
         status: typing.Optional[ConnectionStatus] = OMIT,
@@ -574,7 +592,7 @@ class RawConnectionsClient:
         logo : typing.Optional[str]
             The logo of the connection, that will be shown in the Vault
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
         name : typing.Optional[str]
@@ -592,7 +610,7 @@ class RawConnectionsClient:
         service_id : typing.Optional[str]
             The ID of the service this connection belongs to.
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         settings_required_for_authorization : typing.Optional[typing.Sequence[str]]
@@ -626,7 +644,7 @@ class RawConnectionsClient:
             Connection created
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api_)}/{jsonable_encoder(service_id_)}",
+            f"vault/connections/{encode_path_param(unified_api_)}/{encode_path_param(service_id_)}",
             method="POST",
             json={
                 "auth_type": auth_type,
@@ -740,6 +758,10 @@ class RawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete(
@@ -772,7 +794,7 @@ class RawConnectionsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api)}/{jsonable_encoder(service_id)}",
+            f"vault/connections/{encode_path_param(unified_api)}/{encode_path_param(service_id)}",
             method="DELETE",
             headers={
                 "x-apideck-consumer-id": str(apideck_consumer_id) if apideck_consumer_id is not None else None,
@@ -840,6 +862,10 @@ class RawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update(
@@ -860,14 +886,14 @@ class RawConnectionsClient:
         id: typing.Optional[str] = OMIT,
         integration_state: typing.Optional[IntegrationState] = OMIT,
         logo: typing.Optional[str] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         name: typing.Optional[str] = OMIT,
         oauth_grant_type: typing.Optional[OAuthGrantType] = OMIT,
         resource_schema_support: typing.Optional[typing.Sequence[str]] = OMIT,
         resource_settings_support: typing.Optional[typing.Sequence[str]] = OMIT,
         revoke_url: typing.Optional[str] = OMIT,
         service_id: typing.Optional[str] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         settings_required_for_authorization: typing.Optional[typing.Sequence[str]] = OMIT,
         state: typing.Optional[ConnectionState] = OMIT,
         status: typing.Optional[ConnectionStatus] = OMIT,
@@ -924,7 +950,7 @@ class RawConnectionsClient:
         logo : typing.Optional[str]
             The logo of the connection, that will be shown in the Vault
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
         name : typing.Optional[str]
@@ -942,7 +968,7 @@ class RawConnectionsClient:
         service_id : typing.Optional[str]
             The ID of the service this connection belongs to.
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         settings_required_for_authorization : typing.Optional[typing.Sequence[str]]
@@ -976,7 +1002,7 @@ class RawConnectionsClient:
             Connection updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api_)}/{jsonable_encoder(service_id_)}",
+            f"vault/connections/{encode_path_param(unified_api_)}/{encode_path_param(service_id_)}",
             method="PATCH",
             json={
                 "auth_type": auth_type,
@@ -1090,6 +1116,10 @@ class RawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def import_(
@@ -1099,8 +1129,8 @@ class RawConnectionsClient:
         *,
         apideck_consumer_id: str,
         credentials: typing.Optional[ConnectionImportDataCredentials] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CreateConnectionResponse]:
         """
@@ -1119,10 +1149,10 @@ class RawConnectionsClient:
 
         credentials : typing.Optional[ConnectionImportDataCredentials]
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         request_options : typing.Optional[RequestOptions]
@@ -1134,7 +1164,7 @@ class RawConnectionsClient:
             Connection created
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api)}/{jsonable_encoder(service_id)}/import",
+            f"vault/connections/{encode_path_param(unified_api)}/{encode_path_param(service_id)}/import",
             method="POST",
             json={
                 "credentials": convert_and_respect_annotation_metadata(
@@ -1218,6 +1248,10 @@ class RawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def token(
@@ -1253,7 +1287,7 @@ class RawConnectionsClient:
             Connection
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api)}/{jsonable_encoder(service_id)}/token",
+            f"vault/connections/{encode_path_param(unified_api)}/{encode_path_param(service_id)}/token",
             method="POST",
             json={},
             headers={
@@ -1331,6 +1365,10 @@ class RawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def connection_settings_all(
@@ -1368,7 +1406,7 @@ class RawConnectionsClient:
             Connection
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api)}/{jsonable_encoder(service_id)}/{jsonable_encoder(resource)}/config",
+            f"vault/connections/{encode_path_param(unified_api)}/{encode_path_param(service_id)}/{encode_path_param(resource)}/config",
             method="GET",
             headers={
                 "x-apideck-consumer-id": str(apideck_consumer_id) if apideck_consumer_id is not None else None,
@@ -1443,6 +1481,10 @@ class RawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def connection_settings_update(
@@ -1464,14 +1506,14 @@ class RawConnectionsClient:
         id: typing.Optional[str] = OMIT,
         integration_state: typing.Optional[IntegrationState] = OMIT,
         logo: typing.Optional[str] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         name: typing.Optional[str] = OMIT,
         oauth_grant_type: typing.Optional[OAuthGrantType] = OMIT,
         resource_schema_support: typing.Optional[typing.Sequence[str]] = OMIT,
         resource_settings_support: typing.Optional[typing.Sequence[str]] = OMIT,
         revoke_url: typing.Optional[str] = OMIT,
         service_id: typing.Optional[str] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         settings_required_for_authorization: typing.Optional[typing.Sequence[str]] = OMIT,
         state: typing.Optional[ConnectionState] = OMIT,
         status: typing.Optional[ConnectionStatus] = OMIT,
@@ -1531,7 +1573,7 @@ class RawConnectionsClient:
         logo : typing.Optional[str]
             The logo of the connection, that will be shown in the Vault
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
         name : typing.Optional[str]
@@ -1549,7 +1591,7 @@ class RawConnectionsClient:
         service_id : typing.Optional[str]
             The ID of the service this connection belongs to.
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         settings_required_for_authorization : typing.Optional[typing.Sequence[str]]
@@ -1583,7 +1625,7 @@ class RawConnectionsClient:
             Connection updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api_)}/{jsonable_encoder(service_id_)}/{jsonable_encoder(resource)}/config",
+            f"vault/connections/{encode_path_param(unified_api_)}/{encode_path_param(service_id_)}/{encode_path_param(resource)}/config",
             method="PATCH",
             json={
                 "auth_type": auth_type,
@@ -1697,6 +1739,10 @@ class RawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def revoke(
@@ -1740,7 +1786,7 @@ class RawConnectionsClient:
             Unexpected error
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"vault/revoke/{jsonable_encoder(service_id)}/{jsonable_encoder(application_id)}",
+            f"vault/revoke/{encode_path_param(service_id)}/{encode_path_param(application_id)}",
             method="GET",
             params={
                 "state": state,
@@ -1816,6 +1862,10 @@ class RawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1868,7 +1918,7 @@ class AsyncRawConnectionsClient:
             Unexpected error
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"vault/authorize/{jsonable_encoder(service_id)}/{jsonable_encoder(application_id)}",
+            f"vault/authorize/{encode_path_param(service_id)}/{encode_path_param(application_id)}",
             method="GET",
             params={
                 "state": state,
@@ -1945,6 +1995,10 @@ class AsyncRawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def callback(
@@ -2048,6 +2102,10 @@ class AsyncRawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def all_(
@@ -2162,6 +2220,10 @@ class AsyncRawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def one(
@@ -2195,7 +2257,7 @@ class AsyncRawConnectionsClient:
             Connection
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api)}/{jsonable_encoder(service_id)}",
+            f"vault/connections/{encode_path_param(unified_api)}/{encode_path_param(service_id)}",
             method="GET",
             headers={
                 "x-apideck-consumer-id": str(apideck_consumer_id) if apideck_consumer_id is not None else None,
@@ -2270,6 +2332,10 @@ class AsyncRawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def add(
@@ -2290,14 +2356,14 @@ class AsyncRawConnectionsClient:
         id: typing.Optional[str] = OMIT,
         integration_state: typing.Optional[IntegrationState] = OMIT,
         logo: typing.Optional[str] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         name: typing.Optional[str] = OMIT,
         oauth_grant_type: typing.Optional[OAuthGrantType] = OMIT,
         resource_schema_support: typing.Optional[typing.Sequence[str]] = OMIT,
         resource_settings_support: typing.Optional[typing.Sequence[str]] = OMIT,
         revoke_url: typing.Optional[str] = OMIT,
         service_id: typing.Optional[str] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         settings_required_for_authorization: typing.Optional[typing.Sequence[str]] = OMIT,
         state: typing.Optional[ConnectionState] = OMIT,
         status: typing.Optional[ConnectionStatus] = OMIT,
@@ -2354,7 +2420,7 @@ class AsyncRawConnectionsClient:
         logo : typing.Optional[str]
             The logo of the connection, that will be shown in the Vault
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
         name : typing.Optional[str]
@@ -2372,7 +2438,7 @@ class AsyncRawConnectionsClient:
         service_id : typing.Optional[str]
             The ID of the service this connection belongs to.
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         settings_required_for_authorization : typing.Optional[typing.Sequence[str]]
@@ -2406,7 +2472,7 @@ class AsyncRawConnectionsClient:
             Connection created
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api_)}/{jsonable_encoder(service_id_)}",
+            f"vault/connections/{encode_path_param(unified_api_)}/{encode_path_param(service_id_)}",
             method="POST",
             json={
                 "auth_type": auth_type,
@@ -2520,6 +2586,10 @@ class AsyncRawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
@@ -2552,7 +2622,7 @@ class AsyncRawConnectionsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api)}/{jsonable_encoder(service_id)}",
+            f"vault/connections/{encode_path_param(unified_api)}/{encode_path_param(service_id)}",
             method="DELETE",
             headers={
                 "x-apideck-consumer-id": str(apideck_consumer_id) if apideck_consumer_id is not None else None,
@@ -2620,6 +2690,10 @@ class AsyncRawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update(
@@ -2640,14 +2714,14 @@ class AsyncRawConnectionsClient:
         id: typing.Optional[str] = OMIT,
         integration_state: typing.Optional[IntegrationState] = OMIT,
         logo: typing.Optional[str] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         name: typing.Optional[str] = OMIT,
         oauth_grant_type: typing.Optional[OAuthGrantType] = OMIT,
         resource_schema_support: typing.Optional[typing.Sequence[str]] = OMIT,
         resource_settings_support: typing.Optional[typing.Sequence[str]] = OMIT,
         revoke_url: typing.Optional[str] = OMIT,
         service_id: typing.Optional[str] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         settings_required_for_authorization: typing.Optional[typing.Sequence[str]] = OMIT,
         state: typing.Optional[ConnectionState] = OMIT,
         status: typing.Optional[ConnectionStatus] = OMIT,
@@ -2704,7 +2778,7 @@ class AsyncRawConnectionsClient:
         logo : typing.Optional[str]
             The logo of the connection, that will be shown in the Vault
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
         name : typing.Optional[str]
@@ -2722,7 +2796,7 @@ class AsyncRawConnectionsClient:
         service_id : typing.Optional[str]
             The ID of the service this connection belongs to.
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         settings_required_for_authorization : typing.Optional[typing.Sequence[str]]
@@ -2756,7 +2830,7 @@ class AsyncRawConnectionsClient:
             Connection updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api_)}/{jsonable_encoder(service_id_)}",
+            f"vault/connections/{encode_path_param(unified_api_)}/{encode_path_param(service_id_)}",
             method="PATCH",
             json={
                 "auth_type": auth_type,
@@ -2870,6 +2944,10 @@ class AsyncRawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def import_(
@@ -2879,8 +2957,8 @@ class AsyncRawConnectionsClient:
         *,
         apideck_consumer_id: str,
         credentials: typing.Optional[ConnectionImportDataCredentials] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CreateConnectionResponse]:
         """
@@ -2899,10 +2977,10 @@ class AsyncRawConnectionsClient:
 
         credentials : typing.Optional[ConnectionImportDataCredentials]
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         request_options : typing.Optional[RequestOptions]
@@ -2914,7 +2992,7 @@ class AsyncRawConnectionsClient:
             Connection created
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api)}/{jsonable_encoder(service_id)}/import",
+            f"vault/connections/{encode_path_param(unified_api)}/{encode_path_param(service_id)}/import",
             method="POST",
             json={
                 "credentials": convert_and_respect_annotation_metadata(
@@ -2998,6 +3076,10 @@ class AsyncRawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def token(
@@ -3033,7 +3115,7 @@ class AsyncRawConnectionsClient:
             Connection
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api)}/{jsonable_encoder(service_id)}/token",
+            f"vault/connections/{encode_path_param(unified_api)}/{encode_path_param(service_id)}/token",
             method="POST",
             json={},
             headers={
@@ -3111,6 +3193,10 @@ class AsyncRawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def connection_settings_all(
@@ -3148,7 +3234,7 @@ class AsyncRawConnectionsClient:
             Connection
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api)}/{jsonable_encoder(service_id)}/{jsonable_encoder(resource)}/config",
+            f"vault/connections/{encode_path_param(unified_api)}/{encode_path_param(service_id)}/{encode_path_param(resource)}/config",
             method="GET",
             headers={
                 "x-apideck-consumer-id": str(apideck_consumer_id) if apideck_consumer_id is not None else None,
@@ -3223,6 +3309,10 @@ class AsyncRawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def connection_settings_update(
@@ -3244,14 +3334,14 @@ class AsyncRawConnectionsClient:
         id: typing.Optional[str] = OMIT,
         integration_state: typing.Optional[IntegrationState] = OMIT,
         logo: typing.Optional[str] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         name: typing.Optional[str] = OMIT,
         oauth_grant_type: typing.Optional[OAuthGrantType] = OMIT,
         resource_schema_support: typing.Optional[typing.Sequence[str]] = OMIT,
         resource_settings_support: typing.Optional[typing.Sequence[str]] = OMIT,
         revoke_url: typing.Optional[str] = OMIT,
         service_id: typing.Optional[str] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         settings_required_for_authorization: typing.Optional[typing.Sequence[str]] = OMIT,
         state: typing.Optional[ConnectionState] = OMIT,
         status: typing.Optional[ConnectionStatus] = OMIT,
@@ -3311,7 +3401,7 @@ class AsyncRawConnectionsClient:
         logo : typing.Optional[str]
             The logo of the connection, that will be shown in the Vault
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
         name : typing.Optional[str]
@@ -3329,7 +3419,7 @@ class AsyncRawConnectionsClient:
         service_id : typing.Optional[str]
             The ID of the service this connection belongs to.
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         settings_required_for_authorization : typing.Optional[typing.Sequence[str]]
@@ -3363,7 +3453,7 @@ class AsyncRawConnectionsClient:
             Connection updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"vault/connections/{jsonable_encoder(unified_api_)}/{jsonable_encoder(service_id_)}/{jsonable_encoder(resource)}/config",
+            f"vault/connections/{encode_path_param(unified_api_)}/{encode_path_param(service_id_)}/{encode_path_param(resource)}/config",
             method="PATCH",
             json={
                 "auth_type": auth_type,
@@ -3477,6 +3567,10 @@ class AsyncRawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def revoke(
@@ -3520,7 +3614,7 @@ class AsyncRawConnectionsClient:
             Unexpected error
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"vault/revoke/{jsonable_encoder(service_id)}/{jsonable_encoder(application_id)}",
+            f"vault/revoke/{encode_path_param(service_id)}/{encode_path_param(application_id)}",
             method="GET",
             params={
                 "state": state,
@@ -3596,4 +3690,8 @@ class AsyncRawConnectionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

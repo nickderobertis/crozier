@@ -8,6 +8,7 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .types import ApIs, Api, ApiVersion, Metrics, MetricsThisWeek
     from . import ap_is
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .ap_is import GetProvidersResponse, GetServicesResponse
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
@@ -17,6 +18,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Api": ".types",
     "ApiVersion": ".types",
     "AsyncFernApi": ".client",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "FernApiEnvironment": ".environment",
     "GetProvidersResponse": ".ap_is",
@@ -54,6 +57,8 @@ __all__ = [
     "Api",
     "ApiVersion",
     "AsyncFernApi",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "FernApi",
     "FernApiEnvironment",
     "GetProvidersResponse",

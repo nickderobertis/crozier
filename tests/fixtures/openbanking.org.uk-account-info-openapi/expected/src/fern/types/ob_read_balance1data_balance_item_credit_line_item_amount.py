@@ -15,8 +15,12 @@ class ObReadBalance1DataBalanceItemCreditLineItemAmount(UniversalBaseModel):
     Amount of money of the credit line.
     """
 
-    amount: typing_extensions.Annotated[ObActiveCurrencyAndAmountSimpleType, FieldMetadata(alias="Amount")]
-    currency: typing_extensions.Annotated[ActiveOrHistoricCurrencyCode1, FieldMetadata(alias="Currency")]
+    amount: typing_extensions.Annotated[
+        ObActiveCurrencyAndAmountSimpleType, FieldMetadata(alias="Amount"), pydantic.Field(alias="Amount")
+    ]
+    currency: typing_extensions.Annotated[
+        ActiveOrHistoricCurrencyCode1, FieldMetadata(alias="Currency"), pydantic.Field(alias="Currency")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

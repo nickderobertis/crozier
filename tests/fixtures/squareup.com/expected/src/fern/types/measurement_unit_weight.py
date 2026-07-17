@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MeasurementUnitWeight(str, enum.Enum):
+class MeasurementUnitWeight(enum.StrEnum):
     """
     Unit of weight used to measure a quantity.
     """

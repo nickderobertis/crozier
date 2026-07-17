@@ -9,23 +9,29 @@ from ..core.serialization import FieldMetadata
 
 
 class LeaveEarningsLine(UniversalBaseModel):
-    earnings_rate_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="EarningsRateID")] = (
-        pydantic.Field(default=None)
-    )
+    earnings_rate_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="EarningsRateID"),
+        pydantic.Field(alias="EarningsRateID", description="Xero identifier"),
+    ] = None
     """
     Xero identifier
     """
 
-    number_of_units: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="NumberOfUnits")] = (
-        pydantic.Field(default=None)
-    )
+    number_of_units: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="NumberOfUnits"),
+        pydantic.Field(alias="NumberOfUnits", description="Earnings rate number of units."),
+    ] = None
     """
     Earnings rate number of units.
     """
 
-    rate_per_unit: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="RatePerUnit")] = (
-        pydantic.Field(default=None)
-    )
+    rate_per_unit: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="RatePerUnit"),
+        pydantic.Field(alias="RatePerUnit", description="Rate per unit of the EarningsLine."),
+    ] = None
     """
     Rate per unit of the EarningsLine.
     """

@@ -24,9 +24,11 @@ class DestinyDefinitionsPowerCapsDestinyPowerCapDefinition(UniversalBaseModel):
     The index of the entity as it was found in the investment tables.
     """
 
-    power_cap: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="powerCap")] = pydantic.Field(
-        default=None
-    )
+    power_cap: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="powerCap"),
+        pydantic.Field(alias="powerCap", description="The raw value for a power cap."),
+    ] = None
     """
     The raw value for a power cap.
     """

@@ -1,6 +1,6 @@
 # Reference
 ## Key
-<details><summary><code>client.key.<a href="src/fern/key/client.py">register</a>()</code></summary>
+<details><summary><code>client.key.<a href="src/fern/key/client.py">register</a>() -> KeyRegisterResponse</code></summary>
 <dl>
 <dd>
 
@@ -32,8 +32,12 @@ See: https://github.com/skion/authentiq/wiki/JWT-Examples
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.key.register()
 
 ```
@@ -62,7 +66,7 @@ client.key.register()
 </dl>
 </details>
 
-<details><summary><code>client.key.<a href="src/fern/key/client.py">revoke_nosecret</a>(...)</code></summary>
+<details><summary><code>client.key.<a href="src/fern/key/client.py">revoke_nosecret</a>(...) -> KeyRevokeNosecretResponse</code></summary>
 <dl>
 <dd>
 
@@ -94,8 +98,12 @@ complete the revocation.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.key.revoke_nosecret(
     email="email",
     phone="phone",
@@ -151,7 +159,7 @@ client.key.revoke_nosecret(
 </dl>
 </details>
 
-<details><summary><code>client.key.<a href="src/fern/key/client.py">retrieve</a>(...)</code></summary>
+<details><summary><code>client.key.<a href="src/fern/key/client.py">retrieve</a>(...) -> KeyRetrieveResponse</code></summary>
 <dl>
 <dd>
 
@@ -179,8 +187,12 @@ Get public details of an Authentiq ID.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.key.retrieve(
     pk="PK",
 )
@@ -219,7 +231,7 @@ client.key.retrieve(
 </dl>
 </details>
 
-<details><summary><code>client.key.<a href="src/fern/key/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.key.<a href="src/fern/key/client.py">update</a>(...) -> KeyUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -253,8 +265,12 @@ See: https://github.com/skion/authentiq/wiki/JWT-Examples
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.key.update(
     pk="PK",
 )
@@ -293,7 +309,7 @@ client.key.update(
 </dl>
 </details>
 
-<details><summary><code>client.key.<a href="src/fern/key/client.py">bind</a>(...)</code></summary>
+<details><summary><code>client.key.<a href="src/fern/key/client.py">bind</a>(...) -> KeyBindResponse</code></summary>
 <dl>
 <dd>
 
@@ -328,8 +344,12 @@ See: https://github.com/skion/authentiq/wiki/JWT-Examples
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.key.bind(
     pk="PK",
 )
@@ -368,7 +388,7 @@ client.key.bind(
 </dl>
 </details>
 
-<details><summary><code>client.key.<a href="src/fern/key/client.py">revoke</a>(...)</code></summary>
+<details><summary><code>client.key.<a href="src/fern/key/client.py">revoke</a>(...) -> KeyRevokeResponse</code></summary>
 <dl>
 <dd>
 
@@ -396,8 +416,12 @@ Revoke an Identity (Key) with a revocation secret
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.key.revoke(
     pk="PK",
     secret="secret",
@@ -473,8 +497,12 @@ HEAD info on Authentiq ID
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.key.head_key_pk(
     pk="PK",
 )
@@ -514,7 +542,7 @@ client.key.head_key_pk(
 </details>
 
 ## Login
-<details><summary><code>client.login.<a href="src/fern/login/client.py">push_login_request</a>(...)</code></summary>
+<details><summary><code>client.login.<a href="src/fern/login/client.py">push_login_request</a>(...) -> PushLoginRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -543,8 +571,12 @@ See: https://github.com/skion/authentiq/wiki/JWT-Examples
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.login.push_login_request(
     callback="callback",
 )
@@ -584,7 +616,7 @@ client.login.push_login_request(
 </details>
 
 ## Scope
-<details><summary><code>client.scope.<a href="src/fern/scope/client.py">sign_request</a>(...)</code></summary>
+<details><summary><code>client.scope.<a href="src/fern/scope/client.py">sign_request</a>(...) -> SignRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -613,8 +645,12 @@ See: https://github.com/skion/authentiq/wiki/JWT-Examples
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.scope.sign_request()
 
 ```
@@ -651,7 +687,7 @@ client.scope.sign_request()
 </dl>
 </details>
 
-<details><summary><code>client.scope.<a href="src/fern/scope/client.py">sign_retrieve</a>(...)</code></summary>
+<details><summary><code>client.scope.<a href="src/fern/scope/client.py">sign_retrieve</a>(...) -> typing.Optional[SignRetrieveResponse]</code></summary>
 <dl>
 <dd>
 
@@ -679,8 +715,12 @@ get the status / current content of a verification job
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.scope.sign_retrieve(
     job="job",
 )
@@ -719,7 +759,7 @@ client.scope.sign_retrieve(
 </dl>
 </details>
 
-<details><summary><code>client.scope.<a href="src/fern/scope/client.py">sign_confirm</a>(...)</code></summary>
+<details><summary><code>client.scope.<a href="src/fern/scope/client.py">sign_confirm</a>(...) -> SignConfirmResponse</code></summary>
 <dl>
 <dd>
 
@@ -747,8 +787,12 @@ this is a scope confirmation
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.scope.sign_confirm(
     job="job",
 )
@@ -816,8 +860,12 @@ See: https://github.com/skion/authentiq/wiki/JWT-Examples
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.scope.sign_update(
     job="job",
 )
@@ -856,7 +904,7 @@ client.scope.sign_update(
 </dl>
 </details>
 
-<details><summary><code>client.scope.<a href="src/fern/scope/client.py">sign_delete</a>(...)</code></summary>
+<details><summary><code>client.scope.<a href="src/fern/scope/client.py">sign_delete</a>(...) -> SignDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -884,8 +932,12 @@ delete a verification job
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.scope.sign_delete(
     job="job",
 )
@@ -952,8 +1004,12 @@ HEAD to get the status of a verification job
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.scope.sign_retrieve_head(
     job="job",
 )

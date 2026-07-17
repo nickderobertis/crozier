@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CustomLinkButtonClass(str, enum.Enum):
+class CustomLinkButtonClass(enum.StrEnum):
     """
     The class of the first link in a group will be used for the dropdown button
     """

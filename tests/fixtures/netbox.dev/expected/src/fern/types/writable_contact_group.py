@@ -11,10 +11,12 @@ from .nested_tag import NestedTag
 
 
 class WritableContactGroup(UniversalBaseModel):
-    depth: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="_depth")] = None
+    depth: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="_depth"), pydantic.Field(alias="_depth")
+    ] = None
     contact_count: typing.Optional[int] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     display: typing.Optional[str] = None
     id: typing.Optional[int] = None

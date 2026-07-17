@@ -12,7 +12,7 @@ from .writable_vlan_status import WritableVlanStatus
 class WritableVlan(UniversalBaseModel):
     comments: typing.Optional[str] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     display: typing.Optional[str] = None
     group: typing.Optional[int] = None

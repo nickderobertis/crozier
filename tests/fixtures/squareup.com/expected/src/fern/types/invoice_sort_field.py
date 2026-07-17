@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InvoiceSortField(str, enum.Enum):
+class InvoiceSortField(enum.StrEnum):
     """
     The field to use for sorting.
     """

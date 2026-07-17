@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DeviceAirflowLabel(str, enum.Enum):
+class DeviceAirflowLabel(enum.StrEnum):
     FRONT_TO_REAR = "Front to rear"
     REAR_TO_FRONT = "Rear to front"
     LEFT_TO_RIGHT = "Left to right"

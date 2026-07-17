@@ -9,9 +9,15 @@ from ..core.serialization import FieldMetadata
 
 
 class WebBackendWorkspaceStateResult(UniversalBaseModel):
-    has_connections: typing_extensions.Annotated[bool, FieldMetadata(alias="hasConnections")]
-    has_destinations: typing_extensions.Annotated[bool, FieldMetadata(alias="hasDestinations")]
-    has_sources: typing_extensions.Annotated[bool, FieldMetadata(alias="hasSources")]
+    has_connections: typing_extensions.Annotated[
+        bool, FieldMetadata(alias="hasConnections"), pydantic.Field(alias="hasConnections")
+    ]
+    has_destinations: typing_extensions.Annotated[
+        bool, FieldMetadata(alias="hasDestinations"), pydantic.Field(alias="hasDestinations")
+    ]
+    has_sources: typing_extensions.Annotated[
+        bool, FieldMetadata(alias="hasSources"), pydantic.Field(alias="hasSources")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

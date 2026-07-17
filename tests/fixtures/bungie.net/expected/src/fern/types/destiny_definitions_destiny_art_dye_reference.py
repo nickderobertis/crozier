@@ -10,7 +10,7 @@ from ..core.serialization import FieldMetadata
 
 class DestinyDefinitionsDestinyArtDyeReference(UniversalBaseModel):
     art_dye_channel_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="artDyeChannelHash")
+        typing.Optional[int], FieldMetadata(alias="artDyeChannelHash"), pydantic.Field(alias="artDyeChannelHash")
     ] = None
 
     if IS_PYDANTIC_V2:

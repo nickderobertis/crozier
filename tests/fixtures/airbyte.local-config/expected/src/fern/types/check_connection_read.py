@@ -11,7 +11,9 @@ from .synchronous_job_read import SynchronousJobRead
 
 
 class CheckConnectionRead(UniversalBaseModel):
-    job_info: typing_extensions.Annotated[SynchronousJobRead, FieldMetadata(alias="jobInfo")]
+    job_info: typing_extensions.Annotated[
+        SynchronousJobRead, FieldMetadata(alias="jobInfo"), pydantic.Field(alias="jobInfo")
+    ]
     message: typing.Optional[str] = None
     status: CheckConnectionReadStatus
 

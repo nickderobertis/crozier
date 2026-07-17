@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PropertyDifferenceDifferenceType(str, enum.Enum):
+class PropertyDifferenceDifferenceType(enum.StrEnum):
     """
     <p>The type of property difference.</p> <ul> <li> <p> <code>ADD</code>: A value has been added to a resource property that's an array or list data type.</p> </li> <li> <p> <code>REMOVE</code>: The property has been removed from the current resource configuration.</p> </li> <li> <p> <code>NOT_EQUAL</code>: The current property value differs from its expected value (as defined in the stack template and any values specified as template parameters).</p> </li> </ul>
     """

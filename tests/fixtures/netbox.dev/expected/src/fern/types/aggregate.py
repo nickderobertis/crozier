@@ -14,7 +14,7 @@ from .nested_tenant import NestedTenant
 class Aggregate(UniversalBaseModel):
     comments: typing.Optional[str] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     date_added: typing.Optional[dt.date] = None
     description: typing.Optional[str] = None
     display: typing.Optional[str] = None

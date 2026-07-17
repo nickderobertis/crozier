@@ -14,9 +14,15 @@ class FeaturesConfigRepositoryFilter(UniversalBaseModel):
     """
 
     enabled: typing.Optional[str] = None
-    label_key: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="label-key")] = None
-    label_label: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="label-label")] = None
-    label_list: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="label-list")] = None
+    label_key: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="label-key"), pydantic.Field(alias="label-key")
+    ] = None
+    label_label: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="label-label"), pydantic.Field(alias="label-label")
+    ] = None
+    label_list: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="label-list"), pydantic.Field(alias="label-list")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

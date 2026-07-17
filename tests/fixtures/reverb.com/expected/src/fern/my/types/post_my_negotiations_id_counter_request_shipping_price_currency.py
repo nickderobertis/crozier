@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostMyNegotiationsIdCounterRequestShippingPriceCurrency(str, enum.Enum):
+class PostMyNegotiationsIdCounterRequestShippingPriceCurrency(enum.StrEnum):
     """
     The currency the money will be expressed in
     """

@@ -6,12 +6,14 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.bunq_me_fundraiser_profile_user_listing import BunqMeFundraiserProfileUserListing
 from ..types.bunq_me_fundraiser_profile_user_read import BunqMeFundraiserProfileUserRead
+from pydantic import ValidationError
 
 
 class RawBunqmeFundraiserProfileClient:
@@ -38,7 +40,7 @@ class RawBunqmeFundraiserProfileClient:
             bunq.me public profile of the user.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/bunqme-fundraiser-profile",
+            f"user/{encode_path_param(user_id)}/bunqme-fundraiser-profile",
             method="GET",
             request_options=request_options,
         )
@@ -56,9 +58,9 @@ class RawBunqmeFundraiserProfileClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -66,6 +68,10 @@ class RawBunqmeFundraiserProfileClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_bunqme_fundraiser_profile_for_user(
@@ -91,7 +97,7 @@ class RawBunqmeFundraiserProfileClient:
             bunq.me public profile of the user.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/bunqme-fundraiser-profile/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/bunqme-fundraiser-profile/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -109,9 +115,9 @@ class RawBunqmeFundraiserProfileClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -119,6 +125,10 @@ class RawBunqmeFundraiserProfileClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -146,7 +156,7 @@ class AsyncRawBunqmeFundraiserProfileClient:
             bunq.me public profile of the user.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/bunqme-fundraiser-profile",
+            f"user/{encode_path_param(user_id)}/bunqme-fundraiser-profile",
             method="GET",
             request_options=request_options,
         )
@@ -164,9 +174,9 @@ class AsyncRawBunqmeFundraiserProfileClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -174,6 +184,10 @@ class AsyncRawBunqmeFundraiserProfileClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_bunqme_fundraiser_profile_for_user(
@@ -199,7 +213,7 @@ class AsyncRawBunqmeFundraiserProfileClient:
             bunq.me public profile of the user.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/bunqme-fundraiser-profile/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/bunqme-fundraiser-profile/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -217,9 +231,9 @@ class AsyncRawBunqmeFundraiserProfileClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -227,4 +241,8 @@ class AsyncRawBunqmeFundraiserProfileClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

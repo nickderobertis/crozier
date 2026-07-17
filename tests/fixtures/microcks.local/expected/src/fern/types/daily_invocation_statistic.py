@@ -13,7 +13,11 @@ class DailyInvocationStatistic(UniversalBaseModel):
     The daily statistic of a service mock invocations
     """
 
-    daily_count: typing_extensions.Annotated[float, FieldMetadata(alias="dailyCount")] = pydantic.Field()
+    daily_count: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="dailyCount"),
+        pydantic.Field(alias="dailyCount", description="The number of service mock invocations on this day"),
+    ]
     """
     The number of service mock invocations on this day
     """
@@ -24,8 +28,13 @@ class DailyInvocationStatistic(UniversalBaseModel):
     """
 
     hourly_count: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]], FieldMetadata(alias="hourlyCount")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.Dict[str, typing.Any]],
+        FieldMetadata(alias="hourlyCount"),
+        pydantic.Field(
+            alias="hourlyCount",
+            description="The number of service mock invocations per hour of the day (keys range from 0 to 23)",
+        ),
+    ] = None
     """
     The number of service mock invocations per hour of the day (keys range from 0 to 23)
     """
@@ -36,18 +45,31 @@ class DailyInvocationStatistic(UniversalBaseModel):
     """
 
     minute_count: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]], FieldMetadata(alias="minuteCount")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.Dict[str, typing.Any]],
+        FieldMetadata(alias="minuteCount"),
+        pydantic.Field(
+            alias="minuteCount",
+            description="The number of service mock invocations per minute of the day (keys range from 0 to 1439)",
+        ),
+    ] = None
     """
     The number of service mock invocations per minute of the day (keys range from 0 to 1439)
     """
 
-    service_name: typing_extensions.Annotated[str, FieldMetadata(alias="serviceName")] = pydantic.Field()
+    service_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="serviceName"),
+        pydantic.Field(alias="serviceName", description="The name of the service this statistic is related to"),
+    ]
     """
     The name of the service this statistic is related to
     """
 
-    service_version: typing_extensions.Annotated[str, FieldMetadata(alias="serviceVersion")] = pydantic.Field()
+    service_version: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="serviceVersion"),
+        pydantic.Field(alias="serviceVersion", description="The version of the service this statistic is related to"),
+    ]
     """
     The version of the service this statistic is related to
     """

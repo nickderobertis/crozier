@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InventoryAlertType(str, enum.Enum):
+class InventoryAlertType(enum.StrEnum):
     """
     Indicates whether Square should alert the merchant when the inventory quantity of a CatalogItemVariation is low.
     """

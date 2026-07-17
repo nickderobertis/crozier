@@ -25,9 +25,14 @@ class DestinyDefinitionsDestinyStatDefinition(UniversalBaseModel):
     4) Underlying in-game stat (the stat's actual value according to the game, after the game runs dynamic scripts based on the game and character's state. This is the final transformation that BNet does not have access to. For most stats, this is not actually displayed to the user, with the exception of Magazine Size which is then piped back to the UI for display in-game, but not to BNet.)
     """
 
-    aggregation_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="aggregationType")] = (
-        pydantic.Field(default=None)
-    )
+    aggregation_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="aggregationType"),
+        pydantic.Field(
+            alias="aggregationType",
+            description="Stats can exist on a character or an item, and they may potentially be aggregated in different ways. The DestinyStatAggregationType enum value indicates the way that this stat is being aggregated.",
+        ),
+    ] = None
     """
     Stats can exist on a character or an item, and they may potentially be aggregated in different ways. The DestinyStatAggregationType enum value indicates the way that this stat is being aggregated.
     """
@@ -35,10 +40,16 @@ class DestinyDefinitionsDestinyStatDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
-    has_computed_block: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="hasComputedBlock")] = (
-        pydantic.Field(default=None)
-    )
+    has_computed_block: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="hasComputedBlock"),
+        pydantic.Field(
+            alias="hasComputedBlock",
+            description="True if the stat is computed rather than being delivered as a raw value on items.\r\nFor instance, the Light stat in Destiny 1 was a computed stat.",
+        ),
+    ] = None
     """
     True if the stat is computed rather than being delivered as a raw value on items.
     For instance, the Light stat in Destiny 1 was a computed stat.
@@ -60,9 +71,11 @@ class DestinyDefinitionsDestinyStatDefinition(UniversalBaseModel):
     If this is true, then there is an entity with this identifier/type combination, but BNet is not yet allowed to show it. Sorry!
     """
 
-    stat_category: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="statCategory")] = (
-        pydantic.Field(default=None)
-    )
+    stat_category: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="statCategory"),
+        pydantic.Field(alias="statCategory", description="The category of the stat, according to the game."),
+    ] = None
     """
     The category of the stat, according to the game.
     """

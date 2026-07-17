@@ -17,9 +17,11 @@ class DataExporterConfig(UniversalBaseModel):
     Settings to export Otorshi events
     """
 
-    buffer_size: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="bufferSize")] = pydantic.Field(
-        default=None
-    )
+    buffer_size: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="bufferSize"),
+        pydantic.Field(alias="bufferSize", description="buffer size"),
+    ] = None
     """
     buffer size
     """
@@ -44,16 +46,20 @@ class DataExporterConfig(UniversalBaseModel):
     filtering
     """
 
-    group_duration: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="groupDuration")] = (
-        pydantic.Field(default=None)
-    )
+    group_duration: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="groupDuration"),
+        pydantic.Field(alias="groupDuration", description="duration"),
+    ] = None
     """
     duration
     """
 
-    group_size: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="groupSize")] = pydantic.Field(
-        default=None
-    )
+    group_size: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="groupSize"),
+        pydantic.Field(alias="groupSize", description="Group size"),
+    ] = None
     """
     Group size
     """
@@ -63,9 +69,11 @@ class DataExporterConfig(UniversalBaseModel):
     Id
     """
 
-    json_workers: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="jsonWorkers")] = (
-        pydantic.Field(default=None)
-    )
+    json_workers: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="jsonWorkers"),
+        pydantic.Field(alias="jsonWorkers", description="nb workers"),
+    ] = None
     """
     nb workers
     """
@@ -90,9 +98,11 @@ class DataExporterConfig(UniversalBaseModel):
     projection
     """
 
-    send_workers: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="sendWorkers")] = (
-        pydantic.Field(default=None)
-    )
+    send_workers: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="sendWorkers"),
+        pydantic.Field(alias="sendWorkers", description="send workers"),
+    ] = None
     """
     send workers
     """

@@ -14,16 +14,25 @@ class ListStacksInput(UniversalBaseModel):
     The input for <a>ListStacks</a> action.
     """
 
-    next_token: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="NextToken")] = pydantic.Field(
-        default=None
-    )
+    next_token: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="NextToken"),
+        pydantic.Field(
+            alias="NextToken", description="A string that identifies the next page of stacks that you want to retrieve."
+        ),
+    ] = None
     """
     A string that identifies the next page of stacks that you want to retrieve.
     """
 
     stack_status_filter: typing_extensions.Annotated[
-        typing.Optional[typing.List[StackStatus]], FieldMetadata(alias="StackStatusFilter")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[StackStatus]],
+        FieldMetadata(alias="StackStatusFilter"),
+        pydantic.Field(
+            alias="StackStatusFilter",
+            description="Stack status to use as a filter. Specify one or more stack status codes to list only stacks with the specified status codes. For a complete list of stack status codes, see the <code>StackStatus</code> parameter of the <a>Stack</a> data type.",
+        ),
+    ] = None
     """
     Stack status to use as a filter. Specify one or more stack status codes to list only stacks with the specified status codes. For a complete list of stack status codes, see the <code>StackStatus</code> parameter of the <a>Stack</a> data type.
     """

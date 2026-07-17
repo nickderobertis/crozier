@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
 from .types.post_my_follows_search_request_currency import PostMyFollowsSearchRequestCurrency
@@ -19,6 +20,7 @@ from .types.post_my_negotiations_id_counter_request_shipping_price import (
     PostMyNegotiationsIdCounterRequestShippingPrice,
 )
 from .types.put_my_listings_slug_state_end_request_reason import PutMyListingsSlugStateEndRequestReason
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -52,6 +54,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_account_details(
@@ -118,6 +124,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def see_all_addresses_in_your_address_book(
@@ -146,6 +156,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_a_new_address_in_your_address_book(
@@ -174,6 +188,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_an_existing_address_in_your_address_book(
@@ -194,7 +212,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/addresses/{jsonable_encoder(address_id)}",
+            f"my/addresses/{encode_path_param(address_id)}",
             method="PUT",
             request_options=request_options,
         )
@@ -204,6 +222,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_an_existing_address_in_your_address_book(
@@ -224,7 +246,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/addresses/{jsonable_encoder(address_id)}",
+            f"my/addresses/{encode_path_param(address_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -234,6 +256,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_a_list_of_your_conversations(
@@ -288,6 +314,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def start_a_conversation(
@@ -354,6 +384,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def send_a_message(
@@ -376,7 +410,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/conversations/{jsonable_encoder(conversation_id)}/messages",
+            f"my/conversations/{encode_path_param(conversation_id)}/messages",
             method="POST",
             json={
                 "body": body,
@@ -393,6 +427,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def display_conversation_details_with_messages_in_natural_time_order_oldest_to_newest(
@@ -413,7 +451,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/conversations/{jsonable_encoder(id)}",
+            f"my/conversations/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -423,6 +461,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def mark_a_conversation_read_unread(
@@ -446,7 +488,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/conversations/{jsonable_encoder(id)}",
+            f"my/conversations/{encode_path_param(id)}",
             method="PUT",
             json={
                 "read": read,
@@ -463,6 +505,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_your_actionable_status_counts(
@@ -491,6 +537,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def post_my_curated_set_product_product_id(
@@ -509,7 +559,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/curated_set/product/{jsonable_encoder(product_id)}",
+            f"my/curated_set/product/{encode_path_param(product_id)}",
             method="POST",
             request_options=request_options,
         )
@@ -519,6 +569,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_my_curated_set_product_product_id(
@@ -537,7 +591,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/curated_set/product/{jsonable_encoder(product_id)}",
+            f"my/curated_set/product/{encode_path_param(product_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -547,6 +601,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_listings_from_your_feed(
@@ -575,6 +633,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_your_feed_customization_options(
@@ -603,6 +665,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_your_feed(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -629,6 +695,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_of_received_feedback(
@@ -657,6 +727,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_of_sent_feedback(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -683,6 +757,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def see_what_the_user_is_following(
@@ -711,6 +789,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def returns_a_users_article_category_follows(
@@ -739,6 +821,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_a_users_article_category_follows(
@@ -776,6 +862,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def follow_status_for_a_brand(
@@ -796,7 +886,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/brands/{jsonable_encoder(slug)}",
+            f"my/follows/brands/{encode_path_param(slug)}",
             method="GET",
             request_options=request_options,
         )
@@ -806,6 +896,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def follow_a_brand(
@@ -826,7 +920,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/brands/{jsonable_encoder(slug)}",
+            f"my/follows/brands/{encode_path_param(slug)}",
             method="POST",
             request_options=request_options,
         )
@@ -836,6 +930,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def unfollow_a_brand(
@@ -856,7 +954,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/brands/{jsonable_encoder(slug)}",
+            f"my/follows/brands/{encode_path_param(slug)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -866,6 +964,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def follow_status_for_a_subcategory(
@@ -888,7 +990,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/categories/{jsonable_encoder(category)}/{jsonable_encoder(subcategory)}",
+            f"my/follows/categories/{encode_path_param(category)}/{encode_path_param(subcategory)}",
             method="GET",
             request_options=request_options,
         )
@@ -898,6 +1000,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def follow_a_subcategory(
@@ -920,7 +1026,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/categories/{jsonable_encoder(category)}/{jsonable_encoder(subcategory)}",
+            f"my/follows/categories/{encode_path_param(category)}/{encode_path_param(subcategory)}",
             method="POST",
             request_options=request_options,
         )
@@ -930,6 +1036,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def unfollow_a_subcategory(
@@ -952,7 +1062,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/categories/{jsonable_encoder(category)}/{jsonable_encoder(subcategory)}",
+            f"my/follows/categories/{encode_path_param(category)}/{encode_path_param(subcategory)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -962,6 +1072,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def follow_status_for_a_category(
@@ -982,7 +1096,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/categories/{jsonable_encoder(identifier)}",
+            f"my/follows/categories/{encode_path_param(identifier)}",
             method="GET",
             request_options=request_options,
         )
@@ -992,6 +1106,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def follow_a_category(
@@ -1012,7 +1130,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/categories/{jsonable_encoder(uuid_)}",
+            f"my/follows/categories/{encode_path_param(uuid_)}",
             method="POST",
             request_options=request_options,
         )
@@ -1022,6 +1140,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def unfollow_a_category(
@@ -1042,7 +1164,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/categories/{jsonable_encoder(identifier)}",
+            f"my/follows/categories/{encode_path_param(identifier)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1052,6 +1174,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def follow_status_for_a_collection(
@@ -1072,7 +1198,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/collections/{jsonable_encoder(slug)}",
+            f"my/follows/collections/{encode_path_param(slug)}",
             method="GET",
             request_options=request_options,
         )
@@ -1082,6 +1208,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def follow_a_collection(
@@ -1102,7 +1232,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/collections/{jsonable_encoder(slug)}",
+            f"my/follows/collections/{encode_path_param(slug)}",
             method="POST",
             request_options=request_options,
         )
@@ -1112,6 +1242,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def unfollow_a_collection(
@@ -1132,7 +1266,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/collections/{jsonable_encoder(slug)}",
+            f"my/follows/collections/{encode_path_param(slug)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1142,6 +1276,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def follow_status_for_a_handpicked_collection(
@@ -1162,7 +1300,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/handpicked/{jsonable_encoder(slug)}",
+            f"my/follows/handpicked/{encode_path_param(slug)}",
             method="GET",
             request_options=request_options,
         )
@@ -1172,6 +1310,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def follow_a_handpicked_collection(
@@ -1192,7 +1334,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/handpicked/{jsonable_encoder(slug)}",
+            f"my/follows/handpicked/{encode_path_param(slug)}",
             method="POST",
             request_options=request_options,
         )
@@ -1202,6 +1344,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def unfollow_a_handpicked_collection(
@@ -1222,7 +1368,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/handpicked/{jsonable_encoder(slug)}",
+            f"my/follows/handpicked/{encode_path_param(slug)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1232,6 +1378,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def follow_status_for_a_search(
@@ -1260,6 +1410,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def follow_a_search(
@@ -1451,6 +1605,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def follow_status_for_a_shop(
@@ -1471,7 +1629,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/shops/{jsonable_encoder(slug)}",
+            f"my/follows/shops/{encode_path_param(slug)}",
             method="GET",
             request_options=request_options,
         )
@@ -1481,6 +1639,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def follow_a_shop(
@@ -1501,7 +1663,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/shops/{jsonable_encoder(slug)}",
+            f"my/follows/shops/{encode_path_param(slug)}",
             method="POST",
             request_options=request_options,
         )
@@ -1511,6 +1673,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def unfollow_a_shop(
@@ -1531,7 +1697,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/shops/{jsonable_encoder(slug)}",
+            f"my/follows/shops/{encode_path_param(slug)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1541,6 +1707,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_a_follow(
@@ -1561,7 +1731,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/{jsonable_encoder(follow_id)}",
+            f"my/follows/{encode_path_param(follow_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1571,6 +1741,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def post_my_follows_follow_id_alert(
@@ -1589,7 +1763,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/{jsonable_encoder(follow_id)}/alert",
+            f"my/follows/{encode_path_param(follow_id)}/alert",
             method="POST",
             request_options=request_options,
         )
@@ -1599,6 +1773,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_my_follows_follow_id_alert(
@@ -1617,7 +1795,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/follows/{jsonable_encoder(follow_id)}/alert",
+            f"my/follows/{encode_path_param(follow_id)}/alert",
             method="DELETE",
             request_options=request_options,
         )
@@ -1627,6 +1805,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_a_list_of_live_listings_for_the_seller_to_search_all_listings_specify_state_all(
@@ -1786,7 +1968,9 @@ class RawMyClient:
                 "auction_price_max": auction_price_max,
                 "category": category,
                 "product_type": product_type,
-                "conditions": conditions,
+                "conditions": ",".join(map(str, conditions))
+                if isinstance(conditions, (list, tuple, set))
+                else conditions,
                 "decade": decade,
                 "finish": finish,
                 "handmade": handmade,
@@ -1794,7 +1978,7 @@ class RawMyClient:
                 "item_country": item_country,
                 "item_region": item_region,
                 "item_state": item_state,
-                "make": make,
+                "make": ",".join(map(str, make)) if isinstance(make, (list, tuple, set)) else make,
                 "model": model,
                 "must_not": must_not,
                 "price_max": price_max,
@@ -1811,7 +1995,7 @@ class RawMyClient:
                 "exclude_auctions": exclude_auctions,
                 "accepts_payment_plans": accepts_payment_plans,
                 "watchers_count_min": watchers_count_min,
-                "not_ids": not_ids,
+                "not_ids": ",".join(map(str, not_ids)) if isinstance(not_ids, (list, tuple, set)) else not_ids,
                 "local_pickup": local_pickup,
                 "state": state,
                 "sku": sku,
@@ -1824,6 +2008,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_a_list_your_draft_listings(
@@ -1975,7 +2163,9 @@ class RawMyClient:
                 "auction_price_max": auction_price_max,
                 "category": category,
                 "product_type": product_type,
-                "conditions": conditions,
+                "conditions": ",".join(map(str, conditions))
+                if isinstance(conditions, (list, tuple, set))
+                else conditions,
                 "decade": decade,
                 "finish": finish,
                 "handmade": handmade,
@@ -1983,7 +2173,7 @@ class RawMyClient:
                 "item_country": item_country,
                 "item_region": item_region,
                 "item_state": item_state,
-                "make": make,
+                "make": ",".join(map(str, make)) if isinstance(make, (list, tuple, set)) else make,
                 "model": model,
                 "must_not": must_not,
                 "price_max": price_max,
@@ -2000,7 +2190,7 @@ class RawMyClient:
                 "exclude_auctions": exclude_auctions,
                 "accepts_payment_plans": accepts_payment_plans,
                 "watchers_count_min": watchers_count_min,
-                "not_ids": not_ids,
+                "not_ids": ",".join(map(str, not_ids)) if isinstance(not_ids, (list, tuple, set)) else not_ids,
                 "local_pickup": local_pickup,
             },
             request_options=request_options,
@@ -2011,6 +2201,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_a_list_of_active_negotiations_as_a_seller(
@@ -2055,6 +2249,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def end_a_listing(
@@ -2082,7 +2280,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/listings/{jsonable_encoder(slug)}/state/end",
+            f"my/listings/{encode_path_param(slug)}/state/end",
             method="PUT",
             json={
                 "reason": reason,
@@ -2099,6 +2297,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_a_list_of_your_lists_wishlist_watch_list_etc(
@@ -2127,6 +2329,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_a_list_of_active_negotiations_as_a_buyer(
@@ -2171,6 +2377,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_offer_details(
@@ -2191,7 +2401,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/negotiations/{jsonable_encoder(id)}",
+            f"my/negotiations/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -2201,6 +2411,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def accept_an_offer(
@@ -2224,7 +2438,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/negotiations/{jsonable_encoder(id)}/accept",
+            f"my/negotiations/{encode_path_param(id)}/accept",
             method="POST",
             json={
                 "message": message,
@@ -2241,6 +2455,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def counter_an_offer(
@@ -2294,7 +2512,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/negotiations/{jsonable_encoder(id)}/counter",
+            f"my/negotiations/{encode_path_param(id)}/counter",
             method="POST",
             json={
                 "country_code": country_code,
@@ -2329,6 +2547,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def decline_an_offer(
@@ -2349,7 +2571,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/negotiations/{jsonable_encoder(id)}/decline",
+            f"my/negotiations/{encode_path_param(id)}/decline",
             method="POST",
             request_options=request_options,
         )
@@ -2359,6 +2581,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_of_orders_that_need_feedback(
@@ -2387,6 +2613,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def returns_all_orders_newest_first(
@@ -2415,6 +2645,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_my_orders_buying_by_uuid_uuid(
@@ -2433,7 +2667,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/orders/buying/by_uuid/{jsonable_encoder(uuid_)}",
+            f"my/orders/buying/by_uuid/{encode_path_param(uuid_)}",
             method="GET",
             request_options=request_options,
         )
@@ -2443,6 +2677,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def returns_unpaid_orders_newest_first(
@@ -2471,6 +2709,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def returns_order_details_for_a_buyer(
@@ -2491,7 +2733,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/orders/buying/{jsonable_encoder(id)}",
+            f"my/orders/buying/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -2501,6 +2743,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def marks_an_order_as_received_by_the_buyer(
@@ -2521,7 +2767,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/orders/buying/{jsonable_encoder(id)}/mark_received",
+            f"my/orders/buying/{encode_path_param(id)}/mark_received",
             method="POST",
             request_options=request_options,
         )
@@ -2531,6 +2777,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_all_seller_orders_newest_first(
@@ -2559,6 +2809,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_unpaid_seller_orders_newest_first(
@@ -2587,6 +2841,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def see_previous_orders_from_buyer(
@@ -2607,7 +2865,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/orders/selling/buyer_history/{jsonable_encoder(buyer_id)}",
+            f"my/orders/selling/buyer_history/{encode_path_param(buyer_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -2617,6 +2875,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_my_orders_selling_by_uuid_uuid(
@@ -2635,7 +2897,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/orders/selling/by_uuid/{jsonable_encoder(uuid_)}",
+            f"my/orders/selling/by_uuid/{encode_path_param(uuid_)}",
             method="GET",
             request_options=request_options,
         )
@@ -2645,6 +2907,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def returns_order_details_for_a_seller(
@@ -2665,7 +2931,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/orders/selling/{jsonable_encoder(id)}",
+            f"my/orders/selling/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -2675,6 +2941,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def marks_an_order_as_picked_up(
@@ -2698,7 +2968,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/orders/selling/{jsonable_encoder(id)}/mark_picked_up",
+            f"my/orders/selling/{encode_path_param(id)}/mark_picked_up",
             method="POST",
             json={
                 "date": date,
@@ -2715,6 +2985,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def marks_an_order_as_shipped(
@@ -2750,7 +3024,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/orders/selling/{jsonable_encoder(id)}/ship",
+            f"my/orders/selling/{encode_path_param(id)}/ship",
             method="POST",
             json={
                 "provider": provider,
@@ -2769,6 +3043,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def initiate_a_refund_for_a_sold_order(
@@ -2789,7 +3067,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/orders/selling/{jsonable_encoder(order_id)}/refund_requests",
+            f"my/orders/selling/{encode_path_param(order_id)}/refund_requests",
             method="POST",
             request_options=request_options,
         )
@@ -2799,6 +3077,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_payments(
@@ -2868,6 +3150,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_payment(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -2886,7 +3172,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/payments/selling/{jsonable_encoder(id)}",
+            f"my/payments/selling/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -2896,6 +3182,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_a_list_of_payouts(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -2922,6 +3212,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_the_line_items_of_a_payout(
@@ -2942,7 +3236,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/payouts/{jsonable_encoder(id)}/line_items",
+            f"my/payouts/{encode_path_param(id)}/line_items",
             method="GET",
             request_options=request_options,
         )
@@ -2952,6 +3246,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_a_list_of_refund_requests_as_a_seller(
@@ -2980,6 +3278,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_a_refund_request_for_a_sold_order(
@@ -3000,7 +3302,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/refund_requests/selling/{jsonable_encoder(id)}",
+            f"my/refund_requests/selling/{encode_path_param(id)}",
             method="PUT",
             request_options=request_options,
         )
@@ -3010,6 +3312,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_a_list_of_your_recently_viewed_listings(
@@ -3038,6 +3344,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_a_list_of_wishlisted_items(
@@ -3066,6 +3376,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def add_a_listing_to_your_wishlist(
@@ -3086,7 +3400,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/wishlist/{jsonable_encoder(id)}",
+            f"my/wishlist/{encode_path_param(id)}",
             method="PUT",
             request_options=request_options,
         )
@@ -3096,6 +3410,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def remove_a_listing_from_your_wishlist(
@@ -3116,7 +3434,7 @@ class RawMyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"my/wishlist/{jsonable_encoder(id)}",
+            f"my/wishlist/{encode_path_param(id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -3126,6 +3444,10 @@ class RawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -3159,6 +3481,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_account_details(
@@ -3225,6 +3551,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def see_all_addresses_in_your_address_book(
@@ -3253,6 +3583,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_a_new_address_in_your_address_book(
@@ -3281,6 +3615,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_an_existing_address_in_your_address_book(
@@ -3301,7 +3639,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/addresses/{jsonable_encoder(address_id)}",
+            f"my/addresses/{encode_path_param(address_id)}",
             method="PUT",
             request_options=request_options,
         )
@@ -3311,6 +3649,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_an_existing_address_in_your_address_book(
@@ -3331,7 +3673,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/addresses/{jsonable_encoder(address_id)}",
+            f"my/addresses/{encode_path_param(address_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -3341,6 +3683,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_a_list_of_your_conversations(
@@ -3395,6 +3741,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def start_a_conversation(
@@ -3461,6 +3811,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def send_a_message(
@@ -3483,7 +3837,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/conversations/{jsonable_encoder(conversation_id)}/messages",
+            f"my/conversations/{encode_path_param(conversation_id)}/messages",
             method="POST",
             json={
                 "body": body,
@@ -3500,6 +3854,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def display_conversation_details_with_messages_in_natural_time_order_oldest_to_newest(
@@ -3520,7 +3878,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/conversations/{jsonable_encoder(id)}",
+            f"my/conversations/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -3530,6 +3888,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def mark_a_conversation_read_unread(
@@ -3553,7 +3915,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/conversations/{jsonable_encoder(id)}",
+            f"my/conversations/{encode_path_param(id)}",
             method="PUT",
             json={
                 "read": read,
@@ -3570,6 +3932,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_your_actionable_status_counts(
@@ -3598,6 +3964,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def post_my_curated_set_product_product_id(
@@ -3616,7 +3986,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/curated_set/product/{jsonable_encoder(product_id)}",
+            f"my/curated_set/product/{encode_path_param(product_id)}",
             method="POST",
             request_options=request_options,
         )
@@ -3626,6 +3996,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_my_curated_set_product_product_id(
@@ -3644,7 +4018,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/curated_set/product/{jsonable_encoder(product_id)}",
+            f"my/curated_set/product/{encode_path_param(product_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -3654,6 +4028,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_listings_from_your_feed(
@@ -3682,6 +4060,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_your_feed_customization_options(
@@ -3710,6 +4092,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_your_feed(
@@ -3738,6 +4124,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_of_received_feedback(
@@ -3766,6 +4156,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_of_sent_feedback(
@@ -3794,6 +4188,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def see_what_the_user_is_following(
@@ -3822,6 +4220,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def returns_a_users_article_category_follows(
@@ -3850,6 +4252,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_a_users_article_category_follows(
@@ -3887,6 +4293,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def follow_status_for_a_brand(
@@ -3907,7 +4317,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/brands/{jsonable_encoder(slug)}",
+            f"my/follows/brands/{encode_path_param(slug)}",
             method="GET",
             request_options=request_options,
         )
@@ -3917,6 +4327,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def follow_a_brand(
@@ -3937,7 +4351,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/brands/{jsonable_encoder(slug)}",
+            f"my/follows/brands/{encode_path_param(slug)}",
             method="POST",
             request_options=request_options,
         )
@@ -3947,6 +4361,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def unfollow_a_brand(
@@ -3967,7 +4385,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/brands/{jsonable_encoder(slug)}",
+            f"my/follows/brands/{encode_path_param(slug)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -3977,6 +4395,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def follow_status_for_a_subcategory(
@@ -3999,7 +4421,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/categories/{jsonable_encoder(category)}/{jsonable_encoder(subcategory)}",
+            f"my/follows/categories/{encode_path_param(category)}/{encode_path_param(subcategory)}",
             method="GET",
             request_options=request_options,
         )
@@ -4009,6 +4431,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def follow_a_subcategory(
@@ -4031,7 +4457,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/categories/{jsonable_encoder(category)}/{jsonable_encoder(subcategory)}",
+            f"my/follows/categories/{encode_path_param(category)}/{encode_path_param(subcategory)}",
             method="POST",
             request_options=request_options,
         )
@@ -4041,6 +4467,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def unfollow_a_subcategory(
@@ -4063,7 +4493,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/categories/{jsonable_encoder(category)}/{jsonable_encoder(subcategory)}",
+            f"my/follows/categories/{encode_path_param(category)}/{encode_path_param(subcategory)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -4073,6 +4503,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def follow_status_for_a_category(
@@ -4093,7 +4527,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/categories/{jsonable_encoder(identifier)}",
+            f"my/follows/categories/{encode_path_param(identifier)}",
             method="GET",
             request_options=request_options,
         )
@@ -4103,6 +4537,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def follow_a_category(
@@ -4123,7 +4561,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/categories/{jsonable_encoder(uuid_)}",
+            f"my/follows/categories/{encode_path_param(uuid_)}",
             method="POST",
             request_options=request_options,
         )
@@ -4133,6 +4571,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def unfollow_a_category(
@@ -4153,7 +4595,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/categories/{jsonable_encoder(identifier)}",
+            f"my/follows/categories/{encode_path_param(identifier)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -4163,6 +4605,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def follow_status_for_a_collection(
@@ -4183,7 +4629,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/collections/{jsonable_encoder(slug)}",
+            f"my/follows/collections/{encode_path_param(slug)}",
             method="GET",
             request_options=request_options,
         )
@@ -4193,6 +4639,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def follow_a_collection(
@@ -4213,7 +4663,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/collections/{jsonable_encoder(slug)}",
+            f"my/follows/collections/{encode_path_param(slug)}",
             method="POST",
             request_options=request_options,
         )
@@ -4223,6 +4673,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def unfollow_a_collection(
@@ -4243,7 +4697,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/collections/{jsonable_encoder(slug)}",
+            f"my/follows/collections/{encode_path_param(slug)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -4253,6 +4707,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def follow_status_for_a_handpicked_collection(
@@ -4273,7 +4731,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/handpicked/{jsonable_encoder(slug)}",
+            f"my/follows/handpicked/{encode_path_param(slug)}",
             method="GET",
             request_options=request_options,
         )
@@ -4283,6 +4741,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def follow_a_handpicked_collection(
@@ -4303,7 +4765,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/handpicked/{jsonable_encoder(slug)}",
+            f"my/follows/handpicked/{encode_path_param(slug)}",
             method="POST",
             request_options=request_options,
         )
@@ -4313,6 +4775,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def unfollow_a_handpicked_collection(
@@ -4333,7 +4799,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/handpicked/{jsonable_encoder(slug)}",
+            f"my/follows/handpicked/{encode_path_param(slug)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -4343,6 +4809,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def follow_status_for_a_search(
@@ -4371,6 +4841,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def follow_a_search(
@@ -4562,6 +5036,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def follow_status_for_a_shop(
@@ -4582,7 +5060,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/shops/{jsonable_encoder(slug)}",
+            f"my/follows/shops/{encode_path_param(slug)}",
             method="GET",
             request_options=request_options,
         )
@@ -4592,6 +5070,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def follow_a_shop(
@@ -4612,7 +5094,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/shops/{jsonable_encoder(slug)}",
+            f"my/follows/shops/{encode_path_param(slug)}",
             method="POST",
             request_options=request_options,
         )
@@ -4622,6 +5104,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def unfollow_a_shop(
@@ -4642,7 +5128,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/shops/{jsonable_encoder(slug)}",
+            f"my/follows/shops/{encode_path_param(slug)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -4652,6 +5138,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_a_follow(
@@ -4672,7 +5162,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/{jsonable_encoder(follow_id)}",
+            f"my/follows/{encode_path_param(follow_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -4682,6 +5172,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def post_my_follows_follow_id_alert(
@@ -4700,7 +5194,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/{jsonable_encoder(follow_id)}/alert",
+            f"my/follows/{encode_path_param(follow_id)}/alert",
             method="POST",
             request_options=request_options,
         )
@@ -4710,6 +5204,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_my_follows_follow_id_alert(
@@ -4728,7 +5226,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/follows/{jsonable_encoder(follow_id)}/alert",
+            f"my/follows/{encode_path_param(follow_id)}/alert",
             method="DELETE",
             request_options=request_options,
         )
@@ -4738,6 +5236,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_a_list_of_live_listings_for_the_seller_to_search_all_listings_specify_state_all(
@@ -4897,7 +5399,9 @@ class AsyncRawMyClient:
                 "auction_price_max": auction_price_max,
                 "category": category,
                 "product_type": product_type,
-                "conditions": conditions,
+                "conditions": ",".join(map(str, conditions))
+                if isinstance(conditions, (list, tuple, set))
+                else conditions,
                 "decade": decade,
                 "finish": finish,
                 "handmade": handmade,
@@ -4905,7 +5409,7 @@ class AsyncRawMyClient:
                 "item_country": item_country,
                 "item_region": item_region,
                 "item_state": item_state,
-                "make": make,
+                "make": ",".join(map(str, make)) if isinstance(make, (list, tuple, set)) else make,
                 "model": model,
                 "must_not": must_not,
                 "price_max": price_max,
@@ -4922,7 +5426,7 @@ class AsyncRawMyClient:
                 "exclude_auctions": exclude_auctions,
                 "accepts_payment_plans": accepts_payment_plans,
                 "watchers_count_min": watchers_count_min,
-                "not_ids": not_ids,
+                "not_ids": ",".join(map(str, not_ids)) if isinstance(not_ids, (list, tuple, set)) else not_ids,
                 "local_pickup": local_pickup,
                 "state": state,
                 "sku": sku,
@@ -4935,6 +5439,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_a_list_your_draft_listings(
@@ -5086,7 +5594,9 @@ class AsyncRawMyClient:
                 "auction_price_max": auction_price_max,
                 "category": category,
                 "product_type": product_type,
-                "conditions": conditions,
+                "conditions": ",".join(map(str, conditions))
+                if isinstance(conditions, (list, tuple, set))
+                else conditions,
                 "decade": decade,
                 "finish": finish,
                 "handmade": handmade,
@@ -5094,7 +5604,7 @@ class AsyncRawMyClient:
                 "item_country": item_country,
                 "item_region": item_region,
                 "item_state": item_state,
-                "make": make,
+                "make": ",".join(map(str, make)) if isinstance(make, (list, tuple, set)) else make,
                 "model": model,
                 "must_not": must_not,
                 "price_max": price_max,
@@ -5111,7 +5621,7 @@ class AsyncRawMyClient:
                 "exclude_auctions": exclude_auctions,
                 "accepts_payment_plans": accepts_payment_plans,
                 "watchers_count_min": watchers_count_min,
-                "not_ids": not_ids,
+                "not_ids": ",".join(map(str, not_ids)) if isinstance(not_ids, (list, tuple, set)) else not_ids,
                 "local_pickup": local_pickup,
             },
             request_options=request_options,
@@ -5122,6 +5632,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_a_list_of_active_negotiations_as_a_seller(
@@ -5166,6 +5680,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def end_a_listing(
@@ -5193,7 +5711,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/listings/{jsonable_encoder(slug)}/state/end",
+            f"my/listings/{encode_path_param(slug)}/state/end",
             method="PUT",
             json={
                 "reason": reason,
@@ -5210,6 +5728,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_a_list_of_your_lists_wishlist_watch_list_etc(
@@ -5238,6 +5760,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_a_list_of_active_negotiations_as_a_buyer(
@@ -5282,6 +5808,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_offer_details(
@@ -5302,7 +5832,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/negotiations/{jsonable_encoder(id)}",
+            f"my/negotiations/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -5312,6 +5842,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def accept_an_offer(
@@ -5335,7 +5869,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/negotiations/{jsonable_encoder(id)}/accept",
+            f"my/negotiations/{encode_path_param(id)}/accept",
             method="POST",
             json={
                 "message": message,
@@ -5352,6 +5886,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def counter_an_offer(
@@ -5405,7 +5943,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/negotiations/{jsonable_encoder(id)}/counter",
+            f"my/negotiations/{encode_path_param(id)}/counter",
             method="POST",
             json={
                 "country_code": country_code,
@@ -5440,6 +5978,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def decline_an_offer(
@@ -5460,7 +6002,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/negotiations/{jsonable_encoder(id)}/decline",
+            f"my/negotiations/{encode_path_param(id)}/decline",
             method="POST",
             request_options=request_options,
         )
@@ -5470,6 +6012,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_of_orders_that_need_feedback(
@@ -5498,6 +6044,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def returns_all_orders_newest_first(
@@ -5526,6 +6076,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_my_orders_buying_by_uuid_uuid(
@@ -5544,7 +6098,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/orders/buying/by_uuid/{jsonable_encoder(uuid_)}",
+            f"my/orders/buying/by_uuid/{encode_path_param(uuid_)}",
             method="GET",
             request_options=request_options,
         )
@@ -5554,6 +6108,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def returns_unpaid_orders_newest_first(
@@ -5582,6 +6140,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def returns_order_details_for_a_buyer(
@@ -5602,7 +6164,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/orders/buying/{jsonable_encoder(id)}",
+            f"my/orders/buying/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -5612,6 +6174,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def marks_an_order_as_received_by_the_buyer(
@@ -5632,7 +6198,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/orders/buying/{jsonable_encoder(id)}/mark_received",
+            f"my/orders/buying/{encode_path_param(id)}/mark_received",
             method="POST",
             request_options=request_options,
         )
@@ -5642,6 +6208,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_all_seller_orders_newest_first(
@@ -5670,6 +6240,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_unpaid_seller_orders_newest_first(
@@ -5698,6 +6272,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def see_previous_orders_from_buyer(
@@ -5718,7 +6296,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/orders/selling/buyer_history/{jsonable_encoder(buyer_id)}",
+            f"my/orders/selling/buyer_history/{encode_path_param(buyer_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -5728,6 +6306,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_my_orders_selling_by_uuid_uuid(
@@ -5746,7 +6328,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/orders/selling/by_uuid/{jsonable_encoder(uuid_)}",
+            f"my/orders/selling/by_uuid/{encode_path_param(uuid_)}",
             method="GET",
             request_options=request_options,
         )
@@ -5756,6 +6338,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def returns_order_details_for_a_seller(
@@ -5776,7 +6362,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/orders/selling/{jsonable_encoder(id)}",
+            f"my/orders/selling/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -5786,6 +6372,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def marks_an_order_as_picked_up(
@@ -5809,7 +6399,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/orders/selling/{jsonable_encoder(id)}/mark_picked_up",
+            f"my/orders/selling/{encode_path_param(id)}/mark_picked_up",
             method="POST",
             json={
                 "date": date,
@@ -5826,6 +6416,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def marks_an_order_as_shipped(
@@ -5861,7 +6455,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/orders/selling/{jsonable_encoder(id)}/ship",
+            f"my/orders/selling/{encode_path_param(id)}/ship",
             method="POST",
             json={
                 "provider": provider,
@@ -5880,6 +6474,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def initiate_a_refund_for_a_sold_order(
@@ -5900,7 +6498,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/orders/selling/{jsonable_encoder(order_id)}/refund_requests",
+            f"my/orders/selling/{encode_path_param(order_id)}/refund_requests",
             method="POST",
             request_options=request_options,
         )
@@ -5910,6 +6508,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_payments(
@@ -5979,6 +6581,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_payment(
@@ -5999,7 +6605,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/payments/selling/{jsonable_encoder(id)}",
+            f"my/payments/selling/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -6009,6 +6615,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_a_list_of_payouts(
@@ -6037,6 +6647,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_the_line_items_of_a_payout(
@@ -6057,7 +6671,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/payouts/{jsonable_encoder(id)}/line_items",
+            f"my/payouts/{encode_path_param(id)}/line_items",
             method="GET",
             request_options=request_options,
         )
@@ -6067,6 +6681,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_a_list_of_refund_requests_as_a_seller(
@@ -6095,6 +6713,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_a_refund_request_for_a_sold_order(
@@ -6115,7 +6737,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/refund_requests/selling/{jsonable_encoder(id)}",
+            f"my/refund_requests/selling/{encode_path_param(id)}",
             method="PUT",
             request_options=request_options,
         )
@@ -6125,6 +6747,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_a_list_of_your_recently_viewed_listings(
@@ -6153,6 +6779,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_a_list_of_wishlisted_items(
@@ -6181,6 +6811,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def add_a_listing_to_your_wishlist(
@@ -6201,7 +6835,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/wishlist/{jsonable_encoder(id)}",
+            f"my/wishlist/{encode_path_param(id)}",
             method="PUT",
             request_options=request_options,
         )
@@ -6211,6 +6845,10 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def remove_a_listing_from_your_wishlist(
@@ -6231,7 +6869,7 @@ class AsyncRawMyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"my/wishlist/{jsonable_encoder(id)}",
+            f"my/wishlist/{encode_path_param(id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -6241,4 +6879,8 @@ class AsyncRawMyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

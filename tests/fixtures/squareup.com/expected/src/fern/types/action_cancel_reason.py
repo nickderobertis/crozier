@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ActionCancelReason(str, enum.Enum):
+class ActionCancelReason(enum.StrEnum):
     """ """
 
     BUYER_CANCELED = "BUYER_CANCELED"

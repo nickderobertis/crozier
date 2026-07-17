@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WirelessLanAuthCipherValue(str, enum.Enum):
+class WirelessLanAuthCipherValue(enum.StrEnum):
     AUTO = "auto"
     TKIP = "tkip"
     AES = "aes"

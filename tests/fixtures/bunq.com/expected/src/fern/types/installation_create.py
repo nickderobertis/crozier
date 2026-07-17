@@ -12,21 +12,29 @@ from .installation_token import InstallationToken
 
 
 class InstallationCreate(UniversalBaseModel):
-    id: typing_extensions.Annotated[typing.Optional[BunqId], FieldMetadata(alias="Id")] = pydantic.Field(default=None)
+    id: typing_extensions.Annotated[
+        typing.Optional[BunqId],
+        FieldMetadata(alias="Id"),
+        pydantic.Field(alias="Id", description="The Id object of the created Installation"),
+    ] = None
     """
     The Id object of the created Installation
     """
 
     server_public_key: typing_extensions.Annotated[
-        typing.Optional[InstallationServerPublicKey], FieldMetadata(alias="ServerPublicKey")
-    ] = pydantic.Field(default=None)
+        typing.Optional[InstallationServerPublicKey],
+        FieldMetadata(alias="ServerPublicKey"),
+        pydantic.Field(alias="ServerPublicKey", description="The ServerPublicKey object of the created Installation"),
+    ] = None
     """
     The ServerPublicKey object of the created Installation
     """
 
-    token: typing_extensions.Annotated[typing.Optional[InstallationToken], FieldMetadata(alias="Token")] = (
-        pydantic.Field(default=None)
-    )
+    token: typing_extensions.Annotated[
+        typing.Optional[InstallationToken],
+        FieldMetadata(alias="Token"),
+        pydantic.Field(alias="Token", description="The Token object of this Installation."),
+    ] = None
     """
     The Token object of this Installation.
     """

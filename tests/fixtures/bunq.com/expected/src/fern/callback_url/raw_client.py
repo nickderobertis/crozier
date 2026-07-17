@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -15,6 +16,7 @@ from ..types.oauth_callback_url_delete import OauthCallbackUrlDelete
 from ..types.oauth_callback_url_listing import OauthCallbackUrlListing
 from ..types.oauth_callback_url_read import OauthCallbackUrlRead
 from ..types.oauth_callback_url_update import OauthCallbackUrlUpdate
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -47,7 +49,7 @@ class RawCallbackUrlClient:
             Used for managing OAuth Client Callback URLs.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/oauth-client/{jsonable_encoder(oauth_client_id)}/callback-url",
+            f"user/{encode_path_param(user_id)}/oauth-client/{encode_path_param(oauth_client_id)}/callback-url",
             method="GET",
             request_options=request_options,
         )
@@ -65,9 +67,9 @@ class RawCallbackUrlClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -75,6 +77,10 @@ class RawCallbackUrlClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_callback_url_for_user_oauth_client(
@@ -103,7 +109,7 @@ class RawCallbackUrlClient:
             Used for managing OAuth Client Callback URLs.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/oauth-client/{jsonable_encoder(oauth_client_id)}/callback-url",
+            f"user/{encode_path_param(user_id)}/oauth-client/{encode_path_param(oauth_client_id)}/callback-url",
             method="POST",
             json={
                 "url": url,
@@ -128,9 +134,9 @@ class RawCallbackUrlClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -138,6 +144,10 @@ class RawCallbackUrlClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_callback_url_for_user_oauth_client(
@@ -171,7 +181,7 @@ class RawCallbackUrlClient:
             Used for managing OAuth Client Callback URLs.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/oauth-client/{jsonable_encoder(oauth_client_id)}/callback-url/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/oauth-client/{encode_path_param(oauth_client_id)}/callback-url/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -189,9 +199,9 @@ class RawCallbackUrlClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -199,6 +209,10 @@ class RawCallbackUrlClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_callback_url_for_user_oauth_client(
@@ -236,7 +250,7 @@ class RawCallbackUrlClient:
             Used for managing OAuth Client Callback URLs.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/oauth-client/{jsonable_encoder(oauth_client_id)}/callback-url/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/oauth-client/{encode_path_param(oauth_client_id)}/callback-url/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "url": url,
@@ -261,9 +275,9 @@ class RawCallbackUrlClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -271,6 +285,10 @@ class RawCallbackUrlClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_callback_url_for_user_oauth_client(
@@ -304,7 +322,7 @@ class RawCallbackUrlClient:
             Used for managing OAuth Client Callback URLs.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/oauth-client/{jsonable_encoder(oauth_client_id)}/callback-url/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/oauth-client/{encode_path_param(oauth_client_id)}/callback-url/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -322,9 +340,9 @@ class RawCallbackUrlClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -332,6 +350,10 @@ class RawCallbackUrlClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -362,7 +384,7 @@ class AsyncRawCallbackUrlClient:
             Used for managing OAuth Client Callback URLs.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/oauth-client/{jsonable_encoder(oauth_client_id)}/callback-url",
+            f"user/{encode_path_param(user_id)}/oauth-client/{encode_path_param(oauth_client_id)}/callback-url",
             method="GET",
             request_options=request_options,
         )
@@ -380,9 +402,9 @@ class AsyncRawCallbackUrlClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -390,6 +412,10 @@ class AsyncRawCallbackUrlClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_callback_url_for_user_oauth_client(
@@ -418,7 +444,7 @@ class AsyncRawCallbackUrlClient:
             Used for managing OAuth Client Callback URLs.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/oauth-client/{jsonable_encoder(oauth_client_id)}/callback-url",
+            f"user/{encode_path_param(user_id)}/oauth-client/{encode_path_param(oauth_client_id)}/callback-url",
             method="POST",
             json={
                 "url": url,
@@ -443,9 +469,9 @@ class AsyncRawCallbackUrlClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -453,6 +479,10 @@ class AsyncRawCallbackUrlClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_callback_url_for_user_oauth_client(
@@ -486,7 +516,7 @@ class AsyncRawCallbackUrlClient:
             Used for managing OAuth Client Callback URLs.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/oauth-client/{jsonable_encoder(oauth_client_id)}/callback-url/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/oauth-client/{encode_path_param(oauth_client_id)}/callback-url/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -504,9 +534,9 @@ class AsyncRawCallbackUrlClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -514,6 +544,10 @@ class AsyncRawCallbackUrlClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_callback_url_for_user_oauth_client(
@@ -551,7 +585,7 @@ class AsyncRawCallbackUrlClient:
             Used for managing OAuth Client Callback URLs.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/oauth-client/{jsonable_encoder(oauth_client_id)}/callback-url/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/oauth-client/{encode_path_param(oauth_client_id)}/callback-url/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "url": url,
@@ -576,9 +610,9 @@ class AsyncRawCallbackUrlClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -586,6 +620,10 @@ class AsyncRawCallbackUrlClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_callback_url_for_user_oauth_client(
@@ -619,7 +657,7 @@ class AsyncRawCallbackUrlClient:
             Used for managing OAuth Client Callback URLs.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/oauth-client/{jsonable_encoder(oauth_client_id)}/callback-url/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/oauth-client/{encode_path_param(oauth_client_id)}/callback-url/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -637,9 +675,9 @@ class AsyncRawCallbackUrlClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -647,4 +685,8 @@ class AsyncRawCallbackUrlClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

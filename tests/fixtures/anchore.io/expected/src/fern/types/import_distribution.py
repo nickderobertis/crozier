@@ -9,7 +9,7 @@ from ..core.serialization import FieldMetadata
 
 
 class ImportDistribution(UniversalBaseModel):
-    id_like: typing_extensions.Annotated[str, FieldMetadata(alias="idLike")]
+    id_like: typing_extensions.Annotated[str, FieldMetadata(alias="idLike"), pydantic.Field(alias="idLike")]
     name: str
     version: str
 

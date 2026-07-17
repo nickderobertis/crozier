@@ -45,24 +45,29 @@ class DestinyItemComponentSetOfint32(UniversalBaseModel):
     plug_objectives: typing_extensions.Annotated[
         typing.Optional[DictionaryComponentResponseOfint32AndDestinyItemPlugObjectivesComponent],
         FieldMetadata(alias="plugObjectives"),
+        pydantic.Field(alias="plugObjectives"),
     ] = None
     plug_states: typing_extensions.Annotated[
         typing.Optional[DictionaryComponentResponseOfuint32AndDestinyItemPlugComponent],
         FieldMetadata(alias="plugStates"),
+        pydantic.Field(alias="plugStates"),
     ] = None
     render_data: typing_extensions.Annotated[
         typing.Optional[DictionaryComponentResponseOfint32AndDestinyItemRenderComponent],
         FieldMetadata(alias="renderData"),
+        pydantic.Field(alias="renderData"),
     ] = None
     reusable_plugs: typing_extensions.Annotated[
         typing.Optional[DictionaryComponentResponseOfint32AndDestinyItemReusablePlugsComponent],
         FieldMetadata(alias="reusablePlugs"),
+        pydantic.Field(alias="reusablePlugs"),
     ] = None
     sockets: typing.Optional[DictionaryComponentResponseOfint32AndDestinyItemSocketsComponent] = None
     stats: typing.Optional[DictionaryComponentResponseOfint32AndDestinyItemStatsComponent] = None
     talent_grids: typing_extensions.Annotated[
         typing.Optional[DictionaryComponentResponseOfint32AndDestinyItemTalentGridComponent],
         FieldMetadata(alias="talentGrids"),
+        pydantic.Field(alias="talentGrids"),
     ] = None
 
     if IS_PYDANTIC_V2:

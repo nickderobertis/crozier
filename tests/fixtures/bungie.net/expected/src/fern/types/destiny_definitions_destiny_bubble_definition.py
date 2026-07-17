@@ -19,7 +19,11 @@ class DestinyDefinitionsDestinyBubbleDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="displayProperties",
+            description="The display properties of this bubble, so you don't have to look them up in a separate list anymore.",
+        ),
+    ] = None
     """
     The display properties of this bubble, so you don't have to look them up in a separate list anymore.
     """

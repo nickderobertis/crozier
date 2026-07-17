@@ -13,7 +13,9 @@ class MappingSettings(UniversalBaseModel):
     Settings to change fields of a JWT token
     """
 
-    map_: typing_extensions.Annotated[typing.Dict[str, str], FieldMetadata(alias="map")] = pydantic.Field()
+    map_: typing_extensions.Annotated[
+        typing.Dict[str, str], FieldMetadata(alias="map"), pydantic.Field(alias="map", description="Fields to rename")
+    ]
     """
     Fields to rename
     """

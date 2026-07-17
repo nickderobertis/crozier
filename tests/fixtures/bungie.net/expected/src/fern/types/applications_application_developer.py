@@ -10,7 +10,9 @@ from .user_user_info_card import UserUserInfoCard
 
 
 class ApplicationsApplicationDeveloper(UniversalBaseModel):
-    api_eula_version: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="apiEulaVersion")] = None
+    api_eula_version: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="apiEulaVersion"), pydantic.Field(alias="apiEulaVersion")
+    ] = None
     role: typing.Optional[int] = None
     user: typing.Optional[UserUserInfoCard] = None
 

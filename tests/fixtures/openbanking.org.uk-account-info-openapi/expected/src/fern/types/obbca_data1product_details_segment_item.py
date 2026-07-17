@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObbcaData1ProductDetailsSegmentItem(str, enum.Enum):
+class ObbcaData1ProductDetailsSegmentItem(enum.StrEnum):
     """
     Market segmentation is a marketing term referring to the aggregating of prospective buyers into groups, or segments, that have common needs and respond similarly to a marketing action. Market segmentation enables companies to target different categories of consumers who perceive the full value of certain products and services differently from one another.
 

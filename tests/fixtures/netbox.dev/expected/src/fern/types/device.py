@@ -32,7 +32,7 @@ class Device(UniversalBaseModel):
     cluster: typing.Optional[NestedCluster] = None
     comments: typing.Optional[str] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     device_role: NestedDeviceRole
     device_type: NestedDeviceType
@@ -40,7 +40,7 @@ class Device(UniversalBaseModel):
     face: typing.Optional[DeviceFace] = None
     id: typing.Optional[int] = None
     last_updated: typing.Optional[dt.datetime] = None
-    local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = None
     location: typing.Optional[NestedLocation] = None
     name: typing.Optional[str] = None
     parent_device: typing.Optional[NestedDevice] = None

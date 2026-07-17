@@ -24,7 +24,11 @@ class DestinyMilestonesDestinyMilestoneContent(UniversalBaseModel):
     item_categories: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyMilestonesDestinyMilestoneContentItemCategory]],
         FieldMetadata(alias="itemCategories"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="itemCategories",
+            description="If DPS has defined items related to this Milestone, they can categorize those items in the Firehose. That data will then be returned as item categories here.",
+        ),
+    ] = None
     """
     If DPS has defined items related to this Milestone, they can categorize those items in the Firehose. That data will then be returned as item categories here.
     """

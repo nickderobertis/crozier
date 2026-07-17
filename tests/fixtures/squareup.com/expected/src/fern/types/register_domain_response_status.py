@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class RegisterDomainResponseStatus(str, enum.Enum):
+class RegisterDomainResponseStatus(enum.StrEnum):
     """
     The status of the domain registration.
     """

@@ -16,7 +16,9 @@ class TransformSettings(UniversalBaseModel):
     """
 
     location: TransformSettingsLocation
-    mapping_settings: typing_extensions.Annotated[MappingSettings, FieldMetadata(alias="mappingSettings")]
+    mapping_settings: typing_extensions.Annotated[
+        MappingSettings, FieldMetadata(alias="mappingSettings"), pydantic.Field(alias="mappingSettings")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

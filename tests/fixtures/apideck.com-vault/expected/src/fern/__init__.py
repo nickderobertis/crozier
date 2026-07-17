@@ -86,6 +86,7 @@ if typing.TYPE_CHECKING:
         UnprocessableEntityError,
     )
     from . import connections, consumers, logs, sessions
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .connections import ConnectionImportDataCredentials
     from .environment import FernApiEnvironment
@@ -124,6 +125,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CreateConsumerResponse": ".types",
     "CreateSessionResponse": ".types",
     "CreateSessionResponseData": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "DeleteConsumerResponse": ".types",
     "DeleteConsumerResponseData": ".types",
     "FernApi": ".client",
@@ -236,6 +239,8 @@ __all__ = [
     "CreateConsumerResponse",
     "CreateSessionResponse",
     "CreateSessionResponseData",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "DeleteConsumerResponse",
     "DeleteConsumerResponseData",
     "FernApi",

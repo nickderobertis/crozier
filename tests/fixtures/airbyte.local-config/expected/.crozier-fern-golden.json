@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "airbyte.local-config",
+  "corpus_spec_ref": "1.0.0",
+  "corpus_spec_url": "https://api.apis.guru/v2/specs/airbyte.local/config/1.0.0/openapi.json"
+}

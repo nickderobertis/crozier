@@ -7,7 +7,7 @@ from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
 class BatchPresignMultipartPartsResponse(UniversalBaseModel):
-    presigned_urls: typing.Dict[str, typing.Optional[typing.Any]] = pydantic.Field()
+    presigned_urls: typing.Dict[str, typing.Any] = pydantic.Field()
     """
     The presigned URLs for each part number, which has
     the part numbers as keys.

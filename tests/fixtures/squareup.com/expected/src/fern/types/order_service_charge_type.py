@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OrderServiceChargeType(str, enum.Enum):
+class OrderServiceChargeType(enum.StrEnum):
     """ """
 
     AUTO_GRATUITY = "AUTO_GRATUITY"

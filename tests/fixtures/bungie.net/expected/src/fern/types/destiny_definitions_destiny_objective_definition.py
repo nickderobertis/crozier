@@ -29,37 +29,56 @@ class DestinyDefinitionsDestinyObjectiveDefinition(UniversalBaseModel):
     """
 
     allow_negative_value: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="allowNegativeValue")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="allowNegativeValue"),
+        pydantic.Field(alias="allowNegativeValue", description="If true, the value is allowed to go negative."),
+    ] = None
     """
     If true, the value is allowed to go negative.
     """
 
     allow_overcompletion: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="allowOvercompletion")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="allowOvercompletion"),
+        pydantic.Field(
+            alias="allowOvercompletion",
+            description="If True, the progress will continue even beyond the point where the objective met its minimum completion requirements. Your UI will have to accommodate it.",
+        ),
+    ] = None
     """
     If True, the progress will continue even beyond the point where the objective met its minimum completion requirements. Your UI will have to accommodate it.
     """
 
     allow_value_change_when_completed: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="allowValueChangeWhenCompleted")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="allowValueChangeWhenCompleted"),
+        pydantic.Field(
+            alias="allowValueChangeWhenCompleted",
+            description='If true, you can effectively "un-complete" this objective if you lose progress after crossing the completion threshold. \r\nIf False, once you complete the task it will remain completed forever by locking the value.',
+        ),
+    ] = None
     """
     If true, you can effectively "un-complete" this objective if you lose progress after crossing the completion threshold. 
     If False, once you complete the task it will remain completed forever by locking the value.
     """
 
     completed_value_style: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="completedValueStyle")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="completedValueStyle"),
+        pydantic.Field(alias="completedValueStyle", description="The style to use when the objective is completed."),
+    ] = None
     """
     The style to use when the objective is completed.
     """
 
-    completion_value: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="completionValue")] = (
-        pydantic.Field(default=None)
-    )
+    completion_value: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="completionValue"),
+        pydantic.Field(
+            alias="completionValue",
+            description="The value that the unlock value defined in unlockValueHash must reach in order for the objective to be considered Completed. Used in calculating progress and completion status.",
+        ),
+    ] = None
     """
     The value that the unlock value defined in unlockValueHash must reach in order for the objective to be considered Completed. Used in calculating progress and completion status.
     """
@@ -67,7 +86,11 @@ class DestinyDefinitionsDestinyObjectiveDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="displayProperties",
+            description="Ideally, this should tell you what your task is. I'm not going to lie to you though. Sometimes this doesn't have useful information at all. Which sucks, but there's nothing either of us can do about it.",
+        ),
+    ] = None
     """
     Ideally, this should tell you what your task is. I'm not going to lie to you though. Sometimes this doesn't have useful information at all. Which sucks, but there's nothing either of us can do about it.
     """
@@ -79,8 +102,12 @@ class DestinyDefinitionsDestinyObjectiveDefinition(UniversalBaseModel):
     """
 
     in_progress_value_style: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="inProgressValueStyle")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="inProgressValueStyle"),
+        pydantic.Field(
+            alias="inProgressValueStyle", description="The style to use when the objective is still in progress."
+        ),
+    ] = None
     """
     The style to use when the objective is still in progress.
     """
@@ -91,23 +118,38 @@ class DestinyDefinitionsDestinyObjectiveDefinition(UniversalBaseModel):
     """
 
     is_counting_downward: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="isCountingDownward")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="isCountingDownward"),
+        pydantic.Field(
+            alias="isCountingDownward",
+            description="If true, completion means having an unlock value less than or equal to the completionValue.\r\nIf False, completion means having an unlock value greater than or equal to the completionValue.",
+        ),
+    ] = None
     """
     If true, completion means having an unlock value less than or equal to the completionValue.
     If False, completion means having an unlock value greater than or equal to the completionValue.
     """
 
-    location_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="locationHash")] = (
-        pydantic.Field(default=None)
-    )
+    location_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="locationHash"),
+        pydantic.Field(
+            alias="locationHash",
+            description="OPTIONAL: a hash identifier for the location at which this objective must be accomplished, if there is a location defined. Look up the DestinyLocationDefinition for this hash for that additional location info.",
+        ),
+    ] = None
     """
     OPTIONAL: a hash identifier for the location at which this objective must be accomplished, if there is a location defined. Look up the DestinyLocationDefinition for this hash for that additional location info.
     """
 
     minimum_visibility_threshold: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="minimumVisibilityThreshold")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="minimumVisibilityThreshold"),
+        pydantic.Field(
+            alias="minimumVisibilityThreshold",
+            description="If nonzero, this is the minimum value at which the objective's progression should be shown. Otherwise, don't show it yet.",
+        ),
+    ] = None
     """
     If nonzero, this is the minimum value at which the objective's progression should be shown. Otherwise, don't show it yet.
     """
@@ -118,8 +160,10 @@ class DestinyDefinitionsDestinyObjectiveDefinition(UniversalBaseModel):
     """
 
     progress_description: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="progressDescription")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="progressDescription"),
+        pydantic.Field(alias="progressDescription", description="Text to describe the progress bar."),
+    ] = None
     """
     Text to describe the progress bar.
     """
@@ -135,8 +179,13 @@ class DestinyDefinitionsDestinyObjectiveDefinition(UniversalBaseModel):
     """
 
     show_value_on_complete: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="showValueOnComplete")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="showValueOnComplete"),
+        pydantic.Field(
+            alias="showValueOnComplete",
+            description="If True, you should continue showing the progression value in the UI after it's complete. I mean, we already do that in BNet anyways, but if you want to be better behaved than us you could honor this flag.",
+        ),
+    ] = None
     """
     If True, you should continue showing the progression value in the UI after it's complete. I mean, we already do that in BNet anyways, but if you want to be better behaved than us you could honor this flag.
     """
@@ -146,23 +195,37 @@ class DestinyDefinitionsDestinyObjectiveDefinition(UniversalBaseModel):
     If this objective enables modifications on a player's stats intrinsically, the conditions are defined here.
     """
 
-    ui_label: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="uiLabel")] = pydantic.Field(
-        default=None
-    )
+    ui_label: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="uiLabel"),
+        pydantic.Field(
+            alias="uiLabel",
+            description="Objectives can have arbitrary UI-defined identifiers that define the style applied to objectives. For convenience, known UI labels will be defined in the uiStyle enum value.",
+        ),
+    ] = None
     """
     Objectives can have arbitrary UI-defined identifiers that define the style applied to objectives. For convenience, known UI labels will be defined in the uiStyle enum value.
     """
 
-    ui_style: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="uiStyle")] = pydantic.Field(
-        default=None
-    )
+    ui_style: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="uiStyle"),
+        pydantic.Field(
+            alias="uiStyle", description="If the objective has a known UI label value, this property will represent it."
+        ),
+    ] = None
     """
     If the objective has a known UI label value, this property will represent it.
     """
 
-    value_style: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="valueStyle")] = pydantic.Field(
-        default=None
-    )
+    value_style: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="valueStyle"),
+        pydantic.Field(
+            alias="valueStyle",
+            description="The UI style applied to the objective. It's an enum, take a look at DestinyUnlockValueUIStyle for details of the possible styles. Use this info as you wish to customize your UI.\r\nDEPRECATED: This is no longer populated by Destiny 2 game content. Please use inProgressValueStyle and completedValueStyle instead.",
+        ),
+    ] = None
     """
     The UI style applied to the objective. It's an enum, take a look at DestinyUnlockValueUIStyle for details of the possible styles. Use this info as you wish to customize your UI.
     DEPRECATED: This is no longer populated by Destiny 2 game content. Please use inProgressValueStyle and completedValueStyle instead.

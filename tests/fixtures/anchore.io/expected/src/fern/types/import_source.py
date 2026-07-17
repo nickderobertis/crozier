@@ -7,7 +7,7 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
 class ImportSource(UniversalBaseModel):
-    target: typing.Dict[str, typing.Optional[typing.Any]]
+    target: typing.Dict[str, typing.Any]
     type: str
 
     if IS_PYDANTIC_V2:

@@ -9,9 +9,11 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyComponentsLoadoutsDestinyLoadoutItemComponent(UniversalBaseModel):
-    item_instance_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemInstanceId")] = None
+    item_instance_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="itemInstanceId"), pydantic.Field(alias="itemInstanceId")
+    ] = None
     plug_item_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="plugItemHashes")
+        typing.Optional[typing.List[int]], FieldMetadata(alias="plugItemHashes"), pydantic.Field(alias="plugItemHashes")
     ] = None
 
     if IS_PYDANTIC_V2:

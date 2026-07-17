@@ -156,7 +156,7 @@ class NetflowClient:
 
     def protocol_netflow_list(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> typing.List[typing.Dict[str, typing.Any]]:
         """
         Show list of NETFLOW exports
 
@@ -170,7 +170,7 @@ class NetflowClient:
 
         Returns
         -------
-        typing.List[typing.Dict[str, typing.Optional[typing.Any]]]
+        typing.List[typing.Dict[str, typing.Any]]
             successful operation
 
         Examples
@@ -190,7 +190,7 @@ class NetflowClient:
 
     def protocol_netflow_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's NETFLOW configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -204,7 +204,7 @@ class NetflowClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples
@@ -794,7 +794,7 @@ class AsyncNetflowClient:
 
     async def protocol_netflow_list(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> typing.List[typing.Dict[str, typing.Any]]:
         """
         Show list of NETFLOW exports
 
@@ -808,7 +808,7 @@ class AsyncNetflowClient:
 
         Returns
         -------
-        typing.List[typing.Dict[str, typing.Optional[typing.Any]]]
+        typing.List[typing.Dict[str, typing.Any]]
             successful operation
 
         Examples
@@ -836,7 +836,7 @@ class AsyncNetflowClient:
 
     async def protocol_netflow_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's NETFLOW configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -850,7 +850,7 @@ class AsyncNetflowClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples

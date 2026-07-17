@@ -15,6 +15,7 @@ class DestinyDefinitionsSeasonsDestinySeasonPassDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
@@ -28,8 +29,13 @@ class DestinyDefinitionsSeasonsDestinySeasonPassDefinition(UniversalBaseModel):
     """
 
     prestige_progression_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="prestigeProgressionHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="prestigeProgressionHash"),
+        pydantic.Field(
+            alias="prestigeProgressionHash",
+            description="I know what you're thinking, but I promise we're not going to duplicate and drown you. Instead, we're giving you sweet, sweet power bonuses.\r\n Prestige progression is further progression that you can make on the Season pass after you gain max ranks, that will ultimately increase your power/light level over the theoretical limit.",
+        ),
+    ] = None
     """
     I know what you're thinking, but I promise we're not going to duplicate and drown you. Instead, we're giving you sweet, sweet power bonuses.
      Prestige progression is further progression that you can make on the Season pass after you gain max ranks, that will ultimately increase your power/light level over the theoretical limit.
@@ -41,8 +47,13 @@ class DestinyDefinitionsSeasonsDestinySeasonPassDefinition(UniversalBaseModel):
     """
 
     reward_progression_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="rewardProgressionHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="rewardProgressionHash"),
+        pydantic.Field(
+            alias="rewardProgressionHash",
+            description='This is the progression definition related to the progression for the initial levels 1-100 that provide item rewards for the Season pass. Further experience after you reach the limit is provided in the "Prestige" progression referred to by prestigeProgressionHash.',
+        ),
+    ] = None
     """
     This is the progression definition related to the progression for the initial levels 1-100 that provide item rewards for the Season pass. Further experience after you reach the limit is provided in the "Prestige" progression referred to by prestigeProgressionHash.
     """

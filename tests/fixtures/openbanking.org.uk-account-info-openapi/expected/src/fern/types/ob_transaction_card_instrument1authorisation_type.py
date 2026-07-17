@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObTransactionCardInstrument1AuthorisationType(str, enum.Enum):
+class ObTransactionCardInstrument1AuthorisationType(enum.StrEnum):
     """
     The card authorisation type.
     """

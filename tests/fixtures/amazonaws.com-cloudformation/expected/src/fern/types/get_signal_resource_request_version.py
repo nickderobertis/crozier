@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetSignalResourceRequestVersion(str, enum.Enum):
+class GetSignalResourceRequestVersion(enum.StrEnum):
     TWO_THOUSAND_TEN0515 = "2010-05-15"
 
     def visit(self, two_thousand_ten0515: typing.Callable[[], T_Result]) -> T_Result:

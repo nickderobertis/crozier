@@ -18,7 +18,11 @@ class ServiceRef(UniversalBaseModel):
     The Service name
     """
 
-    service_id: typing_extensions.Annotated[str, FieldMetadata(alias="serviceId")] = pydantic.Field()
+    service_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="serviceId"),
+        pydantic.Field(alias="serviceId", description="Unique reference of a Service"),
+    ]
     """
     Unique reference of a Service
     """

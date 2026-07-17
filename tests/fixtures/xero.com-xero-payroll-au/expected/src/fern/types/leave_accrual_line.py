@@ -9,23 +9,29 @@ from ..core.serialization import FieldMetadata
 
 
 class LeaveAccrualLine(UniversalBaseModel):
-    auto_calculate: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="AutoCalculate")] = (
-        pydantic.Field(default=None)
-    )
+    auto_calculate: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="AutoCalculate"),
+        pydantic.Field(alias="AutoCalculate", description="If you want to auto calculate leave."),
+    ] = None
     """
     If you want to auto calculate leave.
     """
 
-    leave_type_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="LeaveTypeID")] = (
-        pydantic.Field(default=None)
-    )
+    leave_type_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="LeaveTypeID"),
+        pydantic.Field(alias="LeaveTypeID", description="Xero identifier for the Leave type."),
+    ] = None
     """
     Xero identifier for the Leave type.
     """
 
-    number_of_units: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="NumberOfUnits")] = (
-        pydantic.Field(default=None)
-    )
+    number_of_units: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="NumberOfUnits"),
+        pydantic.Field(alias="NumberOfUnits", description="Leave Accrual number of units"),
+    ] = None
     """
     Leave Accrual number of units
     """

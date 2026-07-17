@@ -15,7 +15,9 @@ class DestinyDefinitionsLoadoutsDestinyLoadoutIconDefinition(UniversalBaseModel)
     When entities refer to each other in Destiny content, it is this hash that they are referring to.
     """
 
-    icon_image_path: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="iconImagePath")] = None
+    icon_image_path: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="iconImagePath"), pydantic.Field(alias="iconImagePath")
+    ] = None
     index: typing.Optional[int] = pydantic.Field(default=None)
     """
     The index of the entity as it was found in the investment tables.

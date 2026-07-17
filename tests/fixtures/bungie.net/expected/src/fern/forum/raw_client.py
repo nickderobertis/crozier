@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.forum_get_core_topics_paged_response import ForumGetCoreTopicsPagedResponse
@@ -19,6 +20,7 @@ from .types.forum_get_posts_threaded_paged_response import ForumGetPostsThreaded
 from .types.forum_get_recruitment_thread_summaries_response import ForumGetRecruitmentThreadSummariesResponse
 from .types.forum_get_topic_for_content_response import ForumGetTopicForContentResponse
 from .types.forum_get_topics_paged_response import ForumGetTopicsPagedResponse
+from pydantic import ValidationError
 
 
 class RawForumClient:
@@ -64,7 +66,7 @@ class RawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Forum/GetCoreTopicsPaged/{jsonable_encoder(page)}/{jsonable_encoder(sort)}/{jsonable_encoder(quick_date)}/{jsonable_encoder(category_filter)}/",
+            f"Forum/GetCoreTopicsPaged/{encode_path_param(page)}/{encode_path_param(sort)}/{encode_path_param(quick_date)}/{encode_path_param(category_filter)}/",
             method="GET",
             params={
                 "locales": locales,
@@ -84,6 +86,10 @@ class RawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getforumtagsuggestions(
@@ -126,6 +132,10 @@ class RawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getpostandparent(
@@ -155,7 +165,7 @@ class RawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Forum/GetPostAndParent/{jsonable_encoder(child_post_id)}/",
+            f"Forum/GetPostAndParent/{encode_path_param(child_post_id)}/",
             method="GET",
             params={
                 "showbanned": showbanned,
@@ -175,6 +185,10 @@ class RawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getpostandparentawaitingapproval(
@@ -204,7 +218,7 @@ class RawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Forum/GetPostAndParentAwaitingApproval/{jsonable_encoder(child_post_id)}/",
+            f"Forum/GetPostAndParentAwaitingApproval/{encode_path_param(child_post_id)}/",
             method="GET",
             params={
                 "showbanned": showbanned,
@@ -224,6 +238,10 @@ class RawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getpoststhreadedpaged(
@@ -277,7 +295,7 @@ class RawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Forum/GetPostsThreadedPaged/{jsonable_encoder(parent_post_id)}/{jsonable_encoder(page)}/{jsonable_encoder(page_size)}/{jsonable_encoder(reply_size)}/{jsonable_encoder(get_parent_post)}/{jsonable_encoder(root_thread_mode)}/{jsonable_encoder(sort_mode)}/",
+            f"Forum/GetPostsThreadedPaged/{encode_path_param(parent_post_id)}/{encode_path_param(page)}/{encode_path_param(page_size)}/{encode_path_param(reply_size)}/{encode_path_param(get_parent_post)}/{encode_path_param(root_thread_mode)}/{encode_path_param(sort_mode)}/",
             method="GET",
             params={
                 "showbanned": showbanned,
@@ -297,6 +315,10 @@ class RawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getpoststhreadedpagedfromchild(
@@ -346,7 +368,7 @@ class RawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Forum/GetPostsThreadedPagedFromChild/{jsonable_encoder(child_post_id)}/{jsonable_encoder(page)}/{jsonable_encoder(page_size)}/{jsonable_encoder(reply_size)}/{jsonable_encoder(root_thread_mode)}/{jsonable_encoder(sort_mode)}/",
+            f"Forum/GetPostsThreadedPagedFromChild/{encode_path_param(child_post_id)}/{encode_path_param(page)}/{encode_path_param(page_size)}/{encode_path_param(reply_size)}/{encode_path_param(root_thread_mode)}/{encode_path_param(sort_mode)}/",
             method="GET",
             params={
                 "showbanned": showbanned,
@@ -366,6 +388,10 @@ class RawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def gettopicforcontent(
@@ -388,7 +414,7 @@ class RawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Forum/GetTopicForContent/{jsonable_encoder(content_id)}/",
+            f"Forum/GetTopicForContent/{encode_path_param(content_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -405,6 +431,10 @@ class RawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def gettopicspaged(
@@ -458,7 +488,7 @@ class RawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Forum/GetTopicsPaged/{jsonable_encoder(page)}/{jsonable_encoder(page_size)}/{jsonable_encoder(group)}/{jsonable_encoder(sort)}/{jsonable_encoder(quick_date)}/{jsonable_encoder(category_filter)}/",
+            f"Forum/GetTopicsPaged/{encode_path_param(page)}/{encode_path_param(page_size)}/{encode_path_param(group)}/{encode_path_param(sort)}/{encode_path_param(quick_date)}/{encode_path_param(category_filter)}/",
             method="GET",
             params={
                 "locales": locales,
@@ -479,6 +509,10 @@ class RawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getpoll(
@@ -501,7 +535,7 @@ class RawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Forum/Poll/{jsonable_encoder(topic_id)}/",
+            f"Forum/Poll/{encode_path_param(topic_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -518,6 +552,10 @@ class RawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getrecruitmentthreadsummaries(
@@ -554,6 +592,10 @@ class RawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -600,7 +642,7 @@ class AsyncRawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Forum/GetCoreTopicsPaged/{jsonable_encoder(page)}/{jsonable_encoder(sort)}/{jsonable_encoder(quick_date)}/{jsonable_encoder(category_filter)}/",
+            f"Forum/GetCoreTopicsPaged/{encode_path_param(page)}/{encode_path_param(sort)}/{encode_path_param(quick_date)}/{encode_path_param(category_filter)}/",
             method="GET",
             params={
                 "locales": locales,
@@ -620,6 +662,10 @@ class AsyncRawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getforumtagsuggestions(
@@ -662,6 +708,10 @@ class AsyncRawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getpostandparent(
@@ -691,7 +741,7 @@ class AsyncRawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Forum/GetPostAndParent/{jsonable_encoder(child_post_id)}/",
+            f"Forum/GetPostAndParent/{encode_path_param(child_post_id)}/",
             method="GET",
             params={
                 "showbanned": showbanned,
@@ -711,6 +761,10 @@ class AsyncRawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getpostandparentawaitingapproval(
@@ -740,7 +794,7 @@ class AsyncRawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Forum/GetPostAndParentAwaitingApproval/{jsonable_encoder(child_post_id)}/",
+            f"Forum/GetPostAndParentAwaitingApproval/{encode_path_param(child_post_id)}/",
             method="GET",
             params={
                 "showbanned": showbanned,
@@ -760,6 +814,10 @@ class AsyncRawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getpoststhreadedpaged(
@@ -813,7 +871,7 @@ class AsyncRawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Forum/GetPostsThreadedPaged/{jsonable_encoder(parent_post_id)}/{jsonable_encoder(page)}/{jsonable_encoder(page_size)}/{jsonable_encoder(reply_size)}/{jsonable_encoder(get_parent_post)}/{jsonable_encoder(root_thread_mode)}/{jsonable_encoder(sort_mode)}/",
+            f"Forum/GetPostsThreadedPaged/{encode_path_param(parent_post_id)}/{encode_path_param(page)}/{encode_path_param(page_size)}/{encode_path_param(reply_size)}/{encode_path_param(get_parent_post)}/{encode_path_param(root_thread_mode)}/{encode_path_param(sort_mode)}/",
             method="GET",
             params={
                 "showbanned": showbanned,
@@ -833,6 +891,10 @@ class AsyncRawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getpoststhreadedpagedfromchild(
@@ -882,7 +944,7 @@ class AsyncRawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Forum/GetPostsThreadedPagedFromChild/{jsonable_encoder(child_post_id)}/{jsonable_encoder(page)}/{jsonable_encoder(page_size)}/{jsonable_encoder(reply_size)}/{jsonable_encoder(root_thread_mode)}/{jsonable_encoder(sort_mode)}/",
+            f"Forum/GetPostsThreadedPagedFromChild/{encode_path_param(child_post_id)}/{encode_path_param(page)}/{encode_path_param(page_size)}/{encode_path_param(reply_size)}/{encode_path_param(root_thread_mode)}/{encode_path_param(sort_mode)}/",
             method="GET",
             params={
                 "showbanned": showbanned,
@@ -902,6 +964,10 @@ class AsyncRawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def gettopicforcontent(
@@ -924,7 +990,7 @@ class AsyncRawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Forum/GetTopicForContent/{jsonable_encoder(content_id)}/",
+            f"Forum/GetTopicForContent/{encode_path_param(content_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -941,6 +1007,10 @@ class AsyncRawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def gettopicspaged(
@@ -994,7 +1064,7 @@ class AsyncRawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Forum/GetTopicsPaged/{jsonable_encoder(page)}/{jsonable_encoder(page_size)}/{jsonable_encoder(group)}/{jsonable_encoder(sort)}/{jsonable_encoder(quick_date)}/{jsonable_encoder(category_filter)}/",
+            f"Forum/GetTopicsPaged/{encode_path_param(page)}/{encode_path_param(page_size)}/{encode_path_param(group)}/{encode_path_param(sort)}/{encode_path_param(quick_date)}/{encode_path_param(category_filter)}/",
             method="GET",
             params={
                 "locales": locales,
@@ -1015,6 +1085,10 @@ class AsyncRawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getpoll(
@@ -1037,7 +1111,7 @@ class AsyncRawForumClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Forum/Poll/{jsonable_encoder(topic_id)}/",
+            f"Forum/Poll/{encode_path_param(topic_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -1054,6 +1128,10 @@ class AsyncRawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getrecruitmentthreadsummaries(
@@ -1090,4 +1168,8 @@ class AsyncRawForumClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

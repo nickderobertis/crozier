@@ -13,30 +13,50 @@ class ObpcaData1OtherFeesChargesFeeChargeDetailItemFeeApplicableRange(UniversalB
     Range or amounts or rates for which the fee/charge applies
     """
 
-    maximum_amount: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="MaximumAmount")] = (
-        pydantic.Field(default=None)
-    )
+    maximum_amount: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="MaximumAmount"),
+        pydantic.Field(
+            alias="MaximumAmount",
+            description="Maximum Amount on which fee is applicable (where it is expressed as an amount)",
+        ),
+    ] = None
     """
     Maximum Amount on which fee is applicable (where it is expressed as an amount)
     """
 
-    maximum_rate: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="MaximumRate")] = (
-        pydantic.Field(default=None)
-    )
+    maximum_rate: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="MaximumRate"),
+        pydantic.Field(
+            alias="MaximumRate",
+            description="Maximum rate on which fee/charge is applicable(where it is expressed as an rate)",
+        ),
+    ] = None
     """
     Maximum rate on which fee/charge is applicable(where it is expressed as an rate)
     """
 
-    minimum_amount: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="MinimumAmount")] = (
-        pydantic.Field(default=None)
-    )
+    minimum_amount: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="MinimumAmount"),
+        pydantic.Field(
+            alias="MinimumAmount",
+            description="Minimum Amount on which fee/charge is applicable (where it is expressed as an amount)",
+        ),
+    ] = None
     """
     Minimum Amount on which fee/charge is applicable (where it is expressed as an amount)
     """
 
-    minimum_rate: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="MinimumRate")] = (
-        pydantic.Field(default=None)
-    )
+    minimum_rate: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="MinimumRate"),
+        pydantic.Field(
+            alias="MinimumRate",
+            description="Minimum rate on which fee/charge is applicable(where it is expressed as an rate)",
+        ),
+    ] = None
     """
     Minimum rate on which fee/charge is applicable(where it is expressed as an rate)
     """

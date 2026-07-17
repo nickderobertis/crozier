@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class V1UpdateOrderRequestAction(str, enum.Enum):
+class V1UpdateOrderRequestAction(enum.StrEnum):
     """ """
 
     COMPLETE = "COMPLETE"

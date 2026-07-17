@@ -15,8 +15,13 @@ class PostAssetsVolatilityRequestAssetsCovarianceMatrix(UniversalBaseModel):
     """
 
     assets_covariance_matrix: typing_extensions.Annotated[
-        typing.List[typing.List[float]], FieldMetadata(alias="assetsCovarianceMatrix")
-    ] = pydantic.Field()
+        typing.List[typing.List[float]],
+        FieldMetadata(alias="assetsCovarianceMatrix"),
+        pydantic.Field(
+            alias="assetsCovarianceMatrix",
+            description="assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j",
+        ),
+    ]
     """
     assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     """

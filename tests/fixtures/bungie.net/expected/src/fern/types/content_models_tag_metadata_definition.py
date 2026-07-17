@@ -12,7 +12,9 @@ from .content_models_tag_metadata_item import ContentModelsTagMetadataItem
 class ContentModelsTagMetadataDefinition(UniversalBaseModel):
     datatype: typing.Optional[str] = None
     description: typing.Optional[str] = None
-    is_required: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isRequired")] = None
+    is_required: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="isRequired"), pydantic.Field(alias="isRequired")
+    ] = None
     items: typing.Optional[typing.List[ContentModelsTagMetadataItem]] = None
     name: typing.Optional[str] = None
     order: typing.Optional[int] = None

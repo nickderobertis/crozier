@@ -26,4 +26,4 @@ class NotificationFilterEmailListing(UniversalBaseModel):
 
 from .notification_filter_email import NotificationFilterEmail
 
-update_forward_refs(NotificationFilterEmailListing)
+update_forward_refs(NotificationFilterEmailListing, NotificationFilterEmail=NotificationFilterEmail)

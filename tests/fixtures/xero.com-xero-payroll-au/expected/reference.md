@@ -1,6 +1,6 @@
 # Reference
 ## PayrollAu
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_employees</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_employees</a>(...) -> Employees</code></summary>
 <dl>
 <dd>
 
@@ -14,13 +14,16 @@
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_employees(
-    where='Status=="ACTIVE"',
+    where="Status==\"ACTIVE\"",
     order="EmailAddress%20DESC",
 )
 
@@ -82,7 +85,7 @@ client.payroll_au.get_employees(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_employee</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_employee</a>(...) -> Employees</code></summary>
 <dl>
 <dd>
 
@@ -95,12 +98,15 @@ client.payroll_au.get_employees(
 <dd>
 
 ```python
-from fern import Employee, FernApi
+from fern import FernApi, Employee
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.create_employee(
     request=[
         Employee(
@@ -125,7 +131,7 @@ client.payroll_au.create_employee(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[Employee]` 
+**request:** `typing.List[Employee]` 
     
 </dd>
 </dl>
@@ -145,7 +151,7 @@ client.payroll_au.create_employee(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_employee</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_employee</a>(...) -> Employees</code></summary>
 <dl>
 <dd>
 
@@ -159,11 +165,14 @@ client.payroll_au.create_employee(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_employee(
     employee_id="4ff1e5cc-9835-40d5-bb18-09fdb118db9c",
 )
@@ -202,7 +211,7 @@ client.payroll_au.get_employee(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_employee</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_employee</a>(...) -> Employees</code></summary>
 <dl>
 <dd>
 
@@ -229,12 +238,15 @@ Update properties on a single employee
 <dd>
 
 ```python
-from fern import Employee, FernApi
+from fern import FernApi, Employee
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.update_employee(
     employee_id="4ff1e5cc-9835-40d5-bb18-09fdb118db9c",
     request=[
@@ -268,7 +280,7 @@ client.payroll_au.update_employee(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[Employee]` 
+**request:** `typing.List[Employee]` 
     
 </dd>
 </dl>
@@ -288,7 +300,7 @@ client.payroll_au.update_employee(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_leave_applications</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_leave_applications</a>(...) -> LeaveApplications</code></summary>
 <dl>
 <dd>
 
@@ -302,13 +314,16 @@ client.payroll_au.update_employee(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_leave_applications(
-    where='Status=="ACTIVE"',
+    where="Status==\"ACTIVE\"",
     order="EmailAddress%20DESC",
 )
 
@@ -370,7 +385,7 @@ client.payroll_au.get_leave_applications(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_leave_application</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_leave_application</a>(...) -> LeaveApplications</code></summary>
 <dl>
 <dd>
 
@@ -384,13 +399,18 @@ client.payroll_au.get_leave_applications(
 
 ```python
 from fern import FernApi, LeaveApplication
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.create_leave_application(
-    request=[LeaveApplication()],
+    request=[
+        LeaveApplication()
+    ],
 )
 
 ```
@@ -407,7 +427,7 @@ client.payroll_au.create_leave_application(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[LeaveApplication]` 
+**request:** `typing.List[LeaveApplication]` 
     
 </dd>
 </dl>
@@ -427,7 +447,7 @@ client.payroll_au.create_leave_application(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_leave_application</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_leave_application</a>(...) -> LeaveApplications</code></summary>
 <dl>
 <dd>
 
@@ -441,11 +461,14 @@ client.payroll_au.create_leave_application(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_leave_application(
     leave_application_id="4ff1e5cc-9835-40d5-bb18-09fdb118db9c",
 )
@@ -484,7 +507,7 @@ client.payroll_au.get_leave_application(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_leave_application</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_leave_application</a>(...) -> LeaveApplications</code></summary>
 <dl>
 <dd>
 
@@ -498,14 +521,19 @@ client.payroll_au.get_leave_application(
 
 ```python
 from fern import FernApi, LeaveApplication
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.update_leave_application(
     leave_application_id="4ff1e5cc-9835-40d5-bb18-09fdb118db9c",
-    request=[LeaveApplication()],
+    request=[
+        LeaveApplication()
+    ],
 )
 
 ```
@@ -530,7 +558,7 @@ client.payroll_au.update_leave_application(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[LeaveApplication]` 
+**request:** `typing.List[LeaveApplication]` 
     
 </dd>
 </dl>
@@ -550,7 +578,7 @@ client.payroll_au.update_leave_application(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_pay_items</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_pay_items</a>(...) -> PayItems</code></summary>
 <dl>
 <dd>
 
@@ -564,13 +592,16 @@ client.payroll_au.update_leave_application(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_pay_items(
-    where='Status=="ACTIVE"',
+    where="Status==\"ACTIVE\"",
     order="EmailAddress%20DESC",
 )
 
@@ -632,7 +663,7 @@ client.payroll_au.get_pay_items(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_pay_item</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_pay_item</a>(...) -> PayItems</code></summary>
 <dl>
 <dd>
 
@@ -646,11 +677,14 @@ client.payroll_au.get_pay_items(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.create_pay_item()
 
 ```
@@ -667,31 +701,7 @@ client.payroll_au.create_pay_item()
 <dl>
 <dd>
 
-**deduction_types:** `typing.Optional[typing.Sequence[DeductionType]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**earnings_rates:** `typing.Optional[typing.Sequence[EarningsRate]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**leave_types:** `typing.Optional[typing.Sequence[LeaveType]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reimbursement_types:** `typing.Optional[typing.Sequence[ReimbursementType]]` 
+**request:** `PayItem` 
     
 </dd>
 </dl>
@@ -711,7 +721,7 @@ client.payroll_au.create_pay_item()
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_pay_runs</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_pay_runs</a>(...) -> PayRuns</code></summary>
 <dl>
 <dd>
 
@@ -725,13 +735,16 @@ client.payroll_au.create_pay_item()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_pay_runs(
-    where='Status=="ACTIVE"',
+    where="Status==\"ACTIVE\"",
     order="EmailAddress%20DESC",
 )
 
@@ -793,7 +806,7 @@ client.payroll_au.get_pay_runs(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_pay_run</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_pay_run</a>(...) -> PayRuns</code></summary>
 <dl>
 <dd>
 
@@ -807,11 +820,14 @@ client.payroll_au.get_pay_runs(
 
 ```python
 from fern import FernApi, PayRun
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.create_pay_run(
     request=[
         PayRun(
@@ -834,7 +850,7 @@ client.payroll_au.create_pay_run(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[PayRun]` 
+**request:** `typing.List[PayRun]` 
     
 </dd>
 </dl>
@@ -854,7 +870,7 @@ client.payroll_au.create_pay_run(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_pay_run</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_pay_run</a>(...) -> PayRuns</code></summary>
 <dl>
 <dd>
 
@@ -868,11 +884,14 @@ client.payroll_au.create_pay_run(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_pay_run(
     pay_run_id="4ff1e5cc-9835-40d5-bb18-09fdb118db9c",
 )
@@ -911,7 +930,7 @@ client.payroll_au.get_pay_run(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_pay_run</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_pay_run</a>(...) -> PayRuns</code></summary>
 <dl>
 <dd>
 
@@ -939,11 +958,14 @@ Update properties on a single PayRun
 
 ```python
 from fern import FernApi, PayRun
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.update_pay_run(
     pay_run_id="4ff1e5cc-9835-40d5-bb18-09fdb118db9c",
     request=[
@@ -975,7 +997,7 @@ client.payroll_au.update_pay_run(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[PayRun]` 
+**request:** `typing.List[PayRun]` 
     
 </dd>
 </dl>
@@ -995,7 +1017,7 @@ client.payroll_au.update_pay_run(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_payroll_calendars</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_payroll_calendars</a>(...) -> PayrollCalendars</code></summary>
 <dl>
 <dd>
 
@@ -1009,13 +1031,16 @@ client.payroll_au.update_pay_run(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_payroll_calendars(
-    where='Status=="ACTIVE"',
+    where="Status==\"ACTIVE\"",
     order="EmailAddress%20DESC",
 )
 
@@ -1077,7 +1102,7 @@ client.payroll_au.get_payroll_calendars(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_payroll_calendar</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_payroll_calendar</a>(...) -> PayrollCalendars</code></summary>
 <dl>
 <dd>
 
@@ -1091,13 +1116,18 @@ client.payroll_au.get_payroll_calendars(
 
 ```python
 from fern import FernApi, PayrollCalendar
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.create_payroll_calendar(
-    request=[PayrollCalendar()],
+    request=[
+        PayrollCalendar()
+    ],
 )
 
 ```
@@ -1114,7 +1144,7 @@ client.payroll_au.create_payroll_calendar(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[PayrollCalendar]` 
+**request:** `typing.List[PayrollCalendar]` 
     
 </dd>
 </dl>
@@ -1134,7 +1164,7 @@ client.payroll_au.create_payroll_calendar(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_payroll_calendar</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_payroll_calendar</a>(...) -> PayrollCalendars</code></summary>
 <dl>
 <dd>
 
@@ -1148,11 +1178,14 @@ client.payroll_au.create_payroll_calendar(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_payroll_calendar(
     payroll_calendar_id="4ff1e5cc-9835-40d5-bb18-09fdb118db9c",
 )
@@ -1191,7 +1224,7 @@ client.payroll_au.get_payroll_calendar(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_payslip</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_payslip</a>(...) -> PayslipObject</code></summary>
 <dl>
 <dd>
 
@@ -1205,11 +1238,14 @@ client.payroll_au.get_payroll_calendar(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_payslip(
     payslip_id="4ff1e5cc-9835-40d5-bb18-09fdb118db9c",
 )
@@ -1248,7 +1284,7 @@ client.payroll_au.get_payslip(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_payslip</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_payslip</a>(...) -> Payslips</code></summary>
 <dl>
 <dd>
 
@@ -1276,14 +1312,19 @@ Update lines on a single payslips
 
 ```python
 from fern import FernApi, PayslipLines
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.update_payslip(
     payslip_id="4ff1e5cc-9835-40d5-bb18-09fdb118db9c",
-    request=[PayslipLines()],
+    request=[
+        PayslipLines()
+    ],
 )
 
 ```
@@ -1308,7 +1349,7 @@ client.payroll_au.update_payslip(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[PayslipLines]` 
+**request:** `typing.List[PayslipLines]` 
     
 </dd>
 </dl>
@@ -1328,7 +1369,7 @@ client.payroll_au.update_payslip(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_settings</a>()</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_settings</a>() -> SettingsObject</code></summary>
 <dl>
 <dd>
 
@@ -1342,11 +1383,14 @@ client.payroll_au.update_payslip(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_settings()
 
 ```
@@ -1375,7 +1419,7 @@ client.payroll_au.get_settings()
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_superfund_products</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_superfund_products</a>(...) -> SuperFundProducts</code></summary>
 <dl>
 <dd>
 
@@ -1389,11 +1433,14 @@ client.payroll_au.get_settings()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_superfund_products(
     usi="OSF0001AU",
 )
@@ -1440,7 +1487,7 @@ client.payroll_au.get_superfund_products(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_superfunds</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_superfunds</a>(...) -> SuperFunds</code></summary>
 <dl>
 <dd>
 
@@ -1454,13 +1501,16 @@ client.payroll_au.get_superfund_products(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_superfunds(
-    where='Status=="ACTIVE"',
+    where="Status==\"ACTIVE\"",
     order="EmailAddress%20DESC",
 )
 
@@ -1522,7 +1572,7 @@ client.payroll_au.get_superfunds(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_superfund</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_superfund</a>(...) -> SuperFunds</code></summary>
 <dl>
 <dd>
 
@@ -1536,11 +1586,14 @@ client.payroll_au.get_superfunds(
 
 ```python
 from fern import FernApi, SuperFund, SuperFundType
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.create_superfund(
     request=[
         SuperFund(
@@ -1563,7 +1616,7 @@ client.payroll_au.create_superfund(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[SuperFund]` 
+**request:** `typing.List[SuperFund]` 
     
 </dd>
 </dl>
@@ -1583,7 +1636,7 @@ client.payroll_au.create_superfund(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_superfund</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_superfund</a>(...) -> SuperFunds</code></summary>
 <dl>
 <dd>
 
@@ -1597,11 +1650,14 @@ client.payroll_au.create_superfund(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_superfund(
     super_fund_id="4ff1e5cc-9835-40d5-bb18-09fdb118db9c",
 )
@@ -1640,7 +1696,7 @@ client.payroll_au.get_superfund(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_superfund</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_superfund</a>(...) -> SuperFunds</code></summary>
 <dl>
 <dd>
 
@@ -1668,11 +1724,14 @@ Update properties on a single Superfund
 
 ```python
 from fern import FernApi, SuperFund, SuperFundType
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.update_superfund(
     super_fund_id="4ff1e5cc-9835-40d5-bb18-09fdb118db9c",
     request=[
@@ -1704,7 +1763,7 @@ client.payroll_au.update_superfund(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[SuperFund]` 
+**request:** `typing.List[SuperFund]` 
     
 </dd>
 </dl>
@@ -1724,7 +1783,7 @@ client.payroll_au.update_superfund(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_timesheets</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_timesheets</a>(...) -> Timesheets</code></summary>
 <dl>
 <dd>
 
@@ -1738,13 +1797,16 @@ client.payroll_au.update_superfund(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_timesheets(
-    where='Status=="ACTIVE"',
+    where="Status==\"ACTIVE\"",
     order="EmailAddress%20DESC",
 )
 
@@ -1806,7 +1868,7 @@ client.payroll_au.get_timesheets(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_timesheet</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">create_timesheet</a>(...) -> Timesheets</code></summary>
 <dl>
 <dd>
 
@@ -1820,11 +1882,14 @@ client.payroll_au.get_timesheets(
 
 ```python
 from fern import FernApi, Timesheet
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.create_timesheet(
     request=[
         Timesheet(
@@ -1849,7 +1914,7 @@ client.payroll_au.create_timesheet(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[Timesheet]` 
+**request:** `typing.List[Timesheet]` 
     
 </dd>
 </dl>
@@ -1869,7 +1934,7 @@ client.payroll_au.create_timesheet(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_timesheet</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">get_timesheet</a>(...) -> TimesheetObject</code></summary>
 <dl>
 <dd>
 
@@ -1883,11 +1948,14 @@ client.payroll_au.create_timesheet(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.get_timesheet(
     timesheet_id="4ff1e5cc-9835-40d5-bb18-09fdb118db9c",
 )
@@ -1926,7 +1994,7 @@ client.payroll_au.get_timesheet(
 </dl>
 </details>
 
-<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_timesheet</a>(...)</code></summary>
+<details><summary><code>client.payroll_au.<a href="src/fern/payroll_au/client.py">update_timesheet</a>(...) -> Timesheets</code></summary>
 <dl>
 <dd>
 
@@ -1954,11 +2022,14 @@ Update properties on a single timesheet
 
 ```python
 from fern import FernApi, Timesheet
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    xero_tenant_id="YOUR_XERO_TENANT_ID",
-    token="YOUR_TOKEN",
+    token="<token>",
+    xero_tenant_id="<Xero-Tenant-Id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payroll_au.update_timesheet(
     timesheet_id="4ff1e5cc-9835-40d5-bb18-09fdb118db9c",
     request=[
@@ -1992,7 +2063,7 @@ client.payroll_au.update_timesheet(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[Timesheet]` 
+**request:** `typing.List[Timesheet]` 
     
 </dd>
 </dl>

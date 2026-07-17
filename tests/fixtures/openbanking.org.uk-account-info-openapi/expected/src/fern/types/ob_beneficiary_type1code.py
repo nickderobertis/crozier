@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObBeneficiaryType1Code(str, enum.Enum):
+class ObBeneficiaryType1Code(enum.StrEnum):
     """
     Specifies the Beneficiary Type.
     """

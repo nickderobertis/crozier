@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class Gender(str, enum.Enum):
+class Gender(enum.StrEnum):
     """
     The gender represents the gender identity of a person.
     """

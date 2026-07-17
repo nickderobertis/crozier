@@ -1,7 +1,7 @@
 # Fern Python Library
 
 [![fern shield](https://img.shields.io/badge/%F0%9F%8C%BF-Built%20with%20Fern-brightgreen)](https://buildwithfern.com?utm_source=github&utm_medium=github&utm_campaign=readme&utm_source=Fern%2FPython)
-[![pypi](https://img.shields.io/pypi/v/default_package_name)](https://pypi.python.org/pypi/default_package_name)
+[![pypi](https://img.shields.io/pypi/v/fern)](https://pypi.python.org/pypi/fern)
 
 The Fern Python library provides convenient access to the Fern APIs from Python.
 
@@ -10,6 +10,7 @@ The Fern Python library provides convenient access to the Fern APIs from Python.
 - [Installation](#installation)
 - [Reference](#reference)
 - [Usage](#usage)
+- [Environments](#environments)
 - [Async Client](#async-client)
 - [Exception Handling](#exception-handling)
 - [Advanced](#advanced)
@@ -22,7 +23,7 @@ The Fern Python library provides convenient access to the Fern APIs from Python.
 ## Installation
 
 ```sh
-pip install default_package_name
+pip install fern
 ```
 
 ## Reference
@@ -34,10 +35,27 @@ A full reference for this library is available [here](./reference.md).
 Instantiate and use the client with the following:
 
 ```python
-from fern import FernApi
+from fern import FernApi, AccessCredentialType
 
 client = FernApi()
-client.get_oauth_token()
+
+client.identity.add_credential(
+    type=AccessCredentialType.PASSWORD,
+    value="value",
+)
+```
+
+## Environments
+
+This SDK allows you to configure different environments for API requests.
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
 ```
 
 ## Async Client
@@ -53,7 +71,10 @@ client = AsyncFernApi()
 
 
 async def main() -> None:
-    await client.get_oauth_token()
+    await client.identity.add_credential(
+        type=AccessCredentialType.PASSWORD,
+        value="value",
+    )
 
 
 asyncio.run(main())
@@ -68,7 +89,7 @@ will be thrown.
 from fern.core.api_error import ApiError
 
 try:
-    client.get_oauth_token(...)
+    client.identity.add_credential(...)
 except ApiError as e:
     print(e.status_code)
     print(e.body)
@@ -84,11 +105,10 @@ The `.with_raw_response` property returns a "raw" client that can be used to acc
 ```python
 from fern import FernApi
 
-client = FernApi(
-    ...,
-)
-response = client.with_raw_response.get_oauth_token(...)
+client = FernApi(...)
+response = client.identity.with_raw_response.add_credential(...)
 print(response.headers)  # access the response headers
+print(response.status_code)  # access the response status code
 print(response.data)  # access the underlying object
 ```
 
@@ -98,16 +118,26 @@ The SDK is instrumented with automatic retries with exponential backoff. A reque
 as the request is deemed retryable and the number of retry attempts has not grown larger than the configured
 retry limit (default: 2).
 
-A request is deemed retryable when any of the following HTTP status codes is returned:
+Which status codes are retried depends on the `retryStatusCodes` generator configuration:
 
+**`legacy`** (current default): retries on
 - [408](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/408) (Timeout)
+- [409](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409) (Conflict)
 - [429](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429) (Too Many Requests)
-- [5XX](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500) (Internal Server Errors)
+- [5XX](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#server_error_responses) (All server errors, including 500)
+
+**`recommended`**: retries on
+- [408](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/408) (Timeout)
+- [409](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409) (Conflict)
+- [429](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429) (Too Many Requests)
+- [502](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502) (Bad Gateway)
+- [503](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503) (Service Unavailable)
+- [504](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/504) (Gateway Timeout)
 
 Use the `max_retries` request option to configure this behavior.
 
 ```python
-client.get_oauth_token(..., request_options={
+client.identity.add_credential(..., request_options={
     "max_retries": 1
 })
 ```
@@ -117,18 +147,13 @@ client.get_oauth_token(..., request_options={
 The SDK defaults to a 60 second timeout. You can configure this with a timeout option at the client or request level.
 
 ```python
-
 from fern import FernApi
 
-client = FernApi(
-    ...,
-    timeout=20.0,
-)
-
+client = FernApi(..., timeout=20.0)
 
 # Override timeout for a specific method
-client.get_oauth_token(..., request_options={
-    "timeout_in_seconds": 1
+client.identity.add_credential(..., request_options={
+    "timeout": 1
 })
 ```
 
@@ -139,7 +164,6 @@ and transports.
 
 ```python
 import httpx
-
 from fern import FernApi
 
 client = FernApi(

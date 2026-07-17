@@ -26,8 +26,12 @@ class ApiResponse(UniversalBaseModel):
     """
 
     queue_messages: typing_extensions.Annotated[
-        typing.Optional[typing.List[QueueMessage]], FieldMetadata(alias="queueMessages")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[QueueMessage]],
+        FieldMetadata(alias="queueMessages"),
+        pydantic.Field(
+            alias="queueMessages", description="Queues Messages returned by the call, or empty if not applicable."
+        ),
+    ] = None
     """
     Queues Messages returned by the call, or empty if not applicable.
     """

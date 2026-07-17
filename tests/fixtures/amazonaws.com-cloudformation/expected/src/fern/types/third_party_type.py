@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ThirdPartyType(str, enum.Enum):
+class ThirdPartyType(enum.StrEnum):
     RESOURCE = "RESOURCE"
     MODULE = "MODULE"
     HOOK = "HOOK"

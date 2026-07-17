@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_all_colors_of_the_default_color_name_list</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_all_colors_of_the_default_color_name_list</a>(...) -> GetNamesResponse</code></summary>
 <dl>
 <dd>
 
@@ -13,8 +13,12 @@
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.get_all_colors_of_the_default_color_name_list(
     name="name",
 )
@@ -41,7 +45,7 @@ client.get_all_colors_of_the_default_color_name_list(
 <dl>
 <dd>
 
-**list_:** `typing.Optional[PossibleLists]` — The name of the color name list to use
+**list:** `typing.Optional[PossibleLists]` — The name of the color name list to use
     
 </dd>
 </dl>
@@ -61,7 +65,7 @@ client.get_all_colors_of_the_default_color_name_list(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">generate_a_color_swatch_for_any_color</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">generate_a_color_swatch_for_any_color</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -75,8 +79,12 @@ client.get_all_colors_of_the_default_color_name_list(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.generate_a_color_swatch_for_any_color(
     color="color",
 )
@@ -111,7 +119,7 @@ client.generate_a_color_swatch_for_any_color(
 <dl>
 <dd>
 
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
 </dl>

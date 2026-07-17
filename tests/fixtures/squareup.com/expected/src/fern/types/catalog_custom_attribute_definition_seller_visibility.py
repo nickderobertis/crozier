@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CatalogCustomAttributeDefinitionSellerVisibility(str, enum.Enum):
+class CatalogCustomAttributeDefinitionSellerVisibility(enum.StrEnum):
     """
     Defines the visibility of a custom attribute to sellers in Square
     client applications, Square APIs or in Square UIs (including Square Point

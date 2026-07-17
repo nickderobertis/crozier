@@ -6,11 +6,13 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.get_user_sent_private_messages_response import GetUserSentPrivateMessagesResponse
 from .types.list_user_private_messages_response import ListUserPrivateMessagesResponse
+from pydantic import ValidationError
 
 
 class RawPrivateMessagesClient:
@@ -34,7 +36,7 @@ class RawPrivateMessagesClient:
             private messages
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"topics/private-messages-sent/{jsonable_encoder(username)}.json",
+            f"topics/private-messages-sent/{encode_path_param(username)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -51,6 +53,10 @@ class RawPrivateMessagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_user_private_messages(
@@ -70,7 +76,7 @@ class RawPrivateMessagesClient:
             private messages
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"topics/private-messages/{jsonable_encoder(username)}.json",
+            f"topics/private-messages/{encode_path_param(username)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -87,6 +93,10 @@ class RawPrivateMessagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -111,7 +121,7 @@ class AsyncRawPrivateMessagesClient:
             private messages
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"topics/private-messages-sent/{jsonable_encoder(username)}.json",
+            f"topics/private-messages-sent/{encode_path_param(username)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -128,6 +138,10 @@ class AsyncRawPrivateMessagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_user_private_messages(
@@ -147,7 +161,7 @@ class AsyncRawPrivateMessagesClient:
             private messages
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"topics/private-messages/{jsonable_encoder(username)}.json",
+            f"topics/private-messages/{encode_path_param(username)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -164,4 +178,8 @@ class AsyncRawPrivateMessagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

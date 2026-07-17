@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ApiType(str, enum.Enum):
+class ApiType(enum.StrEnum):
     """
     Indicates whether the API is a Unified API. If unified_api is false, the API is a Platform API.
     """

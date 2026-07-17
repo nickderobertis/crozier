@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -19,6 +20,7 @@ from ..types.retrieve_inventory_changes_response import RetrieveInventoryChanges
 from ..types.retrieve_inventory_count_response import RetrieveInventoryCountResponse
 from ..types.retrieve_inventory_physical_count_response import RetrieveInventoryPhysicalCountResponse
 from ..types.retrieve_inventory_transfer_response import RetrieveInventoryTransferResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -49,7 +51,7 @@ class RawInventoryClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/inventory/adjustment/{jsonable_encoder(adjustment_id)}",
+            f"v2/inventory/adjustment/{encode_path_param(adjustment_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -66,6 +68,10 @@ class RawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_inventory_adjustment(
@@ -89,7 +95,7 @@ class RawInventoryClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/inventory/adjustments/{jsonable_encoder(adjustment_id)}",
+            f"v2/inventory/adjustments/{encode_path_param(adjustment_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -106,6 +112,10 @@ class RawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def deprecated_batch_change_inventory(
@@ -173,6 +183,10 @@ class RawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def deprecated_batch_retrieve_inventory_changes(
@@ -262,6 +276,10 @@ class RawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def deprecated_batch_retrieve_inventory_counts(
@@ -338,6 +356,10 @@ class RawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def batch_change_inventory(
@@ -408,6 +430,10 @@ class RawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def batch_retrieve_inventory_changes(
@@ -503,6 +529,10 @@ class RawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def batch_retrieve_inventory_counts(
@@ -588,6 +618,10 @@ class RawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def deprecated_retrieve_inventory_physical_count(
@@ -612,7 +646,7 @@ class RawInventoryClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/inventory/physical-count/{jsonable_encoder(physical_count_id)}",
+            f"v2/inventory/physical-count/{encode_path_param(physical_count_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -629,6 +663,10 @@ class RawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_inventory_physical_count(
@@ -653,7 +691,7 @@ class RawInventoryClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/inventory/physical-counts/{jsonable_encoder(physical_count_id)}",
+            f"v2/inventory/physical-counts/{encode_path_param(physical_count_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -670,6 +708,10 @@ class RawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_inventory_transfer(
@@ -693,7 +735,7 @@ class RawInventoryClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/inventory/transfers/{jsonable_encoder(transfer_id)}",
+            f"v2/inventory/transfers/{encode_path_param(transfer_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -710,6 +752,10 @@ class RawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_inventory_count(
@@ -750,7 +796,7 @@ class RawInventoryClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/inventory/{jsonable_encoder(catalog_object_id)}",
+            f"v2/inventory/{encode_path_param(catalog_object_id)}",
             method="GET",
             params={
                 "location_ids": location_ids,
@@ -771,6 +817,10 @@ class RawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_inventory_changes(
@@ -820,7 +870,7 @@ class RawInventoryClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/inventory/{jsonable_encoder(catalog_object_id)}/changes",
+            f"v2/inventory/{encode_path_param(catalog_object_id)}/changes",
             method="GET",
             params={
                 "location_ids": location_ids,
@@ -841,6 +891,10 @@ class RawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -869,7 +923,7 @@ class AsyncRawInventoryClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/inventory/adjustment/{jsonable_encoder(adjustment_id)}",
+            f"v2/inventory/adjustment/{encode_path_param(adjustment_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -886,6 +940,10 @@ class AsyncRawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_inventory_adjustment(
@@ -909,7 +967,7 @@ class AsyncRawInventoryClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/inventory/adjustments/{jsonable_encoder(adjustment_id)}",
+            f"v2/inventory/adjustments/{encode_path_param(adjustment_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -926,6 +984,10 @@ class AsyncRawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def deprecated_batch_change_inventory(
@@ -993,6 +1055,10 @@ class AsyncRawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def deprecated_batch_retrieve_inventory_changes(
@@ -1082,6 +1148,10 @@ class AsyncRawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def deprecated_batch_retrieve_inventory_counts(
@@ -1158,6 +1228,10 @@ class AsyncRawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def batch_change_inventory(
@@ -1228,6 +1302,10 @@ class AsyncRawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def batch_retrieve_inventory_changes(
@@ -1323,6 +1401,10 @@ class AsyncRawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def batch_retrieve_inventory_counts(
@@ -1408,6 +1490,10 @@ class AsyncRawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def deprecated_retrieve_inventory_physical_count(
@@ -1432,7 +1518,7 @@ class AsyncRawInventoryClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/inventory/physical-count/{jsonable_encoder(physical_count_id)}",
+            f"v2/inventory/physical-count/{encode_path_param(physical_count_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1449,6 +1535,10 @@ class AsyncRawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_inventory_physical_count(
@@ -1473,7 +1563,7 @@ class AsyncRawInventoryClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/inventory/physical-counts/{jsonable_encoder(physical_count_id)}",
+            f"v2/inventory/physical-counts/{encode_path_param(physical_count_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1490,6 +1580,10 @@ class AsyncRawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_inventory_transfer(
@@ -1513,7 +1607,7 @@ class AsyncRawInventoryClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/inventory/transfers/{jsonable_encoder(transfer_id)}",
+            f"v2/inventory/transfers/{encode_path_param(transfer_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1530,6 +1624,10 @@ class AsyncRawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_inventory_count(
@@ -1570,7 +1668,7 @@ class AsyncRawInventoryClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/inventory/{jsonable_encoder(catalog_object_id)}",
+            f"v2/inventory/{encode_path_param(catalog_object_id)}",
             method="GET",
             params={
                 "location_ids": location_ids,
@@ -1591,6 +1689,10 @@ class AsyncRawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_inventory_changes(
@@ -1640,7 +1742,7 @@ class AsyncRawInventoryClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/inventory/{jsonable_encoder(catalog_object_id)}/changes",
+            f"v2/inventory/{encode_path_param(catalog_object_id)}/changes",
             method="GET",
             params={
                 "location_ids": location_ids,
@@ -1661,4 +1763,8 @@ class AsyncRawInventoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

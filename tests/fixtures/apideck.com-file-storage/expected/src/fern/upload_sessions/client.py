@@ -147,7 +147,7 @@ class UploadSessionsClient:
         id: str,
         *,
         part_number: float,
-        request: str,
+        request: bytes,
         raw: typing.Optional[bool] = None,
         digest: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -163,7 +163,7 @@ class UploadSessionsClient:
         part_number : float
             Part number of the file part being uploaded.
 
-        request : str
+        request : bytes
 
         raw : typing.Optional[bool]
             Include raw response. Mostly used for debugging purposes
@@ -435,7 +435,7 @@ class AsyncUploadSessionsClient:
         id: str,
         *,
         part_number: float,
-        request: str,
+        request: bytes,
         raw: typing.Optional[bool] = None,
         digest: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -451,7 +451,7 @@ class AsyncUploadSessionsClient:
         part_number : float
             Part number of the file part being uploaded.
 
-        request : str
+        request : bytes
 
         raw : typing.Optional[bool]
             Include raw response. Mostly used for debugging purposes

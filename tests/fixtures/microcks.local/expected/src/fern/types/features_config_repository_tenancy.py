@@ -14,7 +14,9 @@ class FeaturesConfigRepositoryTenancy(UniversalBaseModel):
     """
 
     artifact_import_allowed_roles: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="artifact-import-allowed-roles")
+        typing.Optional[str],
+        FieldMetadata(alias="artifact-import-allowed-roles"),
+        pydantic.Field(alias="artifact-import-allowed-roles"),
     ] = None
     enabled: typing.Optional[str] = None
 

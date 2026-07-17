@@ -2,4 +2,4 @@
 
 import typing
 
-ChangeSetNotFoundException = typing.Optional[typing.Any]
+ChangeSetNotFoundException = typing.Any

@@ -10,7 +10,9 @@ from .api_reference import ApiReference
 
 
 class SubclassLevelResource(UniversalBaseModel):
-    class_: typing_extensions.Annotated[typing.Optional[ApiReference], FieldMetadata(alias="class")] = None
+    class_: typing_extensions.Annotated[
+        typing.Optional[ApiReference], FieldMetadata(alias="class"), pydantic.Field(alias="class")
+    ] = None
     features: typing.Optional[typing.List[ApiReference]] = None
     index: typing.Optional[str] = None
     level: typing.Optional[float] = None

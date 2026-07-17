@@ -15,8 +15,13 @@ class DestinyDefinitionsDestinyActivityModifierReferenceDefinition(UniversalBase
     """
 
     activity_modifier_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="activityModifierHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="activityModifierHash"),
+        pydantic.Field(
+            alias="activityModifierHash",
+            description="The hash identifier for the DestinyActivityModifierDefinition referenced by this activity.",
+        ),
+    ] = None
     """
     The hash identifier for the DestinyActivityModifierDefinition referenced by this activity.
     """

@@ -26,18 +26,18 @@ Delete an archived call record from Bulk Export. Note: this does not also delete
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 import datetime
 
-from fern import FernApi
-
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.delete_archived_call(
-    date=datetime.date.fromisoformat(
-        "2023-01-15",
-    ),
+    date=datetime.date.fromisoformat("2023-01-15"),
     sid="Sid",
 )
 
@@ -55,7 +55,7 @@ client.delete_archived_call(
 <dl>
 <dd>
 
-**date:** `dt.date` — The date of the Call in UTC.
+**date:** `datetime.date` — The date of the Call in UTC.
     
 </dd>
 </dl>
@@ -83,7 +83,7 @@ client.delete_archived_call(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_byoc_trunk</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">list_byoc_trunk</a>(...) -> ListByocTrunkResponse</code></summary>
 <dl>
 <dd>
 
@@ -111,11 +111,14 @@ client.delete_archived_call(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.list_byoc_trunk()
 
 ```
@@ -168,7 +171,7 @@ client.list_byoc_trunk()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_byoc_trunk</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">create_byoc_trunk</a>(...) -> VoiceV1ByocTrunk</code></summary>
 <dl>
 <dd>
 
@@ -196,11 +199,14 @@ client.list_byoc_trunk()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.create_byoc_trunk()
 
 ```
@@ -309,7 +315,7 @@ client.create_byoc_trunk()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_byoc_trunk</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">fetch_byoc_trunk</a>(...) -> VoiceV1ByocTrunk</code></summary>
 <dl>
 <dd>
 
@@ -337,11 +343,14 @@ client.create_byoc_trunk()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.fetch_byoc_trunk(
     sid="Sid",
 )
@@ -380,7 +389,7 @@ client.fetch_byoc_trunk(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_byoc_trunk</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">update_byoc_trunk</a>(...) -> VoiceV1ByocTrunk</code></summary>
 <dl>
 <dd>
 
@@ -408,11 +417,14 @@ client.fetch_byoc_trunk(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.update_byoc_trunk(
     sid="Sid",
 )
@@ -559,11 +571,14 @@ client.update_byoc_trunk(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.delete_byoc_trunk(
     sid="Sid",
 )
@@ -602,7 +617,7 @@ client.delete_byoc_trunk(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_connection_policy</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">list_connection_policy</a>(...) -> ListConnectionPolicyResponse</code></summary>
 <dl>
 <dd>
 
@@ -630,11 +645,14 @@ client.delete_byoc_trunk(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.list_connection_policy()
 
 ```
@@ -687,7 +705,7 @@ client.list_connection_policy()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_connection_policy</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">create_connection_policy</a>(...) -> VoiceV1ConnectionPolicy</code></summary>
 <dl>
 <dd>
 
@@ -715,11 +733,14 @@ client.list_connection_policy()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.create_connection_policy()
 
 ```
@@ -756,7 +777,7 @@ client.create_connection_policy()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_connection_policy_target</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">list_connection_policy_target</a>(...) -> ListConnectionPolicyTargetResponse</code></summary>
 <dl>
 <dd>
 
@@ -784,11 +805,14 @@ client.create_connection_policy()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.list_connection_policy_target(
     connection_policy_sid="ConnectionPolicySid",
 )
@@ -851,7 +875,7 @@ client.list_connection_policy_target(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_connection_policy_target</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">create_connection_policy_target</a>(...) -> VoiceV1ConnectionPolicyConnectionPolicyTarget</code></summary>
 <dl>
 <dd>
 
@@ -879,11 +903,14 @@ client.list_connection_policy_target(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.create_connection_policy_target(
     connection_policy_sid="ConnectionPolicySid",
     target="Target",
@@ -963,7 +990,7 @@ client.create_connection_policy_target(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_connection_policy_target</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">fetch_connection_policy_target</a>(...) -> VoiceV1ConnectionPolicyConnectionPolicyTarget</code></summary>
 <dl>
 <dd>
 
@@ -991,11 +1018,14 @@ client.create_connection_policy_target(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.fetch_connection_policy_target(
     connection_policy_sid="ConnectionPolicySid",
     sid="Sid",
@@ -1043,7 +1073,7 @@ client.fetch_connection_policy_target(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_connection_policy_target</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">update_connection_policy_target</a>(...) -> VoiceV1ConnectionPolicyConnectionPolicyTarget</code></summary>
 <dl>
 <dd>
 
@@ -1071,11 +1101,14 @@ client.fetch_connection_policy_target(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.update_connection_policy_target(
     connection_policy_sid="ConnectionPolicySid",
     sid="Sid",
@@ -1191,11 +1224,14 @@ client.update_connection_policy_target(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.delete_connection_policy_target(
     connection_policy_sid="ConnectionPolicySid",
     sid="Sid",
@@ -1243,7 +1279,7 @@ client.delete_connection_policy_target(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_connection_policy</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">fetch_connection_policy</a>(...) -> VoiceV1ConnectionPolicy</code></summary>
 <dl>
 <dd>
 
@@ -1271,11 +1307,14 @@ client.delete_connection_policy_target(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.fetch_connection_policy(
     sid="Sid",
 )
@@ -1314,7 +1353,7 @@ client.fetch_connection_policy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_connection_policy</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">update_connection_policy</a>(...) -> VoiceV1ConnectionPolicy</code></summary>
 <dl>
 <dd>
 
@@ -1342,11 +1381,14 @@ client.fetch_connection_policy(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.update_connection_policy(
     sid="Sid",
 )
@@ -1421,11 +1463,14 @@ client.update_connection_policy(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.delete_connection_policy(
     sid="Sid",
 )
@@ -1464,7 +1509,7 @@ client.delete_connection_policy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_dialing_permissions_country_bulk_update</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">create_dialing_permissions_country_bulk_update</a>(...) -> VoiceV1DialingPermissionsDialingPermissionsCountryBulkUpdate</code></summary>
 <dl>
 <dd>
 
@@ -1492,11 +1537,14 @@ Create a bulk update request to change voice dialing country permissions of one 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.create_dialing_permissions_country_bulk_update(
     update_request="UpdateRequest",
 )
@@ -1535,7 +1583,7 @@ client.create_dialing_permissions_country_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_dialing_permissions_country</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">list_dialing_permissions_country</a>(...) -> ListDialingPermissionsCountryResponse</code></summary>
 <dl>
 <dd>
 
@@ -1563,11 +1611,14 @@ Retrieve all voice dialing country permissions for this account
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.list_dialing_permissions_country()
 
 ```
@@ -1668,7 +1719,7 @@ client.list_dialing_permissions_country()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_dialing_permissions_country</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">fetch_dialing_permissions_country</a>(...) -> VoiceV1DialingPermissionsDialingPermissionsCountryInstance</code></summary>
 <dl>
 <dd>
 
@@ -1696,11 +1747,14 @@ Retrieve voice dialing country permissions identified by the given ISO country c
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.fetch_dialing_permissions_country(
     iso_code="IsoCode",
 )
@@ -1739,7 +1793,7 @@ client.fetch_dialing_permissions_country(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_dialing_permissions_hrs_prefixes</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">list_dialing_permissions_hrs_prefixes</a>(...) -> ListDialingPermissionsHrsPrefixesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1767,11 +1821,14 @@ Fetch the high-risk special services prefixes from the country resource correspo
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.list_dialing_permissions_hrs_prefixes(
     iso_code="IsoCode",
 )
@@ -1834,7 +1891,7 @@ client.list_dialing_permissions_hrs_prefixes(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_ip_record</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">list_ip_record</a>(...) -> ListIpRecordResponse</code></summary>
 <dl>
 <dd>
 
@@ -1862,11 +1919,14 @@ client.list_dialing_permissions_hrs_prefixes(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.list_ip_record()
 
 ```
@@ -1919,7 +1979,7 @@ client.list_ip_record()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_ip_record</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">create_ip_record</a>(...) -> VoiceV1IpRecord</code></summary>
 <dl>
 <dd>
 
@@ -1947,11 +2007,14 @@ client.list_ip_record()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.create_ip_record(
     ip_address="IpAddress",
 )
@@ -2006,7 +2069,7 @@ client.create_ip_record(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_ip_record</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">fetch_ip_record</a>(...) -> VoiceV1IpRecord</code></summary>
 <dl>
 <dd>
 
@@ -2034,11 +2097,14 @@ client.create_ip_record(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.fetch_ip_record(
     sid="Sid",
 )
@@ -2077,7 +2143,7 @@ client.fetch_ip_record(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_ip_record</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">update_ip_record</a>(...) -> VoiceV1IpRecord</code></summary>
 <dl>
 <dd>
 
@@ -2105,11 +2171,14 @@ client.fetch_ip_record(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.update_ip_record(
     sid="Sid",
 )
@@ -2184,11 +2253,14 @@ client.update_ip_record(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.delete_ip_record(
     sid="Sid",
 )
@@ -2227,7 +2299,7 @@ client.delete_ip_record(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_dialing_permissions_settings</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">fetch_dialing_permissions_settings</a>() -> VoiceV1DialingPermissionsDialingPermissionsSettings</code></summary>
 <dl>
 <dd>
 
@@ -2255,11 +2327,14 @@ Retrieve voice dialing permissions inheritance for the sub-account
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.fetch_dialing_permissions_settings()
 
 ```
@@ -2288,7 +2363,7 @@ client.fetch_dialing_permissions_settings()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_dialing_permissions_settings</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">update_dialing_permissions_settings</a>(...) -> VoiceV1DialingPermissionsDialingPermissionsSettings</code></summary>
 <dl>
 <dd>
 
@@ -2316,11 +2391,14 @@ Update voice dialing permissions inheritance for the sub-account
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.update_dialing_permissions_settings()
 
 ```
@@ -2357,7 +2435,7 @@ client.update_dialing_permissions_settings()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_source_ip_mapping</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">list_source_ip_mapping</a>(...) -> ListSourceIpMappingResponse</code></summary>
 <dl>
 <dd>
 
@@ -2385,11 +2463,14 @@ client.update_dialing_permissions_settings()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.list_source_ip_mapping()
 
 ```
@@ -2442,7 +2523,7 @@ client.list_source_ip_mapping()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_source_ip_mapping</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">create_source_ip_mapping</a>(...) -> VoiceV1SourceIpMapping</code></summary>
 <dl>
 <dd>
 
@@ -2470,11 +2551,14 @@ client.list_source_ip_mapping()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.create_source_ip_mapping(
     ip_record_sid="IpRecordSid",
     sip_domain_sid="SipDomainSid",
@@ -2522,7 +2606,7 @@ client.create_source_ip_mapping(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_source_ip_mapping</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">fetch_source_ip_mapping</a>(...) -> VoiceV1SourceIpMapping</code></summary>
 <dl>
 <dd>
 
@@ -2550,11 +2634,14 @@ client.create_source_ip_mapping(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.fetch_source_ip_mapping(
     sid="Sid",
 )
@@ -2593,7 +2680,7 @@ client.fetch_source_ip_mapping(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_source_ip_mapping</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">update_source_ip_mapping</a>(...) -> VoiceV1SourceIpMapping</code></summary>
 <dl>
 <dd>
 
@@ -2621,11 +2708,14 @@ client.fetch_source_ip_mapping(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.update_source_ip_mapping(
     sid="Sid",
     sip_domain_sid="SipDomainSid",
@@ -2701,11 +2791,14 @@ client.update_source_ip_mapping(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.delete_source_ip_mapping(
     sid="Sid",
 )

@@ -2,4 +2,4 @@
 
 import typing
 
-TransferwiseAccountQuoteDelete = typing.Dict[str, typing.Optional[typing.Any]]
+TransferwiseAccountQuoteDelete = typing.Dict[str, typing.Any]

@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -27,6 +28,7 @@ from ..types.group_id import GroupId
 from ..types.version import Version
 from ..types.version_meta_data import VersionMetaData
 from ..types.version_search_results import VersionSearchResults
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -76,7 +78,7 @@ class RawVersionsClient:
             List of all artifact versions.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions",
             method="GET",
             params={
                 "offset": offset,
@@ -119,6 +121,10 @@ class RawVersionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_artifact_version(
@@ -188,7 +194,7 @@ class RawVersionsClient:
             The artifact version was successfully created.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions",
             method="POST",
             json=request,
             headers={
@@ -228,9 +234,9 @@ class RawVersionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -249,6 +255,10 @@ class RawVersionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.contextmanager
@@ -296,7 +306,7 @@ class RawVersionsClient:
             The content of one version of one artifact.
         """
         with self._client_wrapper.httpx_client.stream(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions/{jsonable_encoder(version)}",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions/{encode_path_param(version)}",
             method="GET",
             params={
                 "dereference": dereference,
@@ -338,6 +348,13 @@ class RawVersionsClient:
                 except JSONDecodeError:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
                     )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
@@ -383,7 +400,7 @@ class RawVersionsClient:
             List of all the artifact references for this artifact.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions/{jsonable_encoder(version)}/references",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions/{encode_path_param(version)}/references",
             method="GET",
             request_options=request_options,
         )
@@ -422,6 +439,10 @@ class RawVersionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_artifact_version_state(
@@ -464,7 +485,7 @@ class RawVersionsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions/{jsonable_encoder(version)}/state",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions/{encode_path_param(version)}/state",
             method="PUT",
             json={
                 "state": state,
@@ -514,6 +535,10 @@ class RawVersionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -561,7 +586,7 @@ class AsyncRawVersionsClient:
             List of all artifact versions.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions",
             method="GET",
             params={
                 "offset": offset,
@@ -604,6 +629,10 @@ class AsyncRawVersionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_artifact_version(
@@ -673,7 +702,7 @@ class AsyncRawVersionsClient:
             The artifact version was successfully created.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions",
             method="POST",
             json=request,
             headers={
@@ -713,9 +742,9 @@ class AsyncRawVersionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -734,6 +763,10 @@ class AsyncRawVersionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.asynccontextmanager
@@ -781,7 +814,7 @@ class AsyncRawVersionsClient:
             The content of one version of one artifact.
         """
         async with self._client_wrapper.httpx_client.stream(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions/{jsonable_encoder(version)}",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions/{encode_path_param(version)}",
             method="GET",
             params={
                 "dereference": dereference,
@@ -824,6 +857,13 @@ class AsyncRawVersionsClient:
                 except JSONDecodeError:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
                     )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
@@ -869,7 +909,7 @@ class AsyncRawVersionsClient:
             List of all the artifact references for this artifact.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions/{jsonable_encoder(version)}/references",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions/{encode_path_param(version)}/references",
             method="GET",
             request_options=request_options,
         )
@@ -908,6 +948,10 @@ class AsyncRawVersionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_artifact_version_state(
@@ -950,7 +994,7 @@ class AsyncRawVersionsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions/{jsonable_encoder(version)}/state",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions/{encode_path_param(version)}/state",
             method="PUT",
             json={
                 "state": state,
@@ -1000,4 +1044,8 @@ class AsyncRawVersionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

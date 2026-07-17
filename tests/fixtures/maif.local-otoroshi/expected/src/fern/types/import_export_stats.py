@@ -18,12 +18,20 @@ class ImportExportStats(UniversalBaseModel):
     Number of calls to Otoroshi globally
     """
 
-    data_in: typing_extensions.Annotated[int, FieldMetadata(alias="dataIn")] = pydantic.Field()
+    data_in: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="dataIn"),
+        pydantic.Field(alias="dataIn", description="The amount of data sent to Otoroshi globally"),
+    ]
     """
     The amount of data sent to Otoroshi globally
     """
 
-    data_out: typing_extensions.Annotated[int, FieldMetadata(alias="dataOut")] = pydantic.Field()
+    data_out: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="dataOut"),
+        pydantic.Field(alias="dataOut", description="The amount of data sent from Otoroshi globally"),
+    ]
     """
     The amount of data sent from Otoroshi globally
     """

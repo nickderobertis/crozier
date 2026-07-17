@@ -13,20 +13,32 @@ from .attempt_stream_stats import AttemptStreamStats
 
 
 class AttemptRead(UniversalBaseModel):
-    bytes_synced: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="bytesSynced")] = None
-    created_at: typing_extensions.Annotated[int, FieldMetadata(alias="createdAt")]
-    ended_at: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="endedAt")] = None
+    bytes_synced: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="bytesSynced"), pydantic.Field(alias="bytesSynced")
+    ] = None
+    created_at: typing_extensions.Annotated[int, FieldMetadata(alias="createdAt"), pydantic.Field(alias="createdAt")]
+    ended_at: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="endedAt"), pydantic.Field(alias="endedAt")
+    ] = None
     failure_summary: typing_extensions.Annotated[
-        typing.Optional[AttemptFailureSummary], FieldMetadata(alias="failureSummary")
+        typing.Optional[AttemptFailureSummary],
+        FieldMetadata(alias="failureSummary"),
+        pydantic.Field(alias="failureSummary"),
     ] = None
     id: int
-    records_synced: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="recordsSynced")] = None
+    records_synced: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="recordsSynced"), pydantic.Field(alias="recordsSynced")
+    ] = None
     status: AttemptStatus
     stream_stats: typing_extensions.Annotated[
-        typing.Optional[typing.List[AttemptStreamStats]], FieldMetadata(alias="streamStats")
+        typing.Optional[typing.List[AttemptStreamStats]],
+        FieldMetadata(alias="streamStats"),
+        pydantic.Field(alias="streamStats"),
     ] = None
-    total_stats: typing_extensions.Annotated[typing.Optional[AttemptStats], FieldMetadata(alias="totalStats")] = None
-    updated_at: typing_extensions.Annotated[int, FieldMetadata(alias="updatedAt")]
+    total_stats: typing_extensions.Annotated[
+        typing.Optional[AttemptStats], FieldMetadata(alias="totalStats"), pydantic.Field(alias="totalStats")
+    ] = None
+    updated_at: typing_extensions.Annotated[int, FieldMetadata(alias="updatedAt"), pydantic.Field(alias="updatedAt")]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

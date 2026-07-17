@@ -11,14 +11,16 @@ from .invalid_input_property import InvalidInputProperty
 
 class InvalidInputExceptionInfo(UniversalBaseModel):
     exception_class_name: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="exceptionClassName")
+        typing.Optional[str], FieldMetadata(alias="exceptionClassName"), pydantic.Field(alias="exceptionClassName")
     ] = None
     exception_stack: typing_extensions.Annotated[
-        typing.Optional[typing.List[str]], FieldMetadata(alias="exceptionStack")
+        typing.Optional[typing.List[str]], FieldMetadata(alias="exceptionStack"), pydantic.Field(alias="exceptionStack")
     ] = None
     message: str
     validation_errors: typing_extensions.Annotated[
-        typing.List[InvalidInputProperty], FieldMetadata(alias="validationErrors")
+        typing.List[InvalidInputProperty],
+        FieldMetadata(alias="validationErrors"),
+        pydantic.Field(alias="validationErrors"),
     ]
 
     if IS_PYDANTIC_V2:

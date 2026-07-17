@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class JobConfigType(str, enum.Enum):
+class JobConfigType(enum.StrEnum):
     CHECK_CONNECTION_SOURCE = "check_connection_source"
     CHECK_CONNECTION_DESTINATION = "check_connection_destination"
     DISCOVER_SCHEMA = "discover_schema"

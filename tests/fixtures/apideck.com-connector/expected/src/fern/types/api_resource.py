@@ -27,8 +27,10 @@ class ApiResource(UniversalBaseModel):
     """
 
     schema_: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]], FieldMetadata(alias="schema")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.Dict[str, typing.Any]],
+        FieldMetadata(alias="schema"),
+        pydantic.Field(alias="schema", description="JSON Schema of the resource in our Unified API"),
+    ] = None
     """
     JSON Schema of the resource in our Unified API
     """

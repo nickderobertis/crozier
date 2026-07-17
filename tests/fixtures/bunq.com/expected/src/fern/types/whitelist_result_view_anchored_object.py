@@ -13,9 +13,11 @@ from .request_response import RequestResponse
 
 
 class WhitelistResultViewAnchoredObject(UniversalBaseModel):
-    draft_payment: typing_extensions.Annotated[typing.Optional[DraftPayment], FieldMetadata(alias="draftPayment")] = (
-        pydantic.Field(default=None)
-    )
+    draft_payment: typing_extensions.Annotated[
+        typing.Optional[DraftPayment],
+        FieldMetadata(alias="draftPayment"),
+        pydantic.Field(alias="draftPayment", description="The DraftPayment object"),
+    ] = None
     """
     The DraftPayment object
     """
@@ -26,8 +28,10 @@ class WhitelistResultViewAnchoredObject(UniversalBaseModel):
     """
 
     request_response: typing_extensions.Annotated[
-        typing.Optional[RequestResponse], FieldMetadata(alias="requestResponse")
-    ] = pydantic.Field(default=None)
+        typing.Optional[RequestResponse],
+        FieldMetadata(alias="requestResponse"),
+        pydantic.Field(alias="requestResponse", description="The RequestResponse object"),
+    ] = None
     """
     The RequestResponse object
     """

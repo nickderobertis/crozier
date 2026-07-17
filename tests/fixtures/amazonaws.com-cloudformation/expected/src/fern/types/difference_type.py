@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DifferenceType(str, enum.Enum):
+class DifferenceType(enum.StrEnum):
     ADD = "ADD"
     REMOVE = "REMOVE"
     NOT_EQUAL = "NOT_EQUAL"

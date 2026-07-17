@@ -165,6 +165,7 @@ if typing.TYPE_CHECKING:
         subraces,
         traits,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .character_data import (
         GetApiAbilityScoresIndexRequestIndex,
         GetApiAlignmentsIndexRequestIndex,
@@ -260,6 +261,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DamageAtSlotLevel": ".types",
     "DamageType": ".types",
     "Dc": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "Equipment": ".types",
     "EquipmentCategory": ".types",
     "EquipmentPack": ".types",
@@ -481,6 +484,8 @@ __all__ = [
     "DamageAtSlotLevel",
     "DamageType",
     "Dc",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "Equipment",
     "EquipmentCategory",
     "EquipmentPack",

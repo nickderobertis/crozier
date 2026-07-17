@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MonsterActionsItemActionsItemType(str, enum.Enum):
+class MonsterActionsItemActionsItemType(enum.StrEnum):
     MELEE = "melee"
     RANGED = "ranged"
     ABILITY = "ability"

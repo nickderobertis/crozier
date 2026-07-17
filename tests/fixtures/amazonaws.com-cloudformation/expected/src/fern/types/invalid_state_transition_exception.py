@@ -2,4 +2,4 @@
 
 import typing
 
-InvalidStateTransitionException = typing.Optional[typing.Any]
+InvalidStateTransitionException = typing.Any

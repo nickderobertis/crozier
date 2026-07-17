@@ -9,9 +9,11 @@ from ..core.serialization import FieldMetadata
 
 
 class UpdateStackSetOutput(UniversalBaseModel):
-    operation_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="OperationId")] = (
-        pydantic.Field(default=None)
-    )
+    operation_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="OperationId"),
+        pydantic.Field(alias="OperationId", description="The unique ID for this stack set operation."),
+    ] = None
     """
     The unique ID for this stack set operation.
     """

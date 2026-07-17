@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OnFailure(str, enum.Enum):
+class OnFailure(enum.StrEnum):
     DO_NOTHING = "DO_NOTHING"
     ROLLBACK = "ROLLBACK"
     DELETE = "DELETE"

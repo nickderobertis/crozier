@@ -26,4 +26,4 @@ class NotificationFilterUrlMonetaryAccountListing(UniversalBaseModel):
 
 from .notification_filter_url import NotificationFilterUrl
 
-update_forward_refs(NotificationFilterUrlMonetaryAccountListing)
+update_forward_refs(NotificationFilterUrlMonetaryAccountListing, NotificationFilterUrl=NotificationFilterUrl)

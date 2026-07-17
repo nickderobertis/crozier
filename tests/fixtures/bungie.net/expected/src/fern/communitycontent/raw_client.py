@@ -6,10 +6,12 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.community_content_get_community_content_response import CommunityContentGetCommunityContentResponse
+from pydantic import ValidationError
 
 
 class RawCommunitycontentClient:
@@ -42,7 +44,7 @@ class RawCommunitycontentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"CommunityContent/Get/{jsonable_encoder(sort)}/{jsonable_encoder(media_filter)}/{jsonable_encoder(page)}/",
+            f"CommunityContent/Get/{encode_path_param(sort)}/{encode_path_param(media_filter)}/{encode_path_param(page)}/",
             method="GET",
             request_options=request_options,
         )
@@ -59,6 +61,10 @@ class RawCommunitycontentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -92,7 +98,7 @@ class AsyncRawCommunitycontentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"CommunityContent/Get/{jsonable_encoder(sort)}/{jsonable_encoder(media_filter)}/{jsonable_encoder(page)}/",
+            f"CommunityContent/Get/{encode_path_param(sort)}/{encode_path_param(media_filter)}/{encode_path_param(page)}/",
             method="GET",
             request_options=request_options,
         )
@@ -109,4 +115,8 @@ class AsyncRawCommunitycontentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

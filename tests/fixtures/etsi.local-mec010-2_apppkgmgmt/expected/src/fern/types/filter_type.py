@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class FilterType(str, enum.Enum):
+class FilterType(enum.StrEnum):
     """
     Definition of filter type: per FLOW or PACKET
     """

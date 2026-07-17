@@ -13,22 +13,32 @@ class Execution(UniversalBaseModel):
     Execution
     """
 
-    id: typing_extensions.Annotated[str, FieldMetadata(alias="$id")] = pydantic.Field()
+    id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="$id"), pydantic.Field(alias="$id", description="Execution ID.")
+    ]
     """
     Execution ID.
     """
 
-    date_created: typing_extensions.Annotated[int, FieldMetadata(alias="dateCreated")] = pydantic.Field()
+    date_created: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="dateCreated"),
+        pydantic.Field(alias="dateCreated", description="The execution creation date in Unix timestamp."),
+    ]
     """
     The execution creation date in Unix timestamp.
     """
 
-    exit_code: typing_extensions.Annotated[int, FieldMetadata(alias="exitCode")] = pydantic.Field()
+    exit_code: typing_extensions.Annotated[
+        int, FieldMetadata(alias="exitCode"), pydantic.Field(alias="exitCode", description="The script exit code.")
+    ]
     """
     The script exit code.
     """
 
-    function_id: typing_extensions.Annotated[str, FieldMetadata(alias="functionId")] = pydantic.Field()
+    function_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="functionId"), pydantic.Field(alias="functionId", description="Function ID.")
+    ]
     """
     Function ID.
     """

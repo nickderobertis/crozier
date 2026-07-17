@@ -22,8 +22,11 @@ class DestinyDefinitionsSeasonsDestinyEventCardDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
-    end_time: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="endTime")] = None
+    end_time: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="endTime"), pydantic.Field(alias="endTime")
+    ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
     The unique identifier for this entity. Guaranteed to be unique for the type of entity, but not globally.
@@ -36,28 +39,36 @@ class DestinyDefinitionsSeasonsDestinyEventCardDefinition(UniversalBaseModel):
     The index of the entity as it was found in the investment tables.
     """
 
-    link_redirect_path: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="linkRedirectPath")] = (
-        None
-    )
+    link_redirect_path: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="linkRedirectPath"), pydantic.Field(alias="linkRedirectPath")
+    ] = None
     redacted: typing.Optional[bool] = pydantic.Field(default=None)
     """
     If this is true, then there is an entity with this identifier/type combination, but BNet is not yet allowed to show it. Sorry!
     """
 
     seal_presentation_node_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="sealPresentationNodeHash")
+        typing.Optional[int],
+        FieldMetadata(alias="sealPresentationNodeHash"),
+        pydantic.Field(alias="sealPresentationNodeHash"),
     ] = None
     ticket_currency_item_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="ticketCurrencyItemHash")
+        typing.Optional[int],
+        FieldMetadata(alias="ticketCurrencyItemHash"),
+        pydantic.Field(alias="ticketCurrencyItemHash"),
     ] = None
     ticket_vendor_category_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="ticketVendorCategoryHash")
+        typing.Optional[int],
+        FieldMetadata(alias="ticketVendorCategoryHash"),
+        pydantic.Field(alias="ticketVendorCategoryHash"),
     ] = None
-    ticket_vendor_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="ticketVendorHash")] = (
-        None
-    )
+    ticket_vendor_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="ticketVendorHash"), pydantic.Field(alias="ticketVendorHash")
+    ] = None
     triumphs_presentation_node_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="triumphsPresentationNodeHash")
+        typing.Optional[int],
+        FieldMetadata(alias="triumphsPresentationNodeHash"),
+        pydantic.Field(alias="triumphsPresentationNodeHash"),
     ] = None
 
     if IS_PYDANTIC_V2:

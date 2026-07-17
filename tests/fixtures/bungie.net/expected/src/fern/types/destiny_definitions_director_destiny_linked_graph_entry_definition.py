@@ -9,9 +9,9 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyDefinitionsDirectorDestinyLinkedGraphEntryDefinition(UniversalBaseModel):
-    activity_graph_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="activityGraphHash")] = (
-        None
-    )
+    activity_graph_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="activityGraphHash"), pydantic.Field(alias="activityGraphHash")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

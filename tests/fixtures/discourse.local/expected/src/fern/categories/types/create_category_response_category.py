@@ -16,11 +16,11 @@ class CreateCategoryResponseCategory(UniversalBaseModel):
     allow_badges: bool
     allow_global_tags: typing.Optional[bool] = None
     allow_unlimited_owner_edits_on_first_post: bool
-    allowed_tag_groups: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
-    allowed_tags: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    allowed_tag_groups: typing.Optional[typing.List[typing.Any]] = None
+    allowed_tags: typing.Optional[typing.List[typing.Any]] = None
     auto_close_based_on_last_post: bool
     auto_close_hours: typing.Optional[str] = None
-    available_groups: typing.List[typing.Optional[typing.Any]]
+    available_groups: typing.List[typing.Any]
     can_delete: bool
     can_edit: bool
     color: str
@@ -34,7 +34,7 @@ class CreateCategoryResponseCategory(UniversalBaseModel):
     description_text: typing.Optional[str] = None
     email_in: typing.Optional[str] = None
     email_in_allow_strangers: bool
-    form_template_ids: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    form_template_ids: typing.Optional[typing.List[typing.Any]] = None
     group_permissions: typing.List[CreateCategoryResponseCategoryGroupPermissionsItem]
     has_children: typing.Optional[str] = None
     id: int

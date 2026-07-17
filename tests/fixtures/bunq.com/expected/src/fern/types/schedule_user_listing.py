@@ -2,4 +2,4 @@
 
 import typing
 
-ScheduleUserListing = typing.Dict[str, typing.Optional[typing.Any]]
+ScheduleUserListing = typing.Dict[str, typing.Any]

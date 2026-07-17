@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class JobResultStatusLabel(str, enum.Enum):
+class JobResultStatusLabel(enum.StrEnum):
     PENDING = "Pending"
     SCHEDULED = "Scheduled"
     RUNNING = "Running"

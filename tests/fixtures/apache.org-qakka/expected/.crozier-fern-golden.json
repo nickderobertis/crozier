@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "apache.org-qakka",
+  "corpus_spec_ref": "v1",
+  "corpus_spec_url": "https://api.apis.guru/v2/specs/apache.org/qakka/v1/openapi.json"
+}

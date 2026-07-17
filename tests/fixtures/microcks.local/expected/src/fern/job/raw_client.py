@@ -8,7 +8,8 @@ from .. import core
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -18,6 +19,7 @@ from ..types.import_job import ImportJob
 from ..types.metadata import Metadata
 from ..types.secret_ref import SecretRef
 from ..types.service_ref import ServiceRef
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -80,6 +82,10 @@ class RawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_import_jobs(
@@ -135,6 +141,10 @@ class RawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_import_job(
@@ -252,6 +262,10 @@ class RawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_import_job_counter(
@@ -286,6 +300,10 @@ class RawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_import_job(
@@ -308,7 +326,7 @@ class RawJobClient:
             Found ImportJob
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"jobs/{jsonable_encoder(id)}",
+            f"jobs/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -325,6 +343,10 @@ class RawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_import_job(
@@ -406,7 +428,7 @@ class RawJobClient:
             Updated ImportJob
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"jobs/{jsonable_encoder(id_)}",
+            f"jobs/{encode_path_param(id_)}",
             method="POST",
             json={
                 "active": active,
@@ -449,11 +471,15 @@ class RawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_import_job(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.Optional[typing.Any]]:
+    ) -> HttpResponse[typing.Any]:
         """
         Delete an ImportJob
 
@@ -467,11 +493,11 @@ class RawJobClient:
 
         Returns
         -------
-        HttpResponse[typing.Optional[typing.Any]]
+        HttpResponse[typing.Any]
             ImportJob deleted
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"jobs/{jsonable_encoder(id)}",
+            f"jobs/{encode_path_param(id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -480,9 +506,9 @@ class RawJobClient:
                 return HttpResponse(response=_response, data=None)
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.Optional[typing.Any],
+                    typing.Any,
                     parse_obj_as(
-                        type_=typing.Optional[typing.Any],
+                        type_=typing.Any,
                         object_=_response.json(),
                     ),
                 )
@@ -490,6 +516,10 @@ class RawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def activate_import_job(
@@ -512,7 +542,7 @@ class RawJobClient:
             ImportJob is activated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"jobs/{jsonable_encoder(id)}/activate",
+            f"jobs/{encode_path_param(id)}/activate",
             method="PUT",
             request_options=request_options,
         )
@@ -529,6 +559,10 @@ class RawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def start_import_job(
@@ -551,7 +585,7 @@ class RawJobClient:
             Started ImportJob
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"jobs/{jsonable_encoder(id)}/start",
+            f"jobs/{encode_path_param(id)}/start",
             method="PUT",
             request_options=request_options,
         )
@@ -568,6 +602,10 @@ class RawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def stop_import_job(
@@ -590,7 +628,7 @@ class RawJobClient:
             Stopped ImportJob
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"jobs/{jsonable_encoder(id)}/stop",
+            f"jobs/{encode_path_param(id)}/stop",
             method="PUT",
             request_options=request_options,
         )
@@ -607,6 +645,10 @@ class RawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -667,6 +709,10 @@ class AsyncRawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_import_jobs(
@@ -722,6 +768,10 @@ class AsyncRawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_import_job(
@@ -839,6 +889,10 @@ class AsyncRawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_import_job_counter(
@@ -873,6 +927,10 @@ class AsyncRawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_import_job(
@@ -895,7 +953,7 @@ class AsyncRawJobClient:
             Found ImportJob
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"jobs/{jsonable_encoder(id)}",
+            f"jobs/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -912,6 +970,10 @@ class AsyncRawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_import_job(
@@ -993,7 +1055,7 @@ class AsyncRawJobClient:
             Updated ImportJob
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"jobs/{jsonable_encoder(id_)}",
+            f"jobs/{encode_path_param(id_)}",
             method="POST",
             json={
                 "active": active,
@@ -1036,11 +1098,15 @@ class AsyncRawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_import_job(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[typing.Optional[typing.Any]]:
+    ) -> AsyncHttpResponse[typing.Any]:
         """
         Delete an ImportJob
 
@@ -1054,11 +1120,11 @@ class AsyncRawJobClient:
 
         Returns
         -------
-        AsyncHttpResponse[typing.Optional[typing.Any]]
+        AsyncHttpResponse[typing.Any]
             ImportJob deleted
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"jobs/{jsonable_encoder(id)}",
+            f"jobs/{encode_path_param(id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1067,9 +1133,9 @@ class AsyncRawJobClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.Optional[typing.Any],
+                    typing.Any,
                     parse_obj_as(
-                        type_=typing.Optional[typing.Any],
+                        type_=typing.Any,
                         object_=_response.json(),
                     ),
                 )
@@ -1077,6 +1143,10 @@ class AsyncRawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def activate_import_job(
@@ -1099,7 +1169,7 @@ class AsyncRawJobClient:
             ImportJob is activated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"jobs/{jsonable_encoder(id)}/activate",
+            f"jobs/{encode_path_param(id)}/activate",
             method="PUT",
             request_options=request_options,
         )
@@ -1116,6 +1186,10 @@ class AsyncRawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def start_import_job(
@@ -1138,7 +1212,7 @@ class AsyncRawJobClient:
             Started ImportJob
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"jobs/{jsonable_encoder(id)}/start",
+            f"jobs/{encode_path_param(id)}/start",
             method="PUT",
             request_options=request_options,
         )
@@ -1155,6 +1229,10 @@ class AsyncRawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def stop_import_job(
@@ -1177,7 +1255,7 @@ class AsyncRawJobClient:
             Stopped ImportJob
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"jobs/{jsonable_encoder(id)}/stop",
+            f"jobs/{encode_path_param(id)}/stop",
             method="PUT",
             request_options=request_options,
         )
@@ -1194,4 +1272,8 @@ class AsyncRawJobClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

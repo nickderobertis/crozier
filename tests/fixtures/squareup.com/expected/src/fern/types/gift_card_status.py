@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GiftCardStatus(str, enum.Enum):
+class GiftCardStatus(enum.StrEnum):
     """
     Indicates the gift card state.
     """

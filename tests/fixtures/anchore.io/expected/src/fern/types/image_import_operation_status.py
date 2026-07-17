@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ImageImportOperationStatus(str, enum.Enum):
+class ImageImportOperationStatus(enum.StrEnum):
     PENDING = "pending"
     QUEUED = "queued"
     PROCESSING = "processing"

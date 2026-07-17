@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InvoiceCustomFieldPlacement(str, enum.Enum):
+class InvoiceCustomFieldPlacement(enum.StrEnum):
     """
     Indicates where to render a custom field on the Square-hosted invoice page and in emailed or PDF
     copies of the invoice.

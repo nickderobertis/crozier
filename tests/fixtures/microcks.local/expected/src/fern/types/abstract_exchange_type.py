@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AbstractExchangeType(str, enum.Enum):
+class AbstractExchangeType(enum.StrEnum):
     """
     Discriminant type for identifying kind of exchange
     """

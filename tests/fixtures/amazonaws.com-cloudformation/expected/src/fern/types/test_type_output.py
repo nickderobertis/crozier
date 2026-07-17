@@ -9,9 +9,11 @@ from ..core.serialization import FieldMetadata
 
 
 class TestTypeOutput(UniversalBaseModel):
-    type_version_arn: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TypeVersionArn")] = (
-        pydantic.Field(default=None)
-    )
+    type_version_arn: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="TypeVersionArn"),
+        pydantic.Field(alias="TypeVersionArn", description="The Amazon Resource Name (ARN) of the extension."),
+    ] = None
     """
     The Amazon Resource Name (ARN) of the extension.
     """

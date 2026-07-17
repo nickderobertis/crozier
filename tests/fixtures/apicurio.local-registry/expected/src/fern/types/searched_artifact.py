@@ -18,12 +18,16 @@ class SearchedArtifact(UniversalBaseModel):
     Models a single artifact from the result set returned when searching for artifacts.
     """
 
-    created_by: typing_extensions.Annotated[str, FieldMetadata(alias="createdBy")] = pydantic.Field()
+    created_by: typing_extensions.Annotated[
+        str, FieldMetadata(alias="createdBy"), pydantic.Field(alias="createdBy", description="")
+    ]
     """
     
     """
 
-    created_on: typing_extensions.Annotated[dt.datetime, FieldMetadata(alias="createdOn")] = pydantic.Field()
+    created_on: typing_extensions.Annotated[
+        dt.datetime, FieldMetadata(alias="createdOn"), pydantic.Field(alias="createdOn", description="")
+    ]
     """
     
     """
@@ -33,9 +37,9 @@ class SearchedArtifact(UniversalBaseModel):
     
     """
 
-    group_id: typing_extensions.Annotated[typing.Optional[GroupId], FieldMetadata(alias="groupId")] = pydantic.Field(
-        default=None
-    )
+    group_id: typing_extensions.Annotated[
+        typing.Optional[GroupId], FieldMetadata(alias="groupId"), pydantic.Field(alias="groupId", description="")
+    ] = None
     """
     
     """
@@ -50,16 +54,18 @@ class SearchedArtifact(UniversalBaseModel):
     
     """
 
-    modified_by: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="modifiedBy")] = pydantic.Field(
-        default=None
-    )
+    modified_by: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="modifiedBy"), pydantic.Field(alias="modifiedBy", description="")
+    ] = None
     """
     
     """
 
-    modified_on: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="modifiedOn")] = (
-        pydantic.Field(default=None)
-    )
+    modified_on: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="modifiedOn"),
+        pydantic.Field(alias="modifiedOn", description=""),
+    ] = None
     """
     
     """

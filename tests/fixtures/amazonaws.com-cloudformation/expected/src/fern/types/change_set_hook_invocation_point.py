@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ChangeSetHookInvocationPoint(str, enum.Enum):
+class ChangeSetHookInvocationPoint(enum.StrEnum):
     """
     Specifies the points in provisioning logic where a hook is invoked.
     """

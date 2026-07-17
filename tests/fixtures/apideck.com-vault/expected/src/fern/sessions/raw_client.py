@@ -6,6 +6,7 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -23,6 +24,7 @@ from ..types.unauthorized_response import UnauthorizedResponse
 from ..types.unprocessable_response import UnprocessableResponse
 from .types.session_settings import SessionSettings
 from .types.session_theme import SessionTheme
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -37,7 +39,7 @@ class RawSessionsClient:
         *,
         apideck_consumer_id: str,
         consumer_metadata: typing.Optional[ConsumerMetadata] = OMIT,
-        custom_consumer_settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_consumer_settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         redirect_uri: typing.Optional[str] = OMIT,
         settings: typing.Optional[SessionSettings] = OMIT,
         theme: typing.Optional[SessionTheme] = OMIT,
@@ -56,7 +58,7 @@ class RawSessionsClient:
 
         consumer_metadata : typing.Optional[ConsumerMetadata]
 
-        custom_consumer_settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_consumer_settings : typing.Optional[typing.Dict[str, typing.Any]]
             Custom consumer settings that are passed as part of the session.
 
         redirect_uri : typing.Optional[str]
@@ -167,6 +169,10 @@ class RawSessionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -179,7 +185,7 @@ class AsyncRawSessionsClient:
         *,
         apideck_consumer_id: str,
         consumer_metadata: typing.Optional[ConsumerMetadata] = OMIT,
-        custom_consumer_settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_consumer_settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         redirect_uri: typing.Optional[str] = OMIT,
         settings: typing.Optional[SessionSettings] = OMIT,
         theme: typing.Optional[SessionTheme] = OMIT,
@@ -198,7 +204,7 @@ class AsyncRawSessionsClient:
 
         consumer_metadata : typing.Optional[ConsumerMetadata]
 
-        custom_consumer_settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_consumer_settings : typing.Optional[typing.Dict[str, typing.Any]]
             Custom consumer settings that are passed as part of the session.
 
         redirect_uri : typing.Optional[str]
@@ -309,4 +315,8 @@ class AsyncRawSessionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

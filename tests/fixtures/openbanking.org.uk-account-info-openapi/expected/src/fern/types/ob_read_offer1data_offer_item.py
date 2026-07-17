@@ -14,78 +14,119 @@ from .ob_read_offer1data_offer_item_offer_type import ObReadOffer1DataOfferItemO
 
 
 class ObReadOffer1DataOfferItem(UniversalBaseModel):
-    account_id: typing_extensions.Annotated[AccountId, FieldMetadata(alias="AccountId")]
+    account_id: typing_extensions.Annotated[
+        AccountId, FieldMetadata(alias="AccountId"), pydantic.Field(alias="AccountId")
+    ]
     amount: typing_extensions.Annotated[
-        typing.Optional[ObReadOffer1DataOfferItemAmount], FieldMetadata(alias="Amount")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObReadOffer1DataOfferItemAmount],
+        FieldMetadata(alias="Amount"),
+        pydantic.Field(alias="Amount", description="Amount of money associated with the offer type."),
+    ] = None
     """
     Amount of money associated with the offer type.
     """
 
-    description: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Description")] = pydantic.Field(
-        default=None
-    )
+    description: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Description"),
+        pydantic.Field(alias="Description", description="Further details of the offer."),
+    ] = None
     """
     Further details of the offer.
     """
 
-    end_date_time: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="EndDateTime")] = (
-        pydantic.Field(default=None)
-    )
+    end_date_time: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="EndDateTime"),
+        pydantic.Field(
+            alias="EndDateTime",
+            description="Date and time at which the offer ends.All dates in the JSON payloads are represented in ISO 8601 date-time format. \nAll date-time fields in responses must include the timezone. An example is below:\n2017-04-05T10:43:07+00:00",
+        ),
+    ] = None
     """
     Date and time at which the offer ends.All dates in the JSON payloads are represented in ISO 8601 date-time format. 
     All date-time fields in responses must include the timezone. An example is below:
     2017-04-05T10:43:07+00:00
     """
 
-    fee: typing_extensions.Annotated[typing.Optional[ObReadOffer1DataOfferItemFee], FieldMetadata(alias="Fee")] = (
-        pydantic.Field(default=None)
-    )
+    fee: typing_extensions.Annotated[
+        typing.Optional[ObReadOffer1DataOfferItemFee],
+        FieldMetadata(alias="Fee"),
+        pydantic.Field(alias="Fee", description="Fee associated with the offer type."),
+    ] = None
     """
     Fee associated with the offer type.
     """
 
-    offer_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="OfferId")] = pydantic.Field(
-        default=None
-    )
+    offer_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="OfferId"),
+        pydantic.Field(
+            alias="OfferId",
+            description="A unique and immutable identifier used to identify the offer resource. This identifier has no meaning to the account owner.",
+        ),
+    ] = None
     """
     A unique and immutable identifier used to identify the offer resource. This identifier has no meaning to the account owner.
     """
 
     offer_type: typing_extensions.Annotated[
-        typing.Optional[ObReadOffer1DataOfferItemOfferType], FieldMetadata(alias="OfferType")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObReadOffer1DataOfferItemOfferType],
+        FieldMetadata(alias="OfferType"),
+        pydantic.Field(alias="OfferType", description="Offer type, in a coded form."),
+    ] = None
     """
     Offer type, in a coded form.
     """
 
-    rate: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Rate")] = pydantic.Field(default=None)
+    rate: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Rate"),
+        pydantic.Field(alias="Rate", description="Rate associated with the offer type."),
+    ] = None
     """
     Rate associated with the offer type.
     """
 
-    start_date_time: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="StartDateTime")] = (
-        pydantic.Field(default=None)
-    )
+    start_date_time: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="StartDateTime"),
+        pydantic.Field(
+            alias="StartDateTime",
+            description="Date and time at which the offer starts.All dates in the JSON payloads are represented in ISO 8601 date-time format. \nAll date-time fields in responses must include the timezone. An example is below:\n2017-04-05T10:43:07+00:00",
+        ),
+    ] = None
     """
     Date and time at which the offer starts.All dates in the JSON payloads are represented in ISO 8601 date-time format. 
     All date-time fields in responses must include the timezone. An example is below:
     2017-04-05T10:43:07+00:00
     """
 
-    term: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Term")] = pydantic.Field(default=None)
+    term: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Term"),
+        pydantic.Field(alias="Term", description="Further details of the term of the offer."),
+    ] = None
     """
     Further details of the term of the offer.
     """
 
-    url: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="URL")] = pydantic.Field(default=None)
+    url: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="URL"),
+        pydantic.Field(
+            alias="URL", description="URL (Uniform Resource Locator) where documentation on the offer can be found"
+        ),
+    ] = None
     """
     URL (Uniform Resource Locator) where documentation on the offer can be found
     """
 
-    value: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="Value")] = pydantic.Field(
-        default=None
-    )
+    value: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="Value"),
+        pydantic.Field(alias="Value", description="Value associated with the offer type."),
+    ] = None
     """
     Value associated with the offer type.
     """

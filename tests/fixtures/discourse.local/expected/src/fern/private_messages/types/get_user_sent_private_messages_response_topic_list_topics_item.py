@@ -31,7 +31,7 @@ class GetUserSentPrivateMessagesResponseTopicListTopicsItem(UniversalBaseModel):
     like_count: typing.Optional[int] = None
     liked: typing.Optional[bool] = None
     notification_level: typing.Optional[int] = None
-    participants: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    participants: typing.Optional[typing.List[typing.Any]] = None
     pinned: typing.Optional[bool] = None
     pinned_globally: typing.Optional[bool] = None
     posters: typing.Optional[typing.List[GetUserSentPrivateMessagesResponseTopicListTopicsItemPostersItem]] = None

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetApiConditionsIndexRequestIndex(str, enum.Enum):
+class GetApiConditionsIndexRequestIndex(enum.StrEnum):
     BLINDED = "blinded"
     CHARMED = "charmed"
     DEAFENED = "deafened"

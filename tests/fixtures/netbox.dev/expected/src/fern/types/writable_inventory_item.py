@@ -11,17 +11,19 @@ from .nested_tag import NestedTag
 
 
 class WritableInventoryItem(UniversalBaseModel):
-    depth: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="_depth")] = None
+    depth: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="_depth"), pydantic.Field(alias="_depth")
+    ] = None
     asset_tag: typing.Optional[str] = pydantic.Field(default=None)
     """
     A unique tag used to identify this item
     """
 
-    component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    component: typing.Optional[typing.Dict[str, typing.Any]] = None
     component_id: typing.Optional[int] = None
     component_type: typing.Optional[str] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     device: int
     discovered: typing.Optional[bool] = pydantic.Field(default=None)

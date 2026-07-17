@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from .core.api_error import ApiError
 from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.http_response import AsyncHttpResponse, HttpResponse
-from .core.jsonable_encoder import jsonable_encoder
+from .core.jsonable_encoder import encode_path_param
+from .core.parse_error import ParsingError
 from .core.pydantic_utilities import parse_obj_as
 from .core.request_options import RequestOptions
 from .errors.internal_server_error import InternalServerError
@@ -16,6 +17,7 @@ from .types.retrieved_file_list import RetrievedFileList
 from .types.secret_search_list import SecretSearchList
 from .types.service_version import ServiceVersion
 from .types.token_response import TokenResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -56,6 +58,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def health_check(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -82,6 +88,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_file_content_search_results(
@@ -101,7 +111,7 @@ class RawFernApi:
             List of file metadata objects
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/artifacts/file_content_search",
+            f"images/{encode_path_param(image_digest)}/artifacts/file_content_search",
             method="GET",
             request_options=request_options,
         )
@@ -119,9 +129,9 @@ class RawFernApi:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -129,6 +139,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_retrieved_files(
@@ -148,7 +162,7 @@ class RawFernApi:
             List of file metadata objects
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/artifacts/retrieved_files",
+            f"images/{encode_path_param(image_digest)}/artifacts/retrieved_files",
             method="GET",
             request_options=request_options,
         )
@@ -166,9 +180,9 @@ class RawFernApi:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -176,6 +190,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_secret_search_results(
@@ -195,7 +213,7 @@ class RawFernApi:
             List of file metadata objects
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/artifacts/secret_search",
+            f"images/{encode_path_param(image_digest)}/artifacts/secret_search",
             method="GET",
             request_options=request_options,
         )
@@ -213,9 +231,9 @@ class RawFernApi:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -223,6 +241,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_oauth_token(
@@ -288,9 +310,9 @@ class RawFernApi:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -298,6 +320,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def version_check(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[ServiceVersion]:
@@ -332,6 +358,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -370,6 +400,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def health_check(self, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[None]:
@@ -396,6 +430,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_file_content_search_results(
@@ -415,7 +453,7 @@ class AsyncRawFernApi:
             List of file metadata objects
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/artifacts/file_content_search",
+            f"images/{encode_path_param(image_digest)}/artifacts/file_content_search",
             method="GET",
             request_options=request_options,
         )
@@ -433,9 +471,9 @@ class AsyncRawFernApi:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -443,6 +481,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_retrieved_files(
@@ -462,7 +504,7 @@ class AsyncRawFernApi:
             List of file metadata objects
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/artifacts/retrieved_files",
+            f"images/{encode_path_param(image_digest)}/artifacts/retrieved_files",
             method="GET",
             request_options=request_options,
         )
@@ -480,9 +522,9 @@ class AsyncRawFernApi:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -490,6 +532,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_secret_search_results(
@@ -509,7 +555,7 @@ class AsyncRawFernApi:
             List of file metadata objects
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/artifacts/secret_search",
+            f"images/{encode_path_param(image_digest)}/artifacts/secret_search",
             method="GET",
             request_options=request_options,
         )
@@ -527,9 +573,9 @@ class AsyncRawFernApi:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -537,6 +583,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_oauth_token(
@@ -602,9 +652,9 @@ class AsyncRawFernApi:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -612,6 +662,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def version_check(
@@ -648,4 +702,8 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

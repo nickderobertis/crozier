@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MailerMailgunExporterConfigType(str, enum.Enum):
+class MailerMailgunExporterConfigType(enum.StrEnum):
     """
     Type of mailer
     """

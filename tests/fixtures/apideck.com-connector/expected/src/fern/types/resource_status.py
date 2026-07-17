@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ResourceStatus(str, enum.Enum):
+class ResourceStatus(enum.StrEnum):
     """
     Status of the resource. Resources with status live or beta are callable.
     """

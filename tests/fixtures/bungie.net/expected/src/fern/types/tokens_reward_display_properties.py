@@ -9,9 +9,15 @@ from ..core.serialization import FieldMetadata
 
 
 class TokensRewardDisplayProperties(UniversalBaseModel):
-    description: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Description")] = None
-    image_path: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="ImagePath")] = None
-    name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Name")] = None
+    description: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="Description"), pydantic.Field(alias="Description")
+    ] = None
+    image_path: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="ImagePath"), pydantic.Field(alias="ImagePath")
+    ] = None
+    name: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="Name"), pydantic.Field(alias="Name")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

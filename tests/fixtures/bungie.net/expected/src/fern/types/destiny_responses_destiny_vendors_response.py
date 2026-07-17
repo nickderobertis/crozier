@@ -41,16 +41,26 @@ class DestinyResponsesDestinyVendorsResponse(UniversalBaseModel):
     """
 
     currency_lookups: typing_extensions.Annotated[
-        typing.Optional[SingleComponentResponseOfDestinyCurrenciesComponent], FieldMetadata(alias="currencyLookups")
-    ] = pydantic.Field(default=None)
+        typing.Optional[SingleComponentResponseOfDestinyCurrenciesComponent],
+        FieldMetadata(alias="currencyLookups"),
+        pydantic.Field(
+            alias="currencyLookups",
+            description='A "lookup" convenience component that can be used to quickly check if the character has access to items that can be used for purchasing.\r\nCOMPONENT TYPE: CurrencyLookups',
+        ),
+    ] = None
     """
     A "lookup" convenience component that can be used to quickly check if the character has access to items that can be used for purchasing.
     COMPONENT TYPE: CurrencyLookups
     """
 
     item_components: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, DestinyItemComponentSetOfint32]], FieldMetadata(alias="itemComponents")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.Dict[str, DestinyItemComponentSetOfint32]],
+        FieldMetadata(alias="itemComponents"),
+        pydantic.Field(
+            alias="itemComponents",
+            description="The set of item detail components, one set of item components per Vendor. These are keyed by the Vendor Hash, so you will get one Item Component Set per vendor returned.\r\nThe components contained inside are themselves keyed by the vendorSaleIndex, and will have whatever item-level components you requested (Sockets, Stats, Instance data etc...) per item being sold by the vendor.",
+        ),
+    ] = None
     """
     The set of item detail components, one set of item components per Vendor. These are keyed by the Vendor Hash, so you will get one Item Component Set per vendor returned.
     The components contained inside are themselves keyed by the vendorSaleIndex, and will have whatever item-level components you requested (Sockets, Stats, Instance data etc...) per item being sold by the vendor.
@@ -68,15 +78,24 @@ class DestinyResponsesDestinyVendorsResponse(UniversalBaseModel):
     string_variables: typing_extensions.Annotated[
         typing.Optional[SingleComponentResponseOfDestinyStringVariablesComponent],
         FieldMetadata(alias="stringVariables"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="stringVariables",
+            description="A map of string variable values by hash for this character context.\r\nCOMPONENT TYPE: StringVariables",
+        ),
+    ] = None
     """
     A map of string variable values by hash for this character context.
     COMPONENT TYPE: StringVariables
     """
 
     vendor_groups: typing_extensions.Annotated[
-        typing.Optional[SingleComponentResponseOfDestinyVendorGroupComponent], FieldMetadata(alias="vendorGroups")
-    ] = pydantic.Field(default=None)
+        typing.Optional[SingleComponentResponseOfDestinyVendorGroupComponent],
+        FieldMetadata(alias="vendorGroups"),
+        pydantic.Field(
+            alias="vendorGroups",
+            description="For Vendors being returned, this will give you the information you need to group them and order them in the same way that the Bungie Companion app performs grouping. It will automatically be returned if you request the Vendors component.\r\nCOMPONENT TYPE: Vendors",
+        ),
+    ] = None
     """
     For Vendors being returned, this will give you the information you need to group them and order them in the same way that the Bungie Companion app performs grouping. It will automatically be returned if you request the Vendors component.
     COMPONENT TYPE: Vendors

@@ -8,12 +8,12 @@ from .search_response_grouped_search_result import SearchResponseGroupedSearchRe
 
 
 class SearchResponse(UniversalBaseModel):
-    categories: typing.List[typing.Optional[typing.Any]]
+    categories: typing.List[typing.Any]
     grouped_search_result: SearchResponseGroupedSearchResult
-    groups: typing.List[typing.Optional[typing.Any]]
-    posts: typing.List[typing.Optional[typing.Any]]
-    tags: typing.List[typing.Optional[typing.Any]]
-    users: typing.List[typing.Optional[typing.Any]]
+    groups: typing.List[typing.Any]
+    posts: typing.List[typing.Any]
+    tags: typing.List[typing.Any]
+    users: typing.List[typing.Any]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

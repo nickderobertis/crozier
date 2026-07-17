@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.content_get_content_by_id_response import ContentGetContentByIdResponse
@@ -16,6 +17,7 @@ from .types.content_rss_news_articles_response import ContentRssNewsArticlesResp
 from .types.content_search_content_by_tag_and_type_response import ContentSearchContentByTagAndTypeResponse
 from .types.content_search_content_with_text_response import ContentSearchContentWithTextResponse
 from .types.content_search_help_articles_response import ContentSearchHelpArticlesResponse
+from pydantic import ValidationError
 
 
 class RawContentClient:
@@ -53,7 +55,7 @@ class RawContentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Content/GetContentById/{jsonable_encoder(id)}/{jsonable_encoder(locale)}/",
+            f"Content/GetContentById/{encode_path_param(id)}/{encode_path_param(locale)}/",
             method="GET",
             params={
                 "head": head,
@@ -73,6 +75,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getcontentbytagandtype(
@@ -110,7 +116,7 @@ class RawContentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Content/GetContentByTagAndType/{jsonable_encoder(tag)}/{jsonable_encoder(type)}/{jsonable_encoder(locale)}/",
+            f"Content/GetContentByTagAndType/{encode_path_param(tag)}/{encode_path_param(type)}/{encode_path_param(locale)}/",
             method="GET",
             params={
                 "head": head,
@@ -130,6 +136,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getcontenttype(
@@ -152,7 +162,7 @@ class RawContentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Content/GetContentType/{jsonable_encoder(type)}/",
+            f"Content/GetContentType/{encode_path_param(type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -169,6 +179,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rssnewsarticles(
@@ -202,7 +216,7 @@ class RawContentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Content/Rss/NewsArticles/{jsonable_encoder(page_token)}/",
+            f"Content/Rss/NewsArticles/{encode_path_param(page_token)}/",
             method="GET",
             params={
                 "categoryfilter": categoryfilter,
@@ -223,6 +237,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def searchcontentwithtext(
@@ -272,7 +290,7 @@ class RawContentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Content/Search/{jsonable_encoder(locale)}/",
+            f"Content/Search/{encode_path_param(locale)}/",
             method="GET",
             params={
                 "ctype": ctype,
@@ -297,6 +315,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def searchcontentbytagandtype(
@@ -342,7 +364,7 @@ class RawContentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Content/SearchContentByTagAndType/{jsonable_encoder(tag)}/{jsonable_encoder(type)}/{jsonable_encoder(locale)}/",
+            f"Content/SearchContentByTagAndType/{encode_path_param(tag)}/{encode_path_param(type)}/{encode_path_param(locale)}/",
             method="GET",
             params={
                 "currentpage": currentpage,
@@ -364,6 +386,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def searchhelparticles(
@@ -389,7 +415,7 @@ class RawContentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Content/SearchHelpArticles/{jsonable_encoder(searchtext)}/{jsonable_encoder(size)}/",
+            f"Content/SearchHelpArticles/{encode_path_param(searchtext)}/{encode_path_param(size)}/",
             method="GET",
             request_options=request_options,
         )
@@ -406,6 +432,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -444,7 +474,7 @@ class AsyncRawContentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Content/GetContentById/{jsonable_encoder(id)}/{jsonable_encoder(locale)}/",
+            f"Content/GetContentById/{encode_path_param(id)}/{encode_path_param(locale)}/",
             method="GET",
             params={
                 "head": head,
@@ -464,6 +494,10 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getcontentbytagandtype(
@@ -501,7 +535,7 @@ class AsyncRawContentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Content/GetContentByTagAndType/{jsonable_encoder(tag)}/{jsonable_encoder(type)}/{jsonable_encoder(locale)}/",
+            f"Content/GetContentByTagAndType/{encode_path_param(tag)}/{encode_path_param(type)}/{encode_path_param(locale)}/",
             method="GET",
             params={
                 "head": head,
@@ -521,6 +555,10 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getcontenttype(
@@ -543,7 +581,7 @@ class AsyncRawContentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Content/GetContentType/{jsonable_encoder(type)}/",
+            f"Content/GetContentType/{encode_path_param(type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -560,6 +598,10 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rssnewsarticles(
@@ -593,7 +635,7 @@ class AsyncRawContentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Content/Rss/NewsArticles/{jsonable_encoder(page_token)}/",
+            f"Content/Rss/NewsArticles/{encode_path_param(page_token)}/",
             method="GET",
             params={
                 "categoryfilter": categoryfilter,
@@ -614,6 +656,10 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def searchcontentwithtext(
@@ -663,7 +709,7 @@ class AsyncRawContentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Content/Search/{jsonable_encoder(locale)}/",
+            f"Content/Search/{encode_path_param(locale)}/",
             method="GET",
             params={
                 "ctype": ctype,
@@ -688,6 +734,10 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def searchcontentbytagandtype(
@@ -733,7 +783,7 @@ class AsyncRawContentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Content/SearchContentByTagAndType/{jsonable_encoder(tag)}/{jsonable_encoder(type)}/{jsonable_encoder(locale)}/",
+            f"Content/SearchContentByTagAndType/{encode_path_param(tag)}/{encode_path_param(type)}/{encode_path_param(locale)}/",
             method="GET",
             params={
                 "currentpage": currentpage,
@@ -755,6 +805,10 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def searchhelparticles(
@@ -780,7 +834,7 @@ class AsyncRawContentClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Content/SearchHelpArticles/{jsonable_encoder(searchtext)}/{jsonable_encoder(size)}/",
+            f"Content/SearchHelpArticles/{encode_path_param(searchtext)}/{encode_path_param(size)}/",
             method="GET",
             request_options=request_options,
         )
@@ -797,4 +851,8 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

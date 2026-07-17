@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObAddressTypeCode(str, enum.Enum):
+class ObAddressTypeCode(enum.StrEnum):
     """
     Identifies the nature of the postal address.
     """

@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -17,6 +18,7 @@ from .types.list_categories_response import ListCategoriesResponse
 from .types.list_category_topics_response import ListCategoryTopicsResponse
 from .types.update_category_request_permissions import UpdateCategoryRequestPermissions
 from .types.update_category_response import UpdateCategoryResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -43,7 +45,7 @@ class RawCategoriesClient:
             response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"c/{jsonable_encoder(id)}/show.json",
+            f"c/{encode_path_param(id)}/show.json",
             method="GET",
             request_options=request_options,
         )
@@ -60,6 +62,10 @@ class RawCategoriesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_category_topics(
@@ -81,7 +87,7 @@ class RawCategoriesClient:
             success response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"c/{jsonable_encoder(slug)}/{jsonable_encoder(id)}.json",
+            f"c/{encode_path_param(slug)}/{encode_path_param(id)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -98,6 +104,10 @@ class RawCategoriesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_categories(
@@ -140,6 +150,10 @@ class RawCategoriesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_category(
@@ -148,7 +162,7 @@ class RawCategoriesClient:
         name: str,
         allow_badges: typing.Optional[bool] = OMIT,
         color: typing.Optional[str] = OMIT,
-        form_template_ids: typing.Optional[typing.Sequence[typing.Optional[typing.Any]]] = OMIT,
+        form_template_ids: typing.Optional[typing.Sequence[typing.Any]] = OMIT,
         parent_category_id: typing.Optional[int] = OMIT,
         permissions: typing.Optional[CreateCategoryRequestPermissions] = OMIT,
         search_priority: typing.Optional[int] = OMIT,
@@ -166,7 +180,7 @@ class RawCategoriesClient:
 
         color : typing.Optional[str]
 
-        form_template_ids : typing.Optional[typing.Sequence[typing.Optional[typing.Any]]]
+        form_template_ids : typing.Optional[typing.Sequence[typing.Any]]
 
         parent_category_id : typing.Optional[int]
 
@@ -224,6 +238,10 @@ class RawCategoriesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_category(
@@ -233,7 +251,7 @@ class RawCategoriesClient:
         name: str,
         allow_badges: typing.Optional[bool] = OMIT,
         color: typing.Optional[str] = OMIT,
-        form_template_ids: typing.Optional[typing.Sequence[typing.Optional[typing.Any]]] = OMIT,
+        form_template_ids: typing.Optional[typing.Sequence[typing.Any]] = OMIT,
         parent_category_id: typing.Optional[int] = OMIT,
         permissions: typing.Optional[UpdateCategoryRequestPermissions] = OMIT,
         search_priority: typing.Optional[int] = OMIT,
@@ -253,7 +271,7 @@ class RawCategoriesClient:
 
         color : typing.Optional[str]
 
-        form_template_ids : typing.Optional[typing.Sequence[typing.Optional[typing.Any]]]
+        form_template_ids : typing.Optional[typing.Sequence[typing.Any]]
 
         parent_category_id : typing.Optional[int]
 
@@ -276,7 +294,7 @@ class RawCategoriesClient:
             success response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"categories/{jsonable_encoder(id)}.json",
+            f"categories/{encode_path_param(id)}.json",
             method="PUT",
             json={
                 "allow_badges": allow_badges,
@@ -311,6 +329,10 @@ class RawCategoriesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -335,7 +357,7 @@ class AsyncRawCategoriesClient:
             response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"c/{jsonable_encoder(id)}/show.json",
+            f"c/{encode_path_param(id)}/show.json",
             method="GET",
             request_options=request_options,
         )
@@ -352,6 +374,10 @@ class AsyncRawCategoriesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_category_topics(
@@ -373,7 +399,7 @@ class AsyncRawCategoriesClient:
             success response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"c/{jsonable_encoder(slug)}/{jsonable_encoder(id)}.json",
+            f"c/{encode_path_param(slug)}/{encode_path_param(id)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -390,6 +416,10 @@ class AsyncRawCategoriesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_categories(
@@ -432,6 +462,10 @@ class AsyncRawCategoriesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_category(
@@ -440,7 +474,7 @@ class AsyncRawCategoriesClient:
         name: str,
         allow_badges: typing.Optional[bool] = OMIT,
         color: typing.Optional[str] = OMIT,
-        form_template_ids: typing.Optional[typing.Sequence[typing.Optional[typing.Any]]] = OMIT,
+        form_template_ids: typing.Optional[typing.Sequence[typing.Any]] = OMIT,
         parent_category_id: typing.Optional[int] = OMIT,
         permissions: typing.Optional[CreateCategoryRequestPermissions] = OMIT,
         search_priority: typing.Optional[int] = OMIT,
@@ -458,7 +492,7 @@ class AsyncRawCategoriesClient:
 
         color : typing.Optional[str]
 
-        form_template_ids : typing.Optional[typing.Sequence[typing.Optional[typing.Any]]]
+        form_template_ids : typing.Optional[typing.Sequence[typing.Any]]
 
         parent_category_id : typing.Optional[int]
 
@@ -516,6 +550,10 @@ class AsyncRawCategoriesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_category(
@@ -525,7 +563,7 @@ class AsyncRawCategoriesClient:
         name: str,
         allow_badges: typing.Optional[bool] = OMIT,
         color: typing.Optional[str] = OMIT,
-        form_template_ids: typing.Optional[typing.Sequence[typing.Optional[typing.Any]]] = OMIT,
+        form_template_ids: typing.Optional[typing.Sequence[typing.Any]] = OMIT,
         parent_category_id: typing.Optional[int] = OMIT,
         permissions: typing.Optional[UpdateCategoryRequestPermissions] = OMIT,
         search_priority: typing.Optional[int] = OMIT,
@@ -545,7 +583,7 @@ class AsyncRawCategoriesClient:
 
         color : typing.Optional[str]
 
-        form_template_ids : typing.Optional[typing.Sequence[typing.Optional[typing.Any]]]
+        form_template_ids : typing.Optional[typing.Sequence[typing.Any]]
 
         parent_category_id : typing.Optional[int]
 
@@ -568,7 +606,7 @@ class AsyncRawCategoriesClient:
             success response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"categories/{jsonable_encoder(id)}.json",
+            f"categories/{encode_path_param(id)}.json",
             method="PUT",
             json={
                 "allow_badges": allow_badges,
@@ -603,4 +641,8 @@ class AsyncRawCategoriesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

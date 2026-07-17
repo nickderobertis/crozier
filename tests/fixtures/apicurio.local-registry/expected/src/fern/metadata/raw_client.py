@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.internal_server_error import InternalServerError
@@ -20,6 +21,7 @@ from ..types.group_id import GroupId
 from ..types.properties import Properties
 from ..types.version import Version
 from ..types.version_meta_data import VersionMetaData
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -58,7 +60,7 @@ class RawMetadataClient:
             The artifact's metadata.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/meta",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/meta",
             method="GET",
             request_options=request_options,
         )
@@ -97,6 +99,10 @@ class RawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_artifact_version_meta_data_by_content(
@@ -142,7 +148,7 @@ class RawMetadataClient:
             The metadata of the artifact version matching the provided content.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/meta",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/meta",
             method="POST",
             params={
                 "canonical": canonical,
@@ -186,6 +192,10 @@ class RawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_artifact_meta_data(
@@ -234,7 +244,7 @@ class RawMetadataClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/meta",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/meta",
             method="PUT",
             json={
                 "description": description,
@@ -276,6 +286,10 @@ class RawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_artifact_owner(
@@ -306,7 +320,7 @@ class RawMetadataClient:
             The artifact's owner.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/owner",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/owner",
             method="GET",
             request_options=request_options,
         )
@@ -345,6 +359,10 @@ class RawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_artifact_owner(
@@ -381,7 +399,7 @@ class RawMetadataClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/owner",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/owner",
             method="PUT",
             json={
                 "owner": owner,
@@ -420,6 +438,10 @@ class RawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_artifact_version_meta_data(
@@ -461,7 +483,7 @@ class RawMetadataClient:
             The artifact version's metadata.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions/{jsonable_encoder(version)}/meta",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions/{encode_path_param(version)}/meta",
             method="GET",
             request_options=request_options,
         )
@@ -500,6 +522,10 @@ class RawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_artifact_version_meta_data(
@@ -554,7 +580,7 @@ class RawMetadataClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions/{jsonable_encoder(version)}/meta",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions/{encode_path_param(version)}/meta",
             method="PUT",
             json={
                 "description": description,
@@ -596,6 +622,10 @@ class RawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_artifact_version_meta_data(
@@ -635,7 +665,7 @@ class RawMetadataClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions/{jsonable_encoder(version)}/meta",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions/{encode_path_param(version)}/meta",
             method="DELETE",
             request_options=request_options,
         )
@@ -667,6 +697,10 @@ class RawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -703,7 +737,7 @@ class AsyncRawMetadataClient:
             The artifact's metadata.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/meta",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/meta",
             method="GET",
             request_options=request_options,
         )
@@ -742,6 +776,10 @@ class AsyncRawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_artifact_version_meta_data_by_content(
@@ -787,7 +825,7 @@ class AsyncRawMetadataClient:
             The metadata of the artifact version matching the provided content.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/meta",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/meta",
             method="POST",
             params={
                 "canonical": canonical,
@@ -831,6 +869,10 @@ class AsyncRawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_artifact_meta_data(
@@ -879,7 +921,7 @@ class AsyncRawMetadataClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/meta",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/meta",
             method="PUT",
             json={
                 "description": description,
@@ -921,6 +963,10 @@ class AsyncRawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_artifact_owner(
@@ -951,7 +997,7 @@ class AsyncRawMetadataClient:
             The artifact's owner.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/owner",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/owner",
             method="GET",
             request_options=request_options,
         )
@@ -990,6 +1036,10 @@ class AsyncRawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_artifact_owner(
@@ -1026,7 +1076,7 @@ class AsyncRawMetadataClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/owner",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/owner",
             method="PUT",
             json={
                 "owner": owner,
@@ -1065,6 +1115,10 @@ class AsyncRawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_artifact_version_meta_data(
@@ -1106,7 +1160,7 @@ class AsyncRawMetadataClient:
             The artifact version's metadata.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions/{jsonable_encoder(version)}/meta",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions/{encode_path_param(version)}/meta",
             method="GET",
             request_options=request_options,
         )
@@ -1145,6 +1199,10 @@ class AsyncRawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_artifact_version_meta_data(
@@ -1199,7 +1257,7 @@ class AsyncRawMetadataClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions/{jsonable_encoder(version)}/meta",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions/{encode_path_param(version)}/meta",
             method="PUT",
             json={
                 "description": description,
@@ -1241,6 +1299,10 @@ class AsyncRawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_artifact_version_meta_data(
@@ -1280,7 +1342,7 @@ class AsyncRawMetadataClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/versions/{jsonable_encoder(version)}/meta",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/versions/{encode_path_param(version)}/meta",
             method="DELETE",
             request_options=request_options,
         )
@@ -1312,4 +1374,8 @@ class AsyncRawMetadataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

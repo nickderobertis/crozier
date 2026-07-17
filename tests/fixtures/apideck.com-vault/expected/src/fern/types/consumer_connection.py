@@ -16,14 +16,14 @@ class ConsumerConnection(UniversalBaseModel):
     icon: typing.Optional[str] = None
     id: typing.Optional[str] = None
     logo: typing.Optional[str] = None
-    metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    metadata: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     Attach your own consumer specific metadata
     """
 
     name: typing.Optional[str] = None
     service_id: typing.Optional[str] = None
-    settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    settings: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     Connection settings. Values will persist to `form_fields` with corresponding id
     """

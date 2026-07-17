@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PaymentUnit(str, enum.Enum):
+class PaymentUnit(enum.StrEnum):
     """
     Unit of measurement for employee compensation.
     """

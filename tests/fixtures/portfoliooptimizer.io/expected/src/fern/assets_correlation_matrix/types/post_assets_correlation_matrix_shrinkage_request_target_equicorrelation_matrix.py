@@ -14,13 +14,22 @@ from .post_assets_correlation_matrix_shrinkage_request_target_equicorrelation_ma
 class PostAssetsCorrelationMatrixShrinkageRequestTargetEquicorrelationMatrix(UniversalBaseModel):
     assets: int
     assets_correlation_matrix: typing_extensions.Annotated[
-        typing.List[typing.List[float]], FieldMetadata(alias="assetsCorrelationMatrix")
-    ] = pydantic.Field()
+        typing.List[typing.List[float]],
+        FieldMetadata(alias="assetsCorrelationMatrix"),
+        pydantic.Field(
+            alias="assetsCorrelationMatrix",
+            description="assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j",
+        ),
+    ]
     """
     assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
     """
 
-    shrinkage_factor: typing_extensions.Annotated[float, FieldMetadata(alias="shrinkageFactor")] = pydantic.Field()
+    shrinkage_factor: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="shrinkageFactor"),
+        pydantic.Field(alias="shrinkageFactor", description="The shrinkage factor"),
+    ]
     """
     The shrinkage factor
     """
@@ -28,7 +37,8 @@ class PostAssetsCorrelationMatrixShrinkageRequestTargetEquicorrelationMatrix(Uni
     target_equicorrelation_matrix: typing_extensions.Annotated[
         PostAssetsCorrelationMatrixShrinkageRequestTargetEquicorrelationMatrixTargetEquicorrelationMatrix,
         FieldMetadata(alias="targetEquicorrelationMatrix"),
-    ] = pydantic.Field()
+        pydantic.Field(alias="targetEquicorrelationMatrix", description="The shrinkage target correlation matrix"),
+    ]
     """
     The shrinkage target correlation matrix
     """

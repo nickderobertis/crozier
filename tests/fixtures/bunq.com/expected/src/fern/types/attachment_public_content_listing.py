@@ -2,4 +2,4 @@
 
 import typing
 
-AttachmentPublicContentListing = typing.Dict[str, typing.Optional[typing.Any]]
+AttachmentPublicContentListing = typing.Dict[str, typing.Any]

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CatalogCustomAttributeDefinitionType(str, enum.Enum):
+class CatalogCustomAttributeDefinitionType(enum.StrEnum):
     """
     Defines the possible types for a custom attribute.
     """

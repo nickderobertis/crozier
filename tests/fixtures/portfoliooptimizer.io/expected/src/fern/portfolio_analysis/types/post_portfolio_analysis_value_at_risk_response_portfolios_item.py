@@ -9,9 +9,11 @@ from ...core.serialization import FieldMetadata
 
 
 class PostPortfolioAnalysisValueAtRiskResponsePortfoliosItem(UniversalBaseModel):
-    portfolio_value_at_risk: typing_extensions.Annotated[float, FieldMetadata(alias="portfolioValueAtRisk")] = (
-        pydantic.Field()
-    )
+    portfolio_value_at_risk: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="portfolioValueAtRisk"),
+        pydantic.Field(alias="portfolioValueAtRisk", description="The value at risk of the portfolio"),
+    ]
     """
     The value at risk of the portfolio
     """

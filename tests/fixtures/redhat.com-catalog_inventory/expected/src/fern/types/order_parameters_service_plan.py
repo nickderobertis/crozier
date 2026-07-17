@@ -7,14 +7,12 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
 class OrderParametersServicePlan(UniversalBaseModel):
-    provider_control_parameters: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(
-        default=None
-    )
+    provider_control_parameters: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     The provider specific parameters needed to provision this service. This might include namespaces, special keys
     """
 
-    service_parameters: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    service_parameters: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     JSON object with provisioning parameters
     """

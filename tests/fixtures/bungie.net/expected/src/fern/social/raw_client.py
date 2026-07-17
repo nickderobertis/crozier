@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.social_accept_friend_request_response import SocialAcceptFriendRequestResponse
@@ -17,6 +18,7 @@ from .types.social_get_platform_friend_list_response import SocialGetPlatformFri
 from .types.social_issue_friend_request_response import SocialIssueFriendRequestResponse
 from .types.social_remove_friend_request_response import SocialRemoveFriendRequestResponse
 from .types.social_remove_friend_response import SocialRemoveFriendResponse
+from pydantic import ValidationError
 
 
 class RawSocialClient:
@@ -57,6 +59,10 @@ class RawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def issuefriendrequest(
@@ -79,7 +85,7 @@ class RawSocialClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Social/Friends/Add/{jsonable_encoder(membership_id)}/",
+            f"Social/Friends/Add/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -96,6 +102,10 @@ class RawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def removefriend(
@@ -118,7 +128,7 @@ class RawSocialClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Social/Friends/Remove/{jsonable_encoder(membership_id)}/",
+            f"Social/Friends/Remove/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -135,6 +145,10 @@ class RawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getfriendrequestlist(
@@ -171,6 +185,10 @@ class RawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def acceptfriendrequest(
@@ -193,7 +211,7 @@ class RawSocialClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Social/Friends/Requests/Accept/{jsonable_encoder(membership_id)}/",
+            f"Social/Friends/Requests/Accept/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -210,6 +228,10 @@ class RawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def declinefriendrequest(
@@ -232,7 +254,7 @@ class RawSocialClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Social/Friends/Requests/Decline/{jsonable_encoder(membership_id)}/",
+            f"Social/Friends/Requests/Decline/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -249,6 +271,10 @@ class RawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def removefriendrequest(
@@ -271,7 +297,7 @@ class RawSocialClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Social/Friends/Requests/Remove/{jsonable_encoder(membership_id)}/",
+            f"Social/Friends/Requests/Remove/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -288,6 +314,10 @@ class RawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getplatformfriendlist(
@@ -313,7 +343,7 @@ class RawSocialClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Social/PlatformFriends/{jsonable_encoder(friend_platform)}/{jsonable_encoder(page)}/",
+            f"Social/PlatformFriends/{encode_path_param(friend_platform)}/{encode_path_param(page)}/",
             method="GET",
             request_options=request_options,
         )
@@ -330,6 +360,10 @@ class RawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -371,6 +405,10 @@ class AsyncRawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def issuefriendrequest(
@@ -393,7 +431,7 @@ class AsyncRawSocialClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Social/Friends/Add/{jsonable_encoder(membership_id)}/",
+            f"Social/Friends/Add/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -410,6 +448,10 @@ class AsyncRawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def removefriend(
@@ -432,7 +474,7 @@ class AsyncRawSocialClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Social/Friends/Remove/{jsonable_encoder(membership_id)}/",
+            f"Social/Friends/Remove/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -449,6 +491,10 @@ class AsyncRawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getfriendrequestlist(
@@ -485,6 +531,10 @@ class AsyncRawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def acceptfriendrequest(
@@ -507,7 +557,7 @@ class AsyncRawSocialClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Social/Friends/Requests/Accept/{jsonable_encoder(membership_id)}/",
+            f"Social/Friends/Requests/Accept/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -524,6 +574,10 @@ class AsyncRawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def declinefriendrequest(
@@ -546,7 +600,7 @@ class AsyncRawSocialClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Social/Friends/Requests/Decline/{jsonable_encoder(membership_id)}/",
+            f"Social/Friends/Requests/Decline/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -563,6 +617,10 @@ class AsyncRawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def removefriendrequest(
@@ -585,7 +643,7 @@ class AsyncRawSocialClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Social/Friends/Requests/Remove/{jsonable_encoder(membership_id)}/",
+            f"Social/Friends/Requests/Remove/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -602,6 +660,10 @@ class AsyncRawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getplatformfriendlist(
@@ -627,7 +689,7 @@ class AsyncRawSocialClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Social/PlatformFriends/{jsonable_encoder(friend_platform)}/{jsonable_encoder(page)}/",
+            f"Social/PlatformFriends/{encode_path_param(friend_platform)}/{encode_path_param(page)}/",
             method="GET",
             request_options=request_options,
         )
@@ -644,4 +706,8 @@ class AsyncRawSocialClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

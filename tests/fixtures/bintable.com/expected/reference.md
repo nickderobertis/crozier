@@ -1,6 +1,6 @@
 # Reference
 ## Balance
-<details><summary><code>client.balance.<a href="src/fern/balance/client.py">lookup</a>(...)</code></summary>
+<details><summary><code>client.balance.<a href="src/fern/balance/client.py">lookup</a>(...) -> typing.List[ResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -28,8 +28,12 @@ Get Account balance and expiry
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.balance.lookup(
     api_key="api_key",
 )
@@ -69,7 +73,7 @@ client.balance.lookup(
 </details>
 
 ## Lookup
-<details><summary><code>client.lookup.<a href="src/fern/lookup/client.py">bin_lookup</a>(...)</code></summary>
+<details><summary><code>client.lookup.<a href="src/fern/lookup/client.py">bin_lookup</a>(...) -> typing.List[ResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -98,8 +102,12 @@ card meta data in bintable.com API
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.lookup.bin_lookup(
     bin="bin",
     api_key="api_key",

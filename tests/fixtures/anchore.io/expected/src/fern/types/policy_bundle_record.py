@@ -22,9 +22,11 @@ class PolicyBundleRecord(UniversalBaseModel):
 
     created_at: typing.Optional[dt.datetime] = None
     last_updated: typing.Optional[dt.datetime] = None
-    policy_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="policyId")] = pydantic.Field(
-        default=None
-    )
+    policy_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="policyId"),
+        pydantic.Field(alias="policyId", description="The bundle's identifier"),
+    ] = None
     """
     The bundle's identifier
     """
@@ -35,9 +37,11 @@ class PolicyBundleRecord(UniversalBaseModel):
     """
 
     policybundle: typing.Optional[PolicyBundle] = None
-    user_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="userId")] = pydantic.Field(
-        default=None
-    )
+    user_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="userId"),
+        pydantic.Field(alias="userId", description="UserId of the user that owns the bundle"),
+    ] = None
     """
     UserId of the user that owns the bundle
     """

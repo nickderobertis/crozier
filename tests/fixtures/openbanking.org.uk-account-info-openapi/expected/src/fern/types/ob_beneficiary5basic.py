@@ -14,16 +14,24 @@ from .reference import Reference
 
 
 class ObBeneficiary5Basic(UniversalBaseModel):
-    account_id: typing_extensions.Annotated[typing.Optional[AccountId], FieldMetadata(alias="AccountId")] = None
+    account_id: typing_extensions.Annotated[
+        typing.Optional[AccountId], FieldMetadata(alias="AccountId"), pydantic.Field(alias="AccountId")
+    ] = None
     beneficiary_id: typing_extensions.Annotated[
-        typing.Optional[BeneficiaryId], FieldMetadata(alias="BeneficiaryId")
+        typing.Optional[BeneficiaryId], FieldMetadata(alias="BeneficiaryId"), pydantic.Field(alias="BeneficiaryId")
     ] = None
     beneficiary_type: typing_extensions.Annotated[
-        typing.Optional[ObBeneficiaryType1Code], FieldMetadata(alias="BeneficiaryType")
+        typing.Optional[ObBeneficiaryType1Code],
+        FieldMetadata(alias="BeneficiaryType"),
+        pydantic.Field(alias="BeneficiaryType"),
     ] = None
-    reference: typing_extensions.Annotated[typing.Optional[Reference], FieldMetadata(alias="Reference")] = None
+    reference: typing_extensions.Annotated[
+        typing.Optional[Reference], FieldMetadata(alias="Reference"), pydantic.Field(alias="Reference")
+    ] = None
     supplementary_data: typing_extensions.Annotated[
-        typing.Optional[ObSupplementaryData1], FieldMetadata(alias="SupplementaryData")
+        typing.Optional[ObSupplementaryData1],
+        FieldMetadata(alias="SupplementaryData"),
+        pydantic.Field(alias="SupplementaryData"),
     ] = None
 
     if IS_PYDANTIC_V2:

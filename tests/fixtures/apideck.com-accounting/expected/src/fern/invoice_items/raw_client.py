@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -40,6 +41,7 @@ from ..types.unprocessable_response import UnprocessableResponse
 from ..types.update_invoice_items_response import UpdateInvoiceItemsResponse
 from ..types.updated_at import UpdatedAt
 from ..types.updated_by import UpdatedBy
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -176,6 +178,10 @@ class RawInvoiceItemsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def add(
@@ -394,6 +400,10 @@ class RawInvoiceItemsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def one(
@@ -427,7 +437,7 @@ class RawInvoiceItemsClient:
             InvoiceItems
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"accounting/invoice-items/{jsonable_encoder(id)}",
+            f"accounting/invoice-items/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -503,6 +513,10 @@ class RawInvoiceItemsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete(
@@ -528,7 +542,7 @@ class RawInvoiceItemsClient:
             InvoiceItems
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"accounting/invoice-items/{jsonable_encoder(id)}",
+            f"accounting/invoice-items/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -603,6 +617,10 @@ class RawInvoiceItemsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update(
@@ -711,7 +729,7 @@ class RawInvoiceItemsClient:
             InvoiceItems
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"accounting/invoice-items/{jsonable_encoder(id_)}",
+            f"accounting/invoice-items/{encode_path_param(id_)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -825,6 +843,10 @@ class RawInvoiceItemsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -959,6 +981,10 @@ class AsyncRawInvoiceItemsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def add(
@@ -1177,6 +1203,10 @@ class AsyncRawInvoiceItemsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def one(
@@ -1210,7 +1240,7 @@ class AsyncRawInvoiceItemsClient:
             InvoiceItems
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"accounting/invoice-items/{jsonable_encoder(id)}",
+            f"accounting/invoice-items/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -1286,6 +1316,10 @@ class AsyncRawInvoiceItemsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
@@ -1311,7 +1345,7 @@ class AsyncRawInvoiceItemsClient:
             InvoiceItems
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"accounting/invoice-items/{jsonable_encoder(id)}",
+            f"accounting/invoice-items/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -1386,6 +1420,10 @@ class AsyncRawInvoiceItemsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update(
@@ -1494,7 +1532,7 @@ class AsyncRawInvoiceItemsClient:
             InvoiceItems
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"accounting/invoice-items/{jsonable_encoder(id_)}",
+            f"accounting/invoice-items/{encode_path_param(id_)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -1608,4 +1646,8 @@ class AsyncRawInvoiceItemsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

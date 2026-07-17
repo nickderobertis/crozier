@@ -13,9 +13,14 @@ class DestinyDestinyStat(UniversalBaseModel):
     Represents a stat on an item *or* Character (NOT a Historical Stat, but a physical attribute stat like Attack, Defense etc...)
     """
 
-    stat_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="statHash")] = pydantic.Field(
-        default=None
-    )
+    stat_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="statHash"),
+        pydantic.Field(
+            alias="statHash",
+            description="The hash identifier for the Stat. Use it to look up the DestinyStatDefinition for static data about the stat.",
+        ),
+    ] = None
     """
     The hash identifier for the Stat. Use it to look up the DestinyStatDefinition for static data about the stat.
     """

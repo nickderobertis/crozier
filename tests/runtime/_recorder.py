@@ -61,14 +61,21 @@ def _canonical_headers(headers):
     identically to both SDKs. Lower-case the names (httpx lookup is
     case-insensitive) and neutralize the one deliberate difference: crozier brands
     its SDK-identity headers `X-Crozier-*` where Fern uses `X-Fern-*` (otherwise
-    identical values). A single prefix rule folds either vendor family to a common
-    `x-sdk-*` key — so nothing here enumerates the individual headers, and there is
-    no list to keep in step with the byte-diff's `normalize_sdk_headers`. This is
-    the runtime analog of that normalization; everything else — auth, content-type,
-    and httpx's own headers — must match verbatim."""
+    identical values). The legacy exhaustive runtime fixture predates Fern 5.20's
+    Runtime/Platform identity headers, so those two are omitted on both sides;
+    their exact 5.20 source is byte-gated by the managed corpus. Every other SDK
+    header is folded by one prefix rule, and everything outside SDK identity —
+    auth, content-type, and httpx's own headers — must match verbatim."""
     out = {}
     for name, value in headers.items():
         key = name.lower()
+        if key in {
+            "x-fern-runtime",
+            "x-crozier-runtime",
+            "x-fern-platform",
+            "x-crozier-platform",
+        }:
+            continue
         for prefix in ("x-fern-", "x-crozier-"):
             if key.startswith(prefix):
                 key = "x-sdk-" + key[len(prefix) :]

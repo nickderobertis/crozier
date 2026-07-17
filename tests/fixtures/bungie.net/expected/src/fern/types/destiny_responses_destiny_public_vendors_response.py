@@ -50,15 +50,24 @@ class DestinyResponsesDestinyPublicVendorsResponse(UniversalBaseModel):
     string_variables: typing_extensions.Annotated[
         typing.Optional[SingleComponentResponseOfDestinyStringVariablesComponent],
         FieldMetadata(alias="stringVariables"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="stringVariables",
+            description="A set of string variable values by hash for a public vendors context.\r\nCOMPONENT TYPE: StringVariables",
+        ),
+    ] = None
     """
     A set of string variable values by hash for a public vendors context.
     COMPONENT TYPE: StringVariables
     """
 
     vendor_groups: typing_extensions.Annotated[
-        typing.Optional[SingleComponentResponseOfDestinyVendorGroupComponent], FieldMetadata(alias="vendorGroups")
-    ] = pydantic.Field(default=None)
+        typing.Optional[SingleComponentResponseOfDestinyVendorGroupComponent],
+        FieldMetadata(alias="vendorGroups"),
+        pydantic.Field(
+            alias="vendorGroups",
+            description="For Vendors being returned, this will give you the information you need to group them and order them in the same way that the Bungie Companion app performs grouping. It will automatically be returned if you request the Vendors component.\r\nCOMPONENT TYPE: Vendors",
+        ),
+    ] = None
     """
     For Vendors being returned, this will give you the information you need to group them and order them in the same way that the Bungie Companion app performs grouping. It will automatically be returned if you request the Vendors component.
     COMPONENT TYPE: Vendors

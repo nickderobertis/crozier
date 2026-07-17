@@ -13,9 +13,14 @@ class GetStackPolicyOutput(UniversalBaseModel):
     The output for the <a>GetStackPolicy</a> action.
     """
 
-    stack_policy_body: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="StackPolicyBody")] = (
-        pydantic.Field(default=None)
-    )
+    stack_policy_body: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="StackPolicyBody"),
+        pydantic.Field(
+            alias="StackPolicyBody",
+            description='Structure containing the stack policy body. (For more information, go to <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/protect-stack-resources.html"> Prevent Updates to Stack Resources</a> in the CloudFormation User Guide.)',
+        ),
+    ] = None
     """
     Structure containing the stack policy body. (For more information, go to <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/protect-stack-resources.html"> Prevent Updates to Stack Resources</a> in the CloudFormation User Guide.)
     """

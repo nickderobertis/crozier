@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObFeeFrequency1Code3(str, enum.Enum):
+class ObFeeFrequency1Code3(enum.StrEnum):
     """
     How frequently the fee/charge is calculated
     """

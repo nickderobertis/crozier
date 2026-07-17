@@ -9,7 +9,9 @@ from ..core.serialization import FieldMetadata
 
 
 class LogRead(UniversalBaseModel):
-    log_lines: typing_extensions.Annotated[typing.List[str], FieldMetadata(alias="logLines")]
+    log_lines: typing_extensions.Annotated[
+        typing.List[str], FieldMetadata(alias="logLines"), pydantic.Field(alias="logLines")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

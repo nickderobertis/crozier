@@ -16,20 +16,32 @@ from .reference import Reference
 
 
 class ObBeneficiary5Detail(UniversalBaseModel):
-    account_id: typing_extensions.Annotated[typing.Optional[AccountId], FieldMetadata(alias="AccountId")] = None
+    account_id: typing_extensions.Annotated[
+        typing.Optional[AccountId], FieldMetadata(alias="AccountId"), pydantic.Field(alias="AccountId")
+    ] = None
     beneficiary_id: typing_extensions.Annotated[
-        typing.Optional[BeneficiaryId], FieldMetadata(alias="BeneficiaryId")
+        typing.Optional[BeneficiaryId], FieldMetadata(alias="BeneficiaryId"), pydantic.Field(alias="BeneficiaryId")
     ] = None
     beneficiary_type: typing_extensions.Annotated[
-        typing.Optional[ObBeneficiaryType1Code], FieldMetadata(alias="BeneficiaryType")
+        typing.Optional[ObBeneficiaryType1Code],
+        FieldMetadata(alias="BeneficiaryType"),
+        pydantic.Field(alias="BeneficiaryType"),
     ] = None
-    creditor_account: typing_extensions.Annotated[ObCashAccount50, FieldMetadata(alias="CreditorAccount")]
+    creditor_account: typing_extensions.Annotated[
+        ObCashAccount50, FieldMetadata(alias="CreditorAccount"), pydantic.Field(alias="CreditorAccount")
+    ]
     creditor_agent: typing_extensions.Annotated[
-        typing.Optional[ObBranchAndFinancialInstitutionIdentification60], FieldMetadata(alias="CreditorAgent")
+        typing.Optional[ObBranchAndFinancialInstitutionIdentification60],
+        FieldMetadata(alias="CreditorAgent"),
+        pydantic.Field(alias="CreditorAgent"),
     ] = None
-    reference: typing_extensions.Annotated[typing.Optional[Reference], FieldMetadata(alias="Reference")] = None
+    reference: typing_extensions.Annotated[
+        typing.Optional[Reference], FieldMetadata(alias="Reference"), pydantic.Field(alias="Reference")
+    ] = None
     supplementary_data: typing_extensions.Annotated[
-        typing.Optional[ObSupplementaryData1], FieldMetadata(alias="SupplementaryData")
+        typing.Optional[ObSupplementaryData1],
+        FieldMetadata(alias="SupplementaryData"),
+        pydantic.Field(alias="SupplementaryData"),
     ] = None
 
     if IS_PYDANTIC_V2:

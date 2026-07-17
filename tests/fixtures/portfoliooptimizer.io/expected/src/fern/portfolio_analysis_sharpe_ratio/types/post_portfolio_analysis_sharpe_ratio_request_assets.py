@@ -18,21 +18,32 @@ class PostPortfolioAnalysisSharpeRatioRequestAssets(UniversalBaseModel):
     """
 
     assets_covariance_matrix: typing_extensions.Annotated[
-        typing.List[typing.List[float]], FieldMetadata(alias="assetsCovarianceMatrix")
-    ] = pydantic.Field()
+        typing.List[typing.List[float]],
+        FieldMetadata(alias="assetsCovarianceMatrix"),
+        pydantic.Field(
+            alias="assetsCovarianceMatrix",
+            description="assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j",
+        ),
+    ]
     """
     assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     """
 
-    assets_returns: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="assetsReturns")] = (
-        pydantic.Field()
-    )
+    assets_returns: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="assetsReturns"),
+        pydantic.Field(alias="assetsReturns", description="assetsReturns[i] is the arithmetic return of asset i"),
+    ]
     """
     assetsReturns[i] is the arithmetic return of asset i
     """
 
     portfolios: typing.List[PostPortfolioAnalysisSharpeRatioRequestAssetsPortfoliosItem]
-    risk_free_rate: typing_extensions.Annotated[float, FieldMetadata(alias="riskFreeRate")] = pydantic.Field()
+    risk_free_rate: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="riskFreeRate"),
+        pydantic.Field(alias="riskFreeRate", description="The risk free rate"),
+    ]
     """
     The risk free rate
     """

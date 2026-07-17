@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObAccountStatus1Code(str, enum.Enum):
+class ObAccountStatus1Code(enum.StrEnum):
     """
     Specifies the status of account resource in code form.
     """

@@ -24,7 +24,7 @@ class Webhook(UniversalBaseModel):
     The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
     """
 
-    conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    conditions: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     A set of conditions which determine whether the webhook will be generated.
     """

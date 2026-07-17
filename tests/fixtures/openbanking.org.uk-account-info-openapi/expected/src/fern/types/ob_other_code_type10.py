@@ -12,9 +12,13 @@ from .ob_code_mnemonic import ObCodeMnemonic
 
 
 class ObOtherCodeType10(UniversalBaseModel):
-    code: typing_extensions.Annotated[typing.Optional[ObCodeMnemonic], FieldMetadata(alias="Code")] = None
-    description: typing_extensions.Annotated[Description3, FieldMetadata(alias="Description")]
-    name: typing_extensions.Annotated[Name4, FieldMetadata(alias="Name")]
+    code: typing_extensions.Annotated[
+        typing.Optional[ObCodeMnemonic], FieldMetadata(alias="Code"), pydantic.Field(alias="Code")
+    ] = None
+    description: typing_extensions.Annotated[
+        Description3, FieldMetadata(alias="Description"), pydantic.Field(alias="Description")
+    ]
+    name: typing_extensions.Annotated[Name4, FieldMetadata(alias="Name"), pydantic.Field(alias="Name")]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

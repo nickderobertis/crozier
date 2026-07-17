@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SearchOrdersSortField(str, enum.Enum):
+class SearchOrdersSortField(enum.StrEnum):
     """
     Specifies which timestamp to use to sort `SearchOrder` results.
     """

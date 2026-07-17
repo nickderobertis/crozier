@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PrefixFamilyLabel(str, enum.Enum):
+class PrefixFamilyLabel(enum.StrEnum):
     I_PV4 = "IPv4"
     I_PV6 = "IPv6"
 

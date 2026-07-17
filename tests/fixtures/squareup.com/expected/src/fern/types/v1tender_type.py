@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class V1TenderType(str, enum.Enum):
+class V1TenderType(enum.StrEnum):
     """ """
 
     CREDIT_CARD = "CREDIT_CARD"

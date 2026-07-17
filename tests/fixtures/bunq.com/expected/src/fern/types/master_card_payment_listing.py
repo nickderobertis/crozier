@@ -2,4 +2,4 @@
 
 import typing
 
-MasterCardPaymentListing = typing.Dict[str, typing.Optional[typing.Any]]
+MasterCardPaymentListing = typing.Dict[str, typing.Any]

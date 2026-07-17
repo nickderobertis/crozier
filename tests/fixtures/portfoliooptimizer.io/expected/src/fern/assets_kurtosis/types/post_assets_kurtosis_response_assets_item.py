@@ -9,7 +9,11 @@ from ...core.serialization import FieldMetadata
 
 
 class PostAssetsKurtosisResponseAssetsItem(UniversalBaseModel):
-    asset_kurtosis: typing_extensions.Annotated[float, FieldMetadata(alias="assetKurtosis")] = pydantic.Field()
+    asset_kurtosis: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="assetKurtosis"),
+        pydantic.Field(alias="assetKurtosis", description="The kurtosis of the asset"),
+    ]
     """
     The kurtosis of the asset
     """

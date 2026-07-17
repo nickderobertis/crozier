@@ -110,7 +110,7 @@ class FilesClient:
         self,
         *,
         apideck_metadata: str,
-        request: str,
+        request: bytes,
         raw: typing.Optional[bool] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CreateFileResponse:
@@ -122,7 +122,7 @@ class FilesClient:
         apideck_metadata : str
             Metadata to attach to the file
 
-        request : str
+        request : bytes
 
         raw : typing.Optional[bool]
             Include raw response. Mostly used for debugging purposes
@@ -494,7 +494,7 @@ class AsyncFilesClient:
         self,
         *,
         apideck_metadata: str,
-        request: str,
+        request: bytes,
         raw: typing.Optional[bool] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CreateFileResponse:
@@ -506,7 +506,7 @@ class AsyncFilesClient:
         apideck_metadata : str
             Metadata to attach to the file
 
-        request : str
+        request : bytes
 
         raw : typing.Optional[bool]
             Include raw response. Mostly used for debugging purposes

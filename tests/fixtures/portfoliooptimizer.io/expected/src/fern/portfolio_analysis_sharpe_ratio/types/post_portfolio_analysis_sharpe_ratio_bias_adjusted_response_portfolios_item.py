@@ -10,8 +10,12 @@ from ...core.serialization import FieldMetadata
 
 class PostPortfolioAnalysisSharpeRatioBiasAdjustedResponsePortfoliosItem(UniversalBaseModel):
     portfolio_bias_adjusted_sharpe_ratio: typing_extensions.Annotated[
-        float, FieldMetadata(alias="portfolioBiasAdjustedSharpeRatio")
-    ] = pydantic.Field()
+        float,
+        FieldMetadata(alias="portfolioBiasAdjustedSharpeRatio"),
+        pydantic.Field(
+            alias="portfolioBiasAdjustedSharpeRatio", description="The bias-adjusted Sharpe ratio of the portfolio"
+        ),
+    ]
     """
     The bias-adjusted Sharpe ratio of the portfolio
     """

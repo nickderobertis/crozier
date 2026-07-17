@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.conflict_error import ConflictError
@@ -19,6 +20,7 @@ from .types.sign_confirm_response import SignConfirmResponse
 from .types.sign_delete_response import SignDeleteResponse
 from .types.sign_request_response import SignRequestResponse
 from .types.sign_retrieve_response import SignRetrieveResponse
+from pydantic import ValidationError
 
 
 class RawScopeClient:
@@ -77,6 +79,10 @@ class RawScopeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def sign_retrieve(
@@ -99,7 +105,7 @@ class RawScopeClient:
             Successful response (JWT)
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"scope/{jsonable_encoder(job)}",
+            f"scope/{encode_path_param(job)}",
             method="GET",
             request_options=request_options,
         )
@@ -129,6 +135,10 @@ class RawScopeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def sign_confirm(
@@ -151,7 +161,7 @@ class RawScopeClient:
             Successfully confirmed
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"scope/{jsonable_encoder(job)}",
+            f"scope/{encode_path_param(job)}",
             method="POST",
             request_options=request_options,
         )
@@ -201,6 +211,10 @@ class RawScopeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def sign_update(self, job: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -221,7 +235,7 @@ class RawScopeClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"scope/{jsonable_encoder(job)}",
+            f"scope/{encode_path_param(job)}",
             method="PUT",
             request_options=request_options,
         )
@@ -253,6 +267,10 @@ class RawScopeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def sign_delete(
@@ -275,7 +293,7 @@ class RawScopeClient:
             Successfully deleted
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"scope/{jsonable_encoder(job)}",
+            f"scope/{encode_path_param(job)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -303,6 +321,10 @@ class RawScopeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def sign_retrieve_head(
@@ -324,7 +346,7 @@ class RawScopeClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"scope/{jsonable_encoder(job)}",
+            f"scope/{encode_path_param(job)}",
             method="HEAD",
             request_options=request_options,
         )
@@ -345,6 +367,10 @@ class RawScopeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -404,6 +430,10 @@ class AsyncRawScopeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def sign_retrieve(
@@ -426,7 +456,7 @@ class AsyncRawScopeClient:
             Successful response (JWT)
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"scope/{jsonable_encoder(job)}",
+            f"scope/{encode_path_param(job)}",
             method="GET",
             request_options=request_options,
         )
@@ -456,6 +486,10 @@ class AsyncRawScopeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def sign_confirm(
@@ -478,7 +512,7 @@ class AsyncRawScopeClient:
             Successfully confirmed
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"scope/{jsonable_encoder(job)}",
+            f"scope/{encode_path_param(job)}",
             method="POST",
             request_options=request_options,
         )
@@ -528,6 +562,10 @@ class AsyncRawScopeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def sign_update(
@@ -550,7 +588,7 @@ class AsyncRawScopeClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"scope/{jsonable_encoder(job)}",
+            f"scope/{encode_path_param(job)}",
             method="PUT",
             request_options=request_options,
         )
@@ -582,6 +620,10 @@ class AsyncRawScopeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def sign_delete(
@@ -604,7 +646,7 @@ class AsyncRawScopeClient:
             Successfully deleted
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"scope/{jsonable_encoder(job)}",
+            f"scope/{encode_path_param(job)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -632,6 +674,10 @@ class AsyncRawScopeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def sign_retrieve_head(
@@ -653,7 +699,7 @@ class AsyncRawScopeClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"scope/{jsonable_encoder(job)}",
+            f"scope/{encode_path_param(job)}",
             method="HEAD",
             request_options=request_options,
         )
@@ -674,4 +720,8 @@ class AsyncRawScopeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

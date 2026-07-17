@@ -9,9 +9,14 @@ from ..core.serialization import FieldMetadata
 
 
 class ListExportsInput(UniversalBaseModel):
-    next_token: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="NextToken")] = pydantic.Field(
-        default=None
-    )
+    next_token: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="NextToken"),
+        pydantic.Field(
+            alias="NextToken",
+            description="A string (provided by the <a>ListExports</a> response output) that identifies the next page of exported output values that you asked to retrieve.",
+        ),
+    ] = None
     """
     A string (provided by the <a>ListExports</a> response output) that identifies the next page of exported output values that you asked to retrieve.
     """

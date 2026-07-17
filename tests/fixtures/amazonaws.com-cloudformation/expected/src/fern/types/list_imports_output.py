@@ -10,16 +10,25 @@ from .stack_name import StackName
 
 
 class ListImportsOutput(UniversalBaseModel):
-    imports: typing_extensions.Annotated[typing.Optional[typing.List[StackName]], FieldMetadata(alias="Imports")] = (
-        pydantic.Field(default=None)
-    )
+    imports: typing_extensions.Annotated[
+        typing.Optional[typing.List[StackName]],
+        FieldMetadata(alias="Imports"),
+        pydantic.Field(
+            alias="Imports", description="A list of stack names that are importing the specified exported output value."
+        ),
+    ] = None
     """
     A list of stack names that are importing the specified exported output value.
     """
 
-    next_token: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="NextToken")] = pydantic.Field(
-        default=None
-    )
+    next_token: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="NextToken"),
+        pydantic.Field(
+            alias="NextToken",
+            description="A string that identifies the next page of exports. If there is no additional page, this value is null.",
+        ),
+    ] = None
     """
     A string that identifies the next page of exports. If there is no additional page, this value is null.
     """

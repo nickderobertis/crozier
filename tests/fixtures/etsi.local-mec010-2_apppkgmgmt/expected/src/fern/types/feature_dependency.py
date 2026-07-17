@@ -9,7 +9,13 @@ from ..core.serialization import FieldMetadata
 
 
 class FeatureDependency(UniversalBaseModel):
-    feature_name: typing_extensions.Annotated[str, FieldMetadata(alias="featureName")] = pydantic.Field()
+    feature_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="featureName"),
+        pydantic.Field(
+            alias="featureName", description="The name of the feature, for example, UserApps, UEIdentity, etc."
+        ),
+    ]
     """
     The name of the feature, for example, UserApps, UEIdentity, etc.
     """

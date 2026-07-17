@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class UpdateByocTrunkRequestVoiceFallbackMethod(str, enum.Enum):
+class UpdateByocTrunkRequestVoiceFallbackMethod(enum.StrEnum):
     """
     The HTTP method we should use to call `voice_fallback_url`. Can be: `GET` or `POST`.
     """

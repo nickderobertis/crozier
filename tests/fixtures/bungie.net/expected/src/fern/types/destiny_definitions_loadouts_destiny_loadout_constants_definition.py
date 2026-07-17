@@ -13,8 +13,12 @@ from .destiny_definitions_common_destiny_display_properties_definition import (
 
 class DestinyDefinitionsLoadoutsDestinyLoadoutConstantsDefinition(UniversalBaseModel):
     black_icon_image_path: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="blackIconImagePath")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="blackIconImagePath"),
+        pydantic.Field(
+            alias="blackIconImagePath", description="This is a color-inverted version of the whiteIconImagePath."
+        ),
+    ] = None
     """
     This is a color-inverted version of the whiteIconImagePath.
     """
@@ -22,6 +26,7 @@ class DestinyDefinitionsLoadoutsDestinyLoadoutConstantsDefinition(UniversalBaseM
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
@@ -35,43 +40,71 @@ class DestinyDefinitionsLoadoutsDestinyLoadoutConstantsDefinition(UniversalBaseM
     """
 
     loadout_color_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="loadoutColorHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="loadoutColorHashes"),
+        pydantic.Field(
+            alias="loadoutColorHashes",
+            description="A list of the loadout color hashes in index order, for convenience.",
+        ),
+    ] = None
     """
     A list of the loadout color hashes in index order, for convenience.
     """
 
     loadout_count_per_character: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="loadoutCountPerCharacter")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="loadoutCountPerCharacter"),
+        pydantic.Field(
+            alias="loadoutCountPerCharacter",
+            description="The maximum number of loadouts available to each character. The loadouts component API response can return fewer loadouts than this, as more loadouts are unlocked by reaching higher Guardian Ranks.",
+        ),
+    ] = None
     """
     The maximum number of loadouts available to each character. The loadouts component API response can return fewer loadouts than this, as more loadouts are unlocked by reaching higher Guardian Ranks.
     """
 
     loadout_icon_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="loadoutIconHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="loadoutIconHashes"),
+        pydantic.Field(
+            alias="loadoutIconHashes", description="A list of the loadout icon hashes in index order, for convenience."
+        ),
+    ] = None
     """
     A list of the loadout icon hashes in index order, for convenience.
     """
 
     loadout_name_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="loadoutNameHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="loadoutNameHashes"),
+        pydantic.Field(
+            alias="loadoutNameHashes", description="A list of the loadout name hashes in index order, for convenience."
+        ),
+    ] = None
     """
     A list of the loadout name hashes in index order, for convenience.
     """
 
     loadout_preview_filter_out_socket_category_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="loadoutPreviewFilterOutSocketCategoryHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="loadoutPreviewFilterOutSocketCategoryHashes"),
+        pydantic.Field(
+            alias="loadoutPreviewFilterOutSocketCategoryHashes",
+            description="A list of the socket category hashes to be filtered out of loadout item preview displays.",
+        ),
+    ] = None
     """
     A list of the socket category hashes to be filtered out of loadout item preview displays.
     """
 
     loadout_preview_filter_out_socket_type_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="loadoutPreviewFilterOutSocketTypeHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="loadoutPreviewFilterOutSocketTypeHashes"),
+        pydantic.Field(
+            alias="loadoutPreviewFilterOutSocketTypeHashes",
+            description="A list of the socket type hashes to be filtered out of loadout item preview displays.",
+        ),
+    ] = None
     """
     A list of the socket type hashes to be filtered out of loadout item preview displays.
     """
@@ -82,8 +115,13 @@ class DestinyDefinitionsLoadoutsDestinyLoadoutConstantsDefinition(UniversalBaseM
     """
 
     white_icon_image_path: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="whiteIconImagePath")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="whiteIconImagePath"),
+        pydantic.Field(
+            alias="whiteIconImagePath",
+            description="This is the same icon as the one in the display properties, offered here as well with a more descriptive name.",
+        ),
+    ] = None
     """
     This is the same icon as the one in the display properties, offered here as well with a more descriptive name.
     """

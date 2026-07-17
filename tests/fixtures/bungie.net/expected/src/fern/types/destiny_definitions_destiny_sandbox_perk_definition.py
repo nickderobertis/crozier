@@ -22,17 +22,27 @@ class DestinyDefinitionsDestinySandboxPerkDefinition(UniversalBaseModel):
     What Perks often don't have is human readable information, so we attempt to reverse engineer that by pulling that data from places that uniquely refer to these perks: namely, Talent Nodes and Plugs. That only gives us a subset of perks that are human readable, but those perks are the ones people generally care about anyways. The others are left as a mystery, their true purpose mostly unknown and undocumented.
     """
 
-    damage_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="damageType")] = pydantic.Field(
-        default=None
-    )
+    damage_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="damageType"),
+        pydantic.Field(
+            alias="damageType",
+            description="If this perk grants a damage type to a weapon, the damage type will be defined here.\r\nUnless you have a compelling reason to use this enum value, use the damageTypeHash instead to look up the actual DestinyDamageTypeDefinition.",
+        ),
+    ] = None
     """
     If this perk grants a damage type to a weapon, the damage type will be defined here.
     Unless you have a compelling reason to use this enum value, use the damageTypeHash instead to look up the actual DestinyDamageTypeDefinition.
     """
 
-    damage_type_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="damageTypeHash")] = (
-        pydantic.Field(default=None)
-    )
+    damage_type_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="damageTypeHash"),
+        pydantic.Field(
+            alias="damageTypeHash",
+            description="The hash identifier for looking up the DestinyDamageTypeDefinition, if this perk has a damage type.\r\nThis is preferred over using the damageType enumeration value, which has been left purely because it is occasionally convenient.",
+        ),
+    ] = None
     """
     The hash identifier for looking up the DestinyDamageTypeDefinition, if this perk has a damage type.
     This is preferred over using the damageType enumeration value, which has been left purely because it is occasionally convenient.
@@ -41,7 +51,11 @@ class DestinyDefinitionsDestinySandboxPerkDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="displayProperties",
+            description="These display properties are by no means guaranteed to be populated. Usually when it is, it's only because we back-filled them with the displayProperties of some Talent Node or Plug item that happened to be uniquely providing that perk.",
+        ),
+    ] = None
     """
     These display properties are by no means guaranteed to be populated. Usually when it is, it's only because we back-filled them with the displayProperties of some Talent Node or Plug item that happened to be uniquely providing that perk.
     """
@@ -57,24 +71,36 @@ class DestinyDefinitionsDestinySandboxPerkDefinition(UniversalBaseModel):
     The index of the entity as it was found in the investment tables.
     """
 
-    is_displayable: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isDisplayable")] = (
-        pydantic.Field(default=None)
-    )
+    is_displayable: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="isDisplayable"),
+        pydantic.Field(
+            alias="isDisplayable",
+            description="If true, you can actually show the perk in the UI. Otherwise, it doesn't have useful player-facing information.",
+        ),
+    ] = None
     """
     If true, you can actually show the perk in the UI. Otherwise, it doesn't have useful player-facing information.
     """
 
     perk_groups: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsDestinyTalentNodeStepGroups], FieldMetadata(alias="perkGroups")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyDefinitionsDestinyTalentNodeStepGroups],
+        FieldMetadata(alias="perkGroups"),
+        pydantic.Field(
+            alias="perkGroups",
+            description="An old holdover from the original Armory, this was an attempt to group perks by functionality.\r\nIt is as yet unpopulated, and there will be quite a bit of work needed to restore it to its former working order.",
+        ),
+    ] = None
     """
     An old holdover from the original Armory, this was an attempt to group perks by functionality.
     It is as yet unpopulated, and there will be quite a bit of work needed to restore it to its former working order.
     """
 
-    perk_identifier: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="perkIdentifier")] = (
-        pydantic.Field(default=None)
-    )
+    perk_identifier: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="perkIdentifier"),
+        pydantic.Field(alias="perkIdentifier", description="The string identifier for the perk."),
+    ] = None
     """
     The string identifier for the perk.
     """

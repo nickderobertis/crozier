@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "appwrite.io-client",
+  "corpus_spec_ref": "0.9.3",
+  "corpus_spec_url": "https://api.apis.guru/v2/specs/appwrite.io/client/0.9.3/openapi.json"
+}

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SubscriptionCadence(str, enum.Enum):
+class SubscriptionCadence(enum.StrEnum):
     """
     Determines the billing cadence of a [Subscription](https://developer.squareup.com/reference/square_2021-08-18/objects/Subscription)
     """

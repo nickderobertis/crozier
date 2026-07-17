@@ -13,65 +13,83 @@ class Quotas(UniversalBaseModel):
     Quotas state for an api key on a service group
     """
 
-    authorized_calls_per_day: typing_extensions.Annotated[int, FieldMetadata(alias="authorizedCallsPerDay")] = (
-        pydantic.Field()
-    )
+    authorized_calls_per_day: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="authorizedCallsPerDay"),
+        pydantic.Field(alias="authorizedCallsPerDay", description="The number of authorized calls per day"),
+    ]
     """
     The number of authorized calls per day
     """
 
-    authorized_calls_per_month: typing_extensions.Annotated[int, FieldMetadata(alias="authorizedCallsPerMonth")] = (
-        pydantic.Field()
-    )
+    authorized_calls_per_month: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="authorizedCallsPerMonth"),
+        pydantic.Field(alias="authorizedCallsPerMonth", description="The number of authorized calls per month"),
+    ]
     """
     The number of authorized calls per month
     """
 
-    authorized_calls_per_sec: typing_extensions.Annotated[int, FieldMetadata(alias="authorizedCallsPerSec")] = (
-        pydantic.Field()
-    )
+    authorized_calls_per_sec: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="authorizedCallsPerSec"),
+        pydantic.Field(alias="authorizedCallsPerSec", description="The number of authorized calls per second"),
+    ]
     """
     The number of authorized calls per second
     """
 
-    current_calls_per_day: typing_extensions.Annotated[int, FieldMetadata(alias="currentCallsPerDay")] = (
-        pydantic.Field()
-    )
+    current_calls_per_day: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="currentCallsPerDay"),
+        pydantic.Field(alias="currentCallsPerDay", description="The current number of calls per day"),
+    ]
     """
     The current number of calls per day
     """
 
-    current_calls_per_month: typing_extensions.Annotated[int, FieldMetadata(alias="currentCallsPerMonth")] = (
-        pydantic.Field()
-    )
+    current_calls_per_month: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="currentCallsPerMonth"),
+        pydantic.Field(alias="currentCallsPerMonth", description="The current number of calls per month"),
+    ]
     """
     The current number of calls per month
     """
 
-    current_calls_per_sec: typing_extensions.Annotated[int, FieldMetadata(alias="currentCallsPerSec")] = (
-        pydantic.Field()
-    )
+    current_calls_per_sec: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="currentCallsPerSec"),
+        pydantic.Field(alias="currentCallsPerSec", description="The current number of calls per second"),
+    ]
     """
     The current number of calls per second
     """
 
-    remaining_calls_per_day: typing_extensions.Annotated[int, FieldMetadata(alias="remainingCallsPerDay")] = (
-        pydantic.Field()
-    )
+    remaining_calls_per_day: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="remainingCallsPerDay"),
+        pydantic.Field(alias="remainingCallsPerDay", description="The remaining number of calls per day"),
+    ]
     """
     The remaining number of calls per day
     """
 
-    remaining_calls_per_month: typing_extensions.Annotated[int, FieldMetadata(alias="remainingCallsPerMonth")] = (
-        pydantic.Field()
-    )
+    remaining_calls_per_month: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="remainingCallsPerMonth"),
+        pydantic.Field(alias="remainingCallsPerMonth", description="The number of authorized calls per month"),
+    ]
     """
     The number of authorized calls per month
     """
 
-    remaining_calls_per_sec: typing_extensions.Annotated[int, FieldMetadata(alias="remainingCallsPerSec")] = (
-        pydantic.Field()
-    )
+    remaining_calls_per_sec: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="remainingCallsPerSec"),
+        pydantic.Field(alias="remainingCallsPerSec", description="The remaining number of calls per second"),
+    ]
     """
     The remaining number of calls per second
     """

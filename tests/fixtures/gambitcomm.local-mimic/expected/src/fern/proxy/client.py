@@ -25,7 +25,7 @@ class ProxyClient:
 
     def protocol_proxy_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's PROXY configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -39,7 +39,7 @@ class ProxyClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples
@@ -519,7 +519,7 @@ class AsyncProxyClient:
 
     async def protocol_proxy_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's PROXY configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -533,7 +533,7 @@ class AsyncProxyClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples

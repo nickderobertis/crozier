@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObReadConsentResponse1DataPermissionsItem(str, enum.Enum):
+class ObReadConsentResponse1DataPermissionsItem(enum.StrEnum):
     """
     Specifies the Open Banking account access data types. This is a list of the data clusters being consented by the PSU, and requested for authorisation with the ASPSP.
     """

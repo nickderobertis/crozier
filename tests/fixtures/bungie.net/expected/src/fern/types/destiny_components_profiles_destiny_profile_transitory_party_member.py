@@ -14,23 +14,32 @@ class DestinyComponentsProfilesDestinyProfileTransitoryPartyMember(UniversalBase
     Notably, we don't and can't feasibly return info on characters. If you can, try to use just the data below for your UI and purposes. Only hit us with further queries if you absolutely must know the character ID of the currently playing character. Pretty please with sugar on top.
     """
 
-    display_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="displayName")] = (
-        pydantic.Field(default=None)
-    )
+    display_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="displayName"),
+        pydantic.Field(alias="displayName", description="The player's last known display name."),
+    ] = None
     """
     The player's last known display name.
     """
 
-    emblem_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="emblemHash")] = pydantic.Field(
-        default=None
-    )
+    emblem_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="emblemHash"),
+        pydantic.Field(
+            alias="emblemHash",
+            description="The identifier for the DestinyInventoryItemDefinition of the player's emblem.",
+        ),
+    ] = None
     """
     The identifier for the DestinyInventoryItemDefinition of the player's emblem.
     """
 
-    membership_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="membershipId")] = (
-        pydantic.Field(default=None)
-    )
+    membership_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="membershipId"),
+        pydantic.Field(alias="membershipId", description="The Membership ID that matches the party member."),
+    ] = None
     """
     The Membership ID that matches the party member.
     """

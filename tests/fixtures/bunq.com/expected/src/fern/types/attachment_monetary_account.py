@@ -2,4 +2,4 @@
 
 import typing
 
-AttachmentMonetaryAccount = typing.Dict[str, typing.Optional[typing.Any]]
+AttachmentMonetaryAccount = typing.Dict[str, typing.Any]

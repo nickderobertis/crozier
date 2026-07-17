@@ -9,8 +9,12 @@ from ..core.serialization import FieldMetadata
 
 
 class GroupsV2GroupNameSearchRequest(UniversalBaseModel):
-    group_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="groupName")] = None
-    group_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="groupType")] = None
+    group_name: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="groupName"), pydantic.Field(alias="groupName")
+    ] = None
+    group_type: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="groupType"), pydantic.Field(alias="groupType")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

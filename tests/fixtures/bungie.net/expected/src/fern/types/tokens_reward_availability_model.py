@@ -13,26 +13,43 @@ from .tokens_collectible_definitions import TokensCollectibleDefinitions
 
 class TokensRewardAvailabilityModel(UniversalBaseModel):
     collectible_definitions: typing_extensions.Annotated[
-        typing.Optional[typing.List[TokensCollectibleDefinitions]], FieldMetadata(alias="CollectibleDefinitions")
+        typing.Optional[typing.List[TokensCollectibleDefinitions]],
+        FieldMetadata(alias="CollectibleDefinitions"),
+        pydantic.Field(alias="CollectibleDefinitions"),
     ] = None
-    decrypted_token: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="DecryptedToken")] = None
+    decrypted_token: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="DecryptedToken"), pydantic.Field(alias="DecryptedToken")
+    ] = None
     game_earn_by_date: typing_extensions.Annotated[
-        typing.Optional[dt.datetime], FieldMetadata(alias="GameEarnByDate")
+        typing.Optional[dt.datetime], FieldMetadata(alias="GameEarnByDate"), pydantic.Field(alias="GameEarnByDate")
     ] = None
-    has_existing_code: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="HasExistingCode")] = None
-    has_offer: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="HasOffer")] = None
-    is_loyalty_reward: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="IsLoyaltyReward")] = None
-    is_offer: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="IsOffer")] = None
-    offer_applied: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="OfferApplied")] = None
+    has_existing_code: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="HasExistingCode"), pydantic.Field(alias="HasExistingCode")
+    ] = None
+    has_offer: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="HasOffer"), pydantic.Field(alias="HasOffer")
+    ] = None
+    is_loyalty_reward: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="IsLoyaltyReward"), pydantic.Field(alias="IsLoyaltyReward")
+    ] = None
+    is_offer: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="IsOffer"), pydantic.Field(alias="IsOffer")
+    ] = None
+    offer_applied: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="OfferApplied"), pydantic.Field(alias="OfferApplied")
+    ] = None
     record_definitions: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsRecordsDestinyRecordDefinition]],
         FieldMetadata(alias="RecordDefinitions"),
+        pydantic.Field(alias="RecordDefinitions"),
     ] = None
     redemption_end_date: typing_extensions.Annotated[
-        typing.Optional[dt.datetime], FieldMetadata(alias="RedemptionEndDate")
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="RedemptionEndDate"),
+        pydantic.Field(alias="RedemptionEndDate"),
     ] = None
     shopify_end_date: typing_extensions.Annotated[
-        typing.Optional[dt.datetime], FieldMetadata(alias="ShopifyEndDate")
+        typing.Optional[dt.datetime], FieldMetadata(alias="ShopifyEndDate"), pydantic.Field(alias="ShopifyEndDate")
     ] = None
 
     if IS_PYDANTIC_V2:

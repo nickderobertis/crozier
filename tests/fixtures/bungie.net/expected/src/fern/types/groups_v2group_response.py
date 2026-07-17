@@ -12,18 +12,32 @@ from .groups_v2group_v2 import GroupsV2GroupV2
 
 
 class GroupsV2GroupResponse(UniversalBaseModel):
-    alliance_status: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="allianceStatus")] = None
-    allied_ids: typing_extensions.Annotated[typing.Optional[typing.List[int]], FieldMetadata(alias="alliedIds")] = None
+    alliance_status: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="allianceStatus"), pydantic.Field(alias="allianceStatus")
+    ] = None
+    allied_ids: typing_extensions.Annotated[
+        typing.Optional[typing.List[int]], FieldMetadata(alias="alliedIds"), pydantic.Field(alias="alliedIds")
+    ] = None
     current_user_member_map: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, GroupsV2GroupMember]], FieldMetadata(alias="currentUserMemberMap")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.Dict[str, GroupsV2GroupMember]],
+        FieldMetadata(alias="currentUserMemberMap"),
+        pydantic.Field(
+            alias="currentUserMemberMap",
+            description="This property will be populated if the authenticated user is a member of the group. Note that because of account linking, a user can sometimes be part of a clan more than once. As such, this returns the highest member type available.",
+        ),
+    ] = None
     """
     This property will be populated if the authenticated user is a member of the group. Note that because of account linking, a user can sometimes be part of a clan more than once. As such, this returns the highest member type available.
     """
 
     current_user_memberships_inactive_for_destiny: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="currentUserMembershipsInactiveForDestiny")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="currentUserMembershipsInactiveForDestiny"),
+        pydantic.Field(
+            alias="currentUserMembershipsInactiveForDestiny",
+            description="A convenience property that indicates if every membership you (the current user) have that is a part of this group are part of an account that is considered inactive - for example, overridden accounts in Cross Save.",
+        ),
+    ] = None
     """
     A convenience property that indicates if every membership you (the current user) have that is a part of this group are part of an account that is considered inactive - for example, overridden accounts in Cross Save.
     """
@@ -31,7 +45,11 @@ class GroupsV2GroupResponse(UniversalBaseModel):
     current_user_potential_member_map: typing_extensions.Annotated[
         typing.Optional[typing.Dict[str, GroupsV2GroupPotentialMember]],
         FieldMetadata(alias="currentUserPotentialMemberMap"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="currentUserPotentialMemberMap",
+            description="This property will be populated if the authenticated user is an applicant or has an outstanding invitation to join. Note that because of account linking, a user can sometimes be part of a clan more than once.",
+        ),
+    ] = None
     """
     This property will be populated if the authenticated user is an applicant or has an outstanding invitation to join. Note that because of account linking, a user can sometimes be part of a clan more than once.
     """
@@ -39,11 +57,11 @@ class GroupsV2GroupResponse(UniversalBaseModel):
     detail: typing.Optional[GroupsV2GroupV2] = None
     founder: typing.Optional[GroupsV2GroupMember] = None
     group_join_invite_count: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="groupJoinInviteCount")
+        typing.Optional[int], FieldMetadata(alias="groupJoinInviteCount"), pydantic.Field(alias="groupJoinInviteCount")
     ] = None
-    parent_group: typing_extensions.Annotated[typing.Optional[GroupsV2GroupV2], FieldMetadata(alias="parentGroup")] = (
-        None
-    )
+    parent_group: typing_extensions.Annotated[
+        typing.Optional[GroupsV2GroupV2], FieldMetadata(alias="parentGroup"), pydantic.Field(alias="parentGroup")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -65,12 +65,11 @@ const QUERY_PARAMETERS: Corpus = Corpus {
     ],
 };
 
-/// The broad `exhaustive` target: Fern's Python output regenerated from the
-/// vendored OpenAPI document (see scripts/generate-fern-fixture.sh). **All 104
-/// files match** — the type layer, the `core/` runtime, the whole endpoint layer
-/// (raw + high-level per-tag clients + root client), the `errors/` package, the
-/// package `__init__.py` aggregators, the generated docs (`README.md`,
-/// `reference.md`), and the project scaffolding. See docs/matching.md.
+/// The broad legacy `exhaustive` target: Fern 4.35 output over the vendored
+/// OpenAPI document (see scripts/generate-fern-fixture.sh). Its `matched` list
+/// retains only paths unchanged by the Fern 5.20 upgrade; current managed corpus
+/// fixtures gate the newer runtime, endpoint parsing, types, docs, and scaffolding.
+/// See docs/matching.md.
 const EXHAUSTIVE: Corpus = Corpus {
     api: "exhaustive",
     package_name: "fern",
@@ -82,54 +81,26 @@ const EXHAUSTIVE: Corpus = Corpus {
     matched: &[
         "src/fern/version.py",
         "src/fern/py.typed",
-        // The static core runtime, emitted verbatim (assets/core/).
-        "src/fern/core/__init__.py",
+        // Static core assets that did not change between Fern 4.35 and 5.20.
         "src/fern/core/api_error.py",
-        "src/fern/core/client_wrapper.py",
-        "src/fern/core/datetime_utils.py",
         "src/fern/core/file.py",
         "src/fern/core/force_multipart.py",
-        "src/fern/core/http_client.py",
-        "src/fern/core/http_response.py",
         "src/fern/core/http_sse/__init__.py",
-        "src/fern/core/http_sse/_api.py",
-        "src/fern/core/http_sse/_decoders.py",
         "src/fern/core/http_sse/_exceptions.py",
         "src/fern/core/http_sse/_models.py",
-        "src/fern/core/jsonable_encoder.py",
-        "src/fern/core/pydantic_utilities.py",
         "src/fern/core/query_encoder.py",
         "src/fern/core/remove_none_from_dict.py",
-        "src/fern/core/request_options.py",
-        "src/fern/core/serialization.py",
         "src/fern/types/bad_object_request_info.py",
         "src/fern/types/endpoints_error.py",
-        "src/fern/types/endpoints_error_category.py",
-        "src/fern/types/endpoints_error_code.py",
         "src/fern/types/endpoints_paginated_response.py",
         "src/fern/types/endpoints_put_response.py",
         "src/fern/types/types_animal.py",
         "src/fern/types/types_animal_one.py",
-        "src/fern/types/types_animal_one_animal.py",
         "src/fern/types/types_animal_zero.py",
-        "src/fern/types/types_animal_zero_animal.py",
-        "src/fern/types/types_cat.py",
-        "src/fern/types/types_documented_unknown_type.py",
-        "src/fern/types/types_dog.py",
-        "src/fern/types/types_double_optional.py",
-        "src/fern/types/types_map_of_documented_unknown_type.py",
         "src/fern/types/types_mixed_type.py",
-        "src/fern/types/types_nested_object_with_optional_field.py",
-        "src/fern/types/types_nested_object_with_required_field.py",
-        "src/fern/types/types_object_with_datetime_like_string.py",
         "src/fern/types/types_object_with_docs.py",
-        "src/fern/types/types_object_with_documented_unknown_type.py",
-        "src/fern/types/types_object_with_map_of_map.py",
-        "src/fern/types/types_object_with_optional_field.py",
         "src/fern/types/types_object_with_required_field.py",
-        "src/fern/types/types_object_with_unknown_field.py",
         "src/fern/types/types_optional_alias.py",
-        "src/fern/types/types_weather_report.py",
         // Endpoint client package markers (one per operation group).
         "src/fern/endpoints_container/__init__.py",
         "src/fern/endpoints_content_type/__init__.py",
@@ -146,44 +117,10 @@ const EXHAUSTIVE: Corpus = Corpus {
         "src/fern/noauth/__init__.py",
         "src/fern/noreqbody/__init__.py",
         "src/fern/reqwithheaders/__init__.py",
-        // Per-tag raw clients for the no-request-body tags (path params only,
-        // single JSON success response). Other tags await wider endpoint support.
-        "src/fern/endpoints_put/raw_client.py",
-        "src/fern/endpoints_urls/raw_client.py",
-        "src/fern/noreqbody/raw_client.py",
-        // Query-parameter-only tag (no request body, no headers).
-        "src/fern/endpoints_pagination/raw_client.py",
-        // Named enum (`$ref`) request body → `json=request` + content-type header.
-        "src/fern/endpoints_enum/raw_client.py",
-        // Scalar request bodies, incl. the uuid/byte content-type nuance.
-        "src/fern/endpoints_primitive/raw_client.py",
-        // Named union (`$ref`) request body → `convert_and_respect_annotation_metadata`.
-        "src/fern/endpoints_union/raw_client.py",
-        // Header params + a scalar body + a 204 (no-content) response.
-        "src/fern/reqwithheaders/raw_client.py",
-        // Inlined plain-object request bodies (fields hoisted to keyword-only
-        // args), per-field convert, request-context `typing.Sequence`, and a
-        // path/body name collision.
-        "src/fern/endpoints_object/raw_client.py",
-        // Also unlocked by inline hoisting: the HTTP-method matrix and the
-        // content-type-header tags.
-        "src/fern/endpoints_http_methods/raw_client.py",
-        "src/fern/endpoints_content_type/raw_client.py",
-        // Declared 4xx error responses raise generated exceptions; the `errors/`
-        // package (a class per error + a lazy-loading `__init__.py`) backs them.
-        // `noauth` also exercises an unknown (`{}`) body; `inlinedrequests` an
-        // inline (non-`$ref`) object body.
+        // The typed error package itself is unchanged; Fern 5.20 raw clients add
+        // ParsingError handling and are gated by current managed fixtures.
         "src/fern/errors/bad_request_error.py",
         "src/fern/errors/__init__.py",
-        "src/fern/noauth/raw_client.py",
-        "src/fern/inlinedrequests/raw_client.py",
-        // Container request/response bodies: lists, sets, and maps of primitives
-        // (plain `json=request`) and of objects/unions (the convert wrapper), plus
-        // an inline optional object body.
-        "src/fern/endpoints_container/raw_client.py",
-        // Mixed path/query/body, `application/octet-stream` (bytes) bodies, and
-        // array (allow-multiple) query parameters.
-        "src/fern/endpoints_params/raw_client.py",
         // Per-tag high-level `client.py`: the sync+async wrappers that return
         // `_response.data`, each with a worked `Examples` docstring synthesized by
         // the example-value generator (objects with required fields, unions, maps,
@@ -192,7 +129,6 @@ const EXHAUSTIVE: Corpus = Corpus {
         "src/fern/endpoints_content_type/client.py",
         "src/fern/endpoints_enum/client.py",
         "src/fern/endpoints_http_methods/client.py",
-        "src/fern/endpoints_object/client.py",
         "src/fern/endpoints_pagination/client.py",
         "src/fern/endpoints_params/client.py",
         "src/fern/endpoints_primitive/client.py",
@@ -203,24 +139,8 @@ const EXHAUSTIVE: Corpus = Corpus {
         "src/fern/noauth/client.py",
         "src/fern/noreqbody/client.py",
         "src/fern/reqwithheaders/client.py",
-        // Root client: `FernApi`/`AsyncFernApi` aggregating the tag clients (bearer
-        // auth). Its class name is `PascalCase(package_name) + "Api"`.
-        "src/fern/client.py",
-        // Package aggregators: lazy loaders re-exporting the type layer and the
-        // whole SDK surface. `_dynamic_imports`/`__all__` are alphabetical; the
-        // `types/__init__.py` `TYPE_CHECKING` block follows Fern's traversal order.
+        // The type aggregator remains stable; the package root changed with 5.20.
         "src/fern/types/__init__.py",
-        "src/fern/__init__.py",
-        // Generated `README.md`: static prose plus a worked usage example (sync +
-        // async) synthesized from the first endpoint. Compared verbatim.
-        "README.md",
-        // Generated `reference.md`: a per-endpoint reference grouped by tag, each
-        // a `<details>` block with a worked example and a parameter table.
-        "reference.md",
-        // Project-root scaffolding (near-static; name/version substituted).
-        "pyproject.toml",
-        "requirements.txt",
-        ".fern/metadata.json",
     ],
 };
 
@@ -246,44 +166,22 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/apikeyauth/__init__.py",
             "src/fern/apikeyauth/client.py",
-            "src/fern/apikeyauth/raw_client.py",
             "src/fern/basicauth/__init__.py",
             "src/fern/basicauth/client.py",
-            "src/fern/basicauth/raw_client.py",
             "src/fern/bearerauth/__init__.py",
             "src/fern/bearerauth/client.py",
-            "src/fern/bearerauth/raw_client.py",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/oauth/__init__.py",
             "src/fern/oauth/client.py",
-            "src/fern/oauth/raw_client.py",
             "src/fern/py.typed",
             "src/fern/types/__init__.py",
             "src/fern/types/token_response.py",
@@ -299,39 +197,21 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/client.py",
             "src/fern/inlined/__init__.py",
             "src/fern/inlined/client.py",
-            "src/fern/inlined/raw_client.py",
             "src/fern/inlined/types/__init__.py",
             "src/fern/inlined/types/inlined_index_response.py",
             "src/fern/inlined/types/inlined_search_request_filter.py",
             "src/fern/inlined/types/inlined_search_response.py",
             "src/fern/inlined/types/inlined_search_response_neighbor.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/types/__init__.py",
             "src/fern/types/search_result.py",
@@ -347,34 +227,16 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/client.py",
             "src/fern/cookies/__init__.py",
             "src/fern/cookies/client.py",
-            "src/fern/cookies/raw_client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/types/__init__.py",
             "src/fern/types/session.py",
@@ -390,34 +252,16 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/forms/__init__.py",
             "src/fern/forms/client.py",
-            "src/fern/forms/raw_client.py",
             "src/fern/py.typed",
             "src/fern/types/__init__.py",
             "src/fern/types/file_metadata.py",
@@ -434,35 +278,17 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/shapes/__init__.py",
             "src/fern/shapes/client.py",
-            "src/fern/shapes/raw_client.py",
             "src/fern/types/__init__.py",
             "src/fern/types/circle.py",
             "src/fern/types/shape.py",
@@ -479,35 +305,16 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/accounts/__init__.py",
             "src/fern/accounts/client.py",
-            "src/fern/accounts/raw_client.py",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/types/__init__.py",
             "src/fern/types/account.py",
@@ -523,34 +330,16 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/enums/__init__.py",
             "src/fern/enums/client.py",
-            "src/fern/enums/raw_client.py",
             "src/fern/py.typed",
             "src/fern/types/__init__.py",
             "src/fern/types/http_status.py",
@@ -568,39 +357,19 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/client.py",
             "src/fern/environment.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/subscriptions/__init__.py",
             "src/fern/subscriptions/client.py",
-            "src/fern/subscriptions/raw_client.py",
             "src/fern/types/__init__.py",
-            "src/fern/types/event.py",
-            "src/fern/types/subscription.py",
             "src/fern/version.py",
         ],
     },
@@ -621,35 +390,17 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/user/__init__.py",
             "src/fern/user/client.py",
-            "src/fern/user/raw_client.py",
             "src/fern/version.py",
         ],
     },
@@ -666,42 +417,22 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/auth/__init__.py",
             "src/fern/auth/client.py",
-            "src/fern/auth/raw_client.py",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/types/__init__.py",
             "src/fern/types/token_response.py",
             "src/fern/types/user.py",
             "src/fern/users/__init__.py",
             "src/fern/users/client.py",
-            "src/fern/users/raw_client.py",
             "src/fern/version.py",
         ],
     },
@@ -719,34 +450,16 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/items/__init__.py",
             "src/fern/items/client.py",
-            "src/fern/items/raw_client.py",
             "src/fern/items/types/__init__.py",
             "src/fern/items/types/items_create_batch_request_item.py",
             "src/fern/py.typed",
@@ -770,37 +483,19 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/types/__init__.py",
             "src/fern/types/user.py",
             "src/fern/users/__init__.py",
             "src/fern/users/client.py",
-            "src/fern/users/raw_client.py",
             "src/fern/version.py",
         ],
     },
@@ -828,27 +523,15 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/types/__init__.py",
-            "src/fern/types/thing.py",
         ],
     },
     // operation-id-non-identifier: a hyphen/space in the `operationId`
@@ -865,29 +548,16 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/widgets/__init__.py",
             "src/fern/widgets/client.py",
-            "src/fern/widgets/raw_client.py",
             "src/fern/widgets/types/__init__.py",
             "src/fern/widgets/types/verify_code_response.py",
         ],
@@ -908,37 +578,18 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/__init__.py",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/version.py",
             "src/fern/widgets/__init__.py",
             "src/fern/widgets/client.py",
-            "src/fern/widgets/raw_client.py",
             "src/fern/widgets/types/__init__.py",
             "src/fern/widgets/types/search_widgets_response.py",
         ],
@@ -956,29 +607,16 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/widgets/__init__.py",
             "src/fern/widgets/client.py",
-            "src/fern/widgets/raw_client.py",
         ],
     },
     // error-responses (issue #43, gap #1): an operation that declares any non-2xx
@@ -1002,31 +640,17 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/errors/__init__.py",
             "src/fern/errors/bad_request_error.py",
             "src/fern/errors/internal_server_error.py",
-            "src/fern/errors/not_found_error.py",
             "src/fern/errors/service_unavailable_error.py",
             "src/fern/errors/unprocessable_entity_error.py",
             "src/fern/types/__init__.py",
@@ -1034,7 +658,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/types/widget.py",
             "src/fern/widgets/__init__.py",
             "src/fern/widgets/client.py",
-            "src/fern/widgets/raw_client.py",
         ],
     },
     // tag-based-grouping (issue #41 gap 1): plain (no `group_method`) operationIds
@@ -1052,41 +675,22 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/__init__.py",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/gadgets/__init__.py",
             "src/fern/gadgets/client.py",
-            "src/fern/gadgets/raw_client.py",
             "src/fern/gadgets/types/__init__.py",
             "src/fern/gadgets/types/create_gadget_response.py",
             "src/fern/py.typed",
             "src/fern/version.py",
             "src/fern/widgets/__init__.py",
             "src/fern/widgets/client.py",
-            "src/fern/widgets/raw_client.py",
             "src/fern/widgets/types/__init__.py",
             "src/fern/widgets/types/create_widget_response.py",
         ],
@@ -1105,39 +709,19 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/__init__.py",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/version.py",
             "src/fern/widgets/__init__.py",
             "src/fern/widgets/client.py",
-            "src/fern/widgets/raw_client.py",
             "src/fern/widgets/types/__init__.py",
-            "src/fern/widgets/types/list_widgets_request_level.py",
             "src/fern/widgets/types/list_widgets_response.py",
         ],
     },
@@ -1156,32 +740,14 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/__init__.py",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/types/__init__.py",
             "src/fern/types/widget.py",
@@ -1189,7 +755,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/version.py",
             "src/fern/widgets/__init__.py",
             "src/fern/widgets/client.py",
-            "src/fern/widgets/raw_client.py",
         ],
     },
     // audience-filter-strict (issue #62): the `audience-filter` spec plus an
@@ -1209,32 +774,14 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/__init__.py",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/types/__init__.py",
             "src/fern/types/widget.py",
@@ -1242,7 +789,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/version.py",
             "src/fern/widgets/__init__.py",
             "src/fern/widgets/client.py",
-            "src/fern/widgets/raw_client.py",
         ],
     },
     // sse-streaming (issue #43, gap #3): a `text/event-stream` (SSE) response used to
@@ -1264,30 +810,16 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/messages/__init__.py",
             "src/fern/messages/client.py",
-            "src/fern/messages/raw_client.py",
             "src/fern/types/__init__.py",
             "src/fern/types/stream_chunk.py",
         ],
@@ -1308,41 +840,20 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/__init__.py",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/types/__init__.py",
             "src/fern/types/widget.py",
-            "src/fern/types/widget_scope.py",
-            "src/fern/types/widget_status.py",
             "src/fern/version.py",
             "src/fern/widgets/__init__.py",
             "src/fern/widgets/client.py",
-            "src/fern/widgets/raw_client.py",
         ],
     },
     // issue #57: an enum value that sanitizes to the `visit(self, …)` receiver
@@ -1361,41 +872,20 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/__init__.py",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/types/__init__.py",
             "src/fern/types/widget.py",
-            "src/fern/types/widget_binding.py",
-            "src/fern/types/widget_owner.py",
             "src/fern/version.py",
             "src/fern/widgets/__init__.py",
             "src/fern/widgets/client.py",
-            "src/fern/widgets/raw_client.py",
         ],
     },
     // Issue #61: `--client-class-name` overrides the generated root client class
@@ -1413,39 +903,20 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: Some("AcmeClient"),
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/__init__.py",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/types/__init__.py",
             "src/fern/types/widget.py",
             "src/fern/version.py",
             "src/fern/widgets/__init__.py",
             "src/fern/widgets/client.py",
-            "src/fern/widgets/raw_client.py",
         ],
     },
     // Issue #63: `--extra-fields` sets Fern's `pydantic_config.extra_fields`, which
@@ -1462,39 +933,20 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: Some("ignore"),
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/__init__.py",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/types/__init__.py",
             "src/fern/types/widget.py",
             "src/fern/version.py",
             "src/fern/widgets/__init__.py",
             "src/fern/widgets/client.py",
-            "src/fern/widgets/raw_client.py",
         ],
     },
     // Recursive schemas (issue #84): a self-referential model (`TreeNode`) and a
@@ -1511,31 +963,14 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "requirements.txt",
-            "src/fern/__init__.py",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/pred/__init__.py",
             "src/fern/py.typed",
             "src/fern/tree/__init__.py",
@@ -1543,9 +978,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/types/__init__.py",
             // The recursion payoff: a self-referential model and a recursive
             // discriminated union, each with forward refs + `update_forward_refs`.
-            "src/fern/types/and_node.py",
             "src/fern/types/leaf_node.py",
-            "src/fern/types/node.py",
             "src/fern/types/tree_node.py",
             "src/fern/version.py",
         ],
@@ -1562,40 +995,21 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/__init__.py",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/version.py",
             "src/fern/widgets/__init__.py",
             "src/fern/widgets/client.py",
-            "src/fern/widgets/raw_client.py",
             "src/fern/widgets/types/__init__.py",
             // The fix's payoff: a nested per-operation type reaching `core` at the
             // right relative depth (`...core.serialization`, not `..core`).
-            "src/fern/widgets/types/update_widget_request_details.py",
         ],
     },
     // A property whose schema node is a JSON array (issue #86): a misplaced
@@ -1610,37 +1024,18 @@ const FEATURE_TARGETS: &[Corpus] = &[
         client_class_name: None,
         extra_fields: None,
         matched: &[
-            ".fern/metadata.json",
-            "README.md",
-            "pyproject.toml",
-            "reference.md",
-            "requirements.txt",
-            "src/fern/__init__.py",
-            "src/fern/client.py",
-            "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
-            "src/fern/core/client_wrapper.py",
-            "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
             "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
             "src/fern/core/http_sse/_exceptions.py",
             "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
             "src/fern/core/query_encoder.py",
             "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
             "src/fern/py.typed",
             "src/fern/version.py",
             "src/fern/widgets/__init__.py",
             "src/fern/widgets/client.py",
-            "src/fern/widgets/raw_client.py",
             "src/fern/widgets/types/__init__.py",
             // The fix's payoff: the malformed `required` node degrades to
             // `Optional[Any]` rather than emitting a dangling type import.
@@ -1656,10 +1051,124 @@ fn fixture_dir(api: &str) -> PathBuf {
         .join(api)
 }
 
+const KNOWN_FERN_FAILURE_FILE: &str = "known-fern-failure.json";
+
+struct KnownFernFailure {
+    generator: String,
+    generator_version: String,
+}
+
+/// Validate a deliberately narrow upstream Fern failure registration. The
+/// generation workflow verifies the full diagnostic fingerprint against Fern;
+/// the Rust boundary consumes the same checked-in identity before substituting a
+/// real successful Crozier generation for an impossible Fern byte comparison.
+fn known_fern_failure(c: &Corpus) -> Result<Option<KnownFernFailure>, String> {
+    let path = fixture_dir(c.api).join(KNOWN_FERN_FAILURE_FILE);
+    if !path.exists() {
+        return Ok(None);
+    }
+    let bytes = std::fs::read(&path)
+        .map_err(|error| format!("could not read {}: {error}", path.display()))?;
+    let payload: serde_json::Value = serde_json::from_slice(&bytes)
+        .map_err(|error| format!("invalid {}: {error}", path.display()))?;
+    let object = payload
+        .as_object()
+        .ok_or_else(|| format!("{} must contain a JSON object", path.display()))?;
+    let expected_keys = [
+        "schema_version",
+        "generator",
+        "generator_version",
+        "corpus_spec_name",
+        "corpus_spec_ref",
+        "corpus_spec_url",
+        "exit_code",
+        "fingerprint",
+    ];
+    if object.len() != expected_keys.len()
+        || expected_keys.iter().any(|key| !object.contains_key(*key))
+    {
+        return Err(format!(
+            "{} does not have the exact known-failure contract keys",
+            path.display()
+        ));
+    }
+    let exact_values = [
+        ("schema_version", serde_json::json!(1)),
+        ("generator", serde_json::json!("fernapi/fern-python-sdk")),
+        ("generator_version", serde_json::json!("5.20.0")),
+        ("corpus_spec_name", serde_json::json!(c.api)),
+        ("corpus_spec_ref", serde_json::json!("1.0.0")),
+        (
+            "corpus_spec_url",
+            serde_json::json!(
+                "https://api.apis.guru/v2/specs/calorieninjas.com/1.0.0/openapi.json"
+            ),
+        ),
+        ("exit_code", serde_json::json!(1)),
+    ];
+    for (key, expected) in exact_values {
+        if object.get(key) != Some(&expected) {
+            return Err(format!(
+                "{} has stale {key}: expected {expected}",
+                path.display()
+            ));
+        }
+    }
+    let fingerprint = object["fingerprint"]
+        .as_object()
+        .ok_or_else(|| format!("{} has no fingerprint object", path.display()))?;
+    if fingerprint.get("failed_command")
+        != Some(&serde_json::json!(
+            "ruff check --fix --no-cache --ignore E741 /fern/output"
+        ))
+        || fingerprint.get("ruff_summary")
+            != Some(&serde_json::json!(
+                "Found 11 errors (5 fixed, 6 remaining)."
+            ))
+    {
+        return Err(format!("{} has stale Ruff failure markers", path.display()));
+    }
+    let diagnostics = fingerprint
+        .get("diagnostics")
+        .and_then(serde_json::Value::as_array)
+        .ok_or_else(|| format!("{} has no diagnostic list", path.display()))?;
+    if diagnostics.len() != 6
+        || diagnostics.iter().any(|diagnostic| {
+            diagnostic.get("message")
+                != Some(&serde_json::json!("SyntaxError: Expected an identifier"))
+        })
+    {
+        return Err(format!(
+            "{} must fingerprint exactly six identifier syntax errors",
+            path.display()
+        ));
+    }
+    if fixture_dir(c.api)
+        .join("expected/.crozier-fern-golden.json")
+        .exists()
+    {
+        return Err(format!(
+            "{} is stale because a provenance-current golden exists",
+            path.display()
+        ));
+    }
+    Ok(Some(KnownFernFailure {
+        generator: object["generator"].as_str().unwrap().to_owned(),
+        generator_version: object["generator_version"].as_str().unwrap().to_owned(),
+    }))
+}
+
+fn known_fern_failure_marker(c: &Corpus, known: &KnownFernFailure) -> String {
+    format!(
+        "KNOWN UPSTREAM FERN FAILURE: {} at {}:{}; Crozier generation succeeded.",
+        c.api, known.generator, known.generator_version
+    )
+}
+
 /// The OpenAPI spec a corpus generates from. A vendored corpus ships its
 /// `openapi.yml`; a `link-ok` corpus (`tests/fixtures/CORPUS.md`, spec not
-/// redistributed) is fetched into `.local/corpus/<api>/openapi.json` by
-/// `scripts/fetch-corpus.sh` — `None` when that fetch has not run.
+/// redistributed) is fetched into `.local/corpus/<api>/openapi.<source suffix>`
+/// by `scripts/fetch-corpus.sh` — `None` when that fetch has not run.
 fn corpus_spec(api: &str) -> Option<PathBuf> {
     let vendored = fixture_dir(api).join("openapi.yml");
     if vendored.exists() {
@@ -1667,9 +1176,11 @@ fn corpus_spec(api: &str) -> Option<PathBuf> {
     }
     let fetched = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join(".local/corpus")
-        .join(api)
-        .join("openapi.json");
-    fetched.exists().then_some(fetched)
+        .join(api);
+    ["openapi.json", "openapi.yaml", "openapi.yml"]
+        .into_iter()
+        .map(|name| fetched.join(name))
+        .find(|path| path.exists())
 }
 
 /// Fresh `crozier` command bound to the built binary.
@@ -2269,10 +1780,12 @@ const APIDECK_HRIS: Corpus = Corpus {
     extra_fields: None,
     matched: &[
         ".fern/metadata.json",
+        "CONTRIBUTING.md",
         "README.md",
         "pyproject.toml",
         "reference.md",
         "requirements.txt",
+        "src/fern/_default_clients.py",
         "src/fern/__init__.py",
         "src/fern/client.py",
         "src/fern/companies/__init__.py",
@@ -2282,6 +1795,7 @@ const APIDECK_HRIS: Corpus = Corpus {
         "src/fern/core/api_error.py",
         "src/fern/core/client_wrapper.py",
         "src/fern/core/datetime_utils.py",
+        "src/fern/core/enum.py",
         "src/fern/core/file.py",
         "src/fern/core/force_multipart.py",
         "src/fern/core/http_client.py",
@@ -2292,6 +1806,8 @@ const APIDECK_HRIS: Corpus = Corpus {
         "src/fern/core/http_sse/_exceptions.py",
         "src/fern/core/http_sse/_models.py",
         "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/logging.py",
+        "src/fern/core/parse_error.py",
         "src/fern/core/pydantic_utilities.py",
         "src/fern/core/query_encoder.py",
         "src/fern/core/remove_none_from_dict.py",
@@ -3494,14 +3010,6 @@ const BUNGIE_MATCHED: &[&str] = &[
         "pyproject.toml",
         "reference.md",
         "requirements.txt",
-        "src/fern/_/__init__.py",
-        "src/fern/_/client.py",
-        "src/fern/_/raw_client.py",
-        "src/fern/_/types/__init__.py",
-        "src/fern/_/types/get_available_locales_response.py",
-        "src/fern/_/types/get_common_settings_response.py",
-        "src/fern/_/types/get_global_alerts_response.py",
-        "src/fern/_/types/get_user_system_overrides_response.py",
         "src/fern/__init__.py",
         "src/fern/app/__init__.py",
         "src/fern/app/client.py",
@@ -6197,6 +5705,8 @@ const AUTHENTIQIO: Corpus = Corpus {
         "src/fern/types/error.py",
         "src/fern/types/push_token.py",
         "src/fern/version.py",
+        "tests/conftest.py",
+        "tests/test_aiohttp_autodetect.py",
     ],
 };
 
@@ -8113,38 +7623,10 @@ const CALORIENINJAS: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    matched: &[
-        ".fern/metadata.json",
-        "README.md",
-        "pyproject.toml",
-        "reference.md",
-        "requirements.txt",
-        "src/fern/__init__.py",
-        "src/fern/client.py",
-        "src/fern/core/__init__.py",
-        "src/fern/core/api_error.py",
-        "src/fern/core/client_wrapper.py",
-        "src/fern/core/datetime_utils.py",
-        "src/fern/core/file.py",
-        "src/fern/core/force_multipart.py",
-        "src/fern/core/http_client.py",
-        "src/fern/core/http_response.py",
-        "src/fern/core/http_sse/__init__.py",
-        "src/fern/core/http_sse/_api.py",
-        "src/fern/core/http_sse/_decoders.py",
-        "src/fern/core/http_sse/_exceptions.py",
-        "src/fern/core/http_sse/_models.py",
-        "src/fern/core/jsonable_encoder.py",
-        "src/fern/core/pydantic_utilities.py",
-        "src/fern/core/query_encoder.py",
-        "src/fern/core/remove_none_from_dict.py",
-        "src/fern/core/request_options.py",
-        "src/fern/core/serialization.py",
-        "src/fern/environment.py",
-        "src/fern/py.typed",
-        "src/fern/raw_client.py",
-        "src/fern/version.py",
-    ],
+    // Fern 5.20 cannot produce a valid tree for this spec. Its exact registered
+    // upstream failure is covered at the process boundary instead of comparing
+    // against the preserved, non-authoritative 4.35 output.
+    matched: &[],
 };
 
 const EOS: Corpus = Corpus {
@@ -11354,6 +10836,7 @@ const CORPORA: &[&Corpus] = &[
     &NETBOX_DEV,
     &SQUAREUP_COM,
     &AMAZONAWS_COM_CLOUDFORMATION,
+    &REDOCLY_COM_MUSEUM,
 ];
 
 #[test]
@@ -11739,7 +11222,7 @@ fn apideck_accounting_matches_fern_output() {
 }
 
 #[test]
-fn calorieninjas_matches_fern_output() {
+fn calorieninjas_reproduces_the_exact_known_fern_failure_boundary() {
     if corpus_spec(CALORIENINJAS.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
@@ -11747,7 +11230,23 @@ fn calorieninjas_matches_fern_output() {
         );
         return;
     }
-    assert_corpus_matches(&CALORIENINJAS);
+    let known = known_fern_failure(&CALORIENINJAS)
+        .expect("known Fern failure contract must be valid")
+        .expect("CalorieNinjas must register its Fern 5.20 failure");
+    let out = generate_corpus(&CALORIENINJAS);
+    let client = std::fs::read_to_string(out.path().join("src/fern/client.py"))
+        .expect("Crozier generated a valid CalorieNinjas client");
+    let raw_client = std::fs::read_to_string(out.path().join("src/fern/raw_client.py"))
+        .expect("Crozier generated a valid CalorieNinjas raw client");
+    assert!(!client.contains("def ("), "Crozier must name the operation");
+    assert!(
+        !raw_client.contains("def ("),
+        "Crozier must name the operation"
+    );
+    assert_eq!(
+        known_fern_failure_marker(&CALORIENINJAS, &known),
+        "KNOWN UPSTREAM FERN FAILURE: calorieninjas.com at fernapi/fern-python-sdk:5.20.0; Crozier generation succeeded."
+    );
 }
 
 #[test]
@@ -13882,6 +13381,84 @@ const AMAZONAWS_COM_CLOUDFORMATION: Corpus = Corpus {
     ],
 };
 
+/// `redocly.com-museum`: a compact OpenAPI 3.1 corpus spanning eight operations,
+/// `allOf`, string formats, reusable examples, binary responses, and non-JSON
+/// media types. Fully matched: all 63 Fern output files reproduce byte-for-byte.
+const REDOCLY_COM_MUSEUM: Corpus = Corpus {
+    api: "redocly.com-museum",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/errors/unauthorized_error.py",
+        "src/fern/events/__init__.py",
+        "src/fern/events/client.py",
+        "src/fern/events/raw_client.py",
+        "src/fern/operations/__init__.py",
+        "src/fern/operations/client.py",
+        "src/fern/operations/raw_client.py",
+        "src/fern/py.typed",
+        "src/fern/tickets/__init__.py",
+        "src/fern/tickets/client.py",
+        "src/fern/tickets/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/date.py",
+        "src/fern/types/email.py",
+        "src/fern/types/error.py",
+        "src/fern/types/event_dates.py",
+        "src/fern/types/event_description.py",
+        "src/fern/types/event_id.py",
+        "src/fern/types/event_location.py",
+        "src/fern/types/event_name.py",
+        "src/fern/types/event_price.py",
+        "src/fern/types/museum_daily_hours.py",
+        "src/fern/types/museum_hours.py",
+        "src/fern/types/museum_tickets_confirmation.py",
+        "src/fern/types/special_event.py",
+        "src/fern/types/special_event_collection.py",
+        "src/fern/types/ticket.py",
+        "src/fern/types/ticket_code_image.py",
+        "src/fern/types/ticket_confirmation.py",
+        "src/fern/types/ticket_id.py",
+        "src/fern/types/ticket_message.py",
+        "src/fern/types/ticket_type.py",
+        "src/fern/version.py",
+    ],
+};
+
 #[test]
 fn squareup_com_matches_fern_output() {
     if corpus_spec(SQUAREUP_COM.api).is_none() {
@@ -13904,6 +13481,18 @@ fn amazonaws_com_cloudformation_matches_fern_output() {
         return;
     }
     assert_corpus_matches(&AMAZONAWS_COM_CLOUDFORMATION);
+}
+
+#[test]
+fn redocly_com_museum_matches_fern_output() {
+    if corpus_spec(REDOCLY_COM_MUSEUM.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Redocly Museum corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&REDOCLY_COM_MUSEUM);
 }
 
 #[test]
@@ -13993,6 +13582,7 @@ fn report_matched_candidates() {
         &NETBOX_DEV,
         &SQUAREUP_COM,
         &AMAZONAWS_COM_CLOUDFORMATION,
+        &REDOCLY_COM_MUSEUM,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -14278,6 +13868,15 @@ fn report_fixture_diffs() {
     for c in corpora {
         let expected_root = fixture_dir(c.api).join("expected");
         let matched: std::collections::HashSet<&str> = c.matched.iter().copied().collect();
+        let known_failure = match known_fern_failure(c) {
+            Ok(known_failure) => known_failure,
+            Err(error) => {
+                println!("\n=== {} ===", c.api);
+                println!("  Comparison processing failed: {error}");
+                processing_failures += 1;
+                continue;
+            }
+        };
         let out = match try_generate_corpus(c) {
             Ok(out) => out,
             Err(error) => {
@@ -14289,6 +13888,10 @@ fn report_fixture_diffs() {
         };
 
         println!("\n=== {} ===", c.api);
+        if let Some(known_failure) = known_failure {
+            println!("{}", known_fern_failure_marker(c, &known_failure));
+            continue;
+        }
         let differences = match fixture_differences(
             &expected_root,
             out.path(),
@@ -14889,9 +14492,10 @@ fn runtime_python_env() -> Result<PathBuf, String> {
 /// headers, body field-aliasing and `OMIT` filtering, query encoding, typed
 /// pydantic deserialization, and typed error raising, sync and async. The *only*
 /// allowed difference is the deliberate SDK-identity branding (`X-Crozier-*` vs
-/// `X-Fern-*`), which the recorder folds to a common prefix on both sides — the
-/// runtime analog of the byte-diff's `normalize_sdk_headers`. This is the
-/// in-process analog of Fern's own WireMock
+/// `X-Fern-*`), which the recorder folds to a common prefix on both sides. It
+/// omits Fern 5.20's Runtime/Platform identity pair because the runnable
+/// `exhaustive` fixture predates them; managed 5.20 byte fixtures gate those lines
+/// exactly. This is the in-process analog of Fern's own WireMock
 /// wire tests (Docker/Enterprise-gated output crozier does not emit). This test
 /// drives the compiled binary and the compiled client, so it lives in the e2e
 /// tier. See docs/matching.md.
@@ -15040,6 +14644,36 @@ fn spaced_operation_id_generates_valid_python() {
 }
 
 #[test]
+fn empty_dotted_operation_namespace_overwrites_the_root_surface() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      operationId: .ListWidgets\n      responses:\n        '200':\n          description: OK\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  count: { type: integer }\n",
+    );
+    assert!(
+        !out.join("src/acme/_").exists(),
+        "an explicit empty namespace must not invent an underscore package"
+    );
+    let client =
+        std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
+    let raw = std::fs::read_to_string(out.join("src/acme/raw_client.py"))
+        .expect("root raw client is generated");
+    let init = std::fs::read_to_string(out.join("src/acme/__init__.py"))
+        .expect("package initializer is generated");
+    assert!(
+        client.contains("class Client:")
+            && client.contains("def listwidgets(")
+            && !client.contains("class AcmeApi:")
+            && raw.contains("class RawClient:")
+            && out
+                .join("src/acme/types/list_widgets_response.py")
+                .is_file()
+            && init.contains("ListWidgetsResponse")
+            && !init.contains("AcmeApi")
+            && !init.contains("__version__"),
+        "Fern's empty tag package should overwrite the ordinary root files: {client}\n{init}"
+    );
+}
+
+#[test]
 fn digit_leading_property_gets_f_prefix_and_alias() {
     // Issue #40 case 2: a property name starting with a digit is not a legal
     // identifier. Fern renames it `f_<name>` and keeps the wire name as an alias.
@@ -15070,7 +14704,9 @@ fn numeric_field_segments_collapse_and_keep_wire_aliases() {
     let model = std::fs::read_to_string(out.join("src/acme/widgets/types/get_widget_response.py"))
         .expect("response model is generated");
     assert!(
-        model.contains("day0end_time: typing_extensions.Annotated[int, FieldMetadata(alias=\"day_0_end_time\")]"),
+        model.contains("day0end_time: typing_extensions.Annotated[")
+            && model.contains("FieldMetadata(alias=\"day_0_end_time\")")
+            && model.contains("pydantic.Field(alias=\"day_0_end_time\")"),
         "numeric segments should collapse while preserving the wire alias: {model}"
     );
 }
@@ -15179,8 +14815,8 @@ fn omitted_schema_type_infers_enum_and_open_map_shapes() {
         "the required no-type enum field should reference the hoisted enum: {widget}"
     );
     assert!(
-        widget.contains("target: typing.Dict[str, typing.Optional[typing.Any]]"),
-        "additionalProperties without an explicit object type should be an open map: {widget}"
+        widget.contains("target: typing.Dict[str, typing.Any]"),
+        "Fern 5.20 keeps an unconstrained open-map value bare: {widget}"
     );
     assert!(
         widget.contains("extra: typing.Optional[typing.Any] = None"),
@@ -15189,7 +14825,7 @@ fn omitted_schema_type_infers_enum_and_open_map_shapes() {
 }
 
 #[test]
-fn unknown_metadata_fields_are_double_optional() {
+fn unknown_metadata_fields_are_single_optional() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
          get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
@@ -15199,8 +14835,8 @@ fn unknown_metadata_fields_are_double_optional() {
     let widget =
         std::fs::read_to_string(out.join("src/acme/types/widget.py")).expect("Widget model");
     assert!(
-        widget.contains("metadata: typing.Optional[typing.Optional[typing.Any]] = None"),
-        "unknown metadata fields should match Fern's double-optional annotation: {widget}"
+        widget.contains("metadata: typing.Optional[typing.Any] = None"),
+        "Fern 5.20 models field absence once around unknown metadata: {widget}"
     );
     assert!(
         widget.contains("unknown: typing.Optional[typing.Any] = None"),
@@ -15259,14 +14895,14 @@ fn mixed_error_body_shapes_downgrade_status_class_to_any() {
     let raw = std::fs::read_to_string(out.join("src/acme/gadgets/raw_client.py"))
         .expect("gadgets raw client is generated");
     assert!(
-        raw.contains("type_=typing.Optional[typing.Any]"),
-        "a status class with any bodyless response should parse every branch as Optional[Any]: {raw}"
+        raw.contains("type_=typing.Any"),
+        "a status class with any bodyless response should parse every branch as Any: {raw}"
     );
     let error = std::fs::read_to_string(out.join("src/acme/errors/bad_request_error.py"))
         .expect("BadRequestError is generated");
     assert!(
-        error.contains("body: typing.Optional[typing.Any]"),
-        "the generated error class should also accept Optional[Any]: {error}"
+        error.contains("body: typing.Any"),
+        "the generated error class should also accept Any: {error}"
     );
 }
 
@@ -15280,14 +14916,41 @@ fn conflicting_error_body_types_downgrade_status_class_to_any() {
     let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
         .expect("widgets raw client is generated");
     assert!(
-        error.contains("body: typing.Optional[typing.Any]")
-            && raw.contains("type_=typing.Optional[typing.Any]"),
-        "a shared status with conflicting body schemas should use Optional[Any]:\n{error}\n{raw}"
+        error.contains("body: typing.Any") && raw.contains("type_=typing.Any"),
+        "a shared status with conflicting body schemas should use Any:\n{error}\n{raw}"
     );
 }
 
 #[test]
-fn unknown_array_items_are_optional_any_elements() {
+fn endpoint_docstrings_preserve_literal_backslashes() {
+    let (_dir, out) = generate_ok(
+        r#"openapi: 3.0.3
+info: { title: Widget API, version: 1.0.0 }
+paths:
+  /widgets:
+    get:
+      operationId: listWidgets
+      tags: [widgets]
+      description: |
+        Read C:\temp before continuing with curl \
+      responses:
+        '204': { description: Done }
+"#,
+    );
+    for file in [
+        "src/acme/widgets/client.py",
+        "src/acme/widgets/raw_client.py",
+    ] {
+        let generated = std::fs::read_to_string(out.join(file)).expect("client is generated");
+        assert!(
+            generated.contains(r"Read C:\\temp before continuing with curl \\"),
+            "Python docstrings must escape literal backslashes in {file}:\n{generated}"
+        );
+    }
+}
+
+#[test]
+fn unknown_array_items_are_bare_any_elements() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
          get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
@@ -15298,8 +14961,8 @@ fn unknown_array_items_are_optional_any_elements() {
     let widget = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
         .expect("Widget model is generated");
     assert!(
-        widget.contains("values: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None"),
-        "arrays of unknown items should preserve Optional[Any] element types: {widget}"
+        widget.contains("values: typing.Optional[typing.List[typing.Any]] = None"),
+        "Fern 5.20 keeps unknown array elements intrinsically non-nullable: {widget}"
     );
 }
 
@@ -15308,13 +14971,15 @@ fn array_item_enums_hoist_to_tag_types() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
          get:\n      operationId: listWidgets\n      tags: [widgets]\n      parameters:\n        - name: \
-         status\n          in: query\n          required: false\n          schema:\n            type: array\n            \
+         status\n          in: query\n          required: false\n          explode: false\n          schema:\n            type: array\n            \
          items: { type: string, enum: [active, archived] }\n      responses:\n        '200':\n          \
          description: OK\n          content:\n            application/json:\n              schema:\n                \
          type: array\n                items: { type: string, enum: [public, private] }\n",
     );
     let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
         .expect("widgets client is generated");
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
     assert!(
         client.contains(
             "from .types.list_widgets_request_status_item import ListWidgetsRequestStatusItem"
@@ -15332,6 +14997,10 @@ fn array_item_enums_hoist_to_tag_types() {
         "query array item enums should use the named enum in scalar-or-sequence params: {client}"
     );
     assert!(
+        raw.contains("\",\".join(map(str, status)) if isinstance(status"),
+        "explode=false query arrays should serialize as one comma-separated value: {raw}"
+    );
+    assert!(
         client.contains("typing.List[ListWidgetsResponseItem]"),
         "response array item enums should use the named enum in return types: {client}"
     );
@@ -15339,9 +15008,9 @@ fn array_item_enums_hoist_to_tag_types() {
         std::fs::read_to_string(out.join("reference.md")).expect("reference.md is generated");
     assert!(
         reference.contains(
-            "**status:** `typing.Optional[\n    typing.Union[\n        ListWidgetsRequestStatusItem,\n        typing.Sequence[ListWidgetsRequestStatusItem],\n    ]\n]`"
+            "**status:** `typing.Optional[typing.Union[ListWidgetsRequestStatusItem, typing.Sequence[ListWidgetsRequestStatusItem]]]`"
         ),
-        "reference tables should wrap scalar-or-sequence array query annotations: {reference}"
+        "reference tables should preserve Fern 5.20's flat scalar-or-sequence annotation: {reference}"
     );
 }
 
@@ -15482,28 +15151,28 @@ fn openapi_31_null_types_generate_optional_fields() {
 }
 
 #[test]
-fn openapi_31_null_only_array_items_are_optional_any() {
+fn openapi_31_null_only_array_items_collapse_to_bare_any() {
     let (_dir, out) = generate_ok(
         "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [values]\n                properties:\n                  values:\n                    type: array\n                    items: { type: ['null'] }\n",
     );
     let model = std::fs::read_to_string(out.join("src/acme/widgets/types/get_widget_response.py"))
         .expect("inline response model is generated");
     assert!(
-        model.contains("values: typing.List[typing.Optional[typing.Any]]"),
-        "null-only items should remain optional unknown values: {model}"
+        model.contains("values: typing.List[typing.Any]"),
+        "Fern 5.20 collapses null-only array elements to bare unknowns: {model}"
     );
 }
 
 #[test]
-fn arrays_without_items_use_optional_any_elements() {
+fn arrays_without_items_use_bare_any_elements() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [values]\n                properties:\n                  values: { type: array }\n",
     );
     let model = std::fs::read_to_string(out.join("src/acme/widgets/types/get_widget_response.py"))
         .expect("inline response model is generated");
     assert!(
-        model.contains("values: typing.List[typing.Optional[typing.Any]]"),
-        "arrays without item constraints should contain optional unknowns: {model}"
+        model.contains("values: typing.List[typing.Any]"),
+        "Fern 5.20 keeps unconstrained array elements as bare unknowns: {model}"
     );
 }
 
@@ -15557,15 +15226,15 @@ fn short_multiple_request_enum_imports_stay_flat() {
 }
 
 #[test]
-fn multipart_unknown_fields_keep_intrinsic_optionality_through_the_cli() {
+fn multipart_unknown_fields_model_only_field_absence_through_the_cli() {
     let (_dir, out) = generate_ok(
         "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /uploads:\n    post:\n      operationId: createUpload\n      tags: [uploads]\n      requestBody:\n        content:\n          multipart/form-data:\n            schema:\n              type: object\n              properties:\n                file: {}\n      responses:\n        '204': { description: Created }\n",
     );
     let client = std::fs::read_to_string(out.join("src/acme/uploads/client.py"))
         .expect("multipart client is generated");
     assert!(
-        client.contains("file: typing.Optional[typing.Optional[typing.Any]] = OMIT"),
-        "an omittable unknown form field should retain unknown nullability: {client}"
+        client.contains("file: typing.Optional[typing.Any] = OMIT"),
+        "an omittable unknown form field should model absence only once: {client}"
     );
 }
 
@@ -15668,8 +15337,43 @@ fn header_parameter_enums_hoist_to_tag_types() {
     assert!(
         out.join("src/acme/widgets/types/create_widget_request_x_widget_mode.py")
             .is_file()
-            && raw.contains("CreateWidgetRequestXWidgetMode"),
+            && raw.contains("CreateWidgetRequestXWidgetMode")
+            && raw.contains(
+                "\"X-Widget-Mode\": widget_mode.value if widget_mode is not None else None"
+            ),
         "inline header enums should hoist under the endpoint tag: {raw}"
+    );
+}
+
+#[test]
+fn referenced_unknown_response_keeps_empty_body_guard() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Proxy API, version: 1.0.0 }\npaths:\n  /proxy:\n    get:\n      operationId: getProxy\n      tags: [proxy]\n      responses:\n        '200': { $ref: '#/components/responses/Ok' }\ncomponents:\n  responses:\n    Ok:\n      description: Arbitrary JSON\n      content:\n        application/json:\n          schema: {}\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/proxy/raw_client.py"))
+        .expect("proxy raw client is generated");
+    assert!(raw.contains("HttpResponse[typing.Any]"), "{raw}");
+    assert!(
+        raw.contains("if _response is None or not _response.text.strip():"),
+        "a referenced unknown response keeps Fern's empty-body guard: {raw}"
+    );
+}
+
+#[test]
+fn inherited_union_discriminants_are_not_duplicated_in_wrappers() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Exchange API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    AbstractExchange:\n      type: object\n      required: [type]\n      properties:\n        type: { type: string, enum: [reqRespPair, unidirEvent] }\n    RequestResponsePair:\n      type: object\n      allOf:\n        - type: object\n          required: [request]\n          properties:\n            request: { type: string }\n        - { $ref: '#/components/schemas/AbstractExchange' }\n    UnidirectionalEvent:\n      type: object\n      allOf:\n        - type: object\n          required: [eventMessage]\n          properties:\n            eventMessage: { type: string }\n        - { $ref: '#/components/schemas/AbstractExchange' }\n    Exchange:\n      oneOf:\n        - { $ref: '#/components/schemas/RequestResponsePair' }\n        - { $ref: '#/components/schemas/UnidirectionalEvent' }\n      discriminator:\n        propertyName: type\n        mapping:\n          reqRespPair: '#/components/schemas/RequestResponsePair'\n          unidirEvent: '#/components/schemas/UnidirectionalEvent'\n",
+    );
+    let exchange = std::fs::read_to_string(out.join("src/acme/types/exchange.py"))
+        .expect("discriminated union is generated");
+    assert_eq!(
+        exchange.matches("\n    type:").count(),
+        2,
+        "each wrapper should contain only its literal discriminator: {exchange}"
+    );
+    assert!(
+        !exchange.contains("AbstractExchangeType"),
+        "the inherited enum discriminator must not be re-added: {exchange}"
     );
 }
 
@@ -15703,9 +15407,9 @@ fn binary_success_responses_stream_bytes() {
         std::fs::read_to_string(out.join("reference.md")).expect("reference.md is generated");
     assert!(
         reference.contains(
-            "**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response."
+            "**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration."
         ),
-        "binary response reference docs should mention stream request_options: {reference}"
+        "binary response reference docs should use Fern 5.20's standard request_options prose: {reference}"
     );
 }
 
@@ -15752,18 +15456,40 @@ fn binary_request_media_types_are_preserved() {
             && raw.contains("json=request,"),
         "binary request media selection should preserve ZIP and wildcard semantics: {raw}"
     );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("request=\"string\"") && !client.contains("request=b\"string\""),
+        "referenced binary request examples use Fern's string literal: {client}"
+    );
 }
 
 #[test]
 fn wildcard_binary_requests_with_path_params_omit_json_content_type() {
     let (_dir, out) = generate_ok(
-        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/test:\n    put:\n      operationId: testWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { type: string } }\n      requestBody:\n        required: true\n        content:\n          '*/*':\n            schema: { $ref: '#/components/schemas/FileContent' }\n      responses:\n        '204': { description: Tested }\ncomponents:\n  schemas:\n    FileContent: { type: string, format: binary }\n",
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/test:\n    put:\n      operationId: testWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { type: string } }\n      requestBody:\n        required: true\n        content:\n          '*/*':\n            schema: { type: string, format: binary }\n      responses:\n        '204': { description: Tested }\n",
     );
     let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
         .expect("widgets raw client is generated");
     assert!(
-        raw.contains("json=request,") && !raw.contains("\"content-type\": \"application/json\""),
+        raw.contains("request: bytes")
+            && raw.contains("json=request,")
+            && !raw.contains("\"content-type\": \"application/json\""),
         "wildcard binary-schema requests should not gain JSON headers from path params: {raw}"
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("request: bytes")
+            && client.contains("request=\"string\"")
+            && !client.contains("request=b\"string\""),
+        "the high-level bytes method should use Fern's string example: {client}"
+    );
+    let reference =
+        std::fs::read_to_string(out.join("reference.md")).expect("reference is generated");
+    assert!(
+        reference.contains("**request:** `str`"),
+        "reference docs should retain Fern's source-schema type: {reference}"
     );
 }
 
@@ -16029,6 +15755,187 @@ fn request_media_examples_populate_optional_body_fields() {
 }
 
 #[test]
+fn first_referenced_request_example_drives_typed_worked_examples() {
+    let (_dir, out) = generate_ok(
+        r##"openapi: 3.1.0
+info: { title: Events API, version: 1.0.0 }
+paths:
+  /events:
+    post:
+      operationId: createEvent
+      tags: [events]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Event' }
+            examples:
+              primary: { $ref: '#/components/examples/PrimaryEvent' }
+              alternate: { $ref: '#/components/examples/AlternateEvent' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Event' }
+components:
+  schemas:
+    EventDate: { type: string, format: date }
+    EventDates:
+      type: array
+      items: { $ref: '#/components/schemas/EventDate' }
+    EventPrice: { type: number, format: float }
+    EventBase:
+      type: object
+      required: [name, dates, price]
+      properties:
+        name: { type: string }
+        dates: { $ref: '#/components/schemas/EventDates' }
+        price: { $ref: '#/components/schemas/EventPrice' }
+    Event:
+      allOf:
+        - { $ref: '#/components/schemas/EventBase' }
+        - type: object
+          properties:
+            note: { type: string }
+            code: { type: string }
+  examples:
+    PrimaryEvent:
+      value:
+        name: Primary event
+        dates: ['2024-02-03', '2024-02-03', '2024-02-04']
+        price: 0
+        note: Primary note
+    AlternateEvent:
+      value:
+        name: Alternate event
+        dates: ['2024-03-05']
+        price: 15
+        code: ALT-1
+        note: Alternate note
+"##,
+    );
+    let readme = std::fs::read_to_string(out.join("README.md")).expect("README is generated");
+    let client = std::fs::read_to_string(out.join("src/acme/events/client.py"))
+        .expect("events client is generated");
+    let reference =
+        std::fs::read_to_string(out.join("reference.md")).expect("reference is generated");
+
+    for rendered in [&readme, &client] {
+        assert!(rendered.contains("name=\"Primary event\""), "{rendered}");
+        assert!(rendered.contains("price=0"), "{rendered}");
+        assert!(rendered.contains("note=\"Primary note\""), "{rendered}");
+        assert_eq!(
+            rendered.matches("\"2024-02-03\"").count(),
+            2,
+            "duplicate dates should be omitted once per sync/async example: {rendered}"
+        );
+        assert!(!rendered.contains("code=\"ALT-1\""), "{rendered}");
+    }
+    assert!(reference.contains("name=\"Primary event\""), "{reference}");
+    assert!(reference.contains("price=0"), "{reference}");
+    assert!(reference.contains("note=\"Primary note\""), "{reference}");
+    assert!(!reference.contains("code=\"ALT-1\""), "{reference}");
+}
+
+#[test]
+fn date_query_examples_use_dates_while_wire_values_use_str() {
+    let (_dir, out) = generate_ok(
+        r#"openapi: 3.0.3
+info: { title: Events API, version: 1.0.0 }
+paths:
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      parameters:
+        - name: startDate
+          in: query
+          schema: { type: string, format: date, example: '2024-02-03' }
+        - name: page
+          in: query
+          schema: { type: integer, example: 2 }
+        - name: limit
+          in: query
+          schema: { type: integer, example: 15 }
+        - name: updatedAfter
+          in: query
+          schema: { type: string, format: date-time }
+      responses:
+        '204': { description: Found }
+"#,
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/events/client.py"))
+        .expect("events client is generated");
+    let raw = std::fs::read_to_string(out.join("src/acme/events/raw_client.py"))
+        .expect("events raw client is generated");
+
+    assert!(
+        client.contains(
+            "start_date=datetime.date.fromisoformat(\n                \"2024-02-03\",\n            ),\n            page=2,\n            limit=15,"
+        ),
+        "date examples should be typed without suppressing later scalar examples: {client}"
+    );
+    assert!(
+        raw.contains("\"startDate\": str(start_date) if start_date is not None else None,")
+            && !raw.contains("serialize_datetime(start_date)")
+            && raw.contains(
+                "\"updatedAfter\": serialize_datetime(updated_after) if updated_after is not None else None,"
+            )
+            && raw.contains("from ..core.datetime_utils import serialize_datetime"),
+        "date and date-time query serialization should remain distinct: {raw}"
+    );
+}
+
+#[test]
+fn referenced_request_examples_force_json_content_type_for_composed_bodies() {
+    let (_dir, out) = generate_ok(
+        r##"openapi: 3.0.3
+info: { title: Tickets API, version: 1.0.0 }
+paths:
+  /tickets:
+    post:
+      operationId: buyTicket
+      tags: [tickets]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BuyTicket' }
+            examples:
+              general: { $ref: '#/components/examples/GeneralTicket' }
+              event: { $ref: '#/components/examples/EventTicket' }
+      responses:
+        '204': { description: Purchased }
+components:
+  schemas:
+    Ticket:
+      type: object
+      required: [kind]
+      properties:
+        kind: { type: string }
+    BuyTicket:
+      allOf:
+        - { $ref: '#/components/schemas/Ticket' }
+        - type: object
+          properties:
+            email: { type: string }
+  examples:
+    GeneralTicket: { value: { kind: general } }
+    EventTicket: { value: { kind: event, email: buyer@example.com } }
+"##,
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/tickets/raw_client.py"))
+        .expect("tickets raw client is generated");
+    assert_eq!(
+        raw.matches("\"content-type\": \"application/json\"")
+            .count(),
+        2,
+        "both sync and async requests need the explicit JSON content type: {raw}"
+    );
+}
+
+#[test]
 fn schema_examples_arrays_populate_worked_calls() {
     let (_dir, out) = generate_ok(
         "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [name]\n              properties:\n                name: { type: string, examples: [example-name] }\n      responses:\n        '204': { description: Created }\n",
@@ -16114,6 +16021,30 @@ fn relative_server_paths_use_the_default_environment_member() {
         environment.contains("DEFAULT = \"/api/v1\"")
             && client.contains("AcmeApiEnvironment.DEFAULT"),
         "relative server paths should use Fern's DEFAULT environment member: {environment}\n{client}"
+    );
+}
+
+#[test]
+fn server_url_variables_are_exposed_by_the_root_client() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\nservers:\n  - url: https://api.example.com/{basePath}\n    variables:\n      basePath: { default: v1 }\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      responses:\n        '200': { description: OK }\n",
+    );
+    let client =
+        std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
+    assert!(
+        client.contains(
+            "base_path : typing.Optional[str]\n        Server URL variable for 'basePath'. Defaults to 'v1'."
+        ) && client.matches("base_path: typing.Optional[str] = None").count() == 2
+            && client.matches("if base_path is not None:").count() == 2
+            && client.matches("_base_path = base_path if base_path is not None else \"v1\"").count()
+                == 2
+            && client
+                .matches(
+                    "base_url = \"https://api.example.com/{basePath}\".format(basePath=_base_path)"
+                )
+                .count()
+                == 2,
+        "sync and async root clients should expose and apply the server URL variable: {client}"
     );
 }
 
@@ -16219,7 +16150,7 @@ fn declared_empty_schema_descriptions_emit_class_docstrings() {
         .expect("widget state enum is generated");
     assert!(
         model.contains("class Widget(UniversalBaseModel):\n    \"\"\" \"\"\"\n\n    id: typing.Optional[int]")
-            && state.contains("class WidgetState(str, enum.Enum):\n    \"\"\" \"\"\"\n\n    ACTIVE = \"ACTIVE\""),
+            && state.contains("class WidgetState(enum.StrEnum):\n    \"\"\" \"\"\"\n\n    ACTIVE = \"ACTIVE\""),
         "declared empty schema descriptions should remain visible in generated classes:\n{model}\n{state}"
     );
 }
@@ -16349,7 +16280,7 @@ fn vendor_json_bare_object_request_body_is_open_map() {
     let raw = std::fs::read_to_string(out.join("src/acme/imports/raw_client.py"))
         .expect("imports raw client is generated");
     assert!(
-        raw.contains("request: typing.Dict[str, typing.Optional[typing.Any]]")
+        raw.contains("request: typing.Dict[str, typing.Any]")
             && raw.contains("\"content-type\": \"application/vnd.example+json\""),
         "vendor +json bodies should be open-map requests with the exact media type: {raw}"
     );

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LogoType(str, enum.Enum):
+class LogoType(enum.StrEnum):
     LOGO = "LOGO"
     BANNER = "BANNER"
     SCREENSHOT = "SCREENSHOT"

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetRecordHandlerProgressRequestErrorCode(str, enum.Enum):
+class GetRecordHandlerProgressRequestErrorCode(enum.StrEnum):
     NOT_UPDATABLE = "NotUpdatable"
     INVALID_REQUEST = "InvalidRequest"
     ACCESS_DENIED = "AccessDenied"

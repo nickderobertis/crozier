@@ -10,13 +10,21 @@ from ..core.serialization import FieldMetadata
 
 class UserHardLinkedUserMembership(UniversalBaseModel):
     cross_save_overridden_membership_id: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="CrossSaveOverriddenMembershipId")
+        typing.Optional[int],
+        FieldMetadata(alias="CrossSaveOverriddenMembershipId"),
+        pydantic.Field(alias="CrossSaveOverriddenMembershipId"),
     ] = None
     cross_save_overridden_type: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="CrossSaveOverriddenType")
+        typing.Optional[int],
+        FieldMetadata(alias="CrossSaveOverriddenType"),
+        pydantic.Field(alias="CrossSaveOverriddenType"),
     ] = None
-    membership_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="membershipId")] = None
-    membership_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="membershipType")] = None
+    membership_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="membershipId"), pydantic.Field(alias="membershipId")
+    ] = None
+    membership_type: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="membershipType"), pydantic.Field(alias="membershipType")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

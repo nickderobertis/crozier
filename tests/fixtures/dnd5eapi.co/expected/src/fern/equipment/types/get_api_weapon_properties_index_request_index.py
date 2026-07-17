@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetApiWeaponPropertiesIndexRequestIndex(str, enum.Enum):
+class GetApiWeaponPropertiesIndexRequestIndex(enum.StrEnum):
     AMMUNITION = "ammunition"
     FINESSE = "finesse"
     HEAVY = "heavy"

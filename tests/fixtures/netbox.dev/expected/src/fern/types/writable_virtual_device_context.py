@@ -12,7 +12,7 @@ from .writable_virtual_device_context_status import WritableVirtualDeviceContext
 class WritableVirtualDeviceContext(UniversalBaseModel):
     comments: typing.Optional[str] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     device: typing.Optional[int] = None
     display: typing.Optional[str] = None

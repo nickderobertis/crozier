@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class V1EmployeeRolePermissions(str, enum.Enum):
+class V1EmployeeRolePermissions(enum.StrEnum):
     """ """
 
     REGISTER_ACCESS_SALES_HISTORY = "REGISTER_ACCESS_SALES_HISTORY"

@@ -12,12 +12,18 @@ from .ignores_ignore_response import IgnoresIgnoreResponse
 
 class UserUserToUserContext(UniversalBaseModel):
     global_ignore_end_date: typing_extensions.Annotated[
-        typing.Optional[dt.datetime], FieldMetadata(alias="globalIgnoreEndDate")
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="globalIgnoreEndDate"),
+        pydantic.Field(alias="globalIgnoreEndDate"),
     ] = None
     ignore_status: typing_extensions.Annotated[
-        typing.Optional[IgnoresIgnoreResponse], FieldMetadata(alias="ignoreStatus")
+        typing.Optional[IgnoresIgnoreResponse],
+        FieldMetadata(alias="ignoreStatus"),
+        pydantic.Field(alias="ignoreStatus"),
     ] = None
-    is_following: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isFollowing")] = None
+    is_following: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="isFollowing"), pydantic.Field(alias="isFollowing")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

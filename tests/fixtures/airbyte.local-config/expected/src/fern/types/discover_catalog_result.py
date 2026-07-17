@@ -9,7 +9,7 @@ from ..core.serialization import FieldMetadata
 
 
 class DiscoverCatalogResult(UniversalBaseModel):
-    catalog_id: typing_extensions.Annotated[str, FieldMetadata(alias="catalogId")]
+    catalog_id: typing_extensions.Annotated[str, FieldMetadata(alias="catalogId"), pydantic.Field(alias="catalogId")]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

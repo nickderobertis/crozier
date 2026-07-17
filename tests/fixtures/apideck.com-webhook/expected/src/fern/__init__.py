@@ -61,6 +61,7 @@ if typing.TYPE_CHECKING:
         UnprocessableEntityError,
     )
     from . import webhooks
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
@@ -74,6 +75,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ConsumerId": ".types",
     "CreateWebhookResponse": ".types",
     "CreatedAt": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "DeleteWebhookResponse": ".types",
     "DeliveryUrl": ".types",
     "Description": ".types",
@@ -157,6 +160,8 @@ __all__ = [
     "ConsumerId",
     "CreateWebhookResponse",
     "CreatedAt",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "DeleteWebhookResponse",
     "DeliveryUrl",
     "Description",

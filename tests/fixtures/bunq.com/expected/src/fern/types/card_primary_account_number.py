@@ -34,7 +34,11 @@ class CardPrimaryAccountNumber(UniversalBaseModel):
     The status for this PAN, only for Online Cards.
     """
 
-    uuid_: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="uuid")] = pydantic.Field(default=None)
+    uuid_: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="uuid"),
+        pydantic.Field(alias="uuid", description="The UUID for this Virtual PAN."),
+    ] = None
     """
     The UUID for this Virtual PAN.
     """

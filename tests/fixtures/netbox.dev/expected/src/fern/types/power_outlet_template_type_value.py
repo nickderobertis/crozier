@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PowerOutletTemplateTypeValue(str, enum.Enum):
+class PowerOutletTemplateTypeValue(enum.StrEnum):
     IEC60320C5 = "iec-60320-c5"
     IEC60320C7 = "iec-60320-c7"
     IEC60320C13 = "iec-60320-c13"

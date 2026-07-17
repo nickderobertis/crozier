@@ -20,7 +20,7 @@ class PassThrough(UniversalBaseModel):
     """
 
     verification_settings: typing_extensions.Annotated[
-        VerificationSettings, FieldMetadata(alias="verificationSettings")
+        VerificationSettings, FieldMetadata(alias="verificationSettings"), pydantic.Field(alias="verificationSettings")
     ]
 
     if IS_PYDANTIC_V2:

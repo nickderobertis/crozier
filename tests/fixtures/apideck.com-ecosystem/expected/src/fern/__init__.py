@@ -50,6 +50,7 @@ if typing.TYPE_CHECKING:
         Translations,
     )
     from . import category, collection, ecosystem, listing, product
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
@@ -61,6 +62,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Contact": ".types",
     "CtaSettings": ".types",
     "CustomSettings": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "Ecosystem": ".types",
     "EcosystemMenuPosition": ".types",
     "EcosystemMenuStyle": ".types",
@@ -136,6 +139,8 @@ __all__ = [
     "Contact",
     "CtaSettings",
     "CustomSettings",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "Ecosystem",
     "EcosystemMenuPosition",
     "EcosystemMenuStyle",

@@ -14,8 +14,13 @@ class StackSetOperationSummaryStatusDetails(UniversalBaseModel):
     """
 
     failed_stack_instances_count: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="FailedStackInstancesCount")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="FailedStackInstancesCount"),
+        pydantic.Field(
+            alias="FailedStackInstancesCount",
+            description="The number of stack instances for which the StackSet operation failed.",
+        ),
+    ] = None
     """
     The number of stack instances for which the StackSet operation failed.
     """

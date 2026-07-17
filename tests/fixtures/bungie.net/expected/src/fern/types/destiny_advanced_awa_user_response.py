@@ -9,9 +9,11 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyAdvancedAwaUserResponse(UniversalBaseModel):
-    correlation_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="correlationId")] = (
-        pydantic.Field(default=None)
-    )
+    correlation_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="correlationId"),
+        pydantic.Field(alias="correlationId", description="Correlation ID of the request"),
+    ] = None
     """
     Correlation ID of the request
     """

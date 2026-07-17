@@ -1,6 +1,6 @@
 # Reference
 ## attachment-public
-<details><summary><code>client.attachment_public.<a href="src/fern/attachment_public/client.py">create_attachment_public</a>(...)</code></summary>
+<details><summary><code>client.attachment_public.<a href="src/fern/attachment_public/client.py">create_attachment_public</a>(...) -> AttachmentPublicCreate</code></summary>
 <dl>
 <dd>
 
@@ -28,17 +28,17 @@ Create a new public attachment. Create a POST request with a payload that contai
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.attachment_public.create_attachment_public(
-    request={"key": "value"},
+    request={
+        "key": "value"
+    },
 )
 
 ```
@@ -75,7 +75,7 @@ client.attachment_public.create_attachment_public(
 </dl>
 </details>
 
-<details><summary><code>client.attachment_public.<a href="src/fern/attachment_public/client.py">read_attachment_public</a>(...)</code></summary>
+<details><summary><code>client.attachment_public.<a href="src/fern/attachment_public/client.py">read_attachment_public</a>(...) -> AttachmentPublicRead</code></summary>
 <dl>
 <dd>
 
@@ -103,15 +103,13 @@ Get a specific attachment's metadata through its UUID. The Content-Type header o
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.attachment_public.read_attachment_public(
     item_id=1,
 )
@@ -151,7 +149,7 @@ client.attachment_public.read_attachment_public(
 </details>
 
 ## content
-<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_attachment_public</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_attachment_public</a>(...) -> typing.List[AttachmentPublicContentListing]</code></summary>
 <dl>
 <dd>
 
@@ -179,15 +177,13 @@ Get the raw content of a specific attachment.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.list_all_content_for_attachment_public(
     attachment_public_uuid="attachment-publicUUID",
 )
@@ -226,7 +222,7 @@ client.content.list_all_content_for_attachment_public(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_place_lookup_photo</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_place_lookup_photo</a>(...) -> typing.List[PlacePhotoLookupContentListing]</code></summary>
 <dl>
 <dd>
 
@@ -254,15 +250,13 @@ View endpoint for place opening periods.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.list_all_content_for_place_lookup_photo(
     place_lookup_id=1,
     photo_id=1,
@@ -310,7 +304,7 @@ client.content.list_all_content_for_place_lookup_photo(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_attachment</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_attachment</a>(...) -> typing.List[AttachmentUserContentListing]</code></summary>
 <dl>
 <dd>
 
@@ -338,15 +332,13 @@ Get the raw content of a specific attachment.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.list_all_content_for_user_attachment(
     user_id=1,
     attachment_id=1,
@@ -394,7 +386,7 @@ client.content.list_all_content_for_user_attachment(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_card_export_statement_card</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_card_export_statement_card</a>(...) -> typing.List[ExportStatementCardContentListing]</code></summary>
 <dl>
 <dd>
 
@@ -422,15 +414,13 @@ Fetch the raw content of a card statement export. The returned file format could
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.list_all_content_for_user_card_export_statement_card(
     user_id=1,
     card_id=1,
@@ -487,7 +477,7 @@ client.content.list_all_content_for_user_card_export_statement_card(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_chat_conversation_attachment</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_chat_conversation_attachment</a>(...) -> typing.List[AttachmentConversationContentListing]</code></summary>
 <dl>
 <dd>
 
@@ -515,15 +505,13 @@ Get the raw content of a specific attachment.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.list_all_content_for_user_chat_conversation_attachment(
     user_id=1,
     chat_conversation_id=1,
@@ -580,7 +568,7 @@ client.content.list_all_content_for_user_chat_conversation_attachment(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_export_annual_overview</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_export_annual_overview</a>(...) -> typing.List[ExportAnnualOverviewContentListing]</code></summary>
 <dl>
 <dd>
 
@@ -608,15 +596,13 @@ Used to retrieve the raw content of an annual overview.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.list_all_content_for_user_export_annual_overview(
     user_id=1,
     export_annual_overview_id=1,
@@ -664,7 +650,7 @@ client.content.list_all_content_for_user_export_annual_overview(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_monetary_account_attachment</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_monetary_account_attachment</a>(...) -> typing.List[AttachmentMonetaryAccountContentListing]</code></summary>
 <dl>
 <dd>
 
@@ -692,15 +678,13 @@ Get the raw content of a specific attachment.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.list_all_content_for_user_monetary_account_attachment(
     user_id=1,
     monetary_account_id=1,
@@ -757,7 +741,7 @@ client.content.list_all_content_for_user_monetary_account_attachment(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_monetary_account_customer_statement</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_monetary_account_customer_statement</a>(...) -> typing.List[ExportStatementContentListing]</code></summary>
 <dl>
 <dd>
 
@@ -785,15 +769,13 @@ Fetch the raw content of a statement export. The returned file format could be M
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.list_all_content_for_user_monetary_account_customer_statement(
     user_id=1,
     monetary_account_id=1,
@@ -850,7 +832,7 @@ client.content.list_all_content_for_user_monetary_account_customer_statement(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_monetary_account_event_statement</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_monetary_account_event_statement</a>(...) -> typing.List[ExportStatementPaymentContentListing]</code></summary>
 <dl>
 <dd>
 
@@ -878,15 +860,13 @@ Fetch the raw content of a payment statement export.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.list_all_content_for_user_monetary_account_event_statement(
     user_id=1,
     monetary_account_id=1,
@@ -952,7 +932,7 @@ client.content.list_all_content_for_user_monetary_account_event_statement(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_monetary_account_export_rib</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">list_all_content_for_user_monetary_account_export_rib</a>(...) -> typing.List[ExportRibContentListing]</code></summary>
 <dl>
 <dd>
 
@@ -980,15 +960,13 @@ Used to retrieve the raw content of an RIB.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.list_all_content_for_user_monetary_account_export_rib(
     user_id=1,
     monetary_account_id=1,
@@ -1046,7 +1024,7 @@ client.content.list_all_content_for_user_monetary_account_export_rib(
 </details>
 
 ## avatar
-<details><summary><code>client.avatar.<a href="src/fern/avatar/client.py">create_avatar</a>(...)</code></summary>
+<details><summary><code>client.avatar.<a href="src/fern/avatar/client.py">create_avatar</a>(...) -> AvatarCreate</code></summary>
 <dl>
 <dd>
 
@@ -1074,15 +1052,13 @@ Avatars are public images used to represent you or your company. Avatars are use
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.avatar.create_avatar()
 
 ```
@@ -1099,31 +1075,7 @@ client.avatar.create_avatar()
 <dl>
 <dd>
 
-**anchor_uuid:** `typing.Optional[str]` — The public UUID of object this avatar is anchored to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**image:** `typing.Optional[typing.Sequence[Image]]` — The actual image information of this avatar.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**style:** `typing.Optional[str]` — The style (if applicable) for this Avatar.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**uuid_:** `typing.Optional[str]` — The public UUID of the avatar.
+**request:** `Avatar` 
     
 </dd>
 </dl>
@@ -1143,7 +1095,7 @@ client.avatar.create_avatar()
 </dl>
 </details>
 
-<details><summary><code>client.avatar.<a href="src/fern/avatar/client.py">read_avatar</a>(...)</code></summary>
+<details><summary><code>client.avatar.<a href="src/fern/avatar/client.py">read_avatar</a>(...) -> AvatarRead</code></summary>
 <dl>
 <dd>
 
@@ -1171,15 +1123,13 @@ Avatars are public images used to represent you or your company. Avatars are use
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.avatar.read_avatar(
     item_id=1,
 )
@@ -1219,7 +1169,7 @@ client.avatar.read_avatar(
 </details>
 
 ## device
-<details><summary><code>client.device.<a href="src/fern/device/client.py">list_all_device</a>()</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py">list_all_device</a>() -> typing.List[DeviceListing]</code></summary>
 <dl>
 <dd>
 
@@ -1247,15 +1197,13 @@ Get a collection of Devices. A Device is either a DevicePhone or a DeviceServer.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.device.list_all_device()
 
 ```
@@ -1284,7 +1232,7 @@ client.device.list_all_device()
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">read_device</a>(...)</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py">read_device</a>(...) -> DeviceRead</code></summary>
 <dl>
 <dd>
 
@@ -1312,15 +1260,13 @@ Get a single Device. A Device is either a DevicePhone or a DeviceServer.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.device.read_device(
     item_id=1,
 )
@@ -1360,7 +1306,7 @@ client.device.read_device(
 </details>
 
 ## device-server
-<details><summary><code>client.device_server.<a href="src/fern/device_server/client.py">list_all_device_server</a>()</code></summary>
+<details><summary><code>client.device_server.<a href="src/fern/device_server/client.py">list_all_device_server</a>() -> typing.List[DeviceServerListing]</code></summary>
 <dl>
 <dd>
 
@@ -1388,15 +1334,13 @@ Get a collection of all the DeviceServers you have created.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.device_server.list_all_device_server()
 
 ```
@@ -1425,7 +1369,7 @@ client.device_server.list_all_device_server()
 </dl>
 </details>
 
-<details><summary><code>client.device_server.<a href="src/fern/device_server/client.py">create_device_server</a>(...)</code></summary>
+<details><summary><code>client.device_server.<a href="src/fern/device_server/client.py">create_device_server</a>(...) -> DeviceServerCreate</code></summary>
 <dl>
 <dd>
 
@@ -1453,15 +1397,13 @@ Create a new DeviceServer providing the installation token in the header and sig
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.device_server.create_device_server(
     description="description",
     secret="secret",
@@ -1481,23 +1423,7 @@ client.device_server.create_device_server(
 <dl>
 <dd>
 
-**description:** `str` — The description of the DeviceServer. This is only for your own reference when reading the DeviceServer again.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**secret:** `str` — The API key. You can request an API key in the bunq app.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**permitted_ips:** `typing.Optional[typing.Sequence[str]]` — An array of IPs (v4 or v6) this DeviceServer will be able to do calls from. These will be linked to the API key.
+**request:** `DeviceServer` 
     
 </dd>
 </dl>
@@ -1517,7 +1443,7 @@ client.device_server.create_device_server(
 </dl>
 </details>
 
-<details><summary><code>client.device_server.<a href="src/fern/device_server/client.py">read_device_server</a>(...)</code></summary>
+<details><summary><code>client.device_server.<a href="src/fern/device_server/client.py">read_device_server</a>(...) -> DeviceServerRead</code></summary>
 <dl>
 <dd>
 
@@ -1545,15 +1471,13 @@ Get one of your DeviceServers.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.device_server.read_device_server(
     item_id=1,
 )
@@ -1593,7 +1517,7 @@ client.device_server.read_device_server(
 </details>
 
 ## installation
-<details><summary><code>client.installation.<a href="src/fern/installation/client.py">list_all_installation</a>()</code></summary>
+<details><summary><code>client.installation.<a href="src/fern/installation/client.py">list_all_installation</a>() -> typing.List[InstallationListing]</code></summary>
 <dl>
 <dd>
 
@@ -1621,15 +1545,13 @@ You must have an active session to make this call. This call returns the Id of t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.installation.list_all_installation()
 
 ```
@@ -1658,7 +1580,7 @@ client.installation.list_all_installation()
 </dl>
 </details>
 
-<details><summary><code>client.installation.<a href="src/fern/installation/client.py">create_installation</a>(...)</code></summary>
+<details><summary><code>client.installation.<a href="src/fern/installation/client.py">create_installation</a>(...) -> InstallationCreate</code></summary>
 <dl>
 <dd>
 
@@ -1687,15 +1609,13 @@ This is the only API call that does not require you to use the "X-Bunq-Client-Au
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.installation.create_installation(
     client_public_key="client_public_key",
 )
@@ -1734,7 +1654,7 @@ client.installation.create_installation(
 </dl>
 </details>
 
-<details><summary><code>client.installation.<a href="src/fern/installation/client.py">read_installation</a>(...)</code></summary>
+<details><summary><code>client.installation.<a href="src/fern/installation/client.py">read_installation</a>(...) -> InstallationRead</code></summary>
 <dl>
 <dd>
 
@@ -1762,15 +1682,13 @@ You must have an active session to make this call. This call is used to check wh
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.installation.read_installation(
     item_id=1,
 )
@@ -1810,7 +1728,7 @@ client.installation.read_installation(
 </details>
 
 ## server-public-key
-<details><summary><code>client.server_public_key.<a href="src/fern/server_public_key/client.py">list_all_server_public_key_for_installation</a>(...)</code></summary>
+<details><summary><code>client.server_public_key.<a href="src/fern/server_public_key/client.py">list_all_server_public_key_for_installation</a>(...) -> typing.List[InstallationServerPublicKeyListing]</code></summary>
 <dl>
 <dd>
 
@@ -1838,15 +1756,13 @@ Show the ServerPublicKey for this Installation.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.server_public_key.list_all_server_public_key_for_installation(
     installation_id=1,
 )
@@ -1886,7 +1802,7 @@ client.server_public_key.list_all_server_public_key_for_installation(
 </details>
 
 ## payment-service-provider-credential
-<details><summary><code>client.payment_service_provider_credential.<a href="src/fern/payment_service_provider_credential/client.py">create_payment_service_provider_credential</a>(...)</code></summary>
+<details><summary><code>client.payment_service_provider_credential.<a href="src/fern/payment_service_provider_credential/client.py">create_payment_service_provider_credential</a>(...) -> PaymentServiceProviderCredentialCreate</code></summary>
 <dl>
 <dd>
 
@@ -1914,15 +1830,13 @@ Register a Payment Service Provider and provide credentials
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_service_provider_credential.create_payment_service_provider_credential(
     client_payment_service_provider_certificate="client_payment_service_provider_certificate",
     client_payment_service_provider_certificate_chain="client_payment_service_provider_certificate_chain",
@@ -1979,7 +1893,7 @@ client.payment_service_provider_credential.create_payment_service_provider_crede
 </dl>
 </details>
 
-<details><summary><code>client.payment_service_provider_credential.<a href="src/fern/payment_service_provider_credential/client.py">read_payment_service_provider_credential</a>(...)</code></summary>
+<details><summary><code>client.payment_service_provider_credential.<a href="src/fern/payment_service_provider_credential/client.py">read_payment_service_provider_credential</a>(...) -> PaymentServiceProviderCredentialRead</code></summary>
 <dl>
 <dd>
 
@@ -2007,15 +1921,13 @@ Register a Payment Service Provider and provide credentials
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_service_provider_credential.read_payment_service_provider_credential(
     item_id=1,
 )
@@ -2055,7 +1967,7 @@ client.payment_service_provider_credential.read_payment_service_provider_credent
 </details>
 
 ## sandbox-user-company
-<details><summary><code>client.sandbox_user_company.<a href="src/fern/sandbox_user_company/client.py">create_sandbox_user_company</a>(...)</code></summary>
+<details><summary><code>client.sandbox_user_company.<a href="src/fern/sandbox_user_company/client.py">create_sandbox_user_company</a>(...) -> SandboxUserCompanyCreate</code></summary>
 <dl>
 <dd>
 
@@ -2083,17 +1995,17 @@ Used to create a sandbox userCompany.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sandbox_user_company.create_sandbox_user_company(
-    request={"key": "value"},
+    request={
+        "key": "value"
+    },
 )
 
 ```
@@ -2131,7 +2043,7 @@ client.sandbox_user_company.create_sandbox_user_company(
 </details>
 
 ## sandbox-user-person
-<details><summary><code>client.sandbox_user_person.<a href="src/fern/sandbox_user_person/client.py">create_sandbox_user_person</a>(...)</code></summary>
+<details><summary><code>client.sandbox_user_person.<a href="src/fern/sandbox_user_person/client.py">create_sandbox_user_person</a>(...) -> SandboxUserPersonCreate</code></summary>
 <dl>
 <dd>
 
@@ -2159,17 +2071,17 @@ Used to create a sandbox userPerson.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sandbox_user_person.create_sandbox_user_person(
-    request={"key": "value"},
+    request={
+        "key": "value"
+    },
 )
 
 ```
@@ -2207,7 +2119,7 @@ client.sandbox_user_person.create_sandbox_user_person(
 </details>
 
 ## server-error
-<details><summary><code>client.server_error.<a href="src/fern/server_error/client.py">create_server_error</a>(...)</code></summary>
+<details><summary><code>client.server_error.<a href="src/fern/server_error/client.py">create_server_error</a>(...) -> ServerErrorCreate</code></summary>
 <dl>
 <dd>
 
@@ -2235,17 +2147,17 @@ An endpoint that will always throw an error.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.server_error.create_server_error(
-    request={"key": "value"},
+    request={
+        "key": "value"
+    },
 )
 
 ```
@@ -2283,7 +2195,7 @@ client.server_error.create_server_error(
 </details>
 
 ## session-server
-<details><summary><code>client.session_server.<a href="src/fern/session_server/client.py">create_session_server</a>(...)</code></summary>
+<details><summary><code>client.session_server.<a href="src/fern/session_server/client.py">create_session_server</a>(...) -> SessionServerCreate</code></summary>
 <dl>
 <dd>
 
@@ -2311,15 +2223,13 @@ Create a new session for a DeviceServer. Provide the Installation token in the "
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.session_server.create_session_server(
     secret="secret",
 )
@@ -2359,7 +2269,7 @@ client.session_server.create_session_server(
 </details>
 
 ## session
-<details><summary><code>client.session.<a href="src/fern/session/client.py">delete_session</a>(...)</code></summary>
+<details><summary><code>client.session.<a href="src/fern/session/client.py">delete_session</a>(...) -> SessionDelete</code></summary>
 <dl>
 <dd>
 
@@ -2387,15 +2297,13 @@ Deletes the current session.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.session.delete_session(
     item_id=1,
 )
@@ -2435,7 +2343,7 @@ client.session.delete_session(
 </details>
 
 ## user
-<details><summary><code>client.user.<a href="src/fern/user/client.py">list_all_user</a>()</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">list_all_user</a>() -> typing.List[UserListing]</code></summary>
 <dl>
 <dd>
 
@@ -2463,15 +2371,13 @@ Get a collection of all available users.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.list_all_user()
 
 ```
@@ -2500,7 +2406,7 @@ client.user.list_all_user()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">read_user</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">read_user</a>(...) -> UserRead</code></summary>
 <dl>
 <dd>
 
@@ -2528,15 +2434,13 @@ Get a specific user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.read_user(
     item_id=1,
 )
@@ -2576,7 +2480,7 @@ client.user.read_user(
 </details>
 
 ## user-company
-<details><summary><code>client.user_company.<a href="src/fern/user_company/client.py">read_user_company</a>(...)</code></summary>
+<details><summary><code>client.user_company.<a href="src/fern/user_company/client.py">read_user_company</a>(...) -> UserCompanyRead</code></summary>
 <dl>
 <dd>
 
@@ -2604,15 +2508,13 @@ Get a specific company.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user_company.read_user_company(
     item_id=1,
 )
@@ -2651,7 +2553,7 @@ client.user_company.read_user_company(
 </dl>
 </details>
 
-<details><summary><code>client.user_company.<a href="src/fern/user_company/client.py">update_user_company</a>(...)</code></summary>
+<details><summary><code>client.user_company.<a href="src/fern/user_company/client.py">update_user_company</a>(...) -> UserCompanyUpdate</code></summary>
 <dl>
 <dd>
 
@@ -2679,15 +2581,13 @@ Modify a specific company's data.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user_company.update_user_company(
     item_id=1,
 )
@@ -2714,271 +2614,7 @@ client.user_company.update_user_company(
 <dl>
 <dd>
 
-**address_main:** `typing.Optional[Address]` — The company's main address.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**address_postal:** `typing.Optional[Address]` — The company's postal address.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**alias:** `typing.Optional[typing.Sequence[Pointer]]` — The aliases of the account.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**avatar:** `typing.Optional[Avatar]` — The company's avatar.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**avatar_uuid:** `typing.Optional[str]` — The public UUID of the company's avatar.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**billing_contract:** `typing.Optional[typing.Sequence[BillingContractSubscription]]` — The subscription of the company.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**chamber_of_commerce_number:** `typing.Optional[str]` — The company's chamber of commerce number.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counter_bank_iban:** `typing.Optional[str]` — The company's other bank account IBAN, through which we verify it.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**country:** `typing.Optional[str]` — The country as an ISO 3166-1 alpha-2 country code.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created:** `typing.Optional[str]` — The timestamp of the company object's creation.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**customer:** `typing.Optional[Customer]` — The customer profile of the company.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**customer_limit:** `typing.Optional[CustomerLimit]` — The customer limits of the company.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**daily_limit_without_confirmation_login:** `typing.Optional[Amount]` — The amount the company can pay in the session without asking for credentials.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**deny_reason:** `typing.Optional[str]` — The user deny reason.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**directors:** `typing.Optional[typing.Sequence[LabelUser]]` — The existing bunq aliases for the company's directors.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**display_name:** `typing.Optional[str]` — The company's display name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` — The id of the modified company.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**language:** `typing.Optional[str]` — The person's preferred language. Formatted as a ISO 639-1 language code plus a ISO 3166-1 alpha-2 country code, seperated by an underscore.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**legal_form:** `typing.Optional[str]` — The company's legal form.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` — The company name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**notification_filters:** `typing.Optional[typing.Sequence[NotificationFilter]]` — The types of notifications that will result in a push notification or URL callback for this UserCompany.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**public_nick_name:** `typing.Optional[str]` — The company's public nick name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**public_uuid:** `typing.Optional[str]` — The company's public UUID.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**region:** `typing.Optional[str]` — The person's preferred region. Formatted as a ISO 639-1 language code plus a ISO 3166-1 alpha-2 country code, seperated by an underscore.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**relations:** `typing.Optional[typing.Sequence[RelationUser]]` — The relations for this user.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sector_of_industry:** `typing.Optional[str]` — The sector of industry.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**session_timeout:** `typing.Optional[int]` — The setting for the session timeout of the company in seconds.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The user status. Can be: ACTIVE, SIGNUP, RECOVERY.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sub_status:** `typing.Optional[str]` — The user sub-status. Can be: NONE, FACE_RESET, APPROVAL, APPROVAL_DIRECTOR, APPROVAL_PARENT, APPROVAL_SUPPORT, COUNTER_IBAN, IDEAL or SUBMIT.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tax_resident:** `typing.Optional[typing.Sequence[TaxResident]]` — The user's tax residence numbers for different countries.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type_of_business_entity:** `typing.Optional[str]` — The type of business entity.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**ubo:** `typing.Optional[typing.Sequence[Ubo]]` — The names of the company's ultimate beneficiary owners. Minimum zero, maximum four.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated:** `typing.Optional[str]` — The timestamp of the company object's last update.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**version_terms_of_service:** `typing.Optional[str]` — The version of the terms of service accepted by the user.
+**request:** `UserCompany` 
     
 </dd>
 </dl>
@@ -2999,7 +2635,7 @@ client.user_company.update_user_company(
 </details>
 
 ## name
-<details><summary><code>client.name.<a href="src/fern/name/client.py">list_all_name_for_user_company</a>(...)</code></summary>
+<details><summary><code>client.name.<a href="src/fern/name/client.py">list_all_name_for_user_company</a>(...) -> typing.List[UserCompanyNameListing]</code></summary>
 <dl>
 <dd>
 
@@ -3027,15 +2663,13 @@ Return all the known (trade) names for a specific user company.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.name.list_all_name_for_user_company(
     user_company_id=1,
 )
@@ -3075,7 +2709,7 @@ client.name.list_all_name_for_user_company(
 </details>
 
 ## user-payment-service-provider
-<details><summary><code>client.user_payment_service_provider.<a href="src/fern/user_payment_service_provider/client.py">read_user_payment_service_provider</a>(...)</code></summary>
+<details><summary><code>client.user_payment_service_provider.<a href="src/fern/user_payment_service_provider/client.py">read_user_payment_service_provider</a>(...) -> UserPaymentServiceProviderRead</code></summary>
 <dl>
 <dd>
 
@@ -3103,15 +2737,13 @@ Used to view UserPaymentServiceProvider for session creation.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user_payment_service_provider.read_user_payment_service_provider(
     item_id=1,
 )
@@ -3151,7 +2783,7 @@ client.user_payment_service_provider.read_user_payment_service_provider(
 </details>
 
 ## user-person
-<details><summary><code>client.user_person.<a href="src/fern/user_person/client.py">read_user_person</a>(...)</code></summary>
+<details><summary><code>client.user_person.<a href="src/fern/user_person/client.py">read_user_person</a>(...) -> UserPersonRead</code></summary>
 <dl>
 <dd>
 
@@ -3179,15 +2811,13 @@ Get a specific person.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user_person.read_user_person(
     item_id=1,
 )
@@ -3226,7 +2856,7 @@ client.user_person.read_user_person(
 </dl>
 </details>
 
-<details><summary><code>client.user_person.<a href="src/fern/user_person/client.py">update_user_person</a>(...)</code></summary>
+<details><summary><code>client.user_person.<a href="src/fern/user_person/client.py">update_user_person</a>(...) -> UserPersonUpdate</code></summary>
 <dl>
 <dd>
 
@@ -3254,15 +2884,13 @@ Modify a specific person object's data.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user_person.update_user_person(
     item_id=1,
 )
@@ -3289,303 +2917,7 @@ client.user_person.update_user_person(
 <dl>
 <dd>
 
-**address_main:** `typing.Optional[Address]` — The person's main address.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**address_postal:** `typing.Optional[Address]` — The person's postal address.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**alias:** `typing.Optional[typing.Sequence[Pointer]]` — The aliases of the user.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**avatar:** `typing.Optional[Avatar]` — The user's avatar.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**avatar_uuid:** `typing.Optional[str]` — The public UUID of the user's avatar.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**country_of_birth:** `typing.Optional[str]` — The person's country of birth. Formatted as a SO 3166-1 alpha-2 country code.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created:** `typing.Optional[str]` — The timestamp of the person object's creation.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**daily_limit_without_confirmation_login:** `typing.Optional[Amount]` — The amount the user can pay in the session without asking for credentials.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**date_of_birth:** `typing.Optional[str]` — The person's date of birth. Accepts ISO8601 date formats.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**display_name:** `typing.Optional[str]` — The display name for the person.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**document_back_attachment_id:** `typing.Optional[int]` — The reference to the uploaded picture/scan of the back side of the identification document.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**document_country_of_issuance:** `typing.Optional[str]` — The country which issued the identification document the person registered with.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**document_front_attachment_id:** `typing.Optional[int]` — The reference to the uploaded picture/scan of the front side of the identification document.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**document_number:** `typing.Optional[str]` — The identification document number the person registered with.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**document_type:** `typing.Optional[str]` — The type of identification document the person registered with.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**first_name:** `typing.Optional[str]` — The person's first name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**gender:** `typing.Optional[str]` — The person's gender. Can be MALE, FEMALE or UNKNOWN.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` — The id of the modified person object.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**language:** `typing.Optional[str]` — The person's preferred language. Formatted as a ISO 639-1 language code plus a ISO 3166-1 alpha-2 country code, seperated by an underscore.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_name:** `typing.Optional[str]` — The person's last name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**legal_guardian_alias:** `typing.Optional[Pointer]` — The legal guardian of the user. Required for minors.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**legal_name:** `typing.Optional[str]` — The person's legal name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**middle_name:** `typing.Optional[str]` — The person's middle name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**nationality:** `typing.Optional[str]` — The person's nationality. Formatted as a SO 3166-1 alpha-2 country code.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**notification_filters:** `typing.Optional[typing.Sequence[NotificationFilter]]` — The types of notifications that will result in a push notification or URL callback for this UserPerson.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**place_of_birth:** `typing.Optional[str]` — The person's place of birth.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**public_nick_name:** `typing.Optional[str]` — The public nick name for the person.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**public_uuid:** `typing.Optional[str]` — The person's public UUID.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**region:** `typing.Optional[str]` — The person's preferred region. Formatted as a ISO 639-1 language code plus a ISO 3166-1 alpha-2 country code, seperated by an underscore.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**relations:** `typing.Optional[typing.Sequence[RelationUser]]` — The relations for this user.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**session_timeout:** `typing.Optional[int]` — The setting for the session timeout of the user in seconds.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**signup_track_type:** `typing.Optional[str]` — The type of signup track the user is following.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The user status. The user status. Can be: ACTIVE, BLOCKED, SIGNUP, RECOVERY, DENIED or ABORTED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sub_status:** `typing.Optional[str]` — The user sub-status. Can be: NONE, FACE_RESET, APPROVAL, APPROVAL_DIRECTOR, APPROVAL_PARENT, APPROVAL_SUPPORT, COUNTER_IBAN, IDEAL or SUBMIT.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**subscription_type:** `typing.Optional[str]` — The subscription type the user should start on.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tax_resident:** `typing.Optional[typing.Sequence[TaxResident]]` — The user's tax residence numbers for different countries.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated:** `typing.Optional[str]` — The timestamp of the person object's last update.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**version_terms_of_service:** `typing.Optional[str]` — The version of the terms of service accepted by the user.
+**request:** `UserPerson` 
     
 </dd>
 </dl>
@@ -3606,7 +2938,7 @@ client.user_person.update_user_person(
 </details>
 
 ## attachment
-<details><summary><code>client.attachment.<a href="src/fern/attachment/client.py">read_attachment_for_user</a>(...)</code></summary>
+<details><summary><code>client.attachment.<a href="src/fern/attachment/client.py">read_attachment_for_user</a>(...) -> AttachmentUserRead</code></summary>
 <dl>
 <dd>
 
@@ -3634,15 +2966,13 @@ Get a specific attachment. The header of the response contains the content-type 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.attachment.read_attachment_for_user(
     user_id=1,
     item_id=1,
@@ -3690,7 +3020,7 @@ client.attachment.read_attachment_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.attachment.<a href="src/fern/attachment/client.py">create_attachment_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.attachment.<a href="src/fern/attachment/client.py">create_attachment_for_user_monetary_account</a>(...) -> AttachmentMonetaryAccountCreate</code></summary>
 <dl>
 <dd>
 
@@ -3718,19 +3048,19 @@ Create a new monetary account attachment. Create a POST request with a payload t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.attachment.create_attachment_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
-    request={"key": "value"},
+    request={
+        "key": "value"
+    },
 )
 
 ```
@@ -3784,7 +3114,7 @@ client.attachment.create_attachment_for_user_monetary_account(
 </details>
 
 ## billing-contract-subscription
-<details><summary><code>client.billing_contract_subscription.<a href="src/fern/billing_contract_subscription/client.py">list_all_billing_contract_subscription_for_user</a>(...)</code></summary>
+<details><summary><code>client.billing_contract_subscription.<a href="src/fern/billing_contract_subscription/client.py">list_all_billing_contract_subscription_for_user</a>(...) -> typing.List[BillingContractSubscriptionListing]</code></summary>
 <dl>
 <dd>
 
@@ -3812,15 +3142,13 @@ Get all subscription billing contract for the authenticated user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.billing_contract_subscription.list_all_billing_contract_subscription_for_user(
     user_id=1,
 )
@@ -3860,7 +3188,7 @@ client.billing_contract_subscription.list_all_billing_contract_subscription_for_
 </details>
 
 ## bunqme-fundraiser-profile
-<details><summary><code>client.bunqme_fundraiser_profile.<a href="src/fern/bunqme_fundraiser_profile/client.py">list_all_bunqme_fundraiser_profile_for_user</a>(...)</code></summary>
+<details><summary><code>client.bunqme_fundraiser_profile.<a href="src/fern/bunqme_fundraiser_profile/client.py">list_all_bunqme_fundraiser_profile_for_user</a>(...) -> typing.List[BunqMeFundraiserProfileUserListing]</code></summary>
 <dl>
 <dd>
 
@@ -3888,15 +3216,13 @@ bunq.me public profile of the user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bunqme_fundraiser_profile.list_all_bunqme_fundraiser_profile_for_user(
     user_id=1,
 )
@@ -3935,7 +3261,7 @@ client.bunqme_fundraiser_profile.list_all_bunqme_fundraiser_profile_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.bunqme_fundraiser_profile.<a href="src/fern/bunqme_fundraiser_profile/client.py">read_bunqme_fundraiser_profile_for_user</a>(...)</code></summary>
+<details><summary><code>client.bunqme_fundraiser_profile.<a href="src/fern/bunqme_fundraiser_profile/client.py">read_bunqme_fundraiser_profile_for_user</a>(...) -> BunqMeFundraiserProfileUserRead</code></summary>
 <dl>
 <dd>
 
@@ -3963,15 +3289,13 @@ bunq.me public profile of the user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bunqme_fundraiser_profile.read_bunqme_fundraiser_profile_for_user(
     user_id=1,
     item_id=1,
@@ -4020,7 +3344,7 @@ client.bunqme_fundraiser_profile.read_bunqme_fundraiser_profile_for_user(
 </details>
 
 ## card
-<details><summary><code>client.card.<a href="src/fern/card/client.py">list_all_card_for_user</a>(...)</code></summary>
+<details><summary><code>client.card.<a href="src/fern/card/client.py">list_all_card_for_user</a>(...) -> typing.List[CardListing]</code></summary>
 <dl>
 <dd>
 
@@ -4048,15 +3372,13 @@ Return all the cards available to the user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.card.list_all_card_for_user(
     user_id=1,
 )
@@ -4095,7 +3417,7 @@ client.card.list_all_card_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.card.<a href="src/fern/card/client.py">read_card_for_user</a>(...)</code></summary>
+<details><summary><code>client.card.<a href="src/fern/card/client.py">read_card_for_user</a>(...) -> CardRead</code></summary>
 <dl>
 <dd>
 
@@ -4123,15 +3445,13 @@ Return the details of a specific card.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.card.read_card_for_user(
     user_id=1,
     item_id=1,
@@ -4179,7 +3499,7 @@ client.card.read_card_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.card.<a href="src/fern/card/client.py">update_card_for_user</a>(...)</code></summary>
+<details><summary><code>client.card.<a href="src/fern/card/client.py">update_card_for_user</a>(...) -> CardUpdate</code></summary>
 <dl>
 <dd>
 
@@ -4207,15 +3527,13 @@ Update the card details. Allow to change pin code, status, limits, country permi
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.card.update_card_for_user(
     user_id=1,
     item_id=1,
@@ -4251,79 +3569,7 @@ client.card.update_card_for_user(
 <dl>
 <dd>
 
-**activation_code:** `typing.Optional[str]` — DEPRECATED: Activate a card by setting status to ACTIVE when the order_status is ACCEPTED_FOR_PRODUCTION.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**card_limit:** `typing.Optional[Amount]` — The spending limit for the card.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**card_limit_atm:** `typing.Optional[Amount]` — The ATM spending limit for the card.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**country_permission:** `typing.Optional[typing.Sequence[CardCountryPermission]]` — The countries for which to grant (temporary) permissions to use the card.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**monetary_account_id_fallback:** `typing.Optional[int]` — ID of the MA to be used as fallback for this card if insufficient balance. Fallback account is removed if not supplied.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**order_status:** `typing.Optional[str]` — The order status to set for the card. Set to CARD_REQUEST_PENDING to get a virtual card produced.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**pin_code:** `typing.Optional[str]` — The plaintext pin code. Requests require encryption to be enabled.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**pin_code_assignment:** `typing.Optional[typing.Sequence[CardPinAssignment]]` — Array of Types, PINs, account IDs assigned to the card.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**primary_account_numbers:** `typing.Optional[typing.Sequence[CardPrimaryAccountNumber]]` — Array of PANs and their attributes.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status to set for the card. Can be ACTIVE, DEACTIVATED, LOST, STOLEN or CANCELLED, and can only be set to LOST/STOLEN/CANCELLED when order status is ACCEPTED_FOR_PRODUCTION/DELIVERED_TO_CUSTOMER/CARD_UPDATE_REQUESTED/CARD_UPDATE_SENT/CARD_UPDATE_ACCEPTED. Can only be set to DEACTIVATED after initial activation, i.e. order_status is DELIVERED_TO_CUSTOMER/CARD_UPDATE_REQUESTED/CARD_UPDATE_SENT/CARD_UPDATE_ACCEPTED. Mind that all the possible choices (apart from ACTIVE and DEACTIVATED) are permanent and cannot be changed after.
+**request:** `Card` 
     
 </dd>
 </dl>
@@ -4344,7 +3590,7 @@ client.card.update_card_for_user(
 </details>
 
 ## card-batch
-<details><summary><code>client.card_batch.<a href="src/fern/card_batch/client.py">create_card_batch_for_user</a>(...)</code></summary>
+<details><summary><code>client.card_batch.<a href="src/fern/card_batch/client.py">create_card_batch_for_user</a>(...) -> CardBatchCreate</code></summary>
 <dl>
 <dd>
 
@@ -4371,16 +3617,14 @@ Used to update multiple cards in a batch.
 <dd>
 
 ```python
-from fern import CardBatchEntry, FernApi
+from fern import FernApi, CardBatchEntry
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.card_batch.create_card_batch_for_user(
     user_id=1,
     cards=[
@@ -4412,7 +3656,7 @@ client.card_batch.create_card_batch_for_user(
 <dl>
 <dd>
 
-**cards:** `typing.Sequence[CardBatchEntry]` — The cards that need to be updated.
+**cards:** `typing.List[CardBatchEntry]` — The cards that need to be updated.
     
 </dd>
 </dl>
@@ -4433,7 +3677,7 @@ client.card_batch.create_card_batch_for_user(
 </details>
 
 ## card-batch-replace
-<details><summary><code>client.card_batch_replace.<a href="src/fern/card_batch_replace/client.py">create_card_batch_replace_for_user</a>(...)</code></summary>
+<details><summary><code>client.card_batch_replace.<a href="src/fern/card_batch_replace/client.py">create_card_batch_replace_for_user</a>(...) -> CardBatchReplaceCreate</code></summary>
 <dl>
 <dd>
 
@@ -4460,16 +3704,14 @@ Used to replace multiple cards in a batch.
 <dd>
 
 ```python
-from fern import CardBatchReplaceEntry, FernApi
+from fern import FernApi, CardBatchReplaceEntry
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.card_batch_replace.create_card_batch_replace_for_user(
     user_id=1,
     cards=[
@@ -4501,7 +3743,7 @@ client.card_batch_replace.create_card_batch_replace_for_user(
 <dl>
 <dd>
 
-**cards:** `typing.Sequence[CardBatchReplaceEntry]` — The cards that need to be replaced.
+**cards:** `typing.List[CardBatchReplaceEntry]` — The cards that need to be replaced.
     
 </dd>
 </dl>
@@ -4522,7 +3764,7 @@ client.card_batch_replace.create_card_batch_replace_for_user(
 </details>
 
 ## card-credit
-<details><summary><code>client.card_credit.<a href="src/fern/card_credit/client.py">create_card_credit_for_user</a>(...)</code></summary>
+<details><summary><code>client.card_credit.<a href="src/fern/card_credit/client.py">create_card_credit_for_user</a>(...) -> CardCreditCreate</code></summary>
 <dl>
 <dd>
 
@@ -4550,15 +3792,13 @@ Create a new credit card request.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.card_credit.create_card_credit_for_user(
     user_id=1,
     name_on_card="name_on_card",
@@ -4645,7 +3885,7 @@ client.card_credit.create_card_credit_for_user(
 <dl>
 <dd>
 
-**pin_code_assignment:** `typing.Optional[typing.Sequence[CardPinAssignment]]` — Array of Types, PINs, account IDs assigned to the card.
+**pin_code_assignment:** `typing.Optional[typing.List[CardPinAssignment]]` — Array of Types, PINs, account IDs assigned to the card.
     
 </dd>
 </dl>
@@ -4674,7 +3914,7 @@ client.card_credit.create_card_credit_for_user(
 </details>
 
 ## card-debit
-<details><summary><code>client.card_debit.<a href="src/fern/card_debit/client.py">create_card_debit_for_user</a>(...)</code></summary>
+<details><summary><code>client.card_debit.<a href="src/fern/card_debit/client.py">create_card_debit_for_user</a>(...) -> CardDebitCreate</code></summary>
 <dl>
 <dd>
 
@@ -4702,15 +3942,13 @@ Create a new debit card request.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.card_debit.create_card_debit_for_user(
     user_id=1,
     name_on_card="name_on_card",
@@ -4741,71 +3979,7 @@ client.card_debit.create_card_debit_for_user(
 <dl>
 <dd>
 
-**name_on_card:** `str` — The user's name as it will be on the card. Check 'card-name' for the available card names for a user.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**product_type:** `str` — The product type of the card to order.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**second_line:** `str` — The second line of text on the card, used as name/description for it. It can contain at most 17 characters and it can be empty.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `str` — The type of card to order. Can be MAESTRO or MASTERCARD.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**alias:** `typing.Optional[Pointer]` — The pointer to the monetary account that will be connected at first with the card. Its IBAN code is also the one that will be printed on the card itself. The pointer must be of type IBAN.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**monetary_account_id_fallback:** `typing.Optional[int]` — ID of the MA to be used as fallback for this card if insufficient balance. Fallback account is removed if not supplied.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**order_status:** `typing.Optional[str]` — The order status of this card. Can be CARD_REQUEST_PENDING or VIRTUAL_DELIVERY.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**pin_code_assignment:** `typing.Optional[typing.Sequence[CardPinAssignment]]` — Array of Types, PINs, account IDs assigned to the card.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**preferred_name_on_card:** `typing.Optional[str]` — The user's preferred name that can be put on the card.
+**request:** `CardDebit` 
     
 </dd>
 </dl>
@@ -4826,7 +4000,7 @@ client.card_debit.create_card_debit_for_user(
 </details>
 
 ## card-name
-<details><summary><code>client.card_name.<a href="src/fern/card_name/client.py">list_all_card_name_for_user</a>(...)</code></summary>
+<details><summary><code>client.card_name.<a href="src/fern/card_name/client.py">list_all_card_name_for_user</a>(...) -> typing.List[CardNameListing]</code></summary>
 <dl>
 <dd>
 
@@ -4854,15 +4028,13 @@ Return all the accepted card names for a specific user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.card_name.list_all_card_name_for_user(
     user_id=1,
 )
@@ -4902,7 +4074,7 @@ client.card_name.list_all_card_name_for_user(
 </details>
 
 ## export-statement-card
-<details><summary><code>client.export_statement_card.<a href="src/fern/export_statement_card/client.py">list_all_export_statement_card_for_user_card</a>(...)</code></summary>
+<details><summary><code>client.export_statement_card.<a href="src/fern/export_statement_card/client.py">list_all_export_statement_card_for_user_card</a>(...) -> typing.List[ExportStatementCardListing]</code></summary>
 <dl>
 <dd>
 
@@ -4930,15 +4102,13 @@ Used to create new and read existing card statement exports. Statement exports c
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_statement_card.list_all_export_statement_card_for_user_card(
     user_id=1,
     card_id=1,
@@ -4986,7 +4156,7 @@ client.export_statement_card.list_all_export_statement_card_for_user_card(
 </dl>
 </details>
 
-<details><summary><code>client.export_statement_card.<a href="src/fern/export_statement_card/client.py">read_export_statement_card_for_user_card</a>(...)</code></summary>
+<details><summary><code>client.export_statement_card.<a href="src/fern/export_statement_card/client.py">read_export_statement_card_for_user_card</a>(...) -> ExportStatementCardRead</code></summary>
 <dl>
 <dd>
 
@@ -5014,15 +4184,13 @@ Used to create new and read existing card statement exports. Statement exports c
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_statement_card.read_export_statement_card_for_user_card(
     user_id=1,
     card_id=1,
@@ -5080,7 +4248,7 @@ client.export_statement_card.read_export_statement_card_for_user_card(
 </details>
 
 ## export-statement-card-csv
-<details><summary><code>client.export_statement_card_csv.<a href="src/fern/export_statement_card_csv/client.py">list_all_export_statement_card_csv_for_user_card</a>(...)</code></summary>
+<details><summary><code>client.export_statement_card_csv.<a href="src/fern/export_statement_card_csv/client.py">list_all_export_statement_card_csv_for_user_card</a>(...) -> typing.List[ExportStatementCardCsvListing]</code></summary>
 <dl>
 <dd>
 
@@ -5108,15 +4276,13 @@ Used to serialize ExportStatementCardCsv
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_statement_card_csv.list_all_export_statement_card_csv_for_user_card(
     user_id=1,
     card_id=1,
@@ -5164,7 +4330,7 @@ client.export_statement_card_csv.list_all_export_statement_card_csv_for_user_car
 </dl>
 </details>
 
-<details><summary><code>client.export_statement_card_csv.<a href="src/fern/export_statement_card_csv/client.py">create_export_statement_card_csv_for_user_card</a>(...)</code></summary>
+<details><summary><code>client.export_statement_card_csv.<a href="src/fern/export_statement_card_csv/client.py">create_export_statement_card_csv_for_user_card</a>(...) -> ExportStatementCardCsvCreate</code></summary>
 <dl>
 <dd>
 
@@ -5192,15 +4358,13 @@ Used to serialize ExportStatementCardCsv
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_statement_card_csv.create_export_statement_card_csv_for_user_card(
     user_id=1,
     card_id=1,
@@ -5275,7 +4439,7 @@ client.export_statement_card_csv.create_export_statement_card_csv_for_user_card(
 </dl>
 </details>
 
-<details><summary><code>client.export_statement_card_csv.<a href="src/fern/export_statement_card_csv/client.py">read_export_statement_card_csv_for_user_card</a>(...)</code></summary>
+<details><summary><code>client.export_statement_card_csv.<a href="src/fern/export_statement_card_csv/client.py">read_export_statement_card_csv_for_user_card</a>(...) -> ExportStatementCardCsvRead</code></summary>
 <dl>
 <dd>
 
@@ -5303,15 +4467,13 @@ Used to serialize ExportStatementCardCsv
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_statement_card_csv.read_export_statement_card_csv_for_user_card(
     user_id=1,
     card_id=1,
@@ -5368,7 +4530,7 @@ client.export_statement_card_csv.read_export_statement_card_csv_for_user_card(
 </dl>
 </details>
 
-<details><summary><code>client.export_statement_card_csv.<a href="src/fern/export_statement_card_csv/client.py">delete_export_statement_card_csv_for_user_card</a>(...)</code></summary>
+<details><summary><code>client.export_statement_card_csv.<a href="src/fern/export_statement_card_csv/client.py">delete_export_statement_card_csv_for_user_card</a>(...) -> ExportStatementCardCsvDelete</code></summary>
 <dl>
 <dd>
 
@@ -5396,15 +4558,13 @@ Used to serialize ExportStatementCardCsv
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_statement_card_csv.delete_export_statement_card_csv_for_user_card(
     user_id=1,
     card_id=1,
@@ -5462,7 +4622,7 @@ client.export_statement_card_csv.delete_export_statement_card_csv_for_user_card(
 </details>
 
 ## export-statement-card-pdf
-<details><summary><code>client.export_statement_card_pdf.<a href="src/fern/export_statement_card_pdf/client.py">list_all_export_statement_card_pdf_for_user_card</a>(...)</code></summary>
+<details><summary><code>client.export_statement_card_pdf.<a href="src/fern/export_statement_card_pdf/client.py">list_all_export_statement_card_pdf_for_user_card</a>(...) -> typing.List[ExportStatementCardPdfListing]</code></summary>
 <dl>
 <dd>
 
@@ -5490,15 +4650,13 @@ Used to serialize ExportStatementCardPdf
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_statement_card_pdf.list_all_export_statement_card_pdf_for_user_card(
     user_id=1,
     card_id=1,
@@ -5546,7 +4704,7 @@ client.export_statement_card_pdf.list_all_export_statement_card_pdf_for_user_car
 </dl>
 </details>
 
-<details><summary><code>client.export_statement_card_pdf.<a href="src/fern/export_statement_card_pdf/client.py">create_export_statement_card_pdf_for_user_card</a>(...)</code></summary>
+<details><summary><code>client.export_statement_card_pdf.<a href="src/fern/export_statement_card_pdf/client.py">create_export_statement_card_pdf_for_user_card</a>(...) -> ExportStatementCardPdfCreate</code></summary>
 <dl>
 <dd>
 
@@ -5574,15 +4732,13 @@ Used to serialize ExportStatementCardPdf
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_statement_card_pdf.create_export_statement_card_pdf_for_user_card(
     user_id=1,
     card_id=1,
@@ -5648,7 +4804,7 @@ client.export_statement_card_pdf.create_export_statement_card_pdf_for_user_card(
 </dl>
 </details>
 
-<details><summary><code>client.export_statement_card_pdf.<a href="src/fern/export_statement_card_pdf/client.py">read_export_statement_card_pdf_for_user_card</a>(...)</code></summary>
+<details><summary><code>client.export_statement_card_pdf.<a href="src/fern/export_statement_card_pdf/client.py">read_export_statement_card_pdf_for_user_card</a>(...) -> ExportStatementCardPdfRead</code></summary>
 <dl>
 <dd>
 
@@ -5676,15 +4832,13 @@ Used to serialize ExportStatementCardPdf
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_statement_card_pdf.read_export_statement_card_pdf_for_user_card(
     user_id=1,
     card_id=1,
@@ -5741,7 +4895,7 @@ client.export_statement_card_pdf.read_export_statement_card_pdf_for_user_card(
 </dl>
 </details>
 
-<details><summary><code>client.export_statement_card_pdf.<a href="src/fern/export_statement_card_pdf/client.py">delete_export_statement_card_pdf_for_user_card</a>(...)</code></summary>
+<details><summary><code>client.export_statement_card_pdf.<a href="src/fern/export_statement_card_pdf/client.py">delete_export_statement_card_pdf_for_user_card</a>(...) -> ExportStatementCardPdfDelete</code></summary>
 <dl>
 <dd>
 
@@ -5769,15 +4923,13 @@ Used to serialize ExportStatementCardPdf
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_statement_card_pdf.delete_export_statement_card_pdf_for_user_card(
     user_id=1,
     card_id=1,
@@ -5835,7 +4987,7 @@ client.export_statement_card_pdf.delete_export_statement_card_pdf_for_user_card(
 </details>
 
 ## generated-cvc2
-<details><summary><code>client.generated_cvc2.<a href="src/fern/generated_cvc2/client.py">list_all_generated_cvc2for_user_card</a>(...)</code></summary>
+<details><summary><code>client.generated_cvc2.<a href="src/fern/generated_cvc2/client.py">list_all_generated_cvc2for_user_card</a>(...) -> typing.List[CardGeneratedCvc2Listing]</code></summary>
 <dl>
 <dd>
 
@@ -5863,15 +5015,13 @@ Get all generated CVC2 codes for a card.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.generated_cvc2.list_all_generated_cvc2for_user_card(
     user_id=1,
     card_id=1,
@@ -5919,7 +5069,7 @@ client.generated_cvc2.list_all_generated_cvc2for_user_card(
 </dl>
 </details>
 
-<details><summary><code>client.generated_cvc2.<a href="src/fern/generated_cvc2/client.py">create_generated_cvc2for_user_card</a>(...)</code></summary>
+<details><summary><code>client.generated_cvc2.<a href="src/fern/generated_cvc2/client.py">create_generated_cvc2for_user_card</a>(...) -> CardGeneratedCvc2Create</code></summary>
 <dl>
 <dd>
 
@@ -5947,15 +5097,13 @@ Generate a new CVC2 code for a card.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.generated_cvc2.create_generated_cvc2for_user_card(
     user_id=1,
     card_id=1,
@@ -5991,7 +5139,7 @@ client.generated_cvc2.create_generated_cvc2for_user_card(
 <dl>
 <dd>
 
-**type:** `typing.Optional[str]` — The type of generated cvc2. Can be STATIC or GENERATED.
+**request:** `CardGeneratedCvc2` 
     
 </dd>
 </dl>
@@ -6011,7 +5159,7 @@ client.generated_cvc2.create_generated_cvc2for_user_card(
 </dl>
 </details>
 
-<details><summary><code>client.generated_cvc2.<a href="src/fern/generated_cvc2/client.py">read_generated_cvc2for_user_card</a>(...)</code></summary>
+<details><summary><code>client.generated_cvc2.<a href="src/fern/generated_cvc2/client.py">read_generated_cvc2for_user_card</a>(...) -> CardGeneratedCvc2Read</code></summary>
 <dl>
 <dd>
 
@@ -6039,15 +5187,13 @@ Get the details for a specific generated CVC2 code.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.generated_cvc2.read_generated_cvc2for_user_card(
     user_id=1,
     card_id=1,
@@ -6104,7 +5250,7 @@ client.generated_cvc2.read_generated_cvc2for_user_card(
 </dl>
 </details>
 
-<details><summary><code>client.generated_cvc2.<a href="src/fern/generated_cvc2/client.py">update_generated_cvc2for_user_card</a>(...)</code></summary>
+<details><summary><code>client.generated_cvc2.<a href="src/fern/generated_cvc2/client.py">update_generated_cvc2for_user_card</a>(...) -> CardGeneratedCvc2Update</code></summary>
 <dl>
 <dd>
 
@@ -6132,15 +5278,13 @@ Endpoint for generating and retrieving a new CVC2 code.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.generated_cvc2.update_generated_cvc2for_user_card(
     user_id=1,
     card_id=1,
@@ -6185,7 +5329,7 @@ client.generated_cvc2.update_generated_cvc2for_user_card(
 <dl>
 <dd>
 
-**type:** `typing.Optional[str]` — The type of generated cvc2. Can be STATIC or GENERATED.
+**request:** `CardGeneratedCvc2` 
     
 </dd>
 </dl>
@@ -6206,7 +5350,7 @@ client.generated_cvc2.update_generated_cvc2for_user_card(
 </details>
 
 ## replace
-<details><summary><code>client.replace.<a href="src/fern/replace/client.py">create_replace_for_user_card</a>(...)</code></summary>
+<details><summary><code>client.replace.<a href="src/fern/replace/client.py">create_replace_for_user_card</a>(...) -> CardReplaceCreate</code></summary>
 <dl>
 <dd>
 
@@ -6234,15 +5378,13 @@ Request a card replacement.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.replace.create_replace_for_user_card(
     user_id=1,
     card_id=1,
@@ -6286,7 +5428,7 @@ client.replace.create_replace_for_user_card(
 <dl>
 <dd>
 
-**pin_code_assignment:** `typing.Optional[typing.Sequence[CardPinAssignment]]` — Array of Types, PINs, account IDs assigned to the card.
+**pin_code_assignment:** `typing.Optional[typing.List[CardPinAssignment]]` — Array of Types, PINs, account IDs assigned to the card.
     
 </dd>
 </dl>
@@ -6323,7 +5465,7 @@ client.replace.create_replace_for_user_card(
 </details>
 
 ## certificate-pinned
-<details><summary><code>client.certificate_pinned.<a href="src/fern/certificate_pinned/client.py">list_all_certificate_pinned_for_user</a>(...)</code></summary>
+<details><summary><code>client.certificate_pinned.<a href="src/fern/certificate_pinned/client.py">list_all_certificate_pinned_for_user</a>(...) -> typing.List[CertificatePinnedListing]</code></summary>
 <dl>
 <dd>
 
@@ -6351,15 +5493,13 @@ List all the pinned certificate chain for the given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.certificate_pinned.list_all_certificate_pinned_for_user(
     user_id=1,
 )
@@ -6398,7 +5538,7 @@ client.certificate_pinned.list_all_certificate_pinned_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.certificate_pinned.<a href="src/fern/certificate_pinned/client.py">create_certificate_pinned_for_user</a>(...)</code></summary>
+<details><summary><code>client.certificate_pinned.<a href="src/fern/certificate_pinned/client.py">create_certificate_pinned_for_user</a>(...) -> CertificatePinnedCreate</code></summary>
 <dl>
 <dd>
 
@@ -6425,19 +5565,19 @@ Pin the certificate chain.
 <dd>
 
 ```python
-from fern import Certificate, FernApi
+from fern import FernApi, Certificate
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.certificate_pinned.create_certificate_pinned_for_user(
     user_id=1,
-    certificate_chain=[Certificate()],
+    certificate_chain=[
+        Certificate()
+    ],
 )
 
 ```
@@ -6462,7 +5602,7 @@ client.certificate_pinned.create_certificate_pinned_for_user(
 <dl>
 <dd>
 
-**certificate_chain:** `typing.Sequence[Certificate]` — The certificate chain in .PEM format.
+**certificate_chain:** `typing.List[Certificate]` — The certificate chain in .PEM format.
     
 </dd>
 </dl>
@@ -6482,7 +5622,7 @@ client.certificate_pinned.create_certificate_pinned_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.certificate_pinned.<a href="src/fern/certificate_pinned/client.py">read_certificate_pinned_for_user</a>(...)</code></summary>
+<details><summary><code>client.certificate_pinned.<a href="src/fern/certificate_pinned/client.py">read_certificate_pinned_for_user</a>(...) -> CertificatePinnedRead</code></summary>
 <dl>
 <dd>
 
@@ -6510,15 +5650,13 @@ Get the pinned certificate chain with the specified ID.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.certificate_pinned.read_certificate_pinned_for_user(
     user_id=1,
     item_id=1,
@@ -6566,7 +5704,7 @@ client.certificate_pinned.read_certificate_pinned_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.certificate_pinned.<a href="src/fern/certificate_pinned/client.py">delete_certificate_pinned_for_user</a>(...)</code></summary>
+<details><summary><code>client.certificate_pinned.<a href="src/fern/certificate_pinned/client.py">delete_certificate_pinned_for_user</a>(...) -> CertificatePinnedDelete</code></summary>
 <dl>
 <dd>
 
@@ -6594,15 +5732,13 @@ Remove the pinned certificate chain with the specific ID.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.certificate_pinned.delete_certificate_pinned_for_user(
     user_id=1,
     item_id=1,
@@ -6651,7 +5787,7 @@ client.certificate_pinned.delete_certificate_pinned_for_user(
 </details>
 
 ## challenge-request
-<details><summary><code>client.challenge_request.<a href="src/fern/challenge_request/client.py">read_challenge_request_for_user</a>(...)</code></summary>
+<details><summary><code>client.challenge_request.<a href="src/fern/challenge_request/client.py">read_challenge_request_for_user</a>(...) -> MasterCardIdentityCheckChallengeRequestUserRead</code></summary>
 <dl>
 <dd>
 
@@ -6679,15 +5815,13 @@ Endpoint for apps to fetch a challenge request.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.challenge_request.read_challenge_request_for_user(
     user_id=1,
     item_id=1,
@@ -6735,7 +5869,7 @@ client.challenge_request.read_challenge_request_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.challenge_request.<a href="src/fern/challenge_request/client.py">update_challenge_request_for_user</a>(...)</code></summary>
+<details><summary><code>client.challenge_request.<a href="src/fern/challenge_request/client.py">update_challenge_request_for_user</a>(...) -> MasterCardIdentityCheckChallengeRequestUserUpdate</code></summary>
 <dl>
 <dd>
 
@@ -6763,15 +5897,13 @@ Endpoint for apps to fetch a challenge request.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.challenge_request.update_challenge_request_for_user(
     user_id=1,
     item_id=1,
@@ -6829,7 +5961,7 @@ client.challenge_request.update_challenge_request_for_user(
 </details>
 
 ## company
-<details><summary><code>client.company.<a href="src/fern/company/client.py">list_all_company_for_user</a>(...)</code></summary>
+<details><summary><code>client.company.<a href="src/fern/company/client.py">list_all_company_for_user</a>(...) -> typing.List[CompanyListing]</code></summary>
 <dl>
 <dd>
 
@@ -6857,15 +5989,13 @@ Create and manage companies.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.company.list_all_company_for_user(
     user_id=1,
 )
@@ -6904,7 +6034,7 @@ client.company.list_all_company_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.company.<a href="src/fern/company/client.py">create_company_for_user</a>(...)</code></summary>
+<details><summary><code>client.company.<a href="src/fern/company/client.py">create_company_for_user</a>(...) -> CompanyCreate</code></summary>
 <dl>
 <dd>
 
@@ -6931,16 +6061,14 @@ Create and manage companies.
 <dd>
 
 ```python
-from fern import Address, FernApi
+from fern import FernApi, Address
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.company.create_company_for_user(
     user_id=1,
     address_main=Address(),
@@ -6973,87 +6101,7 @@ client.company.create_company_for_user(
 <dl>
 <dd>
 
-**address_main:** `Address` — The company's main address.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**address_postal:** `Address` — The company's postal address.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**country:** `str` — The country where the company is registered.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**legal_form:** `str` — The company's legal form.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `str` — The company name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**subscription_type:** `str` — The subscription type for the company.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**avatar_uuid:** `typing.Optional[str]` — The public UUID of the company's avatar.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**chamber_of_commerce_number:** `typing.Optional[str]` — The company's chamber of commerce number.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**signup_track_type:** `typing.Optional[str]` — The type of signup track the user is following.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**ubo:** `typing.Optional[typing.Sequence[Ubo]]` — The names and birth dates of the company's ultimate beneficiary owners. Minimum zero, maximum four.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**vat_number:** `typing.Optional[CompanyVatNumber]` — All the vat numbers of the company
+**request:** `Company` 
     
 </dd>
 </dl>
@@ -7073,7 +6121,7 @@ client.company.create_company_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.company.<a href="src/fern/company/client.py">read_company_for_user</a>(...)</code></summary>
+<details><summary><code>client.company.<a href="src/fern/company/client.py">read_company_for_user</a>(...) -> CompanyRead</code></summary>
 <dl>
 <dd>
 
@@ -7101,15 +6149,13 @@ Create and manage companies.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.company.read_company_for_user(
     user_id=1,
     item_id=1,
@@ -7157,7 +6203,7 @@ client.company.read_company_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.company.<a href="src/fern/company/client.py">update_company_for_user</a>(...)</code></summary>
+<details><summary><code>client.company.<a href="src/fern/company/client.py">update_company_for_user</a>(...) -> CompanyUpdate</code></summary>
 <dl>
 <dd>
 
@@ -7184,16 +6230,14 @@ Create and manage companies.
 <dd>
 
 ```python
-from fern import Address, FernApi
+from fern import FernApi, Address
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.company.update_company_for_user(
     user_id=1,
     item_id=1,
@@ -7235,87 +6279,7 @@ client.company.update_company_for_user(
 <dl>
 <dd>
 
-**address_main:** `Address` — The company's main address.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**address_postal:** `Address` — The company's postal address.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**country:** `str` — The country where the company is registered.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**legal_form:** `str` — The company's legal form.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `str` — The company name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**subscription_type:** `str` — The subscription type for the company.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**avatar_uuid:** `typing.Optional[str]` — The public UUID of the company's avatar.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**chamber_of_commerce_number:** `typing.Optional[str]` — The company's chamber of commerce number.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**signup_track_type:** `typing.Optional[str]` — The type of signup track the user is following.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**ubo:** `typing.Optional[typing.Sequence[Ubo]]` — The names and birth dates of the company's ultimate beneficiary owners. Minimum zero, maximum four.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**vat_number:** `typing.Optional[CompanyVatNumber]` — All the vat numbers of the company
+**request:** `Company` 
     
 </dd>
 </dl>
@@ -7336,7 +6300,7 @@ client.company.update_company_for_user(
 </details>
 
 ## confirmation-of-funds
-<details><summary><code>client.confirmation_of_funds.<a href="src/fern/confirmation_of_funds/client.py">create_confirmation_of_funds_for_user</a>(...)</code></summary>
+<details><summary><code>client.confirmation_of_funds.<a href="src/fern/confirmation_of_funds/client.py">create_confirmation_of_funds_for_user</a>(...) -> ConfirmationOfFundsCreate</code></summary>
 <dl>
 <dd>
 
@@ -7363,16 +6327,14 @@ Used to confirm availability of funds on an account.
 <dd>
 
 ```python
-from fern import Amount, FernApi, Pointer
+from fern import FernApi, Amount, Pointer
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.confirmation_of_funds.create_confirmation_of_funds_for_user(
     user_id=1,
     amount=Amount(),
@@ -7430,7 +6392,7 @@ client.confirmation_of_funds.create_confirmation_of_funds_for_user(
 </details>
 
 ## credential-password-ip
-<details><summary><code>client.credential_password_ip.<a href="src/fern/credential_password_ip/client.py">list_all_credential_password_ip_for_user</a>(...)</code></summary>
+<details><summary><code>client.credential_password_ip.<a href="src/fern/credential_password_ip/client.py">list_all_credential_password_ip_for_user</a>(...) -> typing.List[UserCredentialPasswordIpListing]</code></summary>
 <dl>
 <dd>
 
@@ -7458,15 +6420,13 @@ Create a credential of a user for server authentication, or delete the credentia
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.credential_password_ip.list_all_credential_password_ip_for_user(
     user_id=1,
 )
@@ -7505,7 +6465,7 @@ client.credential_password_ip.list_all_credential_password_ip_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.credential_password_ip.<a href="src/fern/credential_password_ip/client.py">read_credential_password_ip_for_user</a>(...)</code></summary>
+<details><summary><code>client.credential_password_ip.<a href="src/fern/credential_password_ip/client.py">read_credential_password_ip_for_user</a>(...) -> UserCredentialPasswordIpRead</code></summary>
 <dl>
 <dd>
 
@@ -7533,15 +6493,13 @@ Create a credential of a user for server authentication, or delete the credentia
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.credential_password_ip.read_credential_password_ip_for_user(
     user_id=1,
     item_id=1,
@@ -7590,7 +6548,7 @@ client.credential_password_ip.read_credential_password_ip_for_user(
 </details>
 
 ## ip
-<details><summary><code>client.ip.<a href="src/fern/ip/client.py">list_all_ip_for_user_credential_password_ip</a>(...)</code></summary>
+<details><summary><code>client.ip.<a href="src/fern/ip/client.py">list_all_ip_for_user_credential_password_ip</a>(...) -> typing.List[PermittedIpListing]</code></summary>
 <dl>
 <dd>
 
@@ -7618,15 +6576,13 @@ Manage the IPs which may be used for a credential of a user for server authentic
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ip.list_all_ip_for_user_credential_password_ip(
     user_id=1,
     credential_password_ip_id=1,
@@ -7674,7 +6630,7 @@ client.ip.list_all_ip_for_user_credential_password_ip(
 </dl>
 </details>
 
-<details><summary><code>client.ip.<a href="src/fern/ip/client.py">create_ip_for_user_credential_password_ip</a>(...)</code></summary>
+<details><summary><code>client.ip.<a href="src/fern/ip/client.py">create_ip_for_user_credential_password_ip</a>(...) -> PermittedIpCreate</code></summary>
 <dl>
 <dd>
 
@@ -7702,15 +6658,13 @@ Manage the IPs which may be used for a credential of a user for server authentic
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ip.create_ip_for_user_credential_password_ip(
     user_id=1,
     credential_password_ip_id=1,
@@ -7747,15 +6701,7 @@ client.ip.create_ip_for_user_credential_password_ip(
 <dl>
 <dd>
 
-**ip:** `str` — The IP address.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the IP. May be "ACTIVE" or "INACTIVE". It is only possible to make requests from "ACTIVE" IP addresses. Only "ACTIVE" IPs will be billed.
+**request:** `PermittedIp` 
     
 </dd>
 </dl>
@@ -7775,7 +6721,7 @@ client.ip.create_ip_for_user_credential_password_ip(
 </dl>
 </details>
 
-<details><summary><code>client.ip.<a href="src/fern/ip/client.py">read_ip_for_user_credential_password_ip</a>(...)</code></summary>
+<details><summary><code>client.ip.<a href="src/fern/ip/client.py">read_ip_for_user_credential_password_ip</a>(...) -> PermittedIpRead</code></summary>
 <dl>
 <dd>
 
@@ -7803,15 +6749,13 @@ Manage the IPs which may be used for a credential of a user for server authentic
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ip.read_ip_for_user_credential_password_ip(
     user_id=1,
     credential_password_ip_id=1,
@@ -7868,7 +6812,7 @@ client.ip.read_ip_for_user_credential_password_ip(
 </dl>
 </details>
 
-<details><summary><code>client.ip.<a href="src/fern/ip/client.py">update_ip_for_user_credential_password_ip</a>(...)</code></summary>
+<details><summary><code>client.ip.<a href="src/fern/ip/client.py">update_ip_for_user_credential_password_ip</a>(...) -> PermittedIpUpdate</code></summary>
 <dl>
 <dd>
 
@@ -7896,15 +6840,13 @@ Manage the IPs which may be used for a credential of a user for server authentic
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ip.update_ip_for_user_credential_password_ip(
     user_id=1,
     credential_password_ip_id=1,
@@ -7950,15 +6892,7 @@ client.ip.update_ip_for_user_credential_password_ip(
 <dl>
 <dd>
 
-**ip:** `str` — The IP address.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the IP. May be "ACTIVE" or "INACTIVE". It is only possible to make requests from "ACTIVE" IP addresses. Only "ACTIVE" IPs will be billed.
+**request:** `PermittedIp` 
     
 </dd>
 </dl>
@@ -7979,7 +6913,7 @@ client.ip.update_ip_for_user_credential_password_ip(
 </details>
 
 ## currency-cloud-beneficiary
-<details><summary><code>client.currency_cloud_beneficiary.<a href="src/fern/currency_cloud_beneficiary/client.py">list_all_currency_cloud_beneficiary_for_user</a>(...)</code></summary>
+<details><summary><code>client.currency_cloud_beneficiary.<a href="src/fern/currency_cloud_beneficiary/client.py">list_all_currency_cloud_beneficiary_for_user</a>(...) -> typing.List[CurrencyCloudBeneficiaryListing]</code></summary>
 <dl>
 <dd>
 
@@ -8007,15 +6941,13 @@ Endpoint to manage CurrencyCloud beneficiaries.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.currency_cloud_beneficiary.list_all_currency_cloud_beneficiary_for_user(
     user_id=1,
 )
@@ -8054,7 +6986,7 @@ client.currency_cloud_beneficiary.list_all_currency_cloud_beneficiary_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.currency_cloud_beneficiary.<a href="src/fern/currency_cloud_beneficiary/client.py">create_currency_cloud_beneficiary_for_user</a>(...)</code></summary>
+<details><summary><code>client.currency_cloud_beneficiary.<a href="src/fern/currency_cloud_beneficiary/client.py">create_currency_cloud_beneficiary_for_user</a>(...) -> CurrencyCloudBeneficiaryCreate</code></summary>
 <dl>
 <dd>
 
@@ -8082,18 +7014,18 @@ Endpoint to manage CurrencyCloud beneficiaries.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.currency_cloud_beneficiary.create_currency_cloud_beneficiary_for_user(
     user_id=1,
-    all_field=["all_field"],
+    all_field=[
+        "all_field"
+    ],
     country="country",
     currency="currency",
     legal_entity_type="legal_entity_type",
@@ -8123,7 +7055,7 @@ client.currency_cloud_beneficiary.create_currency_cloud_beneficiary_for_user(
 <dl>
 <dd>
 
-**all_field:** `typing.Sequence[str]` — All fields that were required by CurrencyCloud. Obtained through the CurrencyCloudBeneficiaryRequirement listing.
+**all_field:** `typing.List[str]` — All fields that were required by CurrencyCloud. Obtained through the CurrencyCloudBeneficiaryRequirement listing.
     
 </dd>
 </dl>
@@ -8183,7 +7115,7 @@ client.currency_cloud_beneficiary.create_currency_cloud_beneficiary_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.currency_cloud_beneficiary.<a href="src/fern/currency_cloud_beneficiary/client.py">read_currency_cloud_beneficiary_for_user</a>(...)</code></summary>
+<details><summary><code>client.currency_cloud_beneficiary.<a href="src/fern/currency_cloud_beneficiary/client.py">read_currency_cloud_beneficiary_for_user</a>(...) -> CurrencyCloudBeneficiaryRead</code></summary>
 <dl>
 <dd>
 
@@ -8211,15 +7143,13 @@ Endpoint to manage CurrencyCloud beneficiaries.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.currency_cloud_beneficiary.read_currency_cloud_beneficiary_for_user(
     user_id=1,
     item_id=1,
@@ -8268,7 +7198,7 @@ client.currency_cloud_beneficiary.read_currency_cloud_beneficiary_for_user(
 </details>
 
 ## currency-cloud-beneficiary-requirement
-<details><summary><code>client.currency_cloud_beneficiary_requirement.<a href="src/fern/currency_cloud_beneficiary_requirement/client.py">list_all_currency_cloud_beneficiary_requirement_for_user</a>(...)</code></summary>
+<details><summary><code>client.currency_cloud_beneficiary_requirement.<a href="src/fern/currency_cloud_beneficiary_requirement/client.py">list_all_currency_cloud_beneficiary_requirement_for_user</a>(...) -> typing.List[CurrencyCloudBeneficiaryRequirementListing]</code></summary>
 <dl>
 <dd>
 
@@ -8296,15 +7226,13 @@ Endpoint to list requirements for CurrencyCloud beneficiaries.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.currency_cloud_beneficiary_requirement.list_all_currency_cloud_beneficiary_requirement_for_user(
     user_id=1,
 )
@@ -8344,7 +7272,7 @@ client.currency_cloud_beneficiary_requirement.list_all_currency_cloud_beneficiar
 </details>
 
 ## event
-<details><summary><code>client.event.<a href="src/fern/event/client.py">list_all_event_for_user</a>(...)</code></summary>
+<details><summary><code>client.event.<a href="src/fern/event/client.py">list_all_event_for_user</a>(...) -> typing.List[EventListing]</code></summary>
 <dl>
 <dd>
 
@@ -8372,15 +7300,13 @@ Get a collection of events for a given user. You can add query the parameters mo
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.event.list_all_event_for_user(
     user_id=1,
 )
@@ -8419,7 +7345,7 @@ client.event.list_all_event_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.event.<a href="src/fern/event/client.py">read_event_for_user</a>(...)</code></summary>
+<details><summary><code>client.event.<a href="src/fern/event/client.py">read_event_for_user</a>(...) -> EventRead</code></summary>
 <dl>
 <dd>
 
@@ -8447,15 +7373,13 @@ Get a specific event for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.event.read_event_for_user(
     user_id=1,
     item_id=1,
@@ -8504,7 +7428,7 @@ client.event.read_event_for_user(
 </details>
 
 ## export-annual-overview
-<details><summary><code>client.export_annual_overview.<a href="src/fern/export_annual_overview/client.py">list_all_export_annual_overview_for_user</a>(...)</code></summary>
+<details><summary><code>client.export_annual_overview.<a href="src/fern/export_annual_overview/client.py">list_all_export_annual_overview_for_user</a>(...) -> typing.List[ExportAnnualOverviewListing]</code></summary>
 <dl>
 <dd>
 
@@ -8532,15 +7456,13 @@ List all the annual overviews for a user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_annual_overview.list_all_export_annual_overview_for_user(
     user_id=1,
 )
@@ -8579,7 +7501,7 @@ client.export_annual_overview.list_all_export_annual_overview_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.export_annual_overview.<a href="src/fern/export_annual_overview/client.py">create_export_annual_overview_for_user</a>(...)</code></summary>
+<details><summary><code>client.export_annual_overview.<a href="src/fern/export_annual_overview/client.py">create_export_annual_overview_for_user</a>(...) -> ExportAnnualOverviewCreate</code></summary>
 <dl>
 <dd>
 
@@ -8607,15 +7529,13 @@ Create a new annual overview for a specific year. An overview can be generated o
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_annual_overview.create_export_annual_overview_for_user(
     user_id=1,
     year=1,
@@ -8663,7 +7583,7 @@ client.export_annual_overview.create_export_annual_overview_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.export_annual_overview.<a href="src/fern/export_annual_overview/client.py">read_export_annual_overview_for_user</a>(...)</code></summary>
+<details><summary><code>client.export_annual_overview.<a href="src/fern/export_annual_overview/client.py">read_export_annual_overview_for_user</a>(...) -> ExportAnnualOverviewRead</code></summary>
 <dl>
 <dd>
 
@@ -8691,15 +7611,13 @@ Get an annual overview for a user by its id.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_annual_overview.read_export_annual_overview_for_user(
     user_id=1,
     item_id=1,
@@ -8747,7 +7665,7 @@ client.export_annual_overview.read_export_annual_overview_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.export_annual_overview.<a href="src/fern/export_annual_overview/client.py">delete_export_annual_overview_for_user</a>(...)</code></summary>
+<details><summary><code>client.export_annual_overview.<a href="src/fern/export_annual_overview/client.py">delete_export_annual_overview_for_user</a>(...) -> ExportAnnualOverviewDelete</code></summary>
 <dl>
 <dd>
 
@@ -8775,15 +7693,13 @@ Used to create new and read existing annual overviews of all the user's monetary
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_annual_overview.delete_export_annual_overview_for_user(
     user_id=1,
     item_id=1,
@@ -8832,7 +7748,7 @@ client.export_annual_overview.delete_export_annual_overview_for_user(
 </details>
 
 ## feature-announcement
-<details><summary><code>client.feature_announcement.<a href="src/fern/feature_announcement/client.py">read_feature_announcement_for_user</a>(...)</code></summary>
+<details><summary><code>client.feature_announcement.<a href="src/fern/feature_announcement/client.py">read_feature_announcement_for_user</a>(...) -> FeatureAnnouncementRead</code></summary>
 <dl>
 <dd>
 
@@ -8860,15 +7776,13 @@ view for updating the feature display.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.feature_announcement.read_feature_announcement_for_user(
     user_id=1,
     item_id=1,
@@ -8917,7 +7831,7 @@ client.feature_announcement.read_feature_announcement_for_user(
 </details>
 
 ## insight-preference-date
-<details><summary><code>client.insight_preference_date.<a href="src/fern/insight_preference_date/client.py">list_all_insight_preference_date_for_user</a>(...)</code></summary>
+<details><summary><code>client.insight_preference_date.<a href="src/fern/insight_preference_date/client.py">list_all_insight_preference_date_for_user</a>(...) -> typing.List[InsightPreferenceDateListing]</code></summary>
 <dl>
 <dd>
 
@@ -8945,15 +7859,13 @@ Used to allow users to set insight/budget preferences.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.insight_preference_date.list_all_insight_preference_date_for_user(
     user_id=1,
 )
@@ -8993,7 +7905,7 @@ client.insight_preference_date.list_all_insight_preference_date_for_user(
 </details>
 
 ## insights
-<details><summary><code>client.insights.<a href="src/fern/insights/client.py">list_all_insights_for_user</a>(...)</code></summary>
+<details><summary><code>client.insights.<a href="src/fern/insights/client.py">list_all_insights_for_user</a>(...) -> typing.List[InsightListing]</code></summary>
 <dl>
 <dd>
 
@@ -9021,15 +7933,13 @@ Used to get insights about transactions between given time range.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.insights.list_all_insights_for_user(
     user_id=1,
 )
@@ -9069,7 +7979,7 @@ client.insights.list_all_insights_for_user(
 </details>
 
 ## insights-search
-<details><summary><code>client.insights_search.<a href="src/fern/insights_search/client.py">list_all_insights_search_for_user</a>(...)</code></summary>
+<details><summary><code>client.insights_search.<a href="src/fern/insights_search/client.py">list_all_insights_search_for_user</a>(...) -> typing.List[InsightEventListing]</code></summary>
 <dl>
 <dd>
 
@@ -9097,15 +8007,13 @@ Used to get events based on time and insight category.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.insights_search.list_all_insights_search_for_user(
     user_id=1,
 )
@@ -9145,7 +8053,7 @@ client.insights_search.list_all_insights_search_for_user(
 </details>
 
 ## invoice
-<details><summary><code>client.invoice.<a href="src/fern/invoice/client.py">list_all_invoice_for_user</a>(...)</code></summary>
+<details><summary><code>client.invoice.<a href="src/fern/invoice/client.py">list_all_invoice_for_user</a>(...) -> typing.List[InvoiceByUserListing]</code></summary>
 <dl>
 <dd>
 
@@ -9173,15 +8081,13 @@ Used to list bunq invoices by user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.invoice.list_all_invoice_for_user(
     user_id=1,
 )
@@ -9220,7 +8126,7 @@ client.invoice.list_all_invoice_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.invoice.<a href="src/fern/invoice/client.py">read_invoice_for_user</a>(...)</code></summary>
+<details><summary><code>client.invoice.<a href="src/fern/invoice/client.py">read_invoice_for_user</a>(...) -> InvoiceByUserRead</code></summary>
 <dl>
 <dd>
 
@@ -9248,15 +8154,13 @@ Used to list bunq invoices by user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.invoice.read_invoice_for_user(
     user_id=1,
     item_id=1,
@@ -9304,7 +8208,7 @@ client.invoice.read_invoice_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.invoice.<a href="src/fern/invoice/client.py">list_all_invoice_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.invoice.<a href="src/fern/invoice/client.py">list_all_invoice_for_user_monetary_account</a>(...) -> typing.List[InvoiceListing]</code></summary>
 <dl>
 <dd>
 
@@ -9332,15 +8236,13 @@ Used to view a bunq invoice.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.invoice.list_all_invoice_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -9388,7 +8290,7 @@ client.invoice.list_all_invoice_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.invoice.<a href="src/fern/invoice/client.py">read_invoice_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.invoice.<a href="src/fern/invoice/client.py">read_invoice_for_user_monetary_account</a>(...) -> InvoiceRead</code></summary>
 <dl>
 <dd>
 
@@ -9416,15 +8318,13 @@ Used to view a bunq invoice.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.invoice.read_invoice_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -9482,7 +8382,7 @@ client.invoice.read_invoice_for_user_monetary_account(
 </details>
 
 ## pdf-content
-<details><summary><code>client.pdf_content.<a href="src/fern/pdf_content/client.py">list_all_pdf_content_for_user_invoice</a>(...)</code></summary>
+<details><summary><code>client.pdf_content.<a href="src/fern/pdf_content/client.py">list_all_pdf_content_for_user_invoice</a>(...) -> typing.List[InvoiceExportPdfContentListing]</code></summary>
 <dl>
 <dd>
 
@@ -9510,15 +8410,13 @@ Get a PDF export of an invoice.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.pdf_content.list_all_pdf_content_for_user_invoice(
     user_id=1,
     invoice_id=1,
@@ -9567,7 +8465,7 @@ client.pdf_content.list_all_pdf_content_for_user_invoice(
 </details>
 
 ## legal-name
-<details><summary><code>client.legal_name.<a href="src/fern/legal_name/client.py">list_all_legal_name_for_user</a>(...)</code></summary>
+<details><summary><code>client.legal_name.<a href="src/fern/legal_name/client.py">list_all_legal_name_for_user</a>(...) -> typing.List[UserLegalNameListing]</code></summary>
 <dl>
 <dd>
 
@@ -9595,15 +8493,13 @@ Endpoint for getting available legal names that can be used by the user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.legal_name.list_all_legal_name_for_user(
     user_id=1,
 )
@@ -9643,7 +8539,7 @@ client.legal_name.list_all_legal_name_for_user(
 </details>
 
 ## limit
-<details><summary><code>client.limit.<a href="src/fern/limit/client.py">list_all_limit_for_user</a>(...)</code></summary>
+<details><summary><code>client.limit.<a href="src/fern/limit/client.py">list_all_limit_for_user</a>(...) -> typing.List[CustomerLimitListing]</code></summary>
 <dl>
 <dd>
 
@@ -9671,15 +8567,13 @@ Get all limits for the authenticated user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.limit.list_all_limit_for_user(
     user_id=1,
 )
@@ -9719,7 +8613,7 @@ client.limit.list_all_limit_for_user(
 </details>
 
 ## monetary-account
-<details><summary><code>client.monetary_account.<a href="src/fern/monetary_account/client.py">list_all_monetary_account_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account.<a href="src/fern/monetary_account/client.py">list_all_monetary_account_for_user</a>(...) -> typing.List[MonetaryAccountListing]</code></summary>
 <dl>
 <dd>
 
@@ -9747,15 +8641,13 @@ Get a collection of all your MonetaryAccounts.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account.list_all_monetary_account_for_user(
     user_id=1,
 )
@@ -9794,7 +8686,7 @@ client.monetary_account.list_all_monetary_account_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.monetary_account.<a href="src/fern/monetary_account/client.py">read_monetary_account_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account.<a href="src/fern/monetary_account/client.py">read_monetary_account_for_user</a>(...) -> MonetaryAccountRead</code></summary>
 <dl>
 <dd>
 
@@ -9822,15 +8714,13 @@ Get a specific MonetaryAccount.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account.read_monetary_account_for_user(
     user_id=1,
     item_id=1,
@@ -9879,7 +8769,7 @@ client.monetary_account.read_monetary_account_for_user(
 </details>
 
 ## monetary-account-bank
-<details><summary><code>client.monetary_account_bank.<a href="src/fern/monetary_account_bank/client.py">list_all_monetary_account_bank_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account_bank.<a href="src/fern/monetary_account_bank/client.py">list_all_monetary_account_bank_for_user</a>(...) -> typing.List[MonetaryAccountBankListing]</code></summary>
 <dl>
 <dd>
 
@@ -9907,15 +8797,13 @@ Gets a listing of all MonetaryAccountBanks of a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account_bank.list_all_monetary_account_bank_for_user(
     user_id=1,
 )
@@ -9954,7 +8842,7 @@ client.monetary_account_bank.list_all_monetary_account_bank_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.monetary_account_bank.<a href="src/fern/monetary_account_bank/client.py">create_monetary_account_bank_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account_bank.<a href="src/fern/monetary_account_bank/client.py">create_monetary_account_bank_for_user</a>(...) -> MonetaryAccountBankCreate</code></summary>
 <dl>
 <dd>
 
@@ -9982,15 +8870,13 @@ Create new MonetaryAccountBank.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account_bank.create_monetary_account_bank_for_user(
     user_id=1,
     currency="currency",
@@ -10018,87 +8904,7 @@ client.monetary_account_bank.create_monetary_account_bank_for_user(
 <dl>
 <dd>
 
-**currency:** `str` — The currency of the MonetaryAccountBank as an ISO 4217 formatted currency code.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**avatar_uuid:** `typing.Optional[str]` — The UUID of the Avatar of the MonetaryAccountBank.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**country_iban:** `typing.Optional[str]` — The country of the monetary account IBAN.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**daily_limit:** `typing.Optional[Amount]` — The daily spending limit Amount of the MonetaryAccountBank. Defaults to 1000 EUR. Currency must match the MonetaryAccountBank's currency. Limited to 10000 EUR.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The description of the MonetaryAccountBank. Defaults to 'bunq account'.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**display_name:** `typing.Optional[str]` — The legal name of the user / company using this monetary account.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reason:** `typing.Optional[str]` — The reason for voluntarily cancelling (closing) the MonetaryAccountBank, can only be OTHER. Should only be specified if updating the status to CANCELLED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reason_description:** `typing.Optional[str]` — The optional free-form reason for voluntarily cancelling (closing) the MonetaryAccountBank. Can be any user provided message. Should only be specified if updating the status to CANCELLED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**setting:** `typing.Optional[MonetaryAccountSetting]` — The settings of the MonetaryAccountBank.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the MonetaryAccountBank. Ignored in POST requests (always set to ACTIVE) can be CANCELLED or PENDING_REOPEN in PUT requests to cancel (close) or reopen the MonetaryAccountBank. When updating the status and/or sub_status no other fields can be updated in the same request (and vice versa).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sub_status:** `typing.Optional[str]` — The sub-status of the MonetaryAccountBank providing extra information regarding the status. Should be ignored for POST requests. In case of PUT requests with status CANCELLED it can only be REDEMPTION_VOLUNTARY, while with status PENDING_REOPEN it can only be NONE. When updating the status and/or sub_status no other fields can be updated in the same request (and vice versa).
+**request:** `MonetaryAccountBank` 
     
 </dd>
 </dl>
@@ -10118,7 +8924,7 @@ client.monetary_account_bank.create_monetary_account_bank_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.monetary_account_bank.<a href="src/fern/monetary_account_bank/client.py">read_monetary_account_bank_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account_bank.<a href="src/fern/monetary_account_bank/client.py">read_monetary_account_bank_for_user</a>(...) -> MonetaryAccountBankRead</code></summary>
 <dl>
 <dd>
 
@@ -10146,15 +8952,13 @@ Get a specific MonetaryAccountBank.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account_bank.read_monetary_account_bank_for_user(
     user_id=1,
     item_id=1,
@@ -10202,7 +9006,7 @@ client.monetary_account_bank.read_monetary_account_bank_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.monetary_account_bank.<a href="src/fern/monetary_account_bank/client.py">update_monetary_account_bank_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account_bank.<a href="src/fern/monetary_account_bank/client.py">update_monetary_account_bank_for_user</a>(...) -> MonetaryAccountBankUpdate</code></summary>
 <dl>
 <dd>
 
@@ -10230,15 +9034,13 @@ Update a specific existing MonetaryAccountBank.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account_bank.update_monetary_account_bank_for_user(
     user_id=1,
     item_id=1,
@@ -10275,87 +9077,7 @@ client.monetary_account_bank.update_monetary_account_bank_for_user(
 <dl>
 <dd>
 
-**currency:** `str` — The currency of the MonetaryAccountBank as an ISO 4217 formatted currency code.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**avatar_uuid:** `typing.Optional[str]` — The UUID of the Avatar of the MonetaryAccountBank.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**country_iban:** `typing.Optional[str]` — The country of the monetary account IBAN.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**daily_limit:** `typing.Optional[Amount]` — The daily spending limit Amount of the MonetaryAccountBank. Defaults to 1000 EUR. Currency must match the MonetaryAccountBank's currency. Limited to 10000 EUR.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The description of the MonetaryAccountBank. Defaults to 'bunq account'.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**display_name:** `typing.Optional[str]` — The legal name of the user / company using this monetary account.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reason:** `typing.Optional[str]` — The reason for voluntarily cancelling (closing) the MonetaryAccountBank, can only be OTHER. Should only be specified if updating the status to CANCELLED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reason_description:** `typing.Optional[str]` — The optional free-form reason for voluntarily cancelling (closing) the MonetaryAccountBank. Can be any user provided message. Should only be specified if updating the status to CANCELLED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**setting:** `typing.Optional[MonetaryAccountSetting]` — The settings of the MonetaryAccountBank.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the MonetaryAccountBank. Ignored in POST requests (always set to ACTIVE) can be CANCELLED or PENDING_REOPEN in PUT requests to cancel (close) or reopen the MonetaryAccountBank. When updating the status and/or sub_status no other fields can be updated in the same request (and vice versa).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sub_status:** `typing.Optional[str]` — The sub-status of the MonetaryAccountBank providing extra information regarding the status. Should be ignored for POST requests. In case of PUT requests with status CANCELLED it can only be REDEMPTION_VOLUNTARY, while with status PENDING_REOPEN it can only be NONE. When updating the status and/or sub_status no other fields can be updated in the same request (and vice versa).
+**request:** `MonetaryAccountBank` 
     
 </dd>
 </dl>
@@ -10376,7 +9098,7 @@ client.monetary_account_bank.update_monetary_account_bank_for_user(
 </details>
 
 ## monetary-account-external
-<details><summary><code>client.monetary_account_external.<a href="src/fern/monetary_account_external/client.py">list_all_monetary_account_external_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account_external.<a href="src/fern/monetary_account_external/client.py">list_all_monetary_account_external_for_user</a>(...) -> typing.List[MonetaryAccountExternalListing]</code></summary>
 <dl>
 <dd>
 
@@ -10404,15 +9126,13 @@ Endpoint for managing monetary accounts which are connected to external services
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account_external.list_all_monetary_account_external_for_user(
     user_id=1,
 )
@@ -10451,7 +9171,7 @@ client.monetary_account_external.list_all_monetary_account_external_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.monetary_account_external.<a href="src/fern/monetary_account_external/client.py">read_monetary_account_external_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account_external.<a href="src/fern/monetary_account_external/client.py">read_monetary_account_external_for_user</a>(...) -> MonetaryAccountExternalRead</code></summary>
 <dl>
 <dd>
 
@@ -10479,15 +9199,13 @@ Endpoint for managing monetary accounts which are connected to external services
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account_external.read_monetary_account_external_for_user(
     user_id=1,
     item_id=1,
@@ -10536,7 +9254,7 @@ client.monetary_account_external.read_monetary_account_external_for_user(
 </details>
 
 ## monetary-account-joint
-<details><summary><code>client.monetary_account_joint.<a href="src/fern/monetary_account_joint/client.py">list_all_monetary_account_joint_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account_joint.<a href="src/fern/monetary_account_joint/client.py">list_all_monetary_account_joint_for_user</a>(...) -> typing.List[MonetaryAccountJointListing]</code></summary>
 <dl>
 <dd>
 
@@ -10564,15 +9282,13 @@ The endpoint for joint monetary accounts.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account_joint.list_all_monetary_account_joint_for_user(
     user_id=1,
 )
@@ -10611,7 +9327,7 @@ client.monetary_account_joint.list_all_monetary_account_joint_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.monetary_account_joint.<a href="src/fern/monetary_account_joint/client.py">create_monetary_account_joint_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account_joint.<a href="src/fern/monetary_account_joint/client.py">create_monetary_account_joint_for_user</a>(...) -> MonetaryAccountJointCreate</code></summary>
 <dl>
 <dd>
 
@@ -10638,19 +9354,19 @@ The endpoint for joint monetary accounts.
 <dd>
 
 ```python
-from fern import CoOwner, FernApi
+from fern import FernApi, CoOwner
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account_joint.create_monetary_account_joint_for_user(
     user_id=1,
-    all_co_owner=[CoOwner()],
+    all_co_owner=[
+        CoOwner()
+    ],
     currency="currency",
 )
 
@@ -10676,95 +9392,7 @@ client.monetary_account_joint.create_monetary_account_joint_for_user(
 <dl>
 <dd>
 
-**all_co_owner:** `typing.Sequence[CoOwner]` — The users the account will be joint with.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**currency:** `str` — The currency of the MonetaryAccountJoint as an ISO 4217 formatted currency code.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**alias:** `typing.Optional[typing.Sequence[Pointer]]` — The Aliases to add to MonetaryAccountJoint. Must all be confirmed first. Can mostly be ignored.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**avatar_uuid:** `typing.Optional[str]` — The UUID of the Avatar of the MonetaryAccountJoint.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**daily_limit:** `typing.Optional[Amount]` — The daily spending limit Amount of the MonetaryAccountJoint. Defaults to 1000 EUR. Currency must match the MonetaryAccountJoint's currency. Limited to 10000 EUR.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The description of the MonetaryAccountJoint. Defaults to 'bunq account'.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**overdraft_limit:** `typing.Optional[Amount]` — The maximum Amount the MonetaryAccountJoint can be 'in the red'. Must be 0 EUR or omitted.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reason:** `typing.Optional[str]` — The reason for voluntarily cancelling (closing) the MonetaryAccountJoint, can only be OTHER. Should only be specified if updating the status to CANCELLED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reason_description:** `typing.Optional[str]` — The optional free-form reason for voluntarily cancelling (closing) the MonetaryAccountJoint. Can be any user provided message. Should only be specified if updating the status to CANCELLED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**setting:** `typing.Optional[MonetaryAccountSetting]` — The settings of the MonetaryAccountJoint.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the MonetaryAccountJoint. Ignored in POST requests (always set to ACTIVE) can be CANCELLED or PENDING_REOPEN in PUT requests to cancel (close) or reopen the MonetaryAccountJoint. When updating the status and/or sub_status no other fields can be updated in the same request (and vice versa).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sub_status:** `typing.Optional[str]` — The sub-status of the MonetaryAccountJoint providing extra information regarding the status. Should be ignored for POST requests. In case of PUT requests with status CANCELLED it can only be REDEMPTION_VOLUNTARY, while with status PENDING_REOPEN it can only be NONE. When updating the status and/or sub_status no other fields can be updated in the same request (and vice versa).
+**request:** `MonetaryAccountJoint` 
     
 </dd>
 </dl>
@@ -10784,7 +9412,7 @@ client.monetary_account_joint.create_monetary_account_joint_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.monetary_account_joint.<a href="src/fern/monetary_account_joint/client.py">read_monetary_account_joint_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account_joint.<a href="src/fern/monetary_account_joint/client.py">read_monetary_account_joint_for_user</a>(...) -> MonetaryAccountJointRead</code></summary>
 <dl>
 <dd>
 
@@ -10812,15 +9440,13 @@ The endpoint for joint monetary accounts.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account_joint.read_monetary_account_joint_for_user(
     user_id=1,
     item_id=1,
@@ -10868,7 +9494,7 @@ client.monetary_account_joint.read_monetary_account_joint_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.monetary_account_joint.<a href="src/fern/monetary_account_joint/client.py">update_monetary_account_joint_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account_joint.<a href="src/fern/monetary_account_joint/client.py">update_monetary_account_joint_for_user</a>(...) -> MonetaryAccountJointUpdate</code></summary>
 <dl>
 <dd>
 
@@ -10895,20 +9521,20 @@ The endpoint for joint monetary accounts.
 <dd>
 
 ```python
-from fern import CoOwner, FernApi
+from fern import FernApi, CoOwner
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account_joint.update_monetary_account_joint_for_user(
     user_id=1,
     item_id=1,
-    all_co_owner=[CoOwner()],
+    all_co_owner=[
+        CoOwner()
+    ],
     currency="currency",
 )
 
@@ -10942,95 +9568,7 @@ client.monetary_account_joint.update_monetary_account_joint_for_user(
 <dl>
 <dd>
 
-**all_co_owner:** `typing.Sequence[CoOwner]` — The users the account will be joint with.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**currency:** `str` — The currency of the MonetaryAccountJoint as an ISO 4217 formatted currency code.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**alias:** `typing.Optional[typing.Sequence[Pointer]]` — The Aliases to add to MonetaryAccountJoint. Must all be confirmed first. Can mostly be ignored.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**avatar_uuid:** `typing.Optional[str]` — The UUID of the Avatar of the MonetaryAccountJoint.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**daily_limit:** `typing.Optional[Amount]` — The daily spending limit Amount of the MonetaryAccountJoint. Defaults to 1000 EUR. Currency must match the MonetaryAccountJoint's currency. Limited to 10000 EUR.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The description of the MonetaryAccountJoint. Defaults to 'bunq account'.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**overdraft_limit:** `typing.Optional[Amount]` — The maximum Amount the MonetaryAccountJoint can be 'in the red'. Must be 0 EUR or omitted.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reason:** `typing.Optional[str]` — The reason for voluntarily cancelling (closing) the MonetaryAccountJoint, can only be OTHER. Should only be specified if updating the status to CANCELLED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reason_description:** `typing.Optional[str]` — The optional free-form reason for voluntarily cancelling (closing) the MonetaryAccountJoint. Can be any user provided message. Should only be specified if updating the status to CANCELLED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**setting:** `typing.Optional[MonetaryAccountSetting]` — The settings of the MonetaryAccountJoint.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the MonetaryAccountJoint. Ignored in POST requests (always set to ACTIVE) can be CANCELLED or PENDING_REOPEN in PUT requests to cancel (close) or reopen the MonetaryAccountJoint. When updating the status and/or sub_status no other fields can be updated in the same request (and vice versa).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sub_status:** `typing.Optional[str]` — The sub-status of the MonetaryAccountJoint providing extra information regarding the status. Should be ignored for POST requests. In case of PUT requests with status CANCELLED it can only be REDEMPTION_VOLUNTARY, while with status PENDING_REOPEN it can only be NONE. When updating the status and/or sub_status no other fields can be updated in the same request (and vice versa).
+**request:** `MonetaryAccountJoint` 
     
 </dd>
 </dl>
@@ -11051,7 +9589,7 @@ client.monetary_account_joint.update_monetary_account_joint_for_user(
 </details>
 
 ## monetary-account-savings
-<details><summary><code>client.monetary_account_savings.<a href="src/fern/monetary_account_savings/client.py">list_all_monetary_account_savings_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account_savings.<a href="src/fern/monetary_account_savings/client.py">list_all_monetary_account_savings_for_user</a>(...) -> typing.List[MonetaryAccountSavingsListing]</code></summary>
 <dl>
 <dd>
 
@@ -11079,15 +9617,13 @@ Gets a listing of all MonetaryAccountSavingss of a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account_savings.list_all_monetary_account_savings_for_user(
     user_id=1,
 )
@@ -11126,7 +9662,7 @@ client.monetary_account_savings.list_all_monetary_account_savings_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.monetary_account_savings.<a href="src/fern/monetary_account_savings/client.py">create_monetary_account_savings_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account_savings.<a href="src/fern/monetary_account_savings/client.py">create_monetary_account_savings_for_user</a>(...) -> MonetaryAccountSavingsCreate</code></summary>
 <dl>
 <dd>
 
@@ -11154,15 +9690,13 @@ Create new MonetaryAccountSavings.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account_savings.create_monetary_account_savings_for_user(
     user_id=1,
     currency="currency",
@@ -11190,87 +9724,7 @@ client.monetary_account_savings.create_monetary_account_savings_for_user(
 <dl>
 <dd>
 
-**currency:** `str` — The currency of the MonetaryAccountSavings as an ISO 4217 formatted currency code.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**all_co_owner:** `typing.Optional[typing.Sequence[CoOwner]]` — The users the account will be joint with.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**avatar_uuid:** `typing.Optional[str]` — The UUID of the Avatar of the MonetaryAccountSavings.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**daily_limit:** `typing.Optional[Amount]` — The daily spending limit Amount of the MonetaryAccountSavings. Defaults to 1000 EUR. Currency must match the MonetaryAccountSavings's currency. Limited to 10000 EUR.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The description of the MonetaryAccountSavings. Defaults to 'bunq account'.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reason:** `typing.Optional[str]` — The reason for voluntarily cancelling (closing) the MonetaryAccountSavings, can only be OTHER. Should only be specified if updating the status to CANCELLED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reason_description:** `typing.Optional[str]` — The optional free-form reason for voluntarily cancelling (closing) the MonetaryAccountSavings. Can be any user provided message. Should only be specified if updating the status to CANCELLED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**savings_goal:** `typing.Optional[Amount]` — The Savings Goal set for this MonetaryAccountSavings.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**setting:** `typing.Optional[MonetaryAccountSetting]` — The settings of the MonetaryAccountSavings.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the MonetaryAccountSavings. Ignored in POST requests (always set to ACTIVE) can be CANCELLED or PENDING_REOPEN in PUT requests to cancel (close) or reopen the MonetaryAccountSavings. When updating the status and/or sub_status no other fields can be updated in the same request (and vice versa).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sub_status:** `typing.Optional[str]` — The sub-status of the MonetaryAccountSavings providing extra information regarding the status. Should be ignored for POST requests. In case of PUT requests with status CANCELLED it can only be REDEMPTION_VOLUNTARY, while with status PENDING_REOPEN it can only be NONE. When updating the status and/or sub_status no other fields can be updated in the same request (and vice versa).
+**request:** `MonetaryAccountSavings` 
     
 </dd>
 </dl>
@@ -11290,7 +9744,7 @@ client.monetary_account_savings.create_monetary_account_savings_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.monetary_account_savings.<a href="src/fern/monetary_account_savings/client.py">read_monetary_account_savings_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account_savings.<a href="src/fern/monetary_account_savings/client.py">read_monetary_account_savings_for_user</a>(...) -> MonetaryAccountSavingsRead</code></summary>
 <dl>
 <dd>
 
@@ -11318,15 +9772,13 @@ Get a specific MonetaryAccountSavings.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account_savings.read_monetary_account_savings_for_user(
     user_id=1,
     item_id=1,
@@ -11374,7 +9826,7 @@ client.monetary_account_savings.read_monetary_account_savings_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.monetary_account_savings.<a href="src/fern/monetary_account_savings/client.py">update_monetary_account_savings_for_user</a>(...)</code></summary>
+<details><summary><code>client.monetary_account_savings.<a href="src/fern/monetary_account_savings/client.py">update_monetary_account_savings_for_user</a>(...) -> MonetaryAccountSavingsUpdate</code></summary>
 <dl>
 <dd>
 
@@ -11402,15 +9854,13 @@ Update a specific existing MonetaryAccountSavings.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monetary_account_savings.update_monetary_account_savings_for_user(
     user_id=1,
     item_id=1,
@@ -11447,87 +9897,7 @@ client.monetary_account_savings.update_monetary_account_savings_for_user(
 <dl>
 <dd>
 
-**currency:** `str` — The currency of the MonetaryAccountSavings as an ISO 4217 formatted currency code.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**all_co_owner:** `typing.Optional[typing.Sequence[CoOwner]]` — The users the account will be joint with.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**avatar_uuid:** `typing.Optional[str]` — The UUID of the Avatar of the MonetaryAccountSavings.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**daily_limit:** `typing.Optional[Amount]` — The daily spending limit Amount of the MonetaryAccountSavings. Defaults to 1000 EUR. Currency must match the MonetaryAccountSavings's currency. Limited to 10000 EUR.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The description of the MonetaryAccountSavings. Defaults to 'bunq account'.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reason:** `typing.Optional[str]` — The reason for voluntarily cancelling (closing) the MonetaryAccountSavings, can only be OTHER. Should only be specified if updating the status to CANCELLED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reason_description:** `typing.Optional[str]` — The optional free-form reason for voluntarily cancelling (closing) the MonetaryAccountSavings. Can be any user provided message. Should only be specified if updating the status to CANCELLED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**savings_goal:** `typing.Optional[Amount]` — The Savings Goal set for this MonetaryAccountSavings.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**setting:** `typing.Optional[MonetaryAccountSetting]` — The settings of the MonetaryAccountSavings.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the MonetaryAccountSavings. Ignored in POST requests (always set to ACTIVE) can be CANCELLED or PENDING_REOPEN in PUT requests to cancel (close) or reopen the MonetaryAccountSavings. When updating the status and/or sub_status no other fields can be updated in the same request (and vice versa).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sub_status:** `typing.Optional[str]` — The sub-status of the MonetaryAccountSavings providing extra information regarding the status. Should be ignored for POST requests. In case of PUT requests with status CANCELLED it can only be REDEMPTION_VOLUNTARY, while with status PENDING_REOPEN it can only be NONE. When updating the status and/or sub_status no other fields can be updated in the same request (and vice versa).
+**request:** `MonetaryAccountSavings` 
     
 </dd>
 </dl>
@@ -11548,7 +9918,7 @@ client.monetary_account_savings.update_monetary_account_savings_for_user(
 </details>
 
 ## note-attachment
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_bunqme_fundraiser_result</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_bunqme_fundraiser_result</a>(...) -> typing.List[NoteAttachmentBunqMeFundraiserResultListing]</code></summary>
 <dl>
 <dd>
 
@@ -11576,15 +9946,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.list_all_note_attachment_for_user_monetary_account_bunqme_fundraiser_result(
     user_id=1,
     monetary_account_id=1,
@@ -11641,7 +10009,7 @@ client.note_attachment.list_all_note_attachment_for_user_monetary_account_bunqme
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_bunqme_fundraiser_result</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_bunqme_fundraiser_result</a>(...) -> NoteAttachmentBunqMeFundraiserResultCreate</code></summary>
 <dl>
 <dd>
 
@@ -11669,15 +10037,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.create_note_attachment_for_user_monetary_account_bunqme_fundraiser_result(
     user_id=1,
     monetary_account_id=1,
@@ -11723,15 +10089,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_bunqme_f
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentBunqMeFundraiserResult` 
     
 </dd>
 </dl>
@@ -11751,7 +10109,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_bunqme_f
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_bunqme_fundraiser_result</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_bunqme_fundraiser_result</a>(...) -> NoteAttachmentBunqMeFundraiserResultRead</code></summary>
 <dl>
 <dd>
 
@@ -11779,15 +10137,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.read_note_attachment_for_user_monetary_account_bunqme_fundraiser_result(
     user_id=1,
     monetary_account_id=1,
@@ -11853,7 +10209,7 @@ client.note_attachment.read_note_attachment_for_user_monetary_account_bunqme_fun
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_bunqme_fundraiser_result</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_bunqme_fundraiser_result</a>(...) -> NoteAttachmentBunqMeFundraiserResultUpdate</code></summary>
 <dl>
 <dd>
 
@@ -11881,15 +10237,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.update_note_attachment_for_user_monetary_account_bunqme_fundraiser_result(
     user_id=1,
     monetary_account_id=1,
@@ -11944,15 +10298,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_bunqme_f
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentBunqMeFundraiserResult` 
     
 </dd>
 </dl>
@@ -11972,7 +10318,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_bunqme_f
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_bunqme_fundraiser_result</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_bunqme_fundraiser_result</a>(...) -> NoteAttachmentBunqMeFundraiserResultDelete</code></summary>
 <dl>
 <dd>
 
@@ -12000,15 +10346,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.delete_note_attachment_for_user_monetary_account_bunqme_fundraiser_result(
     user_id=1,
     monetary_account_id=1,
@@ -12074,7 +10418,7 @@ client.note_attachment.delete_note_attachment_for_user_monetary_account_bunqme_f
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_draft_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_draft_payment</a>(...) -> typing.List[NoteAttachmentDraftPaymentListing]</code></summary>
 <dl>
 <dd>
 
@@ -12102,15 +10446,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.list_all_note_attachment_for_user_monetary_account_draft_payment(
     user_id=1,
     monetary_account_id=1,
@@ -12167,7 +10509,7 @@ client.note_attachment.list_all_note_attachment_for_user_monetary_account_draft_
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_draft_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_draft_payment</a>(...) -> NoteAttachmentDraftPaymentCreate</code></summary>
 <dl>
 <dd>
 
@@ -12195,15 +10537,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.create_note_attachment_for_user_monetary_account_draft_payment(
     user_id=1,
     monetary_account_id=1,
@@ -12249,15 +10589,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_draft_pa
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentDraftPayment` 
     
 </dd>
 </dl>
@@ -12277,7 +10609,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_draft_pa
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_draft_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_draft_payment</a>(...) -> NoteAttachmentDraftPaymentRead</code></summary>
 <dl>
 <dd>
 
@@ -12305,15 +10637,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.read_note_attachment_for_user_monetary_account_draft_payment(
     user_id=1,
     monetary_account_id=1,
@@ -12379,7 +10709,7 @@ client.note_attachment.read_note_attachment_for_user_monetary_account_draft_paym
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_draft_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_draft_payment</a>(...) -> NoteAttachmentDraftPaymentUpdate</code></summary>
 <dl>
 <dd>
 
@@ -12407,15 +10737,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.update_note_attachment_for_user_monetary_account_draft_payment(
     user_id=1,
     monetary_account_id=1,
@@ -12470,15 +10798,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_draft_pa
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentDraftPayment` 
     
 </dd>
 </dl>
@@ -12498,7 +10818,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_draft_pa
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_draft_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_draft_payment</a>(...) -> NoteAttachmentDraftPaymentDelete</code></summary>
 <dl>
 <dd>
 
@@ -12526,15 +10846,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.delete_note_attachment_for_user_monetary_account_draft_payment(
     user_id=1,
     monetary_account_id=1,
@@ -12600,7 +10918,7 @@ client.note_attachment.delete_note_attachment_for_user_monetary_account_draft_pa
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_ideal_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_ideal_merchant_transaction</a>(...) -> typing.List[NoteAttachmentIdealMerchantTransactionListing]</code></summary>
 <dl>
 <dd>
 
@@ -12628,15 +10946,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.list_all_note_attachment_for_user_monetary_account_ideal_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -12693,7 +11009,7 @@ client.note_attachment.list_all_note_attachment_for_user_monetary_account_ideal_
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_ideal_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_ideal_merchant_transaction</a>(...) -> NoteAttachmentIdealMerchantTransactionCreate</code></summary>
 <dl>
 <dd>
 
@@ -12721,15 +11037,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.create_note_attachment_for_user_monetary_account_ideal_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -12775,15 +11089,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_ideal_me
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentIdealMerchantTransaction` 
     
 </dd>
 </dl>
@@ -12803,7 +11109,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_ideal_me
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_ideal_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_ideal_merchant_transaction</a>(...) -> NoteAttachmentIdealMerchantTransactionRead</code></summary>
 <dl>
 <dd>
 
@@ -12831,15 +11137,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.read_note_attachment_for_user_monetary_account_ideal_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -12905,7 +11209,7 @@ client.note_attachment.read_note_attachment_for_user_monetary_account_ideal_merc
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_ideal_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_ideal_merchant_transaction</a>(...) -> NoteAttachmentIdealMerchantTransactionUpdate</code></summary>
 <dl>
 <dd>
 
@@ -12933,15 +11237,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.update_note_attachment_for_user_monetary_account_ideal_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -12996,15 +11298,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_ideal_me
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentIdealMerchantTransaction` 
     
 </dd>
 </dl>
@@ -13024,7 +11318,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_ideal_me
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_ideal_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_ideal_merchant_transaction</a>(...) -> NoteAttachmentIdealMerchantTransactionDelete</code></summary>
 <dl>
 <dd>
 
@@ -13052,15 +11346,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.delete_note_attachment_for_user_monetary_account_ideal_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -13126,7 +11418,7 @@ client.note_attachment.delete_note_attachment_for_user_monetary_account_ideal_me
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_mastercard_action</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_mastercard_action</a>(...) -> typing.List[NoteAttachmentMasterCardActionListing]</code></summary>
 <dl>
 <dd>
 
@@ -13154,15 +11446,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.list_all_note_attachment_for_user_monetary_account_mastercard_action(
     user_id=1,
     monetary_account_id=1,
@@ -13219,7 +11509,7 @@ client.note_attachment.list_all_note_attachment_for_user_monetary_account_master
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_mastercard_action</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_mastercard_action</a>(...) -> NoteAttachmentMasterCardActionCreate</code></summary>
 <dl>
 <dd>
 
@@ -13247,15 +11537,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.create_note_attachment_for_user_monetary_account_mastercard_action(
     user_id=1,
     monetary_account_id=1,
@@ -13301,15 +11589,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_masterca
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentMasterCardAction` 
     
 </dd>
 </dl>
@@ -13329,7 +11609,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_masterca
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_mastercard_action</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_mastercard_action</a>(...) -> NoteAttachmentMasterCardActionRead</code></summary>
 <dl>
 <dd>
 
@@ -13357,15 +11637,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.read_note_attachment_for_user_monetary_account_mastercard_action(
     user_id=1,
     monetary_account_id=1,
@@ -13431,7 +11709,7 @@ client.note_attachment.read_note_attachment_for_user_monetary_account_mastercard
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_mastercard_action</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_mastercard_action</a>(...) -> NoteAttachmentMasterCardActionUpdate</code></summary>
 <dl>
 <dd>
 
@@ -13459,15 +11737,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.update_note_attachment_for_user_monetary_account_mastercard_action(
     user_id=1,
     monetary_account_id=1,
@@ -13522,15 +11798,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_masterca
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentMasterCardAction` 
     
 </dd>
 </dl>
@@ -13550,7 +11818,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_masterca
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_mastercard_action</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_mastercard_action</a>(...) -> NoteAttachmentMasterCardActionDelete</code></summary>
 <dl>
 <dd>
 
@@ -13578,15 +11846,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.delete_note_attachment_for_user_monetary_account_mastercard_action(
     user_id=1,
     monetary_account_id=1,
@@ -13652,7 +11918,7 @@ client.note_attachment.delete_note_attachment_for_user_monetary_account_masterca
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_payment_batch</a>(...) -> typing.List[NoteAttachmentPaymentBatchListing]</code></summary>
 <dl>
 <dd>
 
@@ -13680,15 +11946,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.list_all_note_attachment_for_user_monetary_account_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -13745,7 +12009,7 @@ client.note_attachment.list_all_note_attachment_for_user_monetary_account_paymen
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_payment_batch</a>(...) -> NoteAttachmentPaymentBatchCreate</code></summary>
 <dl>
 <dd>
 
@@ -13773,15 +12037,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.create_note_attachment_for_user_monetary_account_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -13827,15 +12089,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_payment_
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentPaymentBatch` 
     
 </dd>
 </dl>
@@ -13855,7 +12109,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_payment_
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_payment_batch</a>(...) -> NoteAttachmentPaymentBatchRead</code></summary>
 <dl>
 <dd>
 
@@ -13883,15 +12137,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.read_note_attachment_for_user_monetary_account_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -13957,7 +12209,7 @@ client.note_attachment.read_note_attachment_for_user_monetary_account_payment_ba
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_payment_batch</a>(...) -> NoteAttachmentPaymentBatchUpdate</code></summary>
 <dl>
 <dd>
 
@@ -13985,15 +12237,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.update_note_attachment_for_user_monetary_account_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -14048,15 +12298,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_payment_
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentPaymentBatch` 
     
 </dd>
 </dl>
@@ -14076,7 +12318,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_payment_
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_payment_batch</a>(...) -> NoteAttachmentPaymentBatchDelete</code></summary>
 <dl>
 <dd>
 
@@ -14104,15 +12346,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.delete_note_attachment_for_user_monetary_account_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -14178,7 +12418,7 @@ client.note_attachment.delete_note_attachment_for_user_monetary_account_payment_
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_payment</a>(...) -> typing.List[NoteAttachmentPaymentListing]</code></summary>
 <dl>
 <dd>
 
@@ -14206,15 +12446,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.list_all_note_attachment_for_user_monetary_account_payment(
     user_id=1,
     monetary_account_id=1,
@@ -14271,7 +12509,7 @@ client.note_attachment.list_all_note_attachment_for_user_monetary_account_paymen
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_payment</a>(...) -> NoteAttachmentPaymentCreate</code></summary>
 <dl>
 <dd>
 
@@ -14299,15 +12537,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.create_note_attachment_for_user_monetary_account_payment(
     user_id=1,
     monetary_account_id=1,
@@ -14353,15 +12589,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_payment(
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentPayment` 
     
 </dd>
 </dl>
@@ -14381,7 +12609,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_payment</a>(...) -> NoteAttachmentPaymentRead</code></summary>
 <dl>
 <dd>
 
@@ -14409,15 +12637,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.read_note_attachment_for_user_monetary_account_payment(
     user_id=1,
     monetary_account_id=1,
@@ -14483,7 +12709,7 @@ client.note_attachment.read_note_attachment_for_user_monetary_account_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_payment</a>(...) -> NoteAttachmentPaymentUpdate</code></summary>
 <dl>
 <dd>
 
@@ -14511,15 +12737,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.update_note_attachment_for_user_monetary_account_payment(
     user_id=1,
     monetary_account_id=1,
@@ -14574,15 +12798,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_payment(
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentPayment` 
     
 </dd>
 </dl>
@@ -14602,7 +12818,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_payment</a>(...) -> NoteAttachmentPaymentDelete</code></summary>
 <dl>
 <dd>
 
@@ -14630,15 +12846,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.delete_note_attachment_for_user_monetary_account_payment(
     user_id=1,
     monetary_account_id=1,
@@ -14704,7 +12918,7 @@ client.note_attachment.delete_note_attachment_for_user_monetary_account_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_request_inquiry_batch</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_request_inquiry_batch</a>(...) -> typing.List[NoteAttachmentRequestInquiryBatchListing]</code></summary>
 <dl>
 <dd>
 
@@ -14732,15 +12946,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.list_all_note_attachment_for_user_monetary_account_request_inquiry_batch(
     user_id=1,
     monetary_account_id=1,
@@ -14797,7 +13009,7 @@ client.note_attachment.list_all_note_attachment_for_user_monetary_account_reques
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_request_inquiry_batch</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_request_inquiry_batch</a>(...) -> NoteAttachmentRequestInquiryBatchCreate</code></summary>
 <dl>
 <dd>
 
@@ -14825,15 +13037,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.create_note_attachment_for_user_monetary_account_request_inquiry_batch(
     user_id=1,
     monetary_account_id=1,
@@ -14879,15 +13089,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_request_
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentRequestInquiryBatch` 
     
 </dd>
 </dl>
@@ -14907,7 +13109,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_request_
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_request_inquiry_batch</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_request_inquiry_batch</a>(...) -> NoteAttachmentRequestInquiryBatchRead</code></summary>
 <dl>
 <dd>
 
@@ -14935,15 +13137,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.read_note_attachment_for_user_monetary_account_request_inquiry_batch(
     user_id=1,
     monetary_account_id=1,
@@ -15009,7 +13209,7 @@ client.note_attachment.read_note_attachment_for_user_monetary_account_request_in
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_request_inquiry_batch</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_request_inquiry_batch</a>(...) -> NoteAttachmentRequestInquiryBatchUpdate</code></summary>
 <dl>
 <dd>
 
@@ -15037,15 +13237,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.update_note_attachment_for_user_monetary_account_request_inquiry_batch(
     user_id=1,
     monetary_account_id=1,
@@ -15100,15 +13298,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_request_
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentRequestInquiryBatch` 
     
 </dd>
 </dl>
@@ -15128,7 +13318,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_request_
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_request_inquiry_batch</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_request_inquiry_batch</a>(...) -> NoteAttachmentRequestInquiryBatchDelete</code></summary>
 <dl>
 <dd>
 
@@ -15156,15 +13346,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.delete_note_attachment_for_user_monetary_account_request_inquiry_batch(
     user_id=1,
     monetary_account_id=1,
@@ -15230,7 +13418,7 @@ client.note_attachment.delete_note_attachment_for_user_monetary_account_request_
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_request_inquiry</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_request_inquiry</a>(...) -> typing.List[NoteAttachmentRequestInquiryListing]</code></summary>
 <dl>
 <dd>
 
@@ -15258,15 +13446,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.list_all_note_attachment_for_user_monetary_account_request_inquiry(
     user_id=1,
     monetary_account_id=1,
@@ -15323,7 +13509,7 @@ client.note_attachment.list_all_note_attachment_for_user_monetary_account_reques
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_request_inquiry</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_request_inquiry</a>(...) -> NoteAttachmentRequestInquiryCreate</code></summary>
 <dl>
 <dd>
 
@@ -15351,15 +13537,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.create_note_attachment_for_user_monetary_account_request_inquiry(
     user_id=1,
     monetary_account_id=1,
@@ -15405,15 +13589,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_request_
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentRequestInquiry` 
     
 </dd>
 </dl>
@@ -15433,7 +13609,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_request_
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_request_inquiry</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_request_inquiry</a>(...) -> NoteAttachmentRequestInquiryRead</code></summary>
 <dl>
 <dd>
 
@@ -15461,15 +13637,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.read_note_attachment_for_user_monetary_account_request_inquiry(
     user_id=1,
     monetary_account_id=1,
@@ -15535,7 +13709,7 @@ client.note_attachment.read_note_attachment_for_user_monetary_account_request_in
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_request_inquiry</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_request_inquiry</a>(...) -> NoteAttachmentRequestInquiryUpdate</code></summary>
 <dl>
 <dd>
 
@@ -15563,15 +13737,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.update_note_attachment_for_user_monetary_account_request_inquiry(
     user_id=1,
     monetary_account_id=1,
@@ -15626,15 +13798,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_request_
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentRequestInquiry` 
     
 </dd>
 </dl>
@@ -15654,7 +13818,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_request_
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_request_inquiry</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_request_inquiry</a>(...) -> NoteAttachmentRequestInquiryDelete</code></summary>
 <dl>
 <dd>
 
@@ -15682,15 +13846,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.delete_note_attachment_for_user_monetary_account_request_inquiry(
     user_id=1,
     monetary_account_id=1,
@@ -15756,7 +13918,7 @@ client.note_attachment.delete_note_attachment_for_user_monetary_account_request_
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_request_response</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_request_response</a>(...) -> typing.List[NoteAttachmentRequestResponseListing]</code></summary>
 <dl>
 <dd>
 
@@ -15784,15 +13946,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.list_all_note_attachment_for_user_monetary_account_request_response(
     user_id=1,
     monetary_account_id=1,
@@ -15849,7 +14009,7 @@ client.note_attachment.list_all_note_attachment_for_user_monetary_account_reques
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_request_response</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_request_response</a>(...) -> NoteAttachmentRequestResponseCreate</code></summary>
 <dl>
 <dd>
 
@@ -15877,15 +14037,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.create_note_attachment_for_user_monetary_account_request_response(
     user_id=1,
     monetary_account_id=1,
@@ -15931,15 +14089,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_request_
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentRequestResponse` 
     
 </dd>
 </dl>
@@ -15959,7 +14109,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_request_
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_request_response</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_request_response</a>(...) -> NoteAttachmentRequestResponseRead</code></summary>
 <dl>
 <dd>
 
@@ -15987,15 +14137,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.read_note_attachment_for_user_monetary_account_request_response(
     user_id=1,
     monetary_account_id=1,
@@ -16061,7 +14209,7 @@ client.note_attachment.read_note_attachment_for_user_monetary_account_request_re
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_request_response</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_request_response</a>(...) -> NoteAttachmentRequestResponseUpdate</code></summary>
 <dl>
 <dd>
 
@@ -16089,15 +14237,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.update_note_attachment_for_user_monetary_account_request_response(
     user_id=1,
     monetary_account_id=1,
@@ -16152,15 +14298,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_request_
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentRequestResponse` 
     
 </dd>
 </dl>
@@ -16180,7 +14318,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_request_
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_request_response</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_request_response</a>(...) -> NoteAttachmentRequestResponseDelete</code></summary>
 <dl>
 <dd>
 
@@ -16208,15 +14346,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.delete_note_attachment_for_user_monetary_account_request_response(
     user_id=1,
     monetary_account_id=1,
@@ -16282,7 +14418,7 @@ client.note_attachment.delete_note_attachment_for_user_monetary_account_request_
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_schedule_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_schedule_payment_batch</a>(...) -> typing.List[NoteAttachmentSchedulePaymentBatchListing]</code></summary>
 <dl>
 <dd>
 
@@ -16310,15 +14446,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.list_all_note_attachment_for_user_monetary_account_schedule_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -16375,7 +14509,7 @@ client.note_attachment.list_all_note_attachment_for_user_monetary_account_schedu
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_schedule_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_schedule_payment_batch</a>(...) -> NoteAttachmentSchedulePaymentBatchCreate</code></summary>
 <dl>
 <dd>
 
@@ -16403,15 +14537,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.create_note_attachment_for_user_monetary_account_schedule_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -16457,15 +14589,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_schedule
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentSchedulePaymentBatch` 
     
 </dd>
 </dl>
@@ -16485,7 +14609,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_schedule
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_schedule_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_schedule_payment_batch</a>(...) -> NoteAttachmentSchedulePaymentBatchRead</code></summary>
 <dl>
 <dd>
 
@@ -16513,15 +14637,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.read_note_attachment_for_user_monetary_account_schedule_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -16587,7 +14709,7 @@ client.note_attachment.read_note_attachment_for_user_monetary_account_schedule_p
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_schedule_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_schedule_payment_batch</a>(...) -> NoteAttachmentSchedulePaymentBatchUpdate</code></summary>
 <dl>
 <dd>
 
@@ -16615,15 +14737,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.update_note_attachment_for_user_monetary_account_schedule_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -16678,15 +14798,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_schedule
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentSchedulePaymentBatch` 
     
 </dd>
 </dl>
@@ -16706,7 +14818,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_schedule
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_schedule_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_schedule_payment_batch</a>(...) -> NoteAttachmentSchedulePaymentBatchDelete</code></summary>
 <dl>
 <dd>
 
@@ -16734,15 +14846,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.delete_note_attachment_for_user_monetary_account_schedule_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -16808,7 +14918,7 @@ client.note_attachment.delete_note_attachment_for_user_monetary_account_schedule
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_schedule_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_schedule_payment</a>(...) -> typing.List[NoteAttachmentSchedulePaymentListing]</code></summary>
 <dl>
 <dd>
 
@@ -16836,15 +14946,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.list_all_note_attachment_for_user_monetary_account_schedule_payment(
     user_id=1,
     monetary_account_id=1,
@@ -16901,7 +15009,7 @@ client.note_attachment.list_all_note_attachment_for_user_monetary_account_schedu
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_schedule_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_schedule_payment</a>(...) -> NoteAttachmentSchedulePaymentCreate</code></summary>
 <dl>
 <dd>
 
@@ -16929,15 +15037,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.create_note_attachment_for_user_monetary_account_schedule_payment(
     user_id=1,
     monetary_account_id=1,
@@ -16983,15 +15089,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_schedule
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentSchedulePayment` 
     
 </dd>
 </dl>
@@ -17011,7 +15109,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_schedule
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_schedule_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_schedule_payment</a>(...) -> NoteAttachmentSchedulePaymentRead</code></summary>
 <dl>
 <dd>
 
@@ -17039,15 +15137,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.read_note_attachment_for_user_monetary_account_schedule_payment(
     user_id=1,
     monetary_account_id=1,
@@ -17113,7 +15209,7 @@ client.note_attachment.read_note_attachment_for_user_monetary_account_schedule_p
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_schedule_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_schedule_payment</a>(...) -> NoteAttachmentSchedulePaymentUpdate</code></summary>
 <dl>
 <dd>
 
@@ -17141,15 +15237,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.update_note_attachment_for_user_monetary_account_schedule_payment(
     user_id=1,
     monetary_account_id=1,
@@ -17204,15 +15298,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_schedule
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentSchedulePayment` 
     
 </dd>
 </dl>
@@ -17232,7 +15318,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_schedule
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_schedule_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_schedule_payment</a>(...) -> NoteAttachmentSchedulePaymentDelete</code></summary>
 <dl>
 <dd>
 
@@ -17260,15 +15346,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.delete_note_attachment_for_user_monetary_account_schedule_payment(
     user_id=1,
     monetary_account_id=1,
@@ -17334,7 +15418,7 @@ client.note_attachment.delete_note_attachment_for_user_monetary_account_schedule
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_schedule_schedule_instance</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_schedule_schedule_instance</a>(...) -> typing.List[NoteAttachmentScheduleInstanceListing]</code></summary>
 <dl>
 <dd>
 
@@ -17362,15 +15446,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.list_all_note_attachment_for_user_monetary_account_schedule_schedule_instance(
     user_id=1,
     monetary_account_id=1,
@@ -17436,7 +15518,7 @@ client.note_attachment.list_all_note_attachment_for_user_monetary_account_schedu
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_schedule_schedule_instance</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_schedule_schedule_instance</a>(...) -> NoteAttachmentScheduleInstanceCreate</code></summary>
 <dl>
 <dd>
 
@@ -17464,15 +15546,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.create_note_attachment_for_user_monetary_account_schedule_schedule_instance(
     user_id=1,
     monetary_account_id=1,
@@ -17527,15 +15607,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_schedule
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentScheduleInstance` 
     
 </dd>
 </dl>
@@ -17555,7 +15627,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_schedule
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_schedule_schedule_instance</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_schedule_schedule_instance</a>(...) -> NoteAttachmentScheduleInstanceRead</code></summary>
 <dl>
 <dd>
 
@@ -17583,15 +15655,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.read_note_attachment_for_user_monetary_account_schedule_schedule_instance(
     user_id=1,
     monetary_account_id=1,
@@ -17666,7 +15736,7 @@ client.note_attachment.read_note_attachment_for_user_monetary_account_schedule_s
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_schedule_schedule_instance</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_schedule_schedule_instance</a>(...) -> NoteAttachmentScheduleInstanceUpdate</code></summary>
 <dl>
 <dd>
 
@@ -17694,15 +15764,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.update_note_attachment_for_user_monetary_account_schedule_schedule_instance(
     user_id=1,
     monetary_account_id=1,
@@ -17766,15 +15834,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_schedule
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentScheduleInstance` 
     
 </dd>
 </dl>
@@ -17794,7 +15854,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_schedule
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_schedule_schedule_instance</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_schedule_schedule_instance</a>(...) -> NoteAttachmentScheduleInstanceDelete</code></summary>
 <dl>
 <dd>
 
@@ -17822,15 +15882,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.delete_note_attachment_for_user_monetary_account_schedule_schedule_instance(
     user_id=1,
     monetary_account_id=1,
@@ -17905,7 +15963,7 @@ client.note_attachment.delete_note_attachment_for_user_monetary_account_schedule
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_sofort_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_sofort_merchant_transaction</a>(...) -> typing.List[NoteAttachmentSofortMerchantTransactionListing]</code></summary>
 <dl>
 <dd>
 
@@ -17933,15 +15991,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.list_all_note_attachment_for_user_monetary_account_sofort_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -17998,7 +16054,7 @@ client.note_attachment.list_all_note_attachment_for_user_monetary_account_sofort
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_sofort_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_sofort_merchant_transaction</a>(...) -> NoteAttachmentSofortMerchantTransactionCreate</code></summary>
 <dl>
 <dd>
 
@@ -18026,15 +16082,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.create_note_attachment_for_user_monetary_account_sofort_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -18080,15 +16134,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_sofort_m
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentSofortMerchantTransaction` 
     
 </dd>
 </dl>
@@ -18108,7 +16154,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_sofort_m
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_sofort_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_sofort_merchant_transaction</a>(...) -> NoteAttachmentSofortMerchantTransactionRead</code></summary>
 <dl>
 <dd>
 
@@ -18136,15 +16182,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.read_note_attachment_for_user_monetary_account_sofort_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -18210,7 +16254,7 @@ client.note_attachment.read_note_attachment_for_user_monetary_account_sofort_mer
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_sofort_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_sofort_merchant_transaction</a>(...) -> NoteAttachmentSofortMerchantTransactionUpdate</code></summary>
 <dl>
 <dd>
 
@@ -18238,15 +16282,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.update_note_attachment_for_user_monetary_account_sofort_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -18301,15 +16343,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_sofort_m
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentSofortMerchantTransaction` 
     
 </dd>
 </dl>
@@ -18329,7 +16363,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_sofort_m
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_sofort_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_sofort_merchant_transaction</a>(...) -> NoteAttachmentSofortMerchantTransactionDelete</code></summary>
 <dl>
 <dd>
 
@@ -18357,15 +16391,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.delete_note_attachment_for_user_monetary_account_sofort_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -18431,7 +16463,7 @@ client.note_attachment.delete_note_attachment_for_user_monetary_account_sofort_m
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_switch_service_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_switch_service_payment</a>(...) -> typing.List[NoteAttachmentBankSwitchServiceNetherlandsIncomingPaymentListing]</code></summary>
 <dl>
 <dd>
 
@@ -18459,15 +16491,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.list_all_note_attachment_for_user_monetary_account_switch_service_payment(
     user_id=1,
     monetary_account_id=1,
@@ -18524,7 +16554,7 @@ client.note_attachment.list_all_note_attachment_for_user_monetary_account_switch
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_switch_service_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_switch_service_payment</a>(...) -> NoteAttachmentBankSwitchServiceNetherlandsIncomingPaymentCreate</code></summary>
 <dl>
 <dd>
 
@@ -18552,15 +16582,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.create_note_attachment_for_user_monetary_account_switch_service_payment(
     user_id=1,
     monetary_account_id=1,
@@ -18606,15 +16634,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_switch_s
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentBankSwitchServiceNetherlandsIncomingPayment` 
     
 </dd>
 </dl>
@@ -18634,7 +16654,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_switch_s
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_switch_service_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_switch_service_payment</a>(...) -> NoteAttachmentBankSwitchServiceNetherlandsIncomingPaymentRead</code></summary>
 <dl>
 <dd>
 
@@ -18662,15 +16682,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.read_note_attachment_for_user_monetary_account_switch_service_payment(
     user_id=1,
     monetary_account_id=1,
@@ -18736,7 +16754,7 @@ client.note_attachment.read_note_attachment_for_user_monetary_account_switch_ser
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_switch_service_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_switch_service_payment</a>(...) -> NoteAttachmentBankSwitchServiceNetherlandsIncomingPaymentUpdate</code></summary>
 <dl>
 <dd>
 
@@ -18764,15 +16782,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.update_note_attachment_for_user_monetary_account_switch_service_payment(
     user_id=1,
     monetary_account_id=1,
@@ -18827,15 +16843,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_switch_s
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentBankSwitchServiceNetherlandsIncomingPayment` 
     
 </dd>
 </dl>
@@ -18855,7 +16863,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_switch_s
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_switch_service_payment</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_switch_service_payment</a>(...) -> NoteAttachmentBankSwitchServiceNetherlandsIncomingPaymentDelete</code></summary>
 <dl>
 <dd>
 
@@ -18883,15 +16891,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.delete_note_attachment_for_user_monetary_account_switch_service_payment(
     user_id=1,
     monetary_account_id=1,
@@ -18957,7 +16963,7 @@ client.note_attachment.delete_note_attachment_for_user_monetary_account_switch_s
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_whitelist_whitelist_result</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">list_all_note_attachment_for_user_monetary_account_whitelist_whitelist_result</a>(...) -> typing.List[NoteAttachmentWhitelistResultListing]</code></summary>
 <dl>
 <dd>
 
@@ -18985,15 +16991,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.list_all_note_attachment_for_user_monetary_account_whitelist_whitelist_result(
     user_id=1,
     monetary_account_id=1,
@@ -19059,7 +17063,7 @@ client.note_attachment.list_all_note_attachment_for_user_monetary_account_whitel
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_whitelist_whitelist_result</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">create_note_attachment_for_user_monetary_account_whitelist_whitelist_result</a>(...) -> NoteAttachmentWhitelistResultCreate</code></summary>
 <dl>
 <dd>
 
@@ -19087,15 +17091,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.create_note_attachment_for_user_monetary_account_whitelist_whitelist_result(
     user_id=1,
     monetary_account_id=1,
@@ -19150,15 +17152,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_whitelis
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentWhitelistResult` 
     
 </dd>
 </dl>
@@ -19178,7 +17172,7 @@ client.note_attachment.create_note_attachment_for_user_monetary_account_whitelis
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_whitelist_whitelist_result</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">read_note_attachment_for_user_monetary_account_whitelist_whitelist_result</a>(...) -> NoteAttachmentWhitelistResultRead</code></summary>
 <dl>
 <dd>
 
@@ -19206,15 +17200,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.read_note_attachment_for_user_monetary_account_whitelist_whitelist_result(
     user_id=1,
     monetary_account_id=1,
@@ -19289,7 +17281,7 @@ client.note_attachment.read_note_attachment_for_user_monetary_account_whitelist_
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_whitelist_whitelist_result</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">update_note_attachment_for_user_monetary_account_whitelist_whitelist_result</a>(...) -> NoteAttachmentWhitelistResultUpdate</code></summary>
 <dl>
 <dd>
 
@@ -19317,15 +17309,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.update_note_attachment_for_user_monetary_account_whitelist_whitelist_result(
     user_id=1,
     monetary_account_id=1,
@@ -19389,15 +17379,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_whitelis
 <dl>
 <dd>
 
-**attachment_id:** `int` — The reference to the uploaded file to attach to this note.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Optional description of the attachment.
+**request:** `NoteAttachmentWhitelistResult` 
     
 </dd>
 </dl>
@@ -19417,7 +17399,7 @@ client.note_attachment.update_note_attachment_for_user_monetary_account_whitelis
 </dl>
 </details>
 
-<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_whitelist_whitelist_result</a>(...)</code></summary>
+<details><summary><code>client.note_attachment.<a href="src/fern/note_attachment/client.py">delete_note_attachment_for_user_monetary_account_whitelist_whitelist_result</a>(...) -> NoteAttachmentWhitelistResultDelete</code></summary>
 <dl>
 <dd>
 
@@ -19445,15 +17427,13 @@ Used to manage attachment notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_attachment.delete_note_attachment_for_user_monetary_account_whitelist_whitelist_result(
     user_id=1,
     monetary_account_id=1,
@@ -19529,7 +17509,7 @@ client.note_attachment.delete_note_attachment_for_user_monetary_account_whitelis
 </details>
 
 ## note-text
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_bunqme_fundraiser_result</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_bunqme_fundraiser_result</a>(...) -> typing.List[NoteTextBunqMeFundraiserResultListing]</code></summary>
 <dl>
 <dd>
 
@@ -19557,15 +17537,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.list_all_note_text_for_user_monetary_account_bunqme_fundraiser_result(
     user_id=1,
     monetary_account_id=1,
@@ -19622,7 +17600,7 @@ client.note_text.list_all_note_text_for_user_monetary_account_bunqme_fundraiser_
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_bunqme_fundraiser_result</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_bunqme_fundraiser_result</a>(...) -> NoteTextBunqMeFundraiserResultCreate</code></summary>
 <dl>
 <dd>
 
@@ -19650,15 +17628,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.create_note_text_for_user_monetary_account_bunqme_fundraiser_result(
     user_id=1,
     monetary_account_id=1,
@@ -19703,7 +17679,7 @@ client.note_text.create_note_text_for_user_monetary_account_bunqme_fundraiser_re
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextBunqMeFundraiserResult` 
     
 </dd>
 </dl>
@@ -19723,7 +17699,7 @@ client.note_text.create_note_text_for_user_monetary_account_bunqme_fundraiser_re
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_bunqme_fundraiser_result</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_bunqme_fundraiser_result</a>(...) -> NoteTextBunqMeFundraiserResultRead</code></summary>
 <dl>
 <dd>
 
@@ -19751,15 +17727,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.read_note_text_for_user_monetary_account_bunqme_fundraiser_result(
     user_id=1,
     monetary_account_id=1,
@@ -19825,7 +17799,7 @@ client.note_text.read_note_text_for_user_monetary_account_bunqme_fundraiser_resu
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_bunqme_fundraiser_result</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_bunqme_fundraiser_result</a>(...) -> NoteTextBunqMeFundraiserResultUpdate</code></summary>
 <dl>
 <dd>
 
@@ -19853,15 +17827,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.update_note_text_for_user_monetary_account_bunqme_fundraiser_result(
     user_id=1,
     monetary_account_id=1,
@@ -19915,7 +17887,7 @@ client.note_text.update_note_text_for_user_monetary_account_bunqme_fundraiser_re
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextBunqMeFundraiserResult` 
     
 </dd>
 </dl>
@@ -19935,7 +17907,7 @@ client.note_text.update_note_text_for_user_monetary_account_bunqme_fundraiser_re
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_bunqme_fundraiser_result</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_bunqme_fundraiser_result</a>(...) -> NoteTextBunqMeFundraiserResultDelete</code></summary>
 <dl>
 <dd>
 
@@ -19963,15 +17935,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.delete_note_text_for_user_monetary_account_bunqme_fundraiser_result(
     user_id=1,
     monetary_account_id=1,
@@ -20037,7 +18007,7 @@ client.note_text.delete_note_text_for_user_monetary_account_bunqme_fundraiser_re
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_draft_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_draft_payment</a>(...) -> typing.List[NoteTextDraftPaymentListing]</code></summary>
 <dl>
 <dd>
 
@@ -20065,15 +18035,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.list_all_note_text_for_user_monetary_account_draft_payment(
     user_id=1,
     monetary_account_id=1,
@@ -20130,7 +18098,7 @@ client.note_text.list_all_note_text_for_user_monetary_account_draft_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_draft_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_draft_payment</a>(...) -> NoteTextDraftPaymentCreate</code></summary>
 <dl>
 <dd>
 
@@ -20158,15 +18126,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.create_note_text_for_user_monetary_account_draft_payment(
     user_id=1,
     monetary_account_id=1,
@@ -20211,7 +18177,7 @@ client.note_text.create_note_text_for_user_monetary_account_draft_payment(
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextDraftPayment` 
     
 </dd>
 </dl>
@@ -20231,7 +18197,7 @@ client.note_text.create_note_text_for_user_monetary_account_draft_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_draft_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_draft_payment</a>(...) -> NoteTextDraftPaymentRead</code></summary>
 <dl>
 <dd>
 
@@ -20259,15 +18225,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.read_note_text_for_user_monetary_account_draft_payment(
     user_id=1,
     monetary_account_id=1,
@@ -20333,7 +18297,7 @@ client.note_text.read_note_text_for_user_monetary_account_draft_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_draft_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_draft_payment</a>(...) -> NoteTextDraftPaymentUpdate</code></summary>
 <dl>
 <dd>
 
@@ -20361,15 +18325,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.update_note_text_for_user_monetary_account_draft_payment(
     user_id=1,
     monetary_account_id=1,
@@ -20423,7 +18385,7 @@ client.note_text.update_note_text_for_user_monetary_account_draft_payment(
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextDraftPayment` 
     
 </dd>
 </dl>
@@ -20443,7 +18405,7 @@ client.note_text.update_note_text_for_user_monetary_account_draft_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_draft_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_draft_payment</a>(...) -> NoteTextDraftPaymentDelete</code></summary>
 <dl>
 <dd>
 
@@ -20471,15 +18433,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.delete_note_text_for_user_monetary_account_draft_payment(
     user_id=1,
     monetary_account_id=1,
@@ -20545,7 +18505,7 @@ client.note_text.delete_note_text_for_user_monetary_account_draft_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_ideal_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_ideal_merchant_transaction</a>(...) -> typing.List[NoteTextIdealMerchantTransactionListing]</code></summary>
 <dl>
 <dd>
 
@@ -20573,15 +18533,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.list_all_note_text_for_user_monetary_account_ideal_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -20638,7 +18596,7 @@ client.note_text.list_all_note_text_for_user_monetary_account_ideal_merchant_tra
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_ideal_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_ideal_merchant_transaction</a>(...) -> NoteTextIdealMerchantTransactionCreate</code></summary>
 <dl>
 <dd>
 
@@ -20666,15 +18624,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.create_note_text_for_user_monetary_account_ideal_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -20719,7 +18675,7 @@ client.note_text.create_note_text_for_user_monetary_account_ideal_merchant_trans
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextIdealMerchantTransaction` 
     
 </dd>
 </dl>
@@ -20739,7 +18695,7 @@ client.note_text.create_note_text_for_user_monetary_account_ideal_merchant_trans
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_ideal_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_ideal_merchant_transaction</a>(...) -> NoteTextIdealMerchantTransactionRead</code></summary>
 <dl>
 <dd>
 
@@ -20767,15 +18723,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.read_note_text_for_user_monetary_account_ideal_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -20841,7 +18795,7 @@ client.note_text.read_note_text_for_user_monetary_account_ideal_merchant_transac
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_ideal_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_ideal_merchant_transaction</a>(...) -> NoteTextIdealMerchantTransactionUpdate</code></summary>
 <dl>
 <dd>
 
@@ -20869,15 +18823,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.update_note_text_for_user_monetary_account_ideal_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -20931,7 +18883,7 @@ client.note_text.update_note_text_for_user_monetary_account_ideal_merchant_trans
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextIdealMerchantTransaction` 
     
 </dd>
 </dl>
@@ -20951,7 +18903,7 @@ client.note_text.update_note_text_for_user_monetary_account_ideal_merchant_trans
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_ideal_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_ideal_merchant_transaction</a>(...) -> NoteTextIdealMerchantTransactionDelete</code></summary>
 <dl>
 <dd>
 
@@ -20979,15 +18931,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.delete_note_text_for_user_monetary_account_ideal_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -21053,7 +19003,7 @@ client.note_text.delete_note_text_for_user_monetary_account_ideal_merchant_trans
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_mastercard_action</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_mastercard_action</a>(...) -> typing.List[NoteTextMasterCardActionListing]</code></summary>
 <dl>
 <dd>
 
@@ -21081,15 +19031,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.list_all_note_text_for_user_monetary_account_mastercard_action(
     user_id=1,
     monetary_account_id=1,
@@ -21146,7 +19094,7 @@ client.note_text.list_all_note_text_for_user_monetary_account_mastercard_action(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_mastercard_action</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_mastercard_action</a>(...) -> NoteTextMasterCardActionCreate</code></summary>
 <dl>
 <dd>
 
@@ -21174,15 +19122,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.create_note_text_for_user_monetary_account_mastercard_action(
     user_id=1,
     monetary_account_id=1,
@@ -21227,7 +19173,7 @@ client.note_text.create_note_text_for_user_monetary_account_mastercard_action(
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextMasterCardAction` 
     
 </dd>
 </dl>
@@ -21247,7 +19193,7 @@ client.note_text.create_note_text_for_user_monetary_account_mastercard_action(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_mastercard_action</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_mastercard_action</a>(...) -> NoteTextMasterCardActionRead</code></summary>
 <dl>
 <dd>
 
@@ -21275,15 +19221,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.read_note_text_for_user_monetary_account_mastercard_action(
     user_id=1,
     monetary_account_id=1,
@@ -21349,7 +19293,7 @@ client.note_text.read_note_text_for_user_monetary_account_mastercard_action(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_mastercard_action</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_mastercard_action</a>(...) -> NoteTextMasterCardActionUpdate</code></summary>
 <dl>
 <dd>
 
@@ -21377,15 +19321,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.update_note_text_for_user_monetary_account_mastercard_action(
     user_id=1,
     monetary_account_id=1,
@@ -21439,7 +19381,7 @@ client.note_text.update_note_text_for_user_monetary_account_mastercard_action(
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextMasterCardAction` 
     
 </dd>
 </dl>
@@ -21459,7 +19401,7 @@ client.note_text.update_note_text_for_user_monetary_account_mastercard_action(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_mastercard_action</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_mastercard_action</a>(...) -> NoteTextMasterCardActionDelete</code></summary>
 <dl>
 <dd>
 
@@ -21487,15 +19429,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.delete_note_text_for_user_monetary_account_mastercard_action(
     user_id=1,
     monetary_account_id=1,
@@ -21561,7 +19501,7 @@ client.note_text.delete_note_text_for_user_monetary_account_mastercard_action(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_payment_batch</a>(...) -> typing.List[NoteTextPaymentBatchListing]</code></summary>
 <dl>
 <dd>
 
@@ -21589,15 +19529,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.list_all_note_text_for_user_monetary_account_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -21654,7 +19592,7 @@ client.note_text.list_all_note_text_for_user_monetary_account_payment_batch(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_payment_batch</a>(...) -> NoteTextPaymentBatchCreate</code></summary>
 <dl>
 <dd>
 
@@ -21682,15 +19620,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.create_note_text_for_user_monetary_account_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -21735,7 +19671,7 @@ client.note_text.create_note_text_for_user_monetary_account_payment_batch(
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextPaymentBatch` 
     
 </dd>
 </dl>
@@ -21755,7 +19691,7 @@ client.note_text.create_note_text_for_user_monetary_account_payment_batch(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_payment_batch</a>(...) -> NoteTextPaymentBatchRead</code></summary>
 <dl>
 <dd>
 
@@ -21783,15 +19719,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.read_note_text_for_user_monetary_account_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -21857,7 +19791,7 @@ client.note_text.read_note_text_for_user_monetary_account_payment_batch(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_payment_batch</a>(...) -> NoteTextPaymentBatchUpdate</code></summary>
 <dl>
 <dd>
 
@@ -21885,15 +19819,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.update_note_text_for_user_monetary_account_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -21947,7 +19879,7 @@ client.note_text.update_note_text_for_user_monetary_account_payment_batch(
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextPaymentBatch` 
     
 </dd>
 </dl>
@@ -21967,7 +19899,7 @@ client.note_text.update_note_text_for_user_monetary_account_payment_batch(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_payment_batch</a>(...) -> NoteTextPaymentBatchDelete</code></summary>
 <dl>
 <dd>
 
@@ -21995,15 +19927,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.delete_note_text_for_user_monetary_account_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -22069,7 +19999,7 @@ client.note_text.delete_note_text_for_user_monetary_account_payment_batch(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_payment</a>(...) -> typing.List[NoteTextPaymentListing]</code></summary>
 <dl>
 <dd>
 
@@ -22097,15 +20027,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.list_all_note_text_for_user_monetary_account_payment(
     user_id=1,
     monetary_account_id=1,
@@ -22162,7 +20090,7 @@ client.note_text.list_all_note_text_for_user_monetary_account_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_payment</a>(...) -> NoteTextPaymentCreate</code></summary>
 <dl>
 <dd>
 
@@ -22190,15 +20118,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.create_note_text_for_user_monetary_account_payment(
     user_id=1,
     monetary_account_id=1,
@@ -22243,7 +20169,7 @@ client.note_text.create_note_text_for_user_monetary_account_payment(
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextPayment` 
     
 </dd>
 </dl>
@@ -22263,7 +20189,7 @@ client.note_text.create_note_text_for_user_monetary_account_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_payment</a>(...) -> NoteTextPaymentRead</code></summary>
 <dl>
 <dd>
 
@@ -22291,15 +20217,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.read_note_text_for_user_monetary_account_payment(
     user_id=1,
     monetary_account_id=1,
@@ -22365,7 +20289,7 @@ client.note_text.read_note_text_for_user_monetary_account_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_payment</a>(...) -> NoteTextPaymentUpdate</code></summary>
 <dl>
 <dd>
 
@@ -22393,15 +20317,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.update_note_text_for_user_monetary_account_payment(
     user_id=1,
     monetary_account_id=1,
@@ -22455,7 +20377,7 @@ client.note_text.update_note_text_for_user_monetary_account_payment(
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextPayment` 
     
 </dd>
 </dl>
@@ -22475,7 +20397,7 @@ client.note_text.update_note_text_for_user_monetary_account_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_payment</a>(...) -> NoteTextPaymentDelete</code></summary>
 <dl>
 <dd>
 
@@ -22503,15 +20425,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.delete_note_text_for_user_monetary_account_payment(
     user_id=1,
     monetary_account_id=1,
@@ -22577,7 +20497,7 @@ client.note_text.delete_note_text_for_user_monetary_account_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_request_inquiry_batch</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_request_inquiry_batch</a>(...) -> typing.List[NoteTextRequestInquiryBatchListing]</code></summary>
 <dl>
 <dd>
 
@@ -22605,15 +20525,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.list_all_note_text_for_user_monetary_account_request_inquiry_batch(
     user_id=1,
     monetary_account_id=1,
@@ -22670,7 +20588,7 @@ client.note_text.list_all_note_text_for_user_monetary_account_request_inquiry_ba
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_request_inquiry_batch</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_request_inquiry_batch</a>(...) -> NoteTextRequestInquiryBatchCreate</code></summary>
 <dl>
 <dd>
 
@@ -22698,15 +20616,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.create_note_text_for_user_monetary_account_request_inquiry_batch(
     user_id=1,
     monetary_account_id=1,
@@ -22751,7 +20667,7 @@ client.note_text.create_note_text_for_user_monetary_account_request_inquiry_batc
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextRequestInquiryBatch` 
     
 </dd>
 </dl>
@@ -22771,7 +20687,7 @@ client.note_text.create_note_text_for_user_monetary_account_request_inquiry_batc
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_request_inquiry_batch</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_request_inquiry_batch</a>(...) -> NoteTextRequestInquiryBatchRead</code></summary>
 <dl>
 <dd>
 
@@ -22799,15 +20715,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.read_note_text_for_user_monetary_account_request_inquiry_batch(
     user_id=1,
     monetary_account_id=1,
@@ -22873,7 +20787,7 @@ client.note_text.read_note_text_for_user_monetary_account_request_inquiry_batch(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_request_inquiry_batch</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_request_inquiry_batch</a>(...) -> NoteTextRequestInquiryBatchUpdate</code></summary>
 <dl>
 <dd>
 
@@ -22901,15 +20815,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.update_note_text_for_user_monetary_account_request_inquiry_batch(
     user_id=1,
     monetary_account_id=1,
@@ -22963,7 +20875,7 @@ client.note_text.update_note_text_for_user_monetary_account_request_inquiry_batc
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextRequestInquiryBatch` 
     
 </dd>
 </dl>
@@ -22983,7 +20895,7 @@ client.note_text.update_note_text_for_user_monetary_account_request_inquiry_batc
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_request_inquiry_batch</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_request_inquiry_batch</a>(...) -> NoteTextRequestInquiryBatchDelete</code></summary>
 <dl>
 <dd>
 
@@ -23011,15 +20923,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.delete_note_text_for_user_monetary_account_request_inquiry_batch(
     user_id=1,
     monetary_account_id=1,
@@ -23085,7 +20995,7 @@ client.note_text.delete_note_text_for_user_monetary_account_request_inquiry_batc
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_request_inquiry</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_request_inquiry</a>(...) -> typing.List[NoteTextRequestInquiryListing]</code></summary>
 <dl>
 <dd>
 
@@ -23113,15 +21023,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.list_all_note_text_for_user_monetary_account_request_inquiry(
     user_id=1,
     monetary_account_id=1,
@@ -23178,7 +21086,7 @@ client.note_text.list_all_note_text_for_user_monetary_account_request_inquiry(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_request_inquiry</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_request_inquiry</a>(...) -> NoteTextRequestInquiryCreate</code></summary>
 <dl>
 <dd>
 
@@ -23206,15 +21114,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.create_note_text_for_user_monetary_account_request_inquiry(
     user_id=1,
     monetary_account_id=1,
@@ -23259,7 +21165,7 @@ client.note_text.create_note_text_for_user_monetary_account_request_inquiry(
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextRequestInquiry` 
     
 </dd>
 </dl>
@@ -23279,7 +21185,7 @@ client.note_text.create_note_text_for_user_monetary_account_request_inquiry(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_request_inquiry</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_request_inquiry</a>(...) -> NoteTextRequestInquiryRead</code></summary>
 <dl>
 <dd>
 
@@ -23307,15 +21213,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.read_note_text_for_user_monetary_account_request_inquiry(
     user_id=1,
     monetary_account_id=1,
@@ -23381,7 +21285,7 @@ client.note_text.read_note_text_for_user_monetary_account_request_inquiry(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_request_inquiry</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_request_inquiry</a>(...) -> NoteTextRequestInquiryUpdate</code></summary>
 <dl>
 <dd>
 
@@ -23409,15 +21313,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.update_note_text_for_user_monetary_account_request_inquiry(
     user_id=1,
     monetary_account_id=1,
@@ -23471,7 +21373,7 @@ client.note_text.update_note_text_for_user_monetary_account_request_inquiry(
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextRequestInquiry` 
     
 </dd>
 </dl>
@@ -23491,7 +21393,7 @@ client.note_text.update_note_text_for_user_monetary_account_request_inquiry(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_request_inquiry</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_request_inquiry</a>(...) -> NoteTextRequestInquiryDelete</code></summary>
 <dl>
 <dd>
 
@@ -23519,15 +21421,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.delete_note_text_for_user_monetary_account_request_inquiry(
     user_id=1,
     monetary_account_id=1,
@@ -23593,7 +21493,7 @@ client.note_text.delete_note_text_for_user_monetary_account_request_inquiry(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_request_response</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_request_response</a>(...) -> typing.List[NoteTextRequestResponseListing]</code></summary>
 <dl>
 <dd>
 
@@ -23621,15 +21521,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.list_all_note_text_for_user_monetary_account_request_response(
     user_id=1,
     monetary_account_id=1,
@@ -23686,7 +21584,7 @@ client.note_text.list_all_note_text_for_user_monetary_account_request_response(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_request_response</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_request_response</a>(...) -> NoteTextRequestResponseCreate</code></summary>
 <dl>
 <dd>
 
@@ -23714,15 +21612,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.create_note_text_for_user_monetary_account_request_response(
     user_id=1,
     monetary_account_id=1,
@@ -23767,7 +21663,7 @@ client.note_text.create_note_text_for_user_monetary_account_request_response(
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextRequestResponse` 
     
 </dd>
 </dl>
@@ -23787,7 +21683,7 @@ client.note_text.create_note_text_for_user_monetary_account_request_response(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_request_response</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_request_response</a>(...) -> NoteTextRequestResponseRead</code></summary>
 <dl>
 <dd>
 
@@ -23815,15 +21711,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.read_note_text_for_user_monetary_account_request_response(
     user_id=1,
     monetary_account_id=1,
@@ -23889,7 +21783,7 @@ client.note_text.read_note_text_for_user_monetary_account_request_response(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_request_response</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_request_response</a>(...) -> NoteTextRequestResponseUpdate</code></summary>
 <dl>
 <dd>
 
@@ -23917,15 +21811,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.update_note_text_for_user_monetary_account_request_response(
     user_id=1,
     monetary_account_id=1,
@@ -23979,7 +21871,7 @@ client.note_text.update_note_text_for_user_monetary_account_request_response(
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextRequestResponse` 
     
 </dd>
 </dl>
@@ -23999,7 +21891,7 @@ client.note_text.update_note_text_for_user_monetary_account_request_response(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_request_response</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_request_response</a>(...) -> NoteTextRequestResponseDelete</code></summary>
 <dl>
 <dd>
 
@@ -24027,15 +21919,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.delete_note_text_for_user_monetary_account_request_response(
     user_id=1,
     monetary_account_id=1,
@@ -24101,7 +21991,7 @@ client.note_text.delete_note_text_for_user_monetary_account_request_response(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_schedule_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_schedule_payment_batch</a>(...) -> typing.List[NoteTextSchedulePaymentBatchListing]</code></summary>
 <dl>
 <dd>
 
@@ -24129,15 +22019,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.list_all_note_text_for_user_monetary_account_schedule_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -24194,7 +22082,7 @@ client.note_text.list_all_note_text_for_user_monetary_account_schedule_payment_b
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_schedule_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_schedule_payment_batch</a>(...) -> NoteTextSchedulePaymentBatchCreate</code></summary>
 <dl>
 <dd>
 
@@ -24222,15 +22110,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.create_note_text_for_user_monetary_account_schedule_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -24275,7 +22161,7 @@ client.note_text.create_note_text_for_user_monetary_account_schedule_payment_bat
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextSchedulePaymentBatch` 
     
 </dd>
 </dl>
@@ -24295,7 +22181,7 @@ client.note_text.create_note_text_for_user_monetary_account_schedule_payment_bat
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_schedule_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_schedule_payment_batch</a>(...) -> NoteTextSchedulePaymentBatchRead</code></summary>
 <dl>
 <dd>
 
@@ -24323,15 +22209,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.read_note_text_for_user_monetary_account_schedule_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -24397,7 +22281,7 @@ client.note_text.read_note_text_for_user_monetary_account_schedule_payment_batch
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_schedule_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_schedule_payment_batch</a>(...) -> NoteTextSchedulePaymentBatchUpdate</code></summary>
 <dl>
 <dd>
 
@@ -24425,15 +22309,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.update_note_text_for_user_monetary_account_schedule_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -24487,7 +22369,7 @@ client.note_text.update_note_text_for_user_monetary_account_schedule_payment_bat
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextSchedulePaymentBatch` 
     
 </dd>
 </dl>
@@ -24507,7 +22389,7 @@ client.note_text.update_note_text_for_user_monetary_account_schedule_payment_bat
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_schedule_payment_batch</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_schedule_payment_batch</a>(...) -> NoteTextSchedulePaymentBatchDelete</code></summary>
 <dl>
 <dd>
 
@@ -24535,15 +22417,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.delete_note_text_for_user_monetary_account_schedule_payment_batch(
     user_id=1,
     monetary_account_id=1,
@@ -24609,7 +22489,7 @@ client.note_text.delete_note_text_for_user_monetary_account_schedule_payment_bat
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_schedule_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_schedule_payment</a>(...) -> typing.List[NoteTextSchedulePaymentListing]</code></summary>
 <dl>
 <dd>
 
@@ -24637,15 +22517,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.list_all_note_text_for_user_monetary_account_schedule_payment(
     user_id=1,
     monetary_account_id=1,
@@ -24702,7 +22580,7 @@ client.note_text.list_all_note_text_for_user_monetary_account_schedule_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_schedule_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_schedule_payment</a>(...) -> NoteTextSchedulePaymentCreate</code></summary>
 <dl>
 <dd>
 
@@ -24730,15 +22608,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.create_note_text_for_user_monetary_account_schedule_payment(
     user_id=1,
     monetary_account_id=1,
@@ -24783,7 +22659,7 @@ client.note_text.create_note_text_for_user_monetary_account_schedule_payment(
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextSchedulePayment` 
     
 </dd>
 </dl>
@@ -24803,7 +22679,7 @@ client.note_text.create_note_text_for_user_monetary_account_schedule_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_schedule_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_schedule_payment</a>(...) -> NoteTextSchedulePaymentRead</code></summary>
 <dl>
 <dd>
 
@@ -24831,15 +22707,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.read_note_text_for_user_monetary_account_schedule_payment(
     user_id=1,
     monetary_account_id=1,
@@ -24905,7 +22779,7 @@ client.note_text.read_note_text_for_user_monetary_account_schedule_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_schedule_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_schedule_payment</a>(...) -> NoteTextSchedulePaymentUpdate</code></summary>
 <dl>
 <dd>
 
@@ -24933,15 +22807,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.update_note_text_for_user_monetary_account_schedule_payment(
     user_id=1,
     monetary_account_id=1,
@@ -24995,7 +22867,7 @@ client.note_text.update_note_text_for_user_monetary_account_schedule_payment(
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextSchedulePayment` 
     
 </dd>
 </dl>
@@ -25015,7 +22887,7 @@ client.note_text.update_note_text_for_user_monetary_account_schedule_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_schedule_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_schedule_payment</a>(...) -> NoteTextSchedulePaymentDelete</code></summary>
 <dl>
 <dd>
 
@@ -25043,15 +22915,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.delete_note_text_for_user_monetary_account_schedule_payment(
     user_id=1,
     monetary_account_id=1,
@@ -25117,7 +22987,7 @@ client.note_text.delete_note_text_for_user_monetary_account_schedule_payment(
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_schedule_schedule_instance</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_schedule_schedule_instance</a>(...) -> typing.List[NoteTextScheduleInstanceListing]</code></summary>
 <dl>
 <dd>
 
@@ -25145,15 +23015,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.list_all_note_text_for_user_monetary_account_schedule_schedule_instance(
     user_id=1,
     monetary_account_id=1,
@@ -25219,7 +23087,7 @@ client.note_text.list_all_note_text_for_user_monetary_account_schedule_schedule_
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_schedule_schedule_instance</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_schedule_schedule_instance</a>(...) -> NoteTextScheduleInstanceCreate</code></summary>
 <dl>
 <dd>
 
@@ -25247,15 +23115,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.create_note_text_for_user_monetary_account_schedule_schedule_instance(
     user_id=1,
     monetary_account_id=1,
@@ -25309,7 +23175,7 @@ client.note_text.create_note_text_for_user_monetary_account_schedule_schedule_in
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextScheduleInstance` 
     
 </dd>
 </dl>
@@ -25329,7 +23195,7 @@ client.note_text.create_note_text_for_user_monetary_account_schedule_schedule_in
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_schedule_schedule_instance</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_schedule_schedule_instance</a>(...) -> NoteTextScheduleInstanceRead</code></summary>
 <dl>
 <dd>
 
@@ -25357,15 +23223,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.read_note_text_for_user_monetary_account_schedule_schedule_instance(
     user_id=1,
     monetary_account_id=1,
@@ -25440,7 +23304,7 @@ client.note_text.read_note_text_for_user_monetary_account_schedule_schedule_inst
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_schedule_schedule_instance</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_schedule_schedule_instance</a>(...) -> NoteTextScheduleInstanceUpdate</code></summary>
 <dl>
 <dd>
 
@@ -25468,15 +23332,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.update_note_text_for_user_monetary_account_schedule_schedule_instance(
     user_id=1,
     monetary_account_id=1,
@@ -25539,7 +23401,7 @@ client.note_text.update_note_text_for_user_monetary_account_schedule_schedule_in
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextScheduleInstance` 
     
 </dd>
 </dl>
@@ -25559,7 +23421,7 @@ client.note_text.update_note_text_for_user_monetary_account_schedule_schedule_in
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_schedule_schedule_instance</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_schedule_schedule_instance</a>(...) -> NoteTextScheduleInstanceDelete</code></summary>
 <dl>
 <dd>
 
@@ -25587,15 +23449,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.delete_note_text_for_user_monetary_account_schedule_schedule_instance(
     user_id=1,
     monetary_account_id=1,
@@ -25670,7 +23530,7 @@ client.note_text.delete_note_text_for_user_monetary_account_schedule_schedule_in
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_sofort_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_sofort_merchant_transaction</a>(...) -> typing.List[NoteTextSofortMerchantTransactionListing]</code></summary>
 <dl>
 <dd>
 
@@ -25698,15 +23558,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.list_all_note_text_for_user_monetary_account_sofort_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -25763,7 +23621,7 @@ client.note_text.list_all_note_text_for_user_monetary_account_sofort_merchant_tr
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_sofort_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_sofort_merchant_transaction</a>(...) -> NoteTextSofortMerchantTransactionCreate</code></summary>
 <dl>
 <dd>
 
@@ -25791,15 +23649,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.create_note_text_for_user_monetary_account_sofort_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -25844,7 +23700,7 @@ client.note_text.create_note_text_for_user_monetary_account_sofort_merchant_tran
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextSofortMerchantTransaction` 
     
 </dd>
 </dl>
@@ -25864,7 +23720,7 @@ client.note_text.create_note_text_for_user_monetary_account_sofort_merchant_tran
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_sofort_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_sofort_merchant_transaction</a>(...) -> NoteTextSofortMerchantTransactionRead</code></summary>
 <dl>
 <dd>
 
@@ -25892,15 +23748,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.read_note_text_for_user_monetary_account_sofort_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -25966,7 +23820,7 @@ client.note_text.read_note_text_for_user_monetary_account_sofort_merchant_transa
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_sofort_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_sofort_merchant_transaction</a>(...) -> NoteTextSofortMerchantTransactionUpdate</code></summary>
 <dl>
 <dd>
 
@@ -25994,15 +23848,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.update_note_text_for_user_monetary_account_sofort_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -26056,7 +23908,7 @@ client.note_text.update_note_text_for_user_monetary_account_sofort_merchant_tran
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextSofortMerchantTransaction` 
     
 </dd>
 </dl>
@@ -26076,7 +23928,7 @@ client.note_text.update_note_text_for_user_monetary_account_sofort_merchant_tran
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_sofort_merchant_transaction</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_sofort_merchant_transaction</a>(...) -> NoteTextSofortMerchantTransactionDelete</code></summary>
 <dl>
 <dd>
 
@@ -26104,15 +23956,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.delete_note_text_for_user_monetary_account_sofort_merchant_transaction(
     user_id=1,
     monetary_account_id=1,
@@ -26178,7 +24028,7 @@ client.note_text.delete_note_text_for_user_monetary_account_sofort_merchant_tran
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_switch_service_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_switch_service_payment</a>(...) -> typing.List[NoteTextBankSwitchServiceNetherlandsIncomingPaymentListing]</code></summary>
 <dl>
 <dd>
 
@@ -26206,15 +24056,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.list_all_note_text_for_user_monetary_account_switch_service_payment(
     user_id=1,
     monetary_account_id=1,
@@ -26271,7 +24119,7 @@ client.note_text.list_all_note_text_for_user_monetary_account_switch_service_pay
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_switch_service_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_switch_service_payment</a>(...) -> NoteTextBankSwitchServiceNetherlandsIncomingPaymentCreate</code></summary>
 <dl>
 <dd>
 
@@ -26299,15 +24147,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.create_note_text_for_user_monetary_account_switch_service_payment(
     user_id=1,
     monetary_account_id=1,
@@ -26352,7 +24198,7 @@ client.note_text.create_note_text_for_user_monetary_account_switch_service_payme
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextBankSwitchServiceNetherlandsIncomingPayment` 
     
 </dd>
 </dl>
@@ -26372,7 +24218,7 @@ client.note_text.create_note_text_for_user_monetary_account_switch_service_payme
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_switch_service_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_switch_service_payment</a>(...) -> NoteTextBankSwitchServiceNetherlandsIncomingPaymentRead</code></summary>
 <dl>
 <dd>
 
@@ -26400,15 +24246,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.read_note_text_for_user_monetary_account_switch_service_payment(
     user_id=1,
     monetary_account_id=1,
@@ -26474,7 +24318,7 @@ client.note_text.read_note_text_for_user_monetary_account_switch_service_payment
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_switch_service_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_switch_service_payment</a>(...) -> NoteTextBankSwitchServiceNetherlandsIncomingPaymentUpdate</code></summary>
 <dl>
 <dd>
 
@@ -26502,15 +24346,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.update_note_text_for_user_monetary_account_switch_service_payment(
     user_id=1,
     monetary_account_id=1,
@@ -26564,7 +24406,7 @@ client.note_text.update_note_text_for_user_monetary_account_switch_service_payme
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextBankSwitchServiceNetherlandsIncomingPayment` 
     
 </dd>
 </dl>
@@ -26584,7 +24426,7 @@ client.note_text.update_note_text_for_user_monetary_account_switch_service_payme
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_switch_service_payment</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_switch_service_payment</a>(...) -> NoteTextBankSwitchServiceNetherlandsIncomingPaymentDelete</code></summary>
 <dl>
 <dd>
 
@@ -26612,15 +24454,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.delete_note_text_for_user_monetary_account_switch_service_payment(
     user_id=1,
     monetary_account_id=1,
@@ -26686,7 +24526,7 @@ client.note_text.delete_note_text_for_user_monetary_account_switch_service_payme
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_whitelist_whitelist_result</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">list_all_note_text_for_user_monetary_account_whitelist_whitelist_result</a>(...) -> typing.List[NoteTextWhitelistResultListing]</code></summary>
 <dl>
 <dd>
 
@@ -26714,15 +24554,13 @@ Manage the notes for a given user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.list_all_note_text_for_user_monetary_account_whitelist_whitelist_result(
     user_id=1,
     monetary_account_id=1,
@@ -26788,7 +24626,7 @@ client.note_text.list_all_note_text_for_user_monetary_account_whitelist_whitelis
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_whitelist_whitelist_result</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">create_note_text_for_user_monetary_account_whitelist_whitelist_result</a>(...) -> NoteTextWhitelistResultCreate</code></summary>
 <dl>
 <dd>
 
@@ -26816,15 +24654,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.create_note_text_for_user_monetary_account_whitelist_whitelist_result(
     user_id=1,
     monetary_account_id=1,
@@ -26878,7 +24714,7 @@ client.note_text.create_note_text_for_user_monetary_account_whitelist_whitelist_
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextWhitelistResult` 
     
 </dd>
 </dl>
@@ -26898,7 +24734,7 @@ client.note_text.create_note_text_for_user_monetary_account_whitelist_whitelist_
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_whitelist_whitelist_result</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">read_note_text_for_user_monetary_account_whitelist_whitelist_result</a>(...) -> NoteTextWhitelistResultRead</code></summary>
 <dl>
 <dd>
 
@@ -26926,15 +24762,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.read_note_text_for_user_monetary_account_whitelist_whitelist_result(
     user_id=1,
     monetary_account_id=1,
@@ -27009,7 +24843,7 @@ client.note_text.read_note_text_for_user_monetary_account_whitelist_whitelist_re
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_whitelist_whitelist_result</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">update_note_text_for_user_monetary_account_whitelist_whitelist_result</a>(...) -> NoteTextWhitelistResultUpdate</code></summary>
 <dl>
 <dd>
 
@@ -27037,15 +24871,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.update_note_text_for_user_monetary_account_whitelist_whitelist_result(
     user_id=1,
     monetary_account_id=1,
@@ -27108,7 +24940,7 @@ client.note_text.update_note_text_for_user_monetary_account_whitelist_whitelist_
 <dl>
 <dd>
 
-**content:** `typing.Optional[str]` — The content of the note.
+**request:** `NoteTextWhitelistResult` 
     
 </dd>
 </dl>
@@ -27128,7 +24960,7 @@ client.note_text.update_note_text_for_user_monetary_account_whitelist_whitelist_
 </dl>
 </details>
 
-<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_whitelist_whitelist_result</a>(...)</code></summary>
+<details><summary><code>client.note_text.<a href="src/fern/note_text/client.py">delete_note_text_for_user_monetary_account_whitelist_whitelist_result</a>(...) -> NoteTextWhitelistResultDelete</code></summary>
 <dl>
 <dd>
 
@@ -27156,15 +24988,13 @@ Used to manage text notes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.note_text.delete_note_text_for_user_monetary_account_whitelist_whitelist_result(
     user_id=1,
     monetary_account_id=1,
@@ -27240,7 +25070,7 @@ client.note_text.delete_note_text_for_user_monetary_account_whitelist_whitelist_
 </details>
 
 ## bunqme-fundraiser-result
-<details><summary><code>client.bunqme_fundraiser_result.<a href="src/fern/bunqme_fundraiser_result/client.py">read_bunqme_fundraiser_result_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.bunqme_fundraiser_result.<a href="src/fern/bunqme_fundraiser_result/client.py">read_bunqme_fundraiser_result_for_user_monetary_account</a>(...) -> BunqMeFundraiserResultRead</code></summary>
 <dl>
 <dd>
 
@@ -27268,15 +25098,13 @@ bunq.me fundraiser result containing all payments.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bunqme_fundraiser_result.read_bunqme_fundraiser_result_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -27334,7 +25162,7 @@ client.bunqme_fundraiser_result.read_bunqme_fundraiser_result_for_user_monetary_
 </details>
 
 ## bunqme-tab
-<details><summary><code>client.bunqme_tab.<a href="src/fern/bunqme_tab/client.py">list_all_bunqme_tab_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.bunqme_tab.<a href="src/fern/bunqme_tab/client.py">list_all_bunqme_tab_for_user_monetary_account</a>(...) -> typing.List[BunqMeTabListing]</code></summary>
 <dl>
 <dd>
 
@@ -27362,15 +25190,13 @@ bunq.me tabs allows you to create a payment request and share the link through e
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bunqme_tab.list_all_bunqme_tab_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -27418,7 +25244,7 @@ client.bunqme_tab.list_all_bunqme_tab_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.bunqme_tab.<a href="src/fern/bunqme_tab/client.py">create_bunqme_tab_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.bunqme_tab.<a href="src/fern/bunqme_tab/client.py">create_bunqme_tab_for_user_monetary_account</a>(...) -> BunqMeTabCreate</code></summary>
 <dl>
 <dd>
 
@@ -27445,16 +25271,14 @@ bunq.me tabs allows you to create a payment request and share the link through e
 <dd>
 
 ```python
-from fern import BunqMeTabEntry, FernApi
+from fern import FernApi, BunqMeTabEntry
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bunqme_tab.create_bunqme_tab_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -27491,15 +25315,7 @@ client.bunqme_tab.create_bunqme_tab_for_user_monetary_account(
 <dl>
 <dd>
 
-**bunqme_tab_entry:** `BunqMeTabEntry` — The bunq.me entry containing the payment information.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the bunq.me. Ignored in POST requests but can be used for cancelling the bunq.me by setting status as CANCELLED with a PUT request.
+**request:** `BunqMeTab` 
     
 </dd>
 </dl>
@@ -27519,7 +25335,7 @@ client.bunqme_tab.create_bunqme_tab_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.bunqme_tab.<a href="src/fern/bunqme_tab/client.py">read_bunqme_tab_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.bunqme_tab.<a href="src/fern/bunqme_tab/client.py">read_bunqme_tab_for_user_monetary_account</a>(...) -> BunqMeTabRead</code></summary>
 <dl>
 <dd>
 
@@ -27547,15 +25363,13 @@ bunq.me tabs allows you to create a payment request and share the link through e
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bunqme_tab.read_bunqme_tab_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -27612,7 +25426,7 @@ client.bunqme_tab.read_bunqme_tab_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.bunqme_tab.<a href="src/fern/bunqme_tab/client.py">update_bunqme_tab_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.bunqme_tab.<a href="src/fern/bunqme_tab/client.py">update_bunqme_tab_for_user_monetary_account</a>(...) -> BunqMeTabUpdate</code></summary>
 <dl>
 <dd>
 
@@ -27639,16 +25453,14 @@ bunq.me tabs allows you to create a payment request and share the link through e
 <dd>
 
 ```python
-from fern import BunqMeTabEntry, FernApi
+from fern import FernApi, BunqMeTabEntry
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bunqme_tab.update_bunqme_tab_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -27694,15 +25506,7 @@ client.bunqme_tab.update_bunqme_tab_for_user_monetary_account(
 <dl>
 <dd>
 
-**bunqme_tab_entry:** `BunqMeTabEntry` — The bunq.me entry containing the payment information.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the bunq.me. Ignored in POST requests but can be used for cancelling the bunq.me by setting status as CANCELLED with a PUT request.
+**request:** `BunqMeTab` 
     
 </dd>
 </dl>
@@ -27723,7 +25527,7 @@ client.bunqme_tab.update_bunqme_tab_for_user_monetary_account(
 </details>
 
 ## bunqme-tab-result-response
-<details><summary><code>client.bunqme_tab_result_response.<a href="src/fern/bunqme_tab_result_response/client.py">read_bunqme_tab_result_response_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.bunqme_tab_result_response.<a href="src/fern/bunqme_tab_result_response/client.py">read_bunqme_tab_result_response_for_user_monetary_account</a>(...) -> BunqMeTabResultResponseRead</code></summary>
 <dl>
 <dd>
 
@@ -27751,15 +25555,13 @@ Used to view bunq.me TabResultResponse objects belonging to a tab. A TabResultRe
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bunqme_tab_result_response.read_bunqme_tab_result_response_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -27817,7 +25619,7 @@ client.bunqme_tab_result_response.read_bunqme_tab_result_response_for_user_monet
 </details>
 
 ## currency-cloud-payment-quote
-<details><summary><code>client.currency_cloud_payment_quote.<a href="src/fern/currency_cloud_payment_quote/client.py">create_currency_cloud_payment_quote_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.currency_cloud_payment_quote.<a href="src/fern/currency_cloud_payment_quote/client.py">create_currency_cloud_payment_quote_for_user_monetary_account</a>(...) -> CurrencyCloudPaymentQuoteCreate</code></summary>
 <dl>
 <dd>
 
@@ -27845,19 +25647,19 @@ Endpoint for managing currency conversions.
 
 ```python
 from fern import FernApi, Pointer
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.currency_cloud_payment_quote.create_currency_cloud_payment_quote_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
-    pointers=[Pointer()],
+    pointers=[
+        Pointer()
+    ],
 )
 
 ```
@@ -27890,7 +25692,7 @@ client.currency_cloud_payment_quote.create_currency_cloud_payment_quote_for_user
 <dl>
 <dd>
 
-**pointers:** `typing.Sequence[Pointer]` — The points we want to know the fees for.
+**pointers:** `typing.List[Pointer]` — The points we want to know the fees for.
     
 </dd>
 </dl>
@@ -27911,7 +25713,7 @@ client.currency_cloud_payment_quote.create_currency_cloud_payment_quote_for_user
 </details>
 
 ## currency-conversion
-<details><summary><code>client.currency_conversion.<a href="src/fern/currency_conversion/client.py">list_all_currency_conversion_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.currency_conversion.<a href="src/fern/currency_conversion/client.py">list_all_currency_conversion_for_user_monetary_account</a>(...) -> typing.List[CurrencyConversionListing]</code></summary>
 <dl>
 <dd>
 
@@ -27939,15 +25741,13 @@ Endpoint for managing currency conversions.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.currency_conversion.list_all_currency_conversion_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -27995,7 +25795,7 @@ client.currency_conversion.list_all_currency_conversion_for_user_monetary_accoun
 </dl>
 </details>
 
-<details><summary><code>client.currency_conversion.<a href="src/fern/currency_conversion/client.py">read_currency_conversion_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.currency_conversion.<a href="src/fern/currency_conversion/client.py">read_currency_conversion_for_user_monetary_account</a>(...) -> CurrencyConversionRead</code></summary>
 <dl>
 <dd>
 
@@ -28023,15 +25823,13 @@ Endpoint for managing currency conversions.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.currency_conversion.read_currency_conversion_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -28089,7 +25887,7 @@ client.currency_conversion.read_currency_conversion_for_user_monetary_account(
 </details>
 
 ## currency-conversion-quote
-<details><summary><code>client.currency_conversion_quote.<a href="src/fern/currency_conversion_quote/client.py">create_currency_conversion_quote_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.currency_conversion_quote.<a href="src/fern/currency_conversion_quote/client.py">create_currency_conversion_quote_for_user_monetary_account</a>(...) -> CurrencyConversionQuoteCreate</code></summary>
 <dl>
 <dd>
 
@@ -28116,16 +25914,14 @@ Endpoint to create a quote for currency conversions.
 <dd>
 
 ```python
-from fern import Amount, FernApi, Pointer
+from fern import FernApi, Amount, Pointer
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.currency_conversion_quote.create_currency_conversion_quote_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -28165,39 +25961,7 @@ client.currency_conversion_quote.create_currency_conversion_quote_for_user_monet
 <dl>
 <dd>
 
-**amount:** `Amount` — The amount to convert.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counterparty_alias:** `Pointer` — The Alias of the party we are transferring the money to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**currency_source:** `str` — The currency we are converting.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**currency_target:** `str` — The currency we are converting towards.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the quote.
+**request:** `CurrencyConversionQuote` 
     
 </dd>
 </dl>
@@ -28217,7 +25981,7 @@ client.currency_conversion_quote.create_currency_conversion_quote_for_user_monet
 </dl>
 </details>
 
-<details><summary><code>client.currency_conversion_quote.<a href="src/fern/currency_conversion_quote/client.py">read_currency_conversion_quote_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.currency_conversion_quote.<a href="src/fern/currency_conversion_quote/client.py">read_currency_conversion_quote_for_user_monetary_account</a>(...) -> CurrencyConversionQuoteRead</code></summary>
 <dl>
 <dd>
 
@@ -28245,15 +26009,13 @@ Endpoint to create a quote for currency conversions.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.currency_conversion_quote.read_currency_conversion_quote_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -28310,7 +26072,7 @@ client.currency_conversion_quote.read_currency_conversion_quote_for_user_monetar
 </dl>
 </details>
 
-<details><summary><code>client.currency_conversion_quote.<a href="src/fern/currency_conversion_quote/client.py">update_currency_conversion_quote_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.currency_conversion_quote.<a href="src/fern/currency_conversion_quote/client.py">update_currency_conversion_quote_for_user_monetary_account</a>(...) -> CurrencyConversionQuoteUpdate</code></summary>
 <dl>
 <dd>
 
@@ -28337,16 +26099,14 @@ Endpoint to create a quote for currency conversions.
 <dd>
 
 ```python
-from fern import Amount, FernApi, Pointer
+from fern import FernApi, Amount, Pointer
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.currency_conversion_quote.update_currency_conversion_quote_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -28395,39 +26155,7 @@ client.currency_conversion_quote.update_currency_conversion_quote_for_user_monet
 <dl>
 <dd>
 
-**amount:** `Amount` — The amount to convert.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counterparty_alias:** `Pointer` — The Alias of the party we are transferring the money to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**currency_source:** `str` — The currency we are converting.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**currency_target:** `str` — The currency we are converting towards.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the quote.
+**request:** `CurrencyConversionQuote` 
     
 </dd>
 </dl>
@@ -28448,7 +26176,7 @@ client.currency_conversion_quote.update_currency_conversion_quote_for_user_monet
 </details>
 
 ## customer-statement
-<details><summary><code>client.customer_statement.<a href="src/fern/customer_statement/client.py">list_all_customer_statement_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.customer_statement.<a href="src/fern/customer_statement/client.py">list_all_customer_statement_for_user_monetary_account</a>(...) -> typing.List[ExportStatementListing]</code></summary>
 <dl>
 <dd>
 
@@ -28476,15 +26204,13 @@ Used to create new and read existing statement exports. Statement exports can be
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customer_statement.list_all_customer_statement_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -28532,7 +26258,7 @@ client.customer_statement.list_all_customer_statement_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.customer_statement.<a href="src/fern/customer_statement/client.py">create_customer_statement_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.customer_statement.<a href="src/fern/customer_statement/client.py">create_customer_statement_for_user_monetary_account</a>(...) -> ExportStatementCreate</code></summary>
 <dl>
 <dd>
 
@@ -28560,15 +26286,13 @@ Used to create new and read existing statement exports. Statement exports can be
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customer_statement.create_customer_statement_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -28659,7 +26383,7 @@ client.customer_statement.create_customer_statement_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.customer_statement.<a href="src/fern/customer_statement/client.py">read_customer_statement_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.customer_statement.<a href="src/fern/customer_statement/client.py">read_customer_statement_for_user_monetary_account</a>(...) -> ExportStatementRead</code></summary>
 <dl>
 <dd>
 
@@ -28687,15 +26411,13 @@ Used to create new and read existing statement exports. Statement exports can be
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customer_statement.read_customer_statement_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -28752,7 +26474,7 @@ client.customer_statement.read_customer_statement_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.customer_statement.<a href="src/fern/customer_statement/client.py">delete_customer_statement_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.customer_statement.<a href="src/fern/customer_statement/client.py">delete_customer_statement_for_user_monetary_account</a>(...) -> ExportStatementDelete</code></summary>
 <dl>
 <dd>
 
@@ -28780,15 +26502,13 @@ Used to create new and read existing statement exports. Statement exports can be
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customer_statement.delete_customer_statement_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -28846,7 +26566,7 @@ client.customer_statement.delete_customer_statement_for_user_monetary_account(
 </details>
 
 ## draft-payment
-<details><summary><code>client.draft_payment.<a href="src/fern/draft_payment/client.py">list_all_draft_payment_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.draft_payment.<a href="src/fern/draft_payment/client.py">list_all_draft_payment_for_user_monetary_account</a>(...) -> typing.List[DraftPaymentListing]</code></summary>
 <dl>
 <dd>
 
@@ -28874,15 +26594,13 @@ Get a listing of all DraftPayments from a given MonetaryAccount.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.draft_payment.list_all_draft_payment_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -28930,7 +26648,7 @@ client.draft_payment.list_all_draft_payment_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.draft_payment.<a href="src/fern/draft_payment/client.py">create_draft_payment_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.draft_payment.<a href="src/fern/draft_payment/client.py">create_draft_payment_for_user_monetary_account</a>(...) -> DraftPaymentCreate</code></summary>
 <dl>
 <dd>
 
@@ -28957,20 +26675,20 @@ Create a new DraftPayment.
 <dd>
 
 ```python
-from fern import DraftPaymentEntry, FernApi
+from fern import FernApi, DraftPaymentEntry
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.draft_payment.create_draft_payment_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
-    entries=[DraftPaymentEntry()],
+    entries=[
+        DraftPaymentEntry()
+    ],
     number_of_required_accepts=1,
 )
 
@@ -29004,39 +26722,7 @@ client.draft_payment.create_draft_payment_for_user_monetary_account(
 <dl>
 <dd>
 
-**entries:** `typing.Sequence[DraftPaymentEntry]` — The list of entries in the DraftPayment. Each entry will result in a payment when the DraftPayment is accepted.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**number_of_required_accepts:** `int` — The number of accepts that are required for the draft payment to receive status ACCEPTED. Currently only 1 is valid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**previous_updated_timestamp:** `typing.Optional[str]` — The last updated_timestamp that you received for this DraftPayment. This needs to be provided to prevent race conditions.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**schedule:** `typing.Optional[Schedule]` — The schedule details when creating or updating a scheduled payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the DraftPayment.
+**request:** `DraftPayment` 
     
 </dd>
 </dl>
@@ -29056,7 +26742,7 @@ client.draft_payment.create_draft_payment_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.draft_payment.<a href="src/fern/draft_payment/client.py">read_draft_payment_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.draft_payment.<a href="src/fern/draft_payment/client.py">read_draft_payment_for_user_monetary_account</a>(...) -> DraftPaymentRead</code></summary>
 <dl>
 <dd>
 
@@ -29084,15 +26770,13 @@ Get a specific DraftPayment.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.draft_payment.read_draft_payment_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -29149,7 +26833,7 @@ client.draft_payment.read_draft_payment_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.draft_payment.<a href="src/fern/draft_payment/client.py">update_draft_payment_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.draft_payment.<a href="src/fern/draft_payment/client.py">update_draft_payment_for_user_monetary_account</a>(...) -> DraftPaymentUpdate</code></summary>
 <dl>
 <dd>
 
@@ -29176,21 +26860,21 @@ Update a DraftPayment.
 <dd>
 
 ```python
-from fern import DraftPaymentEntry, FernApi
+from fern import FernApi, DraftPaymentEntry
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.draft_payment.update_draft_payment_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
     item_id=1,
-    entries=[DraftPaymentEntry()],
+    entries=[
+        DraftPaymentEntry()
+    ],
     number_of_required_accepts=1,
 )
 
@@ -29232,39 +26916,7 @@ client.draft_payment.update_draft_payment_for_user_monetary_account(
 <dl>
 <dd>
 
-**entries:** `typing.Sequence[DraftPaymentEntry]` — The list of entries in the DraftPayment. Each entry will result in a payment when the DraftPayment is accepted.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**number_of_required_accepts:** `int` — The number of accepts that are required for the draft payment to receive status ACCEPTED. Currently only 1 is valid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**previous_updated_timestamp:** `typing.Optional[str]` — The last updated_timestamp that you received for this DraftPayment. This needs to be provided to prevent race conditions.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**schedule:** `typing.Optional[Schedule]` — The schedule details when creating or updating a scheduled payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the DraftPayment.
+**request:** `DraftPayment` 
     
 </dd>
 </dl>
@@ -29285,7 +26937,7 @@ client.draft_payment.update_draft_payment_for_user_monetary_account(
 </details>
 
 ## statement
-<details><summary><code>client.statement.<a href="src/fern/statement/client.py">create_statement_for_user_monetary_account_event</a>(...)</code></summary>
+<details><summary><code>client.statement.<a href="src/fern/statement/client.py">create_statement_for_user_monetary_account_event</a>(...) -> ExportStatementPaymentCreate</code></summary>
 <dl>
 <dd>
 
@@ -29313,20 +26965,20 @@ Used to create a statement export of a single payment.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.statement.create_statement_for_user_monetary_account_event(
     user_id=1,
     monetary_account_id=1,
     event_id=1,
-    request={"key": "value"},
+    request={
+        "key": "value"
+    },
 )
 
 ```
@@ -29387,7 +27039,7 @@ client.statement.create_statement_for_user_monetary_account_event(
 </dl>
 </details>
 
-<details><summary><code>client.statement.<a href="src/fern/statement/client.py">read_statement_for_user_monetary_account_event</a>(...)</code></summary>
+<details><summary><code>client.statement.<a href="src/fern/statement/client.py">read_statement_for_user_monetary_account_event</a>(...) -> ExportStatementPaymentRead</code></summary>
 <dl>
 <dd>
 
@@ -29415,15 +27067,13 @@ Used to create a statement export of a single payment.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.statement.read_statement_for_user_monetary_account_event(
     user_id=1,
     monetary_account_id=1,
@@ -29490,7 +27140,7 @@ client.statement.read_statement_for_user_monetary_account_event(
 </details>
 
 ## export-rib
-<details><summary><code>client.export_rib.<a href="src/fern/export_rib/client.py">list_all_export_rib_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.export_rib.<a href="src/fern/export_rib/client.py">list_all_export_rib_for_user_monetary_account</a>(...) -> typing.List[ExportRibListing]</code></summary>
 <dl>
 <dd>
 
@@ -29518,15 +27168,13 @@ List all the RIBs for a monetary account.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_rib.list_all_export_rib_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -29574,7 +27222,7 @@ client.export_rib.list_all_export_rib_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.export_rib.<a href="src/fern/export_rib/client.py">create_export_rib_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.export_rib.<a href="src/fern/export_rib/client.py">create_export_rib_for_user_monetary_account</a>(...) -> ExportRibCreate</code></summary>
 <dl>
 <dd>
 
@@ -29602,19 +27250,19 @@ Create a new RIB.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_rib.create_export_rib_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
-    request={"key": "value"},
+    request={
+        "key": "value"
+    },
 )
 
 ```
@@ -29667,7 +27315,7 @@ client.export_rib.create_export_rib_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.export_rib.<a href="src/fern/export_rib/client.py">read_export_rib_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.export_rib.<a href="src/fern/export_rib/client.py">read_export_rib_for_user_monetary_account</a>(...) -> ExportRibRead</code></summary>
 <dl>
 <dd>
 
@@ -29695,15 +27343,13 @@ Get a RIB for a monetary account by its id.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_rib.read_export_rib_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -29760,7 +27406,7 @@ client.export_rib.read_export_rib_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.export_rib.<a href="src/fern/export_rib/client.py">delete_export_rib_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.export_rib.<a href="src/fern/export_rib/client.py">delete_export_rib_for_user_monetary_account</a>(...) -> ExportRibDelete</code></summary>
 <dl>
 <dd>
 
@@ -29788,15 +27434,13 @@ Used to create new and read existing RIBs of a monetary account
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.export_rib.delete_export_rib_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -29854,7 +27498,7 @@ client.export_rib.delete_export_rib_for_user_monetary_account(
 </details>
 
 ## ideal-merchant-transaction
-<details><summary><code>client.ideal_merchant_transaction.<a href="src/fern/ideal_merchant_transaction/client.py">list_all_ideal_merchant_transaction_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.ideal_merchant_transaction.<a href="src/fern/ideal_merchant_transaction/client.py">list_all_ideal_merchant_transaction_for_user_monetary_account</a>(...) -> typing.List[IdealMerchantTransactionListing]</code></summary>
 <dl>
 <dd>
 
@@ -29882,15 +27526,13 @@ View for requesting iDEAL transactions and polling their status.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ideal_merchant_transaction.list_all_ideal_merchant_transaction_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -29938,7 +27580,7 @@ client.ideal_merchant_transaction.list_all_ideal_merchant_transaction_for_user_m
 </dl>
 </details>
 
-<details><summary><code>client.ideal_merchant_transaction.<a href="src/fern/ideal_merchant_transaction/client.py">create_ideal_merchant_transaction_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.ideal_merchant_transaction.<a href="src/fern/ideal_merchant_transaction/client.py">create_ideal_merchant_transaction_for_user_monetary_account</a>(...) -> IdealMerchantTransactionCreate</code></summary>
 <dl>
 <dd>
 
@@ -29966,15 +27608,13 @@ View for requesting iDEAL transactions and polling their status.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ideal_merchant_transaction.create_ideal_merchant_transaction_for_user_monetary_account(
     user_id=1,
     monetary_account_id_=1,
@@ -30002,7 +27642,7 @@ client.ideal_merchant_transaction.create_ideal_merchant_transaction_for_user_mon
 <dl>
 <dd>
 
-**monetary_account_id_:** `int` — 
+**monetary_account_id:** `int` — 
     
 </dd>
 </dl>
@@ -30010,103 +27650,7 @@ client.ideal_merchant_transaction.create_ideal_merchant_transaction_for_user_mon
 <dl>
 <dd>
 
-**alias:** `typing.Optional[LabelMonetaryAccount]` — The alias of the monetary account to add money to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount_guaranteed:** `typing.Optional[Amount]` — In case of a successful transaction, the amount of money that will be transferred.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount_requested:** `typing.Optional[Amount]` — The requested amount of money to add.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counterparty_alias:** `typing.Optional[LabelMonetaryAccount]` — The alias of the monetary account the money comes from.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**expiration:** `typing.Optional[str]` — When the transaction will expire.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**issuer:** `typing.Optional[str]` — The BIC of the issuer.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**issuer_authentication_url:** `typing.Optional[str]` — The URL to visit to 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**issuer_name:** `typing.Optional[str]` — The Name of the issuer.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**monetary_account_id:** `typing.Optional[int]` — The id of the monetary account this ideal merchant transaction links to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**purchase_identifier:** `typing.Optional[str]` — The 'purchase ID' of the iDEAL transaction.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the transaction.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status_timestamp:** `typing.Optional[str]` — When the status was last updated.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**transaction_identifier:** `typing.Optional[str]` — The 'transaction ID' of the iDEAL transaction.
+**request:** `IdealMerchantTransaction` 
     
 </dd>
 </dl>
@@ -30126,7 +27670,7 @@ client.ideal_merchant_transaction.create_ideal_merchant_transaction_for_user_mon
 </dl>
 </details>
 
-<details><summary><code>client.ideal_merchant_transaction.<a href="src/fern/ideal_merchant_transaction/client.py">read_ideal_merchant_transaction_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.ideal_merchant_transaction.<a href="src/fern/ideal_merchant_transaction/client.py">read_ideal_merchant_transaction_for_user_monetary_account</a>(...) -> IdealMerchantTransactionRead</code></summary>
 <dl>
 <dd>
 
@@ -30154,15 +27698,13 @@ View for requesting iDEAL transactions and polling their status.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ideal_merchant_transaction.read_ideal_merchant_transaction_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -30220,7 +27762,7 @@ client.ideal_merchant_transaction.read_ideal_merchant_transaction_for_user_monet
 </details>
 
 ## mastercard-action
-<details><summary><code>client.mastercard_action.<a href="src/fern/mastercard_action/client.py">list_all_mastercard_action_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.mastercard_action.<a href="src/fern/mastercard_action/client.py">list_all_mastercard_action_for_user_monetary_account</a>(...) -> typing.List[MasterCardActionListing]</code></summary>
 <dl>
 <dd>
 
@@ -30248,15 +27790,13 @@ MasterCard transaction view.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mastercard_action.list_all_mastercard_action_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -30304,7 +27844,7 @@ client.mastercard_action.list_all_mastercard_action_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.mastercard_action.<a href="src/fern/mastercard_action/client.py">read_mastercard_action_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.mastercard_action.<a href="src/fern/mastercard_action/client.py">read_mastercard_action_for_user_monetary_account</a>(...) -> MasterCardActionRead</code></summary>
 <dl>
 <dd>
 
@@ -30332,15 +27872,13 @@ MasterCard transaction view.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mastercard_action.read_mastercard_action_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -30398,7 +27936,7 @@ client.mastercard_action.read_mastercard_action_for_user_monetary_account(
 </details>
 
 ## payment
-<details><summary><code>client.payment.<a href="src/fern/payment/client.py">list_all_payment_for_user_monetary_account_mastercard_action</a>(...)</code></summary>
+<details><summary><code>client.payment.<a href="src/fern/payment/client.py">list_all_payment_for_user_monetary_account_mastercard_action</a>(...) -> typing.List[MasterCardPaymentListing]</code></summary>
 <dl>
 <dd>
 
@@ -30426,15 +27964,13 @@ MasterCard transaction view.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment.list_all_payment_for_user_monetary_account_mastercard_action(
     user_id=1,
     monetary_account_id=1,
@@ -30491,7 +28027,7 @@ client.payment.list_all_payment_for_user_monetary_account_mastercard_action(
 </dl>
 </details>
 
-<details><summary><code>client.payment.<a href="src/fern/payment/client.py">list_all_payment_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.payment.<a href="src/fern/payment/client.py">list_all_payment_for_user_monetary_account</a>(...) -> typing.List[PaymentListing]</code></summary>
 <dl>
 <dd>
 
@@ -30519,15 +28055,13 @@ Get a listing of all Payments performed on a given MonetaryAccount (incoming and
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment.list_all_payment_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -30575,7 +28109,7 @@ client.payment.list_all_payment_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.payment.<a href="src/fern/payment/client.py">create_payment_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.payment.<a href="src/fern/payment/client.py">create_payment_for_user_monetary_account</a>(...) -> PaymentCreate</code></summary>
 <dl>
 <dd>
 
@@ -30603,15 +28137,13 @@ Create a new Payment.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment.create_payment_for_user_monetary_account(
     user_id=1,
     monetary_account_id_=1,
@@ -30639,7 +28171,7 @@ client.payment.create_payment_for_user_monetary_account(
 <dl>
 <dd>
 
-**monetary_account_id_:** `int` — 
+**monetary_account_id:** `int` — 
     
 </dd>
 </dl>
@@ -30647,207 +28179,7 @@ client.payment.create_payment_for_user_monetary_account(
 <dl>
 <dd>
 
-**address_billing:** `typing.Optional[Address]` — A billing Address provided with the Payment, currently unused.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**address_shipping:** `typing.Optional[Address]` — A shipping Address provided with the Payment, currently unused.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**alias:** `typing.Optional[LabelMonetaryAccount]` — The LabelMonetaryAccount containing the public information of 'this' (party) side of the Payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**allow_bunqto:** `typing.Optional[bool]` — Whether or not sending a bunq.to payment is allowed.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount:** `typing.Optional[Amount]` — The Amount transferred by the Payment. Will be negative for outgoing Payments and positive for incoming Payments (relative to the MonetaryAccount indicated by monetary_account_id).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attachment:** `typing.Optional[typing.Sequence[AttachmentMonetaryAccountPayment]]` — The Attachments attached to the Payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**balance_after_mutation:** `typing.Optional[Amount]` — The new balance of the monetary account after the mutation.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**batch_id:** `typing.Optional[int]` — The id of the PaymentBatch if this Payment was part of one.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bunqto_expiry:** `typing.Optional[str]` — When bunq.to payment is about to expire.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bunqto_share_url:** `typing.Optional[str]` — The status of the bunq.to payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bunqto_status:** `typing.Optional[str]` — The status of the bunq.to payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bunqto_sub_status:** `typing.Optional[str]` — The sub status of the bunq.to payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bunqto_time_responded:** `typing.Optional[str]` — The timestamp of when the bunq.to payment was responded to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counterparty_alias:** `typing.Optional[LabelMonetaryAccount]` — The LabelMonetaryAccount containing the public information of the other (counterparty) side of the Payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created:** `typing.Optional[str]` — The timestamp when the Payment was done.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The description for the Payment. Maximum 140 characters for Payments to external IBANs, 9000 characters for Payments to only other bunq MonetaryAccounts.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**geolocation:** `typing.Optional[Geolocation]` — The Geolocation where the Payment was done from.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` — The id of the created Payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**merchant_reference:** `typing.Optional[str]` — Optional data included with the Payment specific to the merchant.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**monetary_account_id:** `typing.Optional[int]` — The id of the MonetaryAccount the Payment was made to or from (depending on whether this is an incoming or outgoing Payment).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**payment_auto_allocate_instance:** `typing.Optional[PaymentAutoAllocateInstance]` — A reference to the PaymentAutoAllocateInstance if it exists.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_reference_split_the_bill:** `typing.Optional[typing.Sequence[RequestInquiryReference]]` — The reference to the object used for split the bill. Can be RequestInquiry or RequestInquiryBatch
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scheduled_id:** `typing.Optional[int]` — The id of the JobScheduled if the Payment was scheduled.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sub_type:** `typing.Optional[str]` — The sub-type of the Payment, can be PAYMENT, WITHDRAWAL, REVERSAL, REQUEST, BILLING, SCT, SDD or NLO.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[str]` — The type of Payment, can be BUNQ, EBA_SCT, EBA_SDD, IDEAL, SWIFT or FIS (card).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated:** `typing.Optional[str]` — The timestamp when the Payment was last updated (will be updated when chat messages are received).
+**request:** `Payment` 
     
 </dd>
 </dl>
@@ -30867,7 +28199,7 @@ client.payment.create_payment_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.payment.<a href="src/fern/payment/client.py">read_payment_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.payment.<a href="src/fern/payment/client.py">read_payment_for_user_monetary_account</a>(...) -> PaymentRead</code></summary>
 <dl>
 <dd>
 
@@ -30895,15 +28227,13 @@ Get a specific previous Payment.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment.read_payment_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -30961,7 +28291,7 @@ client.payment.read_payment_for_user_monetary_account(
 </details>
 
 ## notification-filter-url
-<details><summary><code>client.notification_filter_url.<a href="src/fern/notification_filter_url/client.py">list_all_notification_filter_url_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.notification_filter_url.<a href="src/fern/notification_filter_url/client.py">list_all_notification_filter_url_for_user_monetary_account</a>(...) -> typing.List[NotificationFilterUrlMonetaryAccountListing]</code></summary>
 <dl>
 <dd>
 
@@ -30989,15 +28319,13 @@ Manage the url notification filters for a user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.notification_filter_url.list_all_notification_filter_url_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -31045,7 +28373,7 @@ client.notification_filter_url.list_all_notification_filter_url_for_user_monetar
 </dl>
 </details>
 
-<details><summary><code>client.notification_filter_url.<a href="src/fern/notification_filter_url/client.py">create_notification_filter_url_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.notification_filter_url.<a href="src/fern/notification_filter_url/client.py">create_notification_filter_url_for_user_monetary_account</a>(...) -> NotificationFilterUrlMonetaryAccountCreate</code></summary>
 <dl>
 <dd>
 
@@ -31073,15 +28401,13 @@ Manage the url notification filters for a user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.notification_filter_url.create_notification_filter_url_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -31117,7 +28443,7 @@ client.notification_filter_url.create_notification_filter_url_for_user_monetary_
 <dl>
 <dd>
 
-**notification_filters:** `typing.Optional[typing.Sequence[NotificationFilterUrl]]` — The types of notifications that will result in a url notification for this monetary account.
+**notification_filters:** `typing.Optional[typing.List[NotificationFilterUrl]]` — The types of notifications that will result in a url notification for this monetary account.
     
 </dd>
 </dl>
@@ -31137,7 +28463,7 @@ client.notification_filter_url.create_notification_filter_url_for_user_monetary_
 </dl>
 </details>
 
-<details><summary><code>client.notification_filter_url.<a href="src/fern/notification_filter_url/client.py">list_all_notification_filter_url_for_user</a>(...)</code></summary>
+<details><summary><code>client.notification_filter_url.<a href="src/fern/notification_filter_url/client.py">list_all_notification_filter_url_for_user</a>(...) -> typing.List[NotificationFilterUrlListing]</code></summary>
 <dl>
 <dd>
 
@@ -31165,15 +28491,13 @@ Manage the url notification filters for a user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.notification_filter_url.list_all_notification_filter_url_for_user(
     user_id=1,
 )
@@ -31212,7 +28536,7 @@ client.notification_filter_url.list_all_notification_filter_url_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.notification_filter_url.<a href="src/fern/notification_filter_url/client.py">create_notification_filter_url_for_user</a>(...)</code></summary>
+<details><summary><code>client.notification_filter_url.<a href="src/fern/notification_filter_url/client.py">create_notification_filter_url_for_user</a>(...) -> NotificationFilterUrlCreate</code></summary>
 <dl>
 <dd>
 
@@ -31240,15 +28564,13 @@ Manage the url notification filters for a user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.notification_filter_url.create_notification_filter_url_for_user(
     user_id=1,
 )
@@ -31275,7 +28597,7 @@ client.notification_filter_url.create_notification_filter_url_for_user(
 <dl>
 <dd>
 
-**notification_filters:** `typing.Optional[typing.Sequence[NotificationFilterUrl]]` — The types of notifications that will result in a url notification for this user.
+**request:** `NotificationFilterUrl` 
     
 </dd>
 </dl>
@@ -31296,7 +28618,7 @@ client.notification_filter_url.create_notification_filter_url_for_user(
 </details>
 
 ## payment-auto-allocate
-<details><summary><code>client.payment_auto_allocate.<a href="src/fern/payment_auto_allocate/client.py">list_all_payment_auto_allocate_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.payment_auto_allocate.<a href="src/fern/payment_auto_allocate/client.py">list_all_payment_auto_allocate_for_user_monetary_account</a>(...) -> typing.List[PaymentAutoAllocateListing]</code></summary>
 <dl>
 <dd>
 
@@ -31324,15 +28646,13 @@ Manage a users automatic payment auto allocated settings.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_auto_allocate.list_all_payment_auto_allocate_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -31380,7 +28700,7 @@ client.payment_auto_allocate.list_all_payment_auto_allocate_for_user_monetary_ac
 </dl>
 </details>
 
-<details><summary><code>client.payment_auto_allocate.<a href="src/fern/payment_auto_allocate/client.py">create_payment_auto_allocate_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.payment_auto_allocate.<a href="src/fern/payment_auto_allocate/client.py">create_payment_auto_allocate_for_user_monetary_account</a>(...) -> PaymentAutoAllocateCreate</code></summary>
 <dl>
 <dd>
 
@@ -31408,15 +28728,13 @@ Manage a users automatic payment auto allocated settings.
 
 ```python
 from fern import FernApi, PaymentAutoAllocateDefinition
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_auto_allocate.create_payment_auto_allocate_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -31459,23 +28777,7 @@ client.payment_auto_allocate.create_payment_auto_allocate_for_user_monetary_acco
 <dl>
 <dd>
 
-**definition:** `typing.Sequence[PaymentAutoAllocateDefinition]` — The definition of how the money should be allocated.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**payment_id:** `int` — The payment that should be used to define the triggers for the payment auto allocate.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `str` — Whether a payment should be sorted ONCE or RECURRING.
+**request:** `PaymentAutoAllocate` 
     
 </dd>
 </dl>
@@ -31495,7 +28797,7 @@ client.payment_auto_allocate.create_payment_auto_allocate_for_user_monetary_acco
 </dl>
 </details>
 
-<details><summary><code>client.payment_auto_allocate.<a href="src/fern/payment_auto_allocate/client.py">read_payment_auto_allocate_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.payment_auto_allocate.<a href="src/fern/payment_auto_allocate/client.py">read_payment_auto_allocate_for_user_monetary_account</a>(...) -> PaymentAutoAllocateRead</code></summary>
 <dl>
 <dd>
 
@@ -31523,15 +28825,13 @@ Manage a users automatic payment auto allocated settings.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_auto_allocate.read_payment_auto_allocate_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -31588,7 +28888,7 @@ client.payment_auto_allocate.read_payment_auto_allocate_for_user_monetary_accoun
 </dl>
 </details>
 
-<details><summary><code>client.payment_auto_allocate.<a href="src/fern/payment_auto_allocate/client.py">update_payment_auto_allocate_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.payment_auto_allocate.<a href="src/fern/payment_auto_allocate/client.py">update_payment_auto_allocate_for_user_monetary_account</a>(...) -> PaymentAutoAllocateUpdate</code></summary>
 <dl>
 <dd>
 
@@ -31616,15 +28916,13 @@ Manage a users automatic payment auto allocated settings.
 
 ```python
 from fern import FernApi, PaymentAutoAllocateDefinition
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_auto_allocate.update_payment_auto_allocate_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -31676,23 +28974,7 @@ client.payment_auto_allocate.update_payment_auto_allocate_for_user_monetary_acco
 <dl>
 <dd>
 
-**definition:** `typing.Sequence[PaymentAutoAllocateDefinition]` — The definition of how the money should be allocated.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**payment_id:** `int` — The payment that should be used to define the triggers for the payment auto allocate.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `str` — Whether a payment should be sorted ONCE or RECURRING.
+**request:** `PaymentAutoAllocate` 
     
 </dd>
 </dl>
@@ -31712,7 +28994,7 @@ client.payment_auto_allocate.update_payment_auto_allocate_for_user_monetary_acco
 </dl>
 </details>
 
-<details><summary><code>client.payment_auto_allocate.<a href="src/fern/payment_auto_allocate/client.py">delete_payment_auto_allocate_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.payment_auto_allocate.<a href="src/fern/payment_auto_allocate/client.py">delete_payment_auto_allocate_for_user_monetary_account</a>(...) -> PaymentAutoAllocateDelete</code></summary>
 <dl>
 <dd>
 
@@ -31740,15 +29022,13 @@ Manage a users automatic payment auto allocated settings.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_auto_allocate.delete_payment_auto_allocate_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -31805,7 +29085,7 @@ client.payment_auto_allocate.delete_payment_auto_allocate_for_user_monetary_acco
 </dl>
 </details>
 
-<details><summary><code>client.payment_auto_allocate.<a href="src/fern/payment_auto_allocate/client.py">list_all_payment_auto_allocate_for_user</a>(...)</code></summary>
+<details><summary><code>client.payment_auto_allocate.<a href="src/fern/payment_auto_allocate/client.py">list_all_payment_auto_allocate_for_user</a>(...) -> typing.List[PaymentAutoAllocateUserListing]</code></summary>
 <dl>
 <dd>
 
@@ -31833,15 +29113,13 @@ List a users automatic payment auto allocated settings.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_auto_allocate.list_all_payment_auto_allocate_for_user(
     user_id=1,
 )
@@ -31881,7 +29159,7 @@ client.payment_auto_allocate.list_all_payment_auto_allocate_for_user(
 </details>
 
 ## definition
-<details><summary><code>client.definition.<a href="src/fern/definition/client.py">list_all_definition_for_user_monetary_account_payment_auto_allocate</a>(...)</code></summary>
+<details><summary><code>client.definition.<a href="src/fern/definition/client.py">list_all_definition_for_user_monetary_account_payment_auto_allocate</a>(...) -> typing.List[PaymentAutoAllocateDefinitionListing]</code></summary>
 <dl>
 <dd>
 
@@ -31909,15 +29187,13 @@ List all the definitions in a payment auto allocate.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.definition.list_all_definition_for_user_monetary_account_payment_auto_allocate(
     user_id=1,
     monetary_account_id=1,
@@ -31975,7 +29251,7 @@ client.definition.list_all_definition_for_user_monetary_account_payment_auto_all
 </details>
 
 ## instance
-<details><summary><code>client.instance.<a href="src/fern/instance/client.py">list_all_instance_for_user_monetary_account_payment_auto_allocate</a>(...)</code></summary>
+<details><summary><code>client.instance.<a href="src/fern/instance/client.py">list_all_instance_for_user_monetary_account_payment_auto_allocate</a>(...) -> typing.List[PaymentAutoAllocateInstanceListing]</code></summary>
 <dl>
 <dd>
 
@@ -32003,15 +29279,13 @@ List all the times a users payment was automatically allocated.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.instance.list_all_instance_for_user_monetary_account_payment_auto_allocate(
     user_id=1,
     monetary_account_id=1,
@@ -32068,7 +29342,7 @@ client.instance.list_all_instance_for_user_monetary_account_payment_auto_allocat
 </dl>
 </details>
 
-<details><summary><code>client.instance.<a href="src/fern/instance/client.py">read_instance_for_user_monetary_account_payment_auto_allocate</a>(...)</code></summary>
+<details><summary><code>client.instance.<a href="src/fern/instance/client.py">read_instance_for_user_monetary_account_payment_auto_allocate</a>(...) -> PaymentAutoAllocateInstanceRead</code></summary>
 <dl>
 <dd>
 
@@ -32096,15 +29370,13 @@ List all the times a users payment was automatically allocated.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.instance.read_instance_for_user_monetary_account_payment_auto_allocate(
     user_id=1,
     monetary_account_id=1,
@@ -32171,7 +29443,7 @@ client.instance.read_instance_for_user_monetary_account_payment_auto_allocate(
 </details>
 
 ## payment-batch
-<details><summary><code>client.payment_batch.<a href="src/fern/payment_batch/client.py">list_all_payment_batch_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.payment_batch.<a href="src/fern/payment_batch/client.py">list_all_payment_batch_for_user_monetary_account</a>(...) -> typing.List[PaymentBatchListing]</code></summary>
 <dl>
 <dd>
 
@@ -32199,15 +29471,13 @@ Return all the payment batches for a monetary account.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_batch.list_all_payment_batch_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -32255,7 +29525,7 @@ client.payment_batch.list_all_payment_batch_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.payment_batch.<a href="src/fern/payment_batch/client.py">create_payment_batch_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.payment_batch.<a href="src/fern/payment_batch/client.py">create_payment_batch_for_user_monetary_account</a>(...) -> PaymentBatchCreate</code></summary>
 <dl>
 <dd>
 
@@ -32283,15 +29553,13 @@ Create a payment batch by sending an array of single payment objects, that will 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_batch.create_payment_batch_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -32327,7 +29595,7 @@ client.payment_batch.create_payment_batch_for_user_monetary_account(
 <dl>
 <dd>
 
-**payments:** `typing.Optional[PaymentBatchAnchoredPayment]` — The list of mutations that were made.
+**request:** `PaymentBatch` 
     
 </dd>
 </dl>
@@ -32347,7 +29615,7 @@ client.payment_batch.create_payment_batch_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.payment_batch.<a href="src/fern/payment_batch/client.py">read_payment_batch_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.payment_batch.<a href="src/fern/payment_batch/client.py">read_payment_batch_for_user_monetary_account</a>(...) -> PaymentBatchRead</code></summary>
 <dl>
 <dd>
 
@@ -32375,15 +29643,13 @@ Return the details of a specific payment batch.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_batch.read_payment_batch_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -32440,7 +29706,7 @@ client.payment_batch.read_payment_batch_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.payment_batch.<a href="src/fern/payment_batch/client.py">update_payment_batch_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.payment_batch.<a href="src/fern/payment_batch/client.py">update_payment_batch_for_user_monetary_account</a>(...) -> PaymentBatchUpdate</code></summary>
 <dl>
 <dd>
 
@@ -32468,15 +29734,13 @@ Revoke a bunq.to payment batch. The status of all the payments will be set to RE
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_batch.update_payment_batch_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -32521,7 +29785,7 @@ client.payment_batch.update_payment_batch_for_user_monetary_account(
 <dl>
 <dd>
 
-**payments:** `typing.Optional[PaymentBatchAnchoredPayment]` — The list of mutations that were made.
+**request:** `PaymentBatch` 
     
 </dd>
 </dl>
@@ -32542,7 +29806,7 @@ client.payment_batch.update_payment_batch_for_user_monetary_account(
 </details>
 
 ## request-inquiry
-<details><summary><code>client.request_inquiry.<a href="src/fern/request_inquiry/client.py">list_all_request_inquiry_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.request_inquiry.<a href="src/fern/request_inquiry/client.py">list_all_request_inquiry_for_user_monetary_account</a>(...) -> typing.List[RequestInquiryListing]</code></summary>
 <dl>
 <dd>
 
@@ -32570,15 +29834,13 @@ Get all payment requests for a user's monetary account. bunqme_share_url is alwa
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.request_inquiry.list_all_request_inquiry_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -32626,7 +29888,7 @@ client.request_inquiry.list_all_request_inquiry_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.request_inquiry.<a href="src/fern/request_inquiry/client.py">create_request_inquiry_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.request_inquiry.<a href="src/fern/request_inquiry/client.py">create_request_inquiry_for_user_monetary_account</a>(...) -> RequestInquiryCreate</code></summary>
 <dl>
 <dd>
 
@@ -32654,15 +29916,13 @@ Create a new payment request.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.request_inquiry.create_request_inquiry_for_user_monetary_account(
     user_id=1,
     monetary_account_id_=1,
@@ -32691,7 +29951,7 @@ client.request_inquiry.create_request_inquiry_for_user_monetary_account(
 <dl>
 <dd>
 
-**monetary_account_id_:** `int` — 
+**monetary_account_id:** `int` — 
     
 </dd>
 </dl>
@@ -32699,239 +29959,7 @@ client.request_inquiry.create_request_inquiry_for_user_monetary_account(
 <dl>
 <dd>
 
-**allow_bunqme:** `bool` — Whether or not sending a bunq.me request is allowed.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**address_billing:** `typing.Optional[Address]` — The billing address provided by the accepting user if an address was requested.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**address_shipping:** `typing.Optional[Address]` — The shipping address provided by the accepting user if an address was requested.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**allow_amount_higher:** `typing.Optional[bool]` — [DEPRECATED] Whether or not the accepting user can choose to accept with a higher amount than requested. Defaults to false.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**allow_amount_lower:** `typing.Optional[bool]` — [DEPRECATED] Whether or not the accepting user can choose to accept with a lower amount than requested. Defaults to false.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount_inquired:** `typing.Optional[Amount]` — The requested amount.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount_responded:** `typing.Optional[Amount]` — The responded amount.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attachment:** `typing.Optional[typing.Sequence[BunqId]]` — The attachments attached to the payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**batch_id:** `typing.Optional[int]` — The id of the batch if the request was part of a batch.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bunqme_share_url:** `typing.Optional[str]` — The url that points to the bunq.me request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counterparty_alias:** `typing.Optional[LabelMonetaryAccount]` — The LabelMonetaryAccount with the public information of the MonetaryAccount the money was requested from.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created:** `typing.Optional[str]` — The timestamp of the payment request's creation.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The description of the inquiry.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**event_id:** `typing.Optional[int]` — The ID of the associated event if the request was made using 'split the bill'.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**geolocation:** `typing.Optional[Geolocation]` — The geolocation where the payment was done.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` — The id of the created RequestInquiry.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**merchant_reference:** `typing.Optional[str]` — The client's custom reference that was attached to the request and the mutation.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**minimum_age:** `typing.Optional[int]` — The minimum age the user accepting the RequestInquiry must have.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**monetary_account_id:** `typing.Optional[int]` — The id of the monetary account the request response applies to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**redirect_url:** `typing.Optional[str]` — The URL which the user is sent to after accepting or rejecting the Request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reference_split_the_bill:** `typing.Optional[RequestReferenceSplitTheBillAnchorObject]` — The reference to the object used for split the bill. Can be Payment, PaymentBatch, ScheduleInstance, RequestResponse and MasterCardAction
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**require_address:** `typing.Optional[str]` — Whether or not an address must be provided on accept.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scheduled_id:** `typing.Optional[int]` — The id of the scheduled job if the request was scheduled.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**time_expiry:** `typing.Optional[str]` — The timestamp of when the payment request expired.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**time_responded:** `typing.Optional[str]` — The timestamp of when the payment request was responded to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated:** `typing.Optional[str]` — The timestamp of the payment request's last update.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user_alias_created:** `typing.Optional[LabelUser]` — The label that's displayed to the counterparty with the mutation. Includes user.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user_alias_revoked:** `typing.Optional[LabelUser]` — The label that's displayed to the counterparty with the mutation. Includes user.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**want_tip:** `typing.Optional[bool]` — [DEPRECATED] Whether or not the accepting user can give an extra tip on top of the requested Amount. Defaults to false.
+**request:** `RequestInquiry` 
     
 </dd>
 </dl>
@@ -32951,7 +29979,7 @@ client.request_inquiry.create_request_inquiry_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.request_inquiry.<a href="src/fern/request_inquiry/client.py">read_request_inquiry_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.request_inquiry.<a href="src/fern/request_inquiry/client.py">read_request_inquiry_for_user_monetary_account</a>(...) -> RequestInquiryRead</code></summary>
 <dl>
 <dd>
 
@@ -32979,15 +30007,13 @@ Get the details of a specific payment request, including its status. bunqme_shar
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.request_inquiry.read_request_inquiry_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -33044,7 +30070,7 @@ client.request_inquiry.read_request_inquiry_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.request_inquiry.<a href="src/fern/request_inquiry/client.py">update_request_inquiry_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.request_inquiry.<a href="src/fern/request_inquiry/client.py">update_request_inquiry_for_user_monetary_account</a>(...) -> RequestInquiryUpdate</code></summary>
 <dl>
 <dd>
 
@@ -33072,15 +30098,13 @@ Revoke a request for payment, by updating the status to REVOKED.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.request_inquiry.update_request_inquiry_for_user_monetary_account(
     user_id=1,
     monetary_account_id_=1,
@@ -33110,7 +30134,7 @@ client.request_inquiry.update_request_inquiry_for_user_monetary_account(
 <dl>
 <dd>
 
-**monetary_account_id_:** `int` — 
+**monetary_account_id:** `int` — 
     
 </dd>
 </dl>
@@ -33126,239 +30150,7 @@ client.request_inquiry.update_request_inquiry_for_user_monetary_account(
 <dl>
 <dd>
 
-**allow_bunqme:** `bool` — Whether or not sending a bunq.me request is allowed.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**address_billing:** `typing.Optional[Address]` — The billing address provided by the accepting user if an address was requested.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**address_shipping:** `typing.Optional[Address]` — The shipping address provided by the accepting user if an address was requested.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**allow_amount_higher:** `typing.Optional[bool]` — [DEPRECATED] Whether or not the accepting user can choose to accept with a higher amount than requested. Defaults to false.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**allow_amount_lower:** `typing.Optional[bool]` — [DEPRECATED] Whether or not the accepting user can choose to accept with a lower amount than requested. Defaults to false.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount_inquired:** `typing.Optional[Amount]` — The requested amount.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount_responded:** `typing.Optional[Amount]` — The responded amount.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attachment:** `typing.Optional[typing.Sequence[BunqId]]` — The attachments attached to the payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**batch_id:** `typing.Optional[int]` — The id of the batch if the request was part of a batch.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bunqme_share_url:** `typing.Optional[str]` — The url that points to the bunq.me request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counterparty_alias:** `typing.Optional[LabelMonetaryAccount]` — The LabelMonetaryAccount with the public information of the MonetaryAccount the money was requested from.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created:** `typing.Optional[str]` — The timestamp of the payment request's creation.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The description of the inquiry.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**event_id:** `typing.Optional[int]` — The ID of the associated event if the request was made using 'split the bill'.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**geolocation:** `typing.Optional[Geolocation]` — The geolocation where the payment was done.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` — The id of the created RequestInquiry.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**merchant_reference:** `typing.Optional[str]` — The client's custom reference that was attached to the request and the mutation.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**minimum_age:** `typing.Optional[int]` — The minimum age the user accepting the RequestInquiry must have.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**monetary_account_id:** `typing.Optional[int]` — The id of the monetary account the request response applies to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**redirect_url:** `typing.Optional[str]` — The URL which the user is sent to after accepting or rejecting the Request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reference_split_the_bill:** `typing.Optional[RequestReferenceSplitTheBillAnchorObject]` — The reference to the object used for split the bill. Can be Payment, PaymentBatch, ScheduleInstance, RequestResponse and MasterCardAction
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**require_address:** `typing.Optional[str]` — Whether or not an address must be provided on accept.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scheduled_id:** `typing.Optional[int]` — The id of the scheduled job if the request was scheduled.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**time_expiry:** `typing.Optional[str]` — The timestamp of when the payment request expired.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**time_responded:** `typing.Optional[str]` — The timestamp of when the payment request was responded to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated:** `typing.Optional[str]` — The timestamp of the payment request's last update.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user_alias_created:** `typing.Optional[LabelUser]` — The label that's displayed to the counterparty with the mutation. Includes user.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user_alias_revoked:** `typing.Optional[LabelUser]` — The label that's displayed to the counterparty with the mutation. Includes user.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**want_tip:** `typing.Optional[bool]` — [DEPRECATED] Whether or not the accepting user can give an extra tip on top of the requested Amount. Defaults to false.
+**request:** `RequestInquiry` 
     
 </dd>
 </dl>
@@ -33379,7 +30171,7 @@ client.request_inquiry.update_request_inquiry_for_user_monetary_account(
 </details>
 
 ## request-inquiry-batch
-<details><summary><code>client.request_inquiry_batch.<a href="src/fern/request_inquiry_batch/client.py">list_all_request_inquiry_batch_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.request_inquiry_batch.<a href="src/fern/request_inquiry_batch/client.py">list_all_request_inquiry_batch_for_user_monetary_account</a>(...) -> typing.List[RequestInquiryBatchListing]</code></summary>
 <dl>
 <dd>
 
@@ -33407,15 +30199,13 @@ Return all the request batches for a monetary account.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.request_inquiry_batch.list_all_request_inquiry_batch_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -33463,7 +30253,7 @@ client.request_inquiry_batch.list_all_request_inquiry_batch_for_user_monetary_ac
 </dl>
 </details>
 
-<details><summary><code>client.request_inquiry_batch.<a href="src/fern/request_inquiry_batch/client.py">create_request_inquiry_batch_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.request_inquiry_batch.<a href="src/fern/request_inquiry_batch/client.py">create_request_inquiry_batch_for_user_monetary_account</a>(...) -> RequestInquiryBatchCreate</code></summary>
 <dl>
 <dd>
 
@@ -33491,15 +30281,13 @@ Create a request batch by sending an array of single request objects, that will 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.request_inquiry_batch.create_request_inquiry_batch_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -33535,39 +30323,7 @@ client.request_inquiry_batch.create_request_inquiry_batch_for_user_monetary_acco
 <dl>
 <dd>
 
-**event_id:** `typing.Optional[int]` — The ID of the associated event if the request batch was made using 'split the bill'.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reference_split_the_bill:** `typing.Optional[RequestReferenceSplitTheBillAnchorObject]` — The reference to the object used for split the bill. Can be Payment, PaymentBatch, ScheduleInstance, RequestResponse and MasterCardAction
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_inquiries:** `typing.Optional[typing.Sequence[RequestInquiry]]` — The list of requests that were made.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**total_amount_inquired:** `typing.Optional[Amount]` — The total amount originally inquired for this batch.
+**request:** `RequestInquiryBatch` 
     
 </dd>
 </dl>
@@ -33587,7 +30343,7 @@ client.request_inquiry_batch.create_request_inquiry_batch_for_user_monetary_acco
 </dl>
 </details>
 
-<details><summary><code>client.request_inquiry_batch.<a href="src/fern/request_inquiry_batch/client.py">read_request_inquiry_batch_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.request_inquiry_batch.<a href="src/fern/request_inquiry_batch/client.py">read_request_inquiry_batch_for_user_monetary_account</a>(...) -> RequestInquiryBatchRead</code></summary>
 <dl>
 <dd>
 
@@ -33615,15 +30371,13 @@ Return the details of a specific request batch.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.request_inquiry_batch.read_request_inquiry_batch_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -33680,7 +30434,7 @@ client.request_inquiry_batch.read_request_inquiry_batch_for_user_monetary_accoun
 </dl>
 </details>
 
-<details><summary><code>client.request_inquiry_batch.<a href="src/fern/request_inquiry_batch/client.py">update_request_inquiry_batch_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.request_inquiry_batch.<a href="src/fern/request_inquiry_batch/client.py">update_request_inquiry_batch_for_user_monetary_account</a>(...) -> RequestInquiryBatchUpdate</code></summary>
 <dl>
 <dd>
 
@@ -33708,15 +30462,13 @@ Revoke a request batch. The status of all the requests will be set to REVOKED.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.request_inquiry_batch.update_request_inquiry_batch_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -33761,39 +30513,7 @@ client.request_inquiry_batch.update_request_inquiry_batch_for_user_monetary_acco
 <dl>
 <dd>
 
-**event_id:** `typing.Optional[int]` — The ID of the associated event if the request batch was made using 'split the bill'.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reference_split_the_bill:** `typing.Optional[RequestReferenceSplitTheBillAnchorObject]` — The reference to the object used for split the bill. Can be Payment, PaymentBatch, ScheduleInstance, RequestResponse and MasterCardAction
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_inquiries:** `typing.Optional[typing.Sequence[RequestInquiry]]` — The list of requests that were made.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**total_amount_inquired:** `typing.Optional[Amount]` — The total amount originally inquired for this batch.
+**request:** `RequestInquiryBatch` 
     
 </dd>
 </dl>
@@ -33814,7 +30534,7 @@ client.request_inquiry_batch.update_request_inquiry_batch_for_user_monetary_acco
 </details>
 
 ## request-response
-<details><summary><code>client.request_response.<a href="src/fern/request_response/client.py">list_all_request_response_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.request_response.<a href="src/fern/request_response/client.py">list_all_request_response_for_user_monetary_account</a>(...) -> typing.List[RequestResponseListing]</code></summary>
 <dl>
 <dd>
 
@@ -33842,15 +30562,13 @@ Get all RequestResponses for a MonetaryAccount.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.request_response.list_all_request_response_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -33898,7 +30616,7 @@ client.request_response.list_all_request_response_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.request_response.<a href="src/fern/request_response/client.py">read_request_response_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.request_response.<a href="src/fern/request_response/client.py">read_request_response_for_user_monetary_account</a>(...) -> RequestResponseRead</code></summary>
 <dl>
 <dd>
 
@@ -33926,15 +30644,13 @@ Get the details for a specific existing RequestResponse.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.request_response.read_request_response_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -33991,7 +30707,7 @@ client.request_response.read_request_response_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.request_response.<a href="src/fern/request_response/client.py">update_request_response_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.request_response.<a href="src/fern/request_response/client.py">update_request_response_for_user_monetary_account</a>(...) -> RequestResponseUpdate</code></summary>
 <dl>
 <dd>
 
@@ -34019,15 +30735,13 @@ Update the status to accept or reject the RequestResponse.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.request_response.update_request_response_for_user_monetary_account(
     user_id=1,
     monetary_account_id_=1,
@@ -34056,7 +30770,7 @@ client.request_response.update_request_response_for_user_monetary_account(
 <dl>
 <dd>
 
-**monetary_account_id_:** `int` — 
+**monetary_account_id:** `int` — 
     
 </dd>
 </dl>
@@ -34072,231 +30786,7 @@ client.request_response.update_request_response_for_user_monetary_account(
 <dl>
 <dd>
 
-**address_billing:** `typing.Optional[Address]` — The billing address provided by the accepting user if an address was requested.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**address_shipping:** `typing.Optional[Address]` — The shipping address provided by the accepting user if an address was requested.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**alias:** `typing.Optional[LabelMonetaryAccount]` — The LabelMonetaryAccount with the public information of the MonetaryAccount this RequestResponse was received on.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount_inquired:** `typing.Optional[Amount]` — The requested Amount.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount_responded:** `typing.Optional[Amount]` — The Amount the RequestResponse was accepted with.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attachment:** `typing.Optional[typing.Sequence[Attachment]]` — The Attachments attached to the RequestResponse.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counterparty_alias:** `typing.Optional[LabelMonetaryAccount]` — The LabelMonetaryAccount with the public information of the MonetaryAccount that is requesting money with this RequestResponse.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created:** `typing.Optional[str]` — The timestamp when the Request Response was created.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**credit_scheme_identifier:** `typing.Optional[str]` — The credit scheme id provided by the counterparty for DIRECT_DEBIT inquiries.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The description for the RequestResponse provided by the requesting party. Maximum 9000 characters.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**eligible_whitelist_id:** `typing.Optional[int]` — The whitelist id for this action or null.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**event_id:** `typing.Optional[int]` — The ID of the latest event for the request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**geolocation:** `typing.Optional[Geolocation]` — The Geolocation where the RequestResponse was created.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` — The id of the Request Response.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**mandate_identifier:** `typing.Optional[str]` — The mandate id provided by the counterparty for DIRECT_DEBIT inquiries.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**minimum_age:** `typing.Optional[int]` — The minimum age the user accepting the RequestResponse must have.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**monetary_account_id:** `typing.Optional[int]` — The id of the MonetaryAccount the RequestResponse was received on.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**redirect_url:** `typing.Optional[str]` — The URL which the user is sent to after accepting or rejecting the Request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_reference_split_the_bill:** `typing.Optional[typing.Sequence[RequestInquiryReference]]` — The reference to the object used for split the bill. Can be RequestInquiry or RequestInquiryBatch
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**require_address:** `typing.Optional[str]` — Whether or not an address must be provided on accept.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the RequestResponse. Can be ACCEPTED, PENDING, REJECTED, REFUND_REQUESTED, REFUNDED or REVOKED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sub_type:** `typing.Optional[str]` — The subtype of the RequestInquiry. Can be ONCE or RECURRING for DIRECT_DEBIT RequestInquiries and NONE for all other.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**time_expiry:** `typing.Optional[str]` — The timestamp of when the RequestResponse expired or will expire.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**time_refund_requested:** `typing.Optional[str]` — The timestamp of when a refund request for the RequestResponse was claimed.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**time_refunded:** `typing.Optional[str]` — The timestamp of when the RequestResponse was refunded.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**time_responded:** `typing.Optional[str]` — The timestamp of when the RequestResponse was responded to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[str]` — The type of the RequestInquiry. Can be DIRECT_DEBIT, DIRECT_DEBIT_B2B, IDEAL, SOFORT or INTERNAL.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated:** `typing.Optional[str]` — The timestamp when the Request Response was last updated (will be updated when chat messages are received).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user_refund_requested:** `typing.Optional[LabelUser]` — The label of the user that requested the refund.
+**request:** `RequestResponse` 
     
 </dd>
 </dl>
@@ -34317,7 +30807,7 @@ client.request_response.update_request_response_for_user_monetary_account(
 </details>
 
 ## schedule
-<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py">list_all_schedule_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py">list_all_schedule_for_user_monetary_account</a>(...) -> typing.List[ScheduleListing]</code></summary>
 <dl>
 <dd>
 
@@ -34345,15 +30835,13 @@ Get a collection of scheduled definition for a given monetary account. You can a
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.schedule.list_all_schedule_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -34401,7 +30889,7 @@ client.schedule.list_all_schedule_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py">read_schedule_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py">read_schedule_for_user_monetary_account</a>(...) -> ScheduleRead</code></summary>
 <dl>
 <dd>
 
@@ -34429,15 +30917,13 @@ Get a specific schedule definition for a given monetary account.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.schedule.read_schedule_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -34494,7 +30980,7 @@ client.schedule.read_schedule_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py">list_all_schedule_for_user</a>(...)</code></summary>
+<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py">list_all_schedule_for_user</a>(...) -> typing.List[ScheduleUserListing]</code></summary>
 <dl>
 <dd>
 
@@ -34522,15 +31008,13 @@ Get a collection of scheduled definition for all accessible monetary accounts of
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.schedule.list_all_schedule_for_user(
     user_id=1,
 )
@@ -34570,7 +31054,7 @@ client.schedule.list_all_schedule_for_user(
 </details>
 
 ## schedule-payment
-<details><summary><code>client.schedule_payment.<a href="src/fern/schedule_payment/client.py">list_all_schedule_payment_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.schedule_payment.<a href="src/fern/schedule_payment/client.py">list_all_schedule_payment_for_user_monetary_account</a>(...) -> typing.List[SchedulePaymentListing]</code></summary>
 <dl>
 <dd>
 
@@ -34598,15 +31082,13 @@ Endpoint for schedule payments.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.schedule_payment.list_all_schedule_payment_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -34654,7 +31136,7 @@ client.schedule_payment.list_all_schedule_payment_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.schedule_payment.<a href="src/fern/schedule_payment/client.py">create_schedule_payment_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.schedule_payment.<a href="src/fern/schedule_payment/client.py">create_schedule_payment_for_user_monetary_account</a>(...) -> SchedulePaymentCreate</code></summary>
 <dl>
 <dd>
 
@@ -34682,15 +31164,13 @@ Endpoint for schedule payments.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.schedule_payment.create_schedule_payment_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -34726,23 +31206,7 @@ client.schedule_payment.create_schedule_payment_for_user_monetary_account(
 <dl>
 <dd>
 
-**payment:** `typing.Optional[SchedulePaymentEntry]` — The payment details.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**schedule:** `typing.Optional[Schedule]` — The schedule details.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The schedule status, options: ACTIVE, FINISHED, CANCELLED.
+**request:** `SchedulePayment` 
     
 </dd>
 </dl>
@@ -34762,7 +31226,7 @@ client.schedule_payment.create_schedule_payment_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.schedule_payment.<a href="src/fern/schedule_payment/client.py">read_schedule_payment_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.schedule_payment.<a href="src/fern/schedule_payment/client.py">read_schedule_payment_for_user_monetary_account</a>(...) -> SchedulePaymentRead</code></summary>
 <dl>
 <dd>
 
@@ -34790,15 +31254,13 @@ Endpoint for schedule payments.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.schedule_payment.read_schedule_payment_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -34855,7 +31317,7 @@ client.schedule_payment.read_schedule_payment_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.schedule_payment.<a href="src/fern/schedule_payment/client.py">update_schedule_payment_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.schedule_payment.<a href="src/fern/schedule_payment/client.py">update_schedule_payment_for_user_monetary_account</a>(...) -> SchedulePaymentUpdate</code></summary>
 <dl>
 <dd>
 
@@ -34883,15 +31345,13 @@ Endpoint for schedule payments.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.schedule_payment.update_schedule_payment_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -34936,23 +31396,7 @@ client.schedule_payment.update_schedule_payment_for_user_monetary_account(
 <dl>
 <dd>
 
-**payment:** `typing.Optional[SchedulePaymentEntry]` — The payment details.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**schedule:** `typing.Optional[Schedule]` — The schedule details.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The schedule status, options: ACTIVE, FINISHED, CANCELLED.
+**request:** `SchedulePayment` 
     
 </dd>
 </dl>
@@ -34972,7 +31416,7 @@ client.schedule_payment.update_schedule_payment_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.schedule_payment.<a href="src/fern/schedule_payment/client.py">delete_schedule_payment_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.schedule_payment.<a href="src/fern/schedule_payment/client.py">delete_schedule_payment_for_user_monetary_account</a>(...) -> SchedulePaymentDelete</code></summary>
 <dl>
 <dd>
 
@@ -35000,15 +31444,13 @@ Endpoint for schedule payments.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.schedule_payment.delete_schedule_payment_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -35066,7 +31508,7 @@ client.schedule_payment.delete_schedule_payment_for_user_monetary_account(
 </details>
 
 ## schedule-payment-batch
-<details><summary><code>client.schedule_payment_batch.<a href="src/fern/schedule_payment_batch/client.py">create_schedule_payment_batch_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.schedule_payment_batch.<a href="src/fern/schedule_payment_batch/client.py">create_schedule_payment_batch_for_user_monetary_account</a>(...) -> SchedulePaymentBatchCreate</code></summary>
 <dl>
 <dd>
 
@@ -35094,15 +31536,13 @@ Endpoint for schedule payment batches.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.schedule_payment_batch.create_schedule_payment_batch_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -35138,15 +31578,7 @@ client.schedule_payment_batch.create_schedule_payment_batch_for_user_monetary_ac
 <dl>
 <dd>
 
-**payments:** `typing.Optional[typing.Sequence[SchedulePaymentEntry]]` — The payment details.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**schedule:** `typing.Optional[Schedule]` — The schedule details.
+**request:** `SchedulePaymentBatch` 
     
 </dd>
 </dl>
@@ -35166,7 +31598,7 @@ client.schedule_payment_batch.create_schedule_payment_batch_for_user_monetary_ac
 </dl>
 </details>
 
-<details><summary><code>client.schedule_payment_batch.<a href="src/fern/schedule_payment_batch/client.py">read_schedule_payment_batch_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.schedule_payment_batch.<a href="src/fern/schedule_payment_batch/client.py">read_schedule_payment_batch_for_user_monetary_account</a>(...) -> SchedulePaymentBatchRead</code></summary>
 <dl>
 <dd>
 
@@ -35194,15 +31626,13 @@ Endpoint for schedule payment batches.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.schedule_payment_batch.read_schedule_payment_batch_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -35259,7 +31689,7 @@ client.schedule_payment_batch.read_schedule_payment_batch_for_user_monetary_acco
 </dl>
 </details>
 
-<details><summary><code>client.schedule_payment_batch.<a href="src/fern/schedule_payment_batch/client.py">update_schedule_payment_batch_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.schedule_payment_batch.<a href="src/fern/schedule_payment_batch/client.py">update_schedule_payment_batch_for_user_monetary_account</a>(...) -> SchedulePaymentBatchUpdate</code></summary>
 <dl>
 <dd>
 
@@ -35287,15 +31717,13 @@ Endpoint for schedule payment batches.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.schedule_payment_batch.update_schedule_payment_batch_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -35340,15 +31768,7 @@ client.schedule_payment_batch.update_schedule_payment_batch_for_user_monetary_ac
 <dl>
 <dd>
 
-**payments:** `typing.Optional[typing.Sequence[SchedulePaymentEntry]]` — The payment details.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**schedule:** `typing.Optional[Schedule]` — The schedule details.
+**request:** `SchedulePaymentBatch` 
     
 </dd>
 </dl>
@@ -35368,7 +31788,7 @@ client.schedule_payment_batch.update_schedule_payment_batch_for_user_monetary_ac
 </dl>
 </details>
 
-<details><summary><code>client.schedule_payment_batch.<a href="src/fern/schedule_payment_batch/client.py">delete_schedule_payment_batch_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.schedule_payment_batch.<a href="src/fern/schedule_payment_batch/client.py">delete_schedule_payment_batch_for_user_monetary_account</a>(...) -> SchedulePaymentBatchDelete</code></summary>
 <dl>
 <dd>
 
@@ -35396,15 +31816,13 @@ Endpoint for schedule payment batches.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.schedule_payment_batch.delete_schedule_payment_batch_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -35462,7 +31880,7 @@ client.schedule_payment_batch.delete_schedule_payment_batch_for_user_monetary_ac
 </details>
 
 ## schedule-instance
-<details><summary><code>client.schedule_instance.<a href="src/fern/schedule_instance/client.py">list_all_schedule_instance_for_user_monetary_account_schedule</a>(...)</code></summary>
+<details><summary><code>client.schedule_instance.<a href="src/fern/schedule_instance/client.py">list_all_schedule_instance_for_user_monetary_account_schedule</a>(...) -> typing.List[ScheduleInstanceListing]</code></summary>
 <dl>
 <dd>
 
@@ -35490,15 +31908,13 @@ view for reading, updating and listing the scheduled instance.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.schedule_instance.list_all_schedule_instance_for_user_monetary_account_schedule(
     user_id=1,
     monetary_account_id=1,
@@ -35555,7 +31971,7 @@ client.schedule_instance.list_all_schedule_instance_for_user_monetary_account_sc
 </dl>
 </details>
 
-<details><summary><code>client.schedule_instance.<a href="src/fern/schedule_instance/client.py">read_schedule_instance_for_user_monetary_account_schedule</a>(...)</code></summary>
+<details><summary><code>client.schedule_instance.<a href="src/fern/schedule_instance/client.py">read_schedule_instance_for_user_monetary_account_schedule</a>(...) -> ScheduleInstanceRead</code></summary>
 <dl>
 <dd>
 
@@ -35583,15 +31999,13 @@ view for reading, updating and listing the scheduled instance.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.schedule_instance.read_schedule_instance_for_user_monetary_account_schedule(
     user_id=1,
     monetary_account_id=1,
@@ -35657,7 +32071,7 @@ client.schedule_instance.read_schedule_instance_for_user_monetary_account_schedu
 </dl>
 </details>
 
-<details><summary><code>client.schedule_instance.<a href="src/fern/schedule_instance/client.py">update_schedule_instance_for_user_monetary_account_schedule</a>(...)</code></summary>
+<details><summary><code>client.schedule_instance.<a href="src/fern/schedule_instance/client.py">update_schedule_instance_for_user_monetary_account_schedule</a>(...) -> ScheduleInstanceUpdate</code></summary>
 <dl>
 <dd>
 
@@ -35685,15 +32099,13 @@ view for reading, updating and listing the scheduled instance.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.schedule_instance.update_schedule_instance_for_user_monetary_account_schedule(
     user_id=1,
     monetary_account_id=1,
@@ -35747,55 +32159,7 @@ client.schedule_instance.update_schedule_instance_for_user_monetary_account_sche
 <dl>
 <dd>
 
-**error_message:** `typing.Optional[typing.Sequence[Error]]` — The message when the scheduled instance has run and failed due to user error.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_reference_split_the_bill:** `typing.Optional[typing.Sequence[RequestInquiryReference]]` — The reference to the object used for split the bill. Can be RequestInquiry or RequestInquiryBatch
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**result_object:** `typing.Optional[ScheduleInstanceAnchorObject]` — The result object of this schedule instance. (Payment, PaymentBatch)
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scheduled_object:** `typing.Optional[ScheduleAnchorObject]` — The scheduled object. (Payment, PaymentBatch)
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**state:** `typing.Optional[str]` — The state of the scheduleInstance. (FINISHED_SUCCESSFULLY, RETRY, FAILED_USER_ERROR)
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**time_end:** `typing.Optional[str]` — The schedule end time (UTC).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**time_start:** `typing.Optional[str]` — The schedule start time (UTC).
+**request:** `ScheduleInstance` 
     
 </dd>
 </dl>
@@ -35816,7 +32180,7 @@ client.schedule_instance.update_schedule_instance_for_user_monetary_account_sche
 </details>
 
 ## share-invite-monetary-account-inquiry
-<details><summary><code>client.share_invite_monetary_account_inquiry.<a href="src/fern/share_invite_monetary_account_inquiry/client.py">list_all_share_invite_monetary_account_inquiry_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.share_invite_monetary_account_inquiry.<a href="src/fern/share_invite_monetary_account_inquiry/client.py">list_all_share_invite_monetary_account_inquiry_for_user_monetary_account</a>(...) -> typing.List[ShareInviteMonetaryAccountInquiryListing]</code></summary>
 <dl>
 <dd>
 
@@ -35844,15 +32208,13 @@ client.schedule_instance.update_schedule_instance_for_user_monetary_account_sche
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.share_invite_monetary_account_inquiry.list_all_share_invite_monetary_account_inquiry_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -35900,7 +32262,7 @@ client.share_invite_monetary_account_inquiry.list_all_share_invite_monetary_acco
 </dl>
 </details>
 
-<details><summary><code>client.share_invite_monetary_account_inquiry.<a href="src/fern/share_invite_monetary_account_inquiry/client.py">create_share_invite_monetary_account_inquiry_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.share_invite_monetary_account_inquiry.<a href="src/fern/share_invite_monetary_account_inquiry/client.py">create_share_invite_monetary_account_inquiry_for_user_monetary_account</a>(...) -> ShareInviteMonetaryAccountInquiryCreate</code></summary>
 <dl>
 <dd>
 
@@ -35928,15 +32290,13 @@ client.share_invite_monetary_account_inquiry.list_all_share_invite_monetary_acco
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.share_invite_monetary_account_inquiry.create_share_invite_monetary_account_inquiry_for_user_monetary_account(
     user_id=1,
     monetary_account_id_=1,
@@ -35964,7 +32324,7 @@ client.share_invite_monetary_account_inquiry.create_share_invite_monetary_accoun
 <dl>
 <dd>
 
-**monetary_account_id_:** `int` — 
+**monetary_account_id:** `int` — 
     
 </dd>
 </dl>
@@ -35972,111 +32332,7 @@ client.share_invite_monetary_account_inquiry.create_share_invite_monetary_accoun
 <dl>
 <dd>
 
-**access_type:** `typing.Optional[str]` — Type of access that is in place.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**alias:** `typing.Optional[LabelMonetaryAccount]` — The label of the monetary account that's being shared.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counter_user_alias:** `typing.Optional[LabelUser]` — The label of the user to share with.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**draft_share_invite_bank_id:** `typing.Optional[int]` — DEPRECATED: USE `access_type` INSTEAD | The id of the draft share invite bank.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**end_date:** `typing.Optional[str]` — DEPRECATED: USE `access_type` INSTEAD | The expiration date of this share.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` — The id of the newly created share invite.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**monetary_account_id:** `typing.Optional[int]` — The id of the monetary account the share applies to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**relationship:** `typing.Optional[str]` — The relationship: COMPANY_DIRECTOR, COMPANY_EMPLOYEE, etc
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**share_detail:** `typing.Optional[ShareDetail]` — DEPRECATED: USE `access_type` INSTEAD | The share details. Only one of these objects may be passed.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**share_type:** `typing.Optional[str]` — DEPRECATED: USE `access_type` INSTEAD | The share type, either STANDARD or MUTUAL.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start_date:** `typing.Optional[str]` — DEPRECATED: USE `access_type` INSTEAD | The start date of this share.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the share. Can be ACTIVE, REVOKED, REJECTED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user_alias_created:** `typing.Optional[LabelUser]` — The user who created the share.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user_alias_revoked:** `typing.Optional[LabelUser]` — The user who revoked the share.
+**request:** `ShareInviteMonetaryAccountInquiry` 
     
 </dd>
 </dl>
@@ -36096,7 +32352,7 @@ client.share_invite_monetary_account_inquiry.create_share_invite_monetary_accoun
 </dl>
 </details>
 
-<details><summary><code>client.share_invite_monetary_account_inquiry.<a href="src/fern/share_invite_monetary_account_inquiry/client.py">read_share_invite_monetary_account_inquiry_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.share_invite_monetary_account_inquiry.<a href="src/fern/share_invite_monetary_account_inquiry/client.py">read_share_invite_monetary_account_inquiry_for_user_monetary_account</a>(...) -> ShareInviteMonetaryAccountInquiryRead</code></summary>
 <dl>
 <dd>
 
@@ -36124,15 +32380,13 @@ client.share_invite_monetary_account_inquiry.create_share_invite_monetary_accoun
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.share_invite_monetary_account_inquiry.read_share_invite_monetary_account_inquiry_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -36189,7 +32443,7 @@ client.share_invite_monetary_account_inquiry.read_share_invite_monetary_account_
 </dl>
 </details>
 
-<details><summary><code>client.share_invite_monetary_account_inquiry.<a href="src/fern/share_invite_monetary_account_inquiry/client.py">update_share_invite_monetary_account_inquiry_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.share_invite_monetary_account_inquiry.<a href="src/fern/share_invite_monetary_account_inquiry/client.py">update_share_invite_monetary_account_inquiry_for_user_monetary_account</a>(...) -> ShareInviteMonetaryAccountInquiryUpdate</code></summary>
 <dl>
 <dd>
 
@@ -36217,15 +32471,13 @@ client.share_invite_monetary_account_inquiry.read_share_invite_monetary_account_
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.share_invite_monetary_account_inquiry.update_share_invite_monetary_account_inquiry_for_user_monetary_account(
     user_id=1,
     monetary_account_id_=1,
@@ -36254,7 +32506,7 @@ client.share_invite_monetary_account_inquiry.update_share_invite_monetary_accoun
 <dl>
 <dd>
 
-**monetary_account_id_:** `int` — 
+**monetary_account_id:** `int` — 
     
 </dd>
 </dl>
@@ -36270,111 +32522,7 @@ client.share_invite_monetary_account_inquiry.update_share_invite_monetary_accoun
 <dl>
 <dd>
 
-**access_type:** `typing.Optional[str]` — Type of access that is in place.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**alias:** `typing.Optional[LabelMonetaryAccount]` — The label of the monetary account that's being shared.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counter_user_alias:** `typing.Optional[LabelUser]` — The label of the user to share with.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**draft_share_invite_bank_id:** `typing.Optional[int]` — DEPRECATED: USE `access_type` INSTEAD | The id of the draft share invite bank.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**end_date:** `typing.Optional[str]` — DEPRECATED: USE `access_type` INSTEAD | The expiration date of this share.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` — The id of the newly created share invite.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**monetary_account_id:** `typing.Optional[int]` — The id of the monetary account the share applies to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**relationship:** `typing.Optional[str]` — The relationship: COMPANY_DIRECTOR, COMPANY_EMPLOYEE, etc
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**share_detail:** `typing.Optional[ShareDetail]` — DEPRECATED: USE `access_type` INSTEAD | The share details. Only one of these objects may be passed.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**share_type:** `typing.Optional[str]` — DEPRECATED: USE `access_type` INSTEAD | The share type, either STANDARD or MUTUAL.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start_date:** `typing.Optional[str]` — DEPRECATED: USE `access_type` INSTEAD | The start date of this share.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the share. Can be ACTIVE, REVOKED, REJECTED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user_alias_created:** `typing.Optional[LabelUser]` — The user who created the share.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user_alias_revoked:** `typing.Optional[LabelUser]` — The user who revoked the share.
+**request:** `ShareInviteMonetaryAccountInquiry` 
     
 </dd>
 </dl>
@@ -36395,7 +32543,7 @@ client.share_invite_monetary_account_inquiry.update_share_invite_monetary_accoun
 </details>
 
 ## sofort-merchant-transaction
-<details><summary><code>client.sofort_merchant_transaction.<a href="src/fern/sofort_merchant_transaction/client.py">list_all_sofort_merchant_transaction_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.sofort_merchant_transaction.<a href="src/fern/sofort_merchant_transaction/client.py">list_all_sofort_merchant_transaction_for_user_monetary_account</a>(...) -> typing.List[SofortMerchantTransactionListing]</code></summary>
 <dl>
 <dd>
 
@@ -36423,15 +32571,13 @@ View for requesting Sofort transactions and polling their status.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sofort_merchant_transaction.list_all_sofort_merchant_transaction_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -36479,7 +32625,7 @@ client.sofort_merchant_transaction.list_all_sofort_merchant_transaction_for_user
 </dl>
 </details>
 
-<details><summary><code>client.sofort_merchant_transaction.<a href="src/fern/sofort_merchant_transaction/client.py">read_sofort_merchant_transaction_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.sofort_merchant_transaction.<a href="src/fern/sofort_merchant_transaction/client.py">read_sofort_merchant_transaction_for_user_monetary_account</a>(...) -> SofortMerchantTransactionRead</code></summary>
 <dl>
 <dd>
 
@@ -36507,15 +32653,13 @@ View for requesting Sofort transactions and polling their status.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sofort_merchant_transaction.read_sofort_merchant_transaction_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -36573,7 +32717,7 @@ client.sofort_merchant_transaction.read_sofort_merchant_transaction_for_user_mon
 </details>
 
 ## switch-service-payment
-<details><summary><code>client.switch_service_payment.<a href="src/fern/switch_service_payment/client.py">read_switch_service_payment_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.switch_service_payment.<a href="src/fern/switch_service_payment/client.py">read_switch_service_payment_for_user_monetary_account</a>(...) -> BankSwitchServiceNetherlandsIncomingPaymentRead</code></summary>
 <dl>
 <dd>
 
@@ -36601,15 +32745,13 @@ An incoming payment made towards an account of an external bank and redirected t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.switch_service_payment.read_switch_service_payment_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -36667,7 +32809,7 @@ client.switch_service_payment.read_switch_service_payment_for_user_monetary_acco
 </details>
 
 ## translink-transaction
-<details><summary><code>client.translink_transaction.<a href="src/fern/translink_transaction/client.py">list_all_translink_transaction_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.translink_transaction.<a href="src/fern/translink_transaction/client.py">list_all_translink_transaction_for_user_monetary_account</a>(...) -> typing.List[TranslinkTransactionListing]</code></summary>
 <dl>
 <dd>
 
@@ -36695,15 +32837,13 @@ Used to create translink transactions.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.translink_transaction.list_all_translink_transaction_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -36751,7 +32891,7 @@ client.translink_transaction.list_all_translink_transaction_for_user_monetary_ac
 </dl>
 </details>
 
-<details><summary><code>client.translink_transaction.<a href="src/fern/translink_transaction/client.py">create_translink_transaction_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.translink_transaction.<a href="src/fern/translink_transaction/client.py">create_translink_transaction_for_user_monetary_account</a>(...) -> TranslinkTransactionCreate</code></summary>
 <dl>
 <dd>
 
@@ -36779,20 +32919,20 @@ Used to create translink transactions.
 
 ```python
 from fern import FernApi, Payment
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.translink_transaction.create_translink_transaction_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
     description="description",
-    payments=[Payment()],
+    payments=[
+        Payment()
+    ],
     reference="reference",
     type="type",
 )
@@ -36835,7 +32975,7 @@ client.translink_transaction.create_translink_transaction_for_user_monetary_acco
 <dl>
 <dd>
 
-**payments:** `typing.Sequence[Payment]` — The list of payments we want to send in a single transaction.
+**payments:** `typing.List[Payment]` — The list of payments we want to send in a single transaction.
     
 </dd>
 </dl>
@@ -36871,7 +33011,7 @@ client.translink_transaction.create_translink_transaction_for_user_monetary_acco
 </dl>
 </details>
 
-<details><summary><code>client.translink_transaction.<a href="src/fern/translink_transaction/client.py">read_translink_transaction_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.translink_transaction.<a href="src/fern/translink_transaction/client.py">read_translink_transaction_for_user_monetary_account</a>(...) -> TranslinkTransactionRead</code></summary>
 <dl>
 <dd>
 
@@ -36899,15 +33039,13 @@ Used to create translink transactions.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.translink_transaction.read_translink_transaction_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -36965,7 +33103,7 @@ client.translink_transaction.read_translink_transaction_for_user_monetary_accoun
 </details>
 
 ## whitelist-sdd
-<details><summary><code>client.whitelist_sdd.<a href="src/fern/whitelist_sdd/client.py">list_all_whitelist_sdd_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.whitelist_sdd.<a href="src/fern/whitelist_sdd/client.py">list_all_whitelist_sdd_for_user_monetary_account</a>(...) -> typing.List[WhitelistSddMonetaryAccountPayingListing]</code></summary>
 <dl>
 <dd>
 
@@ -36993,15 +33131,13 @@ Get a listing of all SDD whitelist entries for a target monetary account.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.whitelist_sdd.list_all_whitelist_sdd_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -37049,7 +33185,7 @@ client.whitelist_sdd.list_all_whitelist_sdd_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.whitelist_sdd.<a href="src/fern/whitelist_sdd/client.py">read_whitelist_sdd_for_user_monetary_account</a>(...)</code></summary>
+<details><summary><code>client.whitelist_sdd.<a href="src/fern/whitelist_sdd/client.py">read_whitelist_sdd_for_user_monetary_account</a>(...) -> WhitelistSddMonetaryAccountPayingRead</code></summary>
 <dl>
 <dd>
 
@@ -37077,15 +33213,13 @@ Get a specific SDD whitelist entry.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.whitelist_sdd.read_whitelist_sdd_for_user_monetary_account(
     user_id=1,
     monetary_account_id=1,
@@ -37142,7 +33276,7 @@ client.whitelist_sdd.read_whitelist_sdd_for_user_monetary_account(
 </dl>
 </details>
 
-<details><summary><code>client.whitelist_sdd.<a href="src/fern/whitelist_sdd/client.py">list_all_whitelist_sdd_for_user</a>(...)</code></summary>
+<details><summary><code>client.whitelist_sdd.<a href="src/fern/whitelist_sdd/client.py">list_all_whitelist_sdd_for_user</a>(...) -> typing.List[WhitelistSddListing]</code></summary>
 <dl>
 <dd>
 
@@ -37170,15 +33304,13 @@ Get a listing of all recurring SDD whitelist entries for a target monetary accou
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.whitelist_sdd.list_all_whitelist_sdd_for_user(
     user_id=1,
 )
@@ -37217,7 +33349,7 @@ client.whitelist_sdd.list_all_whitelist_sdd_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.whitelist_sdd.<a href="src/fern/whitelist_sdd/client.py">read_whitelist_sdd_for_user</a>(...)</code></summary>
+<details><summary><code>client.whitelist_sdd.<a href="src/fern/whitelist_sdd/client.py">read_whitelist_sdd_for_user</a>(...) -> WhitelistSddRead</code></summary>
 <dl>
 <dd>
 
@@ -37245,15 +33377,13 @@ Get a specific recurring SDD whitelist entry.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.whitelist_sdd.read_whitelist_sdd_for_user(
     user_id=1,
     item_id=1,
@@ -37302,7 +33432,7 @@ client.whitelist_sdd.read_whitelist_sdd_for_user(
 </details>
 
 ## notification-filter-email
-<details><summary><code>client.notification_filter_email.<a href="src/fern/notification_filter_email/client.py">list_all_notification_filter_email_for_user</a>(...)</code></summary>
+<details><summary><code>client.notification_filter_email.<a href="src/fern/notification_filter_email/client.py">list_all_notification_filter_email_for_user</a>(...) -> typing.List[NotificationFilterEmailListing]</code></summary>
 <dl>
 <dd>
 
@@ -37330,15 +33460,13 @@ Manage the email notification filters for a user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.notification_filter_email.list_all_notification_filter_email_for_user(
     user_id=1,
 )
@@ -37377,7 +33505,7 @@ client.notification_filter_email.list_all_notification_filter_email_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.notification_filter_email.<a href="src/fern/notification_filter_email/client.py">create_notification_filter_email_for_user</a>(...)</code></summary>
+<details><summary><code>client.notification_filter_email.<a href="src/fern/notification_filter_email/client.py">create_notification_filter_email_for_user</a>(...) -> NotificationFilterEmailCreate</code></summary>
 <dl>
 <dd>
 
@@ -37405,15 +33533,13 @@ Manage the email notification filters for a user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.notification_filter_email.create_notification_filter_email_for_user(
     user_id=1,
 )
@@ -37440,7 +33566,7 @@ client.notification_filter_email.create_notification_filter_email_for_user(
 <dl>
 <dd>
 
-**notification_filters:** `typing.Optional[typing.Sequence[NotificationFilterEmail]]` — The types of notifications that will result in a email notification for this user.
+**request:** `NotificationFilterEmail` 
     
 </dd>
 </dl>
@@ -37461,7 +33587,7 @@ client.notification_filter_email.create_notification_filter_email_for_user(
 </details>
 
 ## notification-filter-push
-<details><summary><code>client.notification_filter_push.<a href="src/fern/notification_filter_push/client.py">list_all_notification_filter_push_for_user</a>(...)</code></summary>
+<details><summary><code>client.notification_filter_push.<a href="src/fern/notification_filter_push/client.py">list_all_notification_filter_push_for_user</a>(...) -> typing.List[NotificationFilterPushListing]</code></summary>
 <dl>
 <dd>
 
@@ -37489,15 +33615,13 @@ Manage the push notification filters for a user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.notification_filter_push.list_all_notification_filter_push_for_user(
     user_id=1,
 )
@@ -37536,7 +33660,7 @@ client.notification_filter_push.list_all_notification_filter_push_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.notification_filter_push.<a href="src/fern/notification_filter_push/client.py">create_notification_filter_push_for_user</a>(...)</code></summary>
+<details><summary><code>client.notification_filter_push.<a href="src/fern/notification_filter_push/client.py">create_notification_filter_push_for_user</a>(...) -> NotificationFilterPushCreate</code></summary>
 <dl>
 <dd>
 
@@ -37564,15 +33688,13 @@ Manage the push notification filters for a user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.notification_filter_push.create_notification_filter_push_for_user(
     user_id=1,
 )
@@ -37599,7 +33721,7 @@ client.notification_filter_push.create_notification_filter_push_for_user(
 <dl>
 <dd>
 
-**notification_filters:** `typing.Optional[typing.Sequence[NotificationFilterPush]]` — The types of notifications that will result in a push notification for this user.
+**request:** `NotificationFilterPush` 
     
 </dd>
 </dl>
@@ -37620,7 +33742,7 @@ client.notification_filter_push.create_notification_filter_push_for_user(
 </details>
 
 ## oauth-client
-<details><summary><code>client.oauth_client.<a href="src/fern/oauth_client/client.py">list_all_oauth_client_for_user</a>(...)</code></summary>
+<details><summary><code>client.oauth_client.<a href="src/fern/oauth_client/client.py">list_all_oauth_client_for_user</a>(...) -> typing.List[OauthClientListing]</code></summary>
 <dl>
 <dd>
 
@@ -37648,15 +33770,13 @@ Used for managing OAuth Clients.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.oauth_client.list_all_oauth_client_for_user(
     user_id=1,
 )
@@ -37695,7 +33815,7 @@ client.oauth_client.list_all_oauth_client_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.oauth_client.<a href="src/fern/oauth_client/client.py">create_oauth_client_for_user</a>(...)</code></summary>
+<details><summary><code>client.oauth_client.<a href="src/fern/oauth_client/client.py">create_oauth_client_for_user</a>(...) -> OauthClientCreate</code></summary>
 <dl>
 <dd>
 
@@ -37723,15 +33843,13 @@ Used for managing OAuth Clients.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.oauth_client.create_oauth_client_for_user(
     user_id=1,
 )
@@ -37758,7 +33876,7 @@ client.oauth_client.create_oauth_client_for_user(
 <dl>
 <dd>
 
-**status:** `typing.Optional[str]` — The status of the Oauth Client, can be ACTIVE or CANCELLED.
+**request:** `OauthClient` 
     
 </dd>
 </dl>
@@ -37778,7 +33896,7 @@ client.oauth_client.create_oauth_client_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.oauth_client.<a href="src/fern/oauth_client/client.py">read_oauth_client_for_user</a>(...)</code></summary>
+<details><summary><code>client.oauth_client.<a href="src/fern/oauth_client/client.py">read_oauth_client_for_user</a>(...) -> OauthClientRead</code></summary>
 <dl>
 <dd>
 
@@ -37806,15 +33924,13 @@ Used for managing OAuth Clients.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.oauth_client.read_oauth_client_for_user(
     user_id=1,
     item_id=1,
@@ -37862,7 +33978,7 @@ client.oauth_client.read_oauth_client_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.oauth_client.<a href="src/fern/oauth_client/client.py">update_oauth_client_for_user</a>(...)</code></summary>
+<details><summary><code>client.oauth_client.<a href="src/fern/oauth_client/client.py">update_oauth_client_for_user</a>(...) -> OauthClientUpdate</code></summary>
 <dl>
 <dd>
 
@@ -37890,15 +34006,13 @@ Used for managing OAuth Clients.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.oauth_client.update_oauth_client_for_user(
     user_id=1,
     item_id=1,
@@ -37934,7 +34048,7 @@ client.oauth_client.update_oauth_client_for_user(
 <dl>
 <dd>
 
-**status:** `typing.Optional[str]` — The status of the Oauth Client, can be ACTIVE or CANCELLED.
+**request:** `OauthClient` 
     
 </dd>
 </dl>
@@ -37955,7 +34069,7 @@ client.oauth_client.update_oauth_client_for_user(
 </details>
 
 ## callback-url
-<details><summary><code>client.callback_url.<a href="src/fern/callback_url/client.py">list_all_callback_url_for_user_oauth_client</a>(...)</code></summary>
+<details><summary><code>client.callback_url.<a href="src/fern/callback_url/client.py">list_all_callback_url_for_user_oauth_client</a>(...) -> typing.List[OauthCallbackUrlListing]</code></summary>
 <dl>
 <dd>
 
@@ -37983,15 +34097,13 @@ Used for managing OAuth Client Callback URLs.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.callback_url.list_all_callback_url_for_user_oauth_client(
     user_id=1,
     oauth_client_id=1,
@@ -38039,7 +34151,7 @@ client.callback_url.list_all_callback_url_for_user_oauth_client(
 </dl>
 </details>
 
-<details><summary><code>client.callback_url.<a href="src/fern/callback_url/client.py">create_callback_url_for_user_oauth_client</a>(...)</code></summary>
+<details><summary><code>client.callback_url.<a href="src/fern/callback_url/client.py">create_callback_url_for_user_oauth_client</a>(...) -> OauthCallbackUrlCreate</code></summary>
 <dl>
 <dd>
 
@@ -38067,15 +34179,13 @@ Used for managing OAuth Client Callback URLs.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.callback_url.create_callback_url_for_user_oauth_client(
     user_id=1,
     oauth_client_id=1,
@@ -38112,7 +34222,7 @@ client.callback_url.create_callback_url_for_user_oauth_client(
 <dl>
 <dd>
 
-**url:** `str` — The URL for this callback.
+**request:** `OauthCallbackUrl` 
     
 </dd>
 </dl>
@@ -38132,7 +34242,7 @@ client.callback_url.create_callback_url_for_user_oauth_client(
 </dl>
 </details>
 
-<details><summary><code>client.callback_url.<a href="src/fern/callback_url/client.py">read_callback_url_for_user_oauth_client</a>(...)</code></summary>
+<details><summary><code>client.callback_url.<a href="src/fern/callback_url/client.py">read_callback_url_for_user_oauth_client</a>(...) -> OauthCallbackUrlRead</code></summary>
 <dl>
 <dd>
 
@@ -38160,15 +34270,13 @@ Used for managing OAuth Client Callback URLs.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.callback_url.read_callback_url_for_user_oauth_client(
     user_id=1,
     oauth_client_id=1,
@@ -38225,7 +34333,7 @@ client.callback_url.read_callback_url_for_user_oauth_client(
 </dl>
 </details>
 
-<details><summary><code>client.callback_url.<a href="src/fern/callback_url/client.py">update_callback_url_for_user_oauth_client</a>(...)</code></summary>
+<details><summary><code>client.callback_url.<a href="src/fern/callback_url/client.py">update_callback_url_for_user_oauth_client</a>(...) -> OauthCallbackUrlUpdate</code></summary>
 <dl>
 <dd>
 
@@ -38253,15 +34361,13 @@ Used for managing OAuth Client Callback URLs.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.callback_url.update_callback_url_for_user_oauth_client(
     user_id=1,
     oauth_client_id=1,
@@ -38307,7 +34413,7 @@ client.callback_url.update_callback_url_for_user_oauth_client(
 <dl>
 <dd>
 
-**url:** `str` — The URL for this callback.
+**request:** `OauthCallbackUrl` 
     
 </dd>
 </dl>
@@ -38327,7 +34433,7 @@ client.callback_url.update_callback_url_for_user_oauth_client(
 </dl>
 </details>
 
-<details><summary><code>client.callback_url.<a href="src/fern/callback_url/client.py">delete_callback_url_for_user_oauth_client</a>(...)</code></summary>
+<details><summary><code>client.callback_url.<a href="src/fern/callback_url/client.py">delete_callback_url_for_user_oauth_client</a>(...) -> OauthCallbackUrlDelete</code></summary>
 <dl>
 <dd>
 
@@ -38355,15 +34461,13 @@ Used for managing OAuth Client Callback URLs.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.callback_url.delete_callback_url_for_user_oauth_client(
     user_id=1,
     oauth_client_id=1,
@@ -38421,7 +34525,7 @@ client.callback_url.delete_callback_url_for_user_oauth_client(
 </details>
 
 ## payment-service-provider-draft-payment
-<details><summary><code>client.payment_service_provider_draft_payment.<a href="src/fern/payment_service_provider_draft_payment/client.py">list_all_payment_service_provider_draft_payment_for_user</a>(...)</code></summary>
+<details><summary><code>client.payment_service_provider_draft_payment.<a href="src/fern/payment_service_provider_draft_payment/client.py">list_all_payment_service_provider_draft_payment_for_user</a>(...) -> typing.List[PaymentServiceProviderDraftPaymentListing]</code></summary>
 <dl>
 <dd>
 
@@ -38449,15 +34553,13 @@ Manage the PaymentServiceProviderDraftPayment's for a PISP.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_service_provider_draft_payment.list_all_payment_service_provider_draft_payment_for_user(
     user_id=1,
 )
@@ -38496,7 +34598,7 @@ client.payment_service_provider_draft_payment.list_all_payment_service_provider_
 </dl>
 </details>
 
-<details><summary><code>client.payment_service_provider_draft_payment.<a href="src/fern/payment_service_provider_draft_payment/client.py">create_payment_service_provider_draft_payment_for_user</a>(...)</code></summary>
+<details><summary><code>client.payment_service_provider_draft_payment.<a href="src/fern/payment_service_provider_draft_payment/client.py">create_payment_service_provider_draft_payment_for_user</a>(...) -> PaymentServiceProviderDraftPaymentCreate</code></summary>
 <dl>
 <dd>
 
@@ -38523,16 +34625,14 @@ Manage the PaymentServiceProviderDraftPayment's for a PISP.
 <dd>
 
 ```python
-from fern import Amount, FernApi
+from fern import FernApi, Amount
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_service_provider_draft_payment.create_payment_service_provider_draft_payment_for_user(
     user_id=1,
     amount=Amount(),
@@ -38564,55 +34664,7 @@ client.payment_service_provider_draft_payment.create_payment_service_provider_dr
 <dl>
 <dd>
 
-**amount:** `Amount` — The Amount to transfer with the Payment. Must be bigger than 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counterparty_iban:** `str` — The IBAN of the counterparty.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counterparty_name:** `str` — The name of the counterparty.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `str` — Description of the payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sender_iban:** `str` — The IBAN of the sender.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sender_name:** `typing.Optional[str]` — The name of the sender.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The new status of the Draft Payment. Can only be set to REJECTED or CANCELLED by update.
+**request:** `PaymentServiceProviderDraftPayment` 
     
 </dd>
 </dl>
@@ -38632,7 +34684,7 @@ client.payment_service_provider_draft_payment.create_payment_service_provider_dr
 </dl>
 </details>
 
-<details><summary><code>client.payment_service_provider_draft_payment.<a href="src/fern/payment_service_provider_draft_payment/client.py">read_payment_service_provider_draft_payment_for_user</a>(...)</code></summary>
+<details><summary><code>client.payment_service_provider_draft_payment.<a href="src/fern/payment_service_provider_draft_payment/client.py">read_payment_service_provider_draft_payment_for_user</a>(...) -> PaymentServiceProviderDraftPaymentRead</code></summary>
 <dl>
 <dd>
 
@@ -38660,15 +34712,13 @@ Manage the PaymentServiceProviderDraftPayment's for a PISP.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_service_provider_draft_payment.read_payment_service_provider_draft_payment_for_user(
     user_id=1,
     item_id=1,
@@ -38716,7 +34766,7 @@ client.payment_service_provider_draft_payment.read_payment_service_provider_draf
 </dl>
 </details>
 
-<details><summary><code>client.payment_service_provider_draft_payment.<a href="src/fern/payment_service_provider_draft_payment/client.py">update_payment_service_provider_draft_payment_for_user</a>(...)</code></summary>
+<details><summary><code>client.payment_service_provider_draft_payment.<a href="src/fern/payment_service_provider_draft_payment/client.py">update_payment_service_provider_draft_payment_for_user</a>(...) -> PaymentServiceProviderDraftPaymentUpdate</code></summary>
 <dl>
 <dd>
 
@@ -38743,16 +34793,14 @@ Manage the PaymentServiceProviderDraftPayment's for a PISP.
 <dd>
 
 ```python
-from fern import Amount, FernApi
+from fern import FernApi, Amount
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_service_provider_draft_payment.update_payment_service_provider_draft_payment_for_user(
     user_id=1,
     item_id=1,
@@ -38793,55 +34841,7 @@ client.payment_service_provider_draft_payment.update_payment_service_provider_dr
 <dl>
 <dd>
 
-**amount:** `Amount` — The Amount to transfer with the Payment. Must be bigger than 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counterparty_iban:** `str` — The IBAN of the counterparty.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counterparty_name:** `str` — The name of the counterparty.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `str` — Description of the payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sender_iban:** `str` — The IBAN of the sender.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sender_name:** `typing.Optional[str]` — The name of the sender.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The new status of the Draft Payment. Can only be set to REJECTED or CANCELLED by update.
+**request:** `PaymentServiceProviderDraftPayment` 
     
 </dd>
 </dl>
@@ -38862,7 +34862,7 @@ client.payment_service_provider_draft_payment.update_payment_service_provider_dr
 </details>
 
 ## registry-settlement
-<details><summary><code>client.registry_settlement.<a href="src/fern/registry_settlement/client.py">list_all_registry_settlement_for_user_registry</a>(...)</code></summary>
+<details><summary><code>client.registry_settlement.<a href="src/fern/registry_settlement/client.py">list_all_registry_settlement_for_user_registry</a>(...) -> typing.List[RegistrySettlementListing]</code></summary>
 <dl>
 <dd>
 
@@ -38890,15 +34890,13 @@ Get a listing of all Slice group settlements.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.registry_settlement.list_all_registry_settlement_for_user_registry(
     user_id=1,
     registry_id=1,
@@ -38946,7 +34944,7 @@ client.registry_settlement.list_all_registry_settlement_for_user_registry(
 </dl>
 </details>
 
-<details><summary><code>client.registry_settlement.<a href="src/fern/registry_settlement/client.py">create_registry_settlement_for_user_registry</a>(...)</code></summary>
+<details><summary><code>client.registry_settlement.<a href="src/fern/registry_settlement/client.py">create_registry_settlement_for_user_registry</a>(...) -> RegistrySettlementCreate</code></summary>
 <dl>
 <dd>
 
@@ -38974,19 +34972,19 @@ Create a new Slice group settlement.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.registry_settlement.create_registry_settlement_for_user_registry(
     user_id=1,
     registry_id=1,
-    request={"key": "value"},
+    request={
+        "key": "value"
+    },
 )
 
 ```
@@ -39039,7 +35037,7 @@ client.registry_settlement.create_registry_settlement_for_user_registry(
 </dl>
 </details>
 
-<details><summary><code>client.registry_settlement.<a href="src/fern/registry_settlement/client.py">read_registry_settlement_for_user_registry</a>(...)</code></summary>
+<details><summary><code>client.registry_settlement.<a href="src/fern/registry_settlement/client.py">read_registry_settlement_for_user_registry</a>(...) -> RegistrySettlementRead</code></summary>
 <dl>
 <dd>
 
@@ -39067,15 +35065,13 @@ Get a specific Slice group settlement.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.registry_settlement.read_registry_settlement_for_user_registry(
     user_id=1,
     registry_id=1,
@@ -39133,7 +35129,7 @@ client.registry_settlement.read_registry_settlement_for_user_registry(
 </details>
 
 ## reward
-<details><summary><code>client.reward.<a href="src/fern/reward/client.py">list_all_reward_for_user</a>(...)</code></summary>
+<details><summary><code>client.reward.<a href="src/fern/reward/client.py">list_all_reward_for_user</a>(...) -> typing.List[RewardListing]</code></summary>
 <dl>
 <dd>
 
@@ -39161,15 +35157,13 @@ Used to view Rewards.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.reward.list_all_reward_for_user(
     user_id=1,
 )
@@ -39208,7 +35202,7 @@ client.reward.list_all_reward_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.reward.<a href="src/fern/reward/client.py">read_reward_for_user</a>(...)</code></summary>
+<details><summary><code>client.reward.<a href="src/fern/reward/client.py">read_reward_for_user</a>(...) -> RewardRead</code></summary>
 <dl>
 <dd>
 
@@ -39236,15 +35230,13 @@ Used to view Rewards.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.reward.read_reward_for_user(
     user_id=1,
     item_id=1,
@@ -39293,7 +35285,7 @@ client.reward.read_reward_for_user(
 </details>
 
 ## reward-recipient
-<details><summary><code>client.reward_recipient.<a href="src/fern/reward_recipient/client.py">list_all_reward_recipient_for_user</a>(...)</code></summary>
+<details><summary><code>client.reward_recipient.<a href="src/fern/reward_recipient/client.py">list_all_reward_recipient_for_user</a>(...) -> typing.List[RewardRecipientListing]</code></summary>
 <dl>
 <dd>
 
@@ -39321,15 +35313,13 @@ Used to view Rewards.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.reward_recipient.list_all_reward_recipient_for_user(
     user_id=1,
 )
@@ -39368,7 +35358,7 @@ client.reward_recipient.list_all_reward_recipient_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.reward_recipient.<a href="src/fern/reward_recipient/client.py">read_reward_recipient_for_user</a>(...)</code></summary>
+<details><summary><code>client.reward_recipient.<a href="src/fern/reward_recipient/client.py">read_reward_recipient_for_user</a>(...) -> RewardRecipientRead</code></summary>
 <dl>
 <dd>
 
@@ -39396,15 +35386,13 @@ Used to view Rewards.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.reward_recipient.read_reward_recipient_for_user(
     user_id=1,
     item_id=1,
@@ -39453,7 +35441,7 @@ client.reward_recipient.read_reward_recipient_for_user(
 </details>
 
 ## reward-sender
-<details><summary><code>client.reward_sender.<a href="src/fern/reward_sender/client.py">list_all_reward_sender_for_user</a>(...)</code></summary>
+<details><summary><code>client.reward_sender.<a href="src/fern/reward_sender/client.py">list_all_reward_sender_for_user</a>(...) -> typing.List[RewardSenderListing]</code></summary>
 <dl>
 <dd>
 
@@ -39481,15 +35469,13 @@ Used to view Rewards.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.reward_sender.list_all_reward_sender_for_user(
     user_id=1,
 )
@@ -39528,7 +35514,7 @@ client.reward_sender.list_all_reward_sender_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.reward_sender.<a href="src/fern/reward_sender/client.py">read_reward_sender_for_user</a>(...)</code></summary>
+<details><summary><code>client.reward_sender.<a href="src/fern/reward_sender/client.py">read_reward_sender_for_user</a>(...) -> RewardSenderRead</code></summary>
 <dl>
 <dd>
 
@@ -39556,15 +35542,13 @@ Used to view Rewards.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.reward_sender.read_reward_sender_for_user(
     user_id=1,
     item_id=1,
@@ -39613,7 +35597,7 @@ client.reward_sender.read_reward_sender_for_user(
 </details>
 
 ## share-invite-monetary-account-response
-<details><summary><code>client.share_invite_monetary_account_response.<a href="src/fern/share_invite_monetary_account_response/client.py">list_all_share_invite_monetary_account_response_for_user</a>(...)</code></summary>
+<details><summary><code>client.share_invite_monetary_account_response.<a href="src/fern/share_invite_monetary_account_response/client.py">list_all_share_invite_monetary_account_response_for_user</a>(...) -> typing.List[ShareInviteMonetaryAccountResponseListing]</code></summary>
 <dl>
 <dd>
 
@@ -39641,15 +35625,13 @@ Return all the shares a user was invited to.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.share_invite_monetary_account_response.list_all_share_invite_monetary_account_response_for_user(
     user_id=1,
 )
@@ -39688,7 +35670,7 @@ client.share_invite_monetary_account_response.list_all_share_invite_monetary_acc
 </dl>
 </details>
 
-<details><summary><code>client.share_invite_monetary_account_response.<a href="src/fern/share_invite_monetary_account_response/client.py">read_share_invite_monetary_account_response_for_user</a>(...)</code></summary>
+<details><summary><code>client.share_invite_monetary_account_response.<a href="src/fern/share_invite_monetary_account_response/client.py">read_share_invite_monetary_account_response_for_user</a>(...) -> ShareInviteMonetaryAccountResponseRead</code></summary>
 <dl>
 <dd>
 
@@ -39716,15 +35698,13 @@ Return the details of a specific share a user was invited to.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.share_invite_monetary_account_response.read_share_invite_monetary_account_response_for_user(
     user_id=1,
     item_id=1,
@@ -39772,7 +35752,7 @@ client.share_invite_monetary_account_response.read_share_invite_monetary_account
 </dl>
 </details>
 
-<details><summary><code>client.share_invite_monetary_account_response.<a href="src/fern/share_invite_monetary_account_response/client.py">update_share_invite_monetary_account_response_for_user</a>(...)</code></summary>
+<details><summary><code>client.share_invite_monetary_account_response.<a href="src/fern/share_invite_monetary_account_response/client.py">update_share_invite_monetary_account_response_for_user</a>(...) -> ShareInviteMonetaryAccountResponseUpdate</code></summary>
 <dl>
 <dd>
 
@@ -39800,15 +35780,13 @@ Accept or reject a share a user was invited to.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.share_invite_monetary_account_response.update_share_invite_monetary_account_response_for_user(
     user_id=1,
     item_id=1,
@@ -39844,127 +35822,7 @@ client.share_invite_monetary_account_response.update_share_invite_monetary_accou
 <dl>
 <dd>
 
-**access_type:** `typing.Optional[str]` — Type of access that is wanted, one of VIEW_BALANCE, VIEW_TRANSACTION, DRAFT_PAYMENT or FULL_TRANSIENT
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**card_id:** `typing.Optional[int]` — The card to link to the shared monetary account. Used only if share_detail is ShareDetailCardPayment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counter_alias:** `typing.Optional[LabelMonetaryAccount]` — The monetary account and user who created the share.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created:** `typing.Optional[str]` — The timestamp of the ShareInviteBankResponse creation.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The description of this share. It is basically the monetary account description.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**draft_share_invite_bank_id:** `typing.Optional[int]` — The id of the draft share invite bank.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**end_date:** `typing.Optional[str]` — The expiration date of this share.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` — The id of the ShareInviteBankResponse.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**monetary_account_id:** `typing.Optional[int]` — The id of the monetary account the ACCEPTED share applies to. null otherwise.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**relation_user:** `typing.Optional[RelationUser]` — All of the relation users towards this MA.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**share_detail:** `typing.Optional[ShareDetail]` — The share details.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**share_type:** `typing.Optional[str]` — The share type, either STANDARD or MUTUAL.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start_date:** `typing.Optional[str]` — The start date of this share.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status of the share. Can be ACTIVE, REVOKED, REJECTED.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated:** `typing.Optional[str]` — The timestamp of the ShareInviteBankResponse last update.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user_alias_cancelled:** `typing.Optional[LabelUser]` — The user who cancelled the share if it has been revoked or rejected.
+**request:** `ShareInviteMonetaryAccountResponse` 
     
 </dd>
 </dl>
@@ -39985,7 +35843,7 @@ client.share_invite_monetary_account_response.update_share_invite_monetary_accou
 </details>
 
 ## token-qr-request-ideal
-<details><summary><code>client.token_qr_request_ideal.<a href="src/fern/token_qr_request_ideal/client.py">create_token_qr_request_ideal_for_user</a>(...)</code></summary>
+<details><summary><code>client.token_qr_request_ideal.<a href="src/fern/token_qr_request_ideal/client.py">create_token_qr_request_ideal_for_user</a>(...) -> TokenQrRequestIdealCreate</code></summary>
 <dl>
 <dd>
 
@@ -40013,15 +35871,13 @@ Create a request from an ideal transaction.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.token_qr_request_ideal.create_token_qr_request_ideal_for_user(
     user_id=1,
     token="token",
@@ -40070,7 +35926,7 @@ client.token_qr_request_ideal.create_token_qr_request_ideal_for_user(
 </details>
 
 ## token-qr-request-sofort
-<details><summary><code>client.token_qr_request_sofort.<a href="src/fern/token_qr_request_sofort/client.py">create_token_qr_request_sofort_for_user</a>(...)</code></summary>
+<details><summary><code>client.token_qr_request_sofort.<a href="src/fern/token_qr_request_sofort/client.py">create_token_qr_request_sofort_for_user</a>(...) -> TokenQrRequestSofortCreate</code></summary>
 <dl>
 <dd>
 
@@ -40098,15 +35954,13 @@ Create a request from an SOFORT transaction.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.token_qr_request_sofort.create_token_qr_request_sofort_for_user(
     user_id=1,
     token="token",
@@ -40155,7 +36009,7 @@ client.token_qr_request_sofort.create_token_qr_request_sofort_for_user(
 </details>
 
 ## transferwise-currency
-<details><summary><code>client.transferwise_currency.<a href="src/fern/transferwise_currency/client.py">list_all_transferwise_currency_for_user</a>(...)</code></summary>
+<details><summary><code>client.transferwise_currency.<a href="src/fern/transferwise_currency/client.py">list_all_transferwise_currency_for_user</a>(...) -> typing.List[TransferwiseCurrencyListing]</code></summary>
 <dl>
 <dd>
 
@@ -40183,15 +36037,13 @@ Used to get a list of supported currencies for Transferwise.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_currency.list_all_transferwise_currency_for_user(
     user_id=1,
 )
@@ -40231,7 +36083,7 @@ client.transferwise_currency.list_all_transferwise_currency_for_user(
 </details>
 
 ## transferwise-quote
-<details><summary><code>client.transferwise_quote.<a href="src/fern/transferwise_quote/client.py">create_transferwise_quote_for_user</a>(...)</code></summary>
+<details><summary><code>client.transferwise_quote.<a href="src/fern/transferwise_quote/client.py">create_transferwise_quote_for_user</a>(...) -> TransferwiseQuoteCreate</code></summary>
 <dl>
 <dd>
 
@@ -40259,15 +36111,13 @@ Used to get quotes from Transferwise. These can be used to initiate payments.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_quote.create_transferwise_quote_for_user(
     user_id=1,
     currency_source="currency_source",
@@ -40296,95 +36146,7 @@ client.transferwise_quote.create_transferwise_quote_for_user(
 <dl>
 <dd>
 
-**currency_source:** `str` — The source currency.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**currency_target:** `str` — The target currency.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount_fee:** `typing.Optional[Amount]` — The fee amount.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount_source:** `typing.Optional[Amount]` — The source amount.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount_target:** `typing.Optional[Amount]` — The target amount.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created:** `typing.Optional[str]` — The timestamp of the quote's creation.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` — The id of the quote.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**quote_id:** `typing.Optional[str]` — The quote id Transferwise needs.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**rate:** `typing.Optional[str]` — The rate.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**time_delivery_estimate:** `typing.Optional[str]` — The estimated delivery time.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**time_expiry:** `typing.Optional[str]` — The expiration timestamp of the quote.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated:** `typing.Optional[str]` — The timestamp of the quote's last update.
+**request:** `TransferwiseQuote` 
     
 </dd>
 </dl>
@@ -40404,7 +36166,7 @@ client.transferwise_quote.create_transferwise_quote_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.transferwise_quote.<a href="src/fern/transferwise_quote/client.py">read_transferwise_quote_for_user</a>(...)</code></summary>
+<details><summary><code>client.transferwise_quote.<a href="src/fern/transferwise_quote/client.py">read_transferwise_quote_for_user</a>(...) -> TransferwiseQuoteRead</code></summary>
 <dl>
 <dd>
 
@@ -40432,15 +36194,13 @@ Used to get quotes from Transferwise. These can be used to initiate payments.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_quote.read_transferwise_quote_for_user(
     user_id=1,
     item_id=1,
@@ -40489,7 +36249,7 @@ client.transferwise_quote.read_transferwise_quote_for_user(
 </details>
 
 ## transferwise-quote-temporary
-<details><summary><code>client.transferwise_quote_temporary.<a href="src/fern/transferwise_quote_temporary/client.py">create_transferwise_quote_temporary_for_user</a>(...)</code></summary>
+<details><summary><code>client.transferwise_quote_temporary.<a href="src/fern/transferwise_quote_temporary/client.py">create_transferwise_quote_temporary_for_user</a>(...) -> TransferwiseQuoteTemporaryCreate</code></summary>
 <dl>
 <dd>
 
@@ -40517,15 +36277,13 @@ Used to get temporary quotes from Transferwise. These cannot be used to initiate
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_quote_temporary.create_transferwise_quote_temporary_for_user(
     user_id=1,
     currency_source="currency_source",
@@ -40598,7 +36356,7 @@ client.transferwise_quote_temporary.create_transferwise_quote_temporary_for_user
 </dl>
 </details>
 
-<details><summary><code>client.transferwise_quote_temporary.<a href="src/fern/transferwise_quote_temporary/client.py">read_transferwise_quote_temporary_for_user</a>(...)</code></summary>
+<details><summary><code>client.transferwise_quote_temporary.<a href="src/fern/transferwise_quote_temporary/client.py">read_transferwise_quote_temporary_for_user</a>(...) -> TransferwiseQuoteTemporaryRead</code></summary>
 <dl>
 <dd>
 
@@ -40626,15 +36384,13 @@ Used to get temporary quotes from Transferwise. These cannot be used to initiate
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_quote_temporary.read_transferwise_quote_temporary_for_user(
     user_id=1,
     item_id=1,
@@ -40683,7 +36439,7 @@ client.transferwise_quote_temporary.read_transferwise_quote_temporary_for_user(
 </details>
 
 ## transferwise-recipient
-<details><summary><code>client.transferwise_recipient.<a href="src/fern/transferwise_recipient/client.py">list_all_transferwise_recipient_for_user_transferwise_quote</a>(...)</code></summary>
+<details><summary><code>client.transferwise_recipient.<a href="src/fern/transferwise_recipient/client.py">list_all_transferwise_recipient_for_user_transferwise_quote</a>(...) -> typing.List[TransferwiseAccountQuoteListing]</code></summary>
 <dl>
 <dd>
 
@@ -40711,15 +36467,13 @@ Used to manage recipient accounts with Transferwise.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_recipient.list_all_transferwise_recipient_for_user_transferwise_quote(
     user_id=1,
     transferwise_quote_id=1,
@@ -40767,7 +36521,7 @@ client.transferwise_recipient.list_all_transferwise_recipient_for_user_transferw
 </dl>
 </details>
 
-<details><summary><code>client.transferwise_recipient.<a href="src/fern/transferwise_recipient/client.py">create_transferwise_recipient_for_user_transferwise_quote</a>(...)</code></summary>
+<details><summary><code>client.transferwise_recipient.<a href="src/fern/transferwise_recipient/client.py">create_transferwise_recipient_for_user_transferwise_quote</a>(...) -> TransferwiseAccountQuoteCreate</code></summary>
 <dl>
 <dd>
 
@@ -40795,15 +36549,13 @@ Used to manage recipient accounts with Transferwise.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_recipient.create_transferwise_recipient_for_user_transferwise_quote(
     user_id=1,
     transferwise_quote_id=1,
@@ -40865,7 +36617,7 @@ client.transferwise_recipient.create_transferwise_recipient_for_user_transferwis
 <dl>
 <dd>
 
-**detail:** `typing.Optional[typing.Sequence[TransferwiseRequirementField]]` — The fields which were specified as "required" and have since been filled by the user. Always provide the full list.
+**detail:** `typing.Optional[typing.List[TransferwiseRequirementField]]` — The fields which were specified as "required" and have since been filled by the user. Always provide the full list.
     
 </dd>
 </dl>
@@ -40885,7 +36637,7 @@ client.transferwise_recipient.create_transferwise_recipient_for_user_transferwis
 </dl>
 </details>
 
-<details><summary><code>client.transferwise_recipient.<a href="src/fern/transferwise_recipient/client.py">read_transferwise_recipient_for_user_transferwise_quote</a>(...)</code></summary>
+<details><summary><code>client.transferwise_recipient.<a href="src/fern/transferwise_recipient/client.py">read_transferwise_recipient_for_user_transferwise_quote</a>(...) -> TransferwiseAccountQuoteRead</code></summary>
 <dl>
 <dd>
 
@@ -40913,15 +36665,13 @@ Used to manage recipient accounts with Transferwise.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_recipient.read_transferwise_recipient_for_user_transferwise_quote(
     user_id=1,
     transferwise_quote_id=1,
@@ -40978,7 +36728,7 @@ client.transferwise_recipient.read_transferwise_recipient_for_user_transferwise_
 </dl>
 </details>
 
-<details><summary><code>client.transferwise_recipient.<a href="src/fern/transferwise_recipient/client.py">delete_transferwise_recipient_for_user_transferwise_quote</a>(...)</code></summary>
+<details><summary><code>client.transferwise_recipient.<a href="src/fern/transferwise_recipient/client.py">delete_transferwise_recipient_for_user_transferwise_quote</a>(...) -> TransferwiseAccountQuoteDelete</code></summary>
 <dl>
 <dd>
 
@@ -41006,15 +36756,13 @@ Used to manage recipient accounts with Transferwise.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_recipient.delete_transferwise_recipient_for_user_transferwise_quote(
     user_id=1,
     transferwise_quote_id=1,
@@ -41072,7 +36820,7 @@ client.transferwise_recipient.delete_transferwise_recipient_for_user_transferwis
 </details>
 
 ## transferwise-recipient-requirement
-<details><summary><code>client.transferwise_recipient_requirement.<a href="src/fern/transferwise_recipient_requirement/client.py">list_all_transferwise_recipient_requirement_for_user_transferwise_quote</a>(...)</code></summary>
+<details><summary><code>client.transferwise_recipient_requirement.<a href="src/fern/transferwise_recipient_requirement/client.py">list_all_transferwise_recipient_requirement_for_user_transferwise_quote</a>(...) -> typing.List[TransferwiseAccountRequirementListing]</code></summary>
 <dl>
 <dd>
 
@@ -41100,15 +36848,13 @@ Used to determine the recipient account requirements for Transferwise transfers.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_recipient_requirement.list_all_transferwise_recipient_requirement_for_user_transferwise_quote(
     user_id=1,
     transferwise_quote_id=1,
@@ -41156,7 +36902,7 @@ client.transferwise_recipient_requirement.list_all_transferwise_recipient_requir
 </dl>
 </details>
 
-<details><summary><code>client.transferwise_recipient_requirement.<a href="src/fern/transferwise_recipient_requirement/client.py">create_transferwise_recipient_requirement_for_user_transferwise_quote</a>(...)</code></summary>
+<details><summary><code>client.transferwise_recipient_requirement.<a href="src/fern/transferwise_recipient_requirement/client.py">create_transferwise_recipient_requirement_for_user_transferwise_quote</a>(...) -> TransferwiseAccountRequirementCreate</code></summary>
 <dl>
 <dd>
 
@@ -41184,15 +36930,13 @@ Used to determine the recipient account requirements for Transferwise transfers.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_recipient_requirement.create_transferwise_recipient_requirement_for_user_transferwise_quote(
     user_id=1,
     transferwise_quote_id=1,
@@ -41254,7 +36998,7 @@ client.transferwise_recipient_requirement.create_transferwise_recipient_requirem
 <dl>
 <dd>
 
-**detail:** `typing.Optional[typing.Sequence[TransferwiseRequirementField]]` — The fields which were specified as "required" and have since been filled by the user. Always provide the full list.
+**detail:** `typing.Optional[typing.List[TransferwiseRequirementField]]` — The fields which were specified as "required" and have since been filled by the user. Always provide the full list.
     
 </dd>
 </dl>
@@ -41275,7 +37019,7 @@ client.transferwise_recipient_requirement.create_transferwise_recipient_requirem
 </details>
 
 ## transferwise-transfer
-<details><summary><code>client.transferwise_transfer.<a href="src/fern/transferwise_transfer/client.py">list_all_transferwise_transfer_for_user_transferwise_quote</a>(...)</code></summary>
+<details><summary><code>client.transferwise_transfer.<a href="src/fern/transferwise_transfer/client.py">list_all_transferwise_transfer_for_user_transferwise_quote</a>(...) -> typing.List[TransferwiseTransferListing]</code></summary>
 <dl>
 <dd>
 
@@ -41303,15 +37047,13 @@ Used to create Transferwise payments.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_transfer.list_all_transferwise_transfer_for_user_transferwise_quote(
     user_id=1,
     transferwise_quote_id=1,
@@ -41359,7 +37101,7 @@ client.transferwise_transfer.list_all_transferwise_transfer_for_user_transferwis
 </dl>
 </details>
 
-<details><summary><code>client.transferwise_transfer.<a href="src/fern/transferwise_transfer/client.py">create_transferwise_transfer_for_user_transferwise_quote</a>(...)</code></summary>
+<details><summary><code>client.transferwise_transfer.<a href="src/fern/transferwise_transfer/client.py">create_transferwise_transfer_for_user_transferwise_quote</a>(...) -> TransferwiseTransferCreate</code></summary>
 <dl>
 <dd>
 
@@ -41387,15 +37129,13 @@ Used to create Transferwise payments.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_transfer.create_transferwise_transfer_for_user_transferwise_quote(
     user_id=1,
     transferwise_quote_id=1,
@@ -41433,119 +37173,7 @@ client.transferwise_transfer.create_transferwise_transfer_for_user_transferwise_
 <dl>
 <dd>
 
-**monetary_account_id:** `str` — The id of the monetary account the payment should be made from.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**recipient_id:** `str` — The id of the target account.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**alias:** `typing.Optional[LabelMonetaryAccount]` — The LabelMonetaryAccount containing the public information of 'this' (party) side of the Payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount_source:** `typing.Optional[Amount]` — The source amount.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount_target:** `typing.Optional[Amount]` — The target amount.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**counterparty_alias:** `typing.Optional[LabelMonetaryAccount]` — The LabelMonetaryAccount containing the public information of the other (counterparty) side of the Payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**pay_in_reference:** `typing.Optional[str]` — The Pay-In reference of the payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**quote:** `typing.Optional[TransferwiseQuote]` — The quote details used to created the payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**rate:** `typing.Optional[str]` — The rate of the payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reference:** `typing.Optional[str]` — The reference of the payment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The status.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status_transferwise:** `typing.Optional[str]` — The status as Transferwise reports it.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status_transferwise_issue:** `typing.Optional[str]` — A status to indicatie if Transferwise has an issue with this payment and requires more information.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sub_status:** `typing.Optional[str]` — The subStatus.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**time_delivery_estimate:** `typing.Optional[str]` — The estimated delivery time.
+**request:** `TransferwiseTransfer` 
     
 </dd>
 </dl>
@@ -41565,7 +37193,7 @@ client.transferwise_transfer.create_transferwise_transfer_for_user_transferwise_
 </dl>
 </details>
 
-<details><summary><code>client.transferwise_transfer.<a href="src/fern/transferwise_transfer/client.py">read_transferwise_transfer_for_user_transferwise_quote</a>(...)</code></summary>
+<details><summary><code>client.transferwise_transfer.<a href="src/fern/transferwise_transfer/client.py">read_transferwise_transfer_for_user_transferwise_quote</a>(...) -> TransferwiseTransferRead</code></summary>
 <dl>
 <dd>
 
@@ -41593,15 +37221,13 @@ Used to create Transferwise payments.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_transfer.read_transferwise_transfer_for_user_transferwise_quote(
     user_id=1,
     transferwise_quote_id=1,
@@ -41659,7 +37285,7 @@ client.transferwise_transfer.read_transferwise_transfer_for_user_transferwise_qu
 </details>
 
 ## transferwise-transfer-requirement
-<details><summary><code>client.transferwise_transfer_requirement.<a href="src/fern/transferwise_transfer_requirement/client.py">create_transferwise_transfer_requirement_for_user_transferwise_quote</a>(...)</code></summary>
+<details><summary><code>client.transferwise_transfer_requirement.<a href="src/fern/transferwise_transfer_requirement/client.py">create_transferwise_transfer_requirement_for_user_transferwise_quote</a>(...) -> TransferwiseTransferRequirementCreate</code></summary>
 <dl>
 <dd>
 
@@ -41687,15 +37313,13 @@ Used to determine the account requirements for Transferwise transfers.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_transfer_requirement.create_transferwise_transfer_requirement_for_user_transferwise_quote(
     user_id=1,
     transferwise_quote_id=1,
@@ -41740,7 +37364,7 @@ client.transferwise_transfer_requirement.create_transferwise_transfer_requiremen
 <dl>
 <dd>
 
-**detail:** `typing.Optional[typing.Sequence[TransferwiseRequirementField]]` — The fields which were specified as "required" and have since been filled by the user. Always provide the full list.
+**detail:** `typing.Optional[typing.List[TransferwiseRequirementField]]` — The fields which were specified as "required" and have since been filled by the user. Always provide the full list.
     
 </dd>
 </dl>
@@ -41761,7 +37385,7 @@ client.transferwise_transfer_requirement.create_transferwise_transfer_requiremen
 </details>
 
 ## transferwise-user
-<details><summary><code>client.transferwise_user.<a href="src/fern/transferwise_user/client.py">list_all_transferwise_user_for_user</a>(...)</code></summary>
+<details><summary><code>client.transferwise_user.<a href="src/fern/transferwise_user/client.py">list_all_transferwise_user_for_user</a>(...) -> typing.List[TransferwiseUserListing]</code></summary>
 <dl>
 <dd>
 
@@ -41789,15 +37413,13 @@ Used to manage Transferwise users.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_user.list_all_transferwise_user_for_user(
     user_id=1,
 )
@@ -41836,7 +37458,7 @@ client.transferwise_user.list_all_transferwise_user_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.transferwise_user.<a href="src/fern/transferwise_user/client.py">create_transferwise_user_for_user</a>(...)</code></summary>
+<details><summary><code>client.transferwise_user.<a href="src/fern/transferwise_user/client.py">create_transferwise_user_for_user</a>(...) -> TransferwiseUserCreate</code></summary>
 <dl>
 <dd>
 
@@ -41864,15 +37486,13 @@ Used to manage Transferwise users.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transferwise_user.create_transferwise_user_for_user(
     user_id=1,
 )
@@ -41920,7 +37540,7 @@ client.transferwise_user.create_transferwise_user_for_user(
 </details>
 
 ## tree-progress
-<details><summary><code>client.tree_progress.<a href="src/fern/tree_progress/client.py">list_all_tree_progress_for_user</a>(...)</code></summary>
+<details><summary><code>client.tree_progress.<a href="src/fern/tree_progress/client.py">list_all_tree_progress_for_user</a>(...) -> typing.List[TreeProgressListing]</code></summary>
 <dl>
 <dd>
 
@@ -41948,15 +37568,13 @@ See how many trees this user has planted.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tree_progress.list_all_tree_progress_for_user(
     user_id=1,
 )
@@ -41996,7 +37614,7 @@ client.tree_progress.list_all_tree_progress_for_user(
 </details>
 
 ## whitelist-sdd-one-off
-<details><summary><code>client.whitelist_sdd_one_off.<a href="src/fern/whitelist_sdd_one_off/client.py">list_all_whitelist_sdd_one_off_for_user</a>(...)</code></summary>
+<details><summary><code>client.whitelist_sdd_one_off.<a href="src/fern/whitelist_sdd_one_off/client.py">list_all_whitelist_sdd_one_off_for_user</a>(...) -> typing.List[WhitelistSddOneOffListing]</code></summary>
 <dl>
 <dd>
 
@@ -42024,15 +37642,13 @@ Get a listing of all one off SDD whitelist entries for a target monetary account
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.whitelist_sdd_one_off.list_all_whitelist_sdd_one_off_for_user(
     user_id=1,
 )
@@ -42071,7 +37687,7 @@ client.whitelist_sdd_one_off.list_all_whitelist_sdd_one_off_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.whitelist_sdd_one_off.<a href="src/fern/whitelist_sdd_one_off/client.py">create_whitelist_sdd_one_off_for_user</a>(...)</code></summary>
+<details><summary><code>client.whitelist_sdd_one_off.<a href="src/fern/whitelist_sdd_one_off/client.py">create_whitelist_sdd_one_off_for_user</a>(...) -> WhitelistSddOneOffCreate</code></summary>
 <dl>
 <dd>
 
@@ -42099,15 +37715,13 @@ Create a new one off SDD whitelist entry.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.whitelist_sdd_one_off.create_whitelist_sdd_one_off_for_user(
     user_id=1,
     monetary_account_paying_id=1,
@@ -42136,23 +37750,7 @@ client.whitelist_sdd_one_off.create_whitelist_sdd_one_off_for_user(
 <dl>
 <dd>
 
-**monetary_account_paying_id:** `int` — ID of the monetary account of which you want to pay from.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_id:** `int` — ID of the request for which you want to whitelist the originating SDD.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**maximum_amount_per_month:** `typing.Optional[Amount]` — The maximum amount of money that is allowed to be deducted based on the whitelist.
+**request:** `WhitelistSddOneOff` 
     
 </dd>
 </dl>
@@ -42172,7 +37770,7 @@ client.whitelist_sdd_one_off.create_whitelist_sdd_one_off_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.whitelist_sdd_one_off.<a href="src/fern/whitelist_sdd_one_off/client.py">read_whitelist_sdd_one_off_for_user</a>(...)</code></summary>
+<details><summary><code>client.whitelist_sdd_one_off.<a href="src/fern/whitelist_sdd_one_off/client.py">read_whitelist_sdd_one_off_for_user</a>(...) -> WhitelistSddOneOffRead</code></summary>
 <dl>
 <dd>
 
@@ -42200,15 +37798,13 @@ Get a specific one off SDD whitelist entry.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.whitelist_sdd_one_off.read_whitelist_sdd_one_off_for_user(
     user_id=1,
     item_id=1,
@@ -42256,7 +37852,7 @@ client.whitelist_sdd_one_off.read_whitelist_sdd_one_off_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.whitelist_sdd_one_off.<a href="src/fern/whitelist_sdd_one_off/client.py">update_whitelist_sdd_one_off_for_user</a>(...)</code></summary>
+<details><summary><code>client.whitelist_sdd_one_off.<a href="src/fern/whitelist_sdd_one_off/client.py">update_whitelist_sdd_one_off_for_user</a>(...) -> WhitelistSddOneOffUpdate</code></summary>
 <dl>
 <dd>
 
@@ -42284,15 +37880,13 @@ Whitelist an one off SDD so that when another one off SDD from the creditor come
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.whitelist_sdd_one_off.update_whitelist_sdd_one_off_for_user(
     user_id=1,
     item_id=1,
@@ -42330,23 +37924,7 @@ client.whitelist_sdd_one_off.update_whitelist_sdd_one_off_for_user(
 <dl>
 <dd>
 
-**monetary_account_paying_id:** `int` — ID of the monetary account of which you want to pay from.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_id:** `int` — ID of the request for which you want to whitelist the originating SDD.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**maximum_amount_per_month:** `typing.Optional[Amount]` — The maximum amount of money that is allowed to be deducted based on the whitelist.
+**request:** `WhitelistSddOneOff` 
     
 </dd>
 </dl>
@@ -42366,7 +37944,7 @@ client.whitelist_sdd_one_off.update_whitelist_sdd_one_off_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.whitelist_sdd_one_off.<a href="src/fern/whitelist_sdd_one_off/client.py">delete_whitelist_sdd_one_off_for_user</a>(...)</code></summary>
+<details><summary><code>client.whitelist_sdd_one_off.<a href="src/fern/whitelist_sdd_one_off/client.py">delete_whitelist_sdd_one_off_for_user</a>(...) -> WhitelistSddOneOffDelete</code></summary>
 <dl>
 <dd>
 
@@ -42394,15 +37972,13 @@ Whitelist an one off SDD so that when another one off SDD from the creditor come
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.whitelist_sdd_one_off.delete_whitelist_sdd_one_off_for_user(
     user_id=1,
     item_id=1,
@@ -42451,7 +38027,7 @@ client.whitelist_sdd_one_off.delete_whitelist_sdd_one_off_for_user(
 </details>
 
 ## whitelist-sdd-recurring
-<details><summary><code>client.whitelist_sdd_recurring.<a href="src/fern/whitelist_sdd_recurring/client.py">list_all_whitelist_sdd_recurring_for_user</a>(...)</code></summary>
+<details><summary><code>client.whitelist_sdd_recurring.<a href="src/fern/whitelist_sdd_recurring/client.py">list_all_whitelist_sdd_recurring_for_user</a>(...) -> typing.List[WhitelistSddRecurringListing]</code></summary>
 <dl>
 <dd>
 
@@ -42479,15 +38055,13 @@ Get a listing of all recurring SDD whitelist entries for a target monetary accou
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.whitelist_sdd_recurring.list_all_whitelist_sdd_recurring_for_user(
     user_id=1,
 )
@@ -42526,7 +38100,7 @@ client.whitelist_sdd_recurring.list_all_whitelist_sdd_recurring_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.whitelist_sdd_recurring.<a href="src/fern/whitelist_sdd_recurring/client.py">create_whitelist_sdd_recurring_for_user</a>(...)</code></summary>
+<details><summary><code>client.whitelist_sdd_recurring.<a href="src/fern/whitelist_sdd_recurring/client.py">create_whitelist_sdd_recurring_for_user</a>(...) -> WhitelistSddRecurringCreate</code></summary>
 <dl>
 <dd>
 
@@ -42554,15 +38128,13 @@ Create a new recurring SDD whitelist entry.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.whitelist_sdd_recurring.create_whitelist_sdd_recurring_for_user(
     user_id=1,
     monetary_account_paying_id=1,
@@ -42591,23 +38163,7 @@ client.whitelist_sdd_recurring.create_whitelist_sdd_recurring_for_user(
 <dl>
 <dd>
 
-**monetary_account_paying_id:** `int` — ID of the monetary account of which you want to pay from.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_id:** `int` — ID of the request for which you want to whitelist the originating SDD.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**maximum_amount_per_month:** `typing.Optional[Amount]` — The maximum amount of money that is allowed to be deducted based on the whitelist.
+**request:** `WhitelistSddRecurring` 
     
 </dd>
 </dl>
@@ -42627,7 +38183,7 @@ client.whitelist_sdd_recurring.create_whitelist_sdd_recurring_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.whitelist_sdd_recurring.<a href="src/fern/whitelist_sdd_recurring/client.py">read_whitelist_sdd_recurring_for_user</a>(...)</code></summary>
+<details><summary><code>client.whitelist_sdd_recurring.<a href="src/fern/whitelist_sdd_recurring/client.py">read_whitelist_sdd_recurring_for_user</a>(...) -> WhitelistSddRecurringRead</code></summary>
 <dl>
 <dd>
 
@@ -42655,15 +38211,13 @@ Get a specific recurring SDD whitelist entry.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.whitelist_sdd_recurring.read_whitelist_sdd_recurring_for_user(
     user_id=1,
     item_id=1,
@@ -42711,7 +38265,7 @@ client.whitelist_sdd_recurring.read_whitelist_sdd_recurring_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.whitelist_sdd_recurring.<a href="src/fern/whitelist_sdd_recurring/client.py">update_whitelist_sdd_recurring_for_user</a>(...)</code></summary>
+<details><summary><code>client.whitelist_sdd_recurring.<a href="src/fern/whitelist_sdd_recurring/client.py">update_whitelist_sdd_recurring_for_user</a>(...) -> WhitelistSddRecurringUpdate</code></summary>
 <dl>
 <dd>
 
@@ -42739,15 +38293,13 @@ Whitelist a recurring SDD so that when another recurrence comes in, it is automa
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.whitelist_sdd_recurring.update_whitelist_sdd_recurring_for_user(
     user_id=1,
     item_id=1,
@@ -42785,23 +38337,7 @@ client.whitelist_sdd_recurring.update_whitelist_sdd_recurring_for_user(
 <dl>
 <dd>
 
-**monetary_account_paying_id:** `int` — ID of the monetary account of which you want to pay from.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_id:** `int` — ID of the request for which you want to whitelist the originating SDD.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**maximum_amount_per_month:** `typing.Optional[Amount]` — The maximum amount of money that is allowed to be deducted based on the whitelist.
+**request:** `WhitelistSddRecurring` 
     
 </dd>
 </dl>
@@ -42821,7 +38357,7 @@ client.whitelist_sdd_recurring.update_whitelist_sdd_recurring_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.whitelist_sdd_recurring.<a href="src/fern/whitelist_sdd_recurring/client.py">delete_whitelist_sdd_recurring_for_user</a>(...)</code></summary>
+<details><summary><code>client.whitelist_sdd_recurring.<a href="src/fern/whitelist_sdd_recurring/client.py">delete_whitelist_sdd_recurring_for_user</a>(...) -> WhitelistSddRecurringDelete</code></summary>
 <dl>
 <dd>
 
@@ -42849,15 +38385,13 @@ Whitelist a recurring SDD so that when another recurrence comes in, it is automa
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    cache_control="YOUR_CACHE_CONTROL",
-    bunq_language="YOUR_BUNQ_LANGUAGE",
-    bunq_region="YOUR_BUNQ_REGION",
-    bunq_client_request_id="YOUR_BUNQ_CLIENT_REQUEST_ID",
-    bunq_geolocation="YOUR_BUNQ_GEOLOCATION",
-    bunq_client_authentication="YOUR_BUNQ_CLIENT_AUTHENTICATION",
+    bunq_client_authentication="<X-Bunq-Client-Authentication>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.whitelist_sdd_recurring.delete_whitelist_sdd_recurring_for_user(
     user_id=1,
     item_id=1,

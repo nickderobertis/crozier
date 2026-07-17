@@ -53,6 +53,7 @@ if typing.TYPE_CHECKING:
         valuespace,
         web,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
@@ -76,6 +77,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ConfigTftp": ".types",
     "ConfigTod": ".types",
     "ConfigWeb": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "FernApiEnvironment": ".environment",
     "IpAlias": ".types",
@@ -148,6 +151,8 @@ __all__ = [
     "ConfigTftp",
     "ConfigTod",
     "ConfigWeb",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "FernApi",
     "FernApiEnvironment",
     "IpAlias",

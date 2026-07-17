@@ -22,29 +22,46 @@ from .source_id import SourceId
 
 
 class ConnectionRead(UniversalBaseModel):
-    breaking_change: typing_extensions.Annotated[bool, FieldMetadata(alias="breakingChange")]
-    connection_id: typing_extensions.Annotated[ConnectionId, FieldMetadata(alias="connectionId")]
-    destination_id: typing_extensions.Annotated[DestinationId, FieldMetadata(alias="destinationId")]
+    breaking_change: typing_extensions.Annotated[
+        bool, FieldMetadata(alias="breakingChange"), pydantic.Field(alias="breakingChange")
+    ]
+    connection_id: typing_extensions.Annotated[
+        ConnectionId, FieldMetadata(alias="connectionId"), pydantic.Field(alias="connectionId")
+    ]
+    destination_id: typing_extensions.Annotated[
+        DestinationId, FieldMetadata(alias="destinationId"), pydantic.Field(alias="destinationId")
+    ]
     geography: typing.Optional[Geography] = None
     name: str
     namespace_definition: typing_extensions.Annotated[
-        typing.Optional[NamespaceDefinitionType], FieldMetadata(alias="namespaceDefinition")
+        typing.Optional[NamespaceDefinitionType],
+        FieldMetadata(alias="namespaceDefinition"),
+        pydantic.Field(alias="namespaceDefinition"),
     ] = None
-    namespace_format: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="namespaceFormat")] = (
-        pydantic.Field(default=None)
-    )
+    namespace_format: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="namespaceFormat"),
+        pydantic.Field(
+            alias="namespaceFormat",
+            description="Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If \"${SOURCE_NAMESPACE}\" then behaves like namespaceDefinition = 'source'.",
+        ),
+    ] = None
     """
     Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
     """
 
     non_breaking_changes_preference: typing_extensions.Annotated[
-        typing.Optional[NonBreakingChangesPreference], FieldMetadata(alias="nonBreakingChangesPreference")
+        typing.Optional[NonBreakingChangesPreference],
+        FieldMetadata(alias="nonBreakingChangesPreference"),
+        pydantic.Field(alias="nonBreakingChangesPreference"),
     ] = None
     notify_schema_changes: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="notifySchemaChanges")
+        typing.Optional[bool], FieldMetadata(alias="notifySchemaChanges"), pydantic.Field(alias="notifySchemaChanges")
     ] = None
     operation_ids: typing_extensions.Annotated[
-        typing.Optional[typing.List[OperationId]], FieldMetadata(alias="operationIds")
+        typing.Optional[typing.List[OperationId]],
+        FieldMetadata(alias="operationIds"),
+        pydantic.Field(alias="operationIds"),
     ] = None
     prefix: typing.Optional[str] = pydantic.Field(default=None)
     """
@@ -52,19 +69,29 @@ class ConnectionRead(UniversalBaseModel):
     """
 
     resource_requirements: typing_extensions.Annotated[
-        typing.Optional[ResourceRequirements], FieldMetadata(alias="resourceRequirements")
+        typing.Optional[ResourceRequirements],
+        FieldMetadata(alias="resourceRequirements"),
+        pydantic.Field(alias="resourceRequirements"),
     ] = None
     schedule: typing.Optional[ConnectionSchedule] = None
     schedule_data: typing_extensions.Annotated[
-        typing.Optional[ConnectionScheduleData], FieldMetadata(alias="scheduleData")
+        typing.Optional[ConnectionScheduleData],
+        FieldMetadata(alias="scheduleData"),
+        pydantic.Field(alias="scheduleData"),
     ] = None
     schedule_type: typing_extensions.Annotated[
-        typing.Optional[ConnectionScheduleType], FieldMetadata(alias="scheduleType")
+        typing.Optional[ConnectionScheduleType],
+        FieldMetadata(alias="scheduleType"),
+        pydantic.Field(alias="scheduleType"),
     ] = None
-    source_catalog_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="sourceCatalogId")] = None
-    source_id: typing_extensions.Annotated[SourceId, FieldMetadata(alias="sourceId")]
+    source_catalog_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="sourceCatalogId"), pydantic.Field(alias="sourceCatalogId")
+    ] = None
+    source_id: typing_extensions.Annotated[SourceId, FieldMetadata(alias="sourceId"), pydantic.Field(alias="sourceId")]
     status: ConnectionStatus
-    sync_catalog: typing_extensions.Annotated[AirbyteCatalog, FieldMetadata(alias="syncCatalog")]
+    sync_catalog: typing_extensions.Annotated[
+        AirbyteCatalog, FieldMetadata(alias="syncCatalog"), pydantic.Field(alias="syncCatalog")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

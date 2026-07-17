@@ -16,7 +16,9 @@ class Subclass(ApiReference, ResourceDescription):
     `Subclass`
     """
 
-    class_: typing_extensions.Annotated[typing.Optional[ApiReference], FieldMetadata(alias="class")] = None
+    class_: typing_extensions.Annotated[
+        typing.Optional[ApiReference], FieldMetadata(alias="class"), pydantic.Field(alias="class")
+    ] = None
     spells: typing.Optional[typing.List[SubclassSpellsItem]] = None
     subclass_flavor: typing.Optional[str] = pydantic.Field(default=None)
     """

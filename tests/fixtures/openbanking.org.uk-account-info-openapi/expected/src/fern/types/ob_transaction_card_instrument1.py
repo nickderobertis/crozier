@@ -16,27 +16,40 @@ class ObTransactionCardInstrument1(UniversalBaseModel):
     """
 
     authorisation_type: typing_extensions.Annotated[
-        typing.Optional[ObTransactionCardInstrument1AuthorisationType], FieldMetadata(alias="AuthorisationType")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObTransactionCardInstrument1AuthorisationType],
+        FieldMetadata(alias="AuthorisationType"),
+        pydantic.Field(alias="AuthorisationType", description="The card authorisation type."),
+    ] = None
     """
     The card authorisation type.
     """
 
     card_scheme_name: typing_extensions.Annotated[
-        ObTransactionCardInstrument1CardSchemeName, FieldMetadata(alias="CardSchemeName")
-    ] = pydantic.Field()
+        ObTransactionCardInstrument1CardSchemeName,
+        FieldMetadata(alias="CardSchemeName"),
+        pydantic.Field(alias="CardSchemeName", description="Name of the card scheme."),
+    ]
     """
     Name of the card scheme.
     """
 
-    identification: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Identification")] = (
-        pydantic.Field(default=None)
-    )
+    identification: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Identification"),
+        pydantic.Field(
+            alias="Identification",
+            description="Identification assigned by an institution to identify the card instrument used in the transaction. This identification is known by the account owner, and may be masked.",
+        ),
+    ] = None
     """
     Identification assigned by an institution to identify the card instrument used in the transaction. This identification is known by the account owner, and may be masked.
     """
 
-    name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Name")] = pydantic.Field(default=None)
+    name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Name"),
+        pydantic.Field(alias="Name", description="Name of the cardholder using the card instrument."),
+    ] = None
     """
     Name of the cardholder using the card instrument.
     """

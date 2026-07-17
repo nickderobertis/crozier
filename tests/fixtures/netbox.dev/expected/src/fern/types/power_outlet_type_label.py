@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PowerOutletTypeLabel(str, enum.Enum):
+class PowerOutletTypeLabel(enum.StrEnum):
     C5 = "C5"
     C7 = "C7"
     C13 = "C13"

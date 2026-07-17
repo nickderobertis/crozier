@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostAssetsCorrelationMatrixDenoisedRequestDenoisingMethod(str, enum.Enum):
+class PostAssetsCorrelationMatrixDenoisedRequestDenoisingMethod(enum.StrEnum):
     """
     The method used to denoise the asset correlation matrix
     """

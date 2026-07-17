@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetGetTemplateSummaryRequestCallAs(str, enum.Enum):
+class GetGetTemplateSummaryRequestCallAs(enum.StrEnum):
     SELF = "SELF"
     DELEGATED_ADMIN = "DELEGATED_ADMIN"
 

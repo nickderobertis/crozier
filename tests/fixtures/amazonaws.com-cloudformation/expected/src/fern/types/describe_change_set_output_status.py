@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DescribeChangeSetOutputStatus(str, enum.Enum):
+class DescribeChangeSetOutputStatus(enum.StrEnum):
     """
     The current status of the change set, such as <code>CREATE_IN_PROGRESS</code>, <code>CREATE_COMPLETE</code>, or <code>FAILED</code>.
     """

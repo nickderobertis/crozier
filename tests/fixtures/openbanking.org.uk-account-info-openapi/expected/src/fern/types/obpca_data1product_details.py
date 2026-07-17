@@ -11,22 +11,34 @@ from .obpca_data1product_details_segment_item import ObpcaData1ProductDetailsSeg
 
 class ObpcaData1ProductDetails(UniversalBaseModel):
     monthly_maximum_charge: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="MonthlyMaximumCharge")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="MonthlyMaximumCharge"),
+        pydantic.Field(
+            alias="MonthlyMaximumCharge",
+            description="The maximum relevant charges that could accrue as defined fully in Part 7 of the CMA order",
+        ),
+    ] = None
     """
     The maximum relevant charges that could accrue as defined fully in Part 7 of the CMA order
     """
 
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = (
-        pydantic.Field(default=None)
-    )
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="Notes"),
+        pydantic.Field(alias="Notes", description="Optional additional notes to supplement the Core product details"),
+    ] = None
     """
     Optional additional notes to supplement the Core product details
     """
 
     segment: typing_extensions.Annotated[
-        typing.Optional[typing.List[ObpcaData1ProductDetailsSegmentItem]], FieldMetadata(alias="Segment")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[ObpcaData1ProductDetailsSegmentItem]],
+        FieldMetadata(alias="Segment"),
+        pydantic.Field(
+            alias="Segment",
+            description="Market segmentation is a marketing term referring to the aggregating of prospective buyers into groups, or segments, that have common needs and respond similarly to a marketing action. Market segmentation enables companies to target different categories of consumers who perceive the full value of certain products and services differently from one another.\n\nRead more: Market Segmentation http://www.investopedia.com/terms/m/marketsegmentation.asp#ixzz4gfEEalTd \nWith respect to PCA products, they are segmented in relation to different markets that they wish to focus on. ",
+        ),
+    ] = None
     """
     Market segmentation is a marketing term referring to the aggregating of prospective buyers into groups, or segments, that have common needs and respond similarly to a marketing action. Market segmentation enables companies to target different categories of consumers who perceive the full value of certain products and services differently from one another.
     

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EmployeeEmploymentRoleType(str, enum.Enum):
+class EmployeeEmploymentRoleType(enum.StrEnum):
     """
     The type of employment relationship the employee has with the organization.
     """

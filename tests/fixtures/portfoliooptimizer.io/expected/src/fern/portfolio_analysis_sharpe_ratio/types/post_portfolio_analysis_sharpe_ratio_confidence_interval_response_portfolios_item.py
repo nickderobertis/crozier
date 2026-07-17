@@ -10,8 +10,13 @@ from ...core.serialization import FieldMetadata
 
 class PostPortfolioAnalysisSharpeRatioConfidenceIntervalResponsePortfoliosItem(UniversalBaseModel):
     portfolio_sharpe_ratio_confidence_interval: typing_extensions.Annotated[
-        typing.List[float], FieldMetadata(alias="portfolioSharpeRatioConfidenceInterval")
-    ] = pydantic.Field()
+        typing.List[float],
+        FieldMetadata(alias="portfolioSharpeRatioConfidenceInterval"),
+        pydantic.Field(
+            alias="portfolioSharpeRatioConfidenceInterval",
+            description="portfolioSharpeRatioConfidenceInterval[0] (resp. portfolioSharpeRatioConfidenceInterval[1]) is the lower (resp. upper) bound of the built confidence interval, possibly equal to null in case of a negative infinite (resp. positive infinite) bound",
+        ),
+    ]
     """
     portfolioSharpeRatioConfidenceInterval[0] (resp. portfolioSharpeRatioConfidenceInterval[1]) is the lower (resp. upper) bound of the built confidence interval, possibly equal to null in case of a negative infinite (resp. positive infinite) bound
     """

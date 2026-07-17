@@ -19,6 +19,7 @@ class ObReadProduct2DataProductItemOtherProductTypeCreditInterest(UniversalBaseM
     tier_band_set: typing_extensions.Annotated[
         typing.List[ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItem],
         FieldMetadata(alias="TierBandSet"),
+        pydantic.Field(alias="TierBandSet"),
     ]
 
     if IS_PYDANTIC_V2:

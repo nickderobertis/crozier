@@ -13,7 +13,7 @@ class Tag(UniversalBaseModel):
     Tag
     """
 
-    id: typing_extensions.Annotated[str, FieldMetadata(alias="$id")] = pydantic.Field()
+    id: typing_extensions.Annotated[str, FieldMetadata(alias="$id"), pydantic.Field(alias="$id", description="Tag ID.")]
     """
     Tag ID.
     """
@@ -23,12 +23,18 @@ class Tag(UniversalBaseModel):
     The entrypoint command in use to execute the tag code.
     """
 
-    date_created: typing_extensions.Annotated[int, FieldMetadata(alias="dateCreated")] = pydantic.Field()
+    date_created: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="dateCreated"),
+        pydantic.Field(alias="dateCreated", description="The tag creation date in Unix timestamp."),
+    ]
     """
     The tag creation date in Unix timestamp.
     """
 
-    function_id: typing_extensions.Annotated[str, FieldMetadata(alias="functionId")] = pydantic.Field()
+    function_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="functionId"), pydantic.Field(alias="functionId", description="Function ID.")
+    ]
     """
     Function ID.
     """

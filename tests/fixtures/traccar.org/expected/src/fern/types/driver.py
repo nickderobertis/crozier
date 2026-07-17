@@ -13,7 +13,9 @@ class Driver(UniversalBaseModel):
     attributes: typing.Optional[DriverAttributes] = None
     id: typing.Optional[int] = None
     name: typing.Optional[str] = None
-    unique_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="uniqueId")] = None
+    unique_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="uniqueId"), pydantic.Field(alias="uniqueId")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

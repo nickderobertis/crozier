@@ -14,15 +14,22 @@ class ObMerchantDetails1(UniversalBaseModel):
     """
 
     merchant_category_code: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="MerchantCategoryCode")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="MerchantCategoryCode"),
+        pydantic.Field(
+            alias="MerchantCategoryCode",
+            description="Category code conform to ISO 18245, related to the type of services or goods the merchant provides for the transaction.",
+        ),
+    ] = None
     """
     Category code conform to ISO 18245, related to the type of services or goods the merchant provides for the transaction.
     """
 
-    merchant_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="MerchantName")] = (
-        pydantic.Field(default=None)
-    )
+    merchant_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="MerchantName"),
+        pydantic.Field(alias="MerchantName", description="Name by which the merchant is known."),
+    ] = None
     """
     Name by which the merchant is known.
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class State(str, enum.Enum):
+class State(enum.StrEnum):
     """
     State abbreviation for employee home address
     """

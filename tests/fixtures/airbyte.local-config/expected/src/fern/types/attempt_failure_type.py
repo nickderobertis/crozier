@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AttemptFailureType(str, enum.Enum):
+class AttemptFailureType(enum.StrEnum):
     """
     Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
     """

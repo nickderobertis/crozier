@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostGetTemplateRequestAction(str, enum.Enum):
+class PostGetTemplateRequestAction(enum.StrEnum):
     GET_TEMPLATE = "GetTemplate"
 
     def visit(self, get_template: typing.Callable[[], T_Result]) -> T_Result:

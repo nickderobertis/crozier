@@ -11,7 +11,7 @@ from .ob_statement2 import ObStatement2
 
 class ObReadDataStatement2(UniversalBaseModel):
     statement: typing_extensions.Annotated[
-        typing.Optional[typing.List[ObStatement2]], FieldMetadata(alias="Statement")
+        typing.Optional[typing.List[ObStatement2]], FieldMetadata(alias="Statement"), pydantic.Field(alias="Statement")
     ] = None
 
     if IS_PYDANTIC_V2:

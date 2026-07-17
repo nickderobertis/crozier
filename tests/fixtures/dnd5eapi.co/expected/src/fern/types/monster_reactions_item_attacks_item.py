@@ -8,7 +8,7 @@ from .dc import Dc
 
 
 class MonsterReactionsItemAttacksItem(UniversalBaseModel):
-    damage: typing.Optional[typing.Optional[typing.Any]] = None
+    damage: typing.Optional[typing.Any] = None
     dc: typing.Optional[Dc] = None
     name: typing.Optional[str] = None
 

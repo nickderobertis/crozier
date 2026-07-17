@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GiftCardActivityBlockReason(str, enum.Enum):
+class GiftCardActivityBlockReason(enum.StrEnum):
     """ """
 
     CHARGEBACK_BLOCK = "CHARGEBACK_BLOCK"

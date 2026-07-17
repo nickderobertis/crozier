@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class FormFieldType(str, enum.Enum):
+class FormFieldType(enum.StrEnum):
     TEXT = "text"
     CHECKBOX = "checkbox"
     TEL = "tel"

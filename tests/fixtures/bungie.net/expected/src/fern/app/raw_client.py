@@ -8,11 +8,13 @@ from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.app_get_application_api_usage_response import AppGetApplicationApiUsageResponse
 from .types.app_get_bungie_applications_response import AppGetBungieApplicationsResponse
+from pydantic import ValidationError
 
 
 class RawAppClient:
@@ -50,7 +52,7 @@ class RawAppClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"App/ApiUsage/{jsonable_encoder(application_id)}/",
+            f"App/ApiUsage/{encode_path_param(application_id)}/",
             method="GET",
             params={
                 "end": serialize_datetime(end) if end is not None else None,
@@ -71,6 +73,10 @@ class RawAppClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getbungieapplications(
@@ -107,6 +113,10 @@ class RawAppClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -145,7 +155,7 @@ class AsyncRawAppClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"App/ApiUsage/{jsonable_encoder(application_id)}/",
+            f"App/ApiUsage/{encode_path_param(application_id)}/",
             method="GET",
             params={
                 "end": serialize_datetime(end) if end is not None else None,
@@ -166,6 +176,10 @@ class AsyncRawAppClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getbungieapplications(
@@ -202,4 +216,8 @@ class AsyncRawAppClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

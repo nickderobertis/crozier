@@ -34,7 +34,7 @@ class TriggerParamSpec(UniversalBaseModel):
     The name of another trigger that supercedes this on functionally if this is deprecated
     """
 
-    validator: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    validator: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     If present, a definition for validation of input. Typically a jsonschema object that can be used to validate an input against.
     """

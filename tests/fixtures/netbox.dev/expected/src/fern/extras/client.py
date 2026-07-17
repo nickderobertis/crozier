@@ -502,7 +502,7 @@ class ExtrasClient:
     def config_contexts_create(
         self,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -532,7 +532,7 @@ class ExtrasClient:
 
         Parameters
         ----------
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -629,7 +629,7 @@ class ExtrasClient:
     def config_contexts_bulk_update(
         self,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -659,7 +659,7 @@ class ExtrasClient:
 
         Parameters
         ----------
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -781,7 +781,7 @@ class ExtrasClient:
     def config_contexts_bulk_partial_update(
         self,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -811,7 +811,7 @@ class ExtrasClient:
 
         Parameters
         ----------
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -942,7 +942,7 @@ class ExtrasClient:
         self,
         id_: int,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -975,7 +975,7 @@ class ExtrasClient:
         id_ : int
             A unique integer value identifying this config context.
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -1105,7 +1105,7 @@ class ExtrasClient:
         self,
         id_: int,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -1138,7 +1138,7 @@ class ExtrasClient:
         id_ : int
             A unique integer value identifying this config context.
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -1762,7 +1762,7 @@ class ExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -1799,7 +1799,7 @@ class ExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -1903,7 +1903,7 @@ class ExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -1940,7 +1940,7 @@ class ExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -2069,7 +2069,7 @@ class ExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -2106,7 +2106,7 @@ class ExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -2242,7 +2242,7 @@ class ExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -2282,7 +2282,7 @@ class ExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -2419,7 +2419,7 @@ class ExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -2459,7 +2459,7 @@ class ExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -4574,7 +4574,7 @@ class ExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageAttachment:
@@ -4603,7 +4603,7 @@ class ExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -4659,7 +4659,7 @@ class ExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageAttachment:
@@ -4688,7 +4688,7 @@ class ExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -4769,7 +4769,7 @@ class ExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageAttachment:
@@ -4798,7 +4798,7 @@ class ExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -4888,7 +4888,7 @@ class ExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageAttachment:
@@ -4920,7 +4920,7 @@ class ExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -5009,7 +5009,7 @@ class ExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageAttachment:
@@ -5041,7 +5041,7 @@ class ExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -5587,10 +5587,10 @@ class ExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -5610,13 +5610,13 @@ class ExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -5675,10 +5675,10 @@ class ExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -5698,13 +5698,13 @@ class ExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -5788,10 +5788,10 @@ class ExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -5811,13 +5811,13 @@ class ExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -5908,10 +5908,10 @@ class ExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -5934,13 +5934,13 @@ class ExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6032,10 +6032,10 @@ class ExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -6058,13 +6058,13 @@ class ExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6912,7 +6912,7 @@ class ExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -6935,7 +6935,7 @@ class ExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -7005,7 +7005,7 @@ class ExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -7028,7 +7028,7 @@ class ExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -7123,7 +7123,7 @@ class ExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -7146,7 +7146,7 @@ class ExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -7248,7 +7248,7 @@ class ExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -7274,7 +7274,7 @@ class ExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -7377,7 +7377,7 @@ class ExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -7403,7 +7403,7 @@ class ExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -8850,7 +8850,7 @@ class ExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -8887,7 +8887,7 @@ class ExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -8977,7 +8977,7 @@ class ExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -9014,7 +9014,7 @@ class ExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -9129,7 +9129,7 @@ class ExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -9166,7 +9166,7 @@ class ExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -9288,7 +9288,7 @@ class ExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -9328,7 +9328,7 @@ class ExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -9451,7 +9451,7 @@ class ExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -9491,7 +9491,7 @@ class ExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -10043,7 +10043,7 @@ class AsyncExtrasClient:
     async def config_contexts_create(
         self,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -10073,7 +10073,7 @@ class AsyncExtrasClient:
 
         Parameters
         ----------
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -10178,7 +10178,7 @@ class AsyncExtrasClient:
     async def config_contexts_bulk_update(
         self,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -10208,7 +10208,7 @@ class AsyncExtrasClient:
 
         Parameters
         ----------
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -10346,7 +10346,7 @@ class AsyncExtrasClient:
     async def config_contexts_bulk_partial_update(
         self,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -10376,7 +10376,7 @@ class AsyncExtrasClient:
 
         Parameters
         ----------
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -10523,7 +10523,7 @@ class AsyncExtrasClient:
         self,
         id_: int,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -10556,7 +10556,7 @@ class AsyncExtrasClient:
         id_ : int
             A unique integer value identifying this config context.
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -10702,7 +10702,7 @@ class AsyncExtrasClient:
         self,
         id_: int,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -10735,7 +10735,7 @@ class AsyncExtrasClient:
         id_ : int
             A unique integer value identifying this config context.
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -11393,7 +11393,7 @@ class AsyncExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -11430,7 +11430,7 @@ class AsyncExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -11542,7 +11542,7 @@ class AsyncExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -11579,7 +11579,7 @@ class AsyncExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -11724,7 +11724,7 @@ class AsyncExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -11761,7 +11761,7 @@ class AsyncExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -11915,7 +11915,7 @@ class AsyncExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -11955,7 +11955,7 @@ class AsyncExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -12108,7 +12108,7 @@ class AsyncExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -12148,7 +12148,7 @@ class AsyncExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -14427,7 +14427,7 @@ class AsyncExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageAttachment:
@@ -14456,7 +14456,7 @@ class AsyncExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -14520,7 +14520,7 @@ class AsyncExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageAttachment:
@@ -14549,7 +14549,7 @@ class AsyncExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -14646,7 +14646,7 @@ class AsyncExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageAttachment:
@@ -14675,7 +14675,7 @@ class AsyncExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -14781,7 +14781,7 @@ class AsyncExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageAttachment:
@@ -14813,7 +14813,7 @@ class AsyncExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -14920,7 +14920,7 @@ class AsyncExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageAttachment:
@@ -14952,7 +14952,7 @@ class AsyncExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -15530,10 +15530,10 @@ class AsyncExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -15553,13 +15553,13 @@ class AsyncExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -15626,10 +15626,10 @@ class AsyncExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -15649,13 +15649,13 @@ class AsyncExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -15755,10 +15755,10 @@ class AsyncExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -15778,13 +15778,13 @@ class AsyncExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -15893,10 +15893,10 @@ class AsyncExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -15919,13 +15919,13 @@ class AsyncExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -16033,10 +16033,10 @@ class AsyncExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -16059,13 +16059,13 @@ class AsyncExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -16971,7 +16971,7 @@ class AsyncExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -16994,7 +16994,7 @@ class AsyncExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -17072,7 +17072,7 @@ class AsyncExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -17095,7 +17095,7 @@ class AsyncExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -17206,7 +17206,7 @@ class AsyncExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -17229,7 +17229,7 @@ class AsyncExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -17349,7 +17349,7 @@ class AsyncExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -17375,7 +17375,7 @@ class AsyncExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -17494,7 +17494,7 @@ class AsyncExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -17520,7 +17520,7 @@ class AsyncExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -19071,7 +19071,7 @@ class AsyncExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -19108,7 +19108,7 @@ class AsyncExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -19206,7 +19206,7 @@ class AsyncExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -19243,7 +19243,7 @@ class AsyncExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -19374,7 +19374,7 @@ class AsyncExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -19411,7 +19411,7 @@ class AsyncExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -19549,7 +19549,7 @@ class AsyncExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -19589,7 +19589,7 @@ class AsyncExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -19728,7 +19728,7 @@ class AsyncExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -19768,7 +19768,7 @@ class AsyncExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]

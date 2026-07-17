@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ApiStatus(str, enum.Enum):
+class ApiStatus(enum.StrEnum):
     """
     Status of the API. APIs with status live or beta are callable.
     """

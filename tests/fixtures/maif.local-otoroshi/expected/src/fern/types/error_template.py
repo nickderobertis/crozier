@@ -18,7 +18,11 @@ class ErrorTemplate(UniversalBaseModel):
     Map for custom messages
     """
 
-    service_id: typing_extensions.Annotated[str, FieldMetadata(alias="serviceId")] = pydantic.Field()
+    service_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="serviceId"),
+        pydantic.Field(alias="serviceId", description="The Id of the service for which the error template is enabled"),
+    ]
     """
     The Id of the service for which the error template is enabled
     """
@@ -33,14 +37,20 @@ class ErrorTemplate(UniversalBaseModel):
     The html template for 50x errors
     """
 
-    template_build: typing_extensions.Annotated[str, FieldMetadata(alias="templateBuild")] = pydantic.Field()
+    template_build: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="templateBuild"),
+        pydantic.Field(alias="templateBuild", description="The html template for build page"),
+    ]
     """
     The html template for build page
     """
 
-    template_maintenance: typing_extensions.Annotated[str, FieldMetadata(alias="templateMaintenance")] = (
-        pydantic.Field()
-    )
+    template_maintenance: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="templateMaintenance"),
+        pydantic.Field(alias="templateMaintenance", description="The html template for maintenance page"),
+    ]
     """
     The html template for maintenance page
     """

@@ -14,7 +14,7 @@ from .nested_tenant import NestedTenant
 class L2Vpn(UniversalBaseModel):
     comments: typing.Optional[str] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     display: typing.Optional[str] = None
     export_targets: typing.Optional[typing.List[NestedRouteTarget]] = None

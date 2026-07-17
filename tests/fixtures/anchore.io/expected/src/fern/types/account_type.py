@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AccountType(str, enum.Enum):
+class AccountType(enum.StrEnum):
     """
     The user type (admin vs user). If not specified in a POST request, 'user' is default
     """

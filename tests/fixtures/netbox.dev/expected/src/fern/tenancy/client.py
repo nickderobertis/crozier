@@ -278,7 +278,7 @@ class TenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -304,7 +304,7 @@ class TenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -359,7 +359,7 @@ class TenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -385,7 +385,7 @@ class TenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -465,7 +465,7 @@ class TenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -491,7 +491,7 @@ class TenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -580,7 +580,7 @@ class TenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -609,7 +609,7 @@ class TenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -697,7 +697,7 @@ class TenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -726,7 +726,7 @@ class TenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -1117,7 +1117,7 @@ class TenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1142,7 +1142,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1204,7 +1204,7 @@ class TenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1229,7 +1229,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1316,7 +1316,7 @@ class TenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1341,7 +1341,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1435,7 +1435,7 @@ class TenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1463,7 +1463,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1558,7 +1558,7 @@ class TenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1586,7 +1586,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1965,7 +1965,7 @@ class TenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1985,7 +1985,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2040,7 +2040,7 @@ class TenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -2060,7 +2060,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2140,7 +2140,7 @@ class TenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -2160,7 +2160,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2247,7 +2247,7 @@ class TenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -2270,7 +2270,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2358,7 +2358,7 @@ class TenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -2381,7 +2381,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2941,7 +2941,7 @@ class TenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -2968,7 +2968,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3039,7 +3039,7 @@ class TenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -3066,7 +3066,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3162,7 +3162,7 @@ class TenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -3189,7 +3189,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3292,7 +3292,7 @@ class TenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -3322,7 +3322,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3426,7 +3426,7 @@ class TenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -3456,7 +3456,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3866,7 +3866,7 @@ class TenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -3890,7 +3890,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3953,7 +3953,7 @@ class TenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -3977,7 +3977,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4065,7 +4065,7 @@ class TenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -4089,7 +4089,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4184,7 +4184,7 @@ class TenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -4211,7 +4211,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4307,7 +4307,7 @@ class TenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -4334,7 +4334,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4768,7 +4768,7 @@ class TenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -4803,7 +4803,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4891,7 +4891,7 @@ class TenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -4926,7 +4926,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5039,7 +5039,7 @@ class TenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -5074,7 +5074,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5194,7 +5194,7 @@ class TenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -5232,7 +5232,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5353,7 +5353,7 @@ class TenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -5391,7 +5391,7 @@ class TenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5734,7 +5734,7 @@ class AsyncTenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -5760,7 +5760,7 @@ class AsyncTenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -5823,7 +5823,7 @@ class AsyncTenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -5849,7 +5849,7 @@ class AsyncTenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -5945,7 +5945,7 @@ class AsyncTenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -5971,7 +5971,7 @@ class AsyncTenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -6076,7 +6076,7 @@ class AsyncTenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -6105,7 +6105,7 @@ class AsyncTenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -6211,7 +6211,7 @@ class AsyncTenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -6240,7 +6240,7 @@ class AsyncTenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -6647,7 +6647,7 @@ class AsyncTenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6672,7 +6672,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6742,7 +6742,7 @@ class AsyncTenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6767,7 +6767,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6870,7 +6870,7 @@ class AsyncTenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6895,7 +6895,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7007,7 +7007,7 @@ class AsyncTenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7035,7 +7035,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7146,7 +7146,7 @@ class AsyncTenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7174,7 +7174,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7569,7 +7569,7 @@ class AsyncTenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7589,7 +7589,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7652,7 +7652,7 @@ class AsyncTenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7672,7 +7672,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7768,7 +7768,7 @@ class AsyncTenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7788,7 +7788,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7893,7 +7893,7 @@ class AsyncTenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7916,7 +7916,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8020,7 +8020,7 @@ class AsyncTenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -8043,7 +8043,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8619,7 +8619,7 @@ class AsyncTenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -8646,7 +8646,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8725,7 +8725,7 @@ class AsyncTenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -8752,7 +8752,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8864,7 +8864,7 @@ class AsyncTenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -8891,7 +8891,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9010,7 +9010,7 @@ class AsyncTenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -9040,7 +9040,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9160,7 +9160,7 @@ class AsyncTenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -9190,7 +9190,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9616,7 +9616,7 @@ class AsyncTenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -9640,7 +9640,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9711,7 +9711,7 @@ class AsyncTenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -9735,7 +9735,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9839,7 +9839,7 @@ class AsyncTenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -9863,7 +9863,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9976,7 +9976,7 @@ class AsyncTenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10003,7 +10003,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10115,7 +10115,7 @@ class AsyncTenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10142,7 +10142,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10592,7 +10592,7 @@ class AsyncTenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -10627,7 +10627,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10723,7 +10723,7 @@ class AsyncTenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -10758,7 +10758,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10887,7 +10887,7 @@ class AsyncTenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -10922,7 +10922,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11058,7 +11058,7 @@ class AsyncTenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -11096,7 +11096,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11233,7 +11233,7 @@ class AsyncTenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -11271,7 +11271,7 @@ class AsyncTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 

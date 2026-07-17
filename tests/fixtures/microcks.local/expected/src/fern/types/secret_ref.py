@@ -18,7 +18,11 @@ class SecretRef(UniversalBaseModel):
     Distinct name of the referenced Secret
     """
 
-    secret_id: typing_extensions.Annotated[str, FieldMetadata(alias="secretId")] = pydantic.Field()
+    secret_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="secretId"),
+        pydantic.Field(alias="secretId", description="Unique identifier or referenced Secret"),
+    ]
     """
     Unique identifier or referenced Secret
     """

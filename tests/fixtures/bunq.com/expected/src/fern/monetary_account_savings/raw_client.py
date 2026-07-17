@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -18,6 +19,7 @@ from ..types.monetary_account_savings_listing import MonetaryAccountSavingsListi
 from ..types.monetary_account_savings_read import MonetaryAccountSavingsRead
 from ..types.monetary_account_savings_update import MonetaryAccountSavingsUpdate
 from ..types.monetary_account_setting import MonetaryAccountSetting
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -47,7 +49,7 @@ class RawMonetaryAccountSavingsClient:
             With MonetaryAccountSavings you can create a new savings account.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-savings",
+            f"user/{encode_path_param(user_id)}/monetary-account-savings",
             method="GET",
             request_options=request_options,
         )
@@ -65,9 +67,9 @@ class RawMonetaryAccountSavingsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -75,6 +77,10 @@ class RawMonetaryAccountSavingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_monetary_account_savings_for_user(
@@ -144,7 +150,7 @@ class RawMonetaryAccountSavingsClient:
             With MonetaryAccountSavings you can create a new savings account.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-savings",
+            f"user/{encode_path_param(user_id)}/monetary-account-savings",
             method="POST",
             json={
                 "all_co_owner": convert_and_respect_annotation_metadata(
@@ -187,9 +193,9 @@ class RawMonetaryAccountSavingsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -197,6 +203,10 @@ class RawMonetaryAccountSavingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_monetary_account_savings_for_user(
@@ -222,7 +232,7 @@ class RawMonetaryAccountSavingsClient:
             With MonetaryAccountSavings you can create a new savings account.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-savings/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account-savings/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -240,9 +250,9 @@ class RawMonetaryAccountSavingsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -250,6 +260,10 @@ class RawMonetaryAccountSavingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_monetary_account_savings_for_user(
@@ -323,7 +337,7 @@ class RawMonetaryAccountSavingsClient:
             With MonetaryAccountSavings you can create a new savings account.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-savings/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account-savings/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "all_co_owner": convert_and_respect_annotation_metadata(
@@ -366,9 +380,9 @@ class RawMonetaryAccountSavingsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -376,6 +390,10 @@ class RawMonetaryAccountSavingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -403,7 +421,7 @@ class AsyncRawMonetaryAccountSavingsClient:
             With MonetaryAccountSavings you can create a new savings account.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-savings",
+            f"user/{encode_path_param(user_id)}/monetary-account-savings",
             method="GET",
             request_options=request_options,
         )
@@ -421,9 +439,9 @@ class AsyncRawMonetaryAccountSavingsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -431,6 +449,10 @@ class AsyncRawMonetaryAccountSavingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_monetary_account_savings_for_user(
@@ -500,7 +522,7 @@ class AsyncRawMonetaryAccountSavingsClient:
             With MonetaryAccountSavings you can create a new savings account.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-savings",
+            f"user/{encode_path_param(user_id)}/monetary-account-savings",
             method="POST",
             json={
                 "all_co_owner": convert_and_respect_annotation_metadata(
@@ -543,9 +565,9 @@ class AsyncRawMonetaryAccountSavingsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -553,6 +575,10 @@ class AsyncRawMonetaryAccountSavingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_monetary_account_savings_for_user(
@@ -578,7 +604,7 @@ class AsyncRawMonetaryAccountSavingsClient:
             With MonetaryAccountSavings you can create a new savings account.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-savings/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account-savings/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -596,9 +622,9 @@ class AsyncRawMonetaryAccountSavingsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -606,6 +632,10 @@ class AsyncRawMonetaryAccountSavingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_monetary_account_savings_for_user(
@@ -679,7 +709,7 @@ class AsyncRawMonetaryAccountSavingsClient:
             With MonetaryAccountSavings you can create a new savings account.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-savings/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account-savings/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "all_co_owner": convert_and_respect_annotation_metadata(
@@ -722,9 +752,9 @@ class AsyncRawMonetaryAccountSavingsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -732,4 +762,8 @@ class AsyncRawMonetaryAccountSavingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

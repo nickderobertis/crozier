@@ -17,20 +17,38 @@ class GroupsV2GroupQuery(UniversalBaseModel):
     If you pass these, you will get a useless InvalidParameters error.
     """
 
-    creation_date: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="creationDate")] = None
-    current_page: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="currentPage")] = None
-    group_member_count_filter: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="groupMemberCountFilter")
+    creation_date: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="creationDate"), pydantic.Field(alias="creationDate")
     ] = None
-    group_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="groupType")] = None
-    items_per_page: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemsPerPage")] = None
-    locale_filter: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="localeFilter")] = None
+    current_page: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="currentPage"), pydantic.Field(alias="currentPage")
+    ] = None
+    group_member_count_filter: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="groupMemberCountFilter"),
+        pydantic.Field(alias="groupMemberCountFilter"),
+    ] = None
+    group_type: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="groupType"), pydantic.Field(alias="groupType")
+    ] = None
+    items_per_page: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="itemsPerPage"), pydantic.Field(alias="itemsPerPage")
+    ] = None
+    locale_filter: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="localeFilter"), pydantic.Field(alias="localeFilter")
+    ] = None
     name: typing.Optional[str] = None
     request_continuation_token: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="requestContinuationToken")
+        typing.Optional[str],
+        FieldMetadata(alias="requestContinuationToken"),
+        pydantic.Field(alias="requestContinuationToken"),
     ] = None
-    sort_by: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="sortBy")] = None
-    tag_text: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="tagText")] = None
+    sort_by: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="sortBy"), pydantic.Field(alias="sortBy")
+    ] = None
+    tag_text: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="tagText"), pydantic.Field(alias="tagText")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

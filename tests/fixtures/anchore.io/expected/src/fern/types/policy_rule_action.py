@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PolicyRuleAction(str, enum.Enum):
+class PolicyRuleAction(enum.StrEnum):
     GO = "GO"
     STOP = "STOP"
     WARN = "WARN"

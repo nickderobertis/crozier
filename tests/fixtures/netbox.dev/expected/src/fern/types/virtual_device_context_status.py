@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class VirtualDeviceContextStatus(str, enum.Enum):
+class VirtualDeviceContextStatus(enum.StrEnum):
     ACTIVE = "active"
     PLANNED = "planned"
     OFFLINE = "offline"

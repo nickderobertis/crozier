@@ -1,6 +1,6 @@
 # Reference
 ## Customers
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">all</a>(...) -> GetCustomerSupportCustomersResponse</code></summary>
 <dl>
 <dd>
 
@@ -28,13 +28,15 @@ List Customer Support Customers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.all_(
     fields="id,updated_at",
 )
@@ -97,7 +99,7 @@ client.customers.all_(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">add</a>(...) -> CreateCustomerSupportCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -125,13 +127,15 @@ Create Customer Support Customer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.add()
 
 ```
@@ -148,143 +152,15 @@ client.customers.add()
 <dl>
 <dd>
 
+**request:** `CustomerSupportCustomer` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**addresses:** `typing.Optional[typing.Sequence[Address]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bank_accounts:** `typing.Optional[BankAccount]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**company_name:** `typing.Optional[CompanyName]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[dt.datetime]` — The date and time when the object was created.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[str]` — The user who created the object.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**currency:** `typing.Optional[Currency]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**emails:** `typing.Optional[typing.Sequence[Email]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**first_name:** `typing.Optional[FirstName]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` — A unique identifier for an object.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**individual:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_name:** `typing.Optional[LastName]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**notes:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**phone_numbers:** `typing.Optional[typing.Sequence[PhoneNumber]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[CustomerSupportCustomerStatus]` — Customer status
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tax_number:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[dt.datetime]` — The date and time when the object was last updated.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[str]` — The user who last updated the object.
     
 </dd>
 </dl>
@@ -304,7 +180,7 @@ client.customers.add()
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">one</a>(...) -> GetCustomerSupportCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -332,13 +208,15 @@ Get Customer Support Customer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.one(
     id="id",
     fields="id,updated_at",
@@ -394,7 +272,7 @@ client.customers.one(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">delete</a>(...) -> DeleteCustomerSupportCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -422,13 +300,15 @@ Delete Customer Support Customer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.delete(
     id="id",
 )
@@ -475,7 +355,7 @@ client.customers.delete(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">update</a>(...) -> UpdateCustomerSupportCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -503,13 +383,15 @@ Update Customer Support Customer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.update(
     id_="id",
 )
@@ -528,7 +410,15 @@ client.customers.update(
 <dl>
 <dd>
 
-**id_:** `str` — ID of the record you are acting upon.
+**id:** `str` — ID of the record you are acting upon.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `CustomerSupportCustomer` 
     
 </dd>
 </dl>
@@ -537,142 +427,6 @@ client.customers.update(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**addresses:** `typing.Optional[typing.Sequence[Address]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bank_accounts:** `typing.Optional[BankAccount]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**company_name:** `typing.Optional[CompanyName]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[dt.datetime]` — The date and time when the object was created.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[str]` — The user who created the object.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**currency:** `typing.Optional[Currency]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**emails:** `typing.Optional[typing.Sequence[Email]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**first_name:** `typing.Optional[FirstName]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` — A unique identifier for an object.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**individual:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_name:** `typing.Optional[LastName]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**notes:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**phone_numbers:** `typing.Optional[typing.Sequence[PhoneNumber]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[CustomerSupportCustomerStatus]` — Customer status
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tax_number:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[dt.datetime]` — The date and time when the object was last updated.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[str]` — The user who last updated the object.
     
 </dd>
 </dl>

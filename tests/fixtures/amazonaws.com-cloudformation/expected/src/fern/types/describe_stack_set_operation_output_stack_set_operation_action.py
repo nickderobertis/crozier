@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DescribeStackSetOperationOutputStackSetOperationAction(str, enum.Enum):
+class DescribeStackSetOperationOutputStackSetOperationAction(enum.StrEnum):
     """
     The type of stack set operation: <code>CREATE</code>, <code>UPDATE</code>, or <code>DELETE</code>. Create and delete operations affect only the specified stack set instances that are associated with the specified stack set. Update operations affect both the stack set itself, in addition to <i>all</i> associated stack set instances.
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class HealthStatus(str, enum.Enum):
+class HealthStatus(enum.StrEnum):
     """
     Health status
     """

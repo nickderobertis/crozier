@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ErrorCategory(str, enum.Enum):
+class ErrorCategory(enum.StrEnum):
     """
     Indicates which high-level category of error has occurred during a
     request to the Connect API.

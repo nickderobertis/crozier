@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TypeTestsStatus(str, enum.Enum):
+class TypeTestsStatus(enum.StrEnum):
     PASSED = "PASSED"
     FAILED = "FAILED"
     IN_PROGRESS = "IN_PROGRESS"

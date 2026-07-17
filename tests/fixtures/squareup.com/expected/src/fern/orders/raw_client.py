@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -20,6 +21,7 @@ from ..types.retrieve_order_response import RetrieveOrderResponse
 from ..types.search_orders_query import SearchOrdersQuery
 from ..types.search_orders_response import SearchOrdersResponse
 from ..types.update_order_response import UpdateOrderResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -90,6 +92,10 @@ class RawOrdersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def batch_retrieve_orders(
@@ -147,6 +153,10 @@ class RawOrdersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def calculate_order(
@@ -206,6 +216,10 @@ class RawOrdersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def search_orders(
@@ -306,6 +320,10 @@ class RawOrdersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_order(
@@ -328,7 +346,7 @@ class RawOrdersClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/orders/{jsonable_encoder(order_id)}",
+            f"v2/orders/{encode_path_param(order_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -345,6 +363,10 @@ class RawOrdersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_order(
@@ -404,7 +426,7 @@ class RawOrdersClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/orders/{jsonable_encoder(order_id)}",
+            f"v2/orders/{encode_path_param(order_id)}",
             method="PUT",
             json={
                 "fields_to_clear": fields_to_clear,
@@ -430,6 +452,10 @@ class RawOrdersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def pay_order(
@@ -485,7 +511,7 @@ class RawOrdersClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/orders/{jsonable_encoder(order_id)}/pay",
+            f"v2/orders/{encode_path_param(order_id)}/pay",
             method="POST",
             json={
                 "idempotency_key": idempotency_key,
@@ -511,6 +537,10 @@ class RawOrdersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -579,6 +609,10 @@ class AsyncRawOrdersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def batch_retrieve_orders(
@@ -636,6 +670,10 @@ class AsyncRawOrdersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def calculate_order(
@@ -695,6 +733,10 @@ class AsyncRawOrdersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def search_orders(
@@ -795,6 +837,10 @@ class AsyncRawOrdersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_order(
@@ -817,7 +863,7 @@ class AsyncRawOrdersClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/orders/{jsonable_encoder(order_id)}",
+            f"v2/orders/{encode_path_param(order_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -834,6 +880,10 @@ class AsyncRawOrdersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_order(
@@ -893,7 +943,7 @@ class AsyncRawOrdersClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/orders/{jsonable_encoder(order_id)}",
+            f"v2/orders/{encode_path_param(order_id)}",
             method="PUT",
             json={
                 "fields_to_clear": fields_to_clear,
@@ -919,6 +969,10 @@ class AsyncRawOrdersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def pay_order(
@@ -974,7 +1028,7 @@ class AsyncRawOrdersClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/orders/{jsonable_encoder(order_id)}/pay",
+            f"v2/orders/{encode_path_param(order_id)}/pay",
             method="POST",
             json={
                 "idempotency_key": idempotency_key,
@@ -1000,4 +1054,8 @@ class AsyncRawOrdersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

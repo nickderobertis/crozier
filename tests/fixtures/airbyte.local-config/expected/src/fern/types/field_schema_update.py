@@ -10,8 +10,12 @@ from .field_schema import FieldSchema
 
 
 class FieldSchemaUpdate(UniversalBaseModel):
-    new_schema: typing_extensions.Annotated[FieldSchema, FieldMetadata(alias="newSchema")]
-    old_schema: typing_extensions.Annotated[FieldSchema, FieldMetadata(alias="oldSchema")]
+    new_schema: typing_extensions.Annotated[
+        FieldSchema, FieldMetadata(alias="newSchema"), pydantic.Field(alias="newSchema")
+    ]
+    old_schema: typing_extensions.Annotated[
+        FieldSchema, FieldMetadata(alias="oldSchema"), pydantic.Field(alias="oldSchema")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

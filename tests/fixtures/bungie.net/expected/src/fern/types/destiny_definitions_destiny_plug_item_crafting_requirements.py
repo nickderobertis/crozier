@@ -13,11 +13,17 @@ from .destiny_definitions_destiny_plug_item_crafting_unlock_requirement import (
 
 class DestinyDefinitionsDestinyPlugItemCraftingRequirements(UniversalBaseModel):
     material_requirement_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="materialRequirementHashes")
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="materialRequirementHashes"),
+        pydantic.Field(alias="materialRequirementHashes"),
     ] = None
-    required_level: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="requiredLevel")] = (
-        pydantic.Field(default=None)
-    )
+    required_level: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="requiredLevel"),
+        pydantic.Field(
+            alias="requiredLevel", description="If the plug has a known level requirement, it'll be available here."
+        ),
+    ] = None
     """
     If the plug has a known level requirement, it'll be available here.
     """
@@ -25,6 +31,7 @@ class DestinyDefinitionsDestinyPlugItemCraftingRequirements(UniversalBaseModel):
     unlock_requirements: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyPlugItemCraftingUnlockRequirement]],
         FieldMetadata(alias="unlockRequirements"),
+        pydantic.Field(alias="unlockRequirements"),
     ] = None
 
     if IS_PYDANTIC_V2:

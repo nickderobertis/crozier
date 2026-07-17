@@ -15,9 +15,9 @@ class JobTypeResourceLimit(UniversalBaseModel):
     sets resource requirements for a specific job type for an actor definition. these values override the default, if both are set.
     """
 
-    job_type: typing_extensions.Annotated[JobType, FieldMetadata(alias="jobType")]
+    job_type: typing_extensions.Annotated[JobType, FieldMetadata(alias="jobType"), pydantic.Field(alias="jobType")]
     resource_requirements: typing_extensions.Annotated[
-        ResourceRequirements, FieldMetadata(alias="resourceRequirements")
+        ResourceRequirements, FieldMetadata(alias="resourceRequirements"), pydantic.Field(alias="resourceRequirements")
     ]
 
     if IS_PYDANTIC_V2:

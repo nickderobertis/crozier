@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PowerFeedStatusLabel(str, enum.Enum):
+class PowerFeedStatusLabel(enum.StrEnum):
     OFFLINE = "Offline"
     ACTIVE = "Active"
     PLANNED = "Planned"

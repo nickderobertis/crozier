@@ -11,23 +11,32 @@ from .applications_application_developer import ApplicationsApplicationDeveloper
 
 
 class ApplicationsApplication(UniversalBaseModel):
-    application_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="applicationId")] = (
-        pydantic.Field(default=None)
-    )
+    application_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="applicationId"),
+        pydantic.Field(alias="applicationId", description="Unique ID assigned to the application"),
+    ] = None
     """
     Unique ID assigned to the application
     """
 
-    creation_date: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="creationDate")] = (
-        pydantic.Field(default=None)
-    )
+    creation_date: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="creationDate"),
+        pydantic.Field(alias="creationDate", description="Date the application was first added to our database."),
+    ] = None
     """
     Date the application was first added to our database.
     """
 
     first_published: typing_extensions.Annotated[
-        typing.Optional[dt.datetime], FieldMetadata(alias="firstPublished")
-    ] = pydantic.Field(default=None)
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="firstPublished"),
+        pydantic.Field(
+            alias="firstPublished",
+            description="Date the first time the application status entered the 'Public' status.",
+        ),
+    ] = None
     """
     Date the first time the application status entered the 'Public' status.
     """
@@ -48,15 +57,23 @@ class ApplicationsApplication(UniversalBaseModel):
     """
 
     override_authorize_view_name: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="overrideAuthorizeViewName")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="overrideAuthorizeViewName"),
+        pydantic.Field(
+            alias="overrideAuthorizeViewName", description="An optional override for the Authorize view name."
+        ),
+    ] = None
     """
     An optional override for the Authorize view name.
     """
 
-    redirect_url: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="redirectUrl")] = (
-        pydantic.Field(default=None)
-    )
+    redirect_url: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="redirectUrl"),
+        pydantic.Field(
+            alias="redirectUrl", description="URL used to pass the user's authorization code to the application"
+        ),
+    ] = None
     """
     URL used to pass the user's authorization code to the application
     """
@@ -71,9 +88,11 @@ class ApplicationsApplication(UniversalBaseModel):
     Current status of the application.
     """
 
-    status_changed: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="statusChanged")] = (
-        pydantic.Field(default=None)
-    )
+    status_changed: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="statusChanged"),
+        pydantic.Field(alias="statusChanged", description="Date the application status last changed."),
+    ] = None
     """
     Date the application status last changed.
     """

@@ -1,3 +1,6 @@
 
 
 Schema46 = int
+"""
+When a Vendor Interaction provides rewards, they'll either let you choose one or let you have all of them. This determines which it will be.
+"""

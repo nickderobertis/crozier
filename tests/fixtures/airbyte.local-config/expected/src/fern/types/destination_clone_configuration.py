@@ -11,7 +11,9 @@ from .destination_configuration import DestinationConfiguration
 
 class DestinationCloneConfiguration(UniversalBaseModel):
     connection_configuration: typing_extensions.Annotated[
-        typing.Optional[DestinationConfiguration], FieldMetadata(alias="connectionConfiguration")
+        typing.Optional[DestinationConfiguration],
+        FieldMetadata(alias="connectionConfiguration"),
+        pydantic.Field(alias="connectionConfiguration"),
     ] = None
     name: typing.Optional[str] = None
 

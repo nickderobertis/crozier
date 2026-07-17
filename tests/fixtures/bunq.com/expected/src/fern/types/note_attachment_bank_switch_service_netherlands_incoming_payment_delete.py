@@ -2,4 +2,4 @@
 
 import typing
 
-NoteAttachmentBankSwitchServiceNetherlandsIncomingPaymentDelete = typing.Dict[str, typing.Optional[typing.Any]]
+NoteAttachmentBankSwitchServiceNetherlandsIncomingPaymentDelete = typing.Dict[str, typing.Any]

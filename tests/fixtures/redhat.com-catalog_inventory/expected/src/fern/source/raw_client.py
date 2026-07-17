@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -20,6 +21,7 @@ from ..types.service_plans_collection import ServicePlansCollection
 from ..types.source import Source
 from ..types.sources_collection import SourcesCollection
 from ..types.tasks_collection import TasksCollection
+from pydantic import ValidationError
 
 
 class RawSourceClient:
@@ -31,8 +33,8 @@ class RawSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[SourcesCollection]:
         """
@@ -46,10 +48,10 @@ class RawSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -84,6 +86,10 @@ class RawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def show_source(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Source]:
@@ -104,7 +110,7 @@ class RawSourceClient:
             Source info
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}",
+            f"sources/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -122,9 +128,9 @@ class RawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -132,6 +138,10 @@ class RawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def incremental_refresh_source(
@@ -153,7 +163,7 @@ class RawSourceClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/incremental_refresh",
+            f"sources/{encode_path_param(id)}/incremental_refresh",
             method="PATCH",
             request_options=request_options,
         )
@@ -164,9 +174,9 @@ class RawSourceClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -175,9 +185,9 @@ class RawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -186,9 +196,9 @@ class RawSourceClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -196,6 +206,10 @@ class RawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def refresh_source(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -215,7 +229,7 @@ class RawSourceClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/refresh",
+            f"sources/{encode_path_param(id)}/refresh",
             method="PATCH",
             request_options=request_options,
         )
@@ -226,9 +240,9 @@ class RawSourceClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -237,9 +251,9 @@ class RawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -248,9 +262,9 @@ class RawSourceClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -258,6 +272,10 @@ class RawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_source_service_instances(
@@ -266,8 +284,8 @@ class RawSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ServiceInstancesCollection]:
         """
@@ -284,10 +302,10 @@ class RawSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -299,7 +317,7 @@ class RawSourceClient:
             ServiceInstances collection
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/service_instances",
+            f"sources/{encode_path_param(id)}/service_instances",
             method="GET",
             params={
                 "limit": limit,
@@ -323,9 +341,9 @@ class RawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -333,6 +351,10 @@ class RawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_source_service_inventories(
@@ -341,8 +363,8 @@ class RawSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ServiceInventoriesCollection]:
         """
@@ -359,10 +381,10 @@ class RawSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -374,7 +396,7 @@ class RawSourceClient:
             ServiceInventories collection
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/service_inventories",
+            f"sources/{encode_path_param(id)}/service_inventories",
             method="GET",
             params={
                 "limit": limit,
@@ -398,9 +420,9 @@ class RawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -408,6 +430,10 @@ class RawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_source_service_offering_nodes(
@@ -416,8 +442,8 @@ class RawSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ServiceOfferingNodesCollection]:
         """
@@ -434,10 +460,10 @@ class RawSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -449,7 +475,7 @@ class RawSourceClient:
             ServiceOfferingNodes collection
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/service_offering_nodes",
+            f"sources/{encode_path_param(id)}/service_offering_nodes",
             method="GET",
             params={
                 "limit": limit,
@@ -473,9 +499,9 @@ class RawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -483,6 +509,10 @@ class RawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_source_service_offerings(
@@ -491,8 +521,8 @@ class RawSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ServiceOfferingsCollection]:
         """
@@ -509,10 +539,10 @@ class RawSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -524,7 +554,7 @@ class RawSourceClient:
             ServiceOfferings collection
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/service_offerings",
+            f"sources/{encode_path_param(id)}/service_offerings",
             method="GET",
             params={
                 "limit": limit,
@@ -548,9 +578,9 @@ class RawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -558,6 +588,10 @@ class RawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_source_service_plans(
@@ -566,8 +600,8 @@ class RawSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ServicePlansCollection]:
         """
@@ -584,10 +618,10 @@ class RawSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -599,7 +633,7 @@ class RawSourceClient:
             ServicePlans collection
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/service_plans",
+            f"sources/{encode_path_param(id)}/service_plans",
             method="GET",
             params={
                 "limit": limit,
@@ -623,9 +657,9 @@ class RawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -633,6 +667,10 @@ class RawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_source_tasks(
@@ -641,8 +679,8 @@ class RawSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[TasksCollection]:
         """
@@ -659,10 +697,10 @@ class RawSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -674,7 +712,7 @@ class RawSourceClient:
             Tasks collection
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/tasks",
+            f"sources/{encode_path_param(id)}/tasks",
             method="GET",
             params={
                 "limit": limit,
@@ -698,9 +736,9 @@ class RawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -708,6 +746,10 @@ class RawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -720,8 +762,8 @@ class AsyncRawSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[SourcesCollection]:
         """
@@ -735,10 +777,10 @@ class AsyncRawSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -773,6 +815,10 @@ class AsyncRawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def show_source(
@@ -795,7 +841,7 @@ class AsyncRawSourceClient:
             Source info
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}",
+            f"sources/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -813,9 +859,9 @@ class AsyncRawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -823,6 +869,10 @@ class AsyncRawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def incremental_refresh_source(
@@ -844,7 +894,7 @@ class AsyncRawSourceClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/incremental_refresh",
+            f"sources/{encode_path_param(id)}/incremental_refresh",
             method="PATCH",
             request_options=request_options,
         )
@@ -855,9 +905,9 @@ class AsyncRawSourceClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -866,9 +916,9 @@ class AsyncRawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -877,9 +927,9 @@ class AsyncRawSourceClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -887,6 +937,10 @@ class AsyncRawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def refresh_source(
@@ -908,7 +962,7 @@ class AsyncRawSourceClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/refresh",
+            f"sources/{encode_path_param(id)}/refresh",
             method="PATCH",
             request_options=request_options,
         )
@@ -919,9 +973,9 @@ class AsyncRawSourceClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -930,9 +984,9 @@ class AsyncRawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -941,9 +995,9 @@ class AsyncRawSourceClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -951,6 +1005,10 @@ class AsyncRawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_source_service_instances(
@@ -959,8 +1017,8 @@ class AsyncRawSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ServiceInstancesCollection]:
         """
@@ -977,10 +1035,10 @@ class AsyncRawSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -992,7 +1050,7 @@ class AsyncRawSourceClient:
             ServiceInstances collection
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/service_instances",
+            f"sources/{encode_path_param(id)}/service_instances",
             method="GET",
             params={
                 "limit": limit,
@@ -1016,9 +1074,9 @@ class AsyncRawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1026,6 +1084,10 @@ class AsyncRawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_source_service_inventories(
@@ -1034,8 +1096,8 @@ class AsyncRawSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ServiceInventoriesCollection]:
         """
@@ -1052,10 +1114,10 @@ class AsyncRawSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -1067,7 +1129,7 @@ class AsyncRawSourceClient:
             ServiceInventories collection
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/service_inventories",
+            f"sources/{encode_path_param(id)}/service_inventories",
             method="GET",
             params={
                 "limit": limit,
@@ -1091,9 +1153,9 @@ class AsyncRawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1101,6 +1163,10 @@ class AsyncRawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_source_service_offering_nodes(
@@ -1109,8 +1175,8 @@ class AsyncRawSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ServiceOfferingNodesCollection]:
         """
@@ -1127,10 +1193,10 @@ class AsyncRawSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -1142,7 +1208,7 @@ class AsyncRawSourceClient:
             ServiceOfferingNodes collection
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/service_offering_nodes",
+            f"sources/{encode_path_param(id)}/service_offering_nodes",
             method="GET",
             params={
                 "limit": limit,
@@ -1166,9 +1232,9 @@ class AsyncRawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1176,6 +1242,10 @@ class AsyncRawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_source_service_offerings(
@@ -1184,8 +1254,8 @@ class AsyncRawSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ServiceOfferingsCollection]:
         """
@@ -1202,10 +1272,10 @@ class AsyncRawSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -1217,7 +1287,7 @@ class AsyncRawSourceClient:
             ServiceOfferings collection
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/service_offerings",
+            f"sources/{encode_path_param(id)}/service_offerings",
             method="GET",
             params={
                 "limit": limit,
@@ -1241,9 +1311,9 @@ class AsyncRawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1251,6 +1321,10 @@ class AsyncRawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_source_service_plans(
@@ -1259,8 +1333,8 @@ class AsyncRawSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ServicePlansCollection]:
         """
@@ -1277,10 +1351,10 @@ class AsyncRawSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -1292,7 +1366,7 @@ class AsyncRawSourceClient:
             ServicePlans collection
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/service_plans",
+            f"sources/{encode_path_param(id)}/service_plans",
             method="GET",
             params={
                 "limit": limit,
@@ -1316,9 +1390,9 @@ class AsyncRawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1326,6 +1400,10 @@ class AsyncRawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_source_tasks(
@@ -1334,8 +1412,8 @@ class AsyncRawSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[TasksCollection]:
         """
@@ -1352,10 +1430,10 @@ class AsyncRawSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -1367,7 +1445,7 @@ class AsyncRawSourceClient:
             Tasks collection
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"sources/{jsonable_encoder(id)}/tasks",
+            f"sources/{encode_path_param(id)}/tasks",
             method="GET",
             params={
                 "limit": limit,
@@ -1391,9 +1469,9 @@ class AsyncRawSourceClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1401,4 +1479,8 @@ class AsyncRawSourceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

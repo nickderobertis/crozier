@@ -2,4 +2,4 @@
 
 import typing
 
-NoteAttachmentWhitelistResultDelete = typing.Dict[str, typing.Optional[typing.Any]]
+NoteAttachmentWhitelistResultDelete = typing.Dict[str, typing.Any]

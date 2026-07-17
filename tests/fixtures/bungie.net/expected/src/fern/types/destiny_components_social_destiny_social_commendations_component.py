@@ -10,15 +10,23 @@ from ..core.serialization import FieldMetadata
 
 class DestinyComponentsSocialDestinySocialCommendationsComponent(UniversalBaseModel):
     commendation_node_scores_by_hash: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, int]], FieldMetadata(alias="commendationNodeScoresByHash")
+        typing.Optional[typing.Dict[str, int]],
+        FieldMetadata(alias="commendationNodeScoresByHash"),
+        pydantic.Field(alias="commendationNodeScoresByHash"),
     ] = None
     commendation_scores_by_hash: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, int]], FieldMetadata(alias="commendationScoresByHash")
+        typing.Optional[typing.Dict[str, int]],
+        FieldMetadata(alias="commendationScoresByHash"),
+        pydantic.Field(alias="commendationScoresByHash"),
     ] = None
     score_detail_values: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="scoreDetailValues")
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="scoreDetailValues"),
+        pydantic.Field(alias="scoreDetailValues"),
     ] = None
-    total_score: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="totalScore")] = None
+    total_score: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="totalScore"), pydantic.Field(alias="totalScore")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -10,8 +10,12 @@ from ...core.serialization import FieldMetadata
 
 class PostPortfolioAnalysisEffectiveNumberOfBetsResponsePortfoliosItem(UniversalBaseModel):
     portfolio_effective_number_of_bets: typing_extensions.Annotated[
-        float, FieldMetadata(alias="portfolioEffectiveNumberOfBets")
-    ] = pydantic.Field()
+        float,
+        FieldMetadata(alias="portfolioEffectiveNumberOfBets"),
+        pydantic.Field(
+            alias="portfolioEffectiveNumberOfBets", description="The effective number of bets of the portfolio"
+        ),
+    ]
     """
     The effective number of bets of the portfolio
     """

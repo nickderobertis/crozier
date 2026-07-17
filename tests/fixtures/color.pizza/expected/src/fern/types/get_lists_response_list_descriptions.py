@@ -11,28 +11,36 @@ from .list_description import ListDescription
 
 class GetListsResponseListDescriptions(UniversalBaseModel):
     basic: typing.Optional[ListDescription] = None
-    best_of: typing_extensions.Annotated[typing.Optional[ListDescription], FieldMetadata(alias="bestOf")] = None
+    best_of: typing_extensions.Annotated[
+        typing.Optional[ListDescription], FieldMetadata(alias="bestOf"), pydantic.Field(alias="bestOf")
+    ] = None
     chinese_traditional: typing_extensions.Annotated[
-        typing.Optional[ListDescription], FieldMetadata(alias="chineseTraditional")
+        typing.Optional[ListDescription],
+        FieldMetadata(alias="chineseTraditional"),
+        pydantic.Field(alias="chineseTraditional"),
     ] = None
     default: typing.Optional[ListDescription] = None
     french: typing.Optional[ListDescription] = None
     html: typing.Optional[ListDescription] = None
     japanese_traditional: typing_extensions.Annotated[
-        typing.Optional[ListDescription], FieldMetadata(alias="japaneseTraditional")
+        typing.Optional[ListDescription],
+        FieldMetadata(alias="japaneseTraditional"),
+        pydantic.Field(alias="japaneseTraditional"),
     ] = None
-    le_corbusier: typing_extensions.Annotated[typing.Optional[ListDescription], FieldMetadata(alias="leCorbusier")] = (
-        None
-    )
-    nbs_iscc: typing_extensions.Annotated[typing.Optional[ListDescription], FieldMetadata(alias="nbsIscc")] = None
+    le_corbusier: typing_extensions.Annotated[
+        typing.Optional[ListDescription], FieldMetadata(alias="leCorbusier"), pydantic.Field(alias="leCorbusier")
+    ] = None
+    nbs_iscc: typing_extensions.Annotated[
+        typing.Optional[ListDescription], FieldMetadata(alias="nbsIscc"), pydantic.Field(alias="nbsIscc")
+    ] = None
     ntc: typing.Optional[ListDescription] = None
     osxcrayons: typing.Optional[ListDescription] = None
     ral: typing.Optional[ListDescription] = None
     ridgway: typing.Optional[ListDescription] = None
     risograph: typing.Optional[ListDescription] = None
-    sanzo_wada_i: typing_extensions.Annotated[typing.Optional[ListDescription], FieldMetadata(alias="sanzoWadaI")] = (
-        None
-    )
+    sanzo_wada_i: typing_extensions.Annotated[
+        typing.Optional[ListDescription], FieldMetadata(alias="sanzoWadaI"), pydantic.Field(alias="sanzoWadaI")
+    ] = None
     thesaurus: typing.Optional[ListDescription] = None
     werner: typing.Optional[ListDescription] = None
     wikipedia: typing.Optional[ListDescription] = None

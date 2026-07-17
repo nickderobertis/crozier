@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetCreateStackSetRequestPermissionModel(str, enum.Enum):
+class GetCreateStackSetRequestPermissionModel(enum.StrEnum):
     SERVICE_MANAGED = "SERVICE_MANAGED"
     SELF_MANAGED = "SELF_MANAGED"
 

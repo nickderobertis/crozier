@@ -9,7 +9,14 @@ from ...core.serialization import FieldMetadata
 
 
 class PostPortfolioAnalysisDiversificationRatioRequestOneAssetsItem(UniversalBaseModel):
-    asset_prices: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="assetPrices")] = pydantic.Field()
+    asset_prices: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="assetPrices"),
+        pydantic.Field(
+            alias="assetPrices",
+            description="assetPrices[t] is the price of the asset at the time t; all the assetPrices arrays must have the same length",
+        ),
+    ]
     """
     assetPrices[t] is the price of the asset at the time t; all the assetPrices arrays must have the same length
     """

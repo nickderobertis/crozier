@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class RackOuterUnitLabel(str, enum.Enum):
+class RackOuterUnitLabel(enum.StrEnum):
     MILLIMETERS = "Millimeters"
     INCHES = "Inches"
 

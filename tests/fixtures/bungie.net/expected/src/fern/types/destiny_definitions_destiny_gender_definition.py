@@ -19,10 +19,16 @@ class DestinyDefinitionsDestinyGenderDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
-    gender_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="genderType")] = pydantic.Field(
-        default=None
-    )
+    gender_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="genderType"),
+        pydantic.Field(
+            alias="genderType",
+            description="This is a quick reference enumeration for all of the currently defined Genders. We use the enumeration for quicker lookups in related data, like DestinyClassDefinition.genderedClassNames.",
+        ),
+    ] = None
     """
     This is a quick reference enumeration for all of the currently defined Genders. We use the enumeration for quicker lookups in related data, like DestinyClassDefinition.genderedClassNames.
     """

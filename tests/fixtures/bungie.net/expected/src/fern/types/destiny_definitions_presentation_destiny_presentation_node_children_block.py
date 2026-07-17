@@ -38,6 +38,7 @@ class DestinyDefinitionsPresentationDestinyPresentationNodeChildrenBlock(Univers
     presentation_nodes: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsPresentationDestinyPresentationNodeChildEntry]],
         FieldMetadata(alias="presentationNodes"),
+        pydantic.Field(alias="presentationNodes"),
     ] = None
     records: typing.Optional[typing.List[DestinyDefinitionsPresentationDestinyPresentationNodeRecordChildEntry]] = None
 

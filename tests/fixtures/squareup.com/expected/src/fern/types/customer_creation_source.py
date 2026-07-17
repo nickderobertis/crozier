@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CustomerCreationSource(str, enum.Enum):
+class CustomerCreationSource(enum.StrEnum):
     """
     Indicates the method used to create the customer profile.
     """

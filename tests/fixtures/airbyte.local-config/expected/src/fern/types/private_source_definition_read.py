@@ -11,7 +11,9 @@ from .source_definition_read import SourceDefinitionRead
 
 class PrivateSourceDefinitionRead(UniversalBaseModel):
     granted: bool
-    source_definition: typing_extensions.Annotated[SourceDefinitionRead, FieldMetadata(alias="sourceDefinition")]
+    source_definition: typing_extensions.Annotated[
+        SourceDefinitionRead, FieldMetadata(alias="sourceDefinition"), pydantic.Field(alias="sourceDefinition")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

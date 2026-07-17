@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LeaveLineCalculationType(str, enum.Enum):
+class LeaveLineCalculationType(enum.StrEnum):
     """
     Calculation type for leave line for Opening Balance on Employee
     """

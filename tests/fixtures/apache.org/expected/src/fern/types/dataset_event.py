@@ -25,7 +25,7 @@ class DatasetEvent(UniversalBaseModel):
     The URI of the dataset
     """
 
-    extra: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    extra: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     The dataset event extra
     """

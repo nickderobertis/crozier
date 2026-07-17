@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObExternalAccountType1Code(str, enum.Enum):
+class ObExternalAccountType1Code(enum.StrEnum):
     """
     Specifies the type of account (personal or business).
     """

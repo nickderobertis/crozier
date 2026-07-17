@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableInterfaceType(str, enum.Enum):
+class WritableInterfaceType(enum.StrEnum):
     VIRTUAL = "virtual"
     BRIDGE = "bridge"
     LAG = "lag"

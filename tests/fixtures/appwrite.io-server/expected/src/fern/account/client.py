@@ -267,17 +267,14 @@ class AccountClient:
         return _response.data
 
     def update_prefs(
-        self,
-        *,
-        prefs: typing.Dict[str, typing.Optional[typing.Any]],
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, prefs: typing.Dict[str, typing.Any], request_options: typing.Optional[RequestOptions] = None
     ) -> User:
         """
         Update currently logged in user account preferences. You can pass only the specific settings you wish to update.
 
         Parameters
         ----------
-        prefs : typing.Dict[str, typing.Optional[typing.Any]]
+        prefs : typing.Dict[str, typing.Any]
             Prefs key-value JSON object.
 
         request_options : typing.Optional[RequestOptions]
@@ -917,17 +914,14 @@ class AsyncAccountClient:
         return _response.data
 
     async def update_prefs(
-        self,
-        *,
-        prefs: typing.Dict[str, typing.Optional[typing.Any]],
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, prefs: typing.Dict[str, typing.Any], request_options: typing.Optional[RequestOptions] = None
     ) -> User:
         """
         Update currently logged in user account preferences. You can pass only the specific settings you wish to update.
 
         Parameters
         ----------
-        prefs : typing.Dict[str, typing.Optional[typing.Any]]
+        prefs : typing.Dict[str, typing.Any]
             Prefs key-value JSON object.
 
         request_options : typing.Optional[RequestOptions]

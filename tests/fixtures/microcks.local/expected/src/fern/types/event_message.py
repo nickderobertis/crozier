@@ -27,7 +27,9 @@ class EventMessage(UniversalBaseModel):
     Unique identifier of this message
     """
 
-    media_type: typing_extensions.Annotated[str, FieldMetadata(alias="mediaType")] = pydantic.Field()
+    media_type: typing_extensions.Annotated[
+        str, FieldMetadata(alias="mediaType"), pydantic.Field(alias="mediaType", description="Content type of message")
+    ]
     """
     Content type of message
     """
@@ -37,16 +39,22 @@ class EventMessage(UniversalBaseModel):
     Unique distinct name of this message
     """
 
-    operation_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="operationId")] = (
-        pydantic.Field(default=None)
-    )
+    operation_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="operationId"),
+        pydantic.Field(alias="operationId", description="Identifier of Operation this message is associated to"),
+    ] = None
     """
     Identifier of Operation this message is associated to
     """
 
-    test_case_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="testCaseId")] = pydantic.Field(
-        default=None
-    )
+    test_case_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="testCaseId"),
+        pydantic.Field(
+            alias="testCaseId", description="Unique identifier of TestCase this message is attached (in case of a test)"
+        ),
+    ] = None
     """
     Unique identifier of TestCase this message is attached (in case of a test)
     """

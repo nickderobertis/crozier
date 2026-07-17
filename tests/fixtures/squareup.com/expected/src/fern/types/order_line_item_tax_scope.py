@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OrderLineItemTaxScope(str, enum.Enum):
+class OrderLineItemTaxScope(enum.StrEnum):
     """
     Indicates whether this is a line-item or order-level tax.
     """

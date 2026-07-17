@@ -6,13 +6,15 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.rule import Rule
 from ..types.rule_section import RuleSection
 from .types.get_api_rule_sections_index_request_index import GetApiRuleSectionsIndexRequestIndex
 from .types.get_api_rules_index_request_index import GetApiRulesIndexRequestIndex
+from pydantic import ValidationError
 
 
 class RawRulesClient:
@@ -39,7 +41,7 @@ class RawRulesClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/rule-sections/{jsonable_encoder(index)}",
+            f"api/rule-sections/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -56,6 +58,10 @@ class RawRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_a_rule_by_index(
@@ -82,7 +88,7 @@ class RawRulesClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/rules/{jsonable_encoder(index)}",
+            f"api/rules/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -99,6 +105,10 @@ class RawRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -126,7 +136,7 @@ class AsyncRawRulesClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/rule-sections/{jsonable_encoder(index)}",
+            f"api/rule-sections/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -143,6 +153,10 @@ class AsyncRawRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_a_rule_by_index(
@@ -169,7 +183,7 @@ class AsyncRawRulesClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/rules/{jsonable_encoder(index)}",
+            f"api/rules/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -186,4 +200,8 @@ class AsyncRawRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

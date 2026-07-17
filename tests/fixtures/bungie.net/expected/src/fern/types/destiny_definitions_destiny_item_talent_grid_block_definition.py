@@ -14,37 +14,62 @@ class DestinyDefinitionsDestinyItemTalentGridBlockDefinition(UniversalBaseModel)
     Builds/Subclasses are the only items left that still have talent grids with meaningful Nodes.
     """
 
-    build_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="buildName")] = pydantic.Field(
-        default=None
-    )
+    build_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="buildName"),
+        pydantic.Field(
+            alias="buildName",
+            description='A shortcut string identifier for the "build" in question, if this talent grid has an associated build. Doesn\'t map to anything we can expose at the moment.',
+        ),
+    ] = None
     """
     A shortcut string identifier for the "build" in question, if this talent grid has an associated build. Doesn't map to anything we can expose at the moment.
     """
 
-    hud_damage_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="hudDamageType")] = (
-        pydantic.Field(default=None)
-    )
+    hud_damage_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="hudDamageType"),
+        pydantic.Field(
+            alias="hudDamageType",
+            description="If the talent grid implies a damage type, this is the enum value for that damage type.",
+        ),
+    ] = None
     """
     If the talent grid implies a damage type, this is the enum value for that damage type.
     """
 
-    hud_icon: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="hudIcon")] = pydantic.Field(
-        default=None
-    )
+    hud_icon: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="hudIcon"),
+        pydantic.Field(
+            alias="hudIcon",
+            description="If the talent grid has a special icon that's shown in the game UI (like builds, funny that), this is the identifier for that icon. Sadly, we don't actually get that icon right now. I'll be looking to replace this with a path to the actual icon itself.",
+        ),
+    ] = None
     """
     If the talent grid has a special icon that's shown in the game UI (like builds, funny that), this is the identifier for that icon. Sadly, we don't actually get that icon right now. I'll be looking to replace this with a path to the actual icon itself.
     """
 
-    item_detail_string: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="itemDetailString")] = (
-        pydantic.Field(default=None)
-    )
+    item_detail_string: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="itemDetailString"),
+        pydantic.Field(
+            alias="itemDetailString",
+            description='This is meant to be a subtitle for looking at the talent grid. In practice, somewhat frustratingly, this always merely says the localized word for "Details". Great. Maybe it\'ll have more if talent grids ever get used for more than builds and subclasses again.',
+        ),
+    ] = None
     """
     This is meant to be a subtitle for looking at the talent grid. In practice, somewhat frustratingly, this always merely says the localized word for "Details". Great. Maybe it'll have more if talent grids ever get used for more than builds and subclasses again.
     """
 
-    talent_grid_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="talentGridHash")] = (
-        pydantic.Field(default=None)
-    )
+    talent_grid_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="talentGridHash"),
+        pydantic.Field(
+            alias="talentGridHash",
+            description="The hash identifier of the DestinyTalentGridDefinition attached to this item.",
+        ),
+    ] = None
     """
     The hash identifier of the DestinyTalentGridDefinition attached to this item.
     """

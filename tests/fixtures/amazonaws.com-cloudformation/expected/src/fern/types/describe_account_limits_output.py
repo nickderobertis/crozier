@@ -15,15 +15,25 @@ class DescribeAccountLimitsOutput(UniversalBaseModel):
     """
 
     account_limits: typing_extensions.Annotated[
-        typing.Optional[typing.List[AccountLimit]], FieldMetadata(alias="AccountLimits")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[AccountLimit]],
+        FieldMetadata(alias="AccountLimits"),
+        pydantic.Field(
+            alias="AccountLimits",
+            description="An account limit structure that contain a list of CloudFormation account limits and their values.",
+        ),
+    ] = None
     """
     An account limit structure that contain a list of CloudFormation account limits and their values.
     """
 
-    next_token: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="NextToken")] = pydantic.Field(
-        default=None
-    )
+    next_token: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="NextToken"),
+        pydantic.Field(
+            alias="NextToken",
+            description="If the output exceeds 1 MB in size, a string that identifies the next page of limits. If no additional page exists, this value is null.",
+        ),
+    ] = None
     """
     If the output exceeds 1 MB in size, a string that identifies the next page of limits. If no additional page exists, this value is null.
     """

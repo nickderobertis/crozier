@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WirelessLanAuthTypeLabel(str, enum.Enum):
+class WirelessLanAuthTypeLabel(enum.StrEnum):
     OPEN = "Open"
     WEP = "WEP"
     WPA_PERSONAL_PSK = "WPA Personal (PSK)"

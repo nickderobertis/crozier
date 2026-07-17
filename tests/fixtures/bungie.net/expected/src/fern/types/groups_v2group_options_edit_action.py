@@ -10,8 +10,13 @@ from ..core.serialization import FieldMetadata
 
 class GroupsV2GroupOptionsEditAction(UniversalBaseModel):
     host_guided_game_permission_override: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="HostGuidedGamePermissionOverride")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="HostGuidedGamePermissionOverride"),
+        pydantic.Field(
+            alias="HostGuidedGamePermissionOverride",
+            description="Minimum Member Level allowed to host guided games\r\nAlways Allowed: Founder, Acting Founder, Admin\r\nAllowed Overrides: None, Member, Beginner\r\nDefault is Member for clans, None for groups, although this means nothing for groups.",
+        ),
+    ] = None
     """
     Minimum Member Level allowed to host guided games
     Always Allowed: Founder, Acting Founder, Admin
@@ -20,8 +25,13 @@ class GroupsV2GroupOptionsEditAction(UniversalBaseModel):
     """
 
     invite_permission_override: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="InvitePermissionOverride")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="InvitePermissionOverride"),
+        pydantic.Field(
+            alias="InvitePermissionOverride",
+            description="Minimum Member Level allowed to invite new members to group\r\nAlways Allowed: Founder, Acting Founder\r\nTrue means admins have this power, false means they don't\r\nDefault is false for clans, true for groups.",
+        ),
+    ] = None
     """
     Minimum Member Level allowed to invite new members to group
     Always Allowed: Founder, Acting Founder
@@ -29,17 +39,27 @@ class GroupsV2GroupOptionsEditAction(UniversalBaseModel):
     Default is false for clans, true for groups.
     """
 
-    join_level: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="JoinLevel")] = pydantic.Field(
-        default=None
-    )
+    join_level: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="JoinLevel"),
+        pydantic.Field(
+            alias="JoinLevel",
+            description="Level to join a member at when accepting an invite, application, or joining an open clan\r\nDefault is Beginner.",
+        ),
+    ] = None
     """
     Level to join a member at when accepting an invite, application, or joining an open clan
     Default is Beginner.
     """
 
     update_banner_permission_override: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="UpdateBannerPermissionOverride")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="UpdateBannerPermissionOverride"),
+        pydantic.Field(
+            alias="UpdateBannerPermissionOverride",
+            description="Minimum Member Level allowed to update banner\r\nAlways Allowed: Founder, Acting Founder\r\nTrue means admins have this power, false means they don't\r\nDefault is false for clans, true for groups.",
+        ),
+    ] = None
     """
     Minimum Member Level allowed to update banner
     Always Allowed: Founder, Acting Founder
@@ -48,8 +68,13 @@ class GroupsV2GroupOptionsEditAction(UniversalBaseModel):
     """
 
     update_culture_permission_override: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="UpdateCulturePermissionOverride")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="UpdateCulturePermissionOverride"),
+        pydantic.Field(
+            alias="UpdateCulturePermissionOverride",
+            description="Minimum Member Level allowed to update group culture\r\nAlways Allowed: Founder, Acting Founder\r\nTrue means admins have this power, false means they don't\r\nDefault is false for clans, true for groups.",
+        ),
+    ] = None
     """
     Minimum Member Level allowed to update group culture
     Always Allowed: Founder, Acting Founder

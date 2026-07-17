@@ -18,7 +18,9 @@ class ChaosConfig(UniversalBaseModel):
     """
 
     bad_responses_fault_config: typing_extensions.Annotated[
-        typing.Optional[BadResponsesFaultConfig], FieldMetadata(alias="badResponsesFaultConfig")
+        typing.Optional[BadResponsesFaultConfig],
+        FieldMetadata(alias="badResponsesFaultConfig"),
+        pydantic.Field(alias="badResponsesFaultConfig"),
     ] = None
     enabled: bool = pydantic.Field()
     """
@@ -26,13 +28,19 @@ class ChaosConfig(UniversalBaseModel):
     """
 
     large_request_fault_config: typing_extensions.Annotated[
-        typing.Optional[LargeRequestFaultConfig], FieldMetadata(alias="largeRequestFaultConfig")
+        typing.Optional[LargeRequestFaultConfig],
+        FieldMetadata(alias="largeRequestFaultConfig"),
+        pydantic.Field(alias="largeRequestFaultConfig"),
     ] = None
     large_response_fault_config: typing_extensions.Annotated[
-        typing.Optional[LargeResponseFaultConfig], FieldMetadata(alias="largeResponseFaultConfig")
+        typing.Optional[LargeResponseFaultConfig],
+        FieldMetadata(alias="largeResponseFaultConfig"),
+        pydantic.Field(alias="largeResponseFaultConfig"),
     ] = None
     latency_injection_fault_config: typing_extensions.Annotated[
-        typing.Optional[LatencyInjectionFaultConfig], FieldMetadata(alias="latencyInjectionFaultConfig")
+        typing.Optional[LatencyInjectionFaultConfig],
+        FieldMetadata(alias="latencyInjectionFaultConfig"),
+        pydantic.Field(alias="latencyInjectionFaultConfig"),
     ] = None
 
     if IS_PYDANTIC_V2:

@@ -19,14 +19,23 @@ class DestinyDefinitionsDestinyEntitySearchResultItem(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="displayProperties",
+            description="Basic display properties on the entity, so you don't have to look up the definition to show basic results for the item.",
+        ),
+    ] = None
     """
     Basic display properties on the entity, so you don't have to look up the definition to show basic results for the item.
     """
 
-    entity_type: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="entityType")] = pydantic.Field(
-        default=None
-    )
+    entity_type: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="entityType"),
+        pydantic.Field(
+            alias="entityType",
+            description="The type of entity, returned as a string matching the DestinyDefinition's contract class name. You'll have to have your own mapping from class names to actually looking up those definitions in the manifest databases.",
+        ),
+    ] = None
     """
     The type of entity, returned as a string matching the DestinyDefinition's contract class name. You'll have to have your own mapping from class names to actually looking up those definitions in the manifest databases.
     """

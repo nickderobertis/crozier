@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SearchArtifactsByContentRequestOrder(str, enum.Enum):
+class SearchArtifactsByContentRequestOrder(enum.StrEnum):
     ASC = "asc"
     DESC = "desc"
 

@@ -15,7 +15,9 @@ class DestinyDestinyEquipItemResults(UniversalBaseModel):
     """
 
     equip_results: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinyDestinyEquipItemResult]], FieldMetadata(alias="equipResults")
+        typing.Optional[typing.List[DestinyDestinyEquipItemResult]],
+        FieldMetadata(alias="equipResults"),
+        pydantic.Field(alias="equipResults"),
     ] = None
 
     if IS_PYDANTIC_V2:

@@ -17,14 +17,17 @@ class DestinyDefinitionsActivityModifiersDestinyActivityModifierDefinition(Unive
     """
 
     display_in_activity_selection: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="displayInActivitySelection")
+        typing.Optional[bool],
+        FieldMetadata(alias="displayInActivitySelection"),
+        pydantic.Field(alias="displayInActivitySelection"),
     ] = None
-    display_in_nav_mode: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="displayInNavMode")] = (
-        None
-    )
+    display_in_nav_mode: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="displayInNavMode"), pydantic.Field(alias="displayInNavMode")
+    ] = None
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """

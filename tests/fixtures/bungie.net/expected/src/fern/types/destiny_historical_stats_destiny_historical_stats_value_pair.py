@@ -9,9 +9,11 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyHistoricalStatsDestinyHistoricalStatsValuePair(UniversalBaseModel):
-    display_value: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="displayValue")] = (
-        pydantic.Field(default=None)
-    )
+    display_value: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="displayValue"),
+        pydantic.Field(alias="displayValue", description="Localized formated version of the value."),
+    ] = None
     """
     Localized formated version of the value.
     """

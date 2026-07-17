@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObReadOffer1DataOfferItemOfferType(str, enum.Enum):
+class ObReadOffer1DataOfferItemOfferType(enum.StrEnum):
     """
     Offer type, in a coded form.
     """

@@ -11,7 +11,11 @@ from .job_with_attempts_read import JobWithAttemptsRead
 
 class JobReadList(UniversalBaseModel):
     jobs: typing.List[JobWithAttemptsRead]
-    total_job_count: typing_extensions.Annotated[int, FieldMetadata(alias="totalJobCount")] = pydantic.Field()
+    total_job_count: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="totalJobCount"),
+        pydantic.Field(alias="totalJobCount", description="the total count of jobs for the specified connection"),
+    ]
     """
     the total count of jobs for the specified connection
     """

@@ -41,9 +41,11 @@ class RegistryConfiguration(UniversalBaseModel):
     Use TLS/SSL verification for the registry URL
     """
 
-    user_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="userId")] = pydantic.Field(
-        default=None
-    )
+    user_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="userId"),
+        pydantic.Field(alias="userId", description="Engine user that owns this registry entry"),
+    ] = None
     """
     Engine user that owns this registry entry
     """

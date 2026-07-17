@@ -25,7 +25,7 @@ class AdminListUsersResponseItem(UniversalBaseModel):
     name: typing.Optional[str] = None
     post_count: int
     posts_read_count: int
-    secondary_emails: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    secondary_emails: typing.Optional[typing.List[typing.Any]] = None
     staged: bool
     time_read: int
     title: typing.Optional[str] = None

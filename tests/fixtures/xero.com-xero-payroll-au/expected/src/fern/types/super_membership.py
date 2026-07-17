@@ -9,19 +9,31 @@ from ..core.serialization import FieldMetadata
 
 
 class SuperMembership(UniversalBaseModel):
-    employee_number: typing_extensions.Annotated[str, FieldMetadata(alias="EmployeeNumber")] = pydantic.Field()
+    employee_number: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="EmployeeNumber"),
+        pydantic.Field(
+            alias="EmployeeNumber", description="The membership number assigned to the employee by the super fund."
+        ),
+    ]
     """
     The membership number assigned to the employee by the super fund.
     """
 
-    super_fund_id: typing_extensions.Annotated[str, FieldMetadata(alias="SuperFundID")] = pydantic.Field()
+    super_fund_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="SuperFundID"),
+        pydantic.Field(alias="SuperFundID", description="Xero identifier for super fund"),
+    ]
     """
     Xero identifier for super fund
     """
 
-    super_membership_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="SuperMembershipID")] = (
-        pydantic.Field(default=None)
-    )
+    super_membership_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="SuperMembershipID"),
+        pydantic.Field(alias="SuperMembershipID", description="Xero unique identifier for Super membership"),
+    ] = None
     """
     Xero unique identifier for Super membership
     """

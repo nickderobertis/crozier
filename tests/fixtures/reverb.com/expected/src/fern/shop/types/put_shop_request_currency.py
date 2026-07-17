@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PutShopRequestCurrency(str, enum.Enum):
+class PutShopRequestCurrency(enum.StrEnum):
     USD = "USD"
     CAD = "CAD"
     EUR = "EUR"

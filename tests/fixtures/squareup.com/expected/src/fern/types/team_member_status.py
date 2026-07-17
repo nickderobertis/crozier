@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TeamMemberStatus(str, enum.Enum):
+class TeamMemberStatus(enum.StrEnum):
     """
     Enumerates the possible statuses the team member can have within a business.
     """

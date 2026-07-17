@@ -6,13 +6,15 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.schedule_listing import ScheduleListing
 from ..types.schedule_read import ScheduleRead
 from ..types.schedule_user_listing import ScheduleUserListing
+from pydantic import ValidationError
 
 
 class RawScheduleClient:
@@ -42,7 +44,7 @@ class RawScheduleClient:
             view for reading the scheduled definitions.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule",
             method="GET",
             request_options=request_options,
         )
@@ -60,9 +62,9 @@ class RawScheduleClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -70,6 +72,10 @@ class RawScheduleClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_schedule_for_user_monetary_account(
@@ -103,7 +109,7 @@ class RawScheduleClient:
             view for reading the scheduled definitions.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -121,9 +127,9 @@ class RawScheduleClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -131,6 +137,10 @@ class RawScheduleClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_schedule_for_user(
@@ -153,7 +163,7 @@ class RawScheduleClient:
             view for reading the scheduled definitions.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/schedule",
+            f"user/{encode_path_param(user_id)}/schedule",
             method="GET",
             request_options=request_options,
         )
@@ -171,9 +181,9 @@ class RawScheduleClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -181,6 +191,10 @@ class RawScheduleClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -211,7 +225,7 @@ class AsyncRawScheduleClient:
             view for reading the scheduled definitions.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule",
             method="GET",
             request_options=request_options,
         )
@@ -229,9 +243,9 @@ class AsyncRawScheduleClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -239,6 +253,10 @@ class AsyncRawScheduleClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_schedule_for_user_monetary_account(
@@ -272,7 +290,7 @@ class AsyncRawScheduleClient:
             view for reading the scheduled definitions.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -290,9 +308,9 @@ class AsyncRawScheduleClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -300,6 +318,10 @@ class AsyncRawScheduleClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_schedule_for_user(
@@ -322,7 +344,7 @@ class AsyncRawScheduleClient:
             view for reading the scheduled definitions.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/schedule",
+            f"user/{encode_path_param(user_id)}/schedule",
             method="GET",
             request_options=request_options,
         )
@@ -340,9 +362,9 @@ class AsyncRawScheduleClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -350,4 +372,8 @@ class AsyncRawScheduleClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

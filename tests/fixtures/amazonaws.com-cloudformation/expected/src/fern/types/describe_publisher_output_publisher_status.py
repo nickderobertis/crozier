@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DescribePublisherOutputPublisherStatus(str, enum.Enum):
+class DescribePublisherOutputPublisherStatus(enum.StrEnum):
     """
     Whether the publisher is verified. Currently, all registered publishers are verified.
     """

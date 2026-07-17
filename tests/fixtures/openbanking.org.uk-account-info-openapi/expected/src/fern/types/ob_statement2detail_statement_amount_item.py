@@ -16,9 +16,15 @@ class ObStatement2DetailStatementAmountItem(UniversalBaseModel):
     Set of elements used to provide details of a generic amount for the statement resource.
     """
 
-    amount: typing_extensions.Annotated[ObActiveOrHistoricCurrencyAndAmount8, FieldMetadata(alias="Amount")]
-    credit_debit_indicator: typing_extensions.Annotated[ObCreditDebitCode0, FieldMetadata(alias="CreditDebitIndicator")]
-    type: typing_extensions.Annotated[ObExternalStatementAmountType1Code, FieldMetadata(alias="Type")]
+    amount: typing_extensions.Annotated[
+        ObActiveOrHistoricCurrencyAndAmount8, FieldMetadata(alias="Amount"), pydantic.Field(alias="Amount")
+    ]
+    credit_debit_indicator: typing_extensions.Annotated[
+        ObCreditDebitCode0, FieldMetadata(alias="CreditDebitIndicator"), pydantic.Field(alias="CreditDebitIndicator")
+    ]
+    type: typing_extensions.Annotated[
+        ObExternalStatementAmountType1Code, FieldMetadata(alias="Type"), pydantic.Field(alias="Type")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -13,7 +13,9 @@ class FeaturesConfigMicrocksHub(UniversalBaseModel):
     Microcks Hub feature properties
     """
 
-    allowed_roles: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="allowed-roles")] = None
+    allowed_roles: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="allowed-roles"), pydantic.Field(alias="allowed-roles")
+    ] = None
     enabled: typing.Optional[str] = None
     endpoint: typing.Optional[str] = None
 

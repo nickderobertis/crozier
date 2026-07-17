@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ConsoleServerPortTemplateTypeValue(str, enum.Enum):
+class ConsoleServerPortTemplateTypeValue(enum.StrEnum):
     DE9 = "de-9"
     DB25 = "db-25"
     RJ11 = "rj-11"

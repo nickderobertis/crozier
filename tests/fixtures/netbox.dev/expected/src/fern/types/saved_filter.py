@@ -16,7 +16,7 @@ class SavedFilter(UniversalBaseModel):
     id: typing.Optional[int] = None
     last_updated: typing.Optional[dt.datetime] = None
     name: str
-    parameters: typing.Dict[str, typing.Optional[typing.Any]]
+    parameters: typing.Dict[str, typing.Any]
     shared: typing.Optional[bool] = None
     slug: str
     url: typing.Optional[str] = None

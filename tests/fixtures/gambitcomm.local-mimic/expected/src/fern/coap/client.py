@@ -25,7 +25,7 @@ class CoapClient:
 
     def protocol_coap_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's COAP configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -39,7 +39,7 @@ class CoapClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples
@@ -288,7 +288,7 @@ class AsyncCoapClient:
 
     async def protocol_coap_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's COAP configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -302,7 +302,7 @@ class AsyncCoapClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples

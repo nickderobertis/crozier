@@ -16,15 +16,22 @@ class ObpcaData1OtherFeesCharges(UniversalBaseModel):
     """
 
     fee_charge_cap: typing_extensions.Annotated[
-        typing.Optional[typing.List[ObpcaData1OtherFeesChargesFeeChargeCapItem]], FieldMetadata(alias="FeeChargeCap")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[ObpcaData1OtherFeesChargesFeeChargeCapItem]],
+        FieldMetadata(alias="FeeChargeCap"),
+        pydantic.Field(
+            alias="FeeChargeCap",
+            description="Details about any caps (maximum charges) that apply to a particular fee/charge",
+        ),
+    ] = None
     """
     Details about any caps (maximum charges) that apply to a particular fee/charge
     """
 
     fee_charge_detail: typing_extensions.Annotated[
-        typing.List[ObpcaData1OtherFeesChargesFeeChargeDetailItem], FieldMetadata(alias="FeeChargeDetail")
-    ] = pydantic.Field()
+        typing.List[ObpcaData1OtherFeesChargesFeeChargeDetailItem],
+        FieldMetadata(alias="FeeChargeDetail"),
+        pydantic.Field(alias="FeeChargeDetail", description="Other fees/charges details"),
+    ]
     """
     Other fees/charges details
     """

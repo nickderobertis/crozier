@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ConnectorSettingType(str, enum.Enum):
+class ConnectorSettingType(enum.StrEnum):
     TEXT = "text"
     CHECKBOX = "checkbox"
     TEL = "tel"

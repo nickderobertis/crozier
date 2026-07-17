@@ -13,9 +13,14 @@ class DestinyDefinitionsDestinyItemSummaryBlockDefinition(UniversalBaseModel):
     This appears to be information used when rendering rewards. We don't currently use it on BNet.
     """
 
-    sort_priority: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="sortPriority")] = (
-        pydantic.Field(default=None)
-    )
+    sort_priority: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="sortPriority"),
+        pydantic.Field(
+            alias="sortPriority",
+            description="Apparently when rendering an item in a reward, this should be used as a sort priority. We're not doing it presently.",
+        ),
+    ] = None
     """
     Apparently when rendering an item in a reward, this should be used as a sort priority. We're not doing it presently.
     """

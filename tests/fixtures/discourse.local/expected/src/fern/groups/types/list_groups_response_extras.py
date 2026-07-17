@@ -7,7 +7,7 @@ from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
 class ListGroupsResponseExtras(UniversalBaseModel):
-    type_filters: typing.List[typing.Optional[typing.Any]]
+    type_filters: typing.List[typing.Any]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -26,20 +26,27 @@ class ObReadProduct2DataProductItemOtherProductTypeOverdraftOverdraftTierBandSet
     """
 
     capping_period: typing_extensions.Annotated[
-        typing.Optional[ObPeriod1Code], FieldMetadata(alias="CappingPeriod")
+        typing.Optional[ObPeriod1Code], FieldMetadata(alias="CappingPeriod"), pydantic.Field(alias="CappingPeriod")
     ] = None
-    fee_cap_amount: typing_extensions.Annotated[typing.Optional[ObAmount10], FieldMetadata(alias="FeeCapAmount")] = None
+    fee_cap_amount: typing_extensions.Annotated[
+        typing.Optional[ObAmount10], FieldMetadata(alias="FeeCapAmount"), pydantic.Field(alias="FeeCapAmount")
+    ] = None
     fee_cap_occurrence: typing_extensions.Annotated[
-        typing.Optional[Number0], FieldMetadata(alias="FeeCapOccurrence")
+        typing.Optional[Number0], FieldMetadata(alias="FeeCapOccurrence"), pydantic.Field(alias="FeeCapOccurrence")
     ] = None
     fee_type: typing_extensions.Annotated[
         typing.List[
             ObReadProduct2DataProductItemOtherProductTypeOverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftFeesChargesItemOverdraftFeeChargeCapItemFeeTypeItem
         ],
         FieldMetadata(alias="FeeType"),
+        pydantic.Field(alias="FeeType"),
     ]
-    min_max_type: typing_extensions.Annotated[ObMinMaxType1Code, FieldMetadata(alias="MinMaxType")]
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = None
+    min_max_type: typing_extensions.Annotated[
+        ObMinMaxType1Code, FieldMetadata(alias="MinMaxType"), pydantic.Field(alias="MinMaxType")
+    ]
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]], FieldMetadata(alias="Notes"), pydantic.Field(alias="Notes")
+    ] = None
     other_fee_type: typing_extensions.Annotated[
         typing.Optional[
             typing.List[
@@ -47,6 +54,7 @@ class ObReadProduct2DataProductItemOtherProductTypeOverdraftOverdraftTierBandSet
             ]
         ],
         FieldMetadata(alias="OtherFeeType"),
+        pydantic.Field(alias="OtherFeeType"),
     ] = None
 
     if IS_PYDANTIC_V2:

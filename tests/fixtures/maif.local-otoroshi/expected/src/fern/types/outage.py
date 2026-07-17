@@ -13,12 +13,20 @@ class Outage(UniversalBaseModel):
     An outage by the Snow Monkey on a service
     """
 
-    descriptor_id: typing_extensions.Annotated[str, FieldMetadata(alias="descriptorId")] = pydantic.Field()
+    descriptor_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="descriptorId"),
+        pydantic.Field(alias="descriptorId", description="The service impacted by outage"),
+    ]
     """
     The service impacted by outage
     """
 
-    descriptor_name: typing_extensions.Annotated[str, FieldMetadata(alias="descriptorName")] = pydantic.Field()
+    descriptor_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="descriptorName"),
+        pydantic.Field(alias="descriptorName", description="The name of service impacted by outage"),
+    ]
     """
     The name of service impacted by outage
     """

@@ -2,4 +2,4 @@
 
 import typing
 
-SessionDelete = typing.Dict[str, typing.Optional[typing.Any]]
+SessionDelete = typing.Dict[str, typing.Any]

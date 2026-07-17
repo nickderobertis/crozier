@@ -12,7 +12,7 @@ from .nested_user import NestedUser
 class JobResult(UniversalBaseModel):
     completed: typing.Optional[dt.datetime] = None
     created: typing.Optional[dt.datetime] = None
-    data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    data: typing.Optional[typing.Dict[str, typing.Any]] = None
     display: typing.Optional[str] = None
     id: typing.Optional[int] = None
     interval: typing.Optional[int] = pydantic.Field(default=None)

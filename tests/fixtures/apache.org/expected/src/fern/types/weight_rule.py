@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WeightRule(str, enum.Enum):
+class WeightRule(enum.StrEnum):
     """
     Weight rule.
     """

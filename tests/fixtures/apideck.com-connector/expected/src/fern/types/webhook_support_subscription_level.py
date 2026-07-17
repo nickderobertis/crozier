@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WebhookSupportSubscriptionLevel(str, enum.Enum):
+class WebhookSupportSubscriptionLevel(enum.StrEnum):
     """
     Received events are scoped to connection or across integration.
     """

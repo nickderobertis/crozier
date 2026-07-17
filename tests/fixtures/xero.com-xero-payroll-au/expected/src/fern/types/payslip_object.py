@@ -10,7 +10,9 @@ from .payslip import Payslip
 
 
 class PayslipObject(UniversalBaseModel):
-    payslip: typing_extensions.Annotated[typing.Optional[Payslip], FieldMetadata(alias="Payslip")] = None
+    payslip: typing_extensions.Annotated[
+        typing.Optional[Payslip], FieldMetadata(alias="Payslip"), pydantic.Field(alias="Payslip")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

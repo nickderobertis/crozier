@@ -30,7 +30,11 @@ class LabelUser(UniversalBaseModel):
     The current nickname of the user.
     """
 
-    uuid_: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="uuid")] = pydantic.Field(default=None)
+    uuid_: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="uuid"),
+        pydantic.Field(alias="uuid", description="The public UUID of the label-user."),
+    ] = None
     """
     The public UUID of the label-user.
     """

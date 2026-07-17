@@ -96,6 +96,7 @@ if typing.TYPE_CHECKING:
         UnprocessableEntityError,
     )
     from . import collections, comments, tags, tickets, users
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
@@ -124,6 +125,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Currency": ".types",
     "CustomField": ".types",
     "CustomFieldValue": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "DeleteCommentResponse": ".types",
     "DeleteTicketResponse": ".types",
     "Department": ".types",
@@ -243,6 +246,8 @@ __all__ = [
     "Currency",
     "CustomField",
     "CustomFieldValue",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "DeleteCommentResponse",
     "DeleteTicketResponse",
     "Department",

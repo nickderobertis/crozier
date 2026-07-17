@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObExternalStatementType1Code(str, enum.Enum):
+class ObExternalStatementType1Code(enum.StrEnum):
     """
     Statement type, in a coded form.
     """

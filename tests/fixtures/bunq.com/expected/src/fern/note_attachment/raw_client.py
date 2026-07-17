@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -95,6 +96,7 @@ from ..types.note_attachment_whitelist_result_delete import NoteAttachmentWhitel
 from ..types.note_attachment_whitelist_result_listing import NoteAttachmentWhitelistResultListing
 from ..types.note_attachment_whitelist_result_read import NoteAttachmentWhitelistResultRead
 from ..types.note_attachment_whitelist_result_update import NoteAttachmentWhitelistResultUpdate
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -135,7 +137,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/bunqme-fundraiser-result/{jsonable_encoder(bunqme_fundraiser_result_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/bunqme-fundraiser-result/{encode_path_param(bunqme_fundraiser_result_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -153,9 +155,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -163,6 +165,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_note_attachment_for_user_monetary_account_bunqme_fundraiser_result(
@@ -204,7 +210,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/bunqme-fundraiser-result/{jsonable_encoder(bunqme_fundraiser_result_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/bunqme-fundraiser-result/{encode_path_param(bunqme_fundraiser_result_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -230,9 +236,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -240,6 +246,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_note_attachment_for_user_monetary_account_bunqme_fundraiser_result(
@@ -277,7 +287,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/bunqme-fundraiser-result/{jsonable_encoder(bunqme_fundraiser_result_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/bunqme-fundraiser-result/{encode_path_param(bunqme_fundraiser_result_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -295,9 +305,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -305,6 +315,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_note_attachment_for_user_monetary_account_bunqme_fundraiser_result(
@@ -350,7 +364,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/bunqme-fundraiser-result/{jsonable_encoder(bunqme_fundraiser_result_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/bunqme-fundraiser-result/{encode_path_param(bunqme_fundraiser_result_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -376,9 +390,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -386,6 +400,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_note_attachment_for_user_monetary_account_bunqme_fundraiser_result(
@@ -423,7 +441,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/bunqme-fundraiser-result/{jsonable_encoder(bunqme_fundraiser_result_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/bunqme-fundraiser-result/{encode_path_param(bunqme_fundraiser_result_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -441,9 +459,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -451,6 +469,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_note_attachment_for_user_monetary_account_draft_payment(
@@ -484,7 +506,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/draft-payment/{jsonable_encoder(draft_payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/draft-payment/{encode_path_param(draft_payment_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -502,9 +524,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -512,6 +534,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_note_attachment_for_user_monetary_account_draft_payment(
@@ -553,7 +579,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/draft-payment/{jsonable_encoder(draft_payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/draft-payment/{encode_path_param(draft_payment_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -579,9 +605,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -589,6 +615,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_note_attachment_for_user_monetary_account_draft_payment(
@@ -626,7 +656,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/draft-payment/{jsonable_encoder(draft_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/draft-payment/{encode_path_param(draft_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -644,9 +674,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -654,6 +684,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_note_attachment_for_user_monetary_account_draft_payment(
@@ -699,7 +733,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/draft-payment/{jsonable_encoder(draft_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/draft-payment/{encode_path_param(draft_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -725,9 +759,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -735,6 +769,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_note_attachment_for_user_monetary_account_draft_payment(
@@ -772,7 +810,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/draft-payment/{jsonable_encoder(draft_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/draft-payment/{encode_path_param(draft_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -790,9 +828,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -800,6 +838,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_note_attachment_for_user_monetary_account_ideal_merchant_transaction(
@@ -833,7 +875,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/ideal-merchant-transaction/{jsonable_encoder(ideal_merchant_transaction_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/ideal-merchant-transaction/{encode_path_param(ideal_merchant_transaction_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -851,9 +893,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -861,6 +903,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_note_attachment_for_user_monetary_account_ideal_merchant_transaction(
@@ -902,7 +948,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/ideal-merchant-transaction/{jsonable_encoder(ideal_merchant_transaction_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/ideal-merchant-transaction/{encode_path_param(ideal_merchant_transaction_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -928,9 +974,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -938,6 +984,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_note_attachment_for_user_monetary_account_ideal_merchant_transaction(
@@ -975,7 +1025,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/ideal-merchant-transaction/{jsonable_encoder(ideal_merchant_transaction_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/ideal-merchant-transaction/{encode_path_param(ideal_merchant_transaction_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -993,9 +1043,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1003,6 +1053,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_note_attachment_for_user_monetary_account_ideal_merchant_transaction(
@@ -1048,7 +1102,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/ideal-merchant-transaction/{jsonable_encoder(ideal_merchant_transaction_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/ideal-merchant-transaction/{encode_path_param(ideal_merchant_transaction_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -1074,9 +1128,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1084,6 +1138,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_note_attachment_for_user_monetary_account_ideal_merchant_transaction(
@@ -1121,7 +1179,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/ideal-merchant-transaction/{jsonable_encoder(ideal_merchant_transaction_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/ideal-merchant-transaction/{encode_path_param(ideal_merchant_transaction_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1139,9 +1197,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1149,6 +1207,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_note_attachment_for_user_monetary_account_mastercard_action(
@@ -1182,7 +1244,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/mastercard-action/{jsonable_encoder(mastercard_action_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/mastercard-action/{encode_path_param(mastercard_action_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -1200,9 +1262,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1210,6 +1272,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_note_attachment_for_user_monetary_account_mastercard_action(
@@ -1251,7 +1317,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/mastercard-action/{jsonable_encoder(mastercard_action_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/mastercard-action/{encode_path_param(mastercard_action_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -1277,9 +1343,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1287,6 +1353,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_note_attachment_for_user_monetary_account_mastercard_action(
@@ -1324,7 +1394,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/mastercard-action/{jsonable_encoder(mastercard_action_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/mastercard-action/{encode_path_param(mastercard_action_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1342,9 +1412,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1352,6 +1422,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_note_attachment_for_user_monetary_account_mastercard_action(
@@ -1397,7 +1471,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/mastercard-action/{jsonable_encoder(mastercard_action_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/mastercard-action/{encode_path_param(mastercard_action_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -1423,9 +1497,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1433,6 +1507,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_note_attachment_for_user_monetary_account_mastercard_action(
@@ -1470,7 +1548,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/mastercard-action/{jsonable_encoder(mastercard_action_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/mastercard-action/{encode_path_param(mastercard_action_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1488,9 +1566,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1498,6 +1576,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_note_attachment_for_user_monetary_account_payment_batch(
@@ -1531,7 +1613,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment-batch/{jsonable_encoder(payment_batch_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment-batch/{encode_path_param(payment_batch_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -1549,9 +1631,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1559,6 +1641,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_note_attachment_for_user_monetary_account_payment_batch(
@@ -1600,7 +1686,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment-batch/{jsonable_encoder(payment_batch_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment-batch/{encode_path_param(payment_batch_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -1626,9 +1712,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1636,6 +1722,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_note_attachment_for_user_monetary_account_payment_batch(
@@ -1673,7 +1763,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment-batch/{jsonable_encoder(payment_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment-batch/{encode_path_param(payment_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1691,9 +1781,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1701,6 +1791,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_note_attachment_for_user_monetary_account_payment_batch(
@@ -1746,7 +1840,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment-batch/{jsonable_encoder(payment_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment-batch/{encode_path_param(payment_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -1772,9 +1866,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1782,6 +1876,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_note_attachment_for_user_monetary_account_payment_batch(
@@ -1819,7 +1917,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment-batch/{jsonable_encoder(payment_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment-batch/{encode_path_param(payment_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1837,9 +1935,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1847,6 +1945,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_note_attachment_for_user_monetary_account_payment(
@@ -1880,7 +1982,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment/{jsonable_encoder(payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment/{encode_path_param(payment_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -1898,9 +2000,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1908,6 +2010,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_note_attachment_for_user_monetary_account_payment(
@@ -1949,7 +2055,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment/{jsonable_encoder(payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment/{encode_path_param(payment_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -1975,9 +2081,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1985,6 +2091,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_note_attachment_for_user_monetary_account_payment(
@@ -2022,7 +2132,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment/{jsonable_encoder(payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment/{encode_path_param(payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -2040,9 +2150,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2050,6 +2160,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_note_attachment_for_user_monetary_account_payment(
@@ -2095,7 +2209,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment/{jsonable_encoder(payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment/{encode_path_param(payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -2121,9 +2235,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2131,6 +2245,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_note_attachment_for_user_monetary_account_payment(
@@ -2168,7 +2286,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment/{jsonable_encoder(payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment/{encode_path_param(payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2186,9 +2304,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2196,6 +2314,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_note_attachment_for_user_monetary_account_request_inquiry_batch(
@@ -2229,7 +2351,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry-batch/{jsonable_encoder(request_inquiry_batch_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry-batch/{encode_path_param(request_inquiry_batch_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -2247,9 +2369,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2257,6 +2379,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_note_attachment_for_user_monetary_account_request_inquiry_batch(
@@ -2298,7 +2424,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry-batch/{jsonable_encoder(request_inquiry_batch_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry-batch/{encode_path_param(request_inquiry_batch_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -2324,9 +2450,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2334,6 +2460,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_note_attachment_for_user_monetary_account_request_inquiry_batch(
@@ -2371,7 +2501,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry-batch/{jsonable_encoder(request_inquiry_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry-batch/{encode_path_param(request_inquiry_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -2389,9 +2519,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2399,6 +2529,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_note_attachment_for_user_monetary_account_request_inquiry_batch(
@@ -2444,7 +2578,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry-batch/{jsonable_encoder(request_inquiry_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry-batch/{encode_path_param(request_inquiry_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -2470,9 +2604,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2480,6 +2614,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_note_attachment_for_user_monetary_account_request_inquiry_batch(
@@ -2517,7 +2655,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry-batch/{jsonable_encoder(request_inquiry_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry-batch/{encode_path_param(request_inquiry_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2535,9 +2673,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2545,6 +2683,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_note_attachment_for_user_monetary_account_request_inquiry(
@@ -2578,7 +2720,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry/{jsonable_encoder(request_inquiry_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry/{encode_path_param(request_inquiry_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -2596,9 +2738,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2606,6 +2748,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_note_attachment_for_user_monetary_account_request_inquiry(
@@ -2647,7 +2793,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry/{jsonable_encoder(request_inquiry_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry/{encode_path_param(request_inquiry_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -2673,9 +2819,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2683,6 +2829,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_note_attachment_for_user_monetary_account_request_inquiry(
@@ -2720,7 +2870,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry/{jsonable_encoder(request_inquiry_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry/{encode_path_param(request_inquiry_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -2738,9 +2888,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2748,6 +2898,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_note_attachment_for_user_monetary_account_request_inquiry(
@@ -2793,7 +2947,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry/{jsonable_encoder(request_inquiry_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry/{encode_path_param(request_inquiry_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -2819,9 +2973,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2829,6 +2983,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_note_attachment_for_user_monetary_account_request_inquiry(
@@ -2866,7 +3024,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry/{jsonable_encoder(request_inquiry_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry/{encode_path_param(request_inquiry_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2884,9 +3042,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2894,6 +3052,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_note_attachment_for_user_monetary_account_request_response(
@@ -2927,7 +3089,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-response/{jsonable_encoder(request_response_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-response/{encode_path_param(request_response_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -2945,9 +3107,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2955,6 +3117,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_note_attachment_for_user_monetary_account_request_response(
@@ -2996,7 +3162,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-response/{jsonable_encoder(request_response_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-response/{encode_path_param(request_response_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -3022,9 +3188,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3032,6 +3198,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_note_attachment_for_user_monetary_account_request_response(
@@ -3069,7 +3239,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-response/{jsonable_encoder(request_response_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-response/{encode_path_param(request_response_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -3087,9 +3257,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3097,6 +3267,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_note_attachment_for_user_monetary_account_request_response(
@@ -3142,7 +3316,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-response/{jsonable_encoder(request_response_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-response/{encode_path_param(request_response_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -3168,9 +3342,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3178,6 +3352,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_note_attachment_for_user_monetary_account_request_response(
@@ -3215,7 +3393,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-response/{jsonable_encoder(request_response_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-response/{encode_path_param(request_response_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -3233,9 +3411,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3243,6 +3421,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_note_attachment_for_user_monetary_account_schedule_payment_batch(
@@ -3276,7 +3458,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment-batch/{jsonable_encoder(schedule_payment_batch_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment-batch/{encode_path_param(schedule_payment_batch_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -3294,9 +3476,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3304,6 +3486,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_note_attachment_for_user_monetary_account_schedule_payment_batch(
@@ -3345,7 +3531,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment-batch/{jsonable_encoder(schedule_payment_batch_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment-batch/{encode_path_param(schedule_payment_batch_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -3371,9 +3557,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3381,6 +3567,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_note_attachment_for_user_monetary_account_schedule_payment_batch(
@@ -3418,7 +3608,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment-batch/{jsonable_encoder(schedule_payment_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment-batch/{encode_path_param(schedule_payment_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -3436,9 +3626,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3446,6 +3636,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_note_attachment_for_user_monetary_account_schedule_payment_batch(
@@ -3491,7 +3685,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment-batch/{jsonable_encoder(schedule_payment_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment-batch/{encode_path_param(schedule_payment_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -3517,9 +3711,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3527,6 +3721,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_note_attachment_for_user_monetary_account_schedule_payment_batch(
@@ -3564,7 +3762,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment-batch/{jsonable_encoder(schedule_payment_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment-batch/{encode_path_param(schedule_payment_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -3582,9 +3780,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3592,6 +3790,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_note_attachment_for_user_monetary_account_schedule_payment(
@@ -3625,7 +3827,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment/{jsonable_encoder(schedule_payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment/{encode_path_param(schedule_payment_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -3643,9 +3845,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3653,6 +3855,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_note_attachment_for_user_monetary_account_schedule_payment(
@@ -3694,7 +3900,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment/{jsonable_encoder(schedule_payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment/{encode_path_param(schedule_payment_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -3720,9 +3926,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3730,6 +3936,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_note_attachment_for_user_monetary_account_schedule_payment(
@@ -3767,7 +3977,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment/{jsonable_encoder(schedule_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment/{encode_path_param(schedule_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -3785,9 +3995,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3795,6 +4005,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_note_attachment_for_user_monetary_account_schedule_payment(
@@ -3840,7 +4054,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment/{jsonable_encoder(schedule_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment/{encode_path_param(schedule_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -3866,9 +4080,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3876,6 +4090,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_note_attachment_for_user_monetary_account_schedule_payment(
@@ -3913,7 +4131,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment/{jsonable_encoder(schedule_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment/{encode_path_param(schedule_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -3931,9 +4149,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3941,6 +4159,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_note_attachment_for_user_monetary_account_schedule_schedule_instance(
@@ -3978,7 +4200,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule/{jsonable_encoder(schedule_id)}/schedule-instance/{jsonable_encoder(schedule_instance_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule/{encode_path_param(schedule_id)}/schedule-instance/{encode_path_param(schedule_instance_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -3996,9 +4218,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4006,6 +4228,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_note_attachment_for_user_monetary_account_schedule_schedule_instance(
@@ -4051,7 +4277,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule/{jsonable_encoder(schedule_id)}/schedule-instance/{jsonable_encoder(schedule_instance_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule/{encode_path_param(schedule_id)}/schedule-instance/{encode_path_param(schedule_instance_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -4077,9 +4303,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4087,6 +4313,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_note_attachment_for_user_monetary_account_schedule_schedule_instance(
@@ -4128,7 +4358,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule/{jsonable_encoder(schedule_id)}/schedule-instance/{jsonable_encoder(schedule_instance_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule/{encode_path_param(schedule_id)}/schedule-instance/{encode_path_param(schedule_instance_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -4146,9 +4376,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4156,6 +4386,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_note_attachment_for_user_monetary_account_schedule_schedule_instance(
@@ -4205,7 +4439,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule/{jsonable_encoder(schedule_id)}/schedule-instance/{jsonable_encoder(schedule_instance_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule/{encode_path_param(schedule_id)}/schedule-instance/{encode_path_param(schedule_instance_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -4231,9 +4465,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4241,6 +4475,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_note_attachment_for_user_monetary_account_schedule_schedule_instance(
@@ -4282,7 +4520,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule/{jsonable_encoder(schedule_id)}/schedule-instance/{jsonable_encoder(schedule_instance_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule/{encode_path_param(schedule_id)}/schedule-instance/{encode_path_param(schedule_instance_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -4300,9 +4538,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4310,6 +4548,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_note_attachment_for_user_monetary_account_sofort_merchant_transaction(
@@ -4343,7 +4585,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/sofort-merchant-transaction/{jsonable_encoder(sofort_merchant_transaction_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/sofort-merchant-transaction/{encode_path_param(sofort_merchant_transaction_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -4361,9 +4603,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4371,6 +4613,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_note_attachment_for_user_monetary_account_sofort_merchant_transaction(
@@ -4412,7 +4658,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/sofort-merchant-transaction/{jsonable_encoder(sofort_merchant_transaction_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/sofort-merchant-transaction/{encode_path_param(sofort_merchant_transaction_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -4438,9 +4684,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4448,6 +4694,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_note_attachment_for_user_monetary_account_sofort_merchant_transaction(
@@ -4485,7 +4735,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/sofort-merchant-transaction/{jsonable_encoder(sofort_merchant_transaction_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/sofort-merchant-transaction/{encode_path_param(sofort_merchant_transaction_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -4503,9 +4753,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4513,6 +4763,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_note_attachment_for_user_monetary_account_sofort_merchant_transaction(
@@ -4558,7 +4812,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/sofort-merchant-transaction/{jsonable_encoder(sofort_merchant_transaction_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/sofort-merchant-transaction/{encode_path_param(sofort_merchant_transaction_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -4584,9 +4838,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4594,6 +4848,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_note_attachment_for_user_monetary_account_sofort_merchant_transaction(
@@ -4631,7 +4889,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/sofort-merchant-transaction/{jsonable_encoder(sofort_merchant_transaction_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/sofort-merchant-transaction/{encode_path_param(sofort_merchant_transaction_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -4649,9 +4907,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4659,6 +4917,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_note_attachment_for_user_monetary_account_switch_service_payment(
@@ -4692,7 +4954,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/switch-service-payment/{jsonable_encoder(switch_service_payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/switch-service-payment/{encode_path_param(switch_service_payment_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -4710,9 +4972,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4720,6 +4982,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_note_attachment_for_user_monetary_account_switch_service_payment(
@@ -4761,7 +5027,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/switch-service-payment/{jsonable_encoder(switch_service_payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/switch-service-payment/{encode_path_param(switch_service_payment_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -4787,9 +5053,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4797,6 +5063,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_note_attachment_for_user_monetary_account_switch_service_payment(
@@ -4834,7 +5104,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/switch-service-payment/{jsonable_encoder(switch_service_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/switch-service-payment/{encode_path_param(switch_service_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -4852,9 +5122,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4862,6 +5132,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_note_attachment_for_user_monetary_account_switch_service_payment(
@@ -4907,7 +5181,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/switch-service-payment/{jsonable_encoder(switch_service_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/switch-service-payment/{encode_path_param(switch_service_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -4933,9 +5207,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4943,6 +5217,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_note_attachment_for_user_monetary_account_switch_service_payment(
@@ -4980,7 +5258,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/switch-service-payment/{jsonable_encoder(switch_service_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/switch-service-payment/{encode_path_param(switch_service_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -4998,9 +5276,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5008,6 +5286,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_note_attachment_for_user_monetary_account_whitelist_whitelist_result(
@@ -5045,7 +5327,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/whitelist/{jsonable_encoder(whitelist_id)}/whitelist-result/{jsonable_encoder(whitelist_result_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/whitelist/{encode_path_param(whitelist_id)}/whitelist-result/{encode_path_param(whitelist_result_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -5063,9 +5345,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5073,6 +5355,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_note_attachment_for_user_monetary_account_whitelist_whitelist_result(
@@ -5118,7 +5404,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/whitelist/{jsonable_encoder(whitelist_id)}/whitelist-result/{jsonable_encoder(whitelist_result_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/whitelist/{encode_path_param(whitelist_id)}/whitelist-result/{encode_path_param(whitelist_result_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -5144,9 +5430,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5154,6 +5440,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_note_attachment_for_user_monetary_account_whitelist_whitelist_result(
@@ -5195,7 +5485,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/whitelist/{jsonable_encoder(whitelist_id)}/whitelist-result/{jsonable_encoder(whitelist_result_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/whitelist/{encode_path_param(whitelist_id)}/whitelist-result/{encode_path_param(whitelist_result_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -5213,9 +5503,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5223,6 +5513,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_note_attachment_for_user_monetary_account_whitelist_whitelist_result(
@@ -5272,7 +5566,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/whitelist/{jsonable_encoder(whitelist_id)}/whitelist-result/{jsonable_encoder(whitelist_result_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/whitelist/{encode_path_param(whitelist_id)}/whitelist-result/{encode_path_param(whitelist_result_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -5298,9 +5592,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5308,6 +5602,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_note_attachment_for_user_monetary_account_whitelist_whitelist_result(
@@ -5349,7 +5647,7 @@ class RawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/whitelist/{jsonable_encoder(whitelist_id)}/whitelist-result/{jsonable_encoder(whitelist_result_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/whitelist/{encode_path_param(whitelist_id)}/whitelist-result/{encode_path_param(whitelist_result_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -5367,9 +5665,9 @@ class RawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5377,6 +5675,10 @@ class RawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -5415,7 +5717,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/bunqme-fundraiser-result/{jsonable_encoder(bunqme_fundraiser_result_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/bunqme-fundraiser-result/{encode_path_param(bunqme_fundraiser_result_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -5433,9 +5735,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5443,6 +5745,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_note_attachment_for_user_monetary_account_bunqme_fundraiser_result(
@@ -5484,7 +5790,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/bunqme-fundraiser-result/{jsonable_encoder(bunqme_fundraiser_result_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/bunqme-fundraiser-result/{encode_path_param(bunqme_fundraiser_result_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -5510,9 +5816,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5520,6 +5826,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_note_attachment_for_user_monetary_account_bunqme_fundraiser_result(
@@ -5557,7 +5867,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/bunqme-fundraiser-result/{jsonable_encoder(bunqme_fundraiser_result_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/bunqme-fundraiser-result/{encode_path_param(bunqme_fundraiser_result_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -5575,9 +5885,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5585,6 +5895,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_note_attachment_for_user_monetary_account_bunqme_fundraiser_result(
@@ -5630,7 +5944,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/bunqme-fundraiser-result/{jsonable_encoder(bunqme_fundraiser_result_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/bunqme-fundraiser-result/{encode_path_param(bunqme_fundraiser_result_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -5656,9 +5970,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5666,6 +5980,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_note_attachment_for_user_monetary_account_bunqme_fundraiser_result(
@@ -5703,7 +6021,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/bunqme-fundraiser-result/{jsonable_encoder(bunqme_fundraiser_result_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/bunqme-fundraiser-result/{encode_path_param(bunqme_fundraiser_result_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -5721,9 +6039,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5731,6 +6049,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_note_attachment_for_user_monetary_account_draft_payment(
@@ -5764,7 +6086,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/draft-payment/{jsonable_encoder(draft_payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/draft-payment/{encode_path_param(draft_payment_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -5782,9 +6104,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5792,6 +6114,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_note_attachment_for_user_monetary_account_draft_payment(
@@ -5833,7 +6159,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/draft-payment/{jsonable_encoder(draft_payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/draft-payment/{encode_path_param(draft_payment_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -5859,9 +6185,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5869,6 +6195,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_note_attachment_for_user_monetary_account_draft_payment(
@@ -5906,7 +6236,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/draft-payment/{jsonable_encoder(draft_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/draft-payment/{encode_path_param(draft_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -5924,9 +6254,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5934,6 +6264,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_note_attachment_for_user_monetary_account_draft_payment(
@@ -5979,7 +6313,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/draft-payment/{jsonable_encoder(draft_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/draft-payment/{encode_path_param(draft_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -6005,9 +6339,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6015,6 +6349,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_note_attachment_for_user_monetary_account_draft_payment(
@@ -6052,7 +6390,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/draft-payment/{jsonable_encoder(draft_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/draft-payment/{encode_path_param(draft_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -6070,9 +6408,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6080,6 +6418,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_note_attachment_for_user_monetary_account_ideal_merchant_transaction(
@@ -6113,7 +6455,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/ideal-merchant-transaction/{jsonable_encoder(ideal_merchant_transaction_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/ideal-merchant-transaction/{encode_path_param(ideal_merchant_transaction_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -6131,9 +6473,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6141,6 +6483,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_note_attachment_for_user_monetary_account_ideal_merchant_transaction(
@@ -6182,7 +6528,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/ideal-merchant-transaction/{jsonable_encoder(ideal_merchant_transaction_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/ideal-merchant-transaction/{encode_path_param(ideal_merchant_transaction_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -6208,9 +6554,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6218,6 +6564,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_note_attachment_for_user_monetary_account_ideal_merchant_transaction(
@@ -6255,7 +6605,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/ideal-merchant-transaction/{jsonable_encoder(ideal_merchant_transaction_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/ideal-merchant-transaction/{encode_path_param(ideal_merchant_transaction_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -6273,9 +6623,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6283,6 +6633,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_note_attachment_for_user_monetary_account_ideal_merchant_transaction(
@@ -6328,7 +6682,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/ideal-merchant-transaction/{jsonable_encoder(ideal_merchant_transaction_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/ideal-merchant-transaction/{encode_path_param(ideal_merchant_transaction_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -6354,9 +6708,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6364,6 +6718,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_note_attachment_for_user_monetary_account_ideal_merchant_transaction(
@@ -6401,7 +6759,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/ideal-merchant-transaction/{jsonable_encoder(ideal_merchant_transaction_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/ideal-merchant-transaction/{encode_path_param(ideal_merchant_transaction_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -6419,9 +6777,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6429,6 +6787,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_note_attachment_for_user_monetary_account_mastercard_action(
@@ -6462,7 +6824,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/mastercard-action/{jsonable_encoder(mastercard_action_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/mastercard-action/{encode_path_param(mastercard_action_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -6480,9 +6842,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6490,6 +6852,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_note_attachment_for_user_monetary_account_mastercard_action(
@@ -6531,7 +6897,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/mastercard-action/{jsonable_encoder(mastercard_action_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/mastercard-action/{encode_path_param(mastercard_action_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -6557,9 +6923,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6567,6 +6933,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_note_attachment_for_user_monetary_account_mastercard_action(
@@ -6604,7 +6974,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/mastercard-action/{jsonable_encoder(mastercard_action_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/mastercard-action/{encode_path_param(mastercard_action_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -6622,9 +6992,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6632,6 +7002,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_note_attachment_for_user_monetary_account_mastercard_action(
@@ -6677,7 +7051,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/mastercard-action/{jsonable_encoder(mastercard_action_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/mastercard-action/{encode_path_param(mastercard_action_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -6703,9 +7077,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6713,6 +7087,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_note_attachment_for_user_monetary_account_mastercard_action(
@@ -6750,7 +7128,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/mastercard-action/{jsonable_encoder(mastercard_action_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/mastercard-action/{encode_path_param(mastercard_action_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -6768,9 +7146,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6778,6 +7156,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_note_attachment_for_user_monetary_account_payment_batch(
@@ -6811,7 +7193,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment-batch/{jsonable_encoder(payment_batch_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment-batch/{encode_path_param(payment_batch_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -6829,9 +7211,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6839,6 +7221,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_note_attachment_for_user_monetary_account_payment_batch(
@@ -6880,7 +7266,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment-batch/{jsonable_encoder(payment_batch_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment-batch/{encode_path_param(payment_batch_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -6906,9 +7292,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6916,6 +7302,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_note_attachment_for_user_monetary_account_payment_batch(
@@ -6953,7 +7343,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment-batch/{jsonable_encoder(payment_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment-batch/{encode_path_param(payment_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -6971,9 +7361,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6981,6 +7371,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_note_attachment_for_user_monetary_account_payment_batch(
@@ -7026,7 +7420,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment-batch/{jsonable_encoder(payment_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment-batch/{encode_path_param(payment_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -7052,9 +7446,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7062,6 +7456,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_note_attachment_for_user_monetary_account_payment_batch(
@@ -7099,7 +7497,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment-batch/{jsonable_encoder(payment_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment-batch/{encode_path_param(payment_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -7117,9 +7515,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7127,6 +7525,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_note_attachment_for_user_monetary_account_payment(
@@ -7160,7 +7562,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment/{jsonable_encoder(payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment/{encode_path_param(payment_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -7178,9 +7580,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7188,6 +7590,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_note_attachment_for_user_monetary_account_payment(
@@ -7229,7 +7635,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment/{jsonable_encoder(payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment/{encode_path_param(payment_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -7255,9 +7661,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7265,6 +7671,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_note_attachment_for_user_monetary_account_payment(
@@ -7302,7 +7712,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment/{jsonable_encoder(payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment/{encode_path_param(payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -7320,9 +7730,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7330,6 +7740,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_note_attachment_for_user_monetary_account_payment(
@@ -7375,7 +7789,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment/{jsonable_encoder(payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment/{encode_path_param(payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -7401,9 +7815,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7411,6 +7825,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_note_attachment_for_user_monetary_account_payment(
@@ -7448,7 +7866,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment/{jsonable_encoder(payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment/{encode_path_param(payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -7466,9 +7884,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7476,6 +7894,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_note_attachment_for_user_monetary_account_request_inquiry_batch(
@@ -7509,7 +7931,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry-batch/{jsonable_encoder(request_inquiry_batch_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry-batch/{encode_path_param(request_inquiry_batch_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -7527,9 +7949,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7537,6 +7959,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_note_attachment_for_user_monetary_account_request_inquiry_batch(
@@ -7578,7 +8004,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry-batch/{jsonable_encoder(request_inquiry_batch_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry-batch/{encode_path_param(request_inquiry_batch_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -7604,9 +8030,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7614,6 +8040,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_note_attachment_for_user_monetary_account_request_inquiry_batch(
@@ -7651,7 +8081,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry-batch/{jsonable_encoder(request_inquiry_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry-batch/{encode_path_param(request_inquiry_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -7669,9 +8099,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7679,6 +8109,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_note_attachment_for_user_monetary_account_request_inquiry_batch(
@@ -7724,7 +8158,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry-batch/{jsonable_encoder(request_inquiry_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry-batch/{encode_path_param(request_inquiry_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -7750,9 +8184,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7760,6 +8194,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_note_attachment_for_user_monetary_account_request_inquiry_batch(
@@ -7797,7 +8235,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry-batch/{jsonable_encoder(request_inquiry_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry-batch/{encode_path_param(request_inquiry_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -7815,9 +8253,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7825,6 +8263,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_note_attachment_for_user_monetary_account_request_inquiry(
@@ -7858,7 +8300,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry/{jsonable_encoder(request_inquiry_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry/{encode_path_param(request_inquiry_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -7876,9 +8318,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7886,6 +8328,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_note_attachment_for_user_monetary_account_request_inquiry(
@@ -7927,7 +8373,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry/{jsonable_encoder(request_inquiry_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry/{encode_path_param(request_inquiry_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -7953,9 +8399,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7963,6 +8409,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_note_attachment_for_user_monetary_account_request_inquiry(
@@ -8000,7 +8450,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry/{jsonable_encoder(request_inquiry_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry/{encode_path_param(request_inquiry_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -8018,9 +8468,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8028,6 +8478,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_note_attachment_for_user_monetary_account_request_inquiry(
@@ -8073,7 +8527,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry/{jsonable_encoder(request_inquiry_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry/{encode_path_param(request_inquiry_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -8099,9 +8553,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8109,6 +8563,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_note_attachment_for_user_monetary_account_request_inquiry(
@@ -8146,7 +8604,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry/{jsonable_encoder(request_inquiry_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry/{encode_path_param(request_inquiry_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -8164,9 +8622,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8174,6 +8632,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_note_attachment_for_user_monetary_account_request_response(
@@ -8207,7 +8669,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-response/{jsonable_encoder(request_response_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-response/{encode_path_param(request_response_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -8225,9 +8687,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8235,6 +8697,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_note_attachment_for_user_monetary_account_request_response(
@@ -8276,7 +8742,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-response/{jsonable_encoder(request_response_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-response/{encode_path_param(request_response_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -8302,9 +8768,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8312,6 +8778,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_note_attachment_for_user_monetary_account_request_response(
@@ -8349,7 +8819,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-response/{jsonable_encoder(request_response_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-response/{encode_path_param(request_response_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -8367,9 +8837,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8377,6 +8847,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_note_attachment_for_user_monetary_account_request_response(
@@ -8422,7 +8896,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-response/{jsonable_encoder(request_response_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-response/{encode_path_param(request_response_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -8448,9 +8922,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8458,6 +8932,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_note_attachment_for_user_monetary_account_request_response(
@@ -8495,7 +8973,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-response/{jsonable_encoder(request_response_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-response/{encode_path_param(request_response_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -8513,9 +8991,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8523,6 +9001,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_note_attachment_for_user_monetary_account_schedule_payment_batch(
@@ -8556,7 +9038,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment-batch/{jsonable_encoder(schedule_payment_batch_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment-batch/{encode_path_param(schedule_payment_batch_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -8574,9 +9056,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8584,6 +9066,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_note_attachment_for_user_monetary_account_schedule_payment_batch(
@@ -8625,7 +9111,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment-batch/{jsonable_encoder(schedule_payment_batch_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment-batch/{encode_path_param(schedule_payment_batch_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -8651,9 +9137,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8661,6 +9147,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_note_attachment_for_user_monetary_account_schedule_payment_batch(
@@ -8698,7 +9188,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment-batch/{jsonable_encoder(schedule_payment_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment-batch/{encode_path_param(schedule_payment_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -8716,9 +9206,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8726,6 +9216,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_note_attachment_for_user_monetary_account_schedule_payment_batch(
@@ -8771,7 +9265,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment-batch/{jsonable_encoder(schedule_payment_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment-batch/{encode_path_param(schedule_payment_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -8797,9 +9291,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8807,6 +9301,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_note_attachment_for_user_monetary_account_schedule_payment_batch(
@@ -8844,7 +9342,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment-batch/{jsonable_encoder(schedule_payment_batch_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment-batch/{encode_path_param(schedule_payment_batch_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -8862,9 +9360,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8872,6 +9370,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_note_attachment_for_user_monetary_account_schedule_payment(
@@ -8905,7 +9407,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment/{jsonable_encoder(schedule_payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment/{encode_path_param(schedule_payment_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -8923,9 +9425,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8933,6 +9435,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_note_attachment_for_user_monetary_account_schedule_payment(
@@ -8974,7 +9480,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment/{jsonable_encoder(schedule_payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment/{encode_path_param(schedule_payment_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -9000,9 +9506,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -9010,6 +9516,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_note_attachment_for_user_monetary_account_schedule_payment(
@@ -9047,7 +9557,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment/{jsonable_encoder(schedule_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment/{encode_path_param(schedule_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -9065,9 +9575,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -9075,6 +9585,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_note_attachment_for_user_monetary_account_schedule_payment(
@@ -9120,7 +9634,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment/{jsonable_encoder(schedule_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment/{encode_path_param(schedule_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -9146,9 +9660,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -9156,6 +9670,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_note_attachment_for_user_monetary_account_schedule_payment(
@@ -9193,7 +9711,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule-payment/{jsonable_encoder(schedule_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule-payment/{encode_path_param(schedule_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -9211,9 +9729,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -9221,6 +9739,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_note_attachment_for_user_monetary_account_schedule_schedule_instance(
@@ -9258,7 +9780,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule/{jsonable_encoder(schedule_id)}/schedule-instance/{jsonable_encoder(schedule_instance_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule/{encode_path_param(schedule_id)}/schedule-instance/{encode_path_param(schedule_instance_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -9276,9 +9798,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -9286,6 +9808,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_note_attachment_for_user_monetary_account_schedule_schedule_instance(
@@ -9331,7 +9857,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule/{jsonable_encoder(schedule_id)}/schedule-instance/{jsonable_encoder(schedule_instance_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule/{encode_path_param(schedule_id)}/schedule-instance/{encode_path_param(schedule_instance_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -9357,9 +9883,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -9367,6 +9893,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_note_attachment_for_user_monetary_account_schedule_schedule_instance(
@@ -9408,7 +9938,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule/{jsonable_encoder(schedule_id)}/schedule-instance/{jsonable_encoder(schedule_instance_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule/{encode_path_param(schedule_id)}/schedule-instance/{encode_path_param(schedule_instance_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -9426,9 +9956,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -9436,6 +9966,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_note_attachment_for_user_monetary_account_schedule_schedule_instance(
@@ -9485,7 +10019,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule/{jsonable_encoder(schedule_id)}/schedule-instance/{jsonable_encoder(schedule_instance_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule/{encode_path_param(schedule_id)}/schedule-instance/{encode_path_param(schedule_instance_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -9511,9 +10045,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -9521,6 +10055,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_note_attachment_for_user_monetary_account_schedule_schedule_instance(
@@ -9562,7 +10100,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/schedule/{jsonable_encoder(schedule_id)}/schedule-instance/{jsonable_encoder(schedule_instance_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/schedule/{encode_path_param(schedule_id)}/schedule-instance/{encode_path_param(schedule_instance_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -9580,9 +10118,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -9590,6 +10128,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_note_attachment_for_user_monetary_account_sofort_merchant_transaction(
@@ -9623,7 +10165,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/sofort-merchant-transaction/{jsonable_encoder(sofort_merchant_transaction_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/sofort-merchant-transaction/{encode_path_param(sofort_merchant_transaction_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -9641,9 +10183,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -9651,6 +10193,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_note_attachment_for_user_monetary_account_sofort_merchant_transaction(
@@ -9692,7 +10238,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/sofort-merchant-transaction/{jsonable_encoder(sofort_merchant_transaction_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/sofort-merchant-transaction/{encode_path_param(sofort_merchant_transaction_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -9718,9 +10264,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -9728,6 +10274,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_note_attachment_for_user_monetary_account_sofort_merchant_transaction(
@@ -9765,7 +10315,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/sofort-merchant-transaction/{jsonable_encoder(sofort_merchant_transaction_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/sofort-merchant-transaction/{encode_path_param(sofort_merchant_transaction_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -9783,9 +10333,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -9793,6 +10343,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_note_attachment_for_user_monetary_account_sofort_merchant_transaction(
@@ -9838,7 +10392,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/sofort-merchant-transaction/{jsonable_encoder(sofort_merchant_transaction_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/sofort-merchant-transaction/{encode_path_param(sofort_merchant_transaction_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -9864,9 +10418,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -9874,6 +10428,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_note_attachment_for_user_monetary_account_sofort_merchant_transaction(
@@ -9911,7 +10469,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/sofort-merchant-transaction/{jsonable_encoder(sofort_merchant_transaction_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/sofort-merchant-transaction/{encode_path_param(sofort_merchant_transaction_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -9929,9 +10487,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -9939,6 +10497,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_note_attachment_for_user_monetary_account_switch_service_payment(
@@ -9972,7 +10534,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/switch-service-payment/{jsonable_encoder(switch_service_payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/switch-service-payment/{encode_path_param(switch_service_payment_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -9990,9 +10552,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -10000,6 +10562,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_note_attachment_for_user_monetary_account_switch_service_payment(
@@ -10041,7 +10607,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/switch-service-payment/{jsonable_encoder(switch_service_payment_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/switch-service-payment/{encode_path_param(switch_service_payment_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -10067,9 +10633,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -10077,6 +10643,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_note_attachment_for_user_monetary_account_switch_service_payment(
@@ -10114,7 +10684,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/switch-service-payment/{jsonable_encoder(switch_service_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/switch-service-payment/{encode_path_param(switch_service_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -10132,9 +10702,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -10142,6 +10712,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_note_attachment_for_user_monetary_account_switch_service_payment(
@@ -10187,7 +10761,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/switch-service-payment/{jsonable_encoder(switch_service_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/switch-service-payment/{encode_path_param(switch_service_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -10213,9 +10787,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -10223,6 +10797,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_note_attachment_for_user_monetary_account_switch_service_payment(
@@ -10260,7 +10838,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/switch-service-payment/{jsonable_encoder(switch_service_payment_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/switch-service-payment/{encode_path_param(switch_service_payment_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -10278,9 +10856,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -10288,6 +10866,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_note_attachment_for_user_monetary_account_whitelist_whitelist_result(
@@ -10325,7 +10907,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/whitelist/{jsonable_encoder(whitelist_id)}/whitelist-result/{jsonable_encoder(whitelist_result_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/whitelist/{encode_path_param(whitelist_id)}/whitelist-result/{encode_path_param(whitelist_result_id)}/note-attachment",
             method="GET",
             request_options=request_options,
         )
@@ -10343,9 +10925,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -10353,6 +10935,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_note_attachment_for_user_monetary_account_whitelist_whitelist_result(
@@ -10398,7 +10984,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/whitelist/{jsonable_encoder(whitelist_id)}/whitelist-result/{jsonable_encoder(whitelist_result_id)}/note-attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/whitelist/{encode_path_param(whitelist_id)}/whitelist-result/{encode_path_param(whitelist_result_id)}/note-attachment",
             method="POST",
             json={
                 "attachment_id": attachment_id,
@@ -10424,9 +11010,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -10434,6 +11020,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_note_attachment_for_user_monetary_account_whitelist_whitelist_result(
@@ -10475,7 +11065,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/whitelist/{jsonable_encoder(whitelist_id)}/whitelist-result/{jsonable_encoder(whitelist_result_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/whitelist/{encode_path_param(whitelist_id)}/whitelist-result/{encode_path_param(whitelist_result_id)}/note-attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -10493,9 +11083,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -10503,6 +11093,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_note_attachment_for_user_monetary_account_whitelist_whitelist_result(
@@ -10552,7 +11146,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/whitelist/{jsonable_encoder(whitelist_id)}/whitelist-result/{jsonable_encoder(whitelist_result_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/whitelist/{encode_path_param(whitelist_id)}/whitelist-result/{encode_path_param(whitelist_result_id)}/note-attachment/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "attachment_id": attachment_id,
@@ -10578,9 +11172,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -10588,6 +11182,10 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_note_attachment_for_user_monetary_account_whitelist_whitelist_result(
@@ -10629,7 +11227,7 @@ class AsyncRawNoteAttachmentClient:
             Used to manage attachment notes.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/whitelist/{jsonable_encoder(whitelist_id)}/whitelist-result/{jsonable_encoder(whitelist_result_id)}/note-attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/whitelist/{encode_path_param(whitelist_id)}/whitelist-result/{encode_path_param(whitelist_result_id)}/note-attachment/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -10647,9 +11245,9 @@ class AsyncRawNoteAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -10657,4 +11255,8 @@ class AsyncRawNoteAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

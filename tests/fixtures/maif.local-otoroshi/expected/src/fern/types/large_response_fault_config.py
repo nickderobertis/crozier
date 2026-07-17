@@ -14,8 +14,13 @@ class LargeResponseFaultConfig(UniversalBaseModel):
     """
 
     additional_request_size: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="additionalRequestSize")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="additionalRequestSize"),
+        pydantic.Field(
+            alias="additionalRequestSize",
+            description="The size added to the response body in bytes. Added payload will be spaces only.",
+        ),
+    ] = None
     """
     The size added to the response body in bytes. Added payload will be spaces only.
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetApiSubracesIndexRequestIndex(str, enum.Enum):
+class GetApiSubracesIndexRequestIndex(enum.StrEnum):
     HIGH_ELF = "high-elf"
     HILL_DWARF = "hill-dwarf"
     LIGHTFOOT_HALFLING = "lightfoot-halfling"

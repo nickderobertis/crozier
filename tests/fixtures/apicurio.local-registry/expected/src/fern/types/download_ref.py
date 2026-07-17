@@ -13,7 +13,7 @@ class DownloadRef(UniversalBaseModel):
     Models a download "link".  Useful for browser use-cases.
     """
 
-    download_id: typing_extensions.Annotated[str, FieldMetadata(alias="downloadId")]
+    download_id: typing_extensions.Annotated[str, FieldMetadata(alias="downloadId"), pydantic.Field(alias="downloadId")]
     href: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

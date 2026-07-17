@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InvoicePaymentReminderStatus(str, enum.Enum):
+class InvoicePaymentReminderStatus(enum.StrEnum):
     """
     The status of a payment request reminder.
     """

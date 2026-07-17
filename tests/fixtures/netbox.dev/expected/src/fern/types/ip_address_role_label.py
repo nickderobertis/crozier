@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class IpAddressRoleLabel(str, enum.Enum):
+class IpAddressRoleLabel(enum.StrEnum):
     LOOPBACK = "Loopback"
     SECONDARY = "Secondary"
     ANYCAST = "Anycast"

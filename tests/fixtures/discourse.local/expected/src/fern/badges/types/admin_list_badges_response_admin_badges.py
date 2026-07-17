@@ -8,10 +8,10 @@ from .admin_list_badges_response_admin_badges_triggers import AdminListBadgesRes
 
 
 class AdminListBadgesResponseAdminBadges(UniversalBaseModel):
-    badge_grouping_ids: typing.List[typing.Optional[typing.Any]]
-    badge_ids: typing.List[typing.Optional[typing.Any]]
-    badge_type_ids: typing.List[typing.Optional[typing.Any]]
-    protected_system_fields: typing.List[typing.Optional[typing.Any]]
+    badge_grouping_ids: typing.List[typing.Any]
+    badge_ids: typing.List[typing.Any]
+    badge_type_ids: typing.List[typing.Any]
+    protected_system_fields: typing.List[typing.Any]
     triggers: AdminListBadgesResponseAdminBadgesTriggers
 
     if IS_PYDANTIC_V2:

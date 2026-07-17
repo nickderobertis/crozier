@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostMyFollowsSearchRequestCurrency(str, enum.Enum):
+class PostMyFollowsSearchRequestCurrency(enum.StrEnum):
     """
     The currency to be used for the price filters
     """

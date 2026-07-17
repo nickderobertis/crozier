@@ -11,7 +11,7 @@ from .event_response_event_source import EventResponseEventSource
 
 class EventResponseEvent(UniversalBaseModel):
     category: typing.Optional[str] = None
-    details: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    details: typing.Optional[typing.Dict[str, typing.Any]] = None
     level: typing.Optional[str] = None
     message: typing.Optional[str] = None
     resource: typing.Optional[EventResponseEventResource] = None

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class StackResourceSummaryResourceStatus(str, enum.Enum):
+class StackResourceSummaryResourceStatus(enum.StrEnum):
     """
     Current status of the resource.
     """

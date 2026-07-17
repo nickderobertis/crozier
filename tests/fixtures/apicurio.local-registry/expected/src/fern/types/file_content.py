@@ -1,3 +1,3 @@
 
 
-FileContent = str
+FileContent = bytes

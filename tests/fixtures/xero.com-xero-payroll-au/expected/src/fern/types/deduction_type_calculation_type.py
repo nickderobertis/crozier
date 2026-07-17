@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DeductionTypeCalculationType(str, enum.Enum):
+class DeductionTypeCalculationType(enum.StrEnum):
     FIXEDAMOUNT = "FIXEDAMOUNT"
     PRETAX = "PRETAX"
     POSTTAX = "POSTTAX"

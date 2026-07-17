@@ -2,4 +2,4 @@
 
 import typing
 
-CreatedButModifiedException = typing.Optional[typing.Any]
+CreatedButModifiedException = typing.Any

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import gzip
 import io
 import json
@@ -25,6 +26,7 @@ TAGS_URL = (
     "?page_size=100&ordering=name"
 )
 STATE_FILE = ".crozier-fern-golden.json"
+KNOWN_FAILURE_FILE = "known-fern-failure.json"
 FIXTURE_ALIASES_FILE = "corpus-aliases.tsv"
 VERSION_RE = re.compile(
     r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?"
@@ -44,6 +46,14 @@ class CorpusRow:
     url: str
     ref: str
     decision: str
+
+
+@dataclass(frozen=True)
+class KnownFailure:
+    path: Path
+    exit_code: int
+    fingerprint: dict[str, object]
+    generator_version: str
 
 
 def repo_root() -> Path:
@@ -71,7 +81,7 @@ def validate_fixture(value: str) -> str:
 def validate_version(value: str) -> str:
     if not VERSION_RE.fullmatch(value):
         raise GoldensError(
-            f"invalid Fern version {value!r}; expected an exact semantic version such as 4.35.0"
+            f"invalid Fern version {value!r}; expected an exact semantic version such as 5.20.0"
         )
     return value
 
@@ -275,6 +285,126 @@ def expected_state(row: CorpusRow, version: str) -> bytes:
     return (json.dumps(state, indent=2) + "\n").encode()
 
 
+def load_known_failure(
+    root: Path, row: CorpusRow, version: str | None = None
+) -> KnownFailure | None:
+    path = root / "tests" / "fixtures" / row.fixture / KNOWN_FAILURE_FILE
+    if not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise GoldensError(f"could not read known Fern failure {path}: {error}") from error
+    expected_keys = {
+        "schema_version",
+        "generator",
+        "generator_version",
+        "corpus_spec_name",
+        "corpus_spec_ref",
+        "corpus_spec_url",
+        "exit_code",
+        "fingerprint",
+    }
+    if not isinstance(payload, dict) or set(payload) != expected_keys:
+        raise GoldensError(
+            f"known Fern failure {path} must contain exactly {sorted(expected_keys)}"
+        )
+    identity = {
+        "schema_version": 1,
+        "generator": GENERATOR,
+        "corpus_spec_name": row.name,
+        "corpus_spec_ref": row.ref,
+        "corpus_spec_url": row.url,
+    }
+    mismatches = {
+        key: (payload.get(key), expected)
+        for key, expected in identity.items()
+        if payload.get(key) != expected
+    }
+    if mismatches:
+        raise GoldensError(
+            f"known Fern failure {path} has stale corpus/generator identity: {mismatches}"
+        )
+    generator_version = payload.get("generator_version")
+    if not isinstance(generator_version, str):
+        raise GoldensError(f"known Fern failure {path} has no exact generator_version")
+    validate_version(generator_version)
+    exit_code = payload.get("exit_code")
+    fingerprint = payload.get("fingerprint")
+    if not isinstance(exit_code, int) or isinstance(exit_code, bool) or exit_code <= 0:
+        raise GoldensError(f"known Fern failure {path} has invalid exit_code {exit_code!r}")
+    if not isinstance(fingerprint, dict):
+        raise GoldensError(f"known Fern failure {path} has no fingerprint object")
+    known = KnownFailure(path, exit_code, fingerprint, generator_version)
+    return known if version is None or generator_version == version else None
+
+
+def extract_fern_failure_fingerprint(log_path: Path) -> dict[str, object]:
+    try:
+        log = log_path.read_text(encoding="utf-8")
+    except OSError as error:
+        raise GoldensError(f"could not read Fern failure log {log_path}: {error}") from error
+    command = "ruff check --fix --no-cache --ignore E741 /fern/output"
+    if f"Failed to run command: {command}" not in log:
+        raise GoldensError(f"Fern failure log has no failed {command!r} marker")
+    encoded = next(
+        (line.strip() for line in log.splitlines() if line.strip().startswith("b'fern/output/")),
+        None,
+    )
+    if encoded is None:
+        raise GoldensError("Fern failure log has no Ruff diagnostic payload")
+    try:
+        diagnostic_bytes = ast.literal_eval(encoded)
+    except (SyntaxError, ValueError) as error:
+        raise GoldensError(f"Fern Ruff diagnostic payload is malformed: {error}") from error
+    if not isinstance(diagnostic_bytes, bytes):
+        raise GoldensError("Fern Ruff diagnostic payload is not bytes")
+    try:
+        diagnostic_text = diagnostic_bytes.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise GoldensError(f"Fern Ruff diagnostic payload is not UTF-8: {error}") from error
+
+    diagnostics: list[dict[str, object]] = []
+    header = re.compile(
+        r"^fern/output/(?P<path>[^:]+):(?P<line>[0-9]+):(?P<column>[0-9]+): "
+        r"(?P<message>.+)$"
+    )
+    for block in diagnostic_text.split("\n\n"):
+        lines = block.splitlines()
+        if not lines:
+            continue
+        match = header.fullmatch(lines[0])
+        if match is None:
+            continue
+        source_prefix = f"{match.group('line')} | "
+        source_lines = [line for line in lines[1:] if line.startswith(source_prefix)]
+        if len(source_lines) != 1:
+            raise GoldensError(
+                f"Fern Ruff diagnostic {lines[0]!r} has {len(source_lines)} source lines"
+            )
+        diagnostics.append(
+            {
+                "path": match.group("path"),
+                "line": int(match.group("line")),
+                "column": int(match.group("column")),
+                "message": match.group("message"),
+                "source": source_lines[0][len(source_prefix) :],
+            }
+        )
+    summaries = re.findall(r"(?m)^Found [0-9]+ errors \(.+\)\.$", diagnostic_text)
+    if len(summaries) != 1:
+        raise GoldensError(
+            f"Fern Ruff diagnostic payload has {len(summaries)} aggregate summaries"
+        )
+    if not diagnostics:
+        raise GoldensError("Fern Ruff diagnostic payload has no syntax diagnostics")
+    return {
+        "failed_command": command,
+        "diagnostics": diagnostics,
+        "ruff_summary": summaries[0],
+    }
+
+
 def is_current(root: Path, row: CorpusRow, version: str) -> bool:
     expected = root / "tests" / "fixtures" / row.fixture / "expected"
     state = expected / STATE_FILE
@@ -339,7 +469,12 @@ def fetch_spec(root: Path, row: CorpusRow, *, force: bool) -> Path:
         raise GoldensError(
             f"spec fetch failed: {detail or f'fetch-corpus exited {result.returncode}'}"
         )
-    destination = root / ".local" / "corpus" / row.name / "openapi.json"
+    paths = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    if len(paths) != 1:
+        raise GoldensError(
+            "fetch-corpus returned success without exactly one spec path"
+        )
+    destination = Path(paths[0])
     if not destination.is_file() or destination.stat().st_size == 0:
         raise GoldensError(f"fetch-corpus returned success without {destination}")
     return destination
@@ -411,6 +546,7 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
 
     generated: list[str] = []
     current: list[str] = []
+    known_upstream_failures: list[str] = []
     failures: list[str] = []
     generator = root / "scripts" / "generate-fern-fixture.sh"
     if not generator.is_file():
@@ -422,7 +558,12 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
         log_path = report / "generation-logs" / f"{row.fixture}.log"
         try:
             spec = fetch_spec(root, row, force=True)
-            if is_current(root, row, version):
+            known_failure = load_known_failure(root, row, version)
+            if known_failure is not None and is_current(root, row, version):
+                raise GoldensError(
+                    f"{known_failure.path} is stale because a complete current golden exists"
+                )
+            if known_failure is None and is_current(root, row, version):
                 current.append(row.fixture)
                 log_path.write_text(
                     f"current: {row.fixture} at {GENERATOR}:{version}\n", encoding="utf-8"
@@ -447,7 +588,29 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
                         stderr=subprocess.STDOUT,
                     )
                 if result.returncode != 0:
+                    if known_failure is not None:
+                        if result.returncode != known_failure.exit_code:
+                            raise GoldensError(
+                                f"known upstream failure exit changed from "
+                                f"{known_failure.exit_code} to {result.returncode}; see {log_path}"
+                            )
+                        actual_fingerprint = extract_fern_failure_fingerprint(log_path)
+                        if actual_fingerprint != known_failure.fingerprint:
+                            raise GoldensError(
+                                f"known upstream failure fingerprint changed; see {log_path}"
+                            )
+                        known_upstream_failures.append(row.fixture)
+                        print(
+                            f"fern-goldens: warning: exact known upstream Fern failure "
+                            f"reproduced for {row.fixture} at {GENERATOR}:{version}"
+                        )
+                        continue
                     raise GoldensError(f"generator exited {result.returncode}; see {log_path}")
+                if known_failure is not None:
+                    raise GoldensError(
+                        "registered known upstream failure unexpectedly succeeded; "
+                        f"preserved the prior golden and discarded staged output; see {log_path}"
+                    )
                 if not (staged_expected / "src").is_dir() or not any(
                     path.is_file() for path in staged_expected.rglob("*")
                 ):
@@ -474,12 +637,16 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
     (report / "current.txt").write_text(
         "".join(f"{fixture}\n" for fixture in current), encoding="utf-8"
     )
+    (report / "known-upstream-failures.txt").write_text(
+        "".join(f"{fixture}\n" for fixture in known_upstream_failures), encoding="utf-8"
+    )
     (report / "generation-failures.txt").write_text(
         "".join(f"{failure}\n" for failure in failures), encoding="utf-8"
     )
     summary = (
         f"Fern generation summary: {len(generated)} generated, {len(current)} current, "
-        f"{len(failures)} failed at {GENERATOR}:{version}.\n"
+        f"{len(failures)} failed, {len(known_upstream_failures)} exact known upstream "
+        f"Fern failure(s) at {GENERATOR}:{version}.\n"
     )
     (report / "generation-summary.txt").write_text(summary, encoding="utf-8")
     write_deterministic_archive(root, generated, report / "generated-goldens.tar.gz")
@@ -497,6 +664,7 @@ def compare(root: Path) -> int:
     rows = load_manifest(root)
     fetch_failures: list[str] = []
     process_failures: list[str] = []
+    known_upstream_failures: list[str] = []
     managed_rows = [
         row
         for row in rows
@@ -511,6 +679,22 @@ def compare(root: Path) -> int:
     for index, row in enumerate(managed_rows, start=1):
         progress = f"{index}/{len(managed_rows)} {row.fixture}"
         print(f"fern-goldens: comparing {progress}", file=sys.stderr, flush=True)
+        try:
+            known_failure = load_known_failure(root, row)
+            if known_failure is not None and is_current(
+                root, row, known_failure.generator_version
+            ):
+                raise GoldensError(
+                    f"{known_failure.path} is stale because a complete matching golden exists"
+                )
+        except (GoldensError, OSError) as error:
+            processing_failures += 1
+            failure = f"{row.fixture}: invalid known upstream failure: {error}"
+            process_failures.append(failure)
+            with comparison_log.open("a", encoding="utf-8") as log:
+                log.write(f"\n=== {row.fixture} ===\n  Comparison processing failed: {error}\n")
+            print(f"fern-goldens: failed {progress}: invalid known failure", flush=True)
+            continue
         try:
             fetch_spec(root, row, force=False)
         except (GoldensError, OSError) as error:
@@ -579,6 +763,21 @@ def compare(root: Path) -> int:
             fixture_processing_failures = 1
             processing_failures += 1
 
+        if known_failure is not None:
+            marker = (
+                f"KNOWN UPSTREAM FERN FAILURE: {row.fixture} at "
+                f"{GENERATOR}:{known_failure.generator_version}; "
+                "Crozier generation succeeded."
+            )
+            if marker in output:
+                known_upstream_failures.append(row.fixture)
+            else:
+                processing_failures += 1
+                fixture_processing_failures += 1
+                process_failures.append(
+                    f"{row.fixture}: comparison did not report the exact known upstream failure"
+                )
+
         if command.returncode != 0 or not summaries_present:
             if command.returncode < 0:
                 detail = f"terminated by signal {-command.returncode}"
@@ -612,7 +811,8 @@ def compare(root: Path) -> int:
         f"Fern comparison summary: {differences} differing files, "
         f"{generation_failures} Crozier generation failures, "
         f"{processing_failures} comparison processing failures, "
-        f"{len(fetch_failures)} spec fetch failures.\n"
+        f"{len(fetch_failures)} spec fetch failures, "
+        f"{len(known_upstream_failures)} exact known upstream Fern failure(s).\n"
     )
     (report / "comparison-summary.txt").write_text(summary, encoding="utf-8")
     (report / "comparison-fetch-failures.txt").write_text(
@@ -620,6 +820,9 @@ def compare(root: Path) -> int:
     )
     (report / "comparison-processing-failures.txt").write_text(
         "".join(f"{failure}\n" for failure in process_failures), encoding="utf-8"
+    )
+    (report / "comparison-known-upstream-failures.txt").write_text(
+        "".join(f"{fixture}\n" for fixture in known_upstream_failures), encoding="utf-8"
     )
     print(summary, end="")
     if fetch_failures:
@@ -728,15 +931,19 @@ def publish(root: Path, branch: str) -> int:
 def result(
     generation: str,
     publication: str,
+    generation_summary: str,
     generation_evidence: str,
     comparison: str,
+    comparison_summary: str,
     comparison_evidence: str,
 ) -> int:
     outcomes = {
         "generation": generation,
         "publication": publication,
+        "generation summary": generation_summary,
         "generation evidence": generation_evidence,
         "comparison": comparison,
+        "comparison summary": comparison_summary,
         "comparison evidence": comparison_evidence,
     }
     invalid = {name: value for name, value in outcomes.items() if value not in {"success", "failure"}}
@@ -746,7 +953,7 @@ def result(
     if failures:
         print("fern-goldens: failed phases: " + ", ".join(failures), file=sys.stderr)
         return 1
-    print("fern-goldens: generation, publication, comparison, and evidence succeeded")
+    print("fern-goldens: generation, publication, summaries, comparison, and evidence succeeded")
     return 0
 
 
@@ -786,8 +993,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     result_parser = commands.add_parser("result", help="emit the final deferred workflow status")
     result_parser.add_argument("--generation", required=True)
     result_parser.add_argument("--publication", required=True)
+    result_parser.add_argument("--generation-summary", required=True)
     result_parser.add_argument("--generation-evidence", required=True)
     result_parser.add_argument("--comparison", required=True)
+    result_parser.add_argument("--comparison-summary", required=True)
     result_parser.add_argument("--comparison-evidence", required=True)
     return parser.parse_args(argv)
 
@@ -809,8 +1018,10 @@ def main(argv: list[str]) -> int:
             return result(
                 args.generation,
                 args.publication,
+                args.generation_summary,
                 args.generation_evidence,
                 args.comparison,
+                args.comparison_summary,
                 args.comparison_evidence,
             )
         generation_status = generate(root, args.version, selectors_from(args))
@@ -820,7 +1031,9 @@ def main(argv: list[str]) -> int:
             # llmlint: ignore[tool_output_is_signal] Local `run` never publishes or uploads; success is the neutral value for those workflow-only phases.
             "success",
             "success",
+            "success",
             "success" if comparison_status == 0 else "failure",
+            "success",
             "success",
         )
     except (GoldensError, OSError, ValueError) as error:

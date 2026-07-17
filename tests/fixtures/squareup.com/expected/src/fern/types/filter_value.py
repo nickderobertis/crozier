@@ -17,9 +17,11 @@ class FilterValue(UniversalBaseModel):
     Refer to the documentation of the field.
     """
 
-    all_: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="all")] = pydantic.Field(
-        default=None
-    )
+    all_: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="all"),
+        pydantic.Field(alias="all", description="A list of terms that must be present on the field of the resource."),
+    ] = None
     """
     A list of terms that must be present on the field of the resource.
     """

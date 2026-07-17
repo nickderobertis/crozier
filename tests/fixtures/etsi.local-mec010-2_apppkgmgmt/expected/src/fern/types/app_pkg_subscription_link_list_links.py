@@ -15,7 +15,7 @@ class AppPkgSubscriptionLinkListLinks(UniversalBaseModel):
     Links to resources related to this resource.
     """
 
-    self_: typing_extensions.Annotated[LinkType, FieldMetadata(alias="self")]
+    self_: typing_extensions.Annotated[LinkType, FieldMetadata(alias="self"), pydantic.Field(alias="self")]
     subscriptions: typing.Optional[typing.List[SubscriptionsAppPkgSubscription]] = None
 
     if IS_PYDANTIC_V2:

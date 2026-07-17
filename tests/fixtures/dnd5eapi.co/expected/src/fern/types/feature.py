@@ -16,8 +16,10 @@ class Feature(ApiReference, ResourceDescription):
     `Feature`
     """
 
-    class_: typing_extensions.Annotated[typing.Optional[ApiReference], FieldMetadata(alias="class")] = None
-    feature_specific: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    class_: typing_extensions.Annotated[
+        typing.Optional[ApiReference], FieldMetadata(alias="class"), pydantic.Field(alias="class")
+    ] = None
+    feature_specific: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     Information specific to this feature.
     """

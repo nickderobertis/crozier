@@ -12,13 +12,19 @@ from .tokens_user_reward_availability_model import TokensUserRewardAvailabilityM
 
 class TokensBungieRewardDisplay(UniversalBaseModel):
     objective_display_properties: typing_extensions.Annotated[
-        typing.Optional[TokensRewardDisplayProperties], FieldMetadata(alias="ObjectiveDisplayProperties")
+        typing.Optional[TokensRewardDisplayProperties],
+        FieldMetadata(alias="ObjectiveDisplayProperties"),
+        pydantic.Field(alias="ObjectiveDisplayProperties"),
     ] = None
     reward_display_properties: typing_extensions.Annotated[
-        typing.Optional[TokensRewardDisplayProperties], FieldMetadata(alias="RewardDisplayProperties")
+        typing.Optional[TokensRewardDisplayProperties],
+        FieldMetadata(alias="RewardDisplayProperties"),
+        pydantic.Field(alias="RewardDisplayProperties"),
     ] = None
     user_reward_availability_model: typing_extensions.Annotated[
-        typing.Optional[TokensUserRewardAvailabilityModel], FieldMetadata(alias="UserRewardAvailabilityModel")
+        typing.Optional[TokensUserRewardAvailabilityModel],
+        FieldMetadata(alias="UserRewardAvailabilityModel"),
+        pydantic.Field(alias="UserRewardAvailabilityModel"),
     ] = None
 
     if IS_PYDANTIC_V2:

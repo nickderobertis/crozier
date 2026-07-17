@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -20,6 +21,7 @@ from ..types.export_statement_card_content_listing import ExportStatementCardCon
 from ..types.export_statement_content_listing import ExportStatementContentListing
 from ..types.export_statement_payment_content_listing import ExportStatementPaymentContentListing
 from ..types.place_photo_lookup_content_listing import PlacePhotoLookupContentListing
+from pydantic import ValidationError
 
 
 class RawContentClient:
@@ -46,7 +48,7 @@ class RawContentClient:
             Fetch the raw content of a public attachment with given ID. The raw content is the binary representation of a file, without any JSON wrapping.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"attachment-public/{jsonable_encoder(attachment_public_uuid)}/content",
+            f"attachment-public/{encode_path_param(attachment_public_uuid)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -64,9 +66,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -74,6 +76,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_content_for_place_lookup_photo(
@@ -99,7 +105,7 @@ class RawContentClient:
             View endpoint for place opening periods.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"place-lookup/{jsonable_encoder(place_lookup_id)}/photo/{jsonable_encoder(photo_id)}/content",
+            f"place-lookup/{encode_path_param(place_lookup_id)}/photo/{encode_path_param(photo_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -117,9 +123,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -127,6 +133,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_content_for_user_attachment(
@@ -152,7 +162,7 @@ class RawContentClient:
             Fetch the raw content of a user attachment with given ID. The raw content is the binary representation of a file, without any JSON wrapping.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/attachment/{jsonable_encoder(attachment_id)}/content",
+            f"user/{encode_path_param(user_id)}/attachment/{encode_path_param(attachment_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -170,9 +180,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -180,6 +190,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_content_for_user_card_export_statement_card(
@@ -213,7 +227,7 @@ class RawContentClient:
             Fetch the raw content of a card statement export. The returned file format could be CSV or PDF depending on the statement format specified during the statement creation. The doc won't display the response of a request to get the content of a statement export.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card/{jsonable_encoder(export_statement_card_id)}/content",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card/{encode_path_param(export_statement_card_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -231,9 +245,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -241,6 +255,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_content_for_user_chat_conversation_attachment(
@@ -274,7 +292,7 @@ class RawContentClient:
             Fetch the raw content of an attachment with given ID. The raw content is the base64 of a file, without any JSON wrapping.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/chat-conversation/{jsonable_encoder(chat_conversation_id)}/attachment/{jsonable_encoder(attachment_id)}/content",
+            f"user/{encode_path_param(user_id)}/chat-conversation/{encode_path_param(chat_conversation_id)}/attachment/{encode_path_param(attachment_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -292,9 +310,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -302,6 +320,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_content_for_user_export_annual_overview(
@@ -327,7 +349,7 @@ class RawContentClient:
             Fetch the raw content of an annual overview. The annual overview is always in PDF format. Doc won't display the response of a request to get the content of an annual overview.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/export-annual-overview/{jsonable_encoder(export_annual_overview_id)}/content",
+            f"user/{encode_path_param(user_id)}/export-annual-overview/{encode_path_param(export_annual_overview_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -345,9 +367,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -355,6 +377,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_content_for_user_monetary_account_attachment(
@@ -388,7 +414,7 @@ class RawContentClient:
             Fetch the raw content of a monetary account attachment with given ID. The raw content is the binary representation of a file, without any JSON wrapping.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/attachment/{jsonable_encoder(attachment_id)}/content",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/attachment/{encode_path_param(attachment_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -406,9 +432,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -416,6 +442,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_content_for_user_monetary_account_customer_statement(
@@ -449,7 +479,7 @@ class RawContentClient:
             Fetch the raw content of a statement export. The returned file format could be MT940, CSV or PDF depending on the statement format specified during the statement creation. The doc won't display the response of a request to get the content of a statement export.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/customer-statement/{jsonable_encoder(customer_statement_id)}/content",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/customer-statement/{encode_path_param(customer_statement_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -467,9 +497,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -477,6 +507,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_content_for_user_monetary_account_event_statement(
@@ -514,7 +548,7 @@ class RawContentClient:
             Fetch the raw content of a payment statement export.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/event/{jsonable_encoder(event_id)}/statement/{jsonable_encoder(statement_id)}/content",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/event/{encode_path_param(event_id)}/statement/{encode_path_param(statement_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -532,9 +566,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -542,6 +576,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_content_for_user_monetary_account_export_rib(
@@ -575,7 +613,7 @@ class RawContentClient:
             Fetch the raw content of an RIB. The RIB is always in PDF format.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/export-rib/{jsonable_encoder(export_rib_id)}/content",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/export-rib/{encode_path_param(export_rib_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -593,9 +631,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -603,6 +641,10 @@ class RawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -630,7 +672,7 @@ class AsyncRawContentClient:
             Fetch the raw content of a public attachment with given ID. The raw content is the binary representation of a file, without any JSON wrapping.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"attachment-public/{jsonable_encoder(attachment_public_uuid)}/content",
+            f"attachment-public/{encode_path_param(attachment_public_uuid)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -648,9 +690,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -658,6 +700,10 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_content_for_place_lookup_photo(
@@ -683,7 +729,7 @@ class AsyncRawContentClient:
             View endpoint for place opening periods.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"place-lookup/{jsonable_encoder(place_lookup_id)}/photo/{jsonable_encoder(photo_id)}/content",
+            f"place-lookup/{encode_path_param(place_lookup_id)}/photo/{encode_path_param(photo_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -701,9 +747,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -711,6 +757,10 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_content_for_user_attachment(
@@ -736,7 +786,7 @@ class AsyncRawContentClient:
             Fetch the raw content of a user attachment with given ID. The raw content is the binary representation of a file, without any JSON wrapping.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/attachment/{jsonable_encoder(attachment_id)}/content",
+            f"user/{encode_path_param(user_id)}/attachment/{encode_path_param(attachment_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -754,9 +804,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -764,6 +814,10 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_content_for_user_card_export_statement_card(
@@ -797,7 +851,7 @@ class AsyncRawContentClient:
             Fetch the raw content of a card statement export. The returned file format could be CSV or PDF depending on the statement format specified during the statement creation. The doc won't display the response of a request to get the content of a statement export.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card/{jsonable_encoder(export_statement_card_id)}/content",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card/{encode_path_param(export_statement_card_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -815,9 +869,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -825,6 +879,10 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_content_for_user_chat_conversation_attachment(
@@ -858,7 +916,7 @@ class AsyncRawContentClient:
             Fetch the raw content of an attachment with given ID. The raw content is the base64 of a file, without any JSON wrapping.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/chat-conversation/{jsonable_encoder(chat_conversation_id)}/attachment/{jsonable_encoder(attachment_id)}/content",
+            f"user/{encode_path_param(user_id)}/chat-conversation/{encode_path_param(chat_conversation_id)}/attachment/{encode_path_param(attachment_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -876,9 +934,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -886,6 +944,10 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_content_for_user_export_annual_overview(
@@ -911,7 +973,7 @@ class AsyncRawContentClient:
             Fetch the raw content of an annual overview. The annual overview is always in PDF format. Doc won't display the response of a request to get the content of an annual overview.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/export-annual-overview/{jsonable_encoder(export_annual_overview_id)}/content",
+            f"user/{encode_path_param(user_id)}/export-annual-overview/{encode_path_param(export_annual_overview_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -929,9 +991,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -939,6 +1001,10 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_content_for_user_monetary_account_attachment(
@@ -972,7 +1038,7 @@ class AsyncRawContentClient:
             Fetch the raw content of a monetary account attachment with given ID. The raw content is the binary representation of a file, without any JSON wrapping.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/attachment/{jsonable_encoder(attachment_id)}/content",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/attachment/{encode_path_param(attachment_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -990,9 +1056,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1000,6 +1066,10 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_content_for_user_monetary_account_customer_statement(
@@ -1033,7 +1103,7 @@ class AsyncRawContentClient:
             Fetch the raw content of a statement export. The returned file format could be MT940, CSV or PDF depending on the statement format specified during the statement creation. The doc won't display the response of a request to get the content of a statement export.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/customer-statement/{jsonable_encoder(customer_statement_id)}/content",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/customer-statement/{encode_path_param(customer_statement_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -1051,9 +1121,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1061,6 +1131,10 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_content_for_user_monetary_account_event_statement(
@@ -1098,7 +1172,7 @@ class AsyncRawContentClient:
             Fetch the raw content of a payment statement export.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/event/{jsonable_encoder(event_id)}/statement/{jsonable_encoder(statement_id)}/content",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/event/{encode_path_param(event_id)}/statement/{encode_path_param(statement_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -1116,9 +1190,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1126,6 +1200,10 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_content_for_user_monetary_account_export_rib(
@@ -1159,7 +1237,7 @@ class AsyncRawContentClient:
             Fetch the raw content of an RIB. The RIB is always in PDF format.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/export-rib/{jsonable_encoder(export_rib_id)}/content",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/export-rib/{encode_path_param(export_rib_id)}/content",
             method="GET",
             request_options=request_options,
         )
@@ -1177,9 +1255,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1187,4 +1265,8 @@ class AsyncRawContentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

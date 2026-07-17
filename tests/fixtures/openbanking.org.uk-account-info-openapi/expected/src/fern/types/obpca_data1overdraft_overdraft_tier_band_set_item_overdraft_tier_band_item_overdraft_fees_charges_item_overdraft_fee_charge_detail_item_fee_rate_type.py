@@ -1,13 +1,14 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
 class ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItemFeeRateType(
-    str, enum.Enum
+    enum.StrEnum
 ):
     """
     Rate type for overdraft fee/charge (where it is charged in terms of a rate rather than an amount)

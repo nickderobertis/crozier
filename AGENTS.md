@@ -186,6 +186,8 @@ Use the `just` recipes; do not hand-roll equivalents.
   provenance and safely publishes complete results even while comparison is red;
   direct local commands are diagnostic only. See
   [`docs/fern-goldens.md`](docs/fern-goldens.md).
+- CalorieNinjas at Fern 5.20 is covered by an exact, always-retried upstream
+  failure fingerprint; never compare its preserved older tree as a 5.20 golden.
 
 ## Scripts and output are context
 

@@ -34,14 +34,24 @@ class Resource(UniversalBaseModel):
     Relatvie path of this resource regarding main resource
     """
 
-    service_id: typing_extensions.Annotated[str, FieldMetadata(alias="serviceId")] = pydantic.Field()
+    service_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="serviceId"),
+        pydantic.Field(
+            alias="serviceId", description="Unique identifier of the Servoce or API this resource is attached to"
+        ),
+    ]
     """
     Unique identifier of the Servoce or API this resource is attached to
     """
 
-    source_artifact: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="sourceArtifact")] = (
-        pydantic.Field(default=None)
-    )
+    source_artifact: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="sourceArtifact"),
+        pydantic.Field(
+            alias="sourceArtifact", description="Short name of the artifact this resource was extracted from"
+        ),
+    ] = None
     """
     Short name of the artifact this resource was extracted from
     """

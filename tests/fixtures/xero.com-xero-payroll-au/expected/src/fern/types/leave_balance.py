@@ -9,30 +9,40 @@ from ..core.serialization import FieldMetadata
 
 
 class LeaveBalance(UniversalBaseModel):
-    leave_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="LeaveName")] = pydantic.Field(
-        default=None
-    )
+    leave_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="LeaveName"),
+        pydantic.Field(alias="LeaveName", description="The name of the leave type"),
+    ] = None
     """
     The name of the leave type
     """
 
-    leave_type_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="LeaveTypeID")] = (
-        pydantic.Field(default=None)
-    )
+    leave_type_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="LeaveTypeID"),
+        pydantic.Field(alias="LeaveTypeID", description="Identifier of the leave type (see PayItems)"),
+    ] = None
     """
     Identifier of the leave type (see PayItems)
     """
 
-    number_of_units: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="NumberOfUnits")] = (
-        pydantic.Field(default=None)
-    )
+    number_of_units: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="NumberOfUnits"),
+        pydantic.Field(alias="NumberOfUnits", description="The balance of the leave available"),
+    ] = None
     """
     The balance of the leave available
     """
 
-    type_of_units: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TypeOfUnits")] = (
-        pydantic.Field(default=None)
-    )
+    type_of_units: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="TypeOfUnits"),
+        pydantic.Field(
+            alias="TypeOfUnits", description="The type of units as specified by the LeaveType (see PayItems)"
+        ),
+    ] = None
     """
     The type of units as specified by the LeaveType (see PayItems)
     """

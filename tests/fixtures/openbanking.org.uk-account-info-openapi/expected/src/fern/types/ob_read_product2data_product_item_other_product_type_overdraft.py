@@ -16,10 +16,13 @@ class ObReadProduct2DataProductItemOtherProductTypeOverdraft(UniversalBaseModel)
     Borrowing details
     """
 
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = None
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]], FieldMetadata(alias="Notes"), pydantic.Field(alias="Notes")
+    ] = None
     overdraft_tier_band_set: typing_extensions.Annotated[
         typing.List[ObReadProduct2DataProductItemOtherProductTypeOverdraftOverdraftTierBandSetItem],
         FieldMetadata(alias="OverdraftTierBandSet"),
+        pydantic.Field(alias="OverdraftTierBandSet"),
     ]
 
     if IS_PYDANTIC_V2:

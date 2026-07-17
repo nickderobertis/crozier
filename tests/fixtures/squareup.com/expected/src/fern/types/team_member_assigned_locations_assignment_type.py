@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TeamMemberAssignedLocationsAssignmentType(str, enum.Enum):
+class TeamMemberAssignedLocationsAssignmentType(enum.StrEnum):
     """
     Enumerates the possible assignment types that the team member can have.
     """

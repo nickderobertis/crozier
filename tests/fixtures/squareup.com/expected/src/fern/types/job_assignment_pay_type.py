@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class JobAssignmentPayType(str, enum.Enum):
+class JobAssignmentPayType(enum.StrEnum):
     """
     Enumerates the possible pay types that a job can be assigned.
     """

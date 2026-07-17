@@ -13,8 +13,12 @@ class DestinyDefinitionsDestinyVendorSaleItemActionBlockDefinition(UniversalBase
     Not terribly useful, some basic cooldown interaction info.
     """
 
-    execute_seconds: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="executeSeconds")] = None
-    is_positive: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isPositive")] = None
+    execute_seconds: typing_extensions.Annotated[
+        typing.Optional[float], FieldMetadata(alias="executeSeconds"), pydantic.Field(alias="executeSeconds")
+    ] = None
+    is_positive: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="isPositive"), pydantic.Field(alias="isPositive")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

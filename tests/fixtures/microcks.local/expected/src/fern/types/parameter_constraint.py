@@ -14,16 +14,20 @@ class ParameterConstraint(UniversalBaseModel):
     Companion object for Operation that may be used to express constraints on request parameters
     """
 
-    in_: typing_extensions.Annotated[typing.Optional[ParameterConstraintIn], FieldMetadata(alias="in")] = (
-        pydantic.Field(default=None)
-    )
+    in_: typing_extensions.Annotated[
+        typing.Optional[ParameterConstraintIn],
+        FieldMetadata(alias="in"),
+        pydantic.Field(alias="in", description="Parameter location"),
+    ] = None
     """
     Parameter location
     """
 
-    must_match_regexp: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="mustMatchRegexp")] = (
-        pydantic.Field(default=None)
-    )
+    must_match_regexp: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="mustMatchRegexp"),
+        pydantic.Field(alias="mustMatchRegexp", description="Whether it's a regular expression matching constraint"),
+    ] = None
     """
     Whether it's a regular expression matching constraint
     """

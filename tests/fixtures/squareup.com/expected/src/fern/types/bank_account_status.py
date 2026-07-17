@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class BankAccountStatus(str, enum.Enum):
+class BankAccountStatus(enum.StrEnum):
     """
     Indicates the current verification status of a `BankAccount` object.
     """

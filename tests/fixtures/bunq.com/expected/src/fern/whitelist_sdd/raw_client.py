@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -14,6 +15,7 @@ from ..types.whitelist_sdd_listing import WhitelistSddListing
 from ..types.whitelist_sdd_monetary_account_paying_listing import WhitelistSddMonetaryAccountPayingListing
 from ..types.whitelist_sdd_monetary_account_paying_read import WhitelistSddMonetaryAccountPayingRead
 from ..types.whitelist_sdd_read import WhitelistSddRead
+from pydantic import ValidationError
 
 
 class RawWhitelistSddClient:
@@ -43,7 +45,7 @@ class RawWhitelistSddClient:
             Whitelist an SDD so that when one comes in, it is automatically accepted.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/whitelist-sdd",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/whitelist-sdd",
             method="GET",
             request_options=request_options,
         )
@@ -61,9 +63,9 @@ class RawWhitelistSddClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -71,6 +73,10 @@ class RawWhitelistSddClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_whitelist_sdd_for_user_monetary_account(
@@ -104,7 +110,7 @@ class RawWhitelistSddClient:
             Whitelist an SDD so that when one comes in, it is automatically accepted.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/whitelist-sdd/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/whitelist-sdd/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -122,9 +128,9 @@ class RawWhitelistSddClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -132,6 +138,10 @@ class RawWhitelistSddClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_all_whitelist_sdd_for_user(
@@ -154,7 +164,7 @@ class RawWhitelistSddClient:
             Depreciated route, replaced with whitelist-sdd-recurring
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/whitelist-sdd",
+            f"user/{encode_path_param(user_id)}/whitelist-sdd",
             method="GET",
             request_options=request_options,
         )
@@ -172,9 +182,9 @@ class RawWhitelistSddClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -182,6 +192,10 @@ class RawWhitelistSddClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_whitelist_sdd_for_user(
@@ -207,7 +221,7 @@ class RawWhitelistSddClient:
             Depreciated route, replaced with whitelist-sdd-recurring
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/whitelist-sdd/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/whitelist-sdd/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -225,9 +239,9 @@ class RawWhitelistSddClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -235,6 +249,10 @@ class RawWhitelistSddClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -265,7 +283,7 @@ class AsyncRawWhitelistSddClient:
             Whitelist an SDD so that when one comes in, it is automatically accepted.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/whitelist-sdd",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/whitelist-sdd",
             method="GET",
             request_options=request_options,
         )
@@ -283,9 +301,9 @@ class AsyncRawWhitelistSddClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -293,6 +311,10 @@ class AsyncRawWhitelistSddClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_whitelist_sdd_for_user_monetary_account(
@@ -326,7 +348,7 @@ class AsyncRawWhitelistSddClient:
             Whitelist an SDD so that when one comes in, it is automatically accepted.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/whitelist-sdd/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/whitelist-sdd/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -344,9 +366,9 @@ class AsyncRawWhitelistSddClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -354,6 +376,10 @@ class AsyncRawWhitelistSddClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_all_whitelist_sdd_for_user(
@@ -376,7 +402,7 @@ class AsyncRawWhitelistSddClient:
             Depreciated route, replaced with whitelist-sdd-recurring
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/whitelist-sdd",
+            f"user/{encode_path_param(user_id)}/whitelist-sdd",
             method="GET",
             request_options=request_options,
         )
@@ -394,9 +420,9 @@ class AsyncRawWhitelistSddClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -404,6 +430,10 @@ class AsyncRawWhitelistSddClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_whitelist_sdd_for_user(
@@ -429,7 +459,7 @@ class AsyncRawWhitelistSddClient:
             Depreciated route, replaced with whitelist-sdd-recurring
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/whitelist-sdd/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/whitelist-sdd/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -447,9 +477,9 @@ class AsyncRawWhitelistSddClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -457,4 +487,8 @@ class AsyncRawWhitelistSddClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

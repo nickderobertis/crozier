@@ -11,9 +11,13 @@ from .ignores_ignore_response import IgnoresIgnoreResponse
 
 class TagsModelsContractsTagResponse(UniversalBaseModel):
     ignore_status: typing_extensions.Annotated[
-        typing.Optional[IgnoresIgnoreResponse], FieldMetadata(alias="ignoreStatus")
+        typing.Optional[IgnoresIgnoreResponse],
+        FieldMetadata(alias="ignoreStatus"),
+        pydantic.Field(alias="ignoreStatus"),
     ] = None
-    tag_text: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="tagText")] = None
+    tag_text: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="tagText"), pydantic.Field(alias="tagText")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

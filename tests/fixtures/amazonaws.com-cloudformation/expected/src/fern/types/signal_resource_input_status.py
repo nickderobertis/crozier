@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SignalResourceInputStatus(str, enum.Enum):
+class SignalResourceInputStatus(enum.StrEnum):
     """
     The status of the signal, which is either success or failure. A failure signal causes CloudFormation to immediately fail the stack creation or update.
     """

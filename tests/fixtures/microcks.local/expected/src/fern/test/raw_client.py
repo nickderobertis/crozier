@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -17,6 +18,7 @@ from ..types.test_case_result import TestCaseResult
 from ..types.test_result import TestResult
 from ..types.test_runner_type import TestRunnerType
 from ..types.unidirectional_event import UnidirectionalEvent
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -103,6 +105,10 @@ class RawTestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_test_results_by_service(
@@ -123,7 +129,7 @@ class RawTestClient:
             List of TestResults for the Service having the requested id
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tests/service/{jsonable_encoder(service_id)}",
+            f"tests/service/{encode_path_param(service_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -140,6 +146,10 @@ class RawTestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_test_results_by_service_counter(
@@ -160,7 +170,7 @@ class RawTestClient:
             Number of TestResults for this Service in datastore
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tests/service/{jsonable_encoder(service_id)}/count",
+            f"tests/service/{encode_path_param(service_id)}/count",
             method="GET",
             request_options=request_options,
         )
@@ -177,6 +187,10 @@ class RawTestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_test_result(
@@ -199,7 +213,7 @@ class RawTestClient:
             Requested TestResult
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tests/{jsonable_encoder(id)}",
+            f"tests/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -216,6 +230,10 @@ class RawTestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_events_by_test_case(
@@ -239,7 +257,7 @@ class RawTestClient:
             List of event messages for this TestCase
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tests/{jsonable_encoder(id)}/events/{jsonable_encoder(test_case_id)}",
+            f"tests/{encode_path_param(id)}/events/{encode_path_param(test_case_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -256,6 +274,10 @@ class RawTestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_messages_by_test_case(
@@ -279,7 +301,7 @@ class RawTestClient:
             List of request and response messages for this TestCase
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tests/{jsonable_encoder(id)}/messages/{jsonable_encoder(test_case_id)}",
+            f"tests/{encode_path_param(id)}/messages/{encode_path_param(test_case_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -296,6 +318,10 @@ class RawTestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def report_test_case_result(
@@ -321,7 +347,7 @@ class RawTestClient:
             TestCaseResult is reported
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tests/{jsonable_encoder(id)}/testCaseResult",
+            f"tests/{encode_path_param(id)}/testCaseResult",
             method="POST",
             json={
                 "operationName": operation_name,
@@ -345,6 +371,10 @@ class RawTestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -429,6 +459,10 @@ class AsyncRawTestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_test_results_by_service(
@@ -449,7 +483,7 @@ class AsyncRawTestClient:
             List of TestResults for the Service having the requested id
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tests/service/{jsonable_encoder(service_id)}",
+            f"tests/service/{encode_path_param(service_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -466,6 +500,10 @@ class AsyncRawTestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_test_results_by_service_counter(
@@ -486,7 +524,7 @@ class AsyncRawTestClient:
             Number of TestResults for this Service in datastore
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tests/service/{jsonable_encoder(service_id)}/count",
+            f"tests/service/{encode_path_param(service_id)}/count",
             method="GET",
             request_options=request_options,
         )
@@ -503,6 +541,10 @@ class AsyncRawTestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_test_result(
@@ -525,7 +567,7 @@ class AsyncRawTestClient:
             Requested TestResult
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tests/{jsonable_encoder(id)}",
+            f"tests/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -542,6 +584,10 @@ class AsyncRawTestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_events_by_test_case(
@@ -565,7 +611,7 @@ class AsyncRawTestClient:
             List of event messages for this TestCase
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tests/{jsonable_encoder(id)}/events/{jsonable_encoder(test_case_id)}",
+            f"tests/{encode_path_param(id)}/events/{encode_path_param(test_case_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -582,6 +628,10 @@ class AsyncRawTestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_messages_by_test_case(
@@ -605,7 +655,7 @@ class AsyncRawTestClient:
             List of request and response messages for this TestCase
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tests/{jsonable_encoder(id)}/messages/{jsonable_encoder(test_case_id)}",
+            f"tests/{encode_path_param(id)}/messages/{encode_path_param(test_case_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -622,6 +672,10 @@ class AsyncRawTestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def report_test_case_result(
@@ -647,7 +701,7 @@ class AsyncRawTestClient:
             TestCaseResult is reported
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tests/{jsonable_encoder(id)}/testCaseResult",
+            f"tests/{encode_path_param(id)}/testCaseResult",
             method="POST",
             json={
                 "operationName": operation_name,
@@ -671,4 +725,8 @@ class AsyncRawTestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

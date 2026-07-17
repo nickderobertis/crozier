@@ -27,8 +27,10 @@ It runs under `just test-e2e` / `just check`.
   typed error raising — sync + async.
 - **The only allowed difference** is the deliberate SDK-identity branding
   (`X-Crozier-*` vs `X-Fern-*`). `_recorder._canonical_headers` folds either
-  vendor prefix to a common `x-sdk-*` via one prefix rule (no enumerated list to
-  drift) — the runtime analog of the byte-diff's
+  vendor prefix to a common `x-sdk-*` via one prefix rule. It also omits only
+  Fern 5.20's Runtime/Platform identity pair because the runnable `exhaustive`
+  fixture is a legacy Fern snapshot; current managed byte fixtures gate those
+  lines exactly. This is the runtime analog of the byte-diff's
   `tests/e2e.rs::normalize_sdk_headers`. Do not add other normalizations to hide a
   real divergence — fix the generator instead.
 - **Adding a journey.** Add a function `(sdk) -> observation dict` to

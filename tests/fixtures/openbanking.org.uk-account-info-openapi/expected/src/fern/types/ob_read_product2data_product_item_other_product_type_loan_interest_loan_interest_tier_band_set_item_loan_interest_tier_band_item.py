@@ -32,11 +32,17 @@ class ObReadProduct2DataProductItemOtherProductTypeLoanInterestLoanInterestTierB
     """
 
     fixed_variable_interest_rate_type: typing_extensions.Annotated[
-        ObInterestFixedVariableType1Code, FieldMetadata(alias="FixedVariableInterestRateType")
+        ObInterestFixedVariableType1Code,
+        FieldMetadata(alias="FixedVariableInterestRateType"),
+        pydantic.Field(alias="FixedVariableInterestRateType"),
     ]
-    identification: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Identification")] = (
-        pydantic.Field(default=None)
-    )
+    identification: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Identification"),
+        pydantic.Field(
+            alias="Identification", description="Unique and unambiguous identification of a  Tier Band for a SME Loan."
+        ),
+    ] = None
     """
     Unique and unambiguous identification of a  Tier Band for a SME Loan.
     """
@@ -48,10 +54,13 @@ class ObReadProduct2DataProductItemOtherProductTypeLoanInterestLoanInterestTierB
             ]
         ],
         FieldMetadata(alias="LoanInterestFeesCharges"),
+        pydantic.Field(alias="LoanInterestFeesCharges"),
     ] = None
     loan_provider_interest_rate: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="LoanProviderInterestRate")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="LoanProviderInterestRate"),
+        pydantic.Field(alias="LoanProviderInterestRate", description="Loan provider Interest for the SME Loan product"),
+    ] = None
     """
     Loan provider Interest for the SME Loan product
     """
@@ -61,7 +70,11 @@ class ObReadProduct2DataProductItemOtherProductTypeLoanInterestLoanInterestTierB
             ObReadProduct2DataProductItemOtherProductTypeLoanInterestLoanInterestTierBandSetItemLoanInterestTierBandItemLoanProviderInterestRateType
         ],
         FieldMetadata(alias="LoanProviderInterestRateType"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="LoanProviderInterestRateType",
+            description="Interest rate types, other than APR, which financial institutions may use to describe the annual interest rate payable for the SME Loan.",
+        ),
+    ] = None
     """
     Interest rate types, other than APR, which financial institutions may use to describe the annual interest rate payable for the SME Loan.
     """
@@ -71,7 +84,10 @@ class ObReadProduct2DataProductItemOtherProductTypeLoanInterestLoanInterestTierB
             ObReadProduct2DataProductItemOtherProductTypeLoanInterestLoanInterestTierBandSetItemLoanInterestTierBandItemMaxTermPeriod
         ],
         FieldMetadata(alias="MaxTermPeriod"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="MaxTermPeriod", description="The unit of period (days, weeks, months etc.) of the Maximum Term"
+        ),
+    ] = None
     """
     The unit of period (days, weeks, months etc.) of the Maximum Term
     """
@@ -79,48 +95,84 @@ class ObReadProduct2DataProductItemOtherProductTypeLoanInterestLoanInterestTierB
     min_term_period: typing_extensions.Annotated[
         ObReadProduct2DataProductItemOtherProductTypeLoanInterestLoanInterestTierBandSetItemLoanInterestTierBandItemMinTermPeriod,
         FieldMetadata(alias="MinTermPeriod"),
-    ] = pydantic.Field()
+        pydantic.Field(
+            alias="MinTermPeriod", description="The unit of period (days, weeks, months etc.) of the Minimum Term"
+        ),
+    ]
     """
     The unit of period (days, weeks, months etc.) of the Minimum Term
     """
 
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = None
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]], FieldMetadata(alias="Notes"), pydantic.Field(alias="Notes")
+    ] = None
     other_loan_provider_interest_rate_type: typing_extensions.Annotated[
         typing.Optional[
             ObReadProduct2DataProductItemOtherProductTypeLoanInterestLoanInterestTierBandSetItemLoanInterestTierBandItemOtherLoanProviderInterestRateType
         ],
         FieldMetadata(alias="OtherLoanProviderInterestRateType"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="OtherLoanProviderInterestRateType",
+            description="Other loan interest rate types which are not available in the standard code list",
+        ),
+    ] = None
     """
     Other loan interest rate types which are not available in the standard code list
     """
 
-    rep_apr: typing_extensions.Annotated[str, FieldMetadata(alias="RepAPR")] = pydantic.Field()
+    rep_apr: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="RepAPR"),
+        pydantic.Field(
+            alias="RepAPR",
+            description="The annual equivalent rate (AER) is interest that is calculated under the assumption that any interest paid is combined with the original balance and the next interest payment will be based on the slightly higher account balance. Overall, this means that interest can be compounded several times in a year depending on the number of times that interest payments are made. \nFor SME Loan, this APR is the representative APR which includes any account fees.",
+        ),
+    ]
     """
     The annual equivalent rate (AER) is interest that is calculated under the assumption that any interest paid is combined with the original balance and the next interest payment will be based on the slightly higher account balance. Overall, this means that interest can be compounded several times in a year depending on the number of times that interest payments are made. 
     For SME Loan, this APR is the representative APR which includes any account fees.
     """
 
-    tier_value_max_term: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="TierValueMaxTerm")] = (
-        pydantic.Field(default=None)
-    )
+    tier_value_max_term: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="TierValueMaxTerm"),
+        pydantic.Field(
+            alias="TierValueMaxTerm", description="Maximum loan term for which the loan interest tier applies."
+        ),
+    ] = None
     """
     Maximum loan term for which the loan interest tier applies.
     """
 
-    tier_value_maximum: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TierValueMaximum")] = (
-        pydantic.Field(default=None)
-    )
+    tier_value_maximum: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="TierValueMaximum"),
+        pydantic.Field(
+            alias="TierValueMaximum", description="Maximum loan value for which the loan interest tier applies."
+        ),
+    ] = None
     """
     Maximum loan value for which the loan interest tier applies.
     """
 
-    tier_value_min_term: typing_extensions.Annotated[int, FieldMetadata(alias="TierValueMinTerm")] = pydantic.Field()
+    tier_value_min_term: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="TierValueMinTerm"),
+        pydantic.Field(
+            alias="TierValueMinTerm", description="Minimum loan term for which the loan interest tier applies."
+        ),
+    ]
     """
     Minimum loan term for which the loan interest tier applies.
     """
 
-    tier_value_minimum: typing_extensions.Annotated[str, FieldMetadata(alias="TierValueMinimum")] = pydantic.Field()
+    tier_value_minimum: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="TierValueMinimum"),
+        pydantic.Field(
+            alias="TierValueMinimum", description="Minimum loan value for which the loan interest tier applies."
+        ),
+    ]
     """
     Minimum loan value for which the loan interest tier applies.
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CatalogPricingType(str, enum.Enum):
+class CatalogPricingType(enum.StrEnum):
     """
     Indicates whether the price of a CatalogItemVariation should be entered manually at the time of sale.
     """

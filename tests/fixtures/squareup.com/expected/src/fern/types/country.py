@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class Country(str, enum.Enum):
+class Country(enum.StrEnum):
     """
     Indicates the country associated with another entity, such as a business.
     Values are in [ISO 3166-1-alpha-2 format](http://www.iso.org/iso/home/standards/country_codes.htm).

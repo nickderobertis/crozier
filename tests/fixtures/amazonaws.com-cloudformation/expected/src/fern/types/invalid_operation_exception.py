@@ -2,4 +2,4 @@
 
 import typing
 
-InvalidOperationException = typing.Optional[typing.Any]
+InvalidOperationException = typing.Any

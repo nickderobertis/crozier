@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.counter_map import CounterMap
@@ -14,6 +15,7 @@ from ..types.daily_invocation_statistic import DailyInvocationStatistic
 from ..types.test_conformance_metric import TestConformanceMetric
 from ..types.test_result_summary import TestResultSummary
 from ..types.weighted_metric_value import WeightedMetricValue
+from pydantic import ValidationError
 
 
 class RawMetricsClient:
@@ -52,6 +54,10 @@ class RawMetricsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_service_test_conformance_metric(
@@ -72,7 +78,7 @@ class RawMetricsClient:
             Test coverage metric for Service
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"metrics/conformance/service/{jsonable_encoder(service_id)}",
+            f"metrics/conformance/service/{encode_path_param(service_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -89,6 +95,10 @@ class RawMetricsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_aggregated_invocations_stats(
@@ -129,6 +139,10 @@ class RawMetricsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_latest_aggregated_invocations_stats(
@@ -169,6 +183,10 @@ class RawMetricsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_top_ivnocations_stats_by_day(
@@ -217,6 +235,10 @@ class RawMetricsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_invocation_stats_by_service(
@@ -248,7 +270,7 @@ class RawMetricsClient:
             Invocation statistics for service for specified day
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"metrics/invocations/{jsonable_encoder(service_name)}/{jsonable_encoder(service_version)}",
+            f"metrics/invocations/{encode_path_param(service_name)}/{encode_path_param(service_version)}",
             method="GET",
             params={
                 "day": day,
@@ -268,6 +290,10 @@ class RawMetricsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_latest_test_results(
@@ -308,6 +334,10 @@ class RawMetricsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -347,6 +377,10 @@ class AsyncRawMetricsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_service_test_conformance_metric(
@@ -367,7 +401,7 @@ class AsyncRawMetricsClient:
             Test coverage metric for Service
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"metrics/conformance/service/{jsonable_encoder(service_id)}",
+            f"metrics/conformance/service/{encode_path_param(service_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -384,6 +418,10 @@ class AsyncRawMetricsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_aggregated_invocations_stats(
@@ -424,6 +462,10 @@ class AsyncRawMetricsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_latest_aggregated_invocations_stats(
@@ -464,6 +506,10 @@ class AsyncRawMetricsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_top_ivnocations_stats_by_day(
@@ -512,6 +558,10 @@ class AsyncRawMetricsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_invocation_stats_by_service(
@@ -543,7 +593,7 @@ class AsyncRawMetricsClient:
             Invocation statistics for service for specified day
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"metrics/invocations/{jsonable_encoder(service_name)}/{jsonable_encoder(service_version)}",
+            f"metrics/invocations/{encode_path_param(service_name)}/{encode_path_param(service_version)}",
             method="GET",
             params={
                 "day": day,
@@ -563,6 +613,10 @@ class AsyncRawMetricsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_latest_test_results(
@@ -603,4 +657,8 @@ class AsyncRawMetricsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

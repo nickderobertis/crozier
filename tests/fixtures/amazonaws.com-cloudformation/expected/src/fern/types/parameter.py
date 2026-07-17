@@ -13,30 +13,47 @@ class Parameter(UniversalBaseModel):
     The Parameter data type.
     """
 
-    parameter_key: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="ParameterKey")] = (
-        pydantic.Field(default=None)
-    )
+    parameter_key: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="ParameterKey"),
+        pydantic.Field(
+            alias="ParameterKey",
+            description="The key associated with the parameter. If you don't specify a key and value for a particular parameter, CloudFormation uses the default value that's specified in your template.",
+        ),
+    ] = None
     """
     The key associated with the parameter. If you don't specify a key and value for a particular parameter, CloudFormation uses the default value that's specified in your template.
     """
 
-    parameter_value: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="ParameterValue")] = (
-        pydantic.Field(default=None)
-    )
+    parameter_value: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="ParameterValue"),
+        pydantic.Field(alias="ParameterValue", description="The input value associated with the parameter."),
+    ] = None
     """
     The input value associated with the parameter.
     """
 
-    use_previous_value: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="UsePreviousValue")] = (
-        pydantic.Field(default=None)
-    )
+    use_previous_value: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="UsePreviousValue"),
+        pydantic.Field(
+            alias="UsePreviousValue",
+            description="During a stack update, use the existing parameter value that the stack is using for a given parameter key. If you specify <code>true</code>, do not specify a parameter value.",
+        ),
+    ] = None
     """
     During a stack update, use the existing parameter value that the stack is using for a given parameter key. If you specify <code>true</code>, do not specify a parameter value.
     """
 
-    resolved_value: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="ResolvedValue")] = (
-        pydantic.Field(default=None)
-    )
+    resolved_value: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="ResolvedValue"),
+        pydantic.Field(
+            alias="ResolvedValue",
+            description='Read-only. The value that corresponds to a SSM parameter key. This field is returned only for <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html#aws-ssm-parameter-types"> <code>SSM</code> </a> parameter types in the template.',
+        ),
+    ] = None
     """
     Read-only. The value that corresponds to a SSM parameter key. This field is returned only for <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html#aws-ssm-parameter-types"> <code>SSM</code> </a> parameter types in the template.
     """

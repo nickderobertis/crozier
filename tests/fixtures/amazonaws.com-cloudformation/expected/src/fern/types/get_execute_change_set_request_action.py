@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetExecuteChangeSetRequestAction(str, enum.Enum):
+class GetExecuteChangeSetRequestAction(enum.StrEnum):
     EXECUTE_CHANGE_SET = "ExecuteChangeSet"
 
     def visit(self, execute_change_set: typing.Callable[[], T_Result]) -> T_Result:

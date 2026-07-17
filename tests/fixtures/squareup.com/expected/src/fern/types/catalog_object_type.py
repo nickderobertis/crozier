@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CatalogObjectType(str, enum.Enum):
+class CatalogObjectType(enum.StrEnum):
     """
     Possible types of CatalogObjects returned from the Catalog, each
     containing type-specific properties in the `*_data` field corresponding to the object type.

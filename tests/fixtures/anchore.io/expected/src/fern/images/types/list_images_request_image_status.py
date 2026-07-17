@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ListImagesRequestImageStatus(str, enum.Enum):
+class ListImagesRequestImageStatus(enum.StrEnum):
     ALL = "all"
     ACTIVE = "active"
     DELETING = "deleting"

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CreateArtifactRequestXRegistryHashAlgorithm(str, enum.Enum):
+class CreateArtifactRequestXRegistryHashAlgorithm(enum.StrEnum):
     SHA256 = "SHA256"
     MD5 = "MD5"
 

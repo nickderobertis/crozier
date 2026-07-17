@@ -19,22 +19,37 @@ class DestinyDefinitionsItemsDestinyItemPlugDefinition(UniversalBaseModel):
     """
 
     alternate_plug_style: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="alternatePlugStyle")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="alternatePlugStyle"),
+        pydantic.Field(
+            alias="alternatePlugStyle",
+            description="The alternate plug of the plug: only applies when the item is in states that only the server can know about and control, unfortunately. See AlternateUiPlugLabel for the related label info.",
+        ),
+    ] = None
     """
     The alternate plug of the plug: only applies when the item is in states that only the server can know about and control, unfortunately. See AlternateUiPlugLabel for the related label info.
     """
 
     alternate_ui_plug_label: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="alternateUiPlugLabel")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="alternateUiPlugLabel"),
+        pydantic.Field(
+            alias="alternateUiPlugLabel",
+            description="If the plug meets certain state requirements, it may have an alternative label applied to it. This is the alternative label that will be applied in such a situation.",
+        ),
+    ] = None
     """
     If the plug meets certain state requirements, it may have an alternative label applied to it. This is the alternative label that will be applied in such a situation.
     """
 
     enabled_material_requirement_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="enabledMaterialRequirementHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="enabledMaterialRequirementHash"),
+        pydantic.Field(
+            alias="enabledMaterialRequirementHash",
+            description="It's not enough for the plug to be inserted. It has to be enabled as well. For it to be enabled, it may require materials. This is the hash identifier for the DestinyMaterialRequirementSetDefinition for those requirements, if there is one.",
+        ),
+    ] = None
     """
     It's not enough for the plug to be inserted. It has to be enabled as well. For it to be enabled, it may require materials. This is the hash identifier for the DestinyMaterialRequirementSetDefinition for those requirements, if there is one.
     """
@@ -42,29 +57,48 @@ class DestinyDefinitionsItemsDestinyItemPlugDefinition(UniversalBaseModel):
     enabled_rules: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsItemsDestinyPlugRuleDefinition]],
         FieldMetadata(alias="enabledRules"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="enabledRules",
+            description="The rules around whether the plug, once inserted, is enabled and providing its benefits.\r\nThe live data DestinyItemPlugComponent.enableFailIndexes will be an index into this array, so you can pull out the failure strings appropriate for the user.",
+        ),
+    ] = None
     """
     The rules around whether the plug, once inserted, is enabled and providing its benefits.
     The live data DestinyItemPlugComponent.enableFailIndexes will be an index into this array, so you can pull out the failure strings appropriate for the user.
     """
 
     energy_capacity: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsItemsDestinyEnergyCapacityEntry], FieldMetadata(alias="energyCapacity")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyDefinitionsItemsDestinyEnergyCapacityEntry],
+        FieldMetadata(alias="energyCapacity"),
+        pydantic.Field(
+            alias="energyCapacity",
+            description="IF not null, this plug provides Energy capacity to the item in which it is socketed. In Armor 2.0 for example, is implemented in a similar way to Masterworks, where visually it's a single area of the UI being clicked on to \"Upgrade\" to higher energy levels, but it's actually socketing new plugs.",
+        ),
+    ] = None
     """
     IF not null, this plug provides Energy capacity to the item in which it is socketed. In Armor 2.0 for example, is implemented in a similar way to Masterworks, where visually it's a single area of the UI being clicked on to "Upgrade" to higher energy levels, but it's actually socketing new plugs.
     """
 
     energy_cost: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsItemsDestinyEnergyCostEntry], FieldMetadata(alias="energyCost")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyDefinitionsItemsDestinyEnergyCostEntry],
+        FieldMetadata(alias="energyCost"),
+        pydantic.Field(
+            alias="energyCost",
+            description="IF not null, this plug has an energy cost. This contains the details of that cost.",
+        ),
+    ] = None
     """
     IF not null, this plug has an energy cost. This contains the details of that cost.
     """
 
     insertion_material_requirement_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="insertionMaterialRequirementHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="insertionMaterialRequirementHash"),
+        pydantic.Field(
+            alias="insertionMaterialRequirementHash",
+            description="If inserting this plug requires materials, this is the hash identifier for looking up the DestinyMaterialRequirementSetDefinition for those requirements.",
+        ),
+    ] = None
     """
     If inserting this plug requires materials, this is the hash identifier for looking up the DestinyMaterialRequirementSetDefinition for those requirements.
     """
@@ -72,67 +106,113 @@ class DestinyDefinitionsItemsDestinyItemPlugDefinition(UniversalBaseModel):
     insertion_rules: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsItemsDestinyPlugRuleDefinition]],
         FieldMetadata(alias="insertionRules"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="insertionRules",
+            description="The rules around when this plug can be inserted into a socket, aside from the socket's individual restrictions.\r\nThe live data DestinyItemPlugComponent.insertFailIndexes will be an index into this array, so you can pull out the failure strings appropriate for the user.",
+        ),
+    ] = None
     """
     The rules around when this plug can be inserted into a socket, aside from the socket's individual restrictions.
     The live data DestinyItemPlugComponent.insertFailIndexes will be an index into this array, so you can pull out the failure strings appropriate for the user.
     """
 
-    is_dummy_plug: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isDummyPlug")] = (
-        pydantic.Field(default=None)
-    )
+    is_dummy_plug: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="isDummyPlug"),
+        pydantic.Field(
+            alias="isDummyPlug",
+            description="If TRUE, this plug is used for UI display purposes only, and doesn't have any interesting effects of its own.",
+        ),
+    ] = None
     """
     If TRUE, this plug is used for UI display purposes only, and doesn't have any interesting effects of its own.
     """
 
     on_action_recreate_self: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="onActionRecreateSelf")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="onActionRecreateSelf"),
+        pydantic.Field(
+            alias="onActionRecreateSelf",
+            description='If you successfully socket the item, this will determine whether or not you get "refunded" on the plug.',
+        ),
+    ] = None
     """
     If you successfully socket the item, this will determine whether or not you get "refunded" on the plug.
     """
 
     parent_item_override: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsItemsDestinyParentItemOverride], FieldMetadata(alias="parentItemOverride")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyDefinitionsItemsDestinyParentItemOverride],
+        FieldMetadata(alias="parentItemOverride"),
+        pydantic.Field(
+            alias="parentItemOverride",
+            description="Do you ever get the feeling that a system has become so overburdened by edge cases that it probably should have become some other system entirely? So do I!\r\nIn totally unrelated news, Plugs can now override properties of their parent items. This is some of the relevant definition data for those overrides.\r\nIf this is populated, it will have the override data to be applied when this plug is applied to an item.",
+        ),
+    ] = None
     """
     Do you ever get the feeling that a system has become so overburdened by edge cases that it probably should have become some other system entirely? So do I!
     In totally unrelated news, Plugs can now override properties of their parent items. This is some of the relevant definition data for those overrides.
     If this is populated, it will have the override data to be applied when this plug is applied to an item.
     """
 
-    plug_availability: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="plugAvailability")] = (
-        pydantic.Field(default=None)
-    )
+    plug_availability: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="plugAvailability"),
+        pydantic.Field(
+            alias="plugAvailability",
+            description="Indicates the rules about when this plug can be used. See the PlugAvailabilityMode enumeration for more information!",
+        ),
+    ] = None
     """
     Indicates the rules about when this plug can be used. See the PlugAvailabilityMode enumeration for more information!
     """
 
-    plug_category_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="plugCategoryHash")] = (
-        pydantic.Field(default=None)
-    )
+    plug_category_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="plugCategoryHash"),
+        pydantic.Field(
+            alias="plugCategoryHash",
+            description="The hash for the plugCategoryIdentifier. You can use this instead if you wish: I put both in the definition for debugging purposes.",
+        ),
+    ] = None
     """
     The hash for the plugCategoryIdentifier. You can use this instead if you wish: I put both in the definition for debugging purposes.
     """
 
     plug_category_identifier: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="plugCategoryIdentifier")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="plugCategoryIdentifier"),
+        pydantic.Field(
+            alias="plugCategoryIdentifier",
+            description="The string identifier for the plug's category. Use the socket's DestinySocketTypeDefinition.plugWhitelist to determine whether this plug can be inserted into the socket.",
+        ),
+    ] = None
     """
     The string identifier for the plug's category. Use the socket's DestinySocketTypeDefinition.plugWhitelist to determine whether this plug can be inserted into the socket.
     """
 
-    plug_style: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="plugStyle")] = None
+    plug_style: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="plugStyle"), pydantic.Field(alias="plugStyle")
+    ] = None
     preview_item_override_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="previewItemOverrideHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="previewItemOverrideHash"),
+        pydantic.Field(
+            alias="previewItemOverrideHash",
+            description="In the game, if you're inspecting a plug item directly, this will be the item shown with the plug attached. Look up the DestinyInventoryItemDefinition for this hash for the item.",
+        ),
+    ] = None
     """
     In the game, if you're inspecting a plug item directly, this will be the item shown with the plug attached. Look up the DestinyInventoryItemDefinition for this hash for the item.
     """
 
-    ui_plug_label: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="uiPlugLabel")] = (
-        pydantic.Field(default=None)
-    )
+    ui_plug_label: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="uiPlugLabel"),
+        pydantic.Field(
+            alias="uiPlugLabel",
+            description="Plugs can have arbitrary, UI-defined identifiers that the UI designers use to determine the style applied to plugs. Unfortunately, we have neither a definitive list of these labels nor advance warning of when new labels might be applied or how that relates to how they get rendered. If you want to, you can refer to known labels to change your own styles: but know that new ones can be created arbitrarily, and we have no way of associating the labels with any specific UI style guidance... you'll have to piece that together on your end. Or do what we do, and just show plugs more generically, without specialized styles.",
+        ),
+    ] = None
     """
     Plugs can have arbitrary, UI-defined identifiers that the UI designers use to determine the style applied to plugs. Unfortunately, we have neither a definitive list of these labels nor advance warning of when new labels might be applied or how that relates to how they get rendered. If you want to, you can refer to known labels to change your own styles: but know that new ones can be created arbitrarily, and we have no way of associating the labels with any specific UI style guidance... you'll have to piece that together on your end. Or do what we do, and just show plugs more generically, without specialized styles.
     """

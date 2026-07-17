@@ -10,9 +10,9 @@ from .ob_account6 import ObAccount6
 
 
 class ObReadAccount6Data(UniversalBaseModel):
-    account: typing_extensions.Annotated[typing.Optional[typing.List[ObAccount6]], FieldMetadata(alias="Account")] = (
-        None
-    )
+    account: typing_extensions.Annotated[
+        typing.Optional[typing.List[ObAccount6]], FieldMetadata(alias="Account"), pydantic.Field(alias="Account")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

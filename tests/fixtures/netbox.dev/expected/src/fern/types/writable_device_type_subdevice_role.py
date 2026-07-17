@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableDeviceTypeSubdeviceRole(str, enum.Enum):
+class WritableDeviceTypeSubdeviceRole(enum.StrEnum):
     """
     Parent devices house child devices in device bays. Leave blank if this device type is neither a parent nor a child.
     """

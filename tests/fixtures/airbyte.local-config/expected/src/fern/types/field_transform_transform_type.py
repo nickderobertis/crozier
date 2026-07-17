@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class FieldTransformTransformType(str, enum.Enum):
+class FieldTransformTransformType(enum.StrEnum):
     ADD_FIELD = "add_field"
     REMOVE_FIELD = "remove_field"
     UPDATE_FIELD_SCHEMA = "update_field_schema"

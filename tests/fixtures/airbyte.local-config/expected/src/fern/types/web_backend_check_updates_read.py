@@ -13,8 +13,12 @@ class WebBackendCheckUpdatesRead(UniversalBaseModel):
     Summary of source and destination definitions that could be updated
     """
 
-    destination_definitions: typing_extensions.Annotated[int, FieldMetadata(alias="destinationDefinitions")]
-    source_definitions: typing_extensions.Annotated[int, FieldMetadata(alias="sourceDefinitions")]
+    destination_definitions: typing_extensions.Annotated[
+        int, FieldMetadata(alias="destinationDefinitions"), pydantic.Field(alias="destinationDefinitions")
+    ]
+    source_definitions: typing_extensions.Annotated[
+        int, FieldMetadata(alias="sourceDefinitions"), pydantic.Field(alias="sourceDefinitions")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

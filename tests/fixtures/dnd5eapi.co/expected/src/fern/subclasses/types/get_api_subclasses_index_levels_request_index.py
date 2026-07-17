@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetApiSubclassesIndexLevelsRequestIndex(str, enum.Enum):
+class GetApiSubclassesIndexLevelsRequestIndex(enum.StrEnum):
     BERSERKER = "berserker"
     CHAMPION = "champion"
     DEVOTION = "devotion"

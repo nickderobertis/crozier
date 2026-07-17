@@ -10,7 +10,9 @@ from .connection_schedule_data_basic_schedule_time_unit import ConnectionSchedul
 
 
 class ConnectionScheduleDataBasicSchedule(UniversalBaseModel):
-    time_unit: typing_extensions.Annotated[ConnectionScheduleDataBasicScheduleTimeUnit, FieldMetadata(alias="timeUnit")]
+    time_unit: typing_extensions.Annotated[
+        ConnectionScheduleDataBasicScheduleTimeUnit, FieldMetadata(alias="timeUnit"), pydantic.Field(alias="timeUnit")
+    ]
     units: int
 
     if IS_PYDANTIC_V2:

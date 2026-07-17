@@ -6,11 +6,13 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.list_merchants_response import ListMerchantsResponse
 from ..types.retrieve_merchant_response import RetrieveMerchantResponse
+from pydantic import ValidationError
 
 
 class RawMerchantsClient:
@@ -64,6 +66,10 @@ class RawMerchantsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_merchant(
@@ -87,7 +93,7 @@ class RawMerchantsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/merchants/{jsonable_encoder(merchant_id)}",
+            f"v2/merchants/{encode_path_param(merchant_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -104,6 +110,10 @@ class RawMerchantsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -158,6 +168,10 @@ class AsyncRawMerchantsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_merchant(
@@ -181,7 +195,7 @@ class AsyncRawMerchantsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/merchants/{jsonable_encoder(merchant_id)}",
+            f"v2/merchants/{encode_path_param(merchant_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -198,4 +212,8 @@ class AsyncRawMerchantsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

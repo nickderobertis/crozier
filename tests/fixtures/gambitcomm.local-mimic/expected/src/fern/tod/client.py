@@ -25,7 +25,7 @@ class TodClient:
 
     def protocol_tod_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's TOD configuration
 
@@ -39,7 +39,7 @@ class TodClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples
@@ -352,7 +352,7 @@ class AsyncTodClient:
 
     async def protocol_tod_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's TOD configuration
 
@@ -366,7 +366,7 @@ class AsyncTodClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples

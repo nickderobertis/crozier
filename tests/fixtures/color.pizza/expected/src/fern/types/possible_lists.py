@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PossibleLists(str, enum.Enum):
+class PossibleLists(enum.StrEnum):
     DEFAULT = "default"
     BEST_OF = "bestOf"
     WIKIPEDIA = "wikipedia"

@@ -2,4 +2,4 @@
 
 import typing
 
-WhitelistSddOneOffDelete = typing.Dict[str, typing.Optional[typing.Any]]
+WhitelistSddOneOffDelete = typing.Dict[str, typing.Any]

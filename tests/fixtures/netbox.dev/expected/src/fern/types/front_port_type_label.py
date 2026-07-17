@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class FrontPortTypeLabel(str, enum.Enum):
+class FrontPortTypeLabel(enum.StrEnum):
     EIGHT_P8C = "8P8C"
     EIGHT_P6C = "8P6C"
     EIGHT_P4C = "8P4C"

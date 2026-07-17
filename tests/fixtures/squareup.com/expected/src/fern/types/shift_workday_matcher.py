@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ShiftWorkdayMatcher(str, enum.Enum):
+class ShiftWorkdayMatcher(enum.StrEnum):
     """
     Defines the logic used to apply a workday filter.
     """

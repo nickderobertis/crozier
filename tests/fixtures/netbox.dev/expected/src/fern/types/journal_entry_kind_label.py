@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class JournalEntryKindLabel(str, enum.Enum):
+class JournalEntryKindLabel(enum.StrEnum):
     INFO = "Info"
     SUCCESS = "Success"
     WARNING = "Warning"

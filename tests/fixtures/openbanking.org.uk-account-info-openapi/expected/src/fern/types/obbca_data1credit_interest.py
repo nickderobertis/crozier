@@ -15,8 +15,12 @@ class ObbcaData1CreditInterest(UniversalBaseModel):
     """
 
     tier_band_set: typing_extensions.Annotated[
-        typing.List[ObbcaData1CreditInterestTierBandSetItem], FieldMetadata(alias="TierBandSet")
-    ] = pydantic.Field()
+        typing.List[ObbcaData1CreditInterestTierBandSetItem],
+        FieldMetadata(alias="TierBandSet"),
+        pydantic.Field(
+            alias="TierBandSet", description="The group of tiers or bands for which credit interest can be applied."
+        ),
+    ]
     """
     The group of tiers or bands for which credit interest can be applied.
     """

@@ -9,12 +9,23 @@ from ..core.serialization import FieldMetadata
 
 
 class DetectStackResourceDriftInput(UniversalBaseModel):
-    stack_name: typing_extensions.Annotated[str, FieldMetadata(alias="StackName")] = pydantic.Field()
+    stack_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="StackName"),
+        pydantic.Field(alias="StackName", description="The name of the stack to which the resource belongs."),
+    ]
     """
     The name of the stack to which the resource belongs.
     """
 
-    logical_resource_id: typing_extensions.Annotated[str, FieldMetadata(alias="LogicalResourceId")] = pydantic.Field()
+    logical_resource_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="LogicalResourceId"),
+        pydantic.Field(
+            alias="LogicalResourceId",
+            description="The logical name of the resource for which to return drift information.",
+        ),
+    ]
     """
     The logical name of the resource for which to return drift information.
     """

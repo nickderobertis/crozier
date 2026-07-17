@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CreateStackInstancesInputOperationPreferencesRegionConcurrencyType(str, enum.Enum):
+class CreateStackInstancesInputOperationPreferencesRegionConcurrencyType(enum.StrEnum):
     """
     The concurrency type of deploying StackSets operations in Regions, could be in parallel or one Region at a time.
     """

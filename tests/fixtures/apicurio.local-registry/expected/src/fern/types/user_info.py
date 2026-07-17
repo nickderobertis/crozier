@@ -15,7 +15,9 @@ class UserInfo(UniversalBaseModel):
 
     admin: typing.Optional[bool] = None
     developer: typing.Optional[bool] = None
-    display_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="displayName")] = None
+    display_name: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="displayName"), pydantic.Field(alias="displayName")
+    ] = None
     username: typing.Optional[str] = None
     viewer: typing.Optional[bool] = None
 

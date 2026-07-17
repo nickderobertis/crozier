@@ -9,7 +9,11 @@ from ..core.serialization import FieldMetadata
 
 
 class AvatarCreate(UniversalBaseModel):
-    uuid_: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="uuid")] = pydantic.Field(default=None)
+    uuid_: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="uuid"),
+        pydantic.Field(alias="uuid", description="The UUID of the created avatar."),
+    ] = None
     """
     The UUID of the created avatar.
     """

@@ -24,7 +24,7 @@ class ConfigContext(UniversalBaseModel):
     cluster_types: typing.Optional[typing.List[NestedClusterType]] = None
     clusters: typing.Optional[typing.List[typing.Optional[NestedCluster]]] = None
     created: typing.Optional[dt.datetime] = None
-    data: typing.Dict[str, typing.Optional[typing.Any]]
+    data: typing.Dict[str, typing.Any]
     description: typing.Optional[str] = None
     device_types: typing.Optional[typing.List[NestedDeviceType]] = None
     display: typing.Optional[str] = None

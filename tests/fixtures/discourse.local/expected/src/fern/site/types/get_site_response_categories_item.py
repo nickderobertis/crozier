@@ -11,18 +11,18 @@ from .get_site_response_categories_item_required_tag_groups_item import (
 
 class GetSiteResponseCategoriesItem(UniversalBaseModel):
     allow_global_tags: bool
-    allowed_tag_groups: typing.List[typing.Optional[typing.Any]]
-    allowed_tags: typing.List[typing.Optional[typing.Any]]
+    allowed_tag_groups: typing.List[typing.Any]
+    allowed_tags: typing.List[typing.Any]
     can_edit: bool
     color: str
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     default_list_filter: str
     default_top_period: str
     default_view: typing.Optional[str] = None
     description: typing.Optional[str] = None
     description_excerpt: typing.Optional[str] = None
     description_text: typing.Optional[str] = None
-    form_template_ids: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    form_template_ids: typing.Optional[typing.List[typing.Any]] = None
     has_children: bool
     id: int
     minimum_required_tags: int

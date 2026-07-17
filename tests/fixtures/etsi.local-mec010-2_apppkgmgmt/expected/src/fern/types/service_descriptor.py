@@ -17,10 +17,14 @@ class ServiceDescriptor(UniversalBaseModel):
     'The ServiceDescriptor data type describes a MEC service produced by a service-providing MEC application.'
     """
 
-    ser_category: typing_extensions.Annotated[typing.Optional[CategoryRef], FieldMetadata(alias="serCategory")] = None
-    ser_name: typing_extensions.Annotated[SerName, FieldMetadata(alias="serName")]
+    ser_category: typing_extensions.Annotated[
+        typing.Optional[CategoryRef], FieldMetadata(alias="serCategory"), pydantic.Field(alias="serCategory")
+    ] = None
+    ser_name: typing_extensions.Annotated[SerName, FieldMetadata(alias="serName"), pydantic.Field(alias="serName")]
     transports_supported: typing_extensions.Annotated[
-        typing.Optional[TransportsSupported], FieldMetadata(alias="transportsSupported")
+        typing.Optional[TransportsSupported],
+        FieldMetadata(alias="transportsSupported"),
+        pydantic.Field(alias="transportsSupported"),
     ] = None
     version: SerVersion
 

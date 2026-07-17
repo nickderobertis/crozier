@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -14,6 +15,7 @@ from ..types.delete_snippet_response import DeleteSnippetResponse
 from ..types.retrieve_snippet_response import RetrieveSnippetResponse
 from ..types.snippet import Snippet
 from ..types.upsert_snippet_response import UpsertSnippetResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -48,7 +50,7 @@ class RawSnippetsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/sites/{jsonable_encoder(site_id)}/snippet",
+            f"v2/sites/{encode_path_param(site_id)}/snippet",
             method="GET",
             request_options=request_options,
         )
@@ -65,6 +67,10 @@ class RawSnippetsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def upsert_snippet(
@@ -95,7 +101,7 @@ class RawSnippetsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/sites/{jsonable_encoder(site_id)}/snippet",
+            f"v2/sites/{encode_path_param(site_id)}/snippet",
             method="POST",
             json={
                 "snippet": convert_and_respect_annotation_metadata(
@@ -121,6 +127,10 @@ class RawSnippetsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_snippet(
@@ -148,7 +158,7 @@ class RawSnippetsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/sites/{jsonable_encoder(site_id)}/snippet",
+            f"v2/sites/{encode_path_param(site_id)}/snippet",
             method="DELETE",
             request_options=request_options,
         )
@@ -165,6 +175,10 @@ class RawSnippetsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -197,7 +211,7 @@ class AsyncRawSnippetsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/sites/{jsonable_encoder(site_id)}/snippet",
+            f"v2/sites/{encode_path_param(site_id)}/snippet",
             method="GET",
             request_options=request_options,
         )
@@ -214,6 +228,10 @@ class AsyncRawSnippetsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def upsert_snippet(
@@ -244,7 +262,7 @@ class AsyncRawSnippetsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/sites/{jsonable_encoder(site_id)}/snippet",
+            f"v2/sites/{encode_path_param(site_id)}/snippet",
             method="POST",
             json={
                 "snippet": convert_and_respect_annotation_metadata(
@@ -270,6 +288,10 @@ class AsyncRawSnippetsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_snippet(
@@ -297,7 +319,7 @@ class AsyncRawSnippetsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/sites/{jsonable_encoder(site_id)}/snippet",
+            f"v2/sites/{encode_path_param(site_id)}/snippet",
             method="DELETE",
             request_options=request_options,
         )
@@ -314,4 +336,8 @@ class AsyncRawSnippetsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

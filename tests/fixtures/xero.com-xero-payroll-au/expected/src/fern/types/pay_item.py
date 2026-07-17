@@ -14,16 +14,22 @@ from .reimbursement_type import ReimbursementType
 
 class PayItem(UniversalBaseModel):
     deduction_types: typing_extensions.Annotated[
-        typing.Optional[typing.List[DeductionType]], FieldMetadata(alias="DeductionTypes")
+        typing.Optional[typing.List[DeductionType]],
+        FieldMetadata(alias="DeductionTypes"),
+        pydantic.Field(alias="DeductionTypes"),
     ] = None
     earnings_rates: typing_extensions.Annotated[
-        typing.Optional[typing.List[EarningsRate]], FieldMetadata(alias="EarningsRates")
+        typing.Optional[typing.List[EarningsRate]],
+        FieldMetadata(alias="EarningsRates"),
+        pydantic.Field(alias="EarningsRates"),
     ] = None
     leave_types: typing_extensions.Annotated[
-        typing.Optional[typing.List[LeaveType]], FieldMetadata(alias="LeaveTypes")
+        typing.Optional[typing.List[LeaveType]], FieldMetadata(alias="LeaveTypes"), pydantic.Field(alias="LeaveTypes")
     ] = None
     reimbursement_types: typing_extensions.Annotated[
-        typing.Optional[typing.List[ReimbursementType]], FieldMetadata(alias="ReimbursementTypes")
+        typing.Optional[typing.List[ReimbursementType]],
+        FieldMetadata(alias="ReimbursementTypes"),
+        pydantic.Field(alias="ReimbursementTypes"),
     ] = None
 
     if IS_PYDANTIC_V2:

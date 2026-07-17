@@ -2,4 +2,4 @@
 
 import typing
 
-StackSetNotEmptyException = typing.Optional[typing.Any]
+StackSetNotEmptyException = typing.Any

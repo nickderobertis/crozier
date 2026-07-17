@@ -9,9 +9,11 @@ from ...core.serialization import FieldMetadata
 
 
 class PostAssetsVolatilityRequestZeroAssetsItem(UniversalBaseModel):
-    asset_returns: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="assetReturns")] = (
-        pydantic.Field()
-    )
+    asset_returns: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="assetReturns"),
+        pydantic.Field(alias="assetReturns", description="assetReturns[t] is the return of the asset at the time t"),
+    ]
     """
     assetReturns[t] is the return of the asset at the time t
     """

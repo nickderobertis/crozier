@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetSignalResourceRequestAction(str, enum.Enum):
+class GetSignalResourceRequestAction(enum.StrEnum):
     SIGNAL_RESOURCE = "SignalResource"
 
     def visit(self, signal_resource: typing.Callable[[], T_Result]) -> T_Result:

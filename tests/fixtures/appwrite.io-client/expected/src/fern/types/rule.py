@@ -13,12 +13,16 @@ class Rule(UniversalBaseModel):
     Rule
     """
 
-    collection: typing_extensions.Annotated[str, FieldMetadata(alias="$collection")] = pydantic.Field()
+    collection: typing_extensions.Annotated[
+        str, FieldMetadata(alias="$collection"), pydantic.Field(alias="$collection", description="Rule Collection.")
+    ]
     """
     Rule Collection.
     """
 
-    id: typing_extensions.Annotated[str, FieldMetadata(alias="$id")] = pydantic.Field()
+    id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="$id"), pydantic.Field(alias="$id", description="Rule ID.")
+    ]
     """
     Rule ID.
     """
@@ -43,7 +47,11 @@ class Rule(UniversalBaseModel):
     Rule label.
     """
 
-    list_: typing_extensions.Annotated[typing.List[str], FieldMetadata(alias="list")] = pydantic.Field()
+    list_: typing_extensions.Annotated[
+        typing.List[str],
+        FieldMetadata(alias="list"),
+        pydantic.Field(alias="list", description="List of allowed values"),
+    ]
     """
     List of allowed values
     """

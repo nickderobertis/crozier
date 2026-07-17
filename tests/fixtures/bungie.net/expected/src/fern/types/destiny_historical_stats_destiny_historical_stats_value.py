@@ -12,9 +12,14 @@ from .destiny_historical_stats_destiny_historical_stats_value_pair import (
 
 
 class DestinyHistoricalStatsDestinyHistoricalStatsValue(UniversalBaseModel):
-    activity_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="activityId")] = pydantic.Field(
-        default=None
-    )
+    activity_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="activityId"),
+        pydantic.Field(
+            alias="activityId",
+            description="When a stat represents the best, most, longest, fastest or some other personal best, the actual activity ID where that personal best was established is available on this property.",
+        ),
+    ] = None
     """
     When a stat represents the best, most, longest, fastest or some other personal best, the actual activity ID where that personal best was established is available on this property.
     """
@@ -29,9 +34,11 @@ class DestinyHistoricalStatsDestinyHistoricalStatsValue(UniversalBaseModel):
     Per game average for the statistic, if applicable
     """
 
-    stat_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="statId")] = pydantic.Field(
-        default=None
-    )
+    stat_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="statId"),
+        pydantic.Field(alias="statId", description="Unique ID for this stat"),
+    ] = None
     """
     Unique ID for this stat
     """

@@ -18,10 +18,10 @@ class Task(UniversalBaseModel):
     controller_message_id: typing.Optional[str] = None
     created_at: typing.Optional[dt.datetime] = None
     id: typing.Optional[Uuid] = None
-    input: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    input: typing.Optional[typing.Dict[str, typing.Any]] = None
     message: typing.Optional[str] = None
     name: typing.Optional[str] = None
-    output: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    output: typing.Optional[typing.Dict[str, typing.Any]] = None
     owner: typing.Optional[str] = None
     source_id: typing.Optional[Id] = None
     state: typing.Optional[TaskState] = None

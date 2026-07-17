@@ -11,7 +11,9 @@ from .private_destination_definition_read import PrivateDestinationDefinitionRea
 
 class PrivateDestinationDefinitionReadList(UniversalBaseModel):
     destination_definitions: typing_extensions.Annotated[
-        typing.List[PrivateDestinationDefinitionRead], FieldMetadata(alias="destinationDefinitions")
+        typing.List[PrivateDestinationDefinitionRead],
+        FieldMetadata(alias="destinationDefinitions"),
+        pydantic.Field(alias="destinationDefinitions"),
     ]
 
     if IS_PYDANTIC_V2:

@@ -25,5 +25,8 @@ class ProfitAndLossSection(UniversalBaseModel):
 
 
 from .profit_and_loss_records import ProfitAndLossRecords
+from .profit_and_loss_records_item import ProfitAndLossRecordsItem
 
-update_forward_refs(ProfitAndLossSection)
+update_forward_refs(
+    ProfitAndLossSection, ProfitAndLossRecords=ProfitAndLossRecords, ProfitAndLossRecordsItem=ProfitAndLossRecordsItem
+)

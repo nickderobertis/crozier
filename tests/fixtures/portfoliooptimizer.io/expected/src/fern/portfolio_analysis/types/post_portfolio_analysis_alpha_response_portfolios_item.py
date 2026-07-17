@@ -9,7 +9,14 @@ from ...core.serialization import FieldMetadata
 
 
 class PostPortfolioAnalysisAlphaResponsePortfoliosItem(UniversalBaseModel):
-    portfolio_alpha: typing_extensions.Annotated[float, FieldMetadata(alias="portfolioAlpha")] = pydantic.Field()
+    portfolio_alpha: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="portfolioAlpha"),
+        pydantic.Field(
+            alias="portfolioAlpha",
+            description="The portfolio Jensen's alpha, which correponds to the portfolio excess return adjusted for the systematic risk in the Capital Asset Pricing Model (CAPM)",
+        ),
+    ]
     """
     The portfolio Jensen's alpha, which correponds to the portfolio excess return adjusted for the systematic risk in the Capital Asset Pricing Model (CAPM)
     """

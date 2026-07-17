@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetDescribeStackSetRequestCallAs(str, enum.Enum):
+class GetDescribeStackSetRequestCallAs(enum.StrEnum):
     SELF = "SELF"
     DELEGATED_ADMIN = "DELEGATED_ADMIN"
 

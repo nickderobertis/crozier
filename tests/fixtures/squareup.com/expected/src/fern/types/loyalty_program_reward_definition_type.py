@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LoyaltyProgramRewardDefinitionType(str, enum.Enum):
+class LoyaltyProgramRewardDefinitionType(enum.StrEnum):
     """
     The type of discount the reward tier offers. DEPRECATED at version 2020-12-16. Discount details
     are now defined using a catalog pricing rule and other catalog objects. For more information, see

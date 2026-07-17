@@ -9,7 +9,7 @@ from .get_user_sent_private_messages_response_users_item import GetUserSentPriva
 
 
 class GetUserSentPrivateMessagesResponse(UniversalBaseModel):
-    primary_groups: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    primary_groups: typing.Optional[typing.List[typing.Any]] = None
     topic_list: typing.Optional[GetUserSentPrivateMessagesResponseTopicList] = None
     users: typing.Optional[typing.List[GetUserSentPrivateMessagesResponseUsersItem]] = None
 

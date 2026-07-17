@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObInterestFixedVariableType1Code(str, enum.Enum):
+class ObInterestFixedVariableType1Code(enum.StrEnum):
     """
     Type of interest rate, Fixed or Variable
     """

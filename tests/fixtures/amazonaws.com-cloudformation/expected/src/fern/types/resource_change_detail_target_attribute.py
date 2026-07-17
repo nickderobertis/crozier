@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ResourceChangeDetailTargetAttribute(str, enum.Enum):
+class ResourceChangeDetailTargetAttribute(enum.StrEnum):
     """
     Indicates which resource attribute is triggering this update, such as a change in the resource attribute's <code>Metadata</code>, <code>Properties</code>, or <code>Tags</code>.
     """

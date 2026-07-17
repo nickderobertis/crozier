@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ListImagesRequestAnalysisStatus(str, enum.Enum):
+class ListImagesRequestAnalysisStatus(enum.StrEnum):
     NOT_ANALYZED = "not_analyzed"
     ANALYZED = "analyzed"
     ANALYZING = "analyzing"

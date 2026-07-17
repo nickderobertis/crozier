@@ -10,10 +10,14 @@ from ..core.serialization import FieldMetadata
 
 class ConfigUserTheme(UniversalBaseModel):
     user_theme_description: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="userThemeDescription")
+        typing.Optional[str], FieldMetadata(alias="userThemeDescription"), pydantic.Field(alias="userThemeDescription")
     ] = None
-    user_theme_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="userThemeId")] = None
-    user_theme_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="userThemeName")] = None
+    user_theme_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="userThemeId"), pydantic.Field(alias="userThemeId")
+    ] = None
+    user_theme_name: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="userThemeName"), pydantic.Field(alias="userThemeName")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

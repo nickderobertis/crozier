@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -30,6 +31,7 @@ from ..types.update_break_type_response import UpdateBreakTypeResponse
 from ..types.update_shift_response import UpdateShiftResponse
 from ..types.update_workweek_config_response import UpdateWorkweekConfigResponse
 from ..types.workweek_config import WorkweekConfig
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -94,6 +96,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_break_type(
@@ -162,6 +168,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_break_type(
@@ -184,7 +194,7 @@ class RawLaborClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/labor/break-types/{jsonable_encoder(id)}",
+            f"v2/labor/break-types/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -201,6 +211,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_break_type(
@@ -225,7 +239,7 @@ class RawLaborClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/labor/break-types/{jsonable_encoder(id)}",
+            f"v2/labor/break-types/{encode_path_param(id)}",
             method="PUT",
             json={
                 "break_type": convert_and_respect_annotation_metadata(
@@ -251,6 +265,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_break_type(
@@ -275,7 +293,7 @@ class RawLaborClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/labor/break-types/{jsonable_encoder(id)}",
+            f"v2/labor/break-types/{encode_path_param(id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -292,6 +310,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_employee_wages(
@@ -348,6 +370,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_employee_wage(
@@ -370,7 +396,7 @@ class RawLaborClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/labor/employee-wages/{jsonable_encoder(id)}",
+            f"v2/labor/employee-wages/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -387,6 +413,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_shift(
@@ -457,6 +487,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def search_shifts(
@@ -530,6 +564,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_shift(
@@ -552,7 +590,7 @@ class RawLaborClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/labor/shifts/{jsonable_encoder(id)}",
+            f"v2/labor/shifts/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -569,6 +607,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_shift(
@@ -599,7 +641,7 @@ class RawLaborClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/labor/shifts/{jsonable_encoder(id)}",
+            f"v2/labor/shifts/{encode_path_param(id)}",
             method="PUT",
             json={
                 "shift": convert_and_respect_annotation_metadata(object_=shift, annotation=Shift, direction="write"),
@@ -623,6 +665,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_shift(
@@ -645,7 +691,7 @@ class RawLaborClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/labor/shifts/{jsonable_encoder(id)}",
+            f"v2/labor/shifts/{encode_path_param(id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -662,6 +708,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_team_member_wages(
@@ -719,6 +769,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_team_member_wage(
@@ -741,7 +795,7 @@ class RawLaborClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/labor/team-member-wages/{jsonable_encoder(id)}",
+            f"v2/labor/team-member-wages/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -758,6 +812,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_workweek_configs(
@@ -808,6 +866,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_workweek_config(
@@ -832,7 +894,7 @@ class RawLaborClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/labor/workweek-configs/{jsonable_encoder(id)}",
+            f"v2/labor/workweek-configs/{encode_path_param(id)}",
             method="PUT",
             json={
                 "workweek_config": convert_and_respect_annotation_metadata(
@@ -858,6 +920,10 @@ class RawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -920,6 +986,10 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_break_type(
@@ -988,6 +1058,10 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_break_type(
@@ -1010,7 +1084,7 @@ class AsyncRawLaborClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/labor/break-types/{jsonable_encoder(id)}",
+            f"v2/labor/break-types/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1027,6 +1101,10 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_break_type(
@@ -1051,7 +1129,7 @@ class AsyncRawLaborClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/labor/break-types/{jsonable_encoder(id)}",
+            f"v2/labor/break-types/{encode_path_param(id)}",
             method="PUT",
             json={
                 "break_type": convert_and_respect_annotation_metadata(
@@ -1077,6 +1155,10 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_break_type(
@@ -1101,7 +1183,7 @@ class AsyncRawLaborClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/labor/break-types/{jsonable_encoder(id)}",
+            f"v2/labor/break-types/{encode_path_param(id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1118,6 +1200,10 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_employee_wages(
@@ -1174,6 +1260,10 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_employee_wage(
@@ -1196,7 +1286,7 @@ class AsyncRawLaborClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/labor/employee-wages/{jsonable_encoder(id)}",
+            f"v2/labor/employee-wages/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1213,6 +1303,10 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_shift(
@@ -1283,6 +1377,10 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def search_shifts(
@@ -1356,6 +1454,10 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_shift(
@@ -1378,7 +1480,7 @@ class AsyncRawLaborClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/labor/shifts/{jsonable_encoder(id)}",
+            f"v2/labor/shifts/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1395,6 +1497,10 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_shift(
@@ -1425,7 +1531,7 @@ class AsyncRawLaborClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/labor/shifts/{jsonable_encoder(id)}",
+            f"v2/labor/shifts/{encode_path_param(id)}",
             method="PUT",
             json={
                 "shift": convert_and_respect_annotation_metadata(object_=shift, annotation=Shift, direction="write"),
@@ -1449,6 +1555,10 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_shift(
@@ -1471,7 +1581,7 @@ class AsyncRawLaborClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/labor/shifts/{jsonable_encoder(id)}",
+            f"v2/labor/shifts/{encode_path_param(id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1488,6 +1598,10 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_team_member_wages(
@@ -1545,6 +1659,10 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_team_member_wage(
@@ -1567,7 +1685,7 @@ class AsyncRawLaborClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/labor/team-member-wages/{jsonable_encoder(id)}",
+            f"v2/labor/team-member-wages/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1584,6 +1702,10 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_workweek_configs(
@@ -1634,6 +1756,10 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_workweek_config(
@@ -1658,7 +1784,7 @@ class AsyncRawLaborClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/labor/workweek-configs/{jsonable_encoder(id)}",
+            f"v2/labor/workweek-configs/{encode_path_param(id)}",
             method="PUT",
             json={
                 "workweek_config": convert_and_respect_annotation_metadata(
@@ -1684,4 +1810,8 @@ class AsyncRawLaborClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

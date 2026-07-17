@@ -12,8 +12,12 @@ from .search_result_of_trending_entry import SearchResultOfTrendingEntry
 
 
 class TrendingTrendingCategory(UniversalBaseModel):
-    category_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="categoryId")] = None
-    category_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="categoryName")] = None
+    category_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="categoryId"), pydantic.Field(alias="categoryId")
+    ] = None
+    category_name: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="categoryName"), pydantic.Field(alias="categoryName")
+    ] = None
     entries: typing.Optional[SearchResultOfTrendingEntry] = None
 
     if IS_PYDANTIC_V2:

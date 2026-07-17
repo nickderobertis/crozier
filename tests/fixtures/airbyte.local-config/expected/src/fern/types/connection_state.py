@@ -18,12 +18,20 @@ class ConnectionState(UniversalBaseModel):
     Contains the state for a connection. The stateType field identifies what type of state it is. Only the field corresponding to that type will be set, the rest will be null. If stateType=not_set, then none of the fields will be set.
     """
 
-    connection_id: typing_extensions.Annotated[ConnectionId, FieldMetadata(alias="connectionId")]
-    global_state: typing_extensions.Annotated[typing.Optional[GlobalState], FieldMetadata(alias="globalState")] = None
+    connection_id: typing_extensions.Annotated[
+        ConnectionId, FieldMetadata(alias="connectionId"), pydantic.Field(alias="connectionId")
+    ]
+    global_state: typing_extensions.Annotated[
+        typing.Optional[GlobalState], FieldMetadata(alias="globalState"), pydantic.Field(alias="globalState")
+    ] = None
     state: typing.Optional[StateBlob] = None
-    state_type: typing_extensions.Annotated[ConnectionStateType, FieldMetadata(alias="stateType")]
+    state_type: typing_extensions.Annotated[
+        ConnectionStateType, FieldMetadata(alias="stateType"), pydantic.Field(alias="stateType")
+    ]
     stream_state: typing_extensions.Annotated[
-        typing.Optional[typing.List[StreamState]], FieldMetadata(alias="streamState")
+        typing.Optional[typing.List[StreamState]],
+        FieldMetadata(alias="streamState"),
+        pydantic.Field(alias="streamState"),
     ] = None
 
     if IS_PYDANTIC_V2:

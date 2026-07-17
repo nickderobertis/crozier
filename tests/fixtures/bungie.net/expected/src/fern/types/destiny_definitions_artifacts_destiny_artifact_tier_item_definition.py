@@ -9,9 +9,14 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyDefinitionsArtifactsDestinyArtifactTierItemDefinition(UniversalBaseModel):
-    item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemHash")] = pydantic.Field(
-        default=None
-    )
+    item_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="itemHash"),
+        pydantic.Field(
+            alias="itemHash",
+            description="The identifier of the Plug Item unlocked by activating this item in the Artifact.",
+        ),
+    ] = None
     """
     The identifier of the Plug Item unlocked by activating this item in the Artifact.
     """

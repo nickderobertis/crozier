@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObBalanceType1Code(str, enum.Enum):
+class ObBalanceType1Code(enum.StrEnum):
     """
     Balance type, in a coded form.
     """

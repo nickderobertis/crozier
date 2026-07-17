@@ -52,6 +52,10 @@ class CatalogModifierList(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
+from .catalog_item import CatalogItem
+from .catalog_item_option import CatalogItemOption
 from .catalog_object import CatalogObject
 
-update_forward_refs(CatalogModifierList)
+update_forward_refs(
+    CatalogModifierList, CatalogItem=CatalogItem, CatalogItemOption=CatalogItemOption, CatalogObject=CatalogObject
+)

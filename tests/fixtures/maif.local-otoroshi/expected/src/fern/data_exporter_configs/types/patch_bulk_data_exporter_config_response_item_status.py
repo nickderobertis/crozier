@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PatchBulkDataExporterConfigResponseItemStatus(str, enum.Enum):
+class PatchBulkDataExporterConfigResponseItemStatus(enum.StrEnum):
     """
     Status
     """

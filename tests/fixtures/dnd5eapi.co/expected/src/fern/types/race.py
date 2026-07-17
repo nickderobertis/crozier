@@ -86,5 +86,18 @@ class Race(ApiReference):
 
 
 from .choice import Choice
+from .option import Option
+from .option_choice import OptionChoice
+from .option_items import OptionItems
+from .option_set import OptionSet
+from .option_set_options_array import OptionSetOptionsArray
 
-update_forward_refs(Race)
+update_forward_refs(
+    Race,
+    Choice=Choice,
+    Option=Option,
+    OptionChoice=OptionChoice,
+    OptionItems=OptionItems,
+    OptionSet=OptionSet,
+    OptionSetOptionsArray=OptionSetOptionsArray,
+)

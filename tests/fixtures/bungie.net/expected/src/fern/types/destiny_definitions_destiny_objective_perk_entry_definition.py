@@ -14,9 +14,14 @@ class DestinyDefinitionsDestinyObjectivePerkEntryDefinition(UniversalBaseModel):
     These perks will generally not be benefit-granting perks, but rather a perk that modifies gameplay in some interesting way.
     """
 
-    perk_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="perkHash")] = pydantic.Field(
-        default=None
-    )
+    perk_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="perkHash"),
+        pydantic.Field(
+            alias="perkHash",
+            description="The hash identifier of the DestinySandboxPerkDefinition that will be applied to the character.",
+        ),
+    ] = None
     """
     The hash identifier of the DestinySandboxPerkDefinition that will be applied to the character.
     """

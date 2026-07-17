@@ -772,6 +772,7 @@ if typing.TYPE_CHECKING:
         v1employees,
         v1transactions,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
@@ -957,6 +958,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CustomerTextFilter": ".types",
     "DateRange": ".types",
     "DayOfWeek": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "DeleteBreakTypeRequest": ".types",
     "DeleteBreakTypeResponse": ".types",
     "DeleteCatalogObjectRequest": ".types",
@@ -1748,6 +1751,8 @@ __all__ = [
     "CustomerTextFilter",
     "DateRange",
     "DayOfWeek",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "DeleteBreakTypeRequest",
     "DeleteBreakTypeResponse",
     "DeleteCatalogObjectRequest",

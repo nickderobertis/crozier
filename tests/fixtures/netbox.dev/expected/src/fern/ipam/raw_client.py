@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -61,6 +62,7 @@ from .types.ipam_vlan_groups_list_response import IpamVlanGroupsListResponse
 from .types.ipam_vlans_list_response import IpamVlansListResponse
 from .types.ipam_vrfs_list_response import IpamVrfsListResponse
 from .types.writable_create_available_vlan_status import WritableCreateAvailableVlanStatus
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -383,6 +385,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def aggregates_create(
@@ -392,7 +398,7 @@ class RawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -417,7 +423,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -482,6 +488,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def aggregates_bulk_update(
@@ -491,7 +501,7 @@ class RawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -516,7 +526,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -581,6 +591,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def aggregates_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -607,6 +621,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def aggregates_bulk_partial_update(
@@ -616,7 +634,7 @@ class RawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -641,7 +659,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -706,6 +724,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def aggregates_read(
@@ -728,7 +750,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/aggregates/{jsonable_encoder(id)}/",
+            f"ipam/aggregates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -745,6 +767,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def aggregates_update(
@@ -755,7 +781,7 @@ class RawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -783,7 +809,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -812,7 +838,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/aggregates/{jsonable_encoder(id_)}/",
+            f"ipam/aggregates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -851,6 +877,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def aggregates_delete(
@@ -872,7 +902,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/aggregates/{jsonable_encoder(id)}/",
+            f"ipam/aggregates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -882,6 +912,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def aggregates_partial_update(
@@ -892,7 +926,7 @@ class RawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -920,7 +954,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -949,7 +983,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/aggregates/{jsonable_encoder(id_)}/",
+            f"ipam/aggregates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -988,6 +1022,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def asns_list(
@@ -1313,6 +1351,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def asns_create(
@@ -1322,7 +1364,7 @@ class RawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1348,7 +1390,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1413,6 +1455,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def asns_bulk_update(
@@ -1422,7 +1468,7 @@ class RawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1448,7 +1494,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1513,6 +1559,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def asns_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -1539,6 +1589,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def asns_bulk_partial_update(
@@ -1548,7 +1602,7 @@ class RawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1574,7 +1628,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1639,6 +1693,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def asns_read(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Asn]:
@@ -1659,7 +1717,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/asns/{jsonable_encoder(id)}/",
+            f"ipam/asns/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -1676,6 +1734,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def asns_update(
@@ -1686,7 +1748,7 @@ class RawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1715,7 +1777,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1744,7 +1806,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/asns/{jsonable_encoder(id_)}/",
+            f"ipam/asns/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "asn": asn,
@@ -1783,6 +1845,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def asns_delete(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -1802,7 +1868,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/asns/{jsonable_encoder(id)}/",
+            f"ipam/asns/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -1812,6 +1878,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def asns_partial_update(
@@ -1822,7 +1892,7 @@ class RawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1851,7 +1921,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1880,7 +1950,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/asns/{jsonable_encoder(id_)}/",
+            f"ipam/asns/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "asn": asn,
@@ -1919,6 +1989,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_group_assignments_list(
@@ -2164,6 +2238,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_group_assignments_create(
@@ -2176,7 +2254,7 @@ class RawIpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -2200,7 +2278,7 @@ class RawIpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -2245,6 +2323,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_group_assignments_bulk_update(
@@ -2257,7 +2339,7 @@ class RawIpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -2281,7 +2363,7 @@ class RawIpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -2326,6 +2408,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_group_assignments_bulk_delete(
@@ -2354,6 +2440,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_group_assignments_bulk_partial_update(
@@ -2366,7 +2456,7 @@ class RawIpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -2390,7 +2480,7 @@ class RawIpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -2435,6 +2525,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_group_assignments_read(
@@ -2457,7 +2551,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-group-assignments/{jsonable_encoder(id)}/",
+            f"ipam/fhrp-group-assignments/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -2474,6 +2568,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_group_assignments_update(
@@ -2487,7 +2585,7 @@ class RawIpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -2514,7 +2612,7 @@ class RawIpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -2529,7 +2627,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-group-assignments/{jsonable_encoder(id_)}/",
+            f"ipam/fhrp-group-assignments/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -2562,6 +2660,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_group_assignments_delete(
@@ -2583,7 +2685,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-group-assignments/{jsonable_encoder(id)}/",
+            f"ipam/fhrp-group-assignments/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -2593,6 +2695,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_group_assignments_partial_update(
@@ -2606,7 +2712,7 @@ class RawIpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -2633,7 +2739,7 @@ class RawIpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -2648,7 +2754,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-group-assignments/{jsonable_encoder(id_)}/",
+            f"ipam/fhrp-group-assignments/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -2681,6 +2787,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_groups_list(
@@ -3006,6 +3116,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_groups_create(
@@ -3017,7 +3131,7 @@ class RawIpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -3045,7 +3159,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3111,6 +3225,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_groups_bulk_update(
@@ -3122,7 +3240,7 @@ class RawIpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -3150,7 +3268,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3216,6 +3334,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_groups_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -3242,6 +3364,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_groups_bulk_partial_update(
@@ -3253,7 +3379,7 @@ class RawIpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -3281,7 +3407,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3347,6 +3473,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_groups_read(
@@ -3369,7 +3499,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-groups/{jsonable_encoder(id)}/",
+            f"ipam/fhrp-groups/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -3386,6 +3516,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_groups_update(
@@ -3398,7 +3532,7 @@ class RawIpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -3429,7 +3563,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3456,7 +3590,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-groups/{jsonable_encoder(id_)}/",
+            f"ipam/fhrp-groups/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "auth_key": auth_key,
@@ -3498,6 +3632,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_groups_delete(
@@ -3519,7 +3657,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-groups/{jsonable_encoder(id)}/",
+            f"ipam/fhrp-groups/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -3529,6 +3667,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fhrp_groups_partial_update(
@@ -3541,7 +3683,7 @@ class RawIpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -3572,7 +3714,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3599,7 +3741,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-groups/{jsonable_encoder(id_)}/",
+            f"ipam/fhrp-groups/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "auth_key": auth_key,
@@ -3641,6 +3783,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_addresses_list(
@@ -4096,18 +4242,22 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_addresses_create(
         self,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -4132,7 +4282,7 @@ class RawIpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -4142,7 +4292,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4230,18 +4380,22 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_addresses_bulk_update(
         self,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -4266,7 +4420,7 @@ class RawIpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -4276,7 +4430,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4364,6 +4518,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_addresses_bulk_delete(
@@ -4392,18 +4550,22 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_addresses_bulk_partial_update(
         self,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -4428,7 +4590,7 @@ class RawIpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -4438,7 +4600,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4526,6 +4688,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_addresses_read(
@@ -4548,7 +4714,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/ip-addresses/{jsonable_encoder(id)}/",
+            f"ipam/ip-addresses/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -4565,6 +4731,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_addresses_update(
@@ -4572,12 +4742,12 @@ class RawIpamClient:
         id_: int,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -4605,7 +4775,7 @@ class RawIpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -4615,7 +4785,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4658,7 +4828,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/ip-addresses/{jsonable_encoder(id_)}/",
+            f"ipam/ip-addresses/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "address": address,
@@ -4706,6 +4876,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_addresses_delete(
@@ -4727,7 +4901,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/ip-addresses/{jsonable_encoder(id)}/",
+            f"ipam/ip-addresses/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -4737,6 +4911,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_addresses_partial_update(
@@ -4744,12 +4922,12 @@ class RawIpamClient:
         id_: int,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -4777,7 +4955,7 @@ class RawIpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -4787,7 +4965,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4830,7 +5008,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/ip-addresses/{jsonable_encoder(id_)}/",
+            f"ipam/ip-addresses/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "address": address,
@@ -4878,6 +5056,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_ranges_list(
@@ -5203,6 +5385,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_ranges_create(
@@ -5213,7 +5399,7 @@ class RawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -5245,7 +5431,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5322,6 +5508,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_ranges_bulk_update(
@@ -5332,7 +5522,7 @@ class RawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -5364,7 +5554,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5441,6 +5631,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_ranges_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -5467,6 +5661,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_ranges_bulk_partial_update(
@@ -5477,7 +5675,7 @@ class RawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -5509,7 +5707,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5586,6 +5784,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_ranges_read(
@@ -5608,7 +5810,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/ip-ranges/{jsonable_encoder(id)}/",
+            f"ipam/ip-ranges/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -5625,6 +5827,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_ranges_update(
@@ -5636,7 +5842,7 @@ class RawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -5671,7 +5877,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5708,7 +5914,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/ip-ranges/{jsonable_encoder(id_)}/",
+            f"ipam/ip-ranges/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "children": children,
@@ -5751,6 +5957,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_ranges_delete(
@@ -5772,7 +5982,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/ip-ranges/{jsonable_encoder(id)}/",
+            f"ipam/ip-ranges/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -5782,6 +5992,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_ranges_partial_update(
@@ -5793,7 +6007,7 @@ class RawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -5828,7 +6042,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5865,7 +6079,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/ip-ranges/{jsonable_encoder(id_)}/",
+            f"ipam/ip-ranges/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "children": children,
@@ -5908,6 +6122,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_ranges_available_ips_list(
@@ -5930,7 +6148,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/ip-ranges/{jsonable_encoder(id)}/available-ips/",
+            f"ipam/ip-ranges/{encode_path_param(id)}/available-ips/",
             method="GET",
             request_options=request_options,
         )
@@ -5947,6 +6165,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ip_ranges_available_ips_create(
@@ -5978,7 +6200,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/ip-ranges/{jsonable_encoder(id)}/available-ips/",
+            f"ipam/ip-ranges/{encode_path_param(id)}/available-ips/",
             method="POST",
             json={
                 "address": address,
@@ -6003,6 +6225,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpn_terminations_list(
@@ -6353,6 +6579,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpn_terminations_create(
@@ -6361,9 +6591,9 @@ class RawIpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -6382,11 +6612,11 @@ class RawIpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6440,6 +6670,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpn_terminations_bulk_update(
@@ -6448,9 +6682,9 @@ class RawIpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -6469,11 +6703,11 @@ class RawIpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6527,6 +6761,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpn_terminations_bulk_delete(
@@ -6555,6 +6793,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpn_terminations_bulk_partial_update(
@@ -6563,9 +6805,9 @@ class RawIpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -6584,11 +6826,11 @@ class RawIpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6642,6 +6884,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpn_terminations_read(
@@ -6664,7 +6910,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpn-terminations/{jsonable_encoder(id)}/",
+            f"ipam/l2vpn-terminations/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -6681,6 +6927,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpn_terminations_update(
@@ -6690,9 +6940,9 @@ class RawIpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -6714,11 +6964,11 @@ class RawIpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6739,7 +6989,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpn-terminations/{jsonable_encoder(id_)}/",
+            f"ipam/l2vpn-terminations/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "assigned_object": assigned_object,
@@ -6775,6 +7025,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpn_terminations_delete(
@@ -6796,7 +7050,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpn-terminations/{jsonable_encoder(id)}/",
+            f"ipam/l2vpn-terminations/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -6806,6 +7060,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpn_terminations_partial_update(
@@ -6815,9 +7073,9 @@ class RawIpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -6839,11 +7097,11 @@ class RawIpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6864,7 +7122,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpn-terminations/{jsonable_encoder(id_)}/",
+            f"ipam/l2vpn-terminations/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "assigned_object": assigned_object,
@@ -6900,6 +7158,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpns_list(
@@ -7345,6 +7607,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpns_create(
@@ -7355,7 +7621,7 @@ class RawIpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -7383,7 +7649,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7452,6 +7718,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpns_bulk_update(
@@ -7462,7 +7732,7 @@ class RawIpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -7490,7 +7760,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7559,6 +7829,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpns_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -7585,6 +7859,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpns_bulk_partial_update(
@@ -7595,7 +7873,7 @@ class RawIpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -7623,7 +7901,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7692,6 +7970,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpns_read(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[L2Vpn]:
@@ -7712,7 +7994,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpns/{jsonable_encoder(id)}/",
+            f"ipam/l2vpns/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -7729,6 +8011,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpns_update(
@@ -7740,7 +8026,7 @@ class RawIpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -7771,7 +8057,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7802,7 +8088,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpns/{jsonable_encoder(id_)}/",
+            f"ipam/l2vpns/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -7843,6 +8129,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpns_delete(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -7862,7 +8152,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpns/{jsonable_encoder(id)}/",
+            f"ipam/l2vpns/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -7872,6 +8162,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def l2vpns_partial_update(
@@ -7883,7 +8177,7 @@ class RawIpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -7914,7 +8208,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7945,7 +8239,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpns/{jsonable_encoder(id_)}/",
+            f"ipam/l2vpns/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -7986,6 +8280,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def prefixes_list(
@@ -8511,6 +8809,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def prefixes_create(
@@ -8521,7 +8823,7 @@ class RawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -8555,7 +8857,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8643,6 +8945,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def prefixes_bulk_update(
@@ -8653,7 +8959,7 @@ class RawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -8687,7 +8993,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8775,6 +9081,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def prefixes_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -8801,6 +9111,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def prefixes_bulk_partial_update(
@@ -8811,7 +9125,7 @@ class RawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -8845,7 +9159,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8933,6 +9247,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def prefixes_read(
@@ -8955,7 +9273,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id)}/",
+            f"ipam/prefixes/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -8972,6 +9290,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def prefixes_update(
@@ -8983,7 +9305,7 @@ class RawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -9020,7 +9342,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9065,7 +9387,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id_)}/",
+            f"ipam/prefixes/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -9111,6 +9433,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def prefixes_delete(
@@ -9132,7 +9458,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id)}/",
+            f"ipam/prefixes/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -9142,6 +9468,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def prefixes_partial_update(
@@ -9153,7 +9483,7 @@ class RawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -9190,7 +9520,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9235,7 +9565,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id_)}/",
+            f"ipam/prefixes/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -9281,6 +9611,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def prefixes_available_ips_list(
@@ -9303,7 +9637,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id)}/available-ips/",
+            f"ipam/prefixes/{encode_path_param(id)}/available-ips/",
             method="GET",
             request_options=request_options,
         )
@@ -9320,6 +9654,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def prefixes_available_ips_create(
@@ -9351,7 +9689,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id)}/available-ips/",
+            f"ipam/prefixes/{encode_path_param(id)}/available-ips/",
             method="POST",
             json={
                 "address": address,
@@ -9376,6 +9714,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def prefixes_available_prefixes_list(
@@ -9398,7 +9740,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id)}/available-prefixes/",
+            f"ipam/prefixes/{encode_path_param(id)}/available-prefixes/",
             method="GET",
             request_options=request_options,
         )
@@ -9415,6 +9757,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def prefixes_available_prefixes_create(
@@ -9439,7 +9785,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id)}/available-prefixes/",
+            f"ipam/prefixes/{encode_path_param(id)}/available-prefixes/",
             method="POST",
             json={
                 "prefix_length": prefix_length,
@@ -9463,6 +9809,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rirs_list(
@@ -9793,6 +10143,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rirs_create(
@@ -9802,7 +10156,7 @@ class RawIpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -9825,7 +10179,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9885,6 +10239,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rirs_bulk_update(
@@ -9894,7 +10252,7 @@ class RawIpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -9917,7 +10275,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9977,6 +10335,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rirs_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -10003,6 +10365,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rirs_bulk_partial_update(
@@ -10012,7 +10378,7 @@ class RawIpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10035,7 +10401,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10095,6 +10461,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rirs_read(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Rir]:
@@ -10115,7 +10485,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/rirs/{jsonable_encoder(id)}/",
+            f"ipam/rirs/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -10132,6 +10502,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rirs_update(
@@ -10142,7 +10516,7 @@ class RawIpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10168,7 +10542,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10194,7 +10568,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/rirs/{jsonable_encoder(id_)}/",
+            f"ipam/rirs/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "aggregate_count": aggregate_count,
@@ -10231,6 +10605,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rirs_delete(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -10250,7 +10628,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/rirs/{jsonable_encoder(id)}/",
+            f"ipam/rirs/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -10260,6 +10638,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rirs_partial_update(
@@ -10270,7 +10652,7 @@ class RawIpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10296,7 +10678,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10322,7 +10704,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/rirs/{jsonable_encoder(id_)}/",
+            f"ipam/rirs/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "aggregate_count": aggregate_count,
@@ -10359,6 +10741,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def roles_list(
@@ -10684,6 +11070,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def roles_create(
@@ -10692,7 +11082,7 @@ class RawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10715,7 +11105,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10779,6 +11169,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def roles_bulk_update(
@@ -10787,7 +11181,7 @@ class RawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10810,7 +11204,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10874,6 +11268,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def roles_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -10900,6 +11298,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def roles_bulk_partial_update(
@@ -10908,7 +11310,7 @@ class RawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10931,7 +11333,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10995,6 +11397,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def roles_read(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Role]:
@@ -11015,7 +11421,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/roles/{jsonable_encoder(id)}/",
+            f"ipam/roles/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -11032,6 +11438,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def roles_update(
@@ -11041,7 +11451,7 @@ class RawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -11067,7 +11477,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11096,7 +11506,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/roles/{jsonable_encoder(id_)}/",
+            f"ipam/roles/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -11134,6 +11544,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def roles_delete(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -11153,7 +11567,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/roles/{jsonable_encoder(id)}/",
+            f"ipam/roles/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -11163,6 +11577,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def roles_partial_update(
@@ -11172,7 +11590,7 @@ class RawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -11198,7 +11616,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11227,7 +11645,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/roles/{jsonable_encoder(id_)}/",
+            f"ipam/roles/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -11265,6 +11683,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def route_targets_list(
@@ -11615,6 +12037,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def route_targets_create(
@@ -11623,7 +12049,7 @@ class RawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -11645,7 +12071,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11703,6 +12129,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def route_targets_bulk_update(
@@ -11711,7 +12141,7 @@ class RawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -11733,7 +12163,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11791,6 +12221,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def route_targets_bulk_delete(
@@ -11819,6 +12253,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def route_targets_bulk_partial_update(
@@ -11827,7 +12265,7 @@ class RawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -11849,7 +12287,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11907,6 +12345,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def route_targets_read(
@@ -11929,7 +12371,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/route-targets/{jsonable_encoder(id)}/",
+            f"ipam/route-targets/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -11946,6 +12388,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def route_targets_update(
@@ -11955,7 +12401,7 @@ class RawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -11980,7 +12426,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -12005,7 +12451,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/route-targets/{jsonable_encoder(id_)}/",
+            f"ipam/route-targets/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -12041,6 +12487,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def route_targets_delete(
@@ -12062,7 +12512,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/route-targets/{jsonable_encoder(id)}/",
+            f"ipam/route-targets/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -12072,6 +12522,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def route_targets_partial_update(
@@ -12081,7 +12535,7 @@ class RawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -12106,7 +12560,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -12131,7 +12585,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/route-targets/{jsonable_encoder(id_)}/",
+            f"ipam/route-targets/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -12167,6 +12621,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def service_templates_list(
@@ -12397,6 +12855,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def service_templates_create(
@@ -12407,7 +12869,7 @@ class RawIpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -12431,7 +12893,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -12488,6 +12950,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def service_templates_bulk_update(
@@ -12498,7 +12964,7 @@ class RawIpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -12522,7 +12988,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -12579,6 +13045,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def service_templates_bulk_delete(
@@ -12607,6 +13077,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def service_templates_bulk_partial_update(
@@ -12617,7 +13091,7 @@ class RawIpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -12641,7 +13115,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -12698,6 +13172,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def service_templates_read(
@@ -12720,7 +13198,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/service-templates/{jsonable_encoder(id)}/",
+            f"ipam/service-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -12737,6 +13215,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def service_templates_update(
@@ -12748,7 +13230,7 @@ class RawIpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -12775,7 +13257,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -12798,7 +13280,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/service-templates/{jsonable_encoder(id_)}/",
+            f"ipam/service-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -12835,6 +13317,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def service_templates_delete(
@@ -12856,7 +13342,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/service-templates/{jsonable_encoder(id)}/",
+            f"ipam/service-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -12866,6 +13352,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def service_templates_partial_update(
@@ -12877,7 +13367,7 @@ class RawIpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -12904,7 +13394,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -12927,7 +13417,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/service-templates/{jsonable_encoder(id_)}/",
+            f"ipam/service-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -12964,6 +13454,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def services_list(
@@ -13309,6 +13803,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def services_create(
@@ -13319,7 +13817,7 @@ class RawIpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -13346,7 +13844,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -13412,6 +13910,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def services_bulk_update(
@@ -13422,7 +13924,7 @@ class RawIpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -13449,7 +13951,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -13515,6 +14017,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def services_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -13541,6 +14047,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def services_bulk_partial_update(
@@ -13551,7 +14061,7 @@ class RawIpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -13578,7 +14088,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -13644,6 +14154,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def services_read(
@@ -13666,7 +14180,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/services/{jsonable_encoder(id)}/",
+            f"ipam/services/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -13683,6 +14197,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def services_update(
@@ -13694,7 +14212,7 @@ class RawIpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -13724,7 +14242,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -13753,7 +14271,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/services/{jsonable_encoder(id_)}/",
+            f"ipam/services/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -13793,6 +14311,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def services_delete(
@@ -13814,7 +14336,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/services/{jsonable_encoder(id)}/",
+            f"ipam/services/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -13824,6 +14346,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def services_partial_update(
@@ -13835,7 +14361,7 @@ class RawIpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -13865,7 +14391,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -13894,7 +14420,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/services/{jsonable_encoder(id_)}/",
+            f"ipam/services/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -13934,6 +14460,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlan_groups_list(
@@ -14394,6 +14924,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlan_groups_create(
@@ -14402,14 +14936,14 @@ class RawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -14428,7 +14962,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -14444,7 +14978,7 @@ class RawIpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -14503,6 +15037,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlan_groups_bulk_update(
@@ -14511,14 +15049,14 @@ class RawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -14537,7 +15075,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -14553,7 +15091,7 @@ class RawIpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -14612,6 +15150,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlan_groups_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -14638,6 +15180,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlan_groups_bulk_partial_update(
@@ -14646,14 +15192,14 @@ class RawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -14672,7 +15218,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -14688,7 +15234,7 @@ class RawIpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -14747,6 +15293,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlan_groups_read(
@@ -14769,7 +15319,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/vlan-groups/{jsonable_encoder(id)}/",
+            f"ipam/vlan-groups/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -14786,6 +15336,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlan_groups_update(
@@ -14795,14 +15349,14 @@ class RawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -14824,7 +15378,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -14840,7 +15394,7 @@ class RawIpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -14861,7 +15415,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/vlan-groups/{jsonable_encoder(id_)}/",
+            f"ipam/vlan-groups/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -14902,6 +15456,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlan_groups_delete(
@@ -14923,7 +15481,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/vlan-groups/{jsonable_encoder(id)}/",
+            f"ipam/vlan-groups/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -14933,6 +15491,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlan_groups_partial_update(
@@ -14942,14 +15504,14 @@ class RawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -14971,7 +15533,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -14987,7 +15549,7 @@ class RawIpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -15008,7 +15570,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/vlan-groups/{jsonable_encoder(id_)}/",
+            f"ipam/vlan-groups/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -15049,6 +15611,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlan_groups_available_vlans_list(
@@ -15071,7 +15637,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/vlan-groups/{jsonable_encoder(id)}/available-vlans/",
+            f"ipam/vlan-groups/{encode_path_param(id)}/available-vlans/",
             method="GET",
             request_options=request_options,
         )
@@ -15088,6 +15654,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlan_groups_available_vlans_create(
@@ -15095,7 +15665,7 @@ class RawIpamClient:
         id: int,
         *,
         name: str,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         role: typing.Optional[int] = OMIT,
         site: typing.Optional[int] = OMIT,
@@ -15114,7 +15684,7 @@ class RawIpamClient:
 
         name : str
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -15137,7 +15707,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/vlan-groups/{jsonable_encoder(id)}/available-vlans/",
+            f"ipam/vlan-groups/{encode_path_param(id)}/available-vlans/",
             method="POST",
             json={
                 "custom_fields": custom_fields,
@@ -15170,6 +15740,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlans_list(
@@ -15650,6 +16224,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlans_create(
@@ -15659,7 +16237,7 @@ class RawIpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -15688,7 +16266,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -15765,6 +16343,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlans_bulk_update(
@@ -15774,7 +16356,7 @@ class RawIpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -15803,7 +16385,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -15880,6 +16462,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlans_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -15906,6 +16492,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlans_bulk_partial_update(
@@ -15915,7 +16505,7 @@ class RawIpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -15944,7 +16534,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -16021,6 +16611,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlans_read(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Vlan]:
@@ -16041,7 +16635,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/vlans/{jsonable_encoder(id)}/",
+            f"ipam/vlans/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -16058,6 +16652,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlans_update(
@@ -16068,7 +16666,7 @@ class RawIpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -16100,7 +16698,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -16137,7 +16735,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/vlans/{jsonable_encoder(id_)}/",
+            f"ipam/vlans/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -16180,6 +16778,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlans_delete(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -16199,7 +16801,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/vlans/{jsonable_encoder(id)}/",
+            f"ipam/vlans/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -16209,6 +16811,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vlans_partial_update(
@@ -16219,7 +16825,7 @@ class RawIpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -16251,7 +16857,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -16288,7 +16894,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/vlans/{jsonable_encoder(id_)}/",
+            f"ipam/vlans/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -16331,6 +16937,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vrfs_list(
@@ -16741,6 +17351,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vrfs_create(
@@ -16749,7 +17363,7 @@ class RawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -16776,7 +17390,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -16854,6 +17468,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vrfs_bulk_update(
@@ -16862,7 +17480,7 @@ class RawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -16889,7 +17507,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -16967,6 +17585,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vrfs_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -16993,6 +17615,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vrfs_bulk_partial_update(
@@ -17001,7 +17627,7 @@ class RawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -17028,7 +17654,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -17106,6 +17732,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vrfs_read(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Vrf]:
@@ -17126,7 +17756,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/vrfs/{jsonable_encoder(id)}/",
+            f"ipam/vrfs/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -17143,6 +17773,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vrfs_update(
@@ -17152,7 +17786,7 @@ class RawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -17182,7 +17816,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -17221,7 +17855,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/vrfs/{jsonable_encoder(id_)}/",
+            f"ipam/vrfs/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -17263,6 +17897,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vrfs_delete(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -17282,7 +17920,7 @@ class RawIpamClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/vrfs/{jsonable_encoder(id)}/",
+            f"ipam/vrfs/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -17292,6 +17930,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def vrfs_partial_update(
@@ -17301,7 +17943,7 @@ class RawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -17331,7 +17973,7 @@ class RawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -17370,7 +18012,7 @@ class RawIpamClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ipam/vrfs/{jsonable_encoder(id_)}/",
+            f"ipam/vrfs/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -17412,6 +18054,10 @@ class RawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -17732,6 +18378,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def aggregates_create(
@@ -17741,7 +18391,7 @@ class AsyncRawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -17766,7 +18416,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -17831,6 +18481,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def aggregates_bulk_update(
@@ -17840,7 +18494,7 @@ class AsyncRawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -17865,7 +18519,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -17930,6 +18584,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def aggregates_bulk_delete(
@@ -17958,6 +18616,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def aggregates_bulk_partial_update(
@@ -17967,7 +18629,7 @@ class AsyncRawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -17992,7 +18654,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -18057,6 +18719,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def aggregates_read(
@@ -18079,7 +18745,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/aggregates/{jsonable_encoder(id)}/",
+            f"ipam/aggregates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -18096,6 +18762,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def aggregates_update(
@@ -18106,7 +18776,7 @@ class AsyncRawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -18134,7 +18804,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -18163,7 +18833,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/aggregates/{jsonable_encoder(id_)}/",
+            f"ipam/aggregates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -18202,6 +18872,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def aggregates_delete(
@@ -18223,7 +18897,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/aggregates/{jsonable_encoder(id)}/",
+            f"ipam/aggregates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -18233,6 +18907,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def aggregates_partial_update(
@@ -18243,7 +18921,7 @@ class AsyncRawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         date_added: typing.Optional[dt.date] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -18271,7 +18949,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         date_added : typing.Optional[dt.date]
 
@@ -18300,7 +18978,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/aggregates/{jsonable_encoder(id_)}/",
+            f"ipam/aggregates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -18339,6 +19017,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def asns_list(
@@ -18664,6 +19346,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def asns_create(
@@ -18673,7 +19359,7 @@ class AsyncRawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -18699,7 +19385,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -18764,6 +19450,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def asns_bulk_update(
@@ -18773,7 +19463,7 @@ class AsyncRawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -18799,7 +19489,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -18864,6 +19554,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def asns_bulk_delete(
@@ -18892,6 +19586,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def asns_bulk_partial_update(
@@ -18901,7 +19599,7 @@ class AsyncRawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -18927,7 +19625,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -18992,6 +19690,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def asns_read(
@@ -19014,7 +19716,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/asns/{jsonable_encoder(id)}/",
+            f"ipam/asns/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -19031,6 +19733,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def asns_update(
@@ -19041,7 +19747,7 @@ class AsyncRawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -19070,7 +19776,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -19099,7 +19805,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/asns/{jsonable_encoder(id_)}/",
+            f"ipam/asns/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "asn": asn,
@@ -19138,6 +19844,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def asns_delete(
@@ -19159,7 +19869,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/asns/{jsonable_encoder(id)}/",
+            f"ipam/asns/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -19169,6 +19879,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def asns_partial_update(
@@ -19179,7 +19893,7 @@ class AsyncRawIpamClient:
         rir: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -19208,7 +19922,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -19237,7 +19951,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/asns/{jsonable_encoder(id_)}/",
+            f"ipam/asns/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "asn": asn,
@@ -19276,6 +19990,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_group_assignments_list(
@@ -19521,6 +20239,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_group_assignments_create(
@@ -19533,7 +20255,7 @@ class AsyncRawIpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -19557,7 +20279,7 @@ class AsyncRawIpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -19602,6 +20324,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_group_assignments_bulk_update(
@@ -19614,7 +20340,7 @@ class AsyncRawIpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -19638,7 +20364,7 @@ class AsyncRawIpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -19683,6 +20409,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_group_assignments_bulk_delete(
@@ -19711,6 +20441,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_group_assignments_bulk_partial_update(
@@ -19723,7 +20457,7 @@ class AsyncRawIpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -19747,7 +20481,7 @@ class AsyncRawIpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -19792,6 +20526,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_group_assignments_read(
@@ -19814,7 +20552,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-group-assignments/{jsonable_encoder(id)}/",
+            f"ipam/fhrp-group-assignments/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -19831,6 +20569,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_group_assignments_update(
@@ -19844,7 +20586,7 @@ class AsyncRawIpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -19871,7 +20613,7 @@ class AsyncRawIpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -19886,7 +20628,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-group-assignments/{jsonable_encoder(id_)}/",
+            f"ipam/fhrp-group-assignments/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -19919,6 +20661,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_group_assignments_delete(
@@ -19940,7 +20686,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-group-assignments/{jsonable_encoder(id)}/",
+            f"ipam/fhrp-group-assignments/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -19950,6 +20696,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_group_assignments_partial_update(
@@ -19963,7 +20713,7 @@ class AsyncRawIpamClient:
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        interface: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        interface: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -19990,7 +20740,7 @@ class AsyncRawIpamClient:
 
         id : typing.Optional[int]
 
-        interface : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        interface : typing.Optional[typing.Dict[str, typing.Any]]
 
         last_updated : typing.Optional[dt.datetime]
 
@@ -20005,7 +20755,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-group-assignments/{jsonable_encoder(id_)}/",
+            f"ipam/fhrp-group-assignments/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -20038,6 +20788,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_groups_list(
@@ -20363,6 +21117,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_groups_create(
@@ -20374,7 +21132,7 @@ class AsyncRawIpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -20402,7 +21160,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -20468,6 +21226,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_groups_bulk_update(
@@ -20479,7 +21241,7 @@ class AsyncRawIpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -20507,7 +21269,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -20573,6 +21335,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_groups_bulk_delete(
@@ -20601,6 +21367,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_groups_bulk_partial_update(
@@ -20612,7 +21382,7 @@ class AsyncRawIpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -20640,7 +21410,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -20706,6 +21476,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_groups_read(
@@ -20728,7 +21502,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-groups/{jsonable_encoder(id)}/",
+            f"ipam/fhrp-groups/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -20745,6 +21519,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_groups_update(
@@ -20757,7 +21535,7 @@ class AsyncRawIpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -20788,7 +21566,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -20815,7 +21593,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-groups/{jsonable_encoder(id_)}/",
+            f"ipam/fhrp-groups/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "auth_key": auth_key,
@@ -20857,6 +21635,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_groups_delete(
@@ -20878,7 +21660,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-groups/{jsonable_encoder(id)}/",
+            f"ipam/fhrp-groups/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -20888,6 +21670,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fhrp_groups_partial_update(
@@ -20900,7 +21686,7 @@ class AsyncRawIpamClient:
         auth_type: typing.Optional[FhrpGroupAuthType] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -20931,7 +21717,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -20958,7 +21744,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/fhrp-groups/{jsonable_encoder(id_)}/",
+            f"ipam/fhrp-groups/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "auth_key": auth_key,
@@ -21000,6 +21786,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_addresses_list(
@@ -21455,18 +22245,22 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_addresses_create(
         self,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -21491,7 +22285,7 @@ class AsyncRawIpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -21501,7 +22295,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -21589,18 +22383,22 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_addresses_bulk_update(
         self,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -21625,7 +22423,7 @@ class AsyncRawIpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -21635,7 +22433,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -21723,6 +22521,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_addresses_bulk_delete(
@@ -21751,18 +22553,22 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_addresses_bulk_partial_update(
         self,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -21787,7 +22593,7 @@ class AsyncRawIpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -21797,7 +22603,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -21885,6 +22691,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_addresses_read(
@@ -21907,7 +22717,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/ip-addresses/{jsonable_encoder(id)}/",
+            f"ipam/ip-addresses/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -21924,6 +22734,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_addresses_update(
@@ -21931,12 +22745,12 @@ class AsyncRawIpamClient:
         id_: int,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -21964,7 +22778,7 @@ class AsyncRawIpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -21974,7 +22788,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -22017,7 +22831,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/ip-addresses/{jsonable_encoder(id_)}/",
+            f"ipam/ip-addresses/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "address": address,
@@ -22065,6 +22879,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_addresses_delete(
@@ -22086,7 +22904,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/ip-addresses/{jsonable_encoder(id)}/",
+            f"ipam/ip-addresses/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -22096,6 +22914,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_addresses_partial_update(
@@ -22103,12 +22925,12 @@ class AsyncRawIpamClient:
         id_: int,
         *,
         address: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         assigned_object_id: typing.Optional[int] = OMIT,
         assigned_object_type: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         dns_name: typing.Optional[str] = OMIT,
@@ -22136,7 +22958,7 @@ class AsyncRawIpamClient:
         address : str
             IPv4 or IPv6 address (with mask)
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         assigned_object_id : typing.Optional[int]
 
@@ -22146,7 +22968,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -22189,7 +23011,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/ip-addresses/{jsonable_encoder(id_)}/",
+            f"ipam/ip-addresses/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "address": address,
@@ -22237,6 +23059,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_ranges_list(
@@ -22562,6 +23388,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_ranges_create(
@@ -22572,7 +23402,7 @@ class AsyncRawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -22604,7 +23434,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -22681,6 +23511,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_ranges_bulk_update(
@@ -22691,7 +23525,7 @@ class AsyncRawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -22723,7 +23557,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -22800,6 +23634,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_ranges_bulk_delete(
@@ -22828,6 +23666,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_ranges_bulk_partial_update(
@@ -22838,7 +23680,7 @@ class AsyncRawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -22870,7 +23712,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -22947,6 +23789,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_ranges_read(
@@ -22969,7 +23815,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/ip-ranges/{jsonable_encoder(id)}/",
+            f"ipam/ip-ranges/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -22986,6 +23832,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_ranges_update(
@@ -22997,7 +23847,7 @@ class AsyncRawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -23032,7 +23882,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -23069,7 +23919,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/ip-ranges/{jsonable_encoder(id_)}/",
+            f"ipam/ip-ranges/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "children": children,
@@ -23112,6 +23962,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_ranges_delete(
@@ -23133,7 +23987,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/ip-ranges/{jsonable_encoder(id)}/",
+            f"ipam/ip-ranges/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -23143,6 +23997,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_ranges_partial_update(
@@ -23154,7 +24012,7 @@ class AsyncRawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -23189,7 +24047,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -23226,7 +24084,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/ip-ranges/{jsonable_encoder(id_)}/",
+            f"ipam/ip-ranges/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "children": children,
@@ -23269,6 +24127,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_ranges_available_ips_list(
@@ -23291,7 +24153,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/ip-ranges/{jsonable_encoder(id)}/available-ips/",
+            f"ipam/ip-ranges/{encode_path_param(id)}/available-ips/",
             method="GET",
             request_options=request_options,
         )
@@ -23308,6 +24170,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ip_ranges_available_ips_create(
@@ -23339,7 +24205,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/ip-ranges/{jsonable_encoder(id)}/available-ips/",
+            f"ipam/ip-ranges/{encode_path_param(id)}/available-ips/",
             method="POST",
             json={
                 "address": address,
@@ -23364,6 +24230,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpn_terminations_list(
@@ -23714,6 +24584,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpn_terminations_create(
@@ -23722,9 +24596,9 @@ class AsyncRawIpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -23743,11 +24617,11 @@ class AsyncRawIpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -23801,6 +24675,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpn_terminations_bulk_update(
@@ -23809,9 +24687,9 @@ class AsyncRawIpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -23830,11 +24708,11 @@ class AsyncRawIpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -23888,6 +24766,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpn_terminations_bulk_delete(
@@ -23916,6 +24798,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpn_terminations_bulk_partial_update(
@@ -23924,9 +24810,9 @@ class AsyncRawIpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -23945,11 +24831,11 @@ class AsyncRawIpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -24003,6 +24889,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpn_terminations_read(
@@ -24025,7 +24915,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpn-terminations/{jsonable_encoder(id)}/",
+            f"ipam/l2vpn-terminations/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -24042,6 +24932,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpn_terminations_update(
@@ -24051,9 +24945,9 @@ class AsyncRawIpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -24075,11 +24969,11 @@ class AsyncRawIpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -24100,7 +24994,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpn-terminations/{jsonable_encoder(id_)}/",
+            f"ipam/l2vpn-terminations/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "assigned_object": assigned_object,
@@ -24136,6 +25030,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpn_terminations_delete(
@@ -24157,7 +25055,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpn-terminations/{jsonable_encoder(id)}/",
+            f"ipam/l2vpn-terminations/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -24167,6 +25065,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpn_terminations_partial_update(
@@ -24176,9 +25078,9 @@ class AsyncRawIpamClient:
         assigned_object_id: int,
         assigned_object_type: str,
         l2vpn: int,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -24200,11 +25102,11 @@ class AsyncRawIpamClient:
 
         l2vpn : int
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -24225,7 +25127,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpn-terminations/{jsonable_encoder(id_)}/",
+            f"ipam/l2vpn-terminations/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "assigned_object": assigned_object,
@@ -24261,6 +25163,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpns_list(
@@ -24706,6 +25612,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpns_create(
@@ -24716,7 +25626,7 @@ class AsyncRawIpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -24744,7 +25654,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -24813,6 +25723,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpns_bulk_update(
@@ -24823,7 +25737,7 @@ class AsyncRawIpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -24851,7 +25765,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -24920,6 +25834,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpns_bulk_delete(
@@ -24948,6 +25866,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpns_bulk_partial_update(
@@ -24958,7 +25880,7 @@ class AsyncRawIpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -24986,7 +25908,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -25055,6 +25977,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpns_read(
@@ -25077,7 +26003,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpns/{jsonable_encoder(id)}/",
+            f"ipam/l2vpns/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -25094,6 +26020,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpns_update(
@@ -25105,7 +26035,7 @@ class AsyncRawIpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -25136,7 +26066,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -25167,7 +26097,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpns/{jsonable_encoder(id_)}/",
+            f"ipam/l2vpns/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -25208,6 +26138,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpns_delete(
@@ -25229,7 +26163,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpns/{jsonable_encoder(id)}/",
+            f"ipam/l2vpns/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -25239,6 +26173,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def l2vpns_partial_update(
@@ -25250,7 +26188,7 @@ class AsyncRawIpamClient:
         type: WritableL2VpnType,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         export_targets: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -25281,7 +26219,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -25312,7 +26250,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/l2vpns/{jsonable_encoder(id_)}/",
+            f"ipam/l2vpns/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -25353,6 +26291,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def prefixes_list(
@@ -25878,6 +26820,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def prefixes_create(
@@ -25888,7 +26834,7 @@ class AsyncRawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -25922,7 +26868,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26010,6 +26956,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def prefixes_bulk_update(
@@ -26020,7 +26970,7 @@ class AsyncRawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -26054,7 +27004,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26142,6 +27092,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def prefixes_bulk_delete(
@@ -26170,6 +27124,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def prefixes_bulk_partial_update(
@@ -26180,7 +27138,7 @@ class AsyncRawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -26214,7 +27172,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26302,6 +27260,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def prefixes_read(
@@ -26324,7 +27286,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id)}/",
+            f"ipam/prefixes/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -26341,6 +27303,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def prefixes_update(
@@ -26352,7 +27318,7 @@ class AsyncRawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -26389,7 +27355,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26434,7 +27400,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id_)}/",
+            f"ipam/prefixes/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -26480,6 +27446,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def prefixes_delete(
@@ -26501,7 +27471,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id)}/",
+            f"ipam/prefixes/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -26511,6 +27481,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def prefixes_partial_update(
@@ -26522,7 +27496,7 @@ class AsyncRawIpamClient:
         children: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         family: typing.Optional[str] = OMIT,
@@ -26559,7 +27533,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26604,7 +27578,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id_)}/",
+            f"ipam/prefixes/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -26650,6 +27624,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def prefixes_available_ips_list(
@@ -26672,7 +27650,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id)}/available-ips/",
+            f"ipam/prefixes/{encode_path_param(id)}/available-ips/",
             method="GET",
             request_options=request_options,
         )
@@ -26689,6 +27667,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def prefixes_available_ips_create(
@@ -26720,7 +27702,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id)}/available-ips/",
+            f"ipam/prefixes/{encode_path_param(id)}/available-ips/",
             method="POST",
             json={
                 "address": address,
@@ -26745,6 +27727,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def prefixes_available_prefixes_list(
@@ -26767,7 +27753,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id)}/available-prefixes/",
+            f"ipam/prefixes/{encode_path_param(id)}/available-prefixes/",
             method="GET",
             request_options=request_options,
         )
@@ -26784,6 +27770,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def prefixes_available_prefixes_create(
@@ -26808,7 +27798,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/prefixes/{jsonable_encoder(id)}/available-prefixes/",
+            f"ipam/prefixes/{encode_path_param(id)}/available-prefixes/",
             method="POST",
             json={
                 "prefix_length": prefix_length,
@@ -26832,6 +27822,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rirs_list(
@@ -27162,6 +28156,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rirs_create(
@@ -27171,7 +28169,7 @@ class AsyncRawIpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -27194,7 +28192,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -27254,6 +28252,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rirs_bulk_update(
@@ -27263,7 +28265,7 @@ class AsyncRawIpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -27286,7 +28288,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -27346,6 +28348,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rirs_bulk_delete(
@@ -27374,6 +28380,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rirs_bulk_partial_update(
@@ -27383,7 +28393,7 @@ class AsyncRawIpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -27406,7 +28416,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -27466,6 +28476,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rirs_read(
@@ -27488,7 +28502,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/rirs/{jsonable_encoder(id)}/",
+            f"ipam/rirs/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -27505,6 +28519,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rirs_update(
@@ -27515,7 +28533,7 @@ class AsyncRawIpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -27541,7 +28559,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -27567,7 +28585,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/rirs/{jsonable_encoder(id_)}/",
+            f"ipam/rirs/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "aggregate_count": aggregate_count,
@@ -27604,6 +28622,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rirs_delete(
@@ -27625,7 +28647,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/rirs/{jsonable_encoder(id)}/",
+            f"ipam/rirs/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -27635,6 +28657,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rirs_partial_update(
@@ -27645,7 +28671,7 @@ class AsyncRawIpamClient:
         slug: str,
         aggregate_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -27671,7 +28697,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -27697,7 +28723,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/rirs/{jsonable_encoder(id_)}/",
+            f"ipam/rirs/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "aggregate_count": aggregate_count,
@@ -27734,6 +28760,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def roles_list(
@@ -28059,6 +29089,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def roles_create(
@@ -28067,7 +29101,7 @@ class AsyncRawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -28090,7 +29124,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -28154,6 +29188,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def roles_bulk_update(
@@ -28162,7 +29200,7 @@ class AsyncRawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -28185,7 +29223,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -28249,6 +29287,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def roles_bulk_delete(
@@ -28277,6 +29319,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def roles_bulk_partial_update(
@@ -28285,7 +29331,7 @@ class AsyncRawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -28308,7 +29354,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -28372,6 +29418,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def roles_read(
@@ -28394,7 +29444,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/roles/{jsonable_encoder(id)}/",
+            f"ipam/roles/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -28411,6 +29461,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def roles_update(
@@ -28420,7 +29474,7 @@ class AsyncRawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -28446,7 +29500,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -28475,7 +29529,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/roles/{jsonable_encoder(id_)}/",
+            f"ipam/roles/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -28513,6 +29567,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def roles_delete(
@@ -28534,7 +29592,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/roles/{jsonable_encoder(id)}/",
+            f"ipam/roles/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -28544,6 +29602,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def roles_partial_update(
@@ -28553,7 +29615,7 @@ class AsyncRawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -28579,7 +29641,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -28608,7 +29670,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/roles/{jsonable_encoder(id_)}/",
+            f"ipam/roles/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -28646,6 +29708,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def route_targets_list(
@@ -28996,6 +30062,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def route_targets_create(
@@ -29004,7 +30074,7 @@ class AsyncRawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -29026,7 +30096,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -29084,6 +30154,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def route_targets_bulk_update(
@@ -29092,7 +30166,7 @@ class AsyncRawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -29114,7 +30188,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -29172,6 +30246,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def route_targets_bulk_delete(
@@ -29200,6 +30278,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def route_targets_bulk_partial_update(
@@ -29208,7 +30290,7 @@ class AsyncRawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -29230,7 +30312,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -29288,6 +30370,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def route_targets_read(
@@ -29310,7 +30396,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/route-targets/{jsonable_encoder(id)}/",
+            f"ipam/route-targets/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -29327,6 +30413,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def route_targets_update(
@@ -29336,7 +30426,7 @@ class AsyncRawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -29361,7 +30451,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -29386,7 +30476,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/route-targets/{jsonable_encoder(id_)}/",
+            f"ipam/route-targets/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -29422,6 +30512,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def route_targets_delete(
@@ -29443,7 +30537,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/route-targets/{jsonable_encoder(id)}/",
+            f"ipam/route-targets/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -29453,6 +30547,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def route_targets_partial_update(
@@ -29462,7 +30560,7 @@ class AsyncRawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -29487,7 +30585,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -29512,7 +30610,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/route-targets/{jsonable_encoder(id_)}/",
+            f"ipam/route-targets/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -29548,6 +30646,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def service_templates_list(
@@ -29778,6 +30880,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def service_templates_create(
@@ -29788,7 +30894,7 @@ class AsyncRawIpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -29812,7 +30918,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -29869,6 +30975,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def service_templates_bulk_update(
@@ -29879,7 +30989,7 @@ class AsyncRawIpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -29903,7 +31013,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -29960,6 +31070,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def service_templates_bulk_delete(
@@ -29988,6 +31102,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def service_templates_bulk_partial_update(
@@ -29998,7 +31116,7 @@ class AsyncRawIpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -30022,7 +31140,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -30079,6 +31197,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def service_templates_read(
@@ -30101,7 +31223,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/service-templates/{jsonable_encoder(id)}/",
+            f"ipam/service-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -30118,6 +31240,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def service_templates_update(
@@ -30129,7 +31255,7 @@ class AsyncRawIpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -30156,7 +31282,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -30179,7 +31305,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/service-templates/{jsonable_encoder(id_)}/",
+            f"ipam/service-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -30216,6 +31342,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def service_templates_delete(
@@ -30237,7 +31367,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/service-templates/{jsonable_encoder(id)}/",
+            f"ipam/service-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -30247,6 +31377,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def service_templates_partial_update(
@@ -30258,7 +31392,7 @@ class AsyncRawIpamClient:
         protocol: WritableServiceTemplateProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -30285,7 +31419,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -30308,7 +31442,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/service-templates/{jsonable_encoder(id_)}/",
+            f"ipam/service-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -30345,6 +31479,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def services_list(
@@ -30690,6 +31828,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def services_create(
@@ -30700,7 +31842,7 @@ class AsyncRawIpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -30727,7 +31869,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -30793,6 +31935,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def services_bulk_update(
@@ -30803,7 +31949,7 @@ class AsyncRawIpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -30830,7 +31976,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -30896,6 +32042,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def services_bulk_delete(
@@ -30924,6 +32074,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def services_bulk_partial_update(
@@ -30934,7 +32088,7 @@ class AsyncRawIpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -30961,7 +32115,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -31027,6 +32181,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def services_read(
@@ -31049,7 +32207,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/services/{jsonable_encoder(id)}/",
+            f"ipam/services/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -31066,6 +32224,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def services_update(
@@ -31077,7 +32239,7 @@ class AsyncRawIpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -31107,7 +32269,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -31136,7 +32298,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/services/{jsonable_encoder(id_)}/",
+            f"ipam/services/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -31176,6 +32338,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def services_delete(
@@ -31197,7 +32363,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/services/{jsonable_encoder(id)}/",
+            f"ipam/services/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -31207,6 +32373,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def services_partial_update(
@@ -31218,7 +32388,7 @@ class AsyncRawIpamClient:
         protocol: WritableServiceProtocol,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -31248,7 +32418,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -31277,7 +32447,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/services/{jsonable_encoder(id_)}/",
+            f"ipam/services/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -31317,6 +32487,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlan_groups_list(
@@ -31777,6 +32951,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlan_groups_create(
@@ -31785,14 +32963,14 @@ class AsyncRawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -31811,7 +32989,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -31827,7 +33005,7 @@ class AsyncRawIpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -31886,6 +33064,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlan_groups_bulk_update(
@@ -31894,14 +33076,14 @@ class AsyncRawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -31920,7 +33102,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -31936,7 +33118,7 @@ class AsyncRawIpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -31995,6 +33177,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlan_groups_bulk_delete(
@@ -32023,6 +33209,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlan_groups_bulk_partial_update(
@@ -32031,14 +33221,14 @@ class AsyncRawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -32057,7 +33247,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -32073,7 +33263,7 @@ class AsyncRawIpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -32132,6 +33322,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlan_groups_read(
@@ -32154,7 +33348,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/vlan-groups/{jsonable_encoder(id)}/",
+            f"ipam/vlan-groups/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -32171,6 +33365,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlan_groups_update(
@@ -32180,14 +33378,14 @@ class AsyncRawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -32209,7 +33407,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -32225,7 +33423,7 @@ class AsyncRawIpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -32246,7 +33444,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/vlan-groups/{jsonable_encoder(id_)}/",
+            f"ipam/vlan-groups/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -32287,6 +33485,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlan_groups_delete(
@@ -32308,7 +33510,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/vlan-groups/{jsonable_encoder(id)}/",
+            f"ipam/vlan-groups/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -32318,6 +33520,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlan_groups_partial_update(
@@ -32327,14 +33533,14 @@ class AsyncRawIpamClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         max_vid: typing.Optional[int] = OMIT,
         min_vid: typing.Optional[int] = OMIT,
-        scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        scope: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         scope_id: typing.Optional[int] = OMIT,
         scope_type: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
@@ -32356,7 +33562,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -32372,7 +33578,7 @@ class AsyncRawIpamClient:
         min_vid : typing.Optional[int]
             Lowest permissible ID of a child VLAN
 
-        scope : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        scope : typing.Optional[typing.Dict[str, typing.Any]]
 
         scope_id : typing.Optional[int]
 
@@ -32393,7 +33599,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/vlan-groups/{jsonable_encoder(id_)}/",
+            f"ipam/vlan-groups/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -32434,6 +33640,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlan_groups_available_vlans_list(
@@ -32456,7 +33666,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/vlan-groups/{jsonable_encoder(id)}/available-vlans/",
+            f"ipam/vlan-groups/{encode_path_param(id)}/available-vlans/",
             method="GET",
             request_options=request_options,
         )
@@ -32473,6 +33683,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlan_groups_available_vlans_create(
@@ -32480,7 +33694,7 @@ class AsyncRawIpamClient:
         id: int,
         *,
         name: str,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         role: typing.Optional[int] = OMIT,
         site: typing.Optional[int] = OMIT,
@@ -32499,7 +33713,7 @@ class AsyncRawIpamClient:
 
         name : str
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -32522,7 +33736,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/vlan-groups/{jsonable_encoder(id)}/available-vlans/",
+            f"ipam/vlan-groups/{encode_path_param(id)}/available-vlans/",
             method="POST",
             json={
                 "custom_fields": custom_fields,
@@ -32555,6 +33769,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlans_list(
@@ -33035,6 +34253,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlans_create(
@@ -33044,7 +34266,7 @@ class AsyncRawIpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -33073,7 +34295,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -33150,6 +34372,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlans_bulk_update(
@@ -33159,7 +34385,7 @@ class AsyncRawIpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -33188,7 +34414,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -33265,6 +34491,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlans_bulk_delete(
@@ -33293,6 +34523,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlans_bulk_partial_update(
@@ -33302,7 +34536,7 @@ class AsyncRawIpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -33331,7 +34565,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -33408,6 +34642,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlans_read(
@@ -33430,7 +34668,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/vlans/{jsonable_encoder(id)}/",
+            f"ipam/vlans/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -33447,6 +34685,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlans_update(
@@ -33457,7 +34699,7 @@ class AsyncRawIpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -33489,7 +34731,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -33526,7 +34768,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/vlans/{jsonable_encoder(id_)}/",
+            f"ipam/vlans/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -33569,6 +34811,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlans_delete(
@@ -33590,7 +34836,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/vlans/{jsonable_encoder(id)}/",
+            f"ipam/vlans/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -33600,6 +34846,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vlans_partial_update(
@@ -33610,7 +34860,7 @@ class AsyncRawIpamClient:
         vid: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         group: typing.Optional[int] = OMIT,
@@ -33642,7 +34892,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -33679,7 +34929,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/vlans/{jsonable_encoder(id_)}/",
+            f"ipam/vlans/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -33722,6 +34972,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vrfs_list(
@@ -34132,6 +35386,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vrfs_create(
@@ -34140,7 +35398,7 @@ class AsyncRawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -34167,7 +35425,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -34245,6 +35503,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vrfs_bulk_update(
@@ -34253,7 +35515,7 @@ class AsyncRawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -34280,7 +35542,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -34358,6 +35620,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vrfs_bulk_delete(
@@ -34386,6 +35652,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vrfs_bulk_partial_update(
@@ -34394,7 +35664,7 @@ class AsyncRawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -34421,7 +35691,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -34499,6 +35769,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vrfs_read(
@@ -34521,7 +35795,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/vrfs/{jsonable_encoder(id)}/",
+            f"ipam/vrfs/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -34538,6 +35812,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vrfs_update(
@@ -34547,7 +35825,7 @@ class AsyncRawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -34577,7 +35855,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -34616,7 +35894,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/vrfs/{jsonable_encoder(id_)}/",
+            f"ipam/vrfs/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -34658,6 +35936,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vrfs_delete(
@@ -34679,7 +35961,7 @@ class AsyncRawIpamClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/vrfs/{jsonable_encoder(id)}/",
+            f"ipam/vrfs/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -34689,6 +35971,10 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def vrfs_partial_update(
@@ -34698,7 +35984,7 @@ class AsyncRawIpamClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enforce_unique: typing.Optional[bool] = OMIT,
@@ -34728,7 +36014,7 @@ class AsyncRawIpamClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -34767,7 +36053,7 @@ class AsyncRawIpamClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ipam/vrfs/{jsonable_encoder(id_)}/",
+            f"ipam/vrfs/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -34809,4 +36095,8 @@ class AsyncRawIpamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

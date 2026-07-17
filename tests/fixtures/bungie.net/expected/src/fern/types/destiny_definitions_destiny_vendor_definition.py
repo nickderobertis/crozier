@@ -48,7 +48,11 @@ class DestinyDefinitionsDestinyVendorDefinition(UniversalBaseModel):
     accepted_items: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyVendorAcceptedItemDefinition]],
         FieldMetadata(alias="acceptedItems"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="acceptedItems",
+            description="If the Vendor is actually a vehicle for the transferring of items (like the Vault and Postmaster vendors), this defines the list of source->destination buckets for transferring.",
+        ),
+    ] = None
     """
     If the Vendor is actually a vehicle for the transferring of items (like the Vault and Postmaster vendors), this defines the list of source->destination buckets for transferring.
     """
@@ -60,9 +64,14 @@ class DestinyDefinitionsDestinyVendorDefinition(UniversalBaseModel):
     Describes "actions" that can be performed on a vendor. Currently, none of these exist. But theoretically a Vendor could let you interact with it by performing actions. We'll see what these end up looking like if they ever get used.
     """
 
-    buy_string: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="buyString")] = pydantic.Field(
-        default=None
-    )
+    buy_string: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="buyString"),
+        pydantic.Field(
+            alias="buyString",
+            description='If the vendor has a custom localized string describing the "buy" action, that is returned here.',
+        ),
+    ] = None
     """
     If the vendor has a custom localized string describing the "buy" action, that is returned here.
     """
@@ -77,8 +86,13 @@ class DestinyDefinitionsDestinyVendorDefinition(UniversalBaseModel):
     """
 
     consolidate_categories: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="consolidateCategories")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="consolidateCategories"),
+        pydantic.Field(
+            alias="consolidateCategories",
+            description="If TRUE, consolidate categories that only differ by trivial properties (such as having minor differences in name)",
+        ),
+    ] = None
     """
     If TRUE, consolidate categories that only differ by trivial properties (such as having minor differences in name)
     """
@@ -86,15 +100,24 @@ class DestinyDefinitionsDestinyVendorDefinition(UniversalBaseModel):
     display_categories: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyDisplayCategoryDefinition]],
         FieldMetadata(alias="displayCategories"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="displayCategories",
+            description='Display Categories are different from "categories" in that these are specifically for visual grouping and display of categories in Vendor UI. \r\nThe "categories" structure is for validation of the contained items, and can be categorized entirely separately from "Display Categories", there need be and often will be no meaningful relationship between the two.',
+        ),
+    ] = None
     """
     Display Categories are different from "categories" in that these are specifically for visual grouping and display of categories in Vendor UI. 
     The "categories" structure is for validation of the contained items, and can be categorized entirely separately from "Display Categories", there need be and often will be no meaningful relationship between the two.
     """
 
-    display_item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="displayItemHash")] = (
-        pydantic.Field(default=None)
-    )
+    display_item_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="displayItemHash"),
+        pydantic.Field(
+            alias="displayItemHash",
+            description='If the vendor has an item that should be displayed as the "featured" item, this is the hash identifier for that DestinyVendorItemDefinition.\r\nApparently this is usually a related currency, like a reputation token. But it need not be restricted to that.',
+        ),
+    ] = None
     """
     If the vendor has an item that should be displayed as the "featured" item, this is the hash identifier for that DestinyVendorItemDefinition.
     Apparently this is usually a related currency, like a reputation token. But it need not be restricted to that.
@@ -103,23 +126,34 @@ class DestinyDefinitionsDestinyVendorDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsDestinyVendorDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     enabled: typing.Optional[bool] = pydantic.Field(default=None)
     """
     If a vendor is not enabled, we won't even save the vendor's definition, and we won't return any items or info about them. It's as if they don't exist.
     """
 
-    faction_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="factionHash")] = (
-        pydantic.Field(default=None)
-    )
+    faction_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="factionHash"),
+        pydantic.Field(
+            alias="factionHash",
+            description='If the Vendor has a faction, this hash will be valid and point to a DestinyFactionDefinition.\r\nThe game UI and BNet often mine the faction definition for additional elements and details to place on the screen, such as the faction\'s Progression status (aka "Reputation").',
+        ),
+    ] = None
     """
     If the Vendor has a faction, this hash will be valid and point to a DestinyFactionDefinition.
     The game UI and BNet often mine the faction definition for additional elements and details to place on the screen, such as the faction's Progression status (aka "Reputation").
     """
 
     failure_strings: typing_extensions.Annotated[
-        typing.Optional[typing.List[str]], FieldMetadata(alias="failureStrings")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="failureStrings"),
+        pydantic.Field(
+            alias="failureStrings",
+            description="If an item can't be purchased from the vendor, there may be many \"custom\"/game state specific reasons why not.\r\nThis is a list of localized strings with messages for those custom failures. The live BNet data will return a failureIndexes property for items that can't be purchased: using those values to index into this array, you can show the user the appropriate failure message for the item that can't be bought.",
+        ),
+    ] = None
     """
     If an item can't be purchased from the vendor, there may be many "custom"/game state specific reasons why not.
     This is a list of localized strings with messages for those custom failures. The live BNet data will return a failureIndexes property for items that can't be purchased: using those values to index into this array, you can show the user the appropriate failure message for the item that can't be bought.
@@ -137,8 +171,13 @@ class DestinyDefinitionsDestinyVendorDefinition(UniversalBaseModel):
     """
 
     ignore_sale_item_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="ignoreSaleItemHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="ignoreSaleItemHashes"),
+        pydantic.Field(
+            alias="ignoreSaleItemHashes",
+            description="Some items don't make sense to return in the API, for example because they represent an action to be performed rather than an item being sold. I'd rather we not do this, but at least in the short term this is a workable workaround.",
+        ),
+    ] = None
     """
     Some items don't make sense to return in the API, for example because they represent an action to be performed rather than an item being sold. I'd rather we not do this, but at least in the short term this is a workable workaround.
     """
@@ -148,16 +187,26 @@ class DestinyDefinitionsDestinyVendorDefinition(UniversalBaseModel):
     The index of the entity as it was found in the investment tables.
     """
 
-    inhibit_buying: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="inhibitBuying")] = (
-        pydantic.Field(default=None)
-    )
+    inhibit_buying: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="inhibitBuying"),
+        pydantic.Field(
+            alias="inhibitBuying",
+            description="If this is true, you aren't allowed to buy whatever the vendor is selling.",
+        ),
+    ] = None
     """
     If this is true, you aren't allowed to buy whatever the vendor is selling.
     """
 
-    inhibit_selling: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="inhibitSelling")] = (
-        pydantic.Field(default=None)
-    )
+    inhibit_selling: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="inhibitSelling"),
+        pydantic.Field(
+            alias="inhibitSelling",
+            description="If this is true, you're not allowed to sell whatever the vendor is buying.",
+        ),
+    ] = None
     """
     If this is true, you're not allowed to sell whatever the vendor is buying.
     """
@@ -172,14 +221,23 @@ class DestinyDefinitionsDestinyVendorDefinition(UniversalBaseModel):
     inventory_flyouts: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyVendorInventoryFlyoutDefinition]],
         FieldMetadata(alias="inventoryFlyouts"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="inventoryFlyouts",
+            description="If the vendor shows you items from your own inventory - such as the Vault vendor does - this data describes the UI around showing those inventory buckets and which ones get shown.",
+        ),
+    ] = None
     """
     If the vendor shows you items from your own inventory - such as the Vault vendor does - this data describes the UI around showing those inventory buckets and which ones get shown.
     """
 
     item_list: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinyDefinitionsDestinyVendorItemDefinition]], FieldMetadata(alias="itemList")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[DestinyDefinitionsDestinyVendorItemDefinition]],
+        FieldMetadata(alias="itemList"),
+        pydantic.Field(
+            alias="itemList",
+            description='If the vendor sells items (or merely has a list of items to show like the "Sack" vendors do), this is the list of those items that the vendor can sell. From this list, only a subset will be available from the vendor at any given time, selected randomly and reset on the vendor\'s refresh interval.\r\nNote that a vendor can sell the same item multiple ways: for instance, nothing stops a vendor from selling you some specific weapon but using two different currencies, or the same weapon at multiple "item levels".',
+        ),
+    ] = None
     """
     If the vendor sells items (or merely has a list of items to show like the "Sack" vendors do), this is the list of those items that the vendor can sell. From this list, only a subset will be available from the vendor at any given time, selected randomly and reset on the vendor's refresh interval.
     Note that a vendor can sell the same item multiple ways: for instance, nothing stops a vendor from selling you some specific weapon but using two different currencies, or the same weapon at multiple "item levels".
@@ -195,7 +253,11 @@ class DestinyDefinitionsDestinyVendorDefinition(UniversalBaseModel):
     original_categories: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyVendorCategoryEntryDefinition]],
         FieldMetadata(alias="originalCategories"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="originalCategories",
+            description="See the categories property for a description of categories and why originalCategories exists.",
+        ),
+    ] = None
     """
     See the categories property for a description of categories and why originalCategories exists.
     """
@@ -206,30 +268,50 @@ class DestinyDefinitionsDestinyVendorDefinition(UniversalBaseModel):
     """
 
     reset_interval_minutes: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="resetIntervalMinutes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="resetIntervalMinutes"),
+        pydantic.Field(
+            alias="resetIntervalMinutes",
+            description="A number used for calculating the frequency of a vendor's inventory resetting/refreshing.\r\nDon't worry about calculating this - we do it on the server side and send you the next refresh date with the live data.",
+        ),
+    ] = None
     """
     A number used for calculating the frequency of a vendor's inventory resetting/refreshing.
     Don't worry about calculating this - we do it on the server side and send you the next refresh date with the live data.
     """
 
     reset_offset_minutes: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="resetOffsetMinutes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="resetOffsetMinutes"),
+        pydantic.Field(
+            alias="resetOffsetMinutes",
+            description="Again, used for reset/refreshing of inventory. Don't worry too much about it. Unless you want to.",
+        ),
+    ] = None
     """
     Again, used for reset/refreshing of inventory. Don't worry too much about it. Unless you want to.
     """
 
     return_with_vendor_request: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="returnWithVendorRequest")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="returnWithVendorRequest"),
+        pydantic.Field(
+            alias="returnWithVendorRequest",
+            description="As many of you know, Vendor data has historically been pretty brutal on the BNet servers. In an effort to reduce this workload, only Vendors with this flag set will be returned on Vendor requests. This allows us to filter out Vendors that don't dynamic data that's particularly useful: things like \"Preview/Sack\" vendors, for example, that you can usually suss out the details for using just the definitions themselves.",
+        ),
+    ] = None
     """
     As many of you know, Vendor data has historically been pretty brutal on the BNet servers. In an effort to reduce this workload, only Vendors with this flag set will be returned on Vendor requests. This allows us to filter out Vendors that don't dynamic data that's particularly useful: things like "Preview/Sack" vendors, for example, that you can usually suss out the details for using just the definitions themselves.
     """
 
-    sell_string: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="sellString")] = pydantic.Field(
-        default=None
-    )
+    sell_string: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="sellString"),
+        pydantic.Field(
+            alias="sellString",
+            description="Ditto for selling. Not that you can sell items to a vendor anymore. Will it come back? Who knows. The string's still there.",
+        ),
+    ] = None
     """
     Ditto for selling. Not that you can sell items to a vendor anymore. Will it come back? Who knows. The string's still there.
     """
@@ -242,43 +324,71 @@ class DestinyDefinitionsDestinyVendorDefinition(UniversalBaseModel):
     """
 
     unlock_ranges: typing_extensions.Annotated[
-        typing.Optional[typing.List[DatesDateRange]], FieldMetadata(alias="unlockRanges")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[DatesDateRange]],
+        FieldMetadata(alias="unlockRanges"),
+        pydantic.Field(
+            alias="unlockRanges",
+            description="If we were able to predict the dates when this Vendor will be visible/available, this will be the list of those date ranges. Sadly, we're not able to predict this very frequently, so this will often be useless data.",
+        ),
+    ] = None
     """
     If we were able to predict the dates when this Vendor will be visible/available, this will be the list of those date ranges. Sadly, we're not able to predict this very frequently, so this will often be useless data.
     """
 
-    vendor_banner: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="vendorBanner")] = (
-        pydantic.Field(default=None)
-    )
+    vendor_banner: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="vendorBanner"),
+        pydantic.Field(
+            alias="vendorBanner", description="If the vendor has a custom banner image, that can be found here."
+        ),
+    ] = None
     """
     If the vendor has a custom banner image, that can be found here.
     """
 
-    vendor_identifier: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="vendorIdentifier")] = (
-        pydantic.Field(default=None)
-    )
+    vendor_identifier: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="vendorIdentifier"),
+        pydantic.Field(
+            alias="vendorIdentifier",
+            description="The internal identifier for the Vendor. A holdover from the old days of Vendors, but we don't have time to refactor it away.",
+        ),
+    ] = None
     """
     The internal identifier for the Vendor. A holdover from the old days of Vendors, but we don't have time to refactor it away.
     """
 
-    vendor_portrait: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="vendorPortrait")] = (
-        pydantic.Field(default=None)
-    )
+    vendor_portrait: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="vendorPortrait"),
+        pydantic.Field(
+            alias="vendorPortrait", description="A portrait of the Vendor's smiling mug. Or frothing tentacles."
+        ),
+    ] = None
     """
     A portrait of the Vendor's smiling mug. Or frothing tentacles.
     """
 
     vendor_progression_type: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="vendorProgressionType")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="vendorProgressionType"),
+        pydantic.Field(
+            alias="vendorProgressionType",
+            description="The type of reward progression that this vendor has. Default - The original rank progression from token redemption. Ritual - Progression from ranks in ritual content. For example: Crucible (Shaxx), Gambit (Drifter), and Battlegrounds (War Table).",
+        ),
+    ] = None
     """
     The type of reward progression that this vendor has. Default - The original rank progression from token redemption. Ritual - Progression from ranks in ritual content. For example: Crucible (Shaxx), Gambit (Drifter), and Battlegrounds (War Table).
     """
 
     vendor_subcategory_identifier: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="vendorSubcategoryIdentifier")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="vendorSubcategoryIdentifier"),
+        pydantic.Field(
+            alias="vendorSubcategoryIdentifier",
+            description="The identifier of the VendorCategoryDefinition for this vendor's subcategory.",
+        ),
+    ] = None
     """
     The identifier of the VendorCategoryDefinition for this vendor's subcategory.
     """

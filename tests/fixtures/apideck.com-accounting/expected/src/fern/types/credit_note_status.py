@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CreditNoteStatus(str, enum.Enum):
+class CreditNoteStatus(enum.StrEnum):
     """
     Status of credit notes
     """

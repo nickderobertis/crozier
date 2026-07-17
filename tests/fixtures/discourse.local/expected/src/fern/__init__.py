@@ -22,6 +22,7 @@ if typing.TYPE_CHECKING:
         uploads,
         users,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .backups import CreateBackupResponse, GetBackupsResponseItem
     from .badges import (
         AdminListBadgesResponse,
@@ -338,6 +339,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CreateUploadRequestType": ".uploads",
     "CreateUploadResponse": ".uploads",
     "CreateUserResponse": ".users",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "DeleteGroupResponse": ".groups",
     "DeleteUserResponse": ".users",
     "FernApi": ".client",
@@ -625,6 +628,8 @@ __all__ = [
     "CreateUploadRequestType",
     "CreateUploadResponse",
     "CreateUserResponse",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "DeleteGroupResponse",
     "DeleteUserResponse",
     "FernApi",

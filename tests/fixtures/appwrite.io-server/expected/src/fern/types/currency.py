@@ -18,7 +18,11 @@ class Currency(UniversalBaseModel):
     Currency code in [ISO 4217-1](http://en.wikipedia.org/wiki/ISO_4217) three-character format.
     """
 
-    decimal_digits: typing_extensions.Annotated[int, FieldMetadata(alias="decimalDigits")] = pydantic.Field()
+    decimal_digits: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="decimalDigits"),
+        pydantic.Field(alias="decimalDigits", description="Number of decimal digits."),
+    ]
     """
     Number of decimal digits.
     """
@@ -28,7 +32,9 @@ class Currency(UniversalBaseModel):
     Currency name.
     """
 
-    name_plural: typing_extensions.Annotated[str, FieldMetadata(alias="namePlural")] = pydantic.Field()
+    name_plural: typing_extensions.Annotated[
+        str, FieldMetadata(alias="namePlural"), pydantic.Field(alias="namePlural", description="Currency plural name")
+    ]
     """
     Currency plural name
     """
@@ -43,7 +49,11 @@ class Currency(UniversalBaseModel):
     Currency symbol.
     """
 
-    symbol_native: typing_extensions.Annotated[str, FieldMetadata(alias="symbolNative")] = pydantic.Field()
+    symbol_native: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="symbolNative"),
+        pydantic.Field(alias="symbolNative", description="Currency native symbol."),
+    ]
     """
     Currency native symbol.
     """

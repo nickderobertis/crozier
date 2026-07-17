@@ -1,3 +1,6 @@
 
 
 TownName = str
+"""
+Name of a built-up area, with defined boundaries, and a local government.
+"""

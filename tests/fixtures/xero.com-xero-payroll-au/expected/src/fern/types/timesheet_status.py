@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TimesheetStatus(str, enum.Enum):
+class TimesheetStatus(enum.StrEnum):
     DRAFT = "DRAFT"
     PROCESSED = "PROCESSED"
     APPROVED = "APPROVED"

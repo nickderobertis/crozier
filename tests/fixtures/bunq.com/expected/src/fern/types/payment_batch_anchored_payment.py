@@ -11,9 +11,11 @@ from ..core.serialization import FieldMetadata
 
 
 class PaymentBatchAnchoredPayment(UniversalBaseModel):
-    payment: typing_extensions.Annotated[typing.Optional[typing.List["Payment"]], FieldMetadata(alias="Payment")] = (
-        pydantic.Field(default=None)
-    )
+    payment: typing_extensions.Annotated[
+        typing.Optional[typing.List["Payment"]],
+        FieldMetadata(alias="Payment"),
+        pydantic.Field(alias="Payment", description=""),
+    ] = None
     """
     
     """
@@ -29,5 +31,12 @@ class PaymentBatchAnchoredPayment(UniversalBaseModel):
 
 
 from .payment import Payment
+from .payment_auto_allocate_instance import PaymentAutoAllocateInstance
+from .payment_batch import PaymentBatch
 
-update_forward_refs(PaymentBatchAnchoredPayment)
+update_forward_refs(
+    PaymentBatchAnchoredPayment,
+    Payment=Payment,
+    PaymentAutoAllocateInstance=PaymentAutoAllocateInstance,
+    PaymentBatch=PaymentBatch,
+)

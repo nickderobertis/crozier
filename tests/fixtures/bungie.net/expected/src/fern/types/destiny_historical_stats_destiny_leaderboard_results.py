@@ -9,16 +9,26 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyHistoricalStatsDestinyLeaderboardResults(UniversalBaseModel):
-    focus_character_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="focusCharacterId")] = (
-        pydantic.Field(default=None)
-    )
+    focus_character_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="focusCharacterId"),
+        pydantic.Field(
+            alias="focusCharacterId",
+            description="Indicate the character ID of the character that is the focal point of the provided leaderboards. May be null, in which case any character from the focus membership can appear in the provided leaderboards.",
+        ),
+    ] = None
     """
     Indicate the character ID of the character that is the focal point of the provided leaderboards. May be null, in which case any character from the focus membership can appear in the provided leaderboards.
     """
 
-    focus_membership_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="focusMembershipId")] = (
-        pydantic.Field(default=None)
-    )
+    focus_membership_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="focusMembershipId"),
+        pydantic.Field(
+            alias="focusMembershipId",
+            description="Indicate the membership ID of the account that is the focal point of the provided leaderboards.",
+        ),
+    ] = None
     """
     Indicate the membership ID of the account that is the focal point of the provided leaderboards.
     """

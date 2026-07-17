@@ -13,9 +13,14 @@ class DestinyDefinitionsDestinyItemSocketEntryPlugItemDefinition(UniversalBaseMo
     The definition of a known, reusable plug that can be applied to a socket.
     """
 
-    plug_item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="plugItemHash")] = (
-        pydantic.Field(default=None)
-    )
+    plug_item_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="plugItemHash"),
+        pydantic.Field(
+            alias="plugItemHash",
+            description="The hash identifier of a DestinyInventoryItemDefinition representing the plug that can be inserted.",
+        ),
+    ] = None
     """
     The hash identifier of a DestinyInventoryItemDefinition representing the plug that can be inserted.
     """

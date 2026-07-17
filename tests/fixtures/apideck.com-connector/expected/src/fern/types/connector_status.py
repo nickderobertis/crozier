@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ConnectorStatus(str, enum.Enum):
+class ConnectorStatus(enum.StrEnum):
     """
     Status of the connector. Connectors with status live or beta are callable.
     """

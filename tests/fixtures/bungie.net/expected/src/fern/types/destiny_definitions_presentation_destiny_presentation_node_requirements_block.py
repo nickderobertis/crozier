@@ -14,8 +14,13 @@ class DestinyDefinitionsPresentationDestinyPresentationNodeRequirementsBlock(Uni
     """
 
     entitlement_unavailable_message: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="entitlementUnavailableMessage")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="entitlementUnavailableMessage"),
+        pydantic.Field(
+            alias="entitlementUnavailableMessage",
+            description="If this node is not accessible due to Entitlements (for instance, you don't own the required game expansion), this is the message to show.",
+        ),
+    ] = None
     """
     If this node is not accessible due to Entitlements (for instance, you don't own the required game expansion), this is the message to show.
     """

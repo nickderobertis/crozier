@@ -10,7 +10,9 @@ from .workspace_id import WorkspaceId
 
 
 class WorkspaceIdRequestBody(UniversalBaseModel):
-    workspace_id: typing_extensions.Annotated[WorkspaceId, FieldMetadata(alias="workspaceId")]
+    workspace_id: typing_extensions.Annotated[
+        WorkspaceId, FieldMetadata(alias="workspaceId"), pydantic.Field(alias="workspaceId")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

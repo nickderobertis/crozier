@@ -16,21 +16,32 @@ class ObReadBalance1DataBalanceItemCreditLineItem(UniversalBaseModel):
     """
 
     amount: typing_extensions.Annotated[
-        typing.Optional[ObReadBalance1DataBalanceItemCreditLineItemAmount], FieldMetadata(alias="Amount")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObReadBalance1DataBalanceItemCreditLineItemAmount],
+        FieldMetadata(alias="Amount"),
+        pydantic.Field(alias="Amount", description="Amount of money of the credit line."),
+    ] = None
     """
     Amount of money of the credit line.
     """
 
-    included: typing_extensions.Annotated[bool, FieldMetadata(alias="Included")] = pydantic.Field()
+    included: typing_extensions.Annotated[
+        bool,
+        FieldMetadata(alias="Included"),
+        pydantic.Field(
+            alias="Included",
+            description="Indicates whether or not the credit line is included in the balance of the account.\nUsage: If not present, credit line is not included in the balance amount of the account.",
+        ),
+    ]
     """
     Indicates whether or not the credit line is included in the balance of the account.
     Usage: If not present, credit line is not included in the balance amount of the account.
     """
 
     type: typing_extensions.Annotated[
-        typing.Optional[ObReadBalance1DataBalanceItemCreditLineItemType], FieldMetadata(alias="Type")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObReadBalance1DataBalanceItemCreditLineItemType],
+        FieldMetadata(alias="Type"),
+        pydantic.Field(alias="Type", description="Limit type, in a coded form."),
+    ] = None
     """
     Limit type, in a coded form.
     """

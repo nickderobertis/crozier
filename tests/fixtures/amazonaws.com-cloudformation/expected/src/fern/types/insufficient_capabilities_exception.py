@@ -2,4 +2,4 @@
 
 import typing
 
-InsufficientCapabilitiesException = typing.Optional[typing.Any]
+InsufficientCapabilitiesException = typing.Any

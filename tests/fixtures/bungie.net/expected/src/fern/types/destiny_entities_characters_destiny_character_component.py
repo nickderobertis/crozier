@@ -17,87 +17,139 @@ class DestinyEntitiesCharactersDestinyCharacterComponent(UniversalBaseModel):
     """
 
     base_character_level: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="baseCharacterLevel")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="baseCharacterLevel"),
+        pydantic.Field(
+            alias="baseCharacterLevel",
+            description='The "base" level of your character, not accounting for any light level.',
+        ),
+    ] = None
     """
     The "base" level of your character, not accounting for any light level.
     """
 
-    character_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="characterId")] = (
-        pydantic.Field(default=None)
-    )
+    character_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="characterId"),
+        pydantic.Field(alias="characterId", description="The unique identifier for the character."),
+    ] = None
     """
     The unique identifier for the character.
     """
 
-    class_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="classHash")] = pydantic.Field(
-        default=None
-    )
+    class_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="classHash"),
+        pydantic.Field(
+            alias="classHash", description="Use this hash to look up the character's DestinyClassDefinition."
+        ),
+    ] = None
     """
     Use this hash to look up the character's DestinyClassDefinition.
     """
 
-    class_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="classType")] = pydantic.Field(
-        default=None
-    )
+    class_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="classType"),
+        pydantic.Field(
+            alias="classType",
+            description="Mostly for historical purposes at this point, this is an enumeration for the character's class.\r\nIt'll be preferable in the general case to look up the related definition: but for some people this was too convenient to remove.",
+        ),
+    ] = None
     """
     Mostly for historical purposes at this point, this is an enumeration for the character's class.
     It'll be preferable in the general case to look up the related definition: but for some people this was too convenient to remove.
     """
 
     date_last_played: typing_extensions.Annotated[
-        typing.Optional[dt.datetime], FieldMetadata(alias="dateLastPlayed")
-    ] = pydantic.Field(default=None)
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="dateLastPlayed"),
+        pydantic.Field(alias="dateLastPlayed", description="The last date that the user played Destiny."),
+    ] = None
     """
     The last date that the user played Destiny.
     """
 
     emblem_background_path: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="emblemBackgroundPath")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="emblemBackgroundPath"),
+        pydantic.Field(
+            alias="emblemBackgroundPath",
+            description="A shortcut path to the user's currently equipped emblem background image. If you're just showing summary info for a user, this is more convenient than examining their equipped emblem and looking up the definition.",
+        ),
+    ] = None
     """
     A shortcut path to the user's currently equipped emblem background image. If you're just showing summary info for a user, this is more convenient than examining their equipped emblem and looking up the definition.
     """
 
     emblem_color: typing_extensions.Annotated[
-        typing.Optional[DestinyMiscDestinyColor], FieldMetadata(alias="emblemColor")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyMiscDestinyColor],
+        FieldMetadata(alias="emblemColor"),
+        pydantic.Field(
+            alias="emblemColor",
+            description="A shortcut for getting the background color of the user's currently equipped emblem without having to do a DestinyInventoryItemDefinition lookup.",
+        ),
+    ] = None
     """
     A shortcut for getting the background color of the user's currently equipped emblem without having to do a DestinyInventoryItemDefinition lookup.
     """
 
-    emblem_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="emblemHash")] = pydantic.Field(
-        default=None
-    )
+    emblem_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="emblemHash"),
+        pydantic.Field(
+            alias="emblemHash",
+            description="The hash of the currently equipped emblem for the user. Can be used to look up the DestinyInventoryItemDefinition.",
+        ),
+    ] = None
     """
     The hash of the currently equipped emblem for the user. Can be used to look up the DestinyInventoryItemDefinition.
     """
 
-    emblem_path: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="emblemPath")] = pydantic.Field(
-        default=None
-    )
+    emblem_path: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="emblemPath"),
+        pydantic.Field(
+            alias="emblemPath",
+            description="A shortcut path to the user's currently equipped emblem image. If you're just showing summary info for a user, this is more convenient than examining their equipped emblem and looking up the definition.",
+        ),
+    ] = None
     """
     A shortcut path to the user's currently equipped emblem image. If you're just showing summary info for a user, this is more convenient than examining their equipped emblem and looking up the definition.
     """
 
-    gender_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="genderHash")] = pydantic.Field(
-        default=None
-    )
+    gender_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="genderHash"),
+        pydantic.Field(
+            alias="genderHash", description="Use this hash to look up the character's DestinyGenderDefinition."
+        ),
+    ] = None
     """
     Use this hash to look up the character's DestinyGenderDefinition.
     """
 
-    gender_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="genderType")] = pydantic.Field(
-        default=None
-    )
+    gender_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="genderType"),
+        pydantic.Field(
+            alias="genderType",
+            description="Mostly for historical purposes at this point, this is an enumeration for the character's Gender.\r\nIt'll be preferable in the general case to look up the related definition: but for some people this was too convenient to remove. And yeah, it's an enumeration and not a boolean. Fight me.",
+        ),
+    ] = None
     """
     Mostly for historical purposes at this point, this is an enumeration for the character's Gender.
     It'll be preferable in the general case to look up the related definition: but for some people this was too convenient to remove. And yeah, it's an enumeration and not a boolean. Fight me.
     """
 
     level_progression: typing_extensions.Annotated[
-        typing.Optional[DestinyDestinyProgression], FieldMetadata(alias="levelProgression")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyDestinyProgression],
+        FieldMetadata(alias="levelProgression"),
+        pydantic.Field(
+            alias="levelProgression",
+            description="The progression that indicates your character's level. Not their light level, but their character level: you know, the thing you max out a couple hours in and then ignore for the sake of light level.",
+        ),
+    ] = None
     """
     The progression that indicates your character's level. Not their light level, but their character level: you know, the thing you max out a couple hours in and then ignore for the sake of light level.
     """
@@ -107,51 +159,83 @@ class DestinyEntitiesCharactersDestinyCharacterComponent(UniversalBaseModel):
     The user's calculated "Light Level". Light level is an indicator of your power that mostly matters in the end game, once you've reached the maximum character level: it's a level that's dependent on the average Attack/Defense power of your items.
     """
 
-    membership_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="membershipId")] = (
-        pydantic.Field(default=None)
-    )
+    membership_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="membershipId"),
+        pydantic.Field(
+            alias="membershipId",
+            description="Every Destiny Profile has a membershipId. This is provided on the character as well for convenience.",
+        ),
+    ] = None
     """
     Every Destiny Profile has a membershipId. This is provided on the character as well for convenience.
     """
 
-    membership_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="membershipType")] = (
-        pydantic.Field(default=None)
-    )
+    membership_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="membershipType"),
+        pydantic.Field(
+            alias="membershipType",
+            description="membershipType tells you the platform on which the character plays. Examine the BungieMembershipType enumeration for possible values.",
+        ),
+    ] = None
     """
     membershipType tells you the platform on which the character plays. Examine the BungieMembershipType enumeration for possible values.
     """
 
     minutes_played_this_session: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="minutesPlayedThisSession")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="minutesPlayedThisSession"),
+        pydantic.Field(
+            alias="minutesPlayedThisSession",
+            description="If the user is currently playing, this is how long they've been playing.",
+        ),
+    ] = None
     """
     If the user is currently playing, this is how long they've been playing.
     """
 
     minutes_played_total: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="minutesPlayedTotal")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="minutesPlayedTotal"),
+        pydantic.Field(
+            alias="minutesPlayedTotal",
+            description="If this value is 525,600, then they played Destiny for a year. Or they're a very dedicated Rent fan. Note that this includes idle time, not just time spent actually in activities shooting things.",
+        ),
+    ] = None
     """
     If this value is 525,600, then they played Destiny for a year. Or they're a very dedicated Rent fan. Note that this includes idle time, not just time spent actually in activities shooting things.
     """
 
     percent_to_next_level: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="percentToNextLevel")
-    ] = pydantic.Field(default=None)
+        typing.Optional[float],
+        FieldMetadata(alias="percentToNextLevel"),
+        pydantic.Field(
+            alias="percentToNextLevel",
+            description="A number between 0 and 100, indicating the whole and fractional % remaining to get to the next character level.",
+        ),
+    ] = None
     """
     A number between 0 and 100, indicating the whole and fractional % remaining to get to the next character level.
     """
 
-    race_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="raceHash")] = pydantic.Field(
-        default=None
-    )
+    race_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="raceHash"),
+        pydantic.Field(alias="raceHash", description="Use this hash to look up the character's DestinyRaceDefinition."),
+    ] = None
     """
     Use this hash to look up the character's DestinyRaceDefinition.
     """
 
-    race_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="raceType")] = pydantic.Field(
-        default=None
-    )
+    race_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="raceType"),
+        pydantic.Field(
+            alias="raceType",
+            description="Mostly for historical purposes at this point, this is an enumeration for the character's race.\r\nIt'll be preferable in the general case to look up the related definition: but for some people this was too convenient to remove.",
+        ),
+    ] = None
     """
     Mostly for historical purposes at this point, this is an enumeration for the character's race.
     It'll be preferable in the general case to look up the related definition: but for some people this was too convenient to remove.
@@ -163,9 +247,14 @@ class DestinyEntitiesCharactersDestinyCharacterComponent(UniversalBaseModel):
     You'll have to call a different endpoint for those.
     """
 
-    title_record_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="titleRecordHash")] = (
-        pydantic.Field(default=None)
-    )
+    title_record_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="titleRecordHash"),
+        pydantic.Field(
+            alias="titleRecordHash",
+            description="If this Character has a title assigned to it, this is the identifier of the DestinyRecordDefinition that has that title information.",
+        ),
+    ] = None
     """
     If this Character has a title assigned to it, this is the identifier of the DestinyRecordDefinition that has that title information.
     """

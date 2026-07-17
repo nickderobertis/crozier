@@ -223,7 +223,7 @@ class ImportsClient:
         self,
         operation_id: str,
         *,
-        request: typing.Dict[str, typing.Optional[typing.Any]],
+        request: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageImportContentResponse:
         """
@@ -231,7 +231,7 @@ class ImportsClient:
         ----------
         operation_id : str
 
-        request : typing.Dict[str, typing.Optional[typing.Any]]
+        request : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -286,7 +286,7 @@ class ImportsClient:
         self,
         operation_id: str,
         *,
-        request: typing.Dict[str, typing.Optional[typing.Any]],
+        request: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageImportContentResponse:
         """
@@ -294,7 +294,7 @@ class ImportsClient:
         ----------
         operation_id : str
 
-        request : typing.Dict[str, typing.Optional[typing.Any]]
+        request : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -468,7 +468,7 @@ class ImportsClient:
         self,
         operation_id: str,
         *,
-        request: typing.Dict[str, typing.Optional[typing.Any]],
+        request: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageImportContentResponse:
         """
@@ -476,7 +476,7 @@ class ImportsClient:
         ----------
         operation_id : str
 
-        request : typing.Dict[str, typing.Optional[typing.Any]]
+        request : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -763,7 +763,7 @@ class AsyncImportsClient:
         self,
         operation_id: str,
         *,
-        request: typing.Dict[str, typing.Optional[typing.Any]],
+        request: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageImportContentResponse:
         """
@@ -771,7 +771,7 @@ class AsyncImportsClient:
         ----------
         operation_id : str
 
-        request : typing.Dict[str, typing.Optional[typing.Any]]
+        request : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -844,7 +844,7 @@ class AsyncImportsClient:
         self,
         operation_id: str,
         *,
-        request: typing.Dict[str, typing.Optional[typing.Any]],
+        request: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageImportContentResponse:
         """
@@ -852,7 +852,7 @@ class AsyncImportsClient:
         ----------
         operation_id : str
 
-        request : typing.Dict[str, typing.Optional[typing.Any]]
+        request : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1058,7 +1058,7 @@ class AsyncImportsClient:
         self,
         operation_id: str,
         *,
-        request: typing.Dict[str, typing.Optional[typing.Any]],
+        request: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageImportContentResponse:
         """
@@ -1066,7 +1066,7 @@ class AsyncImportsClient:
         ----------
         operation_id : str
 
-        request : typing.Dict[str, typing.Optional[typing.Any]]
+        request : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

@@ -17,9 +17,13 @@ class DestinyEntitiesVendorsDestinyVendorSaleItemComponent(UniversalBaseModel):
     Note that if you want instance, stats, etc... data for the item, you'll have to request additional components such as ItemInstances, ItemPerks etc... and acquire them from the DestinyVendorResponse's "items" property.
     """
 
-    api_purchasable: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="apiPurchasable")] = (
-        pydantic.Field(default=None)
-    )
+    api_purchasable: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="apiPurchasable"),
+        pydantic.Field(
+            alias="apiPurchasable", description="If true, this item can be purchased through the Bungie.net API."
+        ),
+    ] = None
     """
     If true, this item can be purchased through the Bungie.net API.
     """
@@ -36,38 +40,63 @@ class DestinyEntitiesVendorsDestinyVendorSaleItemComponent(UniversalBaseModel):
     """
 
     failure_indexes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="failureIndexes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="failureIndexes"),
+        pydantic.Field(
+            alias="failureIndexes",
+            description="Indexes in to the \"failureStrings\" lookup table in DestinyVendorDefinition for the given Vendor. Gives some more reliable failure information for why you can't purchase an item.\r\nIt is preferred to use these over requiredUnlocks and unlockStatuses: the latter are provided mostly in case someone can do something interesting with it that I didn't anticipate.",
+        ),
+    ] = None
     """
     Indexes in to the "failureStrings" lookup table in DestinyVendorDefinition for the given Vendor. Gives some more reliable failure information for why you can't purchase an item.
     It is preferred to use these over requiredUnlocks and unlockStatuses: the latter are provided mostly in case someone can do something interesting with it that I didn't anticipate.
     """
 
-    item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemHash")] = pydantic.Field(
-        default=None
-    )
+    item_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="itemHash"),
+        pydantic.Field(
+            alias="itemHash",
+            description="The hash of the item being sold, as a quick shortcut for looking up the DestinyInventoryItemDefinition of the sale item.",
+        ),
+    ] = None
     """
     The hash of the item being sold, as a quick shortcut for looking up the DestinyInventoryItemDefinition of the sale item.
     """
 
     item_value_visibility: typing_extensions.Annotated[
-        typing.Optional[typing.List[bool]], FieldMetadata(alias="itemValueVisibility")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[bool]],
+        FieldMetadata(alias="itemValueVisibility"),
+        pydantic.Field(
+            alias="itemValueVisibility",
+            description="If available, a list that describes which item values (rewards) should be shown (true) or hidden (false).",
+        ),
+    ] = None
     """
     If available, a list that describes which item values (rewards) should be shown (true) or hidden (false).
     """
 
     override_next_refresh_date: typing_extensions.Annotated[
-        typing.Optional[dt.datetime], FieldMetadata(alias="overrideNextRefreshDate")
-    ] = pydantic.Field(default=None)
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="overrideNextRefreshDate"),
+        pydantic.Field(
+            alias="overrideNextRefreshDate",
+            description="If this item has its own custom date where it may be removed from the Vendor's rotation, this is that date.\r\nNote that there's not actually any guarantee that it will go away: it could be chosen again and end up still being in the Vendor's sale items! But this is the next date where that test will occur, and is also the date that the game shows for availability on things like Bounties being sold. So it's the best we can give.",
+        ),
+    ] = None
     """
     If this item has its own custom date where it may be removed from the Vendor's rotation, this is that date.
     Note that there's not actually any guarantee that it will go away: it could be chosen again and end up still being in the Vendor's sale items! But this is the next date where that test will occur, and is also the date that the game shows for availability on things like Bounties being sold. So it's the best we can give.
     """
 
     override_style_item_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="overrideStyleItemHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="overrideStyleItemHash"),
+        pydantic.Field(
+            alias="overrideStyleItemHash",
+            description="If populated, this is the hash of the item whose icon (and other secondary styles, but *not* the human readable strings) should override whatever icons/styles are on the item being sold.\r\nIf you don't do this, certain items whose styles are being overridden by socketed items - such as the \"Recycle Shader\" item - would show whatever their default icon/style is, and it wouldn't be pretty or look accurate.",
+        ),
+    ] = None
     """
     If populated, this is the hash of the item whose icon (and other secondary styles, but *not* the human readable strings) should override whatever icons/styles are on the item being sold.
     If you don't do this, certain items whose styles are being overridden by socketed items - such as the "Recycle Shader" item - would show whatever their default icon/style is, and it wouldn't be pretty or look accurate.
@@ -79,31 +108,51 @@ class DestinyEntitiesVendorsDestinyVendorSaleItemComponent(UniversalBaseModel):
     """
 
     required_unlocks: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="requiredUnlocks")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="requiredUnlocks"),
+        pydantic.Field(
+            alias="requiredUnlocks",
+            description="If you can't buy the item due to a complex character state, these will be hashes for DestinyUnlockDefinitions that you can check to see messages regarding the failure (if the unlocks have human readable information: it is not guaranteed that Unlocks will have human readable strings, and your application will have to handle that)\r\nPrefer using failureIndexes instead. These are provided for informational purposes, but have largely been supplanted by failureIndexes.",
+        ),
+    ] = None
     """
     If you can't buy the item due to a complex character state, these will be hashes for DestinyUnlockDefinitions that you can check to see messages regarding the failure (if the unlocks have human readable information: it is not guaranteed that Unlocks will have human readable strings, and your application will have to handle that)
     Prefer using failureIndexes instead. These are provided for informational purposes, but have largely been supplanted by failureIndexes.
     """
 
-    sale_status: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="saleStatus")] = pydantic.Field(
-        default=None
-    )
+    sale_status: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="saleStatus"),
+        pydantic.Field(
+            alias="saleStatus",
+            description="A flag indicating whether the requesting character can buy the item, and if not the reasons why the character can't buy it.",
+        ),
+    ] = None
     """
     A flag indicating whether the requesting character can buy the item, and if not the reasons why the character can't buy it.
     """
 
     unlock_statuses: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinyDestinyUnlockStatus]], FieldMetadata(alias="unlockStatuses")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[DestinyDestinyUnlockStatus]],
+        FieldMetadata(alias="unlockStatuses"),
+        pydantic.Field(
+            alias="unlockStatuses",
+            description="If any complex unlock states are checked in determining purchasability, these will be returned here along with the status of the unlock check.\r\nPrefer using failureIndexes instead. These are provided for informational purposes, but have largely been supplanted by failureIndexes.",
+        ),
+    ] = None
     """
     If any complex unlock states are checked in determining purchasability, these will be returned here along with the status of the unlock check.
     Prefer using failureIndexes instead. These are provided for informational purposes, but have largely been supplanted by failureIndexes.
     """
 
-    vendor_item_index: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="vendorItemIndex")] = (
-        pydantic.Field(default=None)
-    )
+    vendor_item_index: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="vendorItemIndex"),
+        pydantic.Field(
+            alias="vendorItemIndex",
+            description="The index into the DestinyVendorDefinition.itemList property. Note that this means Vendor data *is* Content Version dependent: make sure you have the latest content before you use Vendor data, or these indexes may mismatch. \r\nMost systems avoid this problem, but Vendors is one area where we are unable to reasonably avoid content dependency at the moment.",
+        ),
+    ] = None
     """
     The index into the DestinyVendorDefinition.itemList property. Note that this means Vendor data *is* Content Version dependent: make sure you have the latest content before you use Vendor data, or these indexes may mismatch. 
     Most systems avoid this problem, but Vendors is one area where we are unable to reasonably avoid content dependency at the moment.

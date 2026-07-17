@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class BusinessAppointmentSettingsBookingLocationType(str, enum.Enum):
+class BusinessAppointmentSettingsBookingLocationType(enum.StrEnum):
     """
     Types of location where service is provided.
     """

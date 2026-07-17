@@ -10,9 +10,9 @@ class CreateTagGroupResponseTagGroup(UniversalBaseModel):
     id: int
     name: str
     one_per_topic: bool
-    parent_tag_name: typing.List[typing.Optional[typing.Any]]
-    permissions: typing.Dict[str, typing.Optional[typing.Any]]
-    tag_names: typing.List[typing.Optional[typing.Any]]
+    parent_tag_name: typing.List[typing.Any]
+    permissions: typing.Dict[str, typing.Any]
+    tag_names: typing.List[typing.Any]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

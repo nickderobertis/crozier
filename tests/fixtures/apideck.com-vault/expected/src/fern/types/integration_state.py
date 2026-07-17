@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class IntegrationState(str, enum.Enum):
+class IntegrationState(enum.StrEnum):
     """
     The current state of the Integration.
     """

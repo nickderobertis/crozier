@@ -2,4 +2,4 @@
 
 import typing
 
-NoteTextPaymentDelete = typing.Dict[str, typing.Optional[typing.Any]]
+NoteTextPaymentDelete = typing.Dict[str, typing.Any]

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObCreditDebitCode1(str, enum.Enum):
+class ObCreditDebitCode1(enum.StrEnum):
     """
     Indicates whether the transaction is a credit or a debit entry.
     """

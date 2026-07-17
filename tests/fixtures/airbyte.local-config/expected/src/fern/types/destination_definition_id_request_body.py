@@ -11,7 +11,9 @@ from .destination_definition_id import DestinationDefinitionId
 
 class DestinationDefinitionIdRequestBody(UniversalBaseModel):
     destination_definition_id: typing_extensions.Annotated[
-        DestinationDefinitionId, FieldMetadata(alias="destinationDefinitionId")
+        DestinationDefinitionId,
+        FieldMetadata(alias="destinationDefinitionId"),
+        pydantic.Field(alias="destinationDefinitionId"),
     ]
 
     if IS_PYDANTIC_V2:

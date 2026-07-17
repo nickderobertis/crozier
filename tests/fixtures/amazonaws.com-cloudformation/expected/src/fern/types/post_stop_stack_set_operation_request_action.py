@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostStopStackSetOperationRequestAction(str, enum.Enum):
+class PostStopStackSetOperationRequestAction(enum.StrEnum):
     STOP_STACK_SET_OPERATION = "StopStackSetOperation"
 
     def visit(self, stop_stack_set_operation: typing.Callable[[], T_Result]) -> T_Result:

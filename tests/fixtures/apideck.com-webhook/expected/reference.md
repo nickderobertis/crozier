@@ -1,6 +1,6 @@
 # Reference
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">event_logs_all</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">event_logs_all</a>(...) -> GetWebhookEventLogsResponse</code></summary>
 <dl>
 <dd>
 
@@ -28,10 +28,13 @@ List event logs
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.webhooks.event_logs_all(
     apideck_app_id="dSBdXd2H6Mqwfg0atXHXYcysLJE9qyn1VwBtXHX",
 )
@@ -94,7 +97,7 @@ client.webhooks.event_logs_all(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">resolve</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">resolve</a>(...) -> ResolveWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -122,15 +125,20 @@ Resolve a webhook based on lookup_id and then execute it
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.webhooks.resolve(
     id="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk2MDAwYzIzLWI1NmItNGRlOC1iZmEzLTMxNTAzMTE3YzBmNyJ9.rAXnsmZ4O7eF0aDwdflkxAJQwMUfWs5989WfmspNZ6Q",
     service_id="factorialhr",
     e="Employees::Events::EmployeeCreated",
-    request={"key": "value"},
+    request={
+        "key": "value"
+    },
 )
 
 ```
@@ -191,7 +199,7 @@ client.webhooks.resolve(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">all</a>(...) -> GetWebhooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -219,10 +227,13 @@ List all webhook subscriptions
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.webhooks.all_(
     apideck_app_id="dSBdXd2H6Mqwfg0atXHXYcysLJE9qyn1VwBtXHX",
 )
@@ -277,7 +288,7 @@ client.webhooks.all_(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">add</a>(...) -> CreateWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -304,17 +315,20 @@ Create a webhook subscription to receive events
 <dd>
 
 ```python
-from fern import FernApi, Status, UnifiedApiId, WebhookEventType
+from fern import FernApi, WebhookEventType, Status, UnifiedApiId
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.webhooks.add(
     apideck_app_id="dSBdXd2H6Mqwfg0atXHXYcysLJE9qyn1VwBtXHX",
     delivery_url="https://example.com/my/webhook/endpoint",
     events=[
         WebhookEventType.VAULT_CONNECTION_CREATED,
-        WebhookEventType.VAULT_CONNECTION_UPDATED,
+        WebhookEventType.VAULT_CONNECTION_UPDATED
     ],
     status=Status.ENABLED,
     unified_api=UnifiedApiId.ACCOUNTING,
@@ -350,7 +364,7 @@ client.webhooks.add(
 <dl>
 <dd>
 
-**events:** `typing.Sequence[WebhookEventType]` — The list of subscribed events for this webhook. [`*`] indicates that all events are enabled.
+**events:** `typing.List[WebhookEventType]` — The list of subscribed events for this webhook. [`*`] indicates that all events are enabled.
     
 </dd>
 </dl>
@@ -394,7 +408,7 @@ client.webhooks.add(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">one</a>(...) -> GetWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -422,10 +436,13 @@ Get the webhook subscription details
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.webhooks.one(
     id="id",
     apideck_app_id="dSBdXd2H6Mqwfg0atXHXYcysLJE9qyn1VwBtXHX",
@@ -473,7 +490,7 @@ client.webhooks.one(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">delete</a>(...) -> DeleteWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -501,10 +518,13 @@ Delete a webhook subscription
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.webhooks.delete(
     id="id",
     apideck_app_id="dSBdXd2H6Mqwfg0atXHXYcysLJE9qyn1VwBtXHX",
@@ -552,7 +572,7 @@ client.webhooks.delete(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">update</a>(...) -> UpdateWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -580,10 +600,13 @@ Update a webhook subscription
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.webhooks.update(
     id="id",
     apideck_app_id="dSBdXd2H6Mqwfg0atXHXYcysLJE9qyn1VwBtXHX",
@@ -635,7 +658,7 @@ client.webhooks.update(
 <dl>
 <dd>
 
-**events:** `typing.Optional[typing.Sequence[WebhookEventType]]` — The list of subscribed events for this webhook. [`*`] indicates that all events are enabled.
+**events:** `typing.Optional[typing.List[WebhookEventType]]` — The list of subscribed events for this webhook. [`*`] indicates that all events are enabled.
     
 </dd>
 </dl>
@@ -663,7 +686,7 @@ client.webhooks.update(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">execute</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">execute</a>(...) -> ExecuteWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -691,14 +714,19 @@ Execute a webhook
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.webhooks.execute(
     id="id",
     service_id="factorialhr",
-    request={"key": "value"},
+    request={
+        "key": "value"
+    },
 )
 
 ```
@@ -751,7 +779,7 @@ client.webhooks.execute(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">short_execute</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">short_execute</a>(...) -> ExecuteWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -779,16 +807,21 @@ Execute a webhook
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.webhooks.short_execute(
     id="id",
     service_id="factorialhr",
     l_id="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjA3NWUwNmEzLTUwNzUtNDY3Yi1hNTk5LWVkNmM5YTg5NTYyOCJ9._ppKdmBaCB2RHjBTifMNP2xKNeLBfNPim2CiHSUd0Zg",
     e="Employees::Events::EmployeeCreated",
-    request={"key": "value"},
+    request={
+        "key": "value"
+    },
 )
 
 ```

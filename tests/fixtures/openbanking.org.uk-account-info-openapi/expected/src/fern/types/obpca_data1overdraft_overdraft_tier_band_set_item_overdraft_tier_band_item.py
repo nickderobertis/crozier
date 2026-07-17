@@ -20,28 +20,46 @@ class ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItem(Universal
     """
 
     bank_guaranteed_indicator: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="BankGuaranteedIndicator")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="BankGuaranteedIndicator"),
+        pydantic.Field(
+            alias="BankGuaranteedIndicator",
+            description="Indicates that a bank provides the overdraft limit up to TierValueMIn to all customers automatically",
+        ),
+    ] = None
     """
     Indicates that a bank provides the overdraft limit up to TierValueMIn to all customers automatically
     """
 
-    ear: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="EAR")] = pydantic.Field(default=None)
+    ear: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="EAR"),
+        pydantic.Field(
+            alias="EAR",
+            description="EAR means Effective Annual Rate and/or Equivalent Annual Rate (frequently\nused interchangeably), being the actual annual interest rate of an Overdraft.",
+        ),
+    ] = None
     """
     EAR means Effective Annual Rate and/or Equivalent Annual Rate (frequently
     used interchangeably), being the actual annual interest rate of an Overdraft.
     """
 
-    identification: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Identification")] = (
-        pydantic.Field(default=None)
-    )
+    identification: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Identification"),
+        pydantic.Field(
+            alias="Identification", description="Unique and unambiguous identification of a  Tier Band for a overdraft."
+        ),
+    ] = None
     """
     Unique and unambiguous identification of a  Tier Band for a overdraft.
     """
 
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = (
-        pydantic.Field(default=None)
-    )
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="Notes"),
+        pydantic.Field(alias="Notes", description="Optional additional notes to supplement the Tier/band details"),
+    ] = None
     """
     Optional additional notes to supplement the Tier/band details
     """
@@ -51,7 +69,8 @@ class ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItem(Universal
             typing.List[ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftFeesChargesItem]
         ],
         FieldMetadata(alias="OverdraftFeesCharges"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(alias="OverdraftFeesCharges", description="Overdraft fees and charges"),
+    ] = None
     """
     Overdraft fees and charges
     """
@@ -61,26 +80,40 @@ class ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItem(Universal
             ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftInterestChargingCoverage
         ],
         FieldMetadata(alias="OverdraftInterestChargingCoverage"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="OverdraftInterestChargingCoverage", description="Interest charged on whole amount or tiered/banded"
+        ),
+    ] = None
     """
     Interest charged on whole amount or tiered/banded
     """
 
-    representative_apr: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="RepresentativeAPR")] = (
-        pydantic.Field(default=None)
-    )
+    representative_apr: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="RepresentativeAPR"),
+        pydantic.Field(
+            alias="RepresentativeAPR",
+            description="An annual percentage rate (APR) is the annual rate charged for borrowing or earned through an investment. APR is expressed as a percentage that represents the actual yearly cost of funds over the term of a loan. This includes any fees or additional costs associated with the transaction but does not take compounding into account.",
+        ),
+    ] = None
     """
     An annual percentage rate (APR) is the annual rate charged for borrowing or earned through an investment. APR is expressed as a percentage that represents the actual yearly cost of funds over the term of a loan. This includes any fees or additional costs associated with the transaction but does not take compounding into account.
     """
 
-    tier_value_max: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TierValueMax")] = (
-        pydantic.Field(default=None)
-    )
+    tier_value_max: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="TierValueMax"),
+        pydantic.Field(alias="TierValueMax", description="Maximum value of Overdraft Tier/Band"),
+    ] = None
     """
     Maximum value of Overdraft Tier/Band
     """
 
-    tier_value_min: typing_extensions.Annotated[str, FieldMetadata(alias="TierValueMin")] = pydantic.Field()
+    tier_value_min: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="TierValueMin"),
+        pydantic.Field(alias="TierValueMin", description="Minimum value of Overdraft Tier/Band"),
+    ]
     """
     Minimum value of Overdraft Tier/Band
     """

@@ -11,7 +11,9 @@ from .upload_read_status import UploadReadStatus
 
 
 class UploadRead(UniversalBaseModel):
-    resource_id: typing_extensions.Annotated[typing.Optional[ResourceId], FieldMetadata(alias="resourceId")] = None
+    resource_id: typing_extensions.Annotated[
+        typing.Optional[ResourceId], FieldMetadata(alias="resourceId"), pydantic.Field(alias="resourceId")
+    ] = None
     status: UploadReadStatus
 
     if IS_PYDANTIC_V2:

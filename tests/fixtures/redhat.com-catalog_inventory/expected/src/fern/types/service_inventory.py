@@ -12,7 +12,7 @@ class ServiceInventory(UniversalBaseModel):
     archived_at: typing.Optional[dt.datetime] = None
     created_at: typing.Optional[dt.datetime] = None
     description: typing.Optional[str] = None
-    extra: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    extra: typing.Optional[typing.Dict[str, typing.Any]] = None
     id: typing.Optional[Id] = None
     last_seen_at: typing.Optional[dt.datetime] = None
     name: typing.Optional[str] = None

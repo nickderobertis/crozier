@@ -11,10 +11,14 @@ from .get_lists_response_list_descriptions import GetListsResponseListDescriptio
 
 class GetListsResponse(UniversalBaseModel):
     list_descriptions: typing_extensions.Annotated[
-        typing.Optional[GetListsResponseListDescriptions], FieldMetadata(alias="listDescriptions")
+        typing.Optional[GetListsResponseListDescriptions],
+        FieldMetadata(alias="listDescriptions"),
+        pydantic.Field(alias="listDescriptions"),
     ] = None
     local_available_color_name_lists: typing_extensions.Annotated[
-        typing.Optional[typing.List[str]], FieldMetadata(alias="localAvailableColorNameLists")
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="localAvailableColorNameLists"),
+        pydantic.Field(alias="localAvailableColorNameLists"),
     ] = None
 
     if IS_PYDANTIC_V2:

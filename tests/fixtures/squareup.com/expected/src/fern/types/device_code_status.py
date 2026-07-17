@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DeviceCodeStatus(str, enum.Enum):
+class DeviceCodeStatus(enum.StrEnum):
     """
     DeviceCode.Status enum.
     """

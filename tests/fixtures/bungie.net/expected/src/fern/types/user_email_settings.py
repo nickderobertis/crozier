@@ -17,8 +17,10 @@ class UserEmailSettings(UniversalBaseModel):
     """
 
     opt_in_definitions: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, UserEmailOptInDefinition]], FieldMetadata(alias="optInDefinitions")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.Dict[str, UserEmailOptInDefinition]],
+        FieldMetadata(alias="optInDefinitions"),
+        pydantic.Field(alias="optInDefinitions", description="Keyed by the name identifier of the opt-in definition."),
+    ] = None
     """
     Keyed by the name identifier of the opt-in definition.
     """
@@ -26,7 +28,10 @@ class UserEmailSettings(UniversalBaseModel):
     subscription_definitions: typing_extensions.Annotated[
         typing.Optional[typing.Dict[str, UserEmailSubscriptionDefinition]],
         FieldMetadata(alias="subscriptionDefinitions"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="subscriptionDefinitions", description="Keyed by the name identifier of the Subscription definition."
+        ),
+    ] = None
     """
     Keyed by the name identifier of the Subscription definition.
     """

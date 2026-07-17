@@ -11,7 +11,9 @@ from .leave_application import LeaveApplication
 
 class LeaveApplications(UniversalBaseModel):
     leave_applications: typing_extensions.Annotated[
-        typing.Optional[typing.List[LeaveApplication]], FieldMetadata(alias="LeaveApplications")
+        typing.Optional[typing.List[LeaveApplication]],
+        FieldMetadata(alias="LeaveApplications"),
+        pydantic.Field(alias="LeaveApplications"),
     ] = None
 
     if IS_PYDANTIC_V2:

@@ -61,8 +61,13 @@ class DestinyResponsesDestinyCharacterResponse(UniversalBaseModel):
     """
 
     currency_lookups: typing_extensions.Annotated[
-        typing.Optional[SingleComponentResponseOfDestinyCurrenciesComponent], FieldMetadata(alias="currencyLookups")
-    ] = pydantic.Field(default=None)
+        typing.Optional[SingleComponentResponseOfDestinyCurrenciesComponent],
+        FieldMetadata(alias="currencyLookups"),
+        pydantic.Field(
+            alias="currencyLookups",
+            description='A "lookup" convenience component that can be used to quickly check if the character has access to items that can be used for purchasing.\r\nCOMPONENT TYPE: CurrencyLookups',
+        ),
+    ] = None
     """
     A "lookup" convenience component that can be used to quickly check if the character has access to items that can be used for purchasing.
     COMPONENT TYPE: CurrencyLookups
@@ -81,8 +86,13 @@ class DestinyResponsesDestinyCharacterResponse(UniversalBaseModel):
     """
 
     item_components: typing_extensions.Annotated[
-        typing.Optional[DestinyItemComponentSetOfint64], FieldMetadata(alias="itemComponents")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyItemComponentSetOfint64],
+        FieldMetadata(alias="itemComponents"),
+        pydantic.Field(
+            alias="itemComponents",
+            description="The set of components belonging to the player's instanced items.\r\nCOMPONENT TYPE: [See inside the DestinyItemComponentSet contract for component types.]",
+        ),
+    ] = None
     """
     The set of components belonging to the player's instanced items.
     COMPONENT TYPE: [See inside the DestinyItemComponentSet contract for component types.]
@@ -101,8 +111,13 @@ class DestinyResponsesDestinyCharacterResponse(UniversalBaseModel):
     """
 
     plug_sets: typing_extensions.Annotated[
-        typing.Optional[SingleComponentResponseOfDestinyPlugSetsComponent], FieldMetadata(alias="plugSets")
-    ] = pydantic.Field(default=None)
+        typing.Optional[SingleComponentResponseOfDestinyPlugSetsComponent],
+        FieldMetadata(alias="plugSets"),
+        pydantic.Field(
+            alias="plugSets",
+            description="When sockets refer to reusable Plug Sets (see DestinyPlugSetDefinition for more info), this is the set of plugs and their states that are scoped to this character.\r\nThis comes back with ItemSockets, as it is needed for a complete picture of the sockets on requested items.\r\nCOMPONENT TYPE: ItemSockets",
+        ),
+    ] = None
     """
     When sockets refer to reusable Plug Sets (see DestinyPlugSetDefinition for more info), this is the set of plugs and their states that are scoped to this character.
     This comes back with ItemSockets, as it is needed for a complete picture of the sockets on requested items.
@@ -112,7 +127,8 @@ class DestinyResponsesDestinyCharacterResponse(UniversalBaseModel):
     presentation_nodes: typing_extensions.Annotated[
         typing.Optional[SingleComponentResponseOfDestinyPresentationNodesComponent],
         FieldMetadata(alias="presentationNodes"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(alias="presentationNodes", description="COMPONENT TYPE: PresentationNodes"),
+    ] = None
     """
     COMPONENT TYPE: PresentationNodes
     """
@@ -131,16 +147,26 @@ class DestinyResponsesDestinyCharacterResponse(UniversalBaseModel):
     """
 
     render_data: typing_extensions.Annotated[
-        typing.Optional[SingleComponentResponseOfDestinyCharacterRenderComponent], FieldMetadata(alias="renderData")
-    ] = pydantic.Field(default=None)
+        typing.Optional[SingleComponentResponseOfDestinyCharacterRenderComponent],
+        FieldMetadata(alias="renderData"),
+        pydantic.Field(
+            alias="renderData",
+            description="Character rendering data - a minimal set of information about equipment and dyes used for rendering.\r\nCOMPONENT TYPE: CharacterRenderData",
+        ),
+    ] = None
     """
     Character rendering data - a minimal set of information about equipment and dyes used for rendering.
     COMPONENT TYPE: CharacterRenderData
     """
 
     uninstanced_item_components: typing_extensions.Annotated[
-        typing.Optional[DestinyBaseItemComponentSetOfuint32], FieldMetadata(alias="uninstancedItemComponents")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyBaseItemComponentSetOfuint32],
+        FieldMetadata(alias="uninstancedItemComponents"),
+        pydantic.Field(
+            alias="uninstancedItemComponents",
+            description="The set of components belonging to the player's UNinstanced items. Because apparently now those too can have information relevant to the character's state.\r\nCOMPONENT TYPE: [See inside the DestinyItemComponentSet contract for component types.]",
+        ),
+    ] = None
     """
     The set of components belonging to the player's UNinstanced items. Because apparently now those too can have information relevant to the character's state.
     COMPONENT TYPE: [See inside the DestinyItemComponentSet contract for component types.]

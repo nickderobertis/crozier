@@ -14,7 +14,7 @@ class ObjectPermission(UniversalBaseModel):
     The list of actions granted by this permission
     """
 
-    constraints: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    constraints: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     Queryset filter matching the applicable objects of the selected type(s)
     """

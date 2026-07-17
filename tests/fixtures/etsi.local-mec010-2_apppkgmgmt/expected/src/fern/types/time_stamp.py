@@ -9,7 +9,14 @@ from ..core.serialization import FieldMetadata
 
 
 class TimeStamp(UniversalBaseModel):
-    nano_seconds: typing_extensions.Annotated[int, FieldMetadata(alias="nanoSeconds")] = pydantic.Field()
+    nano_seconds: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="nanoSeconds"),
+        pydantic.Field(
+            alias="nanoSeconds",
+            description="The nanoseconds part of the Time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC.",
+        ),
+    ]
     """
     The nanoseconds part of the Time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC.
     """

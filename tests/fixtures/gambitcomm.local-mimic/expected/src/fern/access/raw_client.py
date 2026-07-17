@@ -6,11 +6,13 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.access_entry import AccessEntry
+from pydantic import ValidationError
 
 
 class RawAccessClient:
@@ -43,7 +45,7 @@ class RawAccessClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/access/add/{jsonable_encoder(user)}/{jsonable_encoder(agents)}/{jsonable_encoder(mask)}",
+            f"mimic/access/add/{encode_path_param(user)}/{encode_path_param(agents)}/{encode_path_param(mask)}",
             method="POST",
             request_options=request_options,
         )
@@ -61,9 +63,9 @@ class RawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -71,6 +73,10 @@ class RawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def del_(self, user: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -91,7 +97,7 @@ class RawAccessClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/access/del/{jsonable_encoder(user)}",
+            f"mimic/access/del/{encode_path_param(user)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -109,9 +115,9 @@ class RawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -119,6 +125,10 @@ class RawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_acldb(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -154,9 +164,9 @@ class RawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -164,6 +174,10 @@ class RawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_admindir(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -199,9 +213,9 @@ class RawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -209,6 +223,10 @@ class RawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_adminuser(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -244,9 +262,9 @@ class RawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -254,6 +272,10 @@ class RawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_enabled(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -289,9 +311,9 @@ class RawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -299,6 +321,10 @@ class RawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list(
@@ -336,9 +362,9 @@ class RawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -346,6 +372,10 @@ class RawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def load(
@@ -368,7 +398,7 @@ class RawAccessClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/access/load/{jsonable_encoder(filename)}",
+            f"mimic/access/load/{encode_path_param(filename)}",
             method="PUT",
             request_options=request_options,
         )
@@ -386,9 +416,9 @@ class RawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -396,6 +426,10 @@ class RawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def save(
@@ -418,7 +452,7 @@ class RawAccessClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/access/save/{jsonable_encoder(filename)}",
+            f"mimic/access/save/{encode_path_param(filename)}",
             method="PUT",
             request_options=request_options,
         )
@@ -436,9 +470,9 @@ class RawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -446,6 +480,10 @@ class RawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_acldb(
@@ -468,7 +506,7 @@ class RawAccessClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/access/set/acldb/{jsonable_encoder(database_name)}",
+            f"mimic/access/set/acldb/{encode_path_param(database_name)}",
             method="PUT",
             request_options=request_options,
         )
@@ -486,9 +524,9 @@ class RawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -496,6 +534,10 @@ class RawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_enabled(
@@ -518,7 +560,7 @@ class RawAccessClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/access/set/enabled/{jsonable_encoder(enabled_or_not)}",
+            f"mimic/access/set/enabled/{encode_path_param(enabled_or_not)}",
             method="PUT",
             request_options=request_options,
         )
@@ -536,9 +578,9 @@ class RawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -546,6 +588,10 @@ class RawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -579,7 +625,7 @@ class AsyncRawAccessClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/access/add/{jsonable_encoder(user)}/{jsonable_encoder(agents)}/{jsonable_encoder(mask)}",
+            f"mimic/access/add/{encode_path_param(user)}/{encode_path_param(agents)}/{encode_path_param(mask)}",
             method="POST",
             request_options=request_options,
         )
@@ -597,9 +643,9 @@ class AsyncRawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -607,6 +653,10 @@ class AsyncRawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def del_(
@@ -629,7 +679,7 @@ class AsyncRawAccessClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/access/del/{jsonable_encoder(user)}",
+            f"mimic/access/del/{encode_path_param(user)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -647,9 +697,9 @@ class AsyncRawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -657,6 +707,10 @@ class AsyncRawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_acldb(self, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[str]:
@@ -692,9 +746,9 @@ class AsyncRawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -702,6 +756,10 @@ class AsyncRawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_admindir(self, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[str]:
@@ -737,9 +795,9 @@ class AsyncRawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -747,6 +805,10 @@ class AsyncRawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_adminuser(self, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[str]:
@@ -782,9 +844,9 @@ class AsyncRawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -792,6 +854,10 @@ class AsyncRawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_enabled(self, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[str]:
@@ -827,9 +893,9 @@ class AsyncRawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -837,6 +903,10 @@ class AsyncRawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list(
@@ -874,9 +944,9 @@ class AsyncRawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -884,6 +954,10 @@ class AsyncRawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def load(
@@ -906,7 +980,7 @@ class AsyncRawAccessClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/access/load/{jsonable_encoder(filename)}",
+            f"mimic/access/load/{encode_path_param(filename)}",
             method="PUT",
             request_options=request_options,
         )
@@ -924,9 +998,9 @@ class AsyncRawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -934,6 +1008,10 @@ class AsyncRawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def save(
@@ -956,7 +1034,7 @@ class AsyncRawAccessClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/access/save/{jsonable_encoder(filename)}",
+            f"mimic/access/save/{encode_path_param(filename)}",
             method="PUT",
             request_options=request_options,
         )
@@ -974,9 +1052,9 @@ class AsyncRawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -984,6 +1062,10 @@ class AsyncRawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_acldb(
@@ -1006,7 +1088,7 @@ class AsyncRawAccessClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/access/set/acldb/{jsonable_encoder(database_name)}",
+            f"mimic/access/set/acldb/{encode_path_param(database_name)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1024,9 +1106,9 @@ class AsyncRawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1034,6 +1116,10 @@ class AsyncRawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_enabled(
@@ -1056,7 +1142,7 @@ class AsyncRawAccessClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/access/set/enabled/{jsonable_encoder(enabled_or_not)}",
+            f"mimic/access/set/enabled/{encode_path_param(enabled_or_not)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1074,9 +1160,9 @@ class AsyncRawAccessClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1084,4 +1170,8 @@ class AsyncRawAccessClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

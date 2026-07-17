@@ -27,22 +27,37 @@ class DestinyMilestonesDestinyMilestone(UniversalBaseModel):
     """
 
     available_quests: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinyMilestonesDestinyMilestoneQuest]], FieldMetadata(alias="availableQuests")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[DestinyMilestonesDestinyMilestoneQuest]],
+        FieldMetadata(alias="availableQuests"),
+        pydantic.Field(
+            alias="availableQuests",
+            description="Indicates what quests are available for this Milestone. Usually this will be only a single Quest, but some quests have multiple available that you can choose from at any given time. All possible quests for a milestone can be found in the DestinyMilestoneDefinition, but they must be combined with this Live data to determine which one(s) are actually active right now. It is possible for Milestones to not have any quests.",
+        ),
+    ] = None
     """
     Indicates what quests are available for this Milestone. Usually this will be only a single Quest, but some quests have multiple available that you can choose from at any given time. All possible quests for a milestone can be found in the DestinyMilestoneDefinition, but they must be combined with this Live data to determine which one(s) are actually active right now. It is possible for Milestones to not have any quests.
     """
 
-    end_date: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="endDate")] = (
-        pydantic.Field(default=None)
-    )
+    end_date: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="endDate"),
+        pydantic.Field(
+            alias="endDate",
+            description="If known, this is the date when the event will next end or repeat. It will only be populated for events with fixed and repeating start and end dates.",
+        ),
+    ] = None
     """
     If known, this is the date when the event will next end or repeat. It will only be populated for events with fixed and repeating start and end dates.
     """
 
-    milestone_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="milestoneHash")] = (
-        pydantic.Field(default=None)
-    )
+    milestone_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="milestoneHash"),
+        pydantic.Field(
+            alias="milestoneHash",
+            description="The unique identifier for the Milestone. Use it to look up the DestinyMilestoneDefinition, so you can combine the other data in this contract with static definition data.",
+        ),
+    ] = None
     """
     The unique identifier for the Milestone. Use it to look up the DestinyMilestoneDefinition, so you can combine the other data in this contract with static definition data.
     """
@@ -59,9 +74,14 @@ class DestinyMilestonesDestinyMilestone(UniversalBaseModel):
     If the entity to which this component is attached has known active Rewards for the player, this will detail information about those rewards, keyed by the RewardEntry Hash. (See DestinyMilestoneDefinition for more information about Reward Entries) Note that these rewards are not for the Quests related to the Milestone. Think of these as "overview/checklist" rewards that may be provided for Milestones that may provide rewards for performing a variety of tasks that aren't under a specific Quest.
     """
 
-    start_date: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="startDate")] = (
-        pydantic.Field(default=None)
-    )
+    start_date: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="startDate"),
+        pydantic.Field(
+            alias="startDate",
+            description="If known, this is the date when the event last began or refreshed. It will only be populated for events with fixed and repeating start and end dates.",
+        ),
+    ] = None
     """
     If known, this is the date when the event last began or refreshed. It will only be populated for events with fixed and repeating start and end dates.
     """
@@ -72,8 +92,13 @@ class DestinyMilestonesDestinyMilestone(UniversalBaseModel):
     """
 
     vendor_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="vendorHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="vendorHashes"),
+        pydantic.Field(
+            alias="vendorHashes",
+            description="A milestone may have one or more active vendors that are \"related\" to it (that provide rewards, or that are the initiators of the Milestone). I already regret this, even as I'm typing it. [I told you I'd regret this] You see, sometimes a milestone may be directly correlated with a set of vendors that provide varying tiers of rewards. The player may not be able to interact with one or more of those vendors. This will return the hashes of the Vendors that the player *can* interact with, allowing you to show their current inventory as rewards or related items to the Milestone or its activities.\r\nBefore we even use it, it's already deprecated! How much of a bummer is that? We need more data.",
+        ),
+    ] = None
     """
     A milestone may have one or more active vendors that are "related" to it (that provide rewards, or that are the initiators of the Milestone). I already regret this, even as I'm typing it. [I told you I'd regret this] You see, sometimes a milestone may be directly correlated with a set of vendors that provide varying tiers of rewards. The player may not be able to interact with one or more of those vendors. This will return the hashes of the Vendors that the player *can* interact with, allowing you to show their current inventory as rewards or related items to the Milestone or its activities.
     Before we even use it, it's already deprecated! How much of a bummer is that? We need more data.

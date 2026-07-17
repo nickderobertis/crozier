@@ -13,11 +13,17 @@ from .workspace_id import WorkspaceId
 
 class OperationRead(UniversalBaseModel):
     name: str
-    operation_id: typing_extensions.Annotated[OperationId, FieldMetadata(alias="operationId")]
-    operator_configuration: typing_extensions.Annotated[
-        OperatorConfiguration, FieldMetadata(alias="operatorConfiguration")
+    operation_id: typing_extensions.Annotated[
+        OperationId, FieldMetadata(alias="operationId"), pydantic.Field(alias="operationId")
     ]
-    workspace_id: typing_extensions.Annotated[WorkspaceId, FieldMetadata(alias="workspaceId")]
+    operator_configuration: typing_extensions.Annotated[
+        OperatorConfiguration,
+        FieldMetadata(alias="operatorConfiguration"),
+        pydantic.Field(alias="operatorConfiguration"),
+    ]
+    workspace_id: typing_extensions.Annotated[
+        WorkspaceId, FieldMetadata(alias="workspaceId"), pydantic.Field(alias="workspaceId")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

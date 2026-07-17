@@ -9,7 +9,9 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyDefinitionsLoadoutsDestinyLoadoutColorDefinition(UniversalBaseModel):
-    color_image_path: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="colorImagePath")] = None
+    color_image_path: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="colorImagePath"), pydantic.Field(alias="colorImagePath")
+    ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
     The unique identifier for this entity. Guaranteed to be unique for the type of entity, but not globally.

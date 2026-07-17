@@ -44,7 +44,7 @@ class TaskInstance(UniversalBaseModel):
     priority_weight: typing.Optional[int] = None
     queue: typing.Optional[str] = None
     queued_when: typing.Optional[str] = None
-    rendered_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    rendered_fields: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     JSON object describing rendered fields.
     

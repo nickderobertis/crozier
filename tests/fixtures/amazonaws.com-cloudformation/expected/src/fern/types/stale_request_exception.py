@@ -2,4 +2,4 @@
 
 import typing
 
-StaleRequestException = typing.Optional[typing.Any]
+StaleRequestException = typing.Any

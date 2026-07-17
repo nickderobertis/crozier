@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CableType(str, enum.Enum):
+class CableType(enum.StrEnum):
     CAT3 = "cat3"
     CAT5 = "cat5"
     CAT5E = "cat5e"

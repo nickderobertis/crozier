@@ -13,7 +13,9 @@ class Token(UniversalBaseModel):
     Token
     """
 
-    id: typing_extensions.Annotated[str, FieldMetadata(alias="$id")] = pydantic.Field()
+    id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="$id"), pydantic.Field(alias="$id", description="Token ID.")
+    ]
     """
     Token ID.
     """
@@ -28,7 +30,9 @@ class Token(UniversalBaseModel):
     Token secret key. This will return an empty string unless the response is returned using an API key or as part of a webhook payload.
     """
 
-    user_id: typing_extensions.Annotated[str, FieldMetadata(alias="userId")] = pydantic.Field()
+    user_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="userId"), pydantic.Field(alias="userId", description="User ID.")
+    ]
     """
     User ID.
     """

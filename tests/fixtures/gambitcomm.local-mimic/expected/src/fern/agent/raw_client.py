@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -16,6 +17,7 @@ from ..types.ip_source import IpSource
 from ..types.timer_script import TimerScript
 from ..types.trap_dest import TrapDest
 from ..types.triplet import Triplet
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -55,7 +57,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/add/{jsonable_encoder(ip)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/add/{encode_path_param(ip)}",
             method="POST",
             json=convert_and_respect_annotation_metadata(
                 object_=request, annotation=typing.Sequence[Triplet], direction="write"
@@ -80,9 +82,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -90,6 +92,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def from_add(
@@ -118,7 +124,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/from/add/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/from/add/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="POST",
             request_options=request_options,
         )
@@ -136,9 +142,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -146,6 +152,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def from_del(
@@ -174,7 +184,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/from/delete/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/from/delete/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -192,9 +202,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -202,6 +212,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def from_list(
@@ -224,7 +238,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/from/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/from/list",
             method="GET",
             request_options=request_options,
         )
@@ -242,9 +256,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -252,6 +266,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_changed(
@@ -274,7 +292,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/changed",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/changed",
             method="GET",
             request_options=request_options,
         )
@@ -292,9 +310,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -302,6 +320,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_config_changed(
@@ -324,7 +346,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/config_changed",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/config_changed",
             method="GET",
             request_options=request_options,
         )
@@ -342,9 +364,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -352,6 +374,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_delay(
@@ -374,7 +400,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/delay",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/delay",
             method="GET",
             request_options=request_options,
         )
@@ -392,9 +418,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -402,6 +428,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_drops(
@@ -424,7 +454,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/drops",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/drops",
             method="GET",
             request_options=request_options,
         )
@@ -442,9 +472,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -452,6 +482,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_host(self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -472,7 +506,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/host",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/host",
             method="GET",
             request_options=request_options,
         )
@@ -490,9 +524,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -500,6 +534,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_inform_timeout(
@@ -522,7 +560,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/inform_timeout",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/inform_timeout",
             method="GET",
             request_options=request_options,
         )
@@ -540,9 +578,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -550,6 +588,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_interface(
@@ -572,7 +614,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/interface",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/interface",
             method="GET",
             request_options=request_options,
         )
@@ -590,9 +632,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -600,6 +642,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_mask(self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -620,7 +666,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/mask",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/mask",
             method="GET",
             request_options=request_options,
         )
@@ -638,9 +684,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -648,6 +694,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_mibs(
@@ -670,7 +720,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/mibs",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/mibs",
             method="GET",
             request_options=request_options,
         )
@@ -688,9 +738,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -698,6 +748,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_number_starts(
@@ -720,7 +774,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/num_starts",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/num_starts",
             method="GET",
             request_options=request_options,
         )
@@ -738,9 +792,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -748,6 +802,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_oiddir(
@@ -770,7 +828,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/oiddir",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/oiddir",
             method="GET",
             request_options=request_options,
         )
@@ -788,9 +846,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -798,6 +856,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_owner(
@@ -820,7 +882,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/owner",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/owner",
             method="GET",
             request_options=request_options,
         )
@@ -838,9 +900,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -848,6 +910,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_pdusize(
@@ -870,7 +936,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/pdusize",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/pdusize",
             method="GET",
             request_options=request_options,
         )
@@ -888,9 +954,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -898,6 +964,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_port(self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -918,7 +988,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/port",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/port",
             method="GET",
             request_options=request_options,
         )
@@ -936,9 +1006,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -946,6 +1016,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_privdir(
@@ -968,7 +1042,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/privdir",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/privdir",
             method="GET",
             request_options=request_options,
         )
@@ -986,9 +1060,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -996,6 +1070,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_protocols(
@@ -1018,7 +1096,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/protocol",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/protocol",
             method="GET",
             request_options=request_options,
         )
@@ -1036,9 +1114,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1046,6 +1124,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_read_community(
@@ -1068,7 +1150,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/read",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/read",
             method="GET",
             request_options=request_options,
         )
@@ -1086,9 +1168,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1096,6 +1178,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_scen(self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[int]:
@@ -1116,7 +1202,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/scen",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/scen",
             method="GET",
             request_options=request_options,
         )
@@ -1134,9 +1220,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1144,6 +1230,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_sim(self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -1164,7 +1254,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/sim",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/sim",
             method="GET",
             request_options=request_options,
         )
@@ -1182,9 +1272,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1192,6 +1282,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_starttime(
@@ -1214,7 +1308,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/start",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/start",
             method="GET",
             request_options=request_options,
         )
@@ -1232,9 +1326,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1242,6 +1336,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_agent_state(
@@ -1264,7 +1362,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/state",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/state",
             method="GET",
             request_options=request_options,
         )
@@ -1282,9 +1380,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1292,6 +1390,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_state_changed(
@@ -1314,7 +1416,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/state_changed",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/state_changed",
             method="GET",
             request_options=request_options,
         )
@@ -1332,9 +1434,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1342,6 +1444,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_statistics(
@@ -1364,7 +1470,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/statistics",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/statistics",
             method="GET",
             request_options=request_options,
         )
@@ -1382,9 +1488,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1392,6 +1498,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_trace(
@@ -1414,7 +1524,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/trace",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/trace",
             method="GET",
             request_options=request_options,
         )
@@ -1432,9 +1542,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1442,6 +1552,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_validate(
@@ -1464,7 +1578,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/validate",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/validate",
             method="GET",
             request_options=request_options,
         )
@@ -1482,9 +1596,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1492,6 +1606,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_write_community(
@@ -1514,7 +1632,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/write",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/write",
             method="GET",
             request_options=request_options,
         )
@@ -1532,9 +1650,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1542,6 +1660,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def halt(self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -1562,7 +1684,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/halt",
+            f"mimic/agent/{encode_path_param(agent_num)}/halt",
             method="PUT",
             request_options=request_options,
         )
@@ -1580,9 +1702,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1590,6 +1712,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def add_ipalias(
@@ -1631,7 +1757,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/ipalias/add/{jsonable_encoder(ip)}/{jsonable_encoder(port)}/{jsonable_encoder(mask)}/{jsonable_encoder(interface)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/ipalias/add/{encode_path_param(ip)}/{encode_path_param(port)}/{encode_path_param(mask)}/{encode_path_param(interface)}",
             method="POST",
             request_options=request_options,
         )
@@ -1649,9 +1775,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1659,6 +1785,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def del_ipalias(
@@ -1687,7 +1817,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/ipalias/delete/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/ipalias/delete/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1705,9 +1835,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1715,6 +1845,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_ipaliases(
@@ -1737,7 +1871,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/ipalias/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/ipalias/list",
             method="GET",
             request_options=request_options,
         )
@@ -1755,9 +1889,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1765,6 +1899,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def start_ipalias(
@@ -1793,7 +1931,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/ipalias/start/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/ipalias/start/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1811,9 +1949,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1821,6 +1959,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def status_ipalias(
@@ -1849,7 +1991,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/ipalias/status/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/ipalias/status/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="GET",
             request_options=request_options,
         )
@@ -1867,9 +2009,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1877,6 +2019,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def stop_ipalias(
@@ -1905,7 +2051,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/ipalias/stop/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/ipalias/stop/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1923,9 +2069,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1933,6 +2079,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def pause_now(
@@ -1955,7 +2105,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/pause",
+            f"mimic/agent/{encode_path_param(agent_num)}/pause",
             method="PUT",
             request_options=request_options,
         )
@@ -1973,9 +2123,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1983,11 +2133,15 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_get_config(
         self, agent_num: int, prot: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> HttpResponse[typing.Dict[str, typing.Any]]:
         """
         Returns the protocol's configuration.
 
@@ -2004,20 +2158,20 @@ class RawAgentClient:
 
         Returns
         -------
-        HttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]
+        HttpResponse[typing.Dict[str, typing.Any]]
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/{jsonable_encoder(prot)}/get/config",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/{encode_path_param(prot)}/get/config",
             method="GET",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.Dict[str, typing.Optional[typing.Any]],
+                    typing.Dict[str, typing.Any],
                     parse_obj_as(
-                        type_=typing.Dict[str, typing.Optional[typing.Any]],
+                        type_=typing.Dict[str, typing.Any],
                         object_=_response.json(),
                     ),
                 )
@@ -2026,9 +2180,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2036,6 +2190,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def reload(self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -2056,7 +2214,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/reload",
+            f"mimic/agent/{encode_path_param(agent_num)}/reload",
             method="PUT",
             request_options=request_options,
         )
@@ -2074,9 +2232,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2084,6 +2242,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def remove(self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -2104,7 +2266,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/remove",
+            f"mimic/agent/{encode_path_param(agent_num)}/remove",
             method="DELETE",
             request_options=request_options,
         )
@@ -2122,9 +2284,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2132,6 +2294,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def resume(self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -2152,7 +2318,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/resume",
+            f"mimic/agent/{encode_path_param(agent_num)}/resume",
             method="PUT",
             request_options=request_options,
         )
@@ -2170,9 +2336,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2180,6 +2346,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def save(self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -2200,7 +2370,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/save",
+            f"mimic/agent/{encode_path_param(agent_num)}/save",
             method="PUT",
             request_options=request_options,
         )
@@ -2218,9 +2388,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2228,6 +2398,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_delay(
@@ -2253,7 +2427,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/delay/{jsonable_encoder(delay)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/delay/{encode_path_param(delay)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2271,9 +2445,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2281,6 +2455,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_drops(
@@ -2306,7 +2484,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/drops/{jsonable_encoder(drops)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/drops/{encode_path_param(drops)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2324,9 +2502,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2334,6 +2512,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_host(
@@ -2359,7 +2541,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/host/{jsonable_encoder(host)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/host/{encode_path_param(host)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2377,9 +2559,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2387,6 +2569,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_inform_timeout(
@@ -2412,7 +2598,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/inform_timeout/{jsonable_encoder(inform_timeout)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/inform_timeout/{encode_path_param(inform_timeout)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2430,9 +2616,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2440,6 +2626,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_interface(
@@ -2465,7 +2655,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/interface/{jsonable_encoder(interface)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/interface/{encode_path_param(interface)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2483,9 +2673,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2493,6 +2683,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_mask(
@@ -2518,7 +2712,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/mask/{jsonable_encoder(mask)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/mask/{encode_path_param(mask)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2536,9 +2730,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2546,6 +2740,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_mibs(
@@ -2574,7 +2772,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/mibs",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/mibs",
             method="PUT",
             json=convert_and_respect_annotation_metadata(
                 object_=request, annotation=typing.Sequence[Triplet], direction="write"
@@ -2599,9 +2797,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2609,6 +2807,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_oiddir(
@@ -2634,7 +2836,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/oiddir/{jsonable_encoder(oiddir)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/oiddir/{encode_path_param(oiddir)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2652,9 +2854,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2662,6 +2864,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_owner(
@@ -2687,7 +2893,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/owner/{jsonable_encoder(owner)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/owner/{encode_path_param(owner)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2705,9 +2911,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2715,6 +2921,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_pdusize(
@@ -2740,7 +2950,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/pdusize/{jsonable_encoder(pdusize)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/pdusize/{encode_path_param(pdusize)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2758,9 +2968,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2768,6 +2978,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_port(
@@ -2793,7 +3007,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/port/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/port/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2811,9 +3025,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2821,6 +3035,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_privdir(
@@ -2846,7 +3064,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/privdir/{jsonable_encoder(privdir)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/privdir/{encode_path_param(privdir)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2864,9 +3082,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2874,6 +3092,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_protocols(
@@ -2898,7 +3120,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/protocol",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/protocol",
             method="PUT",
             json=request,
             headers={
@@ -2921,9 +3143,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2931,6 +3153,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_read_community(
@@ -2956,7 +3182,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/read/{jsonable_encoder(read)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/read/{encode_path_param(read)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2974,9 +3200,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2984,6 +3210,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_starttime(
@@ -3009,7 +3239,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/start/{jsonable_encoder(start)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/start/{encode_path_param(start)}",
             method="PUT",
             request_options=request_options,
         )
@@ -3027,9 +3257,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3037,6 +3267,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_trace(
@@ -3062,7 +3296,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/trace/{jsonable_encoder(trace)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/trace/{encode_path_param(trace)}",
             method="PUT",
             request_options=request_options,
         )
@@ -3080,9 +3314,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3090,6 +3324,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_validate(
@@ -3115,7 +3353,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/validate/{jsonable_encoder(validate)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/validate/{encode_path_param(validate)}",
             method="PUT",
             request_options=request_options,
         )
@@ -3133,9 +3371,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3143,6 +3381,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_write_community(
@@ -3168,7 +3410,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/write/{jsonable_encoder(write)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/write/{encode_path_param(write)}",
             method="PUT",
             request_options=request_options,
         )
@@ -3186,9 +3428,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3196,6 +3438,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def start(self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -3216,7 +3462,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/start",
+            f"mimic/agent/{encode_path_param(agent_num)}/start",
             method="PUT",
             request_options=request_options,
         )
@@ -3234,9 +3480,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3244,6 +3490,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def stop(self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -3264,7 +3514,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/stop",
+            f"mimic/agent/{encode_path_param(agent_num)}/stop",
             method="PUT",
             request_options=request_options,
         )
@@ -3282,9 +3532,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3292,6 +3542,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_copy(
@@ -3317,7 +3571,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/copy/{jsonable_encoder(other_agent)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/copy/{encode_path_param(other_agent)}",
             method="PUT",
             request_options=request_options,
         )
@@ -3335,9 +3589,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3345,6 +3599,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_exists(
@@ -3370,7 +3628,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/exists/{jsonable_encoder(var)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/exists/{encode_path_param(var)}",
             method="GET",
             request_options=request_options,
         )
@@ -3388,9 +3646,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3398,6 +3656,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_get(
@@ -3423,7 +3685,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/get/{jsonable_encoder(var)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/get/{encode_path_param(var)}",
             method="GET",
             request_options=request_options,
         )
@@ -3441,9 +3703,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3451,6 +3713,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_list(
@@ -3473,7 +3739,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/list",
             method="GET",
             request_options=request_options,
         )
@@ -3491,9 +3757,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3501,6 +3767,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_lreplace(
@@ -3537,7 +3807,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/lreplace/{jsonable_encoder(var)}/{jsonable_encoder(index)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/lreplace/{encode_path_param(var)}/{encode_path_param(index)}",
             method="PUT",
             json=request,
             headers={
@@ -3560,9 +3830,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3570,6 +3840,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_persists(
@@ -3595,7 +3869,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/persists/{jsonable_encoder(var)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/persists/{encode_path_param(var)}",
             method="GET",
             request_options=request_options,
         )
@@ -3613,9 +3887,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3623,6 +3897,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_set(
@@ -3659,7 +3937,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/set/{jsonable_encoder(var)}/{jsonable_encoder(persist)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/set/{encode_path_param(var)}/{encode_path_param(persist)}",
             method="PUT",
             json=request,
             headers={
@@ -3682,9 +3960,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3692,6 +3970,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_unset(
@@ -3717,7 +3999,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/unset/{jsonable_encoder(var)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/unset/{encode_path_param(var)}",
             method="PUT",
             request_options=request_options,
         )
@@ -3735,9 +4017,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3745,6 +4027,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def add_timer_script(
@@ -3782,7 +4068,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/timer/script/add/{jsonable_encoder(script)}/{jsonable_encoder(interval)}/{jsonable_encoder(arg)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/timer/script/add/{encode_path_param(script)}/{encode_path_param(interval)}/{encode_path_param(arg)}",
             method="POST",
             request_options=request_options,
         )
@@ -3800,9 +4086,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3810,6 +4096,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def del_timer_script(
@@ -3847,7 +4137,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/timer/script/delete/{jsonable_encoder(script)}/{jsonable_encoder(interval)}/{jsonable_encoder(arg)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/timer/script/delete/{encode_path_param(script)}/{encode_path_param(interval)}/{encode_path_param(arg)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -3865,9 +4155,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3875,6 +4165,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_timer_scripts(
@@ -3897,7 +4191,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/timer/script/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/timer/script/list",
             method="GET",
             request_options=request_options,
         )
@@ -3915,9 +4209,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3925,6 +4219,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def trap_config_add(
@@ -3953,7 +4251,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/trap/config/add/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/trap/config/add/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="POST",
             request_options=request_options,
         )
@@ -3971,9 +4269,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3981,6 +4279,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def trap_config_del(
@@ -4009,7 +4311,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/trap/config/delete/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/trap/config/delete/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -4027,9 +4329,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4037,6 +4339,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def trap_config_list(
@@ -4059,7 +4365,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/trap/config/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/trap/config/list",
             method="GET",
             request_options=request_options,
         )
@@ -4077,9 +4383,9 @@ class RawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4087,6 +4393,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def trap_list(
@@ -4109,7 +4419,7 @@ class RawAgentClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/trap/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/trap/list",
             method="GET",
             request_options=request_options,
         )
@@ -4126,6 +4436,10 @@ class RawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -4163,7 +4477,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/add/{jsonable_encoder(ip)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/add/{encode_path_param(ip)}",
             method="POST",
             json=convert_and_respect_annotation_metadata(
                 object_=request, annotation=typing.Sequence[Triplet], direction="write"
@@ -4188,9 +4502,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4198,6 +4512,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def from_add(
@@ -4226,7 +4544,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/from/add/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/from/add/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="POST",
             request_options=request_options,
         )
@@ -4244,9 +4562,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4254,6 +4572,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def from_del(
@@ -4282,7 +4604,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/from/delete/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/from/delete/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -4300,9 +4622,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4310,6 +4632,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def from_list(
@@ -4332,7 +4658,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/from/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/from/list",
             method="GET",
             request_options=request_options,
         )
@@ -4350,9 +4676,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4360,6 +4686,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_changed(
@@ -4382,7 +4712,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/changed",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/changed",
             method="GET",
             request_options=request_options,
         )
@@ -4400,9 +4730,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4410,6 +4740,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_config_changed(
@@ -4432,7 +4766,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/config_changed",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/config_changed",
             method="GET",
             request_options=request_options,
         )
@@ -4450,9 +4784,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4460,6 +4794,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_delay(
@@ -4482,7 +4820,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/delay",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/delay",
             method="GET",
             request_options=request_options,
         )
@@ -4500,9 +4838,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4510,6 +4848,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_drops(
@@ -4532,7 +4874,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/drops",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/drops",
             method="GET",
             request_options=request_options,
         )
@@ -4550,9 +4892,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4560,6 +4902,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_host(
@@ -4582,7 +4928,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/host",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/host",
             method="GET",
             request_options=request_options,
         )
@@ -4600,9 +4946,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4610,6 +4956,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_inform_timeout(
@@ -4632,7 +4982,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/inform_timeout",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/inform_timeout",
             method="GET",
             request_options=request_options,
         )
@@ -4650,9 +5000,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4660,6 +5010,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_interface(
@@ -4682,7 +5036,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/interface",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/interface",
             method="GET",
             request_options=request_options,
         )
@@ -4700,9 +5054,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4710,6 +5064,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_mask(
@@ -4732,7 +5090,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/mask",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/mask",
             method="GET",
             request_options=request_options,
         )
@@ -4750,9 +5108,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4760,6 +5118,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_mibs(
@@ -4782,7 +5144,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/mibs",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/mibs",
             method="GET",
             request_options=request_options,
         )
@@ -4800,9 +5162,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4810,6 +5172,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_number_starts(
@@ -4832,7 +5198,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/num_starts",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/num_starts",
             method="GET",
             request_options=request_options,
         )
@@ -4850,9 +5216,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4860,6 +5226,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_oiddir(
@@ -4882,7 +5252,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/oiddir",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/oiddir",
             method="GET",
             request_options=request_options,
         )
@@ -4900,9 +5270,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4910,6 +5280,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_owner(
@@ -4932,7 +5306,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/owner",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/owner",
             method="GET",
             request_options=request_options,
         )
@@ -4950,9 +5324,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -4960,6 +5334,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_pdusize(
@@ -4982,7 +5360,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/pdusize",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/pdusize",
             method="GET",
             request_options=request_options,
         )
@@ -5000,9 +5378,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5010,6 +5388,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_port(
@@ -5032,7 +5414,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/port",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/port",
             method="GET",
             request_options=request_options,
         )
@@ -5050,9 +5432,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5060,6 +5442,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_privdir(
@@ -5082,7 +5468,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/privdir",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/privdir",
             method="GET",
             request_options=request_options,
         )
@@ -5100,9 +5486,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5110,6 +5496,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_protocols(
@@ -5132,7 +5522,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/protocol",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/protocol",
             method="GET",
             request_options=request_options,
         )
@@ -5150,9 +5540,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5160,6 +5550,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_read_community(
@@ -5182,7 +5576,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/read",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/read",
             method="GET",
             request_options=request_options,
         )
@@ -5200,9 +5594,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5210,6 +5604,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_scen(
@@ -5232,7 +5630,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/scen",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/scen",
             method="GET",
             request_options=request_options,
         )
@@ -5250,9 +5648,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5260,6 +5658,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_sim(
@@ -5282,7 +5684,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/sim",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/sim",
             method="GET",
             request_options=request_options,
         )
@@ -5300,9 +5702,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5310,6 +5712,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_starttime(
@@ -5332,7 +5738,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/start",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/start",
             method="GET",
             request_options=request_options,
         )
@@ -5350,9 +5756,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5360,6 +5766,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_agent_state(
@@ -5382,7 +5792,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/state",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/state",
             method="GET",
             request_options=request_options,
         )
@@ -5400,9 +5810,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5410,6 +5820,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_state_changed(
@@ -5432,7 +5846,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/state_changed",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/state_changed",
             method="GET",
             request_options=request_options,
         )
@@ -5450,9 +5864,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5460,6 +5874,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_statistics(
@@ -5482,7 +5900,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/statistics",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/statistics",
             method="GET",
             request_options=request_options,
         )
@@ -5500,9 +5918,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5510,6 +5928,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_trace(
@@ -5532,7 +5954,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/trace",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/trace",
             method="GET",
             request_options=request_options,
         )
@@ -5550,9 +5972,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5560,6 +5982,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_validate(
@@ -5582,7 +6008,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/validate",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/validate",
             method="GET",
             request_options=request_options,
         )
@@ -5600,9 +6026,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5610,6 +6036,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_write_community(
@@ -5632,7 +6062,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/get/write",
+            f"mimic/agent/{encode_path_param(agent_num)}/get/write",
             method="GET",
             request_options=request_options,
         )
@@ -5650,9 +6080,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5660,6 +6090,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def halt(
@@ -5682,7 +6116,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/halt",
+            f"mimic/agent/{encode_path_param(agent_num)}/halt",
             method="PUT",
             request_options=request_options,
         )
@@ -5700,9 +6134,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5710,6 +6144,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def add_ipalias(
@@ -5751,7 +6189,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/ipalias/add/{jsonable_encoder(ip)}/{jsonable_encoder(port)}/{jsonable_encoder(mask)}/{jsonable_encoder(interface)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/ipalias/add/{encode_path_param(ip)}/{encode_path_param(port)}/{encode_path_param(mask)}/{encode_path_param(interface)}",
             method="POST",
             request_options=request_options,
         )
@@ -5769,9 +6207,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5779,6 +6217,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def del_ipalias(
@@ -5807,7 +6249,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/ipalias/delete/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/ipalias/delete/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -5825,9 +6267,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5835,6 +6277,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_ipaliases(
@@ -5857,7 +6303,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/ipalias/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/ipalias/list",
             method="GET",
             request_options=request_options,
         )
@@ -5875,9 +6321,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5885,6 +6331,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def start_ipalias(
@@ -5913,7 +6363,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/ipalias/start/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/ipalias/start/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -5931,9 +6381,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5941,6 +6391,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def status_ipalias(
@@ -5969,7 +6423,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/ipalias/status/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/ipalias/status/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="GET",
             request_options=request_options,
         )
@@ -5987,9 +6441,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -5997,6 +6451,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def stop_ipalias(
@@ -6025,7 +6483,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/ipalias/stop/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/ipalias/stop/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -6043,9 +6501,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6053,6 +6511,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def pause_now(
@@ -6075,7 +6537,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/pause",
+            f"mimic/agent/{encode_path_param(agent_num)}/pause",
             method="PUT",
             request_options=request_options,
         )
@@ -6093,9 +6555,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6103,11 +6565,15 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_get_config(
         self, agent_num: int, prot: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> AsyncHttpResponse[typing.Dict[str, typing.Any]]:
         """
         Returns the protocol's configuration.
 
@@ -6124,20 +6590,20 @@ class AsyncRawAgentClient:
 
         Returns
         -------
-        AsyncHttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]
+        AsyncHttpResponse[typing.Dict[str, typing.Any]]
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/{jsonable_encoder(prot)}/get/config",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/{encode_path_param(prot)}/get/config",
             method="GET",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.Dict[str, typing.Optional[typing.Any]],
+                    typing.Dict[str, typing.Any],
                     parse_obj_as(
-                        type_=typing.Dict[str, typing.Optional[typing.Any]],
+                        type_=typing.Dict[str, typing.Any],
                         object_=_response.json(),
                     ),
                 )
@@ -6146,9 +6612,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6156,6 +6622,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def reload(
@@ -6178,7 +6648,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/reload",
+            f"mimic/agent/{encode_path_param(agent_num)}/reload",
             method="PUT",
             request_options=request_options,
         )
@@ -6196,9 +6666,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6206,6 +6676,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def remove(
@@ -6228,7 +6702,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/remove",
+            f"mimic/agent/{encode_path_param(agent_num)}/remove",
             method="DELETE",
             request_options=request_options,
         )
@@ -6246,9 +6720,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6256,6 +6730,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def resume(
@@ -6278,7 +6756,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/resume",
+            f"mimic/agent/{encode_path_param(agent_num)}/resume",
             method="PUT",
             request_options=request_options,
         )
@@ -6296,9 +6774,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6306,6 +6784,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def save(
@@ -6328,7 +6810,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/save",
+            f"mimic/agent/{encode_path_param(agent_num)}/save",
             method="PUT",
             request_options=request_options,
         )
@@ -6346,9 +6828,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6356,6 +6838,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_delay(
@@ -6381,7 +6867,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/delay/{jsonable_encoder(delay)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/delay/{encode_path_param(delay)}",
             method="PUT",
             request_options=request_options,
         )
@@ -6399,9 +6885,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6409,6 +6895,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_drops(
@@ -6434,7 +6924,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/drops/{jsonable_encoder(drops)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/drops/{encode_path_param(drops)}",
             method="PUT",
             request_options=request_options,
         )
@@ -6452,9 +6942,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6462,6 +6952,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_host(
@@ -6487,7 +6981,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/host/{jsonable_encoder(host)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/host/{encode_path_param(host)}",
             method="PUT",
             request_options=request_options,
         )
@@ -6505,9 +6999,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6515,6 +7009,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_inform_timeout(
@@ -6540,7 +7038,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/inform_timeout/{jsonable_encoder(inform_timeout)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/inform_timeout/{encode_path_param(inform_timeout)}",
             method="PUT",
             request_options=request_options,
         )
@@ -6558,9 +7056,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6568,6 +7066,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_interface(
@@ -6593,7 +7095,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/interface/{jsonable_encoder(interface)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/interface/{encode_path_param(interface)}",
             method="PUT",
             request_options=request_options,
         )
@@ -6611,9 +7113,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6621,6 +7123,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_mask(
@@ -6646,7 +7152,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/mask/{jsonable_encoder(mask)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/mask/{encode_path_param(mask)}",
             method="PUT",
             request_options=request_options,
         )
@@ -6664,9 +7170,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6674,6 +7180,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_mibs(
@@ -6702,7 +7212,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/mibs",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/mibs",
             method="PUT",
             json=convert_and_respect_annotation_metadata(
                 object_=request, annotation=typing.Sequence[Triplet], direction="write"
@@ -6727,9 +7237,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6737,6 +7247,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_oiddir(
@@ -6762,7 +7276,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/oiddir/{jsonable_encoder(oiddir)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/oiddir/{encode_path_param(oiddir)}",
             method="PUT",
             request_options=request_options,
         )
@@ -6780,9 +7294,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6790,6 +7304,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_owner(
@@ -6815,7 +7333,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/owner/{jsonable_encoder(owner)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/owner/{encode_path_param(owner)}",
             method="PUT",
             request_options=request_options,
         )
@@ -6833,9 +7351,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6843,6 +7361,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_pdusize(
@@ -6868,7 +7390,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/pdusize/{jsonable_encoder(pdusize)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/pdusize/{encode_path_param(pdusize)}",
             method="PUT",
             request_options=request_options,
         )
@@ -6886,9 +7408,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6896,6 +7418,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_port(
@@ -6921,7 +7447,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/port/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/port/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -6939,9 +7465,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -6949,6 +7475,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_privdir(
@@ -6974,7 +7504,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/privdir/{jsonable_encoder(privdir)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/privdir/{encode_path_param(privdir)}",
             method="PUT",
             request_options=request_options,
         )
@@ -6992,9 +7522,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7002,6 +7532,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_protocols(
@@ -7026,7 +7560,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/protocol",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/protocol",
             method="PUT",
             json=request,
             headers={
@@ -7049,9 +7583,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7059,6 +7593,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_read_community(
@@ -7084,7 +7622,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/read/{jsonable_encoder(read)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/read/{encode_path_param(read)}",
             method="PUT",
             request_options=request_options,
         )
@@ -7102,9 +7640,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7112,6 +7650,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_starttime(
@@ -7137,7 +7679,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/start/{jsonable_encoder(start)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/start/{encode_path_param(start)}",
             method="PUT",
             request_options=request_options,
         )
@@ -7155,9 +7697,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7165,6 +7707,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_trace(
@@ -7190,7 +7736,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/trace/{jsonable_encoder(trace)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/trace/{encode_path_param(trace)}",
             method="PUT",
             request_options=request_options,
         )
@@ -7208,9 +7754,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7218,6 +7764,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_validate(
@@ -7243,7 +7793,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/validate/{jsonable_encoder(validate)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/validate/{encode_path_param(validate)}",
             method="PUT",
             request_options=request_options,
         )
@@ -7261,9 +7811,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7271,6 +7821,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_write_community(
@@ -7296,7 +7850,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/set/write/{jsonable_encoder(write)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/set/write/{encode_path_param(write)}",
             method="PUT",
             request_options=request_options,
         )
@@ -7314,9 +7868,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7324,6 +7878,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def start(
@@ -7346,7 +7904,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/start",
+            f"mimic/agent/{encode_path_param(agent_num)}/start",
             method="PUT",
             request_options=request_options,
         )
@@ -7364,9 +7922,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7374,6 +7932,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def stop(
@@ -7396,7 +7958,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/stop",
+            f"mimic/agent/{encode_path_param(agent_num)}/stop",
             method="PUT",
             request_options=request_options,
         )
@@ -7414,9 +7976,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7424,6 +7986,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_copy(
@@ -7449,7 +8015,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/copy/{jsonable_encoder(other_agent)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/copy/{encode_path_param(other_agent)}",
             method="PUT",
             request_options=request_options,
         )
@@ -7467,9 +8033,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7477,6 +8043,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_exists(
@@ -7502,7 +8072,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/exists/{jsonable_encoder(var)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/exists/{encode_path_param(var)}",
             method="GET",
             request_options=request_options,
         )
@@ -7520,9 +8090,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7530,6 +8100,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_get(
@@ -7555,7 +8129,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/get/{jsonable_encoder(var)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/get/{encode_path_param(var)}",
             method="GET",
             request_options=request_options,
         )
@@ -7573,9 +8147,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7583,6 +8157,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_list(
@@ -7605,7 +8183,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/list",
             method="GET",
             request_options=request_options,
         )
@@ -7623,9 +8201,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7633,6 +8211,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_lreplace(
@@ -7669,7 +8251,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/lreplace/{jsonable_encoder(var)}/{jsonable_encoder(index)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/lreplace/{encode_path_param(var)}/{encode_path_param(index)}",
             method="PUT",
             json=request,
             headers={
@@ -7692,9 +8274,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7702,6 +8284,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_persists(
@@ -7727,7 +8313,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/persists/{jsonable_encoder(var)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/persists/{encode_path_param(var)}",
             method="GET",
             request_options=request_options,
         )
@@ -7745,9 +8331,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7755,6 +8341,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_set(
@@ -7791,7 +8381,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/set/{jsonable_encoder(var)}/{jsonable_encoder(persist)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/set/{encode_path_param(var)}/{encode_path_param(persist)}",
             method="PUT",
             json=request,
             headers={
@@ -7814,9 +8404,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7824,6 +8414,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_unset(
@@ -7849,7 +8443,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/store/unset/{jsonable_encoder(var)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/store/unset/{encode_path_param(var)}",
             method="PUT",
             request_options=request_options,
         )
@@ -7867,9 +8461,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7877,6 +8471,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def add_timer_script(
@@ -7914,7 +8512,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/timer/script/add/{jsonable_encoder(script)}/{jsonable_encoder(interval)}/{jsonable_encoder(arg)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/timer/script/add/{encode_path_param(script)}/{encode_path_param(interval)}/{encode_path_param(arg)}",
             method="POST",
             request_options=request_options,
         )
@@ -7932,9 +8530,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -7942,6 +8540,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def del_timer_script(
@@ -7979,7 +8581,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/timer/script/delete/{jsonable_encoder(script)}/{jsonable_encoder(interval)}/{jsonable_encoder(arg)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/timer/script/delete/{encode_path_param(script)}/{encode_path_param(interval)}/{encode_path_param(arg)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -7997,9 +8599,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8007,6 +8609,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_timer_scripts(
@@ -8029,7 +8635,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/timer/script/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/timer/script/list",
             method="GET",
             request_options=request_options,
         )
@@ -8047,9 +8653,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8057,6 +8663,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def trap_config_add(
@@ -8085,7 +8695,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/trap/config/add/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/trap/config/add/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="POST",
             request_options=request_options,
         )
@@ -8103,9 +8713,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8113,6 +8723,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def trap_config_del(
@@ -8141,7 +8755,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/trap/config/delete/{jsonable_encoder(ip)}/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/trap/config/delete/{encode_path_param(ip)}/{encode_path_param(port)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -8159,9 +8773,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8169,6 +8783,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def trap_config_list(
@@ -8191,7 +8809,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/trap/config/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/trap/config/list",
             method="GET",
             request_options=request_options,
         )
@@ -8209,9 +8827,9 @@ class AsyncRawAgentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -8219,6 +8837,10 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def trap_list(
@@ -8241,7 +8863,7 @@ class AsyncRawAgentClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/trap/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/trap/list",
             method="GET",
             request_options=request_options,
         )
@@ -8258,4 +8880,8 @@ class AsyncRawAgentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

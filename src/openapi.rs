@@ -382,6 +382,14 @@ pub struct Parameter {
     /// Whether the parameter is required.
     #[serde(default)]
     pub required: Option<bool>,
+    /// Whether an array parameter is exploded into repeated values. Fern treats
+    /// explicit `false` on a `form` query array as a comma-separated value.
+    #[serde(default)]
+    pub explode: Option<bool>,
+    /// OpenAPI parameter serialization style (`form`, `spaceDelimited`, …).
+    /// Query parameters default to `form` when omitted.
+    #[serde(default)]
+    pub style: Option<String>,
     /// Human-readable description, surfaced in the method docstring.
     #[serde(default)]
     pub description: Option<String>,
@@ -403,6 +411,9 @@ pub struct Parameter {
 /// The value-bearing portion of an OpenAPI parameter example.
 #[derive(Debug, Default, Clone, Deserialize)]
 pub struct ParameterExample {
+    /// A local `$ref` to a reusable `components.examples` entry.
+    #[serde(rename = "$ref", default)]
+    pub reference: Option<String>,
     /// The example value. External examples have no inline value.
     #[serde(default)]
     pub value: Option<serde_json::Value>,
@@ -514,6 +525,10 @@ pub struct Components {
     /// A `$ref` request body on an operation resolves against this map at load time.
     #[serde(rename = "requestBodies", default)]
     pub request_bodies: IndexMap<String, RequestBody>,
+    /// Reusable examples (`components.examples`), in document order. Named media
+    /// and parameter examples may refer to these entries with a local `$ref`.
+    #[serde(default)]
+    pub examples: IndexMap<String, ParameterExample>,
     /// Declared authentication schemes, in document order.
     #[serde(rename = "securitySchemes", default)]
     pub security_schemes: IndexMap<String, SecurityScheme>,
@@ -1056,8 +1071,9 @@ fn normalize_request_bodies(doc: &mut OpenApi) {
 }
 
 /// Resolve a response that is a `$ref` into `components.responses` to the
-/// referenced response; an inline response (or an unresolvable pointer) is returned
-/// unchanged. Only `#/components/responses/*` pointers are resolved, one level deep.
+/// referenced response while preserving the pointer as provenance; an inline
+/// response (or an unresolvable pointer) is returned unchanged. Only
+/// `#/components/responses/*` pointers are resolved, one level deep.
 fn resolve_response(response: &Response, defs: &IndexMap<String, Response>) -> Response {
     if let Some(name) = response
         .reference
@@ -1065,7 +1081,9 @@ fn resolve_response(response: &Response, defs: &IndexMap<String, Response>) -> R
         .and_then(|r| r.strip_prefix("#/components/responses/"))
     {
         if let Some(target) = defs.get(name) {
-            return target.clone();
+            let mut resolved = target.clone();
+            resolved.reference.clone_from(&response.reference);
+            return resolved;
         }
     }
     response.clone()
@@ -1677,6 +1695,10 @@ components:
         let ok = &op.responses["200"];
         assert_eq!(ok.description.as_deref(), Some("A list of items"));
         assert!(ok.content.contains_key("application/json"));
+        assert_eq!(
+            ok.reference.as_deref(),
+            Some("#/components/responses/ItemsResponse")
+        );
     }
 
     /// An operation-level parameter overrides a path-level one sharing its name and

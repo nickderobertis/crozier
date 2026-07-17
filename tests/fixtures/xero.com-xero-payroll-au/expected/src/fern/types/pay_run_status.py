@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PayRunStatus(str, enum.Enum):
+class PayRunStatus(enum.StrEnum):
     DRAFT = "DRAFT"
     POSTED = "POSTED"
 

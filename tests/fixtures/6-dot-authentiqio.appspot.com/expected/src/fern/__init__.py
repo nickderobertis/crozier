@@ -16,6 +16,7 @@ if typing.TYPE_CHECKING:
         UnauthorizedError,
     )
     from . import key, login, scope
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .key import (
@@ -34,6 +35,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "AuthentiqId": ".types",
     "Claims": ".types",
     "ConflictError": ".errors",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "Error": ".types",
     "FernApi": ".client",
     "FernApiEnvironment": ".environment",
@@ -87,6 +90,8 @@ __all__ = [
     "AuthentiqId",
     "Claims",
     "ConflictError",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "Error",
     "FernApi",
     "FernApiEnvironment",

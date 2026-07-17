@@ -20,28 +20,46 @@ class MappingJob(UniversalBaseModel):
     """
 
     contract_size: typing_extensions.Annotated[
-        typing.Optional[NullableNumberInterval], FieldMetadata(alias="contractSize")
+        typing.Optional[NullableNumberInterval],
+        FieldMetadata(alias="contractSize"),
+        pydantic.Field(alias="contractSize"),
     ] = None
     coupon: typing.Optional[NullableNumberInterval] = None
     currency: typing.Optional[str] = None
-    exch_code: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="exchCode")] = None
+    exch_code: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="exchCode"), pydantic.Field(alias="exchCode")
+    ] = None
     expiration: typing.Optional[NullableDateInterval] = None
-    id_type: typing_extensions.Annotated[MappingJobIdType, FieldMetadata(alias="idType")]
-    id_value: typing_extensions.Annotated[MappingJobIdValue, FieldMetadata(alias="idValue")]
+    id_type: typing_extensions.Annotated[
+        MappingJobIdType, FieldMetadata(alias="idType"), pydantic.Field(alias="idType")
+    ]
+    id_value: typing_extensions.Annotated[
+        MappingJobIdValue, FieldMetadata(alias="idValue"), pydantic.Field(alias="idValue")
+    ]
     include_unlisted_equities: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="includeUnlistedEquities")
+        typing.Optional[bool],
+        FieldMetadata(alias="includeUnlistedEquities"),
+        pydantic.Field(alias="includeUnlistedEquities"),
     ] = None
-    market_sec_des: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="marketSecDes")] = None
+    market_sec_des: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="marketSecDes"), pydantic.Field(alias="marketSecDes")
+    ] = None
     maturity: typing.Optional[NullableDateInterval] = None
-    mic_code: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="micCode")] = None
-    option_type: typing_extensions.Annotated[
-        typing.Optional[MappingJobOptionType], FieldMetadata(alias="optionType")
+    mic_code: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="micCode"), pydantic.Field(alias="micCode")
     ] = None
-    security_type: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="securityType")] = None
-    security_type2: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="securityType2")] = None
-    state_code: typing_extensions.Annotated[typing.Optional[MappingJobStateCode], FieldMetadata(alias="stateCode")] = (
-        None
-    )
+    option_type: typing_extensions.Annotated[
+        typing.Optional[MappingJobOptionType], FieldMetadata(alias="optionType"), pydantic.Field(alias="optionType")
+    ] = None
+    security_type: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="securityType"), pydantic.Field(alias="securityType")
+    ] = None
+    security_type2: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="securityType2"), pydantic.Field(alias="securityType2")
+    ] = None
+    state_code: typing_extensions.Annotated[
+        typing.Optional[MappingJobStateCode], FieldMetadata(alias="stateCode"), pydantic.Field(alias="stateCode")
+    ] = None
     strike: typing.Optional[NullableNumberInterval] = None
 
     if IS_PYDANTIC_V2:

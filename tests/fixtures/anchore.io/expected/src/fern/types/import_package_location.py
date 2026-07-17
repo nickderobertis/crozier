@@ -9,7 +9,9 @@ from ..core.serialization import FieldMetadata
 
 
 class ImportPackageLocation(UniversalBaseModel):
-    layer_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="layerID")] = None
+    layer_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="layerID"), pydantic.Field(alias="layerID")
+    ] = None
     path: str
 
     if IS_PYDANTIC_V2:

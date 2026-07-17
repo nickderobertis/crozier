@@ -25,6 +25,7 @@ if typing.TYPE_CHECKING:
         PossibleLists,
     )
     from .errors import NotFoundError
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
@@ -39,6 +40,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ColorHsl": ".types",
     "ColorLab": ".types",
     "ColorRgb": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "Error": ".types",
     "FernApi": ".client",
     "FernApiEnvironment": ".environment",
@@ -85,6 +88,8 @@ __all__ = [
     "ColorHsl",
     "ColorLab",
     "ColorRgb",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "Error",
     "FernApi",
     "FernApiEnvironment",

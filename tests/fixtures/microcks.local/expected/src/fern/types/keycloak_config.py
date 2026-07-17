@@ -14,7 +14,11 @@ class KeycloakConfig(UniversalBaseModel):
     Representation of Keycloak / SSO configuration used by Microcks server
     """
 
-    auth_server_url: typing_extensions.Annotated[str, FieldMetadata(alias="auth-server-url")] = pydantic.Field()
+    auth_server_url: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="auth-server-url"),
+        pydantic.Field(alias="auth-server-url", description="SSO Server authentication url"),
+    ]
     """
     SSO Server authentication url
     """
@@ -24,7 +28,13 @@ class KeycloakConfig(UniversalBaseModel):
     Whether Keycloak authentification and usage is enabled
     """
 
-    public_client: typing_extensions.Annotated[str, FieldMetadata(alias="public-client")] = pydantic.Field()
+    public_client: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="public-client"),
+        pydantic.Field(
+            alias="public-client", description="Name of public-client that can be used for requesting OAuth token"
+        ),
+    ]
     """
     Name of public-client that can be used for requesting OAuth token
     """
@@ -39,9 +49,11 @@ class KeycloakConfig(UniversalBaseModel):
     Name of Keycloak resource/application used on client side
     """
 
-    ssl_required: typing_extensions.Annotated[KeycloakConfigSslRequired, FieldMetadata(alias="ssl-required")] = (
-        pydantic.Field()
-    )
+    ssl_required: typing_extensions.Annotated[
+        KeycloakConfigSslRequired,
+        FieldMetadata(alias="ssl-required"),
+        pydantic.Field(alias="ssl-required", description="SSL certificates requirements"),
+    ]
     """
     SSL certificates requirements
     """

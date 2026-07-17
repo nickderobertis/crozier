@@ -18,8 +18,13 @@ class DestinyDefinitionsMilestonesDestinyMilestoneActivityDefinition(UniversalBa
     """
 
     conceptual_activity_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="conceptualActivityHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="conceptualActivityHash"),
+        pydantic.Field(
+            alias="conceptualActivityHash",
+            description='The "Conceptual" activity hash. Basically, we picked the lowest level activity and are treating it as the canonical definition of the activity for rendering purposes.\r\nIf you care about the specific difficulty modes and variations, use the activities under "Variants".',
+        ),
+    ] = None
     """
     The "Conceptual" activity hash. Basically, we picked the lowest level activity and are treating it as the canonical definition of the activity for rendering purposes.
     If you care about the specific difficulty modes and variations, use the activities under "Variants".

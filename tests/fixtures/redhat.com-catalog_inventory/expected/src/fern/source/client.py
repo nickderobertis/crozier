@@ -35,8 +35,8 @@ class SourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SourcesCollection:
         """
@@ -50,10 +50,10 @@ class SourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -179,8 +179,8 @@ class SourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ServiceInstancesCollection:
         """
@@ -197,10 +197,10 @@ class SourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -234,8 +234,8 @@ class SourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ServiceInventoriesCollection:
         """
@@ -252,10 +252,10 @@ class SourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -289,8 +289,8 @@ class SourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ServiceOfferingNodesCollection:
         """
@@ -307,10 +307,10 @@ class SourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -344,8 +344,8 @@ class SourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ServiceOfferingsCollection:
         """
@@ -362,10 +362,10 @@ class SourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -399,8 +399,8 @@ class SourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ServicePlansCollection:
         """
@@ -417,10 +417,10 @@ class SourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -454,8 +454,8 @@ class SourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> TasksCollection:
         """
@@ -472,10 +472,10 @@ class SourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -524,8 +524,8 @@ class AsyncSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SourcesCollection:
         """
@@ -539,10 +539,10 @@ class AsyncSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -702,8 +702,8 @@ class AsyncSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ServiceInstancesCollection:
         """
@@ -720,10 +720,10 @@ class AsyncSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -765,8 +765,8 @@ class AsyncSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ServiceInventoriesCollection:
         """
@@ -783,10 +783,10 @@ class AsyncSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -828,8 +828,8 @@ class AsyncSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ServiceOfferingNodesCollection:
         """
@@ -846,10 +846,10 @@ class AsyncSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -891,8 +891,8 @@ class AsyncSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ServiceOfferingsCollection:
         """
@@ -909,10 +909,10 @@ class AsyncSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -954,8 +954,8 @@ class AsyncSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ServicePlansCollection:
         """
@@ -972,10 +972,10 @@ class AsyncSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -1017,8 +1017,8 @@ class AsyncSourceClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> TasksCollection:
         """
@@ -1035,10 +1035,10 @@ class AsyncSourceClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]

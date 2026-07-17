@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InventoryChangeType(str, enum.Enum):
+class InventoryChangeType(enum.StrEnum):
     """
     Indicates how the inventory change was applied to a tracked product quantity.
     """

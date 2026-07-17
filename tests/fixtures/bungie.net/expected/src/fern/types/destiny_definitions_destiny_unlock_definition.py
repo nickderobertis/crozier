@@ -19,7 +19,11 @@ class DestinyDefinitionsDestinyUnlockDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="displayProperties",
+            description="Sometimes, but not frequently, these unlock flags also have human readable information: usually when they are being directly tested for some requirement, in which case the string is a localized description of why the requirement check failed.",
+        ),
+    ] = None
     """
     Sometimes, but not frequently, these unlock flags also have human readable information: usually when they are being directly tested for some requirement, in which case the string is a localized description of why the requirement check failed.
     """

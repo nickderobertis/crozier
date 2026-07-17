@@ -41,9 +41,14 @@ class DestinyResponsesDestinyItemResponse(UniversalBaseModel):
     The response object for retrieving an individual instanced item. None of these components are relevant for an item that doesn't have an "itemInstanceId": for those, get your information from the DestinyInventoryDefinition.
     """
 
-    character_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="characterId")] = (
-        pydantic.Field(default=None)
-    )
+    character_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="characterId"),
+        pydantic.Field(
+            alias="characterId",
+            description="If the item is on a character, this will return the ID of the character that is holding the item.",
+        ),
+    ] = None
     """
     If the item is on a character, this will return the ID of the character that is holding the item.
     """
@@ -75,15 +80,24 @@ class DestinyResponsesDestinyItemResponse(UniversalBaseModel):
     plug_objectives: typing_extensions.Annotated[
         typing.Optional[SingleComponentResponseOfDestinyItemPlugObjectivesComponent],
         FieldMetadata(alias="plugObjectives"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="plugObjectives",
+            description="Information about objectives on Plugs for a given item. See the component's documentation for more info.\r\nCOMPONENT TYPE: ItemPlugObjectives",
+        ),
+    ] = None
     """
     Information about objectives on Plugs for a given item. See the component's documentation for more info.
     COMPONENT TYPE: ItemPlugObjectives
     """
 
     render_data: typing_extensions.Annotated[
-        typing.Optional[SingleComponentResponseOfDestinyItemRenderComponent], FieldMetadata(alias="renderData")
-    ] = pydantic.Field(default=None)
+        typing.Optional[SingleComponentResponseOfDestinyItemRenderComponent],
+        FieldMetadata(alias="renderData"),
+        pydantic.Field(
+            alias="renderData",
+            description="Information about how to render the item in 3D.\r\nCOMPONENT TYPE: ItemRenderData",
+        ),
+    ] = None
     """
     Information about how to render the item in 3D.
     COMPONENT TYPE: ItemRenderData
@@ -92,7 +106,11 @@ class DestinyResponsesDestinyItemResponse(UniversalBaseModel):
     reusable_plugs: typing_extensions.Annotated[
         typing.Optional[SingleComponentResponseOfDestinyItemReusablePlugsComponent],
         FieldMetadata(alias="reusablePlugs"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="reusablePlugs",
+            description="Information about the Reusable Plugs for sockets on an item. These are plugs that you can insert into the given socket regardless of if you actually own an instance of that plug: they are logic-driven plugs rather than inventory-driven.\r\n These may need to be combined with Plug Set component data to get a full picture of available plugs on a given socket.\r\n COMPONENT TYPE: ItemReusablePlugs",
+        ),
+    ] = None
     """
     Information about the Reusable Plugs for sockets on an item. These are plugs that you can insert into the given socket regardless of if you actually own an instance of that plug: they are logic-driven plugs rather than inventory-driven.
      These may need to be combined with Plug Set component data to get a full picture of available plugs on a given socket.
@@ -112,8 +130,13 @@ class DestinyResponsesDestinyItemResponse(UniversalBaseModel):
     """
 
     talent_grid: typing_extensions.Annotated[
-        typing.Optional[SingleComponentResponseOfDestinyItemTalentGridComponent], FieldMetadata(alias="talentGrid")
-    ] = pydantic.Field(default=None)
+        typing.Optional[SingleComponentResponseOfDestinyItemTalentGridComponent],
+        FieldMetadata(alias="talentGrid"),
+        pydantic.Field(
+            alias="talentGrid",
+            description='Information about the talent grid attached to the item. Talent nodes can provide a variety of benefits and abilities, and in Destiny 2 are used almost exclusively for the character\'s "Builds".\r\nCOMPONENT TYPE: ItemTalentGrids',
+        ),
+    ] = None
     """
     Information about the talent grid attached to the item. Talent nodes can provide a variety of benefits and abilities, and in Destiny 2 are used almost exclusively for the character's "Builds".
     COMPONENT TYPE: ItemTalentGrids

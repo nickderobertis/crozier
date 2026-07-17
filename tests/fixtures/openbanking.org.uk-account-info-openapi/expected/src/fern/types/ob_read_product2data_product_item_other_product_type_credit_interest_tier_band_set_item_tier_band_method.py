@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandMethod(str, enum.Enum):
+class ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandMethod(enum.StrEnum):
     """
     The methodology of how credit interest is paid/applied. It can be:-
     1. Banded

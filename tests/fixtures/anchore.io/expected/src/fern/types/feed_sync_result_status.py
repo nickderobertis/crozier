@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class FeedSyncResultStatus(str, enum.Enum):
+class FeedSyncResultStatus(enum.StrEnum):
     """
     The result of the sync operations, either co
     """

@@ -16,21 +16,35 @@ from .scheduled_payment_id import ScheduledPaymentId
 
 
 class ObScheduledPayment3Basic(UniversalBaseModel):
-    account_id: typing_extensions.Annotated[AccountId, FieldMetadata(alias="AccountId")]
+    account_id: typing_extensions.Annotated[
+        AccountId, FieldMetadata(alias="AccountId"), pydantic.Field(alias="AccountId")
+    ]
     debtor_reference: typing_extensions.Annotated[
-        typing.Optional[DebtorReference], FieldMetadata(alias="DebtorReference")
+        typing.Optional[DebtorReference],
+        FieldMetadata(alias="DebtorReference"),
+        pydantic.Field(alias="DebtorReference"),
     ] = None
     instructed_amount: typing_extensions.Annotated[
-        ObActiveOrHistoricCurrencyAndAmount1, FieldMetadata(alias="InstructedAmount")
+        ObActiveOrHistoricCurrencyAndAmount1,
+        FieldMetadata(alias="InstructedAmount"),
+        pydantic.Field(alias="InstructedAmount"),
     ]
-    reference: typing_extensions.Annotated[typing.Optional[Reference], FieldMetadata(alias="Reference")] = None
+    reference: typing_extensions.Annotated[
+        typing.Optional[Reference], FieldMetadata(alias="Reference"), pydantic.Field(alias="Reference")
+    ] = None
     scheduled_payment_date_time: typing_extensions.Annotated[
-        ScheduledPaymentDateTime, FieldMetadata(alias="ScheduledPaymentDateTime")
+        ScheduledPaymentDateTime,
+        FieldMetadata(alias="ScheduledPaymentDateTime"),
+        pydantic.Field(alias="ScheduledPaymentDateTime"),
     ]
     scheduled_payment_id: typing_extensions.Annotated[
-        typing.Optional[ScheduledPaymentId], FieldMetadata(alias="ScheduledPaymentId")
+        typing.Optional[ScheduledPaymentId],
+        FieldMetadata(alias="ScheduledPaymentId"),
+        pydantic.Field(alias="ScheduledPaymentId"),
     ] = None
-    scheduled_type: typing_extensions.Annotated[ObExternalScheduleType1Code, FieldMetadata(alias="ScheduledType")]
+    scheduled_type: typing_extensions.Annotated[
+        ObExternalScheduleType1Code, FieldMetadata(alias="ScheduledType"), pydantic.Field(alias="ScheduledType")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

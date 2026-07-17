@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LeavePeriodStatus(str, enum.Enum):
+class LeavePeriodStatus(enum.StrEnum):
     SCHEDULED = "SCHEDULED"
     PROCESSED = "PROCESSED"
 

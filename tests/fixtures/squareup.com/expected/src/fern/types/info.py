@@ -2,4 +2,4 @@
 
 import typing
 
-Info = typing.Optional[typing.Any]
+Info = typing.Any

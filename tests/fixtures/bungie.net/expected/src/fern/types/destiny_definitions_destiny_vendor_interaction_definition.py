@@ -22,16 +22,24 @@ class DestinyDefinitionsDestinyVendorInteractionDefinition(UniversalBaseModel):
     A Vendor Interaction is a dialog shown by the vendor other than sale items or transfer screens. The vendor is showing you something, and asking you to reply to it by choosing an option or reward.
     """
 
-    flavor_line_one: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="flavorLineOne")] = (
-        pydantic.Field(default=None)
-    )
+    flavor_line_one: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="flavorLineOne"),
+        pydantic.Field(
+            alias="flavorLineOne", description="If the vendor interaction has flavor text, this is some of it."
+        ),
+    ] = None
     """
     If the vendor interaction has flavor text, this is some of it.
     """
 
-    flavor_line_two: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="flavorLineTwo")] = (
-        pydantic.Field(default=None)
-    )
+    flavor_line_two: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="flavorLineTwo"),
+        pydantic.Field(
+            alias="flavorLineTwo", description="If the vendor interaction has flavor text, this is the rest of it."
+        ),
+    ] = None
     """
     If the vendor interaction has flavor text, this is the rest of it.
     """
@@ -39,7 +47,8 @@ class DestinyDefinitionsDestinyVendorInteractionDefinition(UniversalBaseModel):
     header_display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="headerDisplayProperties"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(alias="headerDisplayProperties", description="The header for the interaction dialog."),
+    ] = None
     """
     The header for the interaction dialog.
     """
@@ -49,23 +58,38 @@ class DestinyDefinitionsDestinyVendorInteractionDefinition(UniversalBaseModel):
     The localized text telling the player what to do when they see this dialog.
     """
 
-    interaction_index: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="interactionIndex")] = (
-        pydantic.Field(default=None)
-    )
+    interaction_index: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="interactionIndex"),
+        pydantic.Field(
+            alias="interactionIndex",
+            description="The position of this interaction in its parent array. Note that this is NOT content agnostic, and should not be used as such.",
+        ),
+    ] = None
     """
     The position of this interaction in its parent array. Note that this is NOT content agnostic, and should not be used as such.
     """
 
-    interaction_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="interactionType")] = (
-        pydantic.Field(default=None)
-    )
+    interaction_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="interactionType"),
+        pydantic.Field(
+            alias="interactionType",
+            description="The enumerated version of the possible UI hints for vendor interactions, which is a little easier to grok than the hash found in uiInteractionType.",
+        ),
+    ] = None
     """
     The enumerated version of the possible UI hints for vendor interactions, which is a little easier to grok than the hash found in uiInteractionType.
     """
 
-    questline_item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="questlineItemHash")] = (
-        pydantic.Field(default=None)
-    )
+    questline_item_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="questlineItemHash"),
+        pydantic.Field(
+            alias="questlineItemHash",
+            description="If this interaction dialog is about a quest, this is the questline related to the interaction. You can use this to show the quest overview, or even the character's status with the quest if you use it to find the character's current Quest Step by checking their inventory against this questlineItemHash's DestinyInventoryItemDefinition.setData.",
+        ),
+    ] = None
     """
     If this interaction dialog is about a quest, this is the questline related to the interaction. You can use this to show the quest overview, or even the character's status with the quest if you use it to find the character's current Quest Step by checking their inventory against this questlineItemHash's DestinyInventoryItemDefinition.setData.
     """
@@ -77,16 +101,26 @@ class DestinyDefinitionsDestinyVendorInteractionDefinition(UniversalBaseModel):
     The potential replies that the user can make to the interaction.
     """
 
-    reward_block_label: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="rewardBlockLabel")] = (
-        pydantic.Field(default=None)
-    )
+    reward_block_label: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="rewardBlockLabel"),
+        pydantic.Field(
+            alias="rewardBlockLabel",
+            description="If this interaction is displaying rewards, this is the text to use for the header of the reward-displaying section of the interaction.",
+        ),
+    ] = None
     """
     If this interaction is displaying rewards, this is the text to use for the header of the reward-displaying section of the interaction.
     """
 
     reward_vendor_category_index: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="rewardVendorCategoryIndex")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="rewardVendorCategoryIndex"),
+        pydantic.Field(
+            alias="rewardVendorCategoryIndex",
+            description="If the vendor's reward list is sourced from one of his categories, this is the index into the category array of items to show.",
+        ),
+    ] = None
     """
     If the vendor's reward list is sourced from one of his categories, this is the index into the category array of items to show.
     """
@@ -94,21 +128,35 @@ class DestinyDefinitionsDestinyVendorInteractionDefinition(UniversalBaseModel):
     sack_interaction_list: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyVendorInteractionSackEntryDefinition]],
         FieldMetadata(alias="sackInteractionList"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="sackInteractionList",
+            description="If this interaction is meant to show you sacks, this is the list of types of sacks to be shown. If empty, the interaction is not meant to show sacks.",
+        ),
+    ] = None
     """
     If this interaction is meant to show you sacks, this is the list of types of sacks to be shown. If empty, the interaction is not meant to show sacks.
     """
 
-    ui_interaction_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="uiInteractionType")] = (
-        pydantic.Field(default=None)
-    )
+    ui_interaction_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="uiInteractionType"),
+        pydantic.Field(
+            alias="uiInteractionType",
+            description="A UI hint for the behavior of the interaction screen. This is useful to determine what type of interaction is occurring, such as a prompt to receive a rank up reward or a prompt to choose a reward for completing a quest. The hash isn't as useful as the Enum in retrospect, well what can you do. Try using interactionType instead.",
+        ),
+    ] = None
     """
     A UI hint for the behavior of the interaction screen. This is useful to determine what type of interaction is occurring, such as a prompt to receive a rank up reward or a prompt to choose a reward for completing a quest. The hash isn't as useful as the Enum in retrospect, well what can you do. Try using interactionType instead.
     """
 
     vendor_category_index: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="vendorCategoryIndex")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="vendorCategoryIndex"),
+        pydantic.Field(
+            alias="vendorCategoryIndex",
+            description="If >= 0, this is the category of sale items to show along with this interaction dialog.",
+        ),
+    ] = None
     """
     If >= 0, this is the category of sale items to show along with this interaction dialog.
     """

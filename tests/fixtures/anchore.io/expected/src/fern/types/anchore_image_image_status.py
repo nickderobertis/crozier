@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AnchoreImageImageStatus(str, enum.Enum):
+class AnchoreImageImageStatus(enum.StrEnum):
     """
     State of the image
     """

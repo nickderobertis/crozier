@@ -15,9 +15,14 @@ class ServiceView(UniversalBaseModel):
     Aggregate bean for grouping a Service an its messages pairs
     """
 
-    messages_map: typing_extensions.Annotated[typing.Dict[str, MessageArray], FieldMetadata(alias="messagesMap")] = (
-        pydantic.Field()
-    )
+    messages_map: typing_extensions.Annotated[
+        typing.Dict[str, MessageArray],
+        FieldMetadata(alias="messagesMap"),
+        pydantic.Field(
+            alias="messagesMap",
+            description="Map of messages for this Service. Keys are operation name, values are array of messages for this operation",
+        ),
+    ]
     """
     Map of messages for this Service. Keys are operation name, values are array of messages for this operation
     """

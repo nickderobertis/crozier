@@ -10,9 +10,11 @@ from .mailer_sendgrid_exporter_config_type import MailerSendgridExporterConfigTy
 
 
 class MailerSendgridExporterConfig(UniversalBaseModel):
-    api_key_public: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="apiKeyPublic")] = (
-        pydantic.Field(default=None)
-    )
+    api_key_public: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="apiKeyPublic"),
+        pydantic.Field(alias="apiKeyPublic", description="Sendgrid apiKey"),
+    ] = None
     """
     Sendgrid apiKey
     """

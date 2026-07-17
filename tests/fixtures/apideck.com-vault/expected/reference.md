@@ -1,6 +1,6 @@
 # Reference
 ## Connections
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">authorize</a>(...)</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py">authorize</a>(...) -> UnexpectedErrorResponse</code></summary>
 <dl>
 <dd>
 
@@ -34,11 +34,14 @@ Vault handles the complete Authorization Code Grant Type Flow for you and will r
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connections.authorize(
     service_id="pipedrive",
     application_id="dSBdXd2H6Mqwfg0atXHXYcysLJE9qyn1VwBtXHX",
@@ -112,7 +115,7 @@ client.connections.authorize(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">callback</a>(...)</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py">callback</a>(...) -> UnexpectedErrorResponse</code></summary>
 <dl>
 <dd>
 
@@ -142,11 +145,14 @@ Callback links need a state and code parameter to verify the validity of the req
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connections.callback(
     state="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb25zdW1lcl9pZCI6InRlc3RfdXNlcl9pZCIsInVuaWZpZWRfYXBpIjoiZGVmYXVsdCIsInNlcnZpY2VfaWQiOiJ0ZWFtbGVhZGVyIiwiYXBwbGljYXRpb25faWQiOiIxMTExIiwiaWF0IjoxNjIyMTI2Nzg3fQ.97_pn1UAXc7mctXBdr15czUNO1jjdQ9sJUOIE_Myzbk",
     code="g0ZGZmNjVmOWI",
@@ -194,7 +200,7 @@ client.connections.callback(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py">all</a>(...) -> GetConnectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -224,14 +230,17 @@ OAuth2 supported integrations will contain authorize and revoke links to handle 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connections.all_(
-    apideck_consumer_id="x-apideck-consumer-id",
     api="crm",
+    apideck_consumer_id="x-apideck-consumer-id",
 )
 
 ```
@@ -284,7 +293,7 @@ client.connections.all_(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py">one</a>(...) -> GetConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -312,11 +321,14 @@ Get a connection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connections.one(
     unified_api="crm",
     service_id="pipedrive",
@@ -373,7 +385,7 @@ client.connections.one(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py">add</a>(...) -> CreateConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -401,11 +413,14 @@ Create an authorized connection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connections.add(
     unified_api_="crm",
     service_id_="pipedrive",
@@ -426,7 +441,7 @@ client.connections.add(
 <dl>
 <dd>
 
-**unified_api_:** `str` — Unified API
+**unified_api:** `str` — Unified API
     
 </dd>
 </dl>
@@ -434,7 +449,7 @@ client.connections.add(
 <dl>
 <dd>
 
-**service_id_:** `str` — Service ID of the resource to return
+**service_id:** `str` — Service ID of the resource to return
     
 </dd>
 </dl>
@@ -450,231 +465,7 @@ client.connections.add(
 <dl>
 <dd>
 
-**auth_type:** `typing.Optional[AuthType]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**authorize_url:** `typing.Optional[str]` — The OAuth redirect URI. Redirect your users to this URI to let them authorize your app in the connector's UI. Before you can use this URI, you must add `redirect_uri` as a query parameter. Your users will be redirected to this `redirect_uri` after they granted access to your app in the connector's UI.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**configurable_resources:** `typing.Optional[typing.Sequence[str]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**configuration:** `typing.Optional[typing.Sequence[ConnectionConfigurationItem]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**enabled:** `typing.Optional[bool]` — Whether the connection is enabled or not. You can enable or disable a connection using the Update Connection API.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**form_fields:** `typing.Optional[typing.Sequence[FormField]]` — The settings that are wanted to create a connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**has_guide:** `typing.Optional[bool]` — Whether the connector has a guide available in the developer docs or not (https://docs.apideck.com/connectors/{service_id}/docs/consumer+connection).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**icon:** `typing.Optional[str]` — A visual icon of the connection, that will be shown in the Vault
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` — The unique identifier of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**integration_state:** `typing.Optional[IntegrationState]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**logo:** `typing.Optional[str]` — The logo of the connection, that will be shown in the Vault
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**metadata:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Attach your own consumer specific metadata
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` — The name of the connection
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**oauth_grant_type:** `typing.Optional[OAuthGrantType]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**resource_schema_support:** `typing.Optional[typing.Sequence[str]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**resource_settings_support:** `typing.Optional[typing.Sequence[str]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**revoke_url:** `typing.Optional[str]` — The OAuth revoke URI. Redirect your users to this URI to revoke this connection. Before you can use this URI, you must add `redirect_uri` as a query parameter. Your users will be redirected to this `redirect_uri` after they granted access to your app in the connector's UI.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**service_id:** `typing.Optional[str]` — The ID of the service this connection belongs to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**settings:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Connection settings. Values will persist to `form_fields` with corresponding id
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**settings_required_for_authorization:** `typing.Optional[typing.Sequence[str]]` — List of settings that are required to be configured on integration before authorization can occur
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**state:** `typing.Optional[ConnectionState]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[ConnectionStatus]` — Status of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**subscriptions:** `typing.Optional[typing.Sequence[WebhookSubscription]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tag_line:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**unified_api:** `typing.Optional[str]` — The unified API category where the connection belongs to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**validation_support:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**website:** `typing.Optional[str]` — The website URL of the connection
+**request:** `Connection` 
     
 </dd>
 </dl>
@@ -722,11 +513,14 @@ Deletes a connection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connections.delete(
     unified_api="crm",
     service_id="pipedrive",
@@ -783,7 +577,7 @@ client.connections.delete(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py">update</a>(...) -> UpdateConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -811,11 +605,14 @@ Update a connection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connections.update(
     unified_api_="crm",
     service_id_="pipedrive",
@@ -836,7 +633,7 @@ client.connections.update(
 <dl>
 <dd>
 
-**unified_api_:** `str` — Unified API
+**unified_api:** `str` — Unified API
     
 </dd>
 </dl>
@@ -844,7 +641,7 @@ client.connections.update(
 <dl>
 <dd>
 
-**service_id_:** `str` — Service ID of the resource to return
+**service_id:** `str` — Service ID of the resource to return
     
 </dd>
 </dl>
@@ -860,231 +657,7 @@ client.connections.update(
 <dl>
 <dd>
 
-**auth_type:** `typing.Optional[AuthType]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**authorize_url:** `typing.Optional[str]` — The OAuth redirect URI. Redirect your users to this URI to let them authorize your app in the connector's UI. Before you can use this URI, you must add `redirect_uri` as a query parameter. Your users will be redirected to this `redirect_uri` after they granted access to your app in the connector's UI.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**configurable_resources:** `typing.Optional[typing.Sequence[str]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**configuration:** `typing.Optional[typing.Sequence[ConnectionConfigurationItem]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**enabled:** `typing.Optional[bool]` — Whether the connection is enabled or not. You can enable or disable a connection using the Update Connection API.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**form_fields:** `typing.Optional[typing.Sequence[FormField]]` — The settings that are wanted to create a connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**has_guide:** `typing.Optional[bool]` — Whether the connector has a guide available in the developer docs or not (https://docs.apideck.com/connectors/{service_id}/docs/consumer+connection).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**icon:** `typing.Optional[str]` — A visual icon of the connection, that will be shown in the Vault
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` — The unique identifier of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**integration_state:** `typing.Optional[IntegrationState]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**logo:** `typing.Optional[str]` — The logo of the connection, that will be shown in the Vault
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**metadata:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Attach your own consumer specific metadata
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` — The name of the connection
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**oauth_grant_type:** `typing.Optional[OAuthGrantType]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**resource_schema_support:** `typing.Optional[typing.Sequence[str]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**resource_settings_support:** `typing.Optional[typing.Sequence[str]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**revoke_url:** `typing.Optional[str]` — The OAuth revoke URI. Redirect your users to this URI to revoke this connection. Before you can use this URI, you must add `redirect_uri` as a query parameter. Your users will be redirected to this `redirect_uri` after they granted access to your app in the connector's UI.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**service_id:** `typing.Optional[str]` — The ID of the service this connection belongs to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**settings:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Connection settings. Values will persist to `form_fields` with corresponding id
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**settings_required_for_authorization:** `typing.Optional[typing.Sequence[str]]` — List of settings that are required to be configured on integration before authorization can occur
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**state:** `typing.Optional[ConnectionState]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[ConnectionStatus]` — Status of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**subscriptions:** `typing.Optional[typing.Sequence[WebhookSubscription]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tag_line:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**unified_api:** `typing.Optional[str]` — The unified API category where the connection belongs to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**validation_support:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**website:** `typing.Optional[str]` — The website URL of the connection
+**request:** `Connection` 
     
 </dd>
 </dl>
@@ -1104,7 +677,7 @@ client.connections.update(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">import_</a>(...)</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py">import</a>(...) -> CreateConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1132,11 +705,14 @@ Import an authorized connection.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connections.import_(
     unified_api="crm",
     service_id="pipedrive",
@@ -1189,7 +765,7 @@ client.connections.import_(
 <dl>
 <dd>
 
-**metadata:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Attach your own consumer specific metadata
+**metadata:** `typing.Optional[typing.Dict[str, typing.Any]]` — Attach your own consumer specific metadata
     
 </dd>
 </dl>
@@ -1197,7 +773,7 @@ client.connections.import_(
 <dl>
 <dd>
 
-**settings:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Connection settings. Values will persist to `form_fields` with corresponding id
+**settings:** `typing.Optional[typing.Dict[str, typing.Any]]` — Connection settings. Values will persist to `form_fields` with corresponding id
     
 </dd>
 </dl>
@@ -1217,7 +793,7 @@ client.connections.import_(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">token</a>(...)</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py">token</a>(...) -> GetConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1247,11 +823,14 @@ Note that the access token will not be returned in the response. A 200 response 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connections.token(
     unified_api="crm",
     service_id="pipedrive",
@@ -1308,7 +887,7 @@ client.connections.token(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">connection_settings_all</a>(...)</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py">connection_settings_all</a>(...) -> GetConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1336,11 +915,14 @@ This endpoint returns custom settings and their defaults required by connection 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connections.connection_settings_all(
     unified_api="crm",
     service_id="pipedrive",
@@ -1406,7 +988,7 @@ client.connections.connection_settings_all(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">connection_settings_update</a>(...)</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py">connection_settings_update</a>(...) -> UpdateConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1434,11 +1016,14 @@ Update default values for a connection's resource settings
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connections.connection_settings_update(
     unified_api_="crm",
     service_id_="pipedrive",
@@ -1460,7 +1045,7 @@ client.connections.connection_settings_update(
 <dl>
 <dd>
 
-**unified_api_:** `str` — Unified API
+**unified_api:** `str` — Unified API
     
 </dd>
 </dl>
@@ -1468,7 +1053,7 @@ client.connections.connection_settings_update(
 <dl>
 <dd>
 
-**service_id_:** `str` — Service ID of the resource to return
+**service_id:** `str` — Service ID of the resource to return
     
 </dd>
 </dl>
@@ -1492,231 +1077,7 @@ client.connections.connection_settings_update(
 <dl>
 <dd>
 
-**auth_type:** `typing.Optional[AuthType]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**authorize_url:** `typing.Optional[str]` — The OAuth redirect URI. Redirect your users to this URI to let them authorize your app in the connector's UI. Before you can use this URI, you must add `redirect_uri` as a query parameter. Your users will be redirected to this `redirect_uri` after they granted access to your app in the connector's UI.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**configurable_resources:** `typing.Optional[typing.Sequence[str]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**configuration:** `typing.Optional[typing.Sequence[ConnectionConfigurationItem]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**enabled:** `typing.Optional[bool]` — Whether the connection is enabled or not. You can enable or disable a connection using the Update Connection API.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**form_fields:** `typing.Optional[typing.Sequence[FormField]]` — The settings that are wanted to create a connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**has_guide:** `typing.Optional[bool]` — Whether the connector has a guide available in the developer docs or not (https://docs.apideck.com/connectors/{service_id}/docs/consumer+connection).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**icon:** `typing.Optional[str]` — A visual icon of the connection, that will be shown in the Vault
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` — The unique identifier of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**integration_state:** `typing.Optional[IntegrationState]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**logo:** `typing.Optional[str]` — The logo of the connection, that will be shown in the Vault
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**metadata:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Attach your own consumer specific metadata
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` — The name of the connection
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**oauth_grant_type:** `typing.Optional[OAuthGrantType]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**resource_schema_support:** `typing.Optional[typing.Sequence[str]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**resource_settings_support:** `typing.Optional[typing.Sequence[str]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**revoke_url:** `typing.Optional[str]` — The OAuth revoke URI. Redirect your users to this URI to revoke this connection. Before you can use this URI, you must add `redirect_uri` as a query parameter. Your users will be redirected to this `redirect_uri` after they granted access to your app in the connector's UI.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**service_id:** `typing.Optional[str]` — The ID of the service this connection belongs to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**settings:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Connection settings. Values will persist to `form_fields` with corresponding id
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**settings_required_for_authorization:** `typing.Optional[typing.Sequence[str]]` — List of settings that are required to be configured on integration before authorization can occur
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**state:** `typing.Optional[ConnectionState]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[ConnectionStatus]` — Status of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**subscriptions:** `typing.Optional[typing.Sequence[WebhookSubscription]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tag_line:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**unified_api:** `typing.Optional[str]` — The unified API category where the connection belongs to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**validation_support:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**website:** `typing.Optional[str]` — The website URL of the connection
+**request:** `Connection` 
     
 </dd>
 </dl>
@@ -1736,7 +1097,7 @@ client.connections.connection_settings_update(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">revoke</a>(...)</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py">revoke</a>(...) -> UnexpectedErrorResponse</code></summary>
 <dl>
 <dd>
 
@@ -1770,11 +1131,14 @@ Vault handles the complete revoke flow for you and will redirect you to the dyna
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connections.revoke(
     service_id="pipedrive",
     application_id="dSBdXd2H6Mqwfg0atXHXYcysLJE9qyn1VwBtXHX",
@@ -1841,7 +1205,7 @@ client.connections.revoke(
 </details>
 
 ## Consumers
-<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">all</a>(...) -> GetConsumersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1869,11 +1233,14 @@ This endpoint includes all application consumers, along with an aggregated count
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.consumers.all_()
 
 ```
@@ -1918,7 +1285,7 @@ client.consumers.all_()
 </dl>
 </details>
 
-<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">add</a>(...) -> CreateConsumerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1946,11 +1313,14 @@ Create a consumer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.consumers.add(
     consumer_id="test_consumer_id",
 )
@@ -1969,79 +1339,7 @@ client.consumers.add(
 <dl>
 <dd>
 
-**consumer_id:** `ConsumerId` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**aggregated_request_count:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**application_id:** `typing.Optional[str]` — ID of your Apideck Application
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**connections:** `typing.Optional[typing.Sequence[ConsumerConnection]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**metadata:** `typing.Optional[ConsumerMetadata]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**modified:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_count_updated:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_counts:** `typing.Optional[RequestCountAllocation]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**services:** `typing.Optional[typing.Sequence[str]]` 
+**request:** `Consumer` 
     
 </dd>
 </dl>
@@ -2061,7 +1359,7 @@ client.consumers.add(
 </dl>
 </details>
 
-<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">one</a>(...) -> GetConsumerResponse</code></summary>
 <dl>
 <dd>
 
@@ -2089,11 +1387,14 @@ Consumer detail including their aggregated counts with the connections they have
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.consumers.one(
     consumer_id="test_user_id",
 )
@@ -2132,7 +1433,7 @@ client.consumers.one(
 </dl>
 </details>
 
-<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">delete</a>(...) -> DeleteConsumerResponse</code></summary>
 <dl>
 <dd>
 
@@ -2160,11 +1461,14 @@ Delete consumer and all their connections, including credentials.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.consumers.delete(
     consumer_id="test_user_id",
 )
@@ -2203,7 +1507,7 @@ client.consumers.delete(
 </dl>
 </details>
 
-<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">update</a>(...) -> UpdateConsumerResponse</code></summary>
 <dl>
 <dd>
 
@@ -2231,11 +1535,14 @@ Update consumer metadata such as name and email.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.consumers.update(
     consumer_id="test_user_id",
 )
@@ -2282,7 +1589,7 @@ client.consumers.update(
 </dl>
 </details>
 
-<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">consumer_request_counts_all</a>(...)</code></summary>
+<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">consumer_request_counts_all</a>(...) -> ConsumerRequestCountsInDateRangeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2310,11 +1617,14 @@ Get consumer request counts within a given datetime range.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.consumers.consumer_request_counts_all(
     consumer_id="test_user_id",
     start_datetime="2021-05-01T12:00:00.000Z",
@@ -2372,7 +1682,7 @@ client.consumers.consumer_request_counts_all(
 </details>
 
 ## Logs
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py">all</a>(...) -> GetLogsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2400,11 +1710,14 @@ This endpoint includes all consumer request logs.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.logs.all_(
     apideck_consumer_id="x-apideck-consumer-id",
 )
@@ -2468,7 +1781,7 @@ client.logs.all_(
 </details>
 
 ## Sessions
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">create</a>(...)</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">create</a>(...) -> CreateSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2499,11 +1812,14 @@ Note: This is a short lived token that will expire after 1 hour (TTL: 3600).
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sessions.create(
     apideck_consumer_id="x-apideck-consumer-id",
 )
@@ -2538,7 +1854,7 @@ client.sessions.create(
 <dl>
 <dd>
 
-**custom_consumer_settings:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Custom consumer settings that are passed as part of the session.
+**custom_consumer_settings:** `typing.Optional[typing.Dict[str, typing.Any]]` — Custom consumer settings that are passed as part of the session.
     
 </dd>
 </dl>

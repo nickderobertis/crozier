@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "squareup.com",
+  "corpus_spec_ref": "2.0",
+  "corpus_spec_url": "https://api.apis.guru/v2/specs/squareup.com/2.0/openapi.json"
+}

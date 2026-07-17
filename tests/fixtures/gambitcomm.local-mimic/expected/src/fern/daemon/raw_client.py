@@ -6,12 +6,14 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.agent_state import AgentState
 from ..types.timer_script import TimerScript
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -44,7 +46,7 @@ class RawDaemonClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/clear/{jsonable_encoder(first_agent_num)}/{jsonable_encoder(last_agent_num)}",
+            f"mimic/clear/{encode_path_param(first_agent_num)}/{encode_path_param(last_agent_num)}",
             method="PUT",
             request_options=request_options,
         )
@@ -61,6 +63,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_active_data_list(
@@ -97,6 +103,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_active_list(
@@ -133,6 +143,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_cfgfile(
@@ -169,6 +183,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_cfg_file_changed(
@@ -205,6 +223,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_changed_config_list(
@@ -241,6 +263,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_changed_state_list(
@@ -277,6 +303,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_clients(
@@ -313,6 +343,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_configured_list(
@@ -349,6 +383,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_interfaces(
@@ -385,6 +423,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_last(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[int]:
@@ -419,6 +461,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_log(
@@ -455,6 +501,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_max(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[int]:
@@ -489,6 +539,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_netaddr(
@@ -525,6 +579,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_netdev(
@@ -561,6 +619,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_product(
@@ -597,6 +659,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_daemon_protocols(
@@ -633,6 +699,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_return(
@@ -669,6 +739,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_version(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -703,6 +777,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cfg_load(
@@ -740,7 +818,7 @@ class RawDaemonClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/load/{jsonable_encoder(cfg_file)}/{jsonable_encoder(first_agent_num)}/{jsonable_encoder(last_agent_num)}/{jsonable_encoder(start_agent_num)}",
+            f"mimic/load/{encode_path_param(cfg_file)}/{encode_path_param(first_agent_num)}/{encode_path_param(last_agent_num)}/{encode_path_param(start_agent_num)}",
             method="PUT",
             request_options=request_options,
         )
@@ -757,11 +835,15 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def mget_info(
         self, info_array: typing.Sequence[str], *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.List[typing.Dict[str, typing.Optional[typing.Any]]]]:
+    ) -> HttpResponse[typing.List[typing.Dict[str, typing.Any]]]:
         """
         Get multiple sets of information about MIMIC, where infoArray is one of the parameters defined in the mimic get command.
 
@@ -775,20 +857,20 @@ class RawDaemonClient:
 
         Returns
         -------
-        HttpResponse[typing.List[typing.Dict[str, typing.Optional[typing.Any]]]]
+        HttpResponse[typing.List[typing.Dict[str, typing.Any]]]
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/mget/{jsonable_encoder(info_array)}",
+            f"mimic/mget/{encode_path_param(info_array)}",
             method="GET",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.List[typing.Dict[str, typing.Optional[typing.Any]]],
+                    typing.List[typing.Dict[str, typing.Any]],
                     parse_obj_as(
-                        type_=typing.List[typing.Dict[str, typing.Optional[typing.Any]]],
+                        type_=typing.List[typing.Dict[str, typing.Any]],
                         object_=_response.json(),
                     ),
                 )
@@ -797,9 +879,9 @@ class RawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -807,6 +889,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cfg_save(
@@ -843,6 +929,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cfg_saveas(
@@ -876,7 +966,7 @@ class RawDaemonClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/saveas/{jsonable_encoder(cfg_file)}/{jsonable_encoder(first_agent_num)}/{jsonable_encoder(last_agent_num)}",
+            f"mimic/saveas/{encode_path_param(cfg_file)}/{encode_path_param(first_agent_num)}/{encode_path_param(last_agent_num)}",
             method="PUT",
             request_options=request_options,
         )
@@ -893,6 +983,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_log(self, *, request: str, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -931,6 +1025,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_netdev(
@@ -967,6 +1065,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_save(
@@ -1003,6 +1105,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def start_all_agents(
@@ -1039,6 +1145,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def stop_all_agents(
@@ -1075,6 +1185,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_exists(self, var: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -1095,7 +1209,7 @@ class RawDaemonClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/store/exists/{jsonable_encoder(var)}",
+            f"mimic/store/exists/{encode_path_param(var)}",
             method="GET",
             request_options=request_options,
         )
@@ -1113,9 +1227,9 @@ class RawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1123,6 +1237,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_get(self, var: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -1143,7 +1261,7 @@ class RawDaemonClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/store/get/{jsonable_encoder(var)}",
+            f"mimic/store/get/{encode_path_param(var)}",
             method="GET",
             request_options=request_options,
         )
@@ -1161,9 +1279,9 @@ class RawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1171,6 +1289,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_list(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[typing.List[str]]:
@@ -1206,9 +1328,9 @@ class RawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1216,6 +1338,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_lreplace(
@@ -1243,7 +1369,7 @@ class RawDaemonClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/store/lreplace/{jsonable_encoder(var)}/{jsonable_encoder(index)}",
+            f"mimic/store/lreplace/{encode_path_param(var)}/{encode_path_param(index)}",
             method="PUT",
             json=request,
             headers={
@@ -1266,9 +1392,9 @@ class RawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1276,6 +1402,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_persists(self, var: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -1296,7 +1426,7 @@ class RawDaemonClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/store/persists/{jsonable_encoder(var)}",
+            f"mimic/store/persists/{encode_path_param(var)}",
             method="GET",
             request_options=request_options,
         )
@@ -1314,9 +1444,9 @@ class RawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1324,6 +1454,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_set(
@@ -1351,7 +1485,7 @@ class RawDaemonClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/store/set/{jsonable_encoder(var)}/{jsonable_encoder(persist)}",
+            f"mimic/store/set/{encode_path_param(var)}/{encode_path_param(persist)}",
             method="PUT",
             json=request,
             headers={
@@ -1374,9 +1508,9 @@ class RawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1384,6 +1518,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def store_unset(self, var: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[str]:
@@ -1404,7 +1542,7 @@ class RawDaemonClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/store/unset/{jsonable_encoder(var)}",
+            f"mimic/store/unset/{encode_path_param(var)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1422,9 +1560,9 @@ class RawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1432,6 +1570,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def terminate(
@@ -1468,6 +1610,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def add_daemon_timer_script(
@@ -1496,7 +1642,7 @@ class RawDaemonClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/timer/script/add/{jsonable_encoder(script)}/{jsonable_encoder(interval)}/{jsonable_encoder(arg)}",
+            f"mimic/timer/script/add/{encode_path_param(script)}/{encode_path_param(interval)}/{encode_path_param(arg)}",
             method="POST",
             request_options=request_options,
         )
@@ -1514,9 +1660,9 @@ class RawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1524,6 +1670,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def del_daemon_timer_script(
@@ -1552,7 +1702,7 @@ class RawDaemonClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/timer/script/delete/{jsonable_encoder(script)}/{jsonable_encoder(interval)}/{jsonable_encoder(arg)}",
+            f"mimic/timer/script/delete/{encode_path_param(script)}/{encode_path_param(interval)}/{encode_path_param(arg)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1570,9 +1720,9 @@ class RawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1580,6 +1730,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_daemon_timer_scripts(
@@ -1617,9 +1771,9 @@ class RawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1627,6 +1781,10 @@ class RawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1657,7 +1815,7 @@ class AsyncRawDaemonClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/clear/{jsonable_encoder(first_agent_num)}/{jsonable_encoder(last_agent_num)}",
+            f"mimic/clear/{encode_path_param(first_agent_num)}/{encode_path_param(last_agent_num)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1674,6 +1832,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_active_data_list(
@@ -1710,6 +1872,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_active_list(
@@ -1746,6 +1912,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_cfgfile(
@@ -1782,6 +1952,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_cfg_file_changed(
@@ -1818,6 +1992,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_changed_config_list(
@@ -1854,6 +2032,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_changed_state_list(
@@ -1890,6 +2072,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_clients(
@@ -1926,6 +2112,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_configured_list(
@@ -1962,6 +2152,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_interfaces(
@@ -1998,6 +2192,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_last(self, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[int]:
@@ -2032,6 +2230,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_log(
@@ -2068,6 +2270,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_max(self, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[int]:
@@ -2102,6 +2308,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_netaddr(
@@ -2138,6 +2348,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_netdev(
@@ -2174,6 +2388,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_product(
@@ -2210,6 +2428,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_daemon_protocols(
@@ -2246,6 +2468,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_return(
@@ -2282,6 +2508,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_version(self, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[str]:
@@ -2316,6 +2546,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cfg_load(
@@ -2353,7 +2587,7 @@ class AsyncRawDaemonClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/load/{jsonable_encoder(cfg_file)}/{jsonable_encoder(first_agent_num)}/{jsonable_encoder(last_agent_num)}/{jsonable_encoder(start_agent_num)}",
+            f"mimic/load/{encode_path_param(cfg_file)}/{encode_path_param(first_agent_num)}/{encode_path_param(last_agent_num)}/{encode_path_param(start_agent_num)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2370,11 +2604,15 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def mget_info(
         self, info_array: typing.Sequence[str], *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[typing.List[typing.Dict[str, typing.Optional[typing.Any]]]]:
+    ) -> AsyncHttpResponse[typing.List[typing.Dict[str, typing.Any]]]:
         """
         Get multiple sets of information about MIMIC, where infoArray is one of the parameters defined in the mimic get command.
 
@@ -2388,20 +2626,20 @@ class AsyncRawDaemonClient:
 
         Returns
         -------
-        AsyncHttpResponse[typing.List[typing.Dict[str, typing.Optional[typing.Any]]]]
+        AsyncHttpResponse[typing.List[typing.Dict[str, typing.Any]]]
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/mget/{jsonable_encoder(info_array)}",
+            f"mimic/mget/{encode_path_param(info_array)}",
             method="GET",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.List[typing.Dict[str, typing.Optional[typing.Any]]],
+                    typing.List[typing.Dict[str, typing.Any]],
                     parse_obj_as(
-                        type_=typing.List[typing.Dict[str, typing.Optional[typing.Any]]],
+                        type_=typing.List[typing.Dict[str, typing.Any]],
                         object_=_response.json(),
                     ),
                 )
@@ -2410,9 +2648,9 @@ class AsyncRawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2420,6 +2658,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cfg_save(
@@ -2456,6 +2698,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cfg_saveas(
@@ -2489,7 +2735,7 @@ class AsyncRawDaemonClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/saveas/{jsonable_encoder(cfg_file)}/{jsonable_encoder(first_agent_num)}/{jsonable_encoder(last_agent_num)}",
+            f"mimic/saveas/{encode_path_param(cfg_file)}/{encode_path_param(first_agent_num)}/{encode_path_param(last_agent_num)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2506,6 +2752,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_log(
@@ -2546,6 +2796,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_netdev(
@@ -2582,6 +2836,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_save(
@@ -2618,6 +2876,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def start_all_agents(
@@ -2654,6 +2916,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def stop_all_agents(
@@ -2690,6 +2956,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_exists(
@@ -2712,7 +2982,7 @@ class AsyncRawDaemonClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/store/exists/{jsonable_encoder(var)}",
+            f"mimic/store/exists/{encode_path_param(var)}",
             method="GET",
             request_options=request_options,
         )
@@ -2730,9 +3000,9 @@ class AsyncRawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2740,6 +3010,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_get(
@@ -2762,7 +3036,7 @@ class AsyncRawDaemonClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/store/get/{jsonable_encoder(var)}",
+            f"mimic/store/get/{encode_path_param(var)}",
             method="GET",
             request_options=request_options,
         )
@@ -2780,9 +3054,9 @@ class AsyncRawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2790,6 +3064,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_list(
@@ -2827,9 +3105,9 @@ class AsyncRawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2837,6 +3115,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_lreplace(
@@ -2864,7 +3146,7 @@ class AsyncRawDaemonClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/store/lreplace/{jsonable_encoder(var)}/{jsonable_encoder(index)}",
+            f"mimic/store/lreplace/{encode_path_param(var)}/{encode_path_param(index)}",
             method="PUT",
             json=request,
             headers={
@@ -2887,9 +3169,9 @@ class AsyncRawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2897,6 +3179,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_persists(
@@ -2919,7 +3205,7 @@ class AsyncRawDaemonClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/store/persists/{jsonable_encoder(var)}",
+            f"mimic/store/persists/{encode_path_param(var)}",
             method="GET",
             request_options=request_options,
         )
@@ -2937,9 +3223,9 @@ class AsyncRawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2947,6 +3233,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_set(
@@ -2974,7 +3264,7 @@ class AsyncRawDaemonClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/store/set/{jsonable_encoder(var)}/{jsonable_encoder(persist)}",
+            f"mimic/store/set/{encode_path_param(var)}/{encode_path_param(persist)}",
             method="PUT",
             json=request,
             headers={
@@ -2997,9 +3287,9 @@ class AsyncRawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3007,6 +3297,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def store_unset(
@@ -3029,7 +3323,7 @@ class AsyncRawDaemonClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/store/unset/{jsonable_encoder(var)}",
+            f"mimic/store/unset/{encode_path_param(var)}",
             method="PUT",
             request_options=request_options,
         )
@@ -3047,9 +3341,9 @@ class AsyncRawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3057,6 +3351,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def terminate(
@@ -3093,6 +3391,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def add_daemon_timer_script(
@@ -3121,7 +3423,7 @@ class AsyncRawDaemonClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/timer/script/add/{jsonable_encoder(script)}/{jsonable_encoder(interval)}/{jsonable_encoder(arg)}",
+            f"mimic/timer/script/add/{encode_path_param(script)}/{encode_path_param(interval)}/{encode_path_param(arg)}",
             method="POST",
             request_options=request_options,
         )
@@ -3139,9 +3441,9 @@ class AsyncRawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3149,6 +3451,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def del_daemon_timer_script(
@@ -3177,7 +3483,7 @@ class AsyncRawDaemonClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/timer/script/delete/{jsonable_encoder(script)}/{jsonable_encoder(interval)}/{jsonable_encoder(arg)}",
+            f"mimic/timer/script/delete/{encode_path_param(script)}/{encode_path_param(interval)}/{encode_path_param(arg)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -3195,9 +3501,9 @@ class AsyncRawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3205,6 +3511,10 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_daemon_timer_scripts(
@@ -3242,9 +3552,9 @@ class AsyncRawDaemonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3252,4 +3562,8 @@ class AsyncRawDaemonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

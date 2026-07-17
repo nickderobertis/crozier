@@ -13,17 +13,25 @@ class Auth0Config(UniversalBaseModel):
     Configuration for Auth0 domain
     """
 
-    callback_url: typing_extensions.Annotated[str, FieldMetadata(alias="callbackUrl")] = pydantic.Field()
+    callback_url: typing_extensions.Annotated[
+        str, FieldMetadata(alias="callbackUrl"), pydantic.Field(alias="callbackUrl", description="Auth0 callback URL")
+    ]
     """
     Auth0 callback URL
     """
 
-    client_id: typing_extensions.Annotated[str, FieldMetadata(alias="clientId")] = pydantic.Field()
+    client_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="clientId"), pydantic.Field(alias="clientId", description="Auth0 client id")
+    ]
     """
     Auth0 client id
     """
 
-    client_secret: typing_extensions.Annotated[str, FieldMetadata(alias="clientSecret")] = pydantic.Field()
+    client_secret: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="clientSecret"),
+        pydantic.Field(alias="clientSecret", description="Auth0 client secret"),
+    ]
     """
     Auth0 client secret
     """

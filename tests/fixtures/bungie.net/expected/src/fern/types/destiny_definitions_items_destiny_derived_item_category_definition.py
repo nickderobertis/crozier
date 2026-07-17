@@ -18,8 +18,13 @@ class DestinyDefinitionsItemsDestinyDerivedItemCategoryDefinition(UniversalBaseM
     """
 
     category_description: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="categoryDescription")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="categoryDescription"),
+        pydantic.Field(
+            alias="categoryDescription",
+            description="The localized string for the category title. This will be something describing the items you can get as a group, or your likelihood/the quantity you'll get.",
+        ),
+    ] = None
     """
     The localized string for the category title. This will be something describing the items you can get as a group, or your likelihood/the quantity you'll get.
     """

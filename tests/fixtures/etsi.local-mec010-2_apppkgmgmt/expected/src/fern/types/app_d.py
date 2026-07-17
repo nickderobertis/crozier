@@ -22,127 +22,208 @@ from .virtual_storage_descriptor import VirtualStorageDescriptor
 
 
 class AppD(UniversalBaseModel):
-    app_d_id: typing_extensions.Annotated[str, FieldMetadata(alias="appDId")] = pydantic.Field()
+    app_d_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="appDId"),
+        pydantic.Field(
+            alias="appDId",
+            description="Identifier of this MEC application descriptor. This attribute shall be globally unique. See note 1.",
+        ),
+    ]
     """
     Identifier of this MEC application descriptor. This attribute shall be globally unique. See note 1.
     """
 
     app_dns_rule: typing_extensions.Annotated[
-        typing.Optional[typing.List[DnsRuleDescriptor]], FieldMetadata(alias="appDNSRule")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[DnsRuleDescriptor]],
+        FieldMetadata(alias="appDNSRule"),
+        pydantic.Field(alias="appDNSRule", description="Describes DNS rules the MEC application requires."),
+    ] = None
     """
     Describes DNS rules the MEC application requires.
     """
 
-    app_d_version: typing_extensions.Annotated[str, FieldMetadata(alias="appDVersion")] = pydantic.Field()
+    app_d_version: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="appDVersion"),
+        pydantic.Field(alias="appDVersion", description="Identifies the version of the application descriptor."),
+    ]
     """
     Identifies the version of the application descriptor.
     """
 
-    app_description: typing_extensions.Annotated[str, FieldMetadata(alias="appDescription")] = pydantic.Field()
+    app_description: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="appDescription"),
+        pydantic.Field(alias="appDescription", description="Human readable description of the MEC application."),
+    ]
     """
     Human readable description of the MEC application.
     """
 
     app_ext_cpd: typing_extensions.Annotated[
-        typing.Optional[typing.List[AppExternalCpd]], FieldMetadata(alias="appExtCpd")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[AppExternalCpd]],
+        FieldMetadata(alias="appExtCpd"),
+        pydantic.Field(
+            alias="appExtCpd", description="Describes external interface(s) exposed by this MEC application."
+        ),
+    ] = None
     """
     Describes external interface(s) exposed by this MEC application.
     """
 
     app_feature_optional: typing_extensions.Annotated[
-        typing.Optional[typing.List[FeatureDependency]], FieldMetadata(alias="appFeatureOptional")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[FeatureDependency]],
+        FieldMetadata(alias="appFeatureOptional"),
+        pydantic.Field(
+            alias="appFeatureOptional", description="Describes features a MEC application may use if available."
+        ),
+    ] = None
     """
     Describes features a MEC application may use if available.
     """
 
     app_feature_required: typing_extensions.Annotated[
-        typing.Optional[typing.List[FeatureDependency]], FieldMetadata(alias="appFeatureRequired")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[FeatureDependency]],
+        FieldMetadata(alias="appFeatureRequired"),
+        pydantic.Field(alias="appFeatureRequired", description="Describes features a MEC application requires to run."),
+    ] = None
     """
     Describes features a MEC application requires to run.
     """
 
-    app_info_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="appInfoName")] = (
-        pydantic.Field(default=None)
-    )
+    app_info_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="appInfoName"),
+        pydantic.Field(alias="appInfoName", description="Human readable name for the MEC application."),
+    ] = None
     """
     Human readable name for the MEC application.
     """
 
-    app_latency: typing_extensions.Annotated[typing.Optional[LatencyDescriptor], FieldMetadata(alias="appLatency")] = (
-        None
-    )
-    app_name: typing_extensions.Annotated[str, FieldMetadata(alias="appName")] = pydantic.Field()
+    app_latency: typing_extensions.Annotated[
+        typing.Optional[LatencyDescriptor], FieldMetadata(alias="appLatency"), pydantic.Field(alias="appLatency")
+    ] = None
+    app_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="appName"),
+        pydantic.Field(alias="appName", description="Name to identify the MEC application."),
+    ]
     """
     Name to identify the MEC application.
     """
 
-    app_provider: typing_extensions.Annotated[str, FieldMetadata(alias="appProvider")] = pydantic.Field()
+    app_provider: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="appProvider"),
+        pydantic.Field(alias="appProvider", description="Provider of the application and of the AppD."),
+    ]
     """
     Provider of the application and of the AppD.
     """
 
     app_service_optional: typing_extensions.Annotated[
-        typing.Optional[typing.List[ServiceDependency]], FieldMetadata(alias="appServiceOptional")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[ServiceDependency]],
+        FieldMetadata(alias="appServiceOptional"),
+        pydantic.Field(
+            alias="appServiceOptional", description="Describes services a MEC application may use if available."
+        ),
+    ] = None
     """
     Describes services a MEC application may use if available.
     """
 
     app_service_produced: typing_extensions.Annotated[
-        typing.Optional[typing.List[ServiceDescriptor]], FieldMetadata(alias="appServiceProduced")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[ServiceDescriptor]],
+        FieldMetadata(alias="appServiceProduced"),
+        pydantic.Field(
+            alias="appServiceProduced",
+            description="Describes services a MEC application is able to produce to the platform or other MEC applications. Only relevant for service-producing apps.",
+        ),
+    ] = None
     """
     Describes services a MEC application is able to produce to the platform or other MEC applications. Only relevant for service-producing apps.
     """
 
     app_service_required: typing_extensions.Annotated[
-        typing.Optional[typing.List[ServiceDependency]], FieldMetadata(alias="appServiceRequired")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[ServiceDependency]],
+        FieldMetadata(alias="appServiceRequired"),
+        pydantic.Field(alias="appServiceRequired", description="Describes services a MEC application requires to run."),
+    ] = None
     """
     Describes services a MEC application requires to run.
     """
 
-    app_soft_version: typing_extensions.Annotated[str, FieldMetadata(alias="appSoftVersion")] = pydantic.Field()
+    app_soft_version: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="appSoftVersion"),
+        pydantic.Field(
+            alias="appSoftVersion", description="Identifies the version of software of the MEC application."
+        ),
+    ]
     """
     Identifies the version of software of the MEC application.
     """
 
     app_traffic_rule: typing_extensions.Annotated[
-        typing.Optional[typing.List[TrafficRuleDescriptor]], FieldMetadata(alias="appTrafficRule")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[TrafficRuleDescriptor]],
+        FieldMetadata(alias="appTrafficRule"),
+        pydantic.Field(alias="appTrafficRule", description="Describes traffic rules the MEC application requires."),
+    ] = None
     """
     Describes traffic rules the MEC application requires.
     """
 
     change_app_instance_state_op_config: typing_extensions.Annotated[
-        typing.Optional[ChangeAppInstanceStateOpConfig], FieldMetadata(alias="changeAppInstanceStateOpConfig")
+        typing.Optional[ChangeAppInstanceStateOpConfig],
+        FieldMetadata(alias="changeAppInstanceStateOpConfig"),
+        pydantic.Field(alias="changeAppInstanceStateOpConfig"),
     ] = None
-    mec_version: typing_extensions.Annotated[typing.List[str], FieldMetadata(alias="mecVersion")] = pydantic.Field()
+    mec_version: typing_extensions.Annotated[
+        typing.List[str],
+        FieldMetadata(alias="mecVersion"),
+        pydantic.Field(
+            alias="mecVersion",
+            description="Identifies version(s) of MEC system compatible with the MEC application described in this version of the AppD.",
+        ),
+    ]
     """
     Identifies version(s) of MEC system compatible with the MEC application described in this version of the AppD.
     """
 
-    sw_image_descriptor: typing_extensions.Annotated[SwImageDescriptor, FieldMetadata(alias="swImageDescriptor")]
+    sw_image_descriptor: typing_extensions.Annotated[
+        SwImageDescriptor, FieldMetadata(alias="swImageDescriptor"), pydantic.Field(alias="swImageDescriptor")
+    ]
     terminate_app_instance_op_config: typing_extensions.Annotated[
-        typing.Optional[TerminateAppInstanceOpConfig], FieldMetadata(alias="terminateAppInstanceOpConfig")
+        typing.Optional[TerminateAppInstanceOpConfig],
+        FieldMetadata(alias="terminateAppInstanceOpConfig"),
+        pydantic.Field(alias="terminateAppInstanceOpConfig"),
     ] = None
     transport_dependencies: typing_extensions.Annotated[
-        typing.Optional[typing.List[TransportDependency]], FieldMetadata(alias="transportDependencies")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[TransportDependency]],
+        FieldMetadata(alias="transportDependencies"),
+        pydantic.Field(
+            alias="transportDependencies",
+            description="Transports, if any, that this application requires to be provided by the platform. These transports will be used by the application to deliver services provided by this application. Only relevant for service-producing apps. See note 2.",
+        ),
+    ] = None
     """
     Transports, if any, that this application requires to be provided by the platform. These transports will be used by the application to deliver services provided by this application. Only relevant for service-producing apps. See note 2.
     """
 
     virtual_compute_descriptor: typing_extensions.Annotated[
-        VirtualComputeDescription, FieldMetadata(alias="virtualComputeDescriptor")
+        VirtualComputeDescription,
+        FieldMetadata(alias="virtualComputeDescriptor"),
+        pydantic.Field(alias="virtualComputeDescriptor"),
     ]
     virtual_storage_descriptor: typing_extensions.Annotated[
-        typing.Optional[typing.List[VirtualStorageDescriptor]], FieldMetadata(alias="virtualStorageDescriptor")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[VirtualStorageDescriptor]],
+        FieldMetadata(alias="virtualStorageDescriptor"),
+        pydantic.Field(
+            alias="virtualStorageDescriptor",
+            description="Defines descriptors of virtual storage resources to be used by the MEC application.",
+        ),
+    ] = None
     """
     Defines descriptors of virtual storage resources to be used by the MEC application.
     """

@@ -13,12 +13,14 @@ from .writable_circuit_termination_term_side import WritableCircuitTerminationTe
 
 
 class WritableCircuitTermination(UniversalBaseModel):
-    occupied: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="_occupied")] = None
+    occupied: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="_occupied"), pydantic.Field(alias="_occupied")
+    ] = None
     cable: typing.Optional[NestedCable] = None
     cable_end: typing.Optional[str] = None
     circuit: int
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     display: typing.Optional[str] = None
     id: typing.Optional[int] = None

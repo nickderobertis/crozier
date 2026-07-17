@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableIpAddressRole(str, enum.Enum):
+class WritableIpAddressRole(enum.StrEnum):
     """
     The functional role of this IP
     """

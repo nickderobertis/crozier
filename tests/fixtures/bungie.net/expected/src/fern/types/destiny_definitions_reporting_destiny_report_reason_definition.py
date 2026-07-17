@@ -19,10 +19,16 @@ class DestinyDefinitionsReportingDestinyReportReasonDefinition(UniversalBaseMode
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
-    reason_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="reasonHash")] = pydantic.Field(
-        default=None
-    )
+    reason_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="reasonHash"),
+        pydantic.Field(
+            alias="reasonHash",
+            description="The identifier for the reason: they are only guaranteed unique under the Category in which they are found.",
+        ),
+    ] = None
     """
     The identifier for the reason: they are only guaranteed unique under the Category in which they are found.
     """

@@ -7,8 +7,9 @@ These fixtures are the golden target crozier is verified against. They are
   [fern-api/fern](https://github.com/fern-api/fern), commit
   `3a471b03d4778f291849adc03bacfcd40340fc26`; `exhaustive/expected/` was generated
   from `exhaustive/openapi.yml` with `fernapi/fern-python-sdk:4.35.0`. Numbered
-  real-world corpus sources and refs live in [`CORPUS.md`](CORPUS.md), and their
-  current goldens are maintained by the **Fern goldens** workflow.
+  real-world corpus sources and refs live in [`CORPUS.md`](CORPUS.md). The
+  **Fern goldens** workflow checks the latest stable generator from `main`
+  weekly; each managed golden records its current exact version in provenance.
 - **License / attribution:** [`../../licenses/fern-APACHE-2.0.txt`](../../licenses/fern-APACHE-2.0.txt)
   and [`../../NOTICE`](../../NOTICE) (with the statement of changes required by
   Apache-2.0 §4). Keep them; regeneration must preserve them.
@@ -27,14 +28,19 @@ Each `<api>/` directory holds:
 - `expected/.crozier-fern-golden.json` on workflow-managed goldens — the exact
   Fern generator version and manifest name/ref/URL. It is automation provenance,
   not Fern output, so the comparison excludes it.
+- `known-fern-failure.json` only when an exact generator/version/spec-bound
+  upstream failure prevents a current golden. Its fingerprint is revalidated on
+  every generation retry; it never makes an arbitrary Fern failure non-fatal.
 
 ## Corpus
 
 The real-world source manifest and historical batch ledger live in
 [`CORPUS.md`](CORPUS.md). Add or change one numbered row per feature branch, then
-use the manually dispatched **Fern goldens** workflow. See
-[`../../docs/fern-goldens.md`](../../docs/fern-goldens.md) for inputs, expected-red
-first runs, partial-success publication, provenance, and local diagnostics.
+manually run **Fern goldens** on that branch. The same workflow runs from `main`
+every Monday with blank inputs to resolve the latest Fern version across managed
+goldens. See [`../../docs/fern-goldens.md`](../../docs/fern-goldens.md) for the
+event/input contract, expected-red upgrade branches, best-effort publication,
+known failures, provenance, and the final green/no-change rerun.
 
 - **`query-parameters-openapi/`** — legacy offline seed; its source and committed
   `expected/` snapshot came directly from Fern's repository.

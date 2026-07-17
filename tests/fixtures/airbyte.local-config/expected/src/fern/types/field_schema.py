@@ -2,4 +2,7 @@
 
 import typing
 
-FieldSchema = typing.Dict[str, typing.Optional[typing.Any]]
+FieldSchema = typing.Dict[str, typing.Any]
+"""
+JSONSchema representation of the field
+"""

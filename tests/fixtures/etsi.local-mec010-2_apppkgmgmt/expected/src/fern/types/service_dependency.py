@@ -13,22 +13,40 @@ from .transport_dependency import TransportDependency
 
 class ServiceDependency(UniversalBaseModel):
     requested_permissions: typing_extensions.Annotated[
-        typing.Optional[typing.List[NotSpecified]], FieldMetadata(alias="requestedPermissions")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[NotSpecified]],
+        FieldMetadata(alias="requestedPermissions"),
+        pydantic.Field(
+            alias="requestedPermissions",
+            description="Requested permissions regarding the access of the application to the service. See clause 8.2 of ETSI GS MEC 009 [4].\nThe format of this attribute is left for the data model design stage.",
+        ),
+    ] = None
     """
     Requested permissions regarding the access of the application to the service. See clause 8.2 of ETSI GS MEC 009 [4].
     The format of this attribute is left for the data model design stage.
     """
 
-    ser_category: typing_extensions.Annotated[typing.Optional[CategoryRef], FieldMetadata(alias="serCategory")] = None
-    ser_name: typing_extensions.Annotated[str, FieldMetadata(alias="serName")] = pydantic.Field()
+    ser_category: typing_extensions.Annotated[
+        typing.Optional[CategoryRef], FieldMetadata(alias="serCategory"), pydantic.Field(alias="serCategory")
+    ] = None
+    ser_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="serName"),
+        pydantic.Field(
+            alias="serName", description="The name of the service, for example, RNIS, LocationService, etc."
+        ),
+    ]
     """
     The name of the service, for example, RNIS, LocationService, etc.
     """
 
     ser_transport_dependencies: typing_extensions.Annotated[
-        typing.Optional[typing.List[TransportDependency]], FieldMetadata(alias="serTransportDependencies")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[TransportDependency]],
+        FieldMetadata(alias="serTransportDependencies"),
+        pydantic.Field(
+            alias="serTransportDependencies",
+            description="Indicates transport and serialization format dependencies of consuming the service. Defaults to REST + JSON if absent. See note.",
+        ),
+    ] = None
     """
     Indicates transport and serialization format dependencies of consuming the service. Defaults to REST + JSON if absent. See note.
     """

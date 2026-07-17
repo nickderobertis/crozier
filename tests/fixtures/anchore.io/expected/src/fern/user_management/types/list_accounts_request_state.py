@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ListAccountsRequestState(str, enum.Enum):
+class ListAccountsRequestState(enum.StrEnum):
     ENABLED = "enabled"
     DISABLED = "disabled"
     DELETING = "deleting"

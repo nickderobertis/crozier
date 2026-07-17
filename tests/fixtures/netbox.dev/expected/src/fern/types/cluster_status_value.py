@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ClusterStatusValue(str, enum.Enum):
+class ClusterStatusValue(enum.StrEnum):
     PLANNED = "planned"
     STAGING = "staging"
     ACTIVE = "active"

@@ -17,36 +17,54 @@ class ValidateTemplateOutput(UniversalBaseModel):
     """
 
     parameters: typing_extensions.Annotated[
-        typing.Optional[typing.List[TemplateParameter]], FieldMetadata(alias="Parameters")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[TemplateParameter]],
+        FieldMetadata(alias="Parameters"),
+        pydantic.Field(alias="Parameters", description="A list of <code>TemplateParameter</code> structures."),
+    ] = None
     """
     A list of <code>TemplateParameter</code> structures.
     """
 
-    description: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Description")] = pydantic.Field(
-        default=None
-    )
+    description: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Description"),
+        pydantic.Field(alias="Description", description="The description found within the template."),
+    ] = None
     """
     The description found within the template.
     """
 
     capabilities: typing_extensions.Annotated[
-        typing.Optional[typing.List[Capability]], FieldMetadata(alias="Capabilities")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[Capability]],
+        FieldMetadata(alias="Capabilities"),
+        pydantic.Field(
+            alias="Capabilities",
+            description='<p>The capabilities found within the template. If your template contains IAM resources, you must specify the CAPABILITY_IAM or CAPABILITY_NAMED_IAM value for this parameter when you use the <a>CreateStack</a> or <a>UpdateStack</a> actions with your template; otherwise, those actions return an InsufficientCapabilities error.</p> <p>For more information, see <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-template.html#capabilities">Acknowledging IAM Resources in CloudFormation Templates</a>.</p>',
+        ),
+    ] = None
     """
     <p>The capabilities found within the template. If your template contains IAM resources, you must specify the CAPABILITY_IAM or CAPABILITY_NAMED_IAM value for this parameter when you use the <a>CreateStack</a> or <a>UpdateStack</a> actions with your template; otherwise, those actions return an InsufficientCapabilities error.</p> <p>For more information, see <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-template.html#capabilities">Acknowledging IAM Resources in CloudFormation Templates</a>.</p>
     """
 
     capabilities_reason: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="CapabilitiesReason")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="CapabilitiesReason"),
+        pydantic.Field(
+            alias="CapabilitiesReason",
+            description="The list of resources that generated the values in the <code>Capabilities</code> response element.",
+        ),
+    ] = None
     """
     The list of resources that generated the values in the <code>Capabilities</code> response element.
     """
 
     declared_transforms: typing_extensions.Annotated[
-        typing.Optional[typing.List[TransformName]], FieldMetadata(alias="DeclaredTransforms")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[TransformName]],
+        FieldMetadata(alias="DeclaredTransforms"),
+        pydantic.Field(
+            alias="DeclaredTransforms", description="A list of the transforms that are declared in the template."
+        ),
+    ] = None
     """
     A list of the transforms that are declared in the template.
     """

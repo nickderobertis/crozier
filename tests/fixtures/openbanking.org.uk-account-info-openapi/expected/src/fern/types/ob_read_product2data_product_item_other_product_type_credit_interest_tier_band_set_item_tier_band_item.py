@@ -31,7 +31,14 @@ class ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItem
     Tier Band Details
     """
 
-    aer: typing_extensions.Annotated[str, FieldMetadata(alias="AER")] = pydantic.Field()
+    aer: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="AER"),
+        pydantic.Field(
+            alias="AER",
+            description="The annual equivalent rate (AER) is interest that is calculated under the assumption that any interest paid is combined with the original balance and the next interest payment will be based on the slightly higher account balance. Overall, this means that interest can be compounded several times in a year depending on the number of times that interest payments are made. \nRead more: Annual Equivalent Rate (AER) http://www.investopedia.com/terms/a/aer.asp#ixzz4gfR7IO1A",
+        ),
+    ]
     """
     The annual equivalent rate (AER) is interest that is calculated under the assumption that any interest paid is combined with the original balance and the next interest payment will be based on the slightly higher account balance. Overall, this means that interest can be compounded several times in a year depending on the number of times that interest payments are made. 
     Read more: Annual Equivalent Rate (AER) http://www.investopedia.com/terms/a/aer.asp#ixzz4gfR7IO1A
@@ -40,14 +47,20 @@ class ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItem
     application_frequency: typing_extensions.Annotated[
         ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemApplicationFrequency,
         FieldMetadata(alias="ApplicationFrequency"),
-    ] = pydantic.Field()
+        pydantic.Field(
+            alias="ApplicationFrequency",
+            description="How often is interest applied to the Product for this tier/band i.e. how often the financial institution pays accumulated interest to the customer's account.",
+        ),
+    ]
     """
     How often is interest applied to the Product for this tier/band i.e. how often the financial institution pays accumulated interest to the customer's account.
     """
 
-    bank_interest_rate: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="BankInterestRate")] = (
-        pydantic.Field(default=None)
-    )
+    bank_interest_rate: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="BankInterestRate"),
+        pydantic.Field(alias="BankInterestRate", description="Bank Interest for the product"),
+    ] = None
     """
     Bank Interest for the product
     """
@@ -57,7 +70,11 @@ class ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItem
             ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemBankInterestRateType
         ],
         FieldMetadata(alias="BankInterestRateType"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="BankInterestRateType",
+            description="Interest rate types, other than AER, which financial institutions may use to describe the annual interest rate payable to the account holder's account.",
+        ),
+    ] = None
     """
     Interest rate types, other than AER, which financial institutions may use to describe the annual interest rate payable to the account holder's account.
     """
@@ -67,7 +84,10 @@ class ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItem
             ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemCalculationFrequency
         ],
         FieldMetadata(alias="CalculationFrequency"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="CalculationFrequency", description="How often is credit interest calculated for the account."
+        ),
+    ] = None
     """
     How often is credit interest calculated for the account.
     """
@@ -77,46 +97,73 @@ class ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItem
             ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemDepositInterestAppliedCoverage
         ],
         FieldMetadata(alias="DepositInterestAppliedCoverage"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(alias="DepositInterestAppliedCoverage", description="Amount on which Interest applied."),
+    ] = None
     """
     Amount on which Interest applied.
     """
 
     fixed_variable_interest_rate_type: typing_extensions.Annotated[
-        ObInterestFixedVariableType1Code, FieldMetadata(alias="FixedVariableInterestRateType")
+        ObInterestFixedVariableType1Code,
+        FieldMetadata(alias="FixedVariableInterestRateType"),
+        pydantic.Field(alias="FixedVariableInterestRateType"),
     ]
-    identification: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Identification")] = (
-        pydantic.Field(default=None)
-    )
+    identification: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Identification"),
+        pydantic.Field(
+            alias="Identification", description="Unique and unambiguous identification of a  Tier Band for the Product."
+        ),
+    ] = None
     """
     Unique and unambiguous identification of a  Tier Band for the Product.
     """
 
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = None
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]], FieldMetadata(alias="Notes"), pydantic.Field(alias="Notes")
+    ] = None
     other_application_frequency: typing_extensions.Annotated[
-        typing.Optional[ObOtherCodeType11], FieldMetadata(alias="OtherApplicationFrequency")
+        typing.Optional[ObOtherCodeType11],
+        FieldMetadata(alias="OtherApplicationFrequency"),
+        pydantic.Field(alias="OtherApplicationFrequency"),
     ] = None
     other_bank_interest_type: typing_extensions.Annotated[
         typing.Optional[
             ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemOtherBankInterestType
         ],
         FieldMetadata(alias="OtherBankInterestType"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="OtherBankInterestType",
+            description="Other interest rate types which are not available in the standard code list",
+        ),
+    ] = None
     """
     Other interest rate types which are not available in the standard code list
     """
 
     other_calculation_frequency: typing_extensions.Annotated[
-        typing.Optional[ObOtherCodeType12], FieldMetadata(alias="OtherCalculationFrequency")
+        typing.Optional[ObOtherCodeType12],
+        FieldMetadata(alias="OtherCalculationFrequency"),
+        pydantic.Field(alias="OtherCalculationFrequency"),
     ] = None
-    tier_value_maximum: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TierValueMaximum")] = (
-        pydantic.Field(default=None)
-    )
+    tier_value_maximum: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="TierValueMaximum"),
+        pydantic.Field(
+            alias="TierValueMaximum", description="Maximum deposit value for which the credit interest tier applies."
+        ),
+    ] = None
     """
     Maximum deposit value for which the credit interest tier applies.
     """
 
-    tier_value_minimum: typing_extensions.Annotated[str, FieldMetadata(alias="TierValueMinimum")] = pydantic.Field()
+    tier_value_minimum: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="TierValueMinimum"),
+        pydantic.Field(
+            alias="TierValueMinimum", description="Minimum deposit value for which the credit interest tier applies."
+        ),
+    ]
     """
     Minimum deposit value for which the credit interest tier applies.
     """

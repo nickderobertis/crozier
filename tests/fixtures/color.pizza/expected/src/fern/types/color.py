@@ -17,14 +17,22 @@ class Color(UniversalBaseModel):
     hsl: typing.Optional[ColorHsl] = None
     lab: typing.Optional[ColorLab] = None
     luminance: typing.Optional[float] = None
-    luminance_wcag: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="luminanceWCAG")] = None
+    luminance_wcag: typing_extensions.Annotated[
+        typing.Optional[float], FieldMetadata(alias="luminanceWCAG"), pydantic.Field(alias="luminanceWCAG")
+    ] = None
     name: typing.Optional[str] = None
-    requested_hex: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="requestedHex")] = None
+    requested_hex: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="requestedHex"), pydantic.Field(alias="requestedHex")
+    ] = None
     rgb: typing.Optional[ColorRgb] = None
     svg: typing.Optional[str] = None
-    svg_named: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="svgNamed")] = None
+    svg_named: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="svgNamed"), pydantic.Field(alias="svgNamed")
+    ] = None
     swatch_img: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]], FieldMetadata(alias="swatchImg")
+        typing.Optional[typing.Dict[str, typing.Any]],
+        FieldMetadata(alias="swatchImg"),
+        pydantic.Field(alias="swatchImg"),
     ] = None
 
     if IS_PYDANTIC_V2:

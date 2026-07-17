@@ -15,15 +15,25 @@ class ListChangeSetsOutput(UniversalBaseModel):
     """
 
     summaries: typing_extensions.Annotated[
-        typing.Optional[typing.List[ChangeSetSummary]], FieldMetadata(alias="Summaries")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[ChangeSetSummary]],
+        FieldMetadata(alias="Summaries"),
+        pydantic.Field(
+            alias="Summaries",
+            description="A list of <code>ChangeSetSummary</code> structures that provides the ID and status of each change set for the specified stack.",
+        ),
+    ] = None
     """
     A list of <code>ChangeSetSummary</code> structures that provides the ID and status of each change set for the specified stack.
     """
 
-    next_token: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="NextToken")] = pydantic.Field(
-        default=None
-    )
+    next_token: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="NextToken"),
+        pydantic.Field(
+            alias="NextToken",
+            description="If the output exceeds 1 MB, a string that identifies the next page of change sets. If there is no additional page, this value is <code>null</code>.",
+        ),
+    ] = None
     """
     If the output exceeds 1 MB, a string that identifies the next page of change sets. If there is no additional page, this value is <code>null</code>.
     """

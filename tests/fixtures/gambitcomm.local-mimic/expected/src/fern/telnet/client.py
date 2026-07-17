@@ -172,7 +172,7 @@ class TelnetClient:
 
     def protocol_telnet_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's TELNET configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -186,7 +186,7 @@ class TelnetClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples
@@ -970,7 +970,7 @@ class AsyncTelnetClient:
 
     async def protocol_telnet_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's TELNET configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -984,7 +984,7 @@ class AsyncTelnetClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples

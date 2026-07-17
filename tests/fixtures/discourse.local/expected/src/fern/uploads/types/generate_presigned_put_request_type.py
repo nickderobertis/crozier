@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GeneratePresignedPutRequestType(str, enum.Enum):
+class GeneratePresignedPutRequestType(enum.StrEnum):
     AVATAR = "avatar"
     PROFILE_BACKGROUND = "profile_background"
     CARD_BACKGROUND = "card_background"

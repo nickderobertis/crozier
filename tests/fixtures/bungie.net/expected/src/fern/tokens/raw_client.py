@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.tokens_apply_missing_partner_offers_without_claim_response import (
@@ -19,6 +20,7 @@ from .types.tokens_get_bungie_rewards_for_user_response import TokensGetBungieRe
 from .types.tokens_get_bungie_rewards_list_response import TokensGetBungieRewardsListResponse
 from .types.tokens_get_partner_offer_sku_history_response import TokensGetPartnerOfferSkuHistoryResponse
 from .types.tokens_get_partner_reward_history_response import TokensGetPartnerRewardHistoryResponse
+from pydantic import ValidationError
 
 
 class RawTokensClient:
@@ -52,7 +54,7 @@ class RawTokensClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Tokens/Partner/ApplyMissingOffers/{jsonable_encoder(partner_application_id)}/{jsonable_encoder(target_bnet_membership_id)}/",
+            f"Tokens/Partner/ApplyMissingOffers/{encode_path_param(partner_application_id)}/{encode_path_param(target_bnet_membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -69,6 +71,10 @@ class RawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def claimpartneroffer(
@@ -105,6 +111,10 @@ class RawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def forcedropsrepair(
@@ -141,6 +151,10 @@ class RawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getpartnerofferskuhistory(
@@ -170,7 +184,7 @@ class RawTokensClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Tokens/Partner/History/{jsonable_encoder(partner_application_id)}/{jsonable_encoder(target_bnet_membership_id)}/",
+            f"Tokens/Partner/History/{encode_path_param(partner_application_id)}/{encode_path_param(target_bnet_membership_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -187,6 +201,10 @@ class RawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getpartnerrewardhistory(
@@ -216,7 +234,7 @@ class RawTokensClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Tokens/Partner/History/{jsonable_encoder(target_bnet_membership_id)}/Application/{jsonable_encoder(partner_application_id)}/",
+            f"Tokens/Partner/History/{encode_path_param(target_bnet_membership_id)}/Application/{encode_path_param(partner_application_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -233,6 +251,10 @@ class RawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getbungierewardslist(
@@ -269,6 +291,10 @@ class RawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getbungierewardsforplatformuser(
@@ -294,7 +320,7 @@ class RawTokensClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Tokens/Rewards/GetRewardsForPlatformUser/{jsonable_encoder(membership_id)}/{jsonable_encoder(membership_type)}/",
+            f"Tokens/Rewards/GetRewardsForPlatformUser/{encode_path_param(membership_id)}/{encode_path_param(membership_type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -311,6 +337,10 @@ class RawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getbungierewardsforuser(
@@ -333,7 +363,7 @@ class RawTokensClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Tokens/Rewards/GetRewardsForUser/{jsonable_encoder(membership_id)}/",
+            f"Tokens/Rewards/GetRewardsForUser/{encode_path_param(membership_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -350,6 +380,10 @@ class RawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -384,7 +418,7 @@ class AsyncRawTokensClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Tokens/Partner/ApplyMissingOffers/{jsonable_encoder(partner_application_id)}/{jsonable_encoder(target_bnet_membership_id)}/",
+            f"Tokens/Partner/ApplyMissingOffers/{encode_path_param(partner_application_id)}/{encode_path_param(target_bnet_membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -401,6 +435,10 @@ class AsyncRawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def claimpartneroffer(
@@ -437,6 +475,10 @@ class AsyncRawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def forcedropsrepair(
@@ -473,6 +515,10 @@ class AsyncRawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getpartnerofferskuhistory(
@@ -502,7 +548,7 @@ class AsyncRawTokensClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Tokens/Partner/History/{jsonable_encoder(partner_application_id)}/{jsonable_encoder(target_bnet_membership_id)}/",
+            f"Tokens/Partner/History/{encode_path_param(partner_application_id)}/{encode_path_param(target_bnet_membership_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -519,6 +565,10 @@ class AsyncRawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getpartnerrewardhistory(
@@ -548,7 +598,7 @@ class AsyncRawTokensClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Tokens/Partner/History/{jsonable_encoder(target_bnet_membership_id)}/Application/{jsonable_encoder(partner_application_id)}/",
+            f"Tokens/Partner/History/{encode_path_param(target_bnet_membership_id)}/Application/{encode_path_param(partner_application_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -565,6 +615,10 @@ class AsyncRawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getbungierewardslist(
@@ -601,6 +655,10 @@ class AsyncRawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getbungierewardsforplatformuser(
@@ -626,7 +684,7 @@ class AsyncRawTokensClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Tokens/Rewards/GetRewardsForPlatformUser/{jsonable_encoder(membership_id)}/{jsonable_encoder(membership_type)}/",
+            f"Tokens/Rewards/GetRewardsForPlatformUser/{encode_path_param(membership_id)}/{encode_path_param(membership_type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -643,6 +701,10 @@ class AsyncRawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getbungierewardsforuser(
@@ -665,7 +727,7 @@ class AsyncRawTokensClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Tokens/Rewards/GetRewardsForUser/{jsonable_encoder(membership_id)}/",
+            f"Tokens/Rewards/GetRewardsForUser/{encode_path_param(membership_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -682,4 +744,8 @@ class AsyncRawTokensClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

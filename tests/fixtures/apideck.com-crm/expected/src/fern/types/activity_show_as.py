@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ActivityShowAs(str, enum.Enum):
+class ActivityShowAs(enum.StrEnum):
     FREE = "free"
     BUSY = "busy"
 

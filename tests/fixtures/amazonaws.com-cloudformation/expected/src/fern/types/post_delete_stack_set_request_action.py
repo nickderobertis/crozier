@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostDeleteStackSetRequestAction(str, enum.Enum):
+class PostDeleteStackSetRequestAction(enum.StrEnum):
     DELETE_STACK_SET = "DeleteStackSet"
 
     def visit(self, delete_stack_set: typing.Callable[[], T_Result]) -> T_Result:

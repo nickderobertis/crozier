@@ -2,4 +2,4 @@
 
 import typing
 
-NotImplementedResponseDetail = typing.Union[str, typing.Dict[str, typing.Optional[typing.Any]]]
+NotImplementedResponseDetail = typing.Union[str, typing.Dict[str, typing.Any]]

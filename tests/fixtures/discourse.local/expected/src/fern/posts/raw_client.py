@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -18,6 +19,7 @@ from .types.perform_post_action_response import PerformPostActionResponse
 from .types.post_replies_response_item import PostRepliesResponseItem
 from .types.update_post_request_post import UpdatePostRequestPost
 from .types.update_post_response import UpdatePostResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -87,6 +89,10 @@ class RawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_posts(
@@ -140,6 +146,10 @@ class RawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_topic_post_pm(
@@ -234,6 +244,10 @@ class RawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_post(
@@ -257,7 +271,7 @@ class RawPostsClient:
             latest posts
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"posts/{jsonable_encoder(id)}.json",
+            f"posts/{encode_path_param(id)}.json",
             method="GET",
             headers={
                 "Api-Key": str(api_key) if api_key is not None else None,
@@ -278,6 +292,10 @@ class RawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_post(
@@ -309,7 +327,7 @@ class RawPostsClient:
             post updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"posts/{jsonable_encoder(id)}.json",
+            f"posts/{encode_path_param(id)}.json",
             method="PUT",
             json={
                 "post": convert_and_respect_annotation_metadata(
@@ -337,6 +355,10 @@ class RawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_post(
@@ -366,7 +388,7 @@ class RawPostsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"posts/{jsonable_encoder(id)}.json",
+            f"posts/{encode_path_param(id)}.json",
             method="DELETE",
             json={
                 "force_destroy": force_destroy,
@@ -383,6 +405,10 @@ class RawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def lock_post(
@@ -414,7 +440,7 @@ class RawPostsClient:
             post updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"posts/{jsonable_encoder(id)}/locked.json",
+            f"posts/{encode_path_param(id)}/locked.json",
             method="PUT",
             json={
                 "locked": locked,
@@ -440,6 +466,10 @@ class RawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def post_replies(
@@ -459,7 +489,7 @@ class RawPostsClient:
             post replies
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"posts/{jsonable_encoder(id)}/replies.json",
+            f"posts/{encode_path_param(id)}/replies.json",
             method="GET",
             request_options=request_options,
         )
@@ -476,6 +506,10 @@ class RawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -543,6 +577,10 @@ class AsyncRawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_posts(
@@ -596,6 +634,10 @@ class AsyncRawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_topic_post_pm(
@@ -690,6 +732,10 @@ class AsyncRawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_post(
@@ -713,7 +759,7 @@ class AsyncRawPostsClient:
             latest posts
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"posts/{jsonable_encoder(id)}.json",
+            f"posts/{encode_path_param(id)}.json",
             method="GET",
             headers={
                 "Api-Key": str(api_key) if api_key is not None else None,
@@ -734,6 +780,10 @@ class AsyncRawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_post(
@@ -765,7 +815,7 @@ class AsyncRawPostsClient:
             post updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"posts/{jsonable_encoder(id)}.json",
+            f"posts/{encode_path_param(id)}.json",
             method="PUT",
             json={
                 "post": convert_and_respect_annotation_metadata(
@@ -793,6 +843,10 @@ class AsyncRawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_post(
@@ -822,7 +876,7 @@ class AsyncRawPostsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"posts/{jsonable_encoder(id)}.json",
+            f"posts/{encode_path_param(id)}.json",
             method="DELETE",
             json={
                 "force_destroy": force_destroy,
@@ -839,6 +893,10 @@ class AsyncRawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def lock_post(
@@ -870,7 +928,7 @@ class AsyncRawPostsClient:
             post updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"posts/{jsonable_encoder(id)}/locked.json",
+            f"posts/{encode_path_param(id)}/locked.json",
             method="PUT",
             json={
                 "locked": locked,
@@ -896,6 +954,10 @@ class AsyncRawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def post_replies(
@@ -915,7 +977,7 @@ class AsyncRawPostsClient:
             post replies
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"posts/{jsonable_encoder(id)}/replies.json",
+            f"posts/{encode_path_param(id)}/replies.json",
             method="GET",
             request_options=request_options,
         )
@@ -932,4 +994,8 @@ class AsyncRawPostsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

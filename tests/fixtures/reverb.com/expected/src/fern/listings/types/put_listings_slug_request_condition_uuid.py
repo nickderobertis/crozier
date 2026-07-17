@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PutListingsSlugRequestConditionUuid(str, enum.Enum):
+class PutListingsSlugRequestConditionUuid(enum.StrEnum):
     """
     Condition UUID
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetRecordHandlerProgressRequestOperationStatus(str, enum.Enum):
+class GetRecordHandlerProgressRequestOperationStatus(enum.StrEnum):
     PENDING = "PENDING"
     IN_PROGRESS = "IN_PROGRESS"
     SUCCESS = "SUCCESS"

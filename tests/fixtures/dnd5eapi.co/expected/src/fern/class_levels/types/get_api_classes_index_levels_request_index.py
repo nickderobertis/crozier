@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetApiClassesIndexLevelsRequestIndex(str, enum.Enum):
+class GetApiClassesIndexLevelsRequestIndex(enum.StrEnum):
     BARBARIAN = "barbarian"
     BARD = "bard"
     CLERIC = "cleric"

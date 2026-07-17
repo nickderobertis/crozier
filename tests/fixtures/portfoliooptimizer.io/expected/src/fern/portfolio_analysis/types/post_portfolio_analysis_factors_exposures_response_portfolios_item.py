@@ -9,19 +9,38 @@ from ...core.serialization import FieldMetadata
 
 
 class PostPortfolioAnalysisFactorsExposuresResponsePortfoliosItem(UniversalBaseModel):
-    portfolio_alpha: typing_extensions.Annotated[float, FieldMetadata(alias="portfolioAlpha")] = pydantic.Field()
+    portfolio_alpha: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="portfolioAlpha"),
+        pydantic.Field(
+            alias="portfolioAlpha",
+            description="The portfolio alpha, which correponds to the portion of the portfolio returns that cannot be explained by the portfolio factor exposures",
+        ),
+    ]
     """
     The portfolio alpha, which correponds to the portion of the portfolio returns that cannot be explained by the portfolio factor exposures
     """
 
-    portfolio_betas: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="portfolioBetas")] = (
-        pydantic.Field()
-    )
+    portfolio_betas: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="portfolioBetas"),
+        pydantic.Field(
+            alias="portfolioBetas",
+            description="The portfolio betas, which correspond to the portfolio factor exposures",
+        ),
+    ]
     """
     The portfolio betas, which correspond to the portfolio factor exposures
     """
 
-    portfolio_r_squared: typing_extensions.Annotated[float, FieldMetadata(alias="portfolioRSquared")] = pydantic.Field()
+    portfolio_r_squared: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="portfolioRSquared"),
+        pydantic.Field(
+            alias="portfolioRSquared",
+            description="The portfolio R^2, which indicates how much of the variability in the portfolio returns can be explained by the portfolio factor exposures; generally, the higher the R^2 the better the portfolio factor exposures explain the portfolio returns",
+        ),
+    ]
     """
     The portfolio R^2, which indicates how much of the variability in the portfolio returns can be explained by the portfolio factor exposures; generally, the higher the R^2 the better the portfolio factor exposures explain the portfolio returns
     """

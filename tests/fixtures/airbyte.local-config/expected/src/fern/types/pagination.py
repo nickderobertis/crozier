@@ -9,8 +9,12 @@ from ..core.serialization import FieldMetadata
 
 
 class Pagination(UniversalBaseModel):
-    page_size: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="pageSize")] = None
-    row_offset: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="rowOffset")] = None
+    page_size: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="pageSize"), pydantic.Field(alias="pageSize")
+    ] = None
+    row_offset: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="rowOffset"), pydantic.Field(alias="rowOffset")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

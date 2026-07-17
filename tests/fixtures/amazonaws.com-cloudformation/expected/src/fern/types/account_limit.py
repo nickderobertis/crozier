@@ -13,14 +13,23 @@ class AccountLimit(UniversalBaseModel):
     <p>The AccountLimit data type.</p> <p>CloudFormation has the following limits per account:</p> <ul> <li> <p>Number of concurrent resources</p> </li> <li> <p>Number of stacks</p> </li> <li> <p>Number of stack outputs</p> </li> </ul> <p>For more information about these account limits, and other CloudFormation limits, see <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html">CloudFormation quotas</a> in the <i>CloudFormation User Guide</i>.</p>
     """
 
-    name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Name")] = pydantic.Field(default=None)
+    name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Name"),
+        pydantic.Field(
+            alias="Name",
+            description="<p>The name of the account limit.</p> <p>Values: <code>ConcurrentResourcesLimit</code> | <code>StackLimit</code> | <code>StackOutputsLimit</code> </p>",
+        ),
+    ] = None
     """
     <p>The name of the account limit.</p> <p>Values: <code>ConcurrentResourcesLimit</code> | <code>StackLimit</code> | <code>StackOutputsLimit</code> </p>
     """
 
-    value: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="Value")] = pydantic.Field(
-        default=None
-    )
+    value: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="Value"),
+        pydantic.Field(alias="Value", description="The value that's associated with the account limit name."),
+    ] = None
     """
     The value that's associated with the account limit name.
     """

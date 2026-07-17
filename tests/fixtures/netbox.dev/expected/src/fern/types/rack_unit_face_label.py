@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class RackUnitFaceLabel(str, enum.Enum):
+class RackUnitFaceLabel(enum.StrEnum):
     FRONT = "Front"
     REAR = "Rear"
 

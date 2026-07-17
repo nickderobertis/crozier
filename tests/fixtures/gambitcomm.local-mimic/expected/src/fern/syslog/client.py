@@ -28,7 +28,7 @@ class SyslogClient:
 
     def protocol_syslog_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's SYSLOG configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -42,7 +42,7 @@ class SyslogClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples
@@ -438,7 +438,7 @@ class AsyncSyslogClient:
 
     async def protocol_syslog_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's SYSLOG configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -452,7 +452,7 @@ class AsyncSyslogClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples

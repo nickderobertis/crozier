@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ConnectionState(str, enum.Enum):
+class ConnectionState(enum.StrEnum):
     """
     [Connection state flow](#section/Connection-state)
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class L2VpnTypeValue(str, enum.Enum):
+class L2VpnTypeValue(enum.StrEnum):
     VPWS = "vpws"
     VPLS = "vpls"
     VXLAN = "vxlan"

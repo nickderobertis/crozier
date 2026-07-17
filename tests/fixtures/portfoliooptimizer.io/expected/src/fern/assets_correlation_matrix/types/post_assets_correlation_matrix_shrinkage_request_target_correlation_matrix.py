@@ -11,16 +11,28 @@ from ...core.serialization import FieldMetadata
 class PostAssetsCorrelationMatrixShrinkageRequestTargetCorrelationMatrix(UniversalBaseModel):
     assets: int
     assets_correlation_matrix: typing_extensions.Annotated[
-        typing.List[typing.List[float]], FieldMetadata(alias="assetsCorrelationMatrix")
-    ] = pydantic.Field()
+        typing.List[typing.List[float]],
+        FieldMetadata(alias="assetsCorrelationMatrix"),
+        pydantic.Field(
+            alias="assetsCorrelationMatrix",
+            description="assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j",
+        ),
+    ]
     """
     assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
     """
 
-    shrinkage_factor: typing_extensions.Annotated[float, FieldMetadata(alias="shrinkageFactor")]
+    shrinkage_factor: typing_extensions.Annotated[
+        float, FieldMetadata(alias="shrinkageFactor"), pydantic.Field(alias="shrinkageFactor")
+    ]
     target_correlation_matrix: typing_extensions.Annotated[
-        typing.List[typing.List[float]], FieldMetadata(alias="targetCorrelationMatrix")
-    ] = pydantic.Field()
+        typing.List[typing.List[float]],
+        FieldMetadata(alias="targetCorrelationMatrix"),
+        pydantic.Field(
+            alias="targetCorrelationMatrix",
+            description="targetCorrelationMatrix[i][j] is the target correlation between the asset i and the asset j",
+        ),
+    ]
     """
     targetCorrelationMatrix[i][j] is the target correlation between the asset i and the asset j
     """

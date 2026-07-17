@@ -6,12 +6,14 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.get_categories_response import GetCategoriesResponse
 from ..types.get_category_response import GetCategoryResponse
 from ..types.get_listings_response import GetListingsResponse
+from pydantic import ValidationError
 
 
 class RawCategoryClient:
@@ -48,7 +50,7 @@ class RawCategoryClient:
             Categories
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ecosystems/{jsonable_encoder(ecosystem_id)}/categories",
+            f"ecosystems/{encode_path_param(ecosystem_id)}/categories",
             method="GET",
             params={
                 "cursor": cursor,
@@ -69,6 +71,10 @@ class RawCategoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def categories_one(
@@ -93,7 +99,7 @@ class RawCategoryClient:
             Category
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ecosystems/{jsonable_encoder(ecosystem_id)}/categories/{jsonable_encoder(id)}",
+            f"ecosystems/{encode_path_param(ecosystem_id)}/categories/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -110,6 +116,10 @@ class RawCategoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def listings_all(
@@ -146,7 +156,7 @@ class RawCategoryClient:
             Listings
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ecosystems/{jsonable_encoder(ecosystem_id)}/categories/{jsonable_encoder(id)}/listings",
+            f"ecosystems/{encode_path_param(ecosystem_id)}/categories/{encode_path_param(id)}/listings",
             method="GET",
             params={
                 "cursor": cursor,
@@ -167,6 +177,10 @@ class RawCategoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -204,7 +218,7 @@ class AsyncRawCategoryClient:
             Categories
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ecosystems/{jsonable_encoder(ecosystem_id)}/categories",
+            f"ecosystems/{encode_path_param(ecosystem_id)}/categories",
             method="GET",
             params={
                 "cursor": cursor,
@@ -225,6 +239,10 @@ class AsyncRawCategoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def categories_one(
@@ -249,7 +267,7 @@ class AsyncRawCategoryClient:
             Category
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ecosystems/{jsonable_encoder(ecosystem_id)}/categories/{jsonable_encoder(id)}",
+            f"ecosystems/{encode_path_param(ecosystem_id)}/categories/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -266,6 +284,10 @@ class AsyncRawCategoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def listings_all(
@@ -302,7 +324,7 @@ class AsyncRawCategoryClient:
             Listings
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ecosystems/{jsonable_encoder(ecosystem_id)}/categories/{jsonable_encoder(id)}/listings",
+            f"ecosystems/{encode_path_param(ecosystem_id)}/categories/{encode_path_param(id)}/listings",
             method="GET",
             params={
                 "cursor": cursor,
@@ -323,4 +345,8 @@ class AsyncRawCategoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

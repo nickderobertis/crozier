@@ -13,8 +13,8 @@ class ArtifactReference(UniversalBaseModel):
     A reference to a different artifact. Typically used with artifact types that can have dependencies like Protobuf.
     """
 
-    artifact_id: typing_extensions.Annotated[str, FieldMetadata(alias="artifactId")]
-    group_id: typing_extensions.Annotated[str, FieldMetadata(alias="groupId")]
+    artifact_id: typing_extensions.Annotated[str, FieldMetadata(alias="artifactId"), pydantic.Field(alias="artifactId")]
+    group_id: typing_extensions.Annotated[str, FieldMetadata(alias="groupId"), pydantic.Field(alias="groupId")]
     name: str
     version: typing.Optional[str] = None
 

@@ -10,7 +10,7 @@ class MonsterSpecialAbilitiesItemSpellcastingSpellsItem(UniversalBaseModel):
     level: typing.Optional[float] = None
     name: typing.Optional[str] = None
     url: typing.Optional[str] = None
-    usage: typing.Optional[typing.Optional[typing.Any]] = None
+    usage: typing.Optional[typing.Any] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

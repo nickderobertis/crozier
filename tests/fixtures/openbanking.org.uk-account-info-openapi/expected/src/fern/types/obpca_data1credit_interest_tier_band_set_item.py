@@ -28,35 +28,50 @@ class ObpcaData1CreditInterestTierBandSetItem(UniversalBaseModel):
     calculation_method: typing_extensions.Annotated[
         typing.Optional[ObpcaData1CreditInterestTierBandSetItemCalculationMethod],
         FieldMetadata(alias="CalculationMethod"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(alias="CalculationMethod", description="Methods of calculating interest"),
+    ] = None
     """
     Methods of calculating interest
     """
 
     destination: typing_extensions.Annotated[
-        typing.Optional[ObpcaData1CreditInterestTierBandSetItemDestination], FieldMetadata(alias="Destination")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObpcaData1CreditInterestTierBandSetItemDestination],
+        FieldMetadata(alias="Destination"),
+        pydantic.Field(
+            alias="Destination",
+            description="Describes whether accrued interest is payable only to the PCA or to another bank account",
+        ),
+    ] = None
     """
     Describes whether accrued interest is payable only to the PCA or to another bank account
     """
 
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = (
-        pydantic.Field(default=None)
-    )
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="Notes"),
+        pydantic.Field(alias="Notes", description="Optional additional notes to supplement the Tier Band Set details"),
+    ] = None
     """
     Optional additional notes to supplement the Tier Band Set details
     """
 
     tier_band: typing_extensions.Annotated[
-        typing.List[ObpcaData1CreditInterestTierBandSetItemTierBandItem], FieldMetadata(alias="TierBand")
-    ] = pydantic.Field()
+        typing.List[ObpcaData1CreditInterestTierBandSetItemTierBandItem],
+        FieldMetadata(alias="TierBand"),
+        pydantic.Field(alias="TierBand", description="Tier Band Details"),
+    ]
     """
     Tier Band Details
     """
 
     tier_band_method: typing_extensions.Annotated[
-        ObpcaData1CreditInterestTierBandSetItemTierBandMethod, FieldMetadata(alias="TierBandMethod")
-    ] = pydantic.Field()
+        ObpcaData1CreditInterestTierBandSetItemTierBandMethod,
+        FieldMetadata(alias="TierBandMethod"),
+        pydantic.Field(
+            alias="TierBandMethod",
+            description="The methodology of how credit interest is charged. It can be:-\n\n1. Banded\nInterest rates are banded. i.e. Increasing rate on whole balance as balance increases.\n\n2. Tiered\nInterest rates are tiered. i.e. increasing rate for each tier as balance increases, but interest paid on tier fixed for that tier and not on whole balance.\n\n3. Whole\nThe same interest rate is applied irrespective of the PCA balance",
+        ),
+    ]
     """
     The methodology of how credit interest is charged. It can be:-
     

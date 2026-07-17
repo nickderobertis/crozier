@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObReadProduct2DataProductItemOtherProductTypeProductDetailsFeeFreeLengthPeriod(str, enum.Enum):
+class ObReadProduct2DataProductItemOtherProductTypeProductDetailsFeeFreeLengthPeriod(enum.StrEnum):
     """
     The unit of period (days, weeks, months etc.) of the promotional length
     """

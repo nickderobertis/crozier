@@ -114,6 +114,10 @@ struct Imports {
     /// after the class body (a deferred import) so the module loads without the
     /// cycle firing at import time.
     deferred: BTreeSet<String>,
+    /// First-registration order for deferred imports. Fern keeps direct field
+    /// references ahead of the additional namespace used to repair a cycle;
+    /// aliases still use [`Self::deferred`]'s sorted order under `TYPE_CHECKING`.
+    deferred_order: Vec<String>,
 }
 
 impl Imports {
@@ -135,6 +139,7 @@ impl Imports {
             Some(tag) if tag.is_empty() => match &self.loc {
                 RefLoc::RootTypes => format!(".{m}"),
                 RefLoc::TagTypes(_) => format!("...types.{m}"),
+                RefLoc::Client(module) if module.is_empty() => format!(".types.{m}"),
                 RefLoc::Client(_) | RefLoc::Errors => format!("..types.{m}"),
                 RefLoc::PackageRoot => format!(".types.{m}"),
             },
@@ -165,7 +170,10 @@ impl Imports {
         if self.forward.contains(class) {
             if naming::module_name(class) != self.cur_module {
                 let path = self.type_import_path(class);
-                self.deferred.insert(format!("from {path} import {class}"));
+                let line = format!("from {path} import {class}");
+                if self.deferred.insert(line.clone()) {
+                    self.deferred_order.push(line);
+                }
             }
             return;
         }
@@ -323,6 +331,7 @@ fn render_type(t: &TypeRef, imports: &mut Imports) -> Doc {
     match t {
         TypeRef::Primitive(p) => match p {
             Prim::Str => Doc::atom("str"),
+            Prim::Bytes => Doc::atom("bytes"),
             Prim::Int | Prim::Long => Doc::atom("int"),
             Prim::Float => Doc::atom("float"),
             Prim::Bool => Doc::atom("bool"),
@@ -427,28 +436,39 @@ struct FieldView {
 /// Compute a field's annotation + default, registering imports.
 fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
     let inner = render_type(&field.type_ref, imports);
-    // An unknown schema already contributes its own `Optional[Any]`. A required
-    // unknown field keeps that single wrapper; a non-required unknown field adds
-    // a second wrapper for property absence, matching Fern's distinction.
-    let required_unknown = field.spec_required
-        && matches!(field.type_ref, TypeRef::Optional(ref inner) if matches!(inner.as_ref(), TypeRef::Primitive(Prim::Any)));
-    let typ = if field.optional && !required_unknown {
+    let typ = if field.optional {
         imports.add_plain("typing");
         Doc::group("typing.Optional[", vec![inner], "]")
     } else {
         inner
     };
 
-    // Fern carries the wire alias in `FieldMetadata` inside the `Annotated`, not
-    // in `pydantic.Field`.
+    // Fern 5.20 carries the wire alias in both its serialization metadata and a
+    // pydantic field marker. The former drives crozier's write-side converter;
+    // the latter makes direct pydantic construction/deserialization honor it.
     let annotation = if field.needs_alias() {
+        imports.add_plain("pydantic");
         imports.add_plain("typing_extensions");
         imports.add_core("serialization", "FieldMetadata");
+        let pydantic_field = field.docstring.as_ref().map_or_else(
+            || Doc::atom(format!("pydantic.Field(alias=\"{}\")", field.wire_name)),
+            |description| {
+                Doc::group(
+                    "pydantic.Field(",
+                    vec![
+                        Doc::atom(format!("alias=\"{}\"", field.wire_name)),
+                        Doc::atom(format!("description=\"{}\"", escape_py_str(description))),
+                    ],
+                    ")",
+                )
+            },
+        );
         Doc::group(
             "typing_extensions.Annotated[",
             vec![
                 typ,
                 Doc::atom(format!("FieldMetadata(alias=\"{}\")", field.wire_name)),
+                pydantic_field,
             ],
             "]",
         )
@@ -468,6 +488,16 @@ fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
 /// `pydantic.Field` (with `default=None` when optional); an undocumented
 /// optional field defaults to `None`; a required undocumented field has none.
 fn field_default(field: &Field, imports: &mut Imports) -> String {
+    // An aliased field already carries its pydantic.Field in Annotated. Adding a
+    // second Field as the default changes pydantic's metadata merge semantics and
+    // diverges from Fern 5.20; optional aliases use the ordinary None default.
+    if field.needs_alias() {
+        return if field.optional {
+            " = None".to_string()
+        } else {
+            String::new()
+        };
+    }
     if field.docstring.is_some() {
         imports.add_plain("pydantic");
         if field.optional {
@@ -573,6 +603,32 @@ fn decl_refs(decl: &TypeDecl) -> Vec<String> {
     out
 }
 
+/// Named types that occur in a declaration's emitted annotations. Unlike the
+/// cycle-detection graph, a discriminated union excludes its source variant
+/// targets: Fern emits wrapper classes, so those source models are not names
+/// `update_forward_refs` must resolve for the union module.
+fn decl_annotation_refs(decl: &TypeDecl) -> Vec<String> {
+    let mut out = Vec::new();
+    match decl {
+        TypeDecl::Object(object) => {
+            out.extend(object.bases.iter().cloned());
+            for field in &object.fields {
+                collect_named_refs(&field.type_ref, &mut out);
+            }
+        }
+        TypeDecl::Alias(alias) => collect_named_refs(&alias.target, &mut out),
+        TypeDecl::DiscriminatedUnion(union) => {
+            for member in &union.members {
+                for field in &member.fields {
+                    collect_named_refs(&field.type_ref, &mut out);
+                }
+            }
+        }
+        TypeDecl::Enum(_) => {}
+    }
+    out
+}
+
 /// For every generated type, the subset of its own references that close a cycle
 /// back to it — the references crozier must emit as string forward references
 /// with a deferred/omitted import so the module graph loads (issue #84).
@@ -650,24 +706,35 @@ fn forward_ref_map(
     map
 }
 
-/// The types that transitively reference a type in a cycle (including the cyclic
-/// types themselves). Fern emits `from __future__ import annotations` +
-/// `update_forward_refs` for exactly these — even when no individual field of the
-/// type is a string forward reference (a `DraftPayment` whose `schedule` field
-/// reaches a cycle it is not part of still needs the trailer). Computed by reverse
-/// reachability from the cyclic types over the reference graph.
-fn types_reaching_cycle(
+/// For each non-alias declaration that reaches a recursive type, collect every
+/// cyclic name in its forward-reference closure. Fern passes that complete set to
+/// `update_forward_refs`, including names reached transitively through aliases.
+/// An object excludes its own class (already the call's first argument), while a
+/// discriminated union retains its alias name because the first argument is a
+/// generated variant wrapper.
+#[derive(Default)]
+struct ForwardRepair {
+    names: std::collections::HashSet<String>,
+    import_order: Vec<String>,
+}
+
+fn forward_repair_map(
     types: &[TypeDecl],
     tag_types: &[crate::ir::TagTypeDecl],
-) -> std::collections::HashSet<String> {
+) -> std::collections::HashMap<String, ForwardRepair> {
     use std::collections::{HashMap, HashSet};
 
     let mut edges: HashMap<String, Vec<String>> = HashMap::new();
+    let mut repair_edges: HashMap<String, Vec<String>> = HashMap::new();
     for decl in types.iter().chain(tag_types.iter().map(|t| &t.decl)) {
         edges
             .entry(decl.name().to_string())
             .or_default()
             .extend(decl_refs(decl));
+        repair_edges
+            .entry(decl.name().to_string())
+            .or_default()
+            .extend(decl_annotation_refs(decl));
     }
     let reaches = |start: &str, target: &str| -> bool {
         let mut stack: Vec<&str> = edges
@@ -688,29 +755,83 @@ fn types_reaching_cycle(
         false
     };
 
-    // A type is cyclic when it can reach itself. Reverse edges, then flood from the
-    // cyclic set: every type that can reach a cyclic one is caught.
-    let cyclic: Vec<&str> = edges
+    let cyclic: HashSet<&str> = edges
         .keys()
         .map(String::as_str)
         .filter(|n| reaches(n, n))
         .collect();
-    let mut reverse: HashMap<&str, Vec<&str>> = HashMap::new();
-    for (from, tos) in &edges {
-        for to in tos {
-            reverse.entry(to.as_str()).or_default().push(from.as_str());
+    let aliases: HashSet<&str> = types
+        .iter()
+        .chain(tag_types.iter().map(|tag| &tag.decl))
+        .filter_map(|decl| matches!(decl, TypeDecl::Alias(_)).then_some(decl.name()))
+        .collect();
+
+    let mut out = HashMap::new();
+    for decl in types.iter().chain(tag_types.iter().map(|tag| &tag.decl)) {
+        if matches!(decl, TypeDecl::Alias(_)) {
+            continue;
         }
-    }
-    let mut out: HashSet<String> = HashSet::new();
-    let mut stack: Vec<&str> = cyclic.clone();
-    for c in &cyclic {
-        out.insert((*c).to_string());
-    }
-    while let Some(node) = stack.pop() {
-        for &pred in reverse.get(node).into_iter().flatten() {
-            if out.insert(pred.to_string()) {
-                stack.push(pred);
+        let mut reach_stack: Vec<&str> = edges
+            .get(decl.name())
+            .into_iter()
+            .flatten()
+            .map(String::as_str)
+            .collect();
+        let mut reach_seen = HashSet::new();
+        let mut reaches_cycle = false;
+        while let Some(node) = reach_stack.pop() {
+            reaches_cycle |= cyclic.contains(node);
+            if reach_seen.insert(node) {
+                reach_stack.extend(edges.get(node).into_iter().flatten().map(String::as_str));
             }
+        }
+
+        let closure_edges = if matches!(decl, TypeDecl::DiscriminatedUnion(_)) {
+            &repair_edges
+        } else {
+            &edges
+        };
+        let mut stack: Vec<&str> = repair_edges
+            .get(decl.name())
+            .into_iter()
+            .flatten()
+            .map(String::as_str)
+            .filter(|name| cyclic.contains(name))
+            .collect();
+        let mut seen = HashSet::new();
+        let mut repair = HashSet::new();
+        while let Some(node) = stack.pop() {
+            if cyclic.contains(node) {
+                repair.insert(node.to_string());
+            }
+            if seen.insert(node) {
+                stack.extend(
+                    closure_edges
+                        .get(node)
+                        .into_iter()
+                        .flatten()
+                        .map(String::as_str),
+                );
+            }
+        }
+        if matches!(decl, TypeDecl::Object(_)) {
+            repair.remove(decl.name());
+        }
+        if reaches_cycle {
+            let mut import_order: Vec<String> = repair.iter().cloned().collect();
+            import_order.sort_by(|left, right| {
+                aliases
+                    .contains(left.as_str())
+                    .cmp(&aliases.contains(right.as_str()))
+                    .then_with(|| natural_cmp(left, right))
+            });
+            out.insert(
+                decl.name().to_string(),
+                ForwardRepair {
+                    names: repair,
+                    import_order,
+                },
+            );
         }
     }
     out
@@ -732,7 +853,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // Recursive types: per type, the references that must render as string forward
     // references (issue #84). Empty for the common acyclic case.
     let forward_map = forward_ref_map(&ir.types, &ir.tag_types);
-    let reaching_cycle = types_reaching_cycle(&ir.types, &ir.tag_types);
+    let repair_map = forward_repair_map(&ir.types, &ir.tag_types);
     let empty_forward = std::collections::HashSet::new();
 
     // version.py
@@ -756,6 +877,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // One file per generated type.
     for decl in &ir.types {
         let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
+        let repair = repair_map.get(decl.name());
         let file = render_type_decl(
             &env,
             decl,
@@ -763,7 +885,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             &tag_map,
             ir.extra_fields,
             forward,
-            reaching_cycle.contains(decl.name()),
+            repair,
         )?;
         files.push(GeneratedFile {
             path: PathBuf::from(format!("src/{pkg}/types/{}.py", decl.module())),
@@ -783,6 +905,8 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     for (module, decls) in &tag_type_modules {
         for decl in decls {
             let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
+            let repair = repair_map.get(decl.name());
+            let empty_namespace = ir.empty_endpoint_namespace && *module == "_";
             let location = if module.is_empty() {
                 RefLoc::RootTypes
             } else {
@@ -795,14 +919,20 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 &tag_map,
                 ir.extra_fields,
                 forward,
-                reaching_cycle.contains(decl.name()),
+                repair,
             )?;
             files.push(GeneratedFile {
-                path: PathBuf::from(format!("src/{pkg}/{module}/types/{}.py", decl.module())),
+                path: if empty_namespace {
+                    PathBuf::from(format!("src/{pkg}/types/{}.py", decl.module()))
+                } else {
+                    PathBuf::from(format!("src/{pkg}/{module}/types/{}.py", decl.module()))
+                },
                 contents: file,
             });
         }
-        files.push(tag_types_init_file(&env, pkg, module, decls)?);
+        if !(ir.empty_endpoint_namespace && *module == "_") {
+            files.push(tag_types_init_file(&env, pkg, module, decls)?);
+        }
     }
 
     // Fern's static core runtime, emitted verbatim (see assets/README.md), plus
@@ -825,6 +955,9 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // a comment-only header (four blank lines once stripped) — unless the tag owns
     // hoisted inline types, in which case it is a lazy loader re-exporting them.
     for module in &ir.endpoint_modules {
+        if ir.empty_endpoint_namespace && module == "_" {
+            continue;
+        }
         if let Some(decls) = tag_type_modules.get(module.as_str()) {
             files.push(tag_pkg_init_file(&env, pkg, module, decls)?);
         } else {
@@ -842,7 +975,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         .collect();
     let root_emittable = !root_eps.is_empty() && root_eps.iter().all(|e| e.emittable);
     if root_emittable {
-        files.push(raw_client_file(&env, pkg, "", &root_eps, &tag_map)?);
+        files.push(raw_client_file(&env, pkg, "", &root_eps, &tag_map, false)?);
     }
 
     // Per-tag `raw_client.py` and `client.py`, but only for modules whose every
@@ -857,7 +990,11 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             .filter(|e| &e.module == module)
             .collect();
         if !eps.is_empty() && eps.iter().all(|e| e.emittable) {
-            files.push(raw_client_file(&env, pkg, module, &eps, &tag_map)?);
+            if ir.empty_endpoint_namespace && module == "_" {
+                emittable_modules.push(module);
+                continue;
+            }
+            files.push(raw_client_file(&env, pkg, module, &eps, &tag_map, false)?);
             let cx = ClientCtx {
                 pkg,
                 client_name: &ir.client_name,
@@ -868,6 +1005,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 has_environment: ir.environment.is_some(),
                 tag_types: &tag_map,
                 global_headers: &ir.global_headers,
+                empty_namespace: false,
             };
             files.push(client_file(&env, &cx, &eps)?);
             emittable_modules.push(module);
@@ -912,6 +1050,56 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     }
     if root_emittable || !emittable_modules.is_empty() {
         files.push(root_init_file(&env, pkg, ir, &emittable_modules)?);
+    }
+
+    // Fern treats a leading-dot operationId (`.GetThing`) as an explicit empty
+    // endpoint namespace. Its empty tag package lands at the package root and is
+    // emitted after the ordinary root surface, so `client.py` and `__init__.py`
+    // are intentionally overwritten by the tag-client variants. Preserve that
+    // observable (if unusual) file collision for compatibility.
+    let empty_namespace_eps: Vec<&Endpoint> = ir
+        .endpoints
+        .iter()
+        .filter(|endpoint| endpoint.module == "_")
+        .collect();
+    let empty_namespace_emittable = ir.empty_endpoint_namespace
+        && !empty_namespace_eps.is_empty()
+        && empty_namespace_eps
+            .iter()
+            .all(|endpoint| endpoint.emittable);
+    if empty_namespace_emittable {
+        let mut empty_namespace_tag_map = tag_map.clone();
+        for name in &ir.empty_namespace_types {
+            empty_namespace_tag_map.insert(name.clone(), String::new());
+        }
+        files.push(raw_client_file(
+            &env,
+            pkg,
+            "",
+            &empty_namespace_eps,
+            &empty_namespace_tag_map,
+            true,
+        )?);
+        let cx = ClientCtx {
+            pkg,
+            client_name: &ir.client_name,
+            module: "",
+            types: &ir.types,
+            tag_decls: &ir.tag_types,
+            auth: &ir.auth,
+            has_environment: ir.environment.is_some(),
+            tag_types: &empty_namespace_tag_map,
+            global_headers: &ir.global_headers,
+            empty_namespace: true,
+        };
+        files.push(client_file(&env, &cx, &empty_namespace_eps)?);
+        let empty_namespace_types: Vec<&TypeDecl> = ir
+            .tag_types
+            .iter()
+            .filter(|decl| decl.module == "_")
+            .map(|decl| &decl.decl)
+            .collect();
+        files.push(tag_pkg_init_file(&env, pkg, "", &empty_namespace_types)?);
     }
 
     // Generated `README.md` (usage examples from the first endpoint) and the
@@ -1236,6 +1424,14 @@ fn root_init_file(
     tc.push_str(&from_import_block(".errors", &error_names, 4));
     tc.push_str(&from_import_block(".", &module_names, 4));
     tc.push_str(&from_import_block(
+        "._default_clients",
+        &[
+            "DefaultAioHttpClient".to_string(),
+            "DefaultAsyncHttpxClient".to_string(),
+        ],
+        4,
+    ));
+    tc.push_str(&from_import_block(
         ".client",
         &[async_name.clone(), client_name.to_string()],
         4,
@@ -1267,6 +1463,14 @@ fn root_init_file(
     for m in &module_names {
         pairs.push((m.clone(), format!(".{m}")));
     }
+    pairs.push((
+        "DefaultAioHttpClient".to_string(),
+        "._default_clients".to_string(),
+    ));
+    pairs.push((
+        "DefaultAsyncHttpxClient".to_string(),
+        "._default_clients".to_string(),
+    ));
     pairs.push((client_name.to_string(), ".client".to_string()));
     pairs.push((async_name, ".client".to_string()));
     if let Some(e) = environment {
@@ -1436,55 +1640,16 @@ fn is_complex_type(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -
     }
 }
 
-/// Whether a response type is a dictionary directly or through package-root alias
-/// indirection. Fern uses a placeholder in bodyless GET README snippets for map
-/// responses, including named map aliases such as APIs.guru's `ApIs`.
-fn resolves_to_dict(t: &TypeRef, types: &[TypeDecl]) -> bool {
-    fn resolve(t: &TypeRef, types: &[TypeDecl], seen: &mut BTreeSet<String>) -> bool {
-        match t {
-            TypeRef::Dict(..) => true,
-            TypeRef::Optional(inner) => resolve(inner, types, seen),
-            TypeRef::Named(name) if seen.insert(name.clone()) => types
-                .iter()
-                .find(|decl| decl.name() == name)
-                .is_some_and(|decl| match decl {
-                    TypeDecl::Alias(alias) => resolve(&alias.target, types, seen),
-                    _ => false,
-                }),
-            _ => false,
-        }
-    }
-
-    resolve(t, types, &mut BTreeSet::new())
-}
-
 /// Render an abbreviated call `<prefix>(...)` for the README snippets: empty parens
-/// when the body is not complex, else a `...` placeholder wrapped onto its own line
-/// when the flat form overflows. Fern's snippet writer targets an 80-column width
-/// here (not the project's ruff `line-length`), so bunq's 83-column raw-response call
-/// wraps while its 58-column error call stays flat.
+/// when the body is not complex, else a literal `...` placeholder. Fern 5.20 does
+/// not wrap these advanced README calls,
+/// even when a descriptive operation name makes the line unusually long.
 fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
     let pad = " ".repeat(indent);
     if !complex {
         return format!("{pad}{prefix}()");
     }
-    let flat = format!("{pad}{prefix}(...)");
-    if flat.len() <= 80 {
-        flat
-    } else if indent == 0
-        && prefix.starts_with("response = client.")
-        && prefix.len() > 80
-        && prefix
-            .strip_prefix("response = ")
-            .is_some_and(|call| format!("    {call}(...)").len() <= 80)
-    {
-        format!(
-            "response = (\n    {}(...)\n)",
-            prefix.strip_prefix("response = ").unwrap_or(prefix)
-        )
-    } else {
-        format!("{pad}{prefix}(\n{}...\n{pad})", " ".repeat(indent + 4))
-    }
+    format!("{pad}{prefix}(...)")
 }
 
 /// Whether an endpoint can anchor the README's representative calls. Fern skips
@@ -1537,33 +1702,28 @@ fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
         .iter()
         .flat_map(|module| ir.endpoints.iter().filter(move |ep| &ep.module == module))
         .collect();
-    select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
-        .filter(|e| e.http_method != "GET" || e.request_body.is_some())
-        .or_else(|| {
-            if grouped.is_empty() {
-                select_readme_endpoint(ir.endpoints.iter())
-            } else {
-                select_readme_endpoint(grouped.iter().copied())
-            }
-        })
+    if grouped.is_empty() {
+        select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
+    } else {
+        select_readme_endpoint(grouped.iter().copied())
+    }
 }
 
 fn client_call_prefix(ep: &Endpoint) -> String {
+    let method = ep.method_name.trim_end_matches('_');
     if ep.module.is_empty() {
-        format!("client.{}", ep.method_name)
+        format!("client.{method}")
     } else {
-        format!("client.{}.{}", ep.module, ep.method_name)
+        format!("client.{}.{method}", ep.module)
     }
 }
 
 fn raw_client_call_prefix(ep: &Endpoint) -> String {
+    let method = ep.method_name.trim_end_matches('_');
     if ep.module.is_empty() {
-        format!("response = client.with_raw_response.{}", ep.method_name)
+        format!("response = client.with_raw_response.{method}")
     } else {
-        format!(
-            "response = client.{}.with_raw_response.{}",
-            ep.module, ep.method_name
-        )
+        format!("response = client.{}.with_raw_response.{method}", ep.module)
     }
 }
 
@@ -1589,13 +1749,8 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             && (first.query_params.iter().any(|param| param.required)
                 || first.query_params.iter().any(|param| param.convert)
                 || first.header_params.iter().any(|param| param.required));
-    let has_map_response = first
-        .response
-        .as_ref()
-        .is_some_and(|response| resolves_to_dict(response, &ir.types));
     let complex = first.method_name != "_"
         && (has_required_non_body_params
-            || (first.request_body.is_none() && (first.http_method != "GET" || has_map_response))
             || (ir.openapi_31
                 && first.body_schema_implicit_object
                 && matches!(
@@ -1616,28 +1771,56 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             types: &ir.types,
             tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
+            referenced_doc_order: Vec::new(),
             referenced_tag: BTreeSet::new(),
+            referenced_tag_doc_order: Vec::new(),
             uses_datetime: false,
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
             building: Default::default(),
+            documentation: false,
+            reference: false,
         };
-        build_example(first, false, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
+        build_documentation_example(
+            first,
+            false,
+            &first.module,
+            pkg,
+            &ir.client_name,
+            &mut ctx,
+            None,
+            false,
+        )?
+        .join("\n")
     };
     let async_example = {
         let mut ctx = ExampleCtx {
             types: &ir.types,
             tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
+            referenced_doc_order: Vec::new(),
             referenced_tag: BTreeSet::new(),
+            referenced_tag_doc_order: Vec::new(),
             uses_datetime: false,
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
             building: Default::default(),
+            documentation: false,
+            reference: false,
         };
-        build_example(first, true, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
+        build_documentation_example(
+            first,
+            true,
+            &first.module,
+            pkg,
+            &ir.client_name,
+            &mut ctx,
+            None,
+            false,
+        )?
+        .join("\n")
     };
 
     let contents = include_str!("../assets/scaffolding/README.md.tmpl")
@@ -1646,6 +1829,13 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         .replace("@@PKG@@", pkg)
         .replace("@@CLIENT@@", &ir.client_name)
         .replace("@@ASYNC@@", &async_name)
+        .replace(
+            "@@ENV_DEFAULT@@",
+            &ir.environment.as_ref().map_or_else(
+                || format!("{}Environment.DEFAULT", ir.client_name),
+                crate::ir::Environment::default_ref,
+            ),
+        )
         .replace("@@ERR_CALL@@", &err_call)
         .replace("@@RAW_CALL@@", &raw_call)
         .replace("@@RETRY_CALL@@", &retry_call)
@@ -1675,8 +1865,6 @@ fn reference_file(
         .endpoints
         .iter()
         .filter(|e| e.module.is_empty() && e.emittable)
-        .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
-        .filter(|e| endpoint_has_worked_example(e))
         .collect();
     for ep in root_eps {
         any = true;
@@ -1689,8 +1877,6 @@ fn reference_file(
             .endpoints
             .iter()
             .filter(|e| &e.module == *module && e.emittable)
-            .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
-            .filter(|e| endpoint_has_worked_example(e))
             .collect();
         any = true;
         let title = ir
@@ -1744,8 +1930,10 @@ struct ReferenceEntryView {
     pkg: String,
     method: String,
     dots: &'static str,
+    return_type: String,
     description: Option<String>,
     example: String,
+    example_gap: &'static str,
     params: Vec<ParamRow>,
 }
 
@@ -1761,30 +1949,45 @@ fn reference_entry(
 ) -> Result<String> {
     let mut imports = Imports::at(RefLoc::Client(module.to_string()), tag_types);
     let mp = method_params(ep, &mut imports);
+    let has_args =
+        !mp.path.is_empty() || !mp.query.is_empty() || !mp.header.is_empty() || !mp.body.is_empty();
 
     // The example (sync form). Bytes bodies are filtered out before this point.
     let mut ctx = ExampleCtx {
         types: &ir.types,
         tag_decls: &ir.tag_types,
         referenced: BTreeSet::new(),
+        referenced_doc_order: Vec::new(),
         referenced_tag: BTreeSet::new(),
+        referenced_tag_doc_order: Vec::new(),
         uses_datetime: false,
         auth: &ir.auth,
         has_environment: ir.environment.is_some(),
         global_headers: &ir.global_headers,
         building: Default::default(),
+        documentation: false,
+        reference: false,
     };
-    let example = build_example_with_body_example(
+    let example = build_documentation_example(
         ep,
         false,
         module,
         pkg,
         &ir.client_name,
         &mut ctx,
-        ep.reference_body_example.as_ref(),
+        ir.environment.as_ref(),
+        true,
     )
-    .unwrap_or_default()
-    .join("\n");
+    .map_or_else(
+        || {
+            if has_args {
+                format!("{}(...)", client_call_prefix(ep))
+            } else {
+                format!("{}()", client_call_prefix(ep))
+            }
+        },
+        |lines| lines.join("\n"),
+    );
 
     // The parameter rows, in signature order, then `request_options`.
     let mut params: Vec<ParamRow> = Vec::new();
@@ -1794,33 +1997,81 @@ fn reference_entry(
         // `description` key); only an omitted (`None`) one gets the bare space.
         let suffix = reference_param_suffix(desc.as_deref());
         params.push(ParamRow {
-            name: name.clone(),
-            annot: ty.clone(),
+            name: name.trim_end_matches('_').to_string(),
+            annot: reference_param_annotation(&ty.replace("typing.Sequence[", "typing.List[")),
             suffix,
         });
     }
-    for dp in ordered_keyword_params(&mp.query, &mp.header, &mp.body) {
-        let suffix = reference_param_suffix(dp.description.as_deref());
-        let annot = reference_param_annotation(&dp.annotation);
-        params.push(ParamRow {
-            name: dp.name.clone(),
-            annot,
-            suffix,
-        });
-    }
-    let request_options_suffix = if ep.binary_response {
-        " — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response."
+    let reference_body = if !ep.body_schema_dropped {
+        ep.reference_body_type.as_ref().map_or_else(
+            || mp.body,
+            |request| {
+                vec![DocParam {
+                    name: "request".to_string(),
+                    annotation: raw_type_str_ctx(request, &mut imports, true),
+                    default: None,
+                    description: None,
+                }]
+            },
+        )
     } else {
-        " — Request-specific configuration."
+        mp.body
     };
+    let mut reference_body = reference_body;
+    if let Some(RequestBody::Inline(fields)) = &ep.request_body {
+        reference_body.sort_by_key(|param| {
+            fields
+                .iter()
+                .find(|field| field.py_name == param.name)
+                .map_or(usize::MAX, |field| field.reference_order)
+        });
+    }
+    for dp in ordered_keyword_params(&mp.query, &mp.header, &reference_body) {
+        let is_body = reference_body.iter().any(|body| body.name == dp.name);
+        let annotation = if is_body {
+            let annotation = dp.annotation.replace("typing.Sequence[", "typing.List[");
+            if annotation == "bytes"
+                && ep
+                    .request_body
+                    .as_ref()
+                    .is_some_and(RequestBody::is_wildcard_media)
+            {
+                // Fern 5.20's reference writer documents an inline wildcard
+                // binary body as its OpenAPI source type even though both Python
+                // clients correctly accept `bytes` at runtime.
+                "str".to_string()
+            } else {
+                annotation
+            }
+        } else {
+            dp.annotation.clone()
+        };
+        let description = if is_body {
+            match &ep.request_body {
+                Some(RequestBody::Single(_)) => ep.request_body_schema_doc.as_deref(),
+                Some(RequestBody::Bytes { .. }) => ep.request_body_doc.as_deref(),
+                Some(RequestBody::Form(form)) => form
+                    .fields
+                    .iter()
+                    .find(|field| field.py_name == dp.name)
+                    .and_then(|field| field.docstring.as_deref()),
+                _ => dp.description.as_deref(),
+            }
+        } else {
+            dp.description.as_deref()
+        };
+        params.push(ParamRow {
+            name: dp.name.trim_end_matches('_').to_string(),
+            annot: reference_param_annotation(&annotation),
+            suffix: reference_param_suffix(description),
+        });
+    }
     params.push(ParamRow {
         name: "request_options".to_string(),
         annot: "typing.Optional[RequestOptions]".to_string(),
-        suffix: request_options_suffix.to_string(),
+        suffix: " — Request-specific configuration.".to_string(),
     });
 
-    let has_args =
-        !mp.path.is_empty() || !mp.query.is_empty() || !mp.header.is_empty() || !mp.body.is_empty();
     let view = ReferenceEntryView {
         client_prefix: if module.is_empty() {
             "client.".to_string()
@@ -1833,13 +2084,21 @@ fn reference_entry(
             format!("src/{pkg}/{module}/client.py")
         },
         pkg: pkg.to_string(),
-        method: ep.method_name.clone(),
+        method: ep.method_name.trim_end_matches('_').to_string(),
         dots: if has_args { "..." } else { "" },
+        return_type: reference_return_type(ep, &mp.inner),
         description: ep
             .docstring
             .as_ref()
             .map(|description| format!("{description}{}", ep.reference_description_suffix)),
         example,
+        example_gap: if !endpoint_has_worked_example(ep)
+            || matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
+        {
+            ""
+        } else {
+            "\n"
+        },
         params,
     };
     let rendered = render(
@@ -1852,57 +2111,28 @@ fn reference_entry(
 }
 
 fn reference_param_annotation(annotation: &str) -> String {
-    // Fern recursively wraps a generated scalar-or-sequence type for array query
-    // params only when the annotation exceeds the reference writer's 80 columns.
-    // A moderately long union fits after the outer Optional breaks; a longer one
-    // needs its Union members broken as well.
+    let mut annotation = annotation.replace("dt.", "datetime.");
     if let Some(inner) = annotation
-        .strip_prefix("typing.Optional[typing.Union[")
-        .and_then(|s| s.strip_suffix("]]"))
+        .strip_prefix("typing.Optional[typing.Optional[")
+        .and_then(|value| value.strip_suffix("]]"))
     {
-        if let Some((item, sequence_item)) = inner.split_once(", typing.Sequence[") {
-            if sequence_item.strip_suffix(']') == Some(item)
-                && item.chars().next().is_some_and(char::is_uppercase)
-                && annotation.len() > 80
-                && 4 + "typing.Union[".len() + inner.len() + 1 > 80
-            {
-                if 8 + inner.len() <= 80 {
-                    return format!(
-                        "typing.Optional[\n    typing.Union[\n        {inner}\n    ]\n]"
-                    );
-                }
-                return format!(
-                    "typing.Optional[\n    typing.Union[\n        {item},\n        typing.Sequence[{item}],\n    ]\n]"
-                );
-            }
-        }
+        annotation = format!("typing.Optional[{inner}]");
     }
+    annotation
+}
 
-    // Fern's reference type writer wraps a long optional container at its outer
-    // brackets once the annotation itself exceeds 80 columns. Method signatures
-    // are formatted separately by Ruff and retain the ordinary one-line type.
-    if annotation.len() > 80 {
-        if let Some(inner) = annotation
-            .strip_prefix("typing.Optional[")
-            .and_then(|value| value.strip_suffix(']'))
-        {
-            return format!("typing.Optional[\n    {inner}\n]");
-        }
-        if let Some(inner) = annotation
-            .strip_prefix("typing.Sequence[")
-            .and_then(|value| value.strip_suffix(']'))
-        {
-            return format!("typing.Sequence[\n    {inner}\n]");
-        }
-    }
-
-    // Fern renders a `core.File` type in the reference parameter table with a
-    // leading `from __future__ import annotations` (an artifact of how it prints
-    // the forward-referenced file type); reproduce it so the table matches.
-    if annotation == "core.File" {
-        "from __future__ import annotations\n\ncore.File".to_string()
+fn reference_return_type(ep: &Endpoint, response: &str) -> String {
+    let rendered = if ep.binary_response {
+        "typing.Iterator[bytes]"
+    } else if ep.streaming {
+        "typing.Iterator[ServerSentEvent]"
     } else {
-        annotation.to_string()
+        response
+    };
+    if rendered == "None" {
+        String::new()
+    } else {
+        format!(" -> {rendered}")
     }
 }
 
@@ -1934,6 +2164,7 @@ const CORE_ASSETS: &[(&str, &str)] = &[
         "datetime_utils.py",
         include_str!("../assets/core/datetime_utils.py"),
     ),
+    ("enum.py", include_str!("../assets/core/enum.py")),
     ("file.py", include_str!("../assets/core/file.py")),
     (
         "force_multipart.py",
@@ -1971,6 +2202,11 @@ const CORE_ASSETS: &[(&str, &str)] = &[
         "jsonable_encoder.py",
         include_str!("../assets/core/jsonable_encoder.py"),
     ),
+    ("logging.py", include_str!("../assets/core/logging.py")),
+    (
+        "parse_error.py",
+        include_str!("../assets/core/parse_error.py"),
+    ),
     (
         "pydantic_utilities.py",
         include_str!("../assets/core/pydantic_utilities.py"),
@@ -2002,15 +2238,20 @@ const PACKAGE_PLACEHOLDER: &str = "@@CROZIER_PACKAGE@@";
 /// configured). Not yet exposed as a flag.
 const DEFAULT_SDK_VERSION: &str = "0.0.0";
 
-/// Project-root scaffolding Fern emits verbatim apart from the project/package
-/// name and version. `.fern/metadata.json` and `requirements.txt` are fully
-/// static; `pyproject.toml` carries the substitutions. Vendored under
+/// Project scaffolding Fern emits verbatim apart from project/package names and
+/// the SDK version. The Python test/default-client templates carry the same
+/// substitutions so non-`fern` package names remain importable. Vendored under
 /// `assets/scaffolding/` (Apache-2.0; see `NOTICE`).
 fn scaffolding_files(pkg: &str, project_name: &str) -> Vec<GeneratedFile> {
     let pyproject = include_str!("../assets/scaffolding/pyproject.toml")
         .replace(SDK_NAME_PLACEHOLDER, project_name)
         .replace(PACKAGE_PLACEHOLDER, pkg)
         .replace(SDK_VERSION_PLACEHOLDER, DEFAULT_SDK_VERSION);
+    let substitute_names = |contents: &str| {
+        contents
+            .replace(SDK_NAME_PLACEHOLDER, project_name)
+            .replace(PACKAGE_PLACEHOLDER, pkg)
+    };
     vec![
         GeneratedFile {
             path: PathBuf::from("pyproject.toml"),
@@ -2023,6 +2264,26 @@ fn scaffolding_files(pkg: &str, project_name: &str) -> Vec<GeneratedFile> {
         GeneratedFile {
             path: PathBuf::from(".fern/metadata.json"),
             contents: include_str!("../assets/scaffolding/metadata.json").to_string(),
+        },
+        GeneratedFile {
+            path: PathBuf::from("CONTRIBUTING.md"),
+            contents: include_str!("../assets/scaffolding/CONTRIBUTING.md").to_string(),
+        },
+        GeneratedFile {
+            path: PathBuf::from(format!("src/{pkg}/_default_clients.py")),
+            contents: substitute_names(include_str!(
+                "../assets/scaffolding/default_clients.py.tmpl"
+            )),
+        },
+        GeneratedFile {
+            path: PathBuf::from("tests/conftest.py"),
+            contents: include_str!("../assets/scaffolding/conftest.py").to_string(),
+        },
+        GeneratedFile {
+            path: PathBuf::from("tests/test_aiohttp_autodetect.py"),
+            contents: substitute_names(include_str!(
+                "../assets/scaffolding/test_aiohttp_autodetect.py.tmpl"
+            )),
         },
     ]
 }
@@ -2273,17 +2534,17 @@ fn client_wrapper_file(
     // the e2e byte-match normalizes the `X-Crozier-` prefix back to `X-Fern-` so
     // the comparison against Fern's fixtures is otherwise exact (see docs/matching).
     let get_headers_head = format!(
-        "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n\n    def get_headers(self) -> typing.Dict[str, str]:\n        headers: typing.Dict[str, str] = {{\n            \"X-Crozier-Language\": \"Python\",\n            \"X-Crozier-SDK-Name\": \"{project_name}\",\n            \"X-Crozier-SDK-Version\": \"{DEFAULT_SDK_VERSION}\",\n            **(self.get_custom_headers() or {{}}),\n        }}\n"
+        "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n        self._max_retries = max_retries\n        self._stream_reconnection_enabled = stream_reconnection_enabled\n        self._max_stream_reconnection_attempts = max_stream_reconnection_attempts\n        self._logging = logging\n\n    def get_headers(self) -> typing.Dict[str, str]:\n        import platform\n\n        headers: typing.Dict[str, str] = {{\n            \"X-Crozier-Language\": \"Python\",\n            \"X-Crozier-Runtime\": f\"python/{{platform.python_version()}}\",\n            \"X-Crozier-Platform\": f\"{{platform.system().lower()}}/{{platform.release()}}\",\n            \"X-Crozier-SDK-Name\": \"{project_name}\",\n            \"X-Crozier-SDK-Version\": \"{DEFAULT_SDK_VERSION}\",\n            **(self.get_custom_headers() or {{}}),\n        }}\n"
     );
     let mut c = String::new();
     // Lead with the generated-file header (like every other emitted module): it
     // survives `ruff format` and the e2e comment-strip folds it to the blank lines
     // Fern's own stripped header leaves, so the leading layout matches.
     c.push_str(HEADER);
-    c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
+    c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\nfrom .logging import LogConfig, Logger\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
-    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n    ):\n");
+    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = 2,\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n    ):\n");
     c.push_str(&gh_assign);
     c.push_str(&a.assign);
     c.push_str(&get_headers_head);
@@ -2291,19 +2552,19 @@ fn client_wrapper_file(
     c.push_str(&a.header_block);
     c.push_str("        return headers\n\n");
     c.push_str(&a.token_method);
-    c.push_str("    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:\n        return self._headers\n\n    def get_base_url(self) -> str:\n        return self._base_url\n\n    def get_timeout(self) -> typing.Optional[float]:\n        return self._timeout\n\n\nclass SyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
+    c.push_str("    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:\n        return self._headers\n\n    def get_base_url(self) -> str:\n        return self._base_url\n\n    def get_timeout(self) -> typing.Optional[float]:\n        return self._timeout\n\n    def get_max_retries(self) -> int:\n        return self._max_retries\n\n    def get_stream_reconnection_enabled(self) -> bool:\n        return self._stream_reconnection_enabled if self._stream_reconnection_enabled is not None else True\n\n    def get_max_stream_reconnection_attempts(self) -> typing.Optional[int]:\n        return self._max_stream_reconnection_attempts\n\n\nclass SyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
-    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        httpx_client: httpx.Client,\n    ):\n        super().__init__(");
+    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = 2,\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n        httpx_client: httpx.Client,\n    ):\n        super().__init__(\n            ");
     c.push_str(&gh_super);
     c.push_str(&a.super_arg);
-    c.push_str("headers=headers, base_url=base_url, timeout=timeout)\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
+    c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n        )\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            logging_config=self._logging,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
-    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(");
+    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = 2,\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n        async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(\n            ");
     c.push_str(&gh_super);
     c.push_str(&a.super_arg);
-    c.push_str("headers=headers, base_url=base_url, timeout=timeout)\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n        )\n");
+    c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n        )\n        self._async_token = async_token\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            async_base_headers=self.async_get_headers,\n            logging_config=self._logging,\n        )\n\n    async def async_get_headers(self) -> typing.Dict[str, str]:\n        headers = self.get_headers()\n        if self._async_token is not None:\n            token = await self._async_token()\n            headers[\"Authorization\"] = f\"Bearer {token}\"\n        return headers\n");
     GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/core/client_wrapper.py")),
         contents: c,
@@ -2384,6 +2645,14 @@ fn render_class_body(
     )
 }
 
+fn update_forward_refs_call(target: &str, repair: &ForwardRepair) -> String {
+    let mut names: Vec<&str> = repair.names.iter().map(String::as_str).collect();
+    names.sort_by(|left, right| natural_cmp(left, right));
+    let mut arguments = vec![target.to_string()];
+    arguments.extend(names.into_iter().map(|name| format!("{name}={name}")));
+    format!("update_forward_refs({})", arguments.join(", "))
+}
+
 /// Render one type declaration to a file body. `loc` is the file's location
 /// (package-root `types/` or a tag's `types/`), which sets the `core`/type import
 /// depth; `tag_types` maps hoisted type names to their tags for those references.
@@ -2394,16 +2663,20 @@ fn render_type_decl(
     tag_types: &BTreeMap<String, String>,
     extra: ExtraFields,
     forward: &std::collections::HashSet<String>,
-    // Whether this type reaches a cycle and so emits `from __future__` +
-    // `update_forward_refs`, even if `forward` (its own quoted field refs) is empty.
-    needs_forward: bool,
+    repair: Option<&ForwardRepair>,
 ) -> Result<String> {
+    // Reaching a cycle requires `from __future__` + `update_forward_refs`, even
+    // when `forward` (this declaration's own quoted field refs) is empty.
+    let needs_forward = repair.is_some();
+    let empty_repair = ForwardRepair::default();
+    let repair = repair.unwrap_or(&empty_repair);
     match decl {
         TypeDecl::Object(obj) => {
             let mut imports = Imports::at(loc, tag_types);
             // A recursive model's cyclic field references render as string forward
             // references and skip/defer their imports (issue #84).
             imports.forward = forward.clone();
+            imports.forward.extend(repair.names.iter().cloned());
             imports.cur_module = obj.module.clone();
             imports.add_plain("typing");
             imports.add_plain("pydantic");
@@ -2430,6 +2703,9 @@ fn render_type_decl(
                     }
                 })
                 .collect();
+            for name in &repair.import_order {
+                imports.add_type(name);
+            }
             if !forward.is_empty() || needs_forward {
                 // A recursive model: `from __future__ import annotations` lets the
                 // string forward refs resolve lazily, and `update_forward_refs`
@@ -2447,13 +2723,26 @@ fn render_type_decl(
                 // imports (a blank line after them), then the forward-ref repair.
                 file.push_str("\n\n\n");
                 if !imports.deferred.is_empty() {
-                    for line in &imports.deferred {
+                    // Fern's reserved-module path registers direct model refs
+                    // before its repair namespace; ordinary modules sort this
+                    // block. Preserve that distinction (`Class` → `class_`).
+                    let reserved_module = obj
+                        .module
+                        .strip_suffix('_')
+                        .is_some_and(naming::is_reserved);
+                    let deferred: Vec<&String> = if reserved_module {
+                        imports.deferred_order.iter().collect()
+                    } else {
+                        imports.deferred.iter().collect()
+                    };
+                    for line in deferred {
                         file.push_str(line);
                         file.push('\n');
                     }
                     file.push('\n');
                 }
-                file.push_str(&format!("update_forward_refs({})\n", obj.name));
+                file.push_str(&update_forward_refs_call(&obj.name, repair));
+                file.push('\n');
                 return Ok(file);
             }
             let (config_dict_args, extra_kind) = extra_config(extra);
@@ -2480,6 +2769,19 @@ fn render_type_decl(
             imports.cur_module = alias.module.clone();
             let target = render_type(&alias.target, &mut imports);
             let assignment = format!("{} = {}", alias.name, target.flat());
+            // Fern 5.20 drops descriptions from union aliases while preserving
+            // them for scalar and collection aliases.
+            let docstring = (!matches!(alias.target, TypeRef::Union(_)))
+                .then_some(alias.docstring.as_deref())
+                .flatten()
+                .map(|doc| {
+                    if doc.is_empty() {
+                        "\"\"\"\n\"\"\"\n".to_string()
+                    } else {
+                        format!("{}\n", render_docstring(doc, 0))
+                    }
+                })
+                .unwrap_or_default();
             if !forward.is_empty() {
                 let mut contents = format!(
                     "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n",
@@ -2491,7 +2793,7 @@ fn render_type_decl(
                         contents.push_str(&format!("    {line}\n"));
                     }
                 }
-                contents.push_str(&format!("{assignment}\n"));
+                contents.push_str(&format!("{assignment}\n{docstring}"));
                 return Ok(contents);
             }
             render(
@@ -2502,26 +2804,36 @@ fn render_type_decl(
                     header => HEADER,
                     imports => imports.render(),
                     assignment => assignment,
+                    docstring => docstring,
                 },
             )
         }
-        TypeDecl::Enum(e) => render_enum(env, e),
+        TypeDecl::Enum(e) => render_enum(env, e, &loc),
         TypeDecl::DiscriminatedUnion(union) => {
-            render_discriminated_union(env, union, extra, loc, tag_types, forward)
+            render_discriminated_union(env, union, extra, loc, tag_types, forward, repair)
         }
     }
 }
 
-/// Render a string enum to its module: a `class {Name}(str, enum.Enum)` with a
+/// Render a string enum to its module: a `class {Name}(enum.StrEnum)` with a
 /// `SCREAMING_SNAKE = "value"` member per value and a `visit` dispatch method
-/// (Fern's `enum_type: python_enums` shape). The `visit` signature is emitted on
-/// one line; the `ruff` post-pass wraps it past the line-length limit.
-fn render_enum(env: &Environment<'static>, e: &crate::ir::EnumType) -> Result<String> {
-    let mut body = String::from(
-        "import enum\nimport typing\n\nT_Result = typing.TypeVar(\"T_Result\")\n\n\nclass ",
+/// (Fern's `enum_type: python_enums` shape). Fern's compatibility enum is under
+/// the package-root `core`, so tag-hoisted types need one more relative dot.
+fn render_enum(
+    env: &Environment<'static>,
+    e: &crate::ir::EnumType,
+    loc: &RefLoc,
+) -> Result<String> {
+    let core_parent = match loc {
+        RefLoc::TagTypes(_) => "...core",
+        RefLoc::RootTypes => "..core",
+        RefLoc::Client(_) | RefLoc::Errors | RefLoc::PackageRoot => ".core",
+    };
+    let mut body = format!(
+        "import typing\n\nfrom {core_parent} import enum\n\nT_Result = typing.TypeVar(\"T_Result\")\n\n\nclass "
     );
     body.push_str(&e.name);
-    body.push_str("(str, enum.Enum):\n");
+    body.push_str("(enum.StrEnum):\n");
     if let Some(doc) = &e.docstring {
         // Fern renders the schema description as a class docstring, then a blank
         // line before the first member.
@@ -2576,18 +2888,23 @@ fn render_discriminated_union(
     loc: RefLoc,
     tag_types: &BTreeMap<String, String>,
     forward: &std::collections::HashSet<String>,
+    repair: &ForwardRepair,
 ) -> Result<String> {
     let mut imports = Imports::at(loc, tag_types);
     // A recursive variant references the union by string forward reference
     // (issue #84); a same-module ref (the common case — the union alias lives in
     // this file) needs no import.
     imports.forward = forward.clone();
+    imports.forward.extend(repair.names.iter().cloned());
     imports.cur_module = union.module.clone();
     imports.add_plain("typing");
     imports.add_plain("pydantic");
     imports.add_plain("typing_extensions");
     imports.add_core("pydantic_utilities", "IS_PYDANTIC_V2");
     imports.add_core("pydantic_utilities", "UniversalBaseModel");
+    for name in &repair.import_order {
+        imports.add_type(name);
+    }
 
     let mut classes: Vec<String> = Vec::new();
     for member in &union.members {
@@ -2645,7 +2962,8 @@ fn render_discriminated_union(
                 .iter()
                 .any(|f| type_uses_forward(&f.type_ref, forward))
             {
-                trailer.push_str(&format!("\nupdate_forward_refs({})", member.class_name));
+                trailer.push('\n');
+                trailer.push_str(&update_forward_refs_call(&member.class_name, repair));
             }
         }
     }
@@ -2693,6 +3011,7 @@ fn raw_type_str(t: &TypeRef, imports: &mut Imports) -> String {
 fn raw_type_str_ctx(t: &TypeRef, imports: &mut Imports, seq: bool) -> String {
     match t {
         TypeRef::Primitive(Prim::Str) => "str".to_string(),
+        TypeRef::Primitive(Prim::Bytes) => "bytes".to_string(),
         TypeRef::Primitive(Prim::Int | Prim::Long) => "int".to_string(),
         TypeRef::Primitive(Prim::Float) => "float".to_string(),
         TypeRef::Primitive(Prim::Bool) => "bool".to_string(),
@@ -2756,7 +3075,7 @@ fn raw_type_str_ctx(t: &TypeRef, imports: &mut Imports, seq: bool) -> String {
 }
 
 /// The request's URL argument: the document path with its leading slash stripped,
-/// rendered as an f-string interpolating `jsonable_encoder(param)` for each path
+/// rendered as an f-string interpolating `encode_path_param(param)` for each path
 /// placeholder, or a plain string literal when there are none.
 fn url_arg(ep: &Endpoint) -> String {
     let stripped = ep.path.strip_prefix('/').unwrap_or(&ep.path);
@@ -2765,7 +3084,7 @@ fn url_arg(ep: &Endpoint) -> String {
         for pp in &ep.path_params {
             rendered = rendered.replace(
                 &format!("{{{}}}", pp.wire_name),
-                &format!("{{jsonable_encoder({})}}", pp.py_name),
+                &format!("{{encode_path_param({})}}", pp.py_name),
             );
         }
         format!("f\"{rendered}\"")
@@ -3070,7 +3389,7 @@ fn raw_docstring(
     if let Some(summary) = &ep.docstring {
         // A multi-line summary carries the 8-space docstring indent on every line.
         for line in summary.split('\n') {
-            lines.push(format!("        {line}"));
+            lines.push(format!("        {}", python_doc_line(line)));
         }
         lines.push(String::new());
     }
@@ -3125,11 +3444,16 @@ fn push_path_param(lines: &mut Vec<String>, name: &str, ty: &str, desc: &Option<
 }
 
 fn push_param_doc(lines: &mut Vec<String>, description: &str) {
-    lines.extend(
-        description
-            .split('\n')
-            .map(|line| format!("            {}", line.replace('\t', "    "))),
-    );
+    lines.extend(description.split('\n').map(|line| {
+        format!(
+            "            {}",
+            python_doc_line(&line.replace('\t', "    "))
+        )
+    }));
+}
+
+fn python_doc_line(line: &str) -> String {
+    line.replace('\\', "\\\\")
 }
 
 /// Push the `Returns` description under the return type: each line of the
@@ -3137,7 +3461,10 @@ fn push_param_doc(lines: &mut Vec<String>, description: &str) {
 /// declares no (non-empty) description — matching Fern.
 fn push_return_doc(lines: &mut Vec<String>, response_doc: Option<&str>) {
     match response_doc {
-        Some(doc) => lines.extend(doc.split('\n').map(|line| format!("            {line}"))),
+        Some(doc) => lines.extend(
+            doc.split('\n')
+                .map(|line| format!("            {}", python_doc_line(line))),
+        ),
         None => lines.push(String::new()),
     }
 }
@@ -3149,8 +3476,10 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     imports.add_from("json.decoder", "JSONDecodeError");
     imports.add_core("api_error", "ApiError");
     if !ep.path_params.is_empty() {
-        imports.add_core("jsonable_encoder", "jsonable_encoder");
+        imports.add_core("jsonable_encoder", "encode_path_param");
     }
+    imports.add_core("parse_error", "ParsingError");
+    imports.add_from("pydantic", "ValidationError");
 
     let await_ = if is_async { "await " } else { "" };
     let wrapper = if is_async {
@@ -3167,7 +3496,9 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     lines.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut lines, ep, imports);
     lines.extend(["        )".to_string(), "        try:".to_string()]);
-    if matches!(ep.response, Some(TypeRef::Optional(_))) {
+    if matches!(ep.response, Some(TypeRef::Optional(_)))
+        || ep.response_may_be_empty && matches!(ep.response, Some(TypeRef::Primitive(Prim::Any)))
+    {
         lines.extend([
             "            if _response is None or not _response.text.strip():".to_string(),
             format!("                return {wrapper}(response=_response, data=None)"),
@@ -3223,8 +3554,12 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         "            _response_json = _response.json()".to_string(),
         "        except JSONDecodeError:".to_string(),
         "            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)".to_string(),
-        "        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)".to_string(),
     ]);
+    lines.extend([
+        "        except ValidationError as e:".to_string(),
+        "            raise ParsingError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e)".to_string(),
+    ]);
+    lines.push("        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)".to_string());
     lines.join("\n")
 }
 
@@ -3240,7 +3575,12 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     if !ep.query_params.is_empty() {
         lines.push("            params={".to_string());
         for qp in &ep.query_params {
-            if qp.convert {
+            if qp.comma_separated {
+                lines.push(format!(
+                    "                \"{}\": \",\".join(map(str, {})) if isinstance({}, (list, tuple, set)) else {},",
+                    qp.wire_name, qp.py_name, qp.py_name, qp.py_name
+                ));
+            } else if qp.convert {
                 imports.add_core("serialization", "convert_and_respect_annotation_metadata");
                 // Fern converts collections per element: a query
                 // `Sequence[Model]` passes `annotation=Model`, while a direct
@@ -3263,7 +3603,17 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     ")",
                 );
                 lines.push(format!("{},", call.flat()));
-            } else if type_serializes_as_datetime(&qp.type_ref) {
+            } else if type_serializes_as(&qp.type_ref, Prim::Date) {
+                let value = if qp.required {
+                    format!("str({})", qp.py_name)
+                } else {
+                    format!(
+                        "str({}) if {} is not None else None",
+                        qp.py_name, qp.py_name
+                    )
+                };
+                lines.push(format!("                \"{}\": {value},", qp.wire_name));
+            } else if type_serializes_as(&qp.type_ref, Prim::Datetime) {
                 imports.add_core("datetime_utils", "serialize_datetime");
                 let value = if qp.required {
                     format!("serialize_datetime({})", qp.py_name)
@@ -3346,7 +3696,19 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             let mut data = String::new();
             let mut files = String::new();
             for f in &form.fields {
-                let entry = format!("                \"{}\": {},\n", f.wire_name, f.py_name);
+                let value = if f.form_json {
+                    imports.add_plain("json");
+                    imports.add_core("jsonable_encoder", "jsonable_encoder");
+                    let encoded = format!("json.dumps(jsonable_encoder({}))", f.py_name);
+                    if f.optional {
+                        format!("{encoded} if {} is not OMIT else OMIT", f.py_name)
+                    } else {
+                        encoded
+                    }
+                } else {
+                    f.py_name.clone()
+                };
+                let entry = format!("                \"{}\": {value},\n", f.wire_name);
                 if f.is_file {
                     files.push_str(&entry);
                 } else {
@@ -3366,10 +3728,10 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         }
     }
 
-    fn type_serializes_as_datetime(t: &TypeRef) -> bool {
+    fn type_serializes_as(t: &TypeRef, primitive: Prim) -> bool {
         match t {
-            TypeRef::Primitive(Prim::Date | Prim::Datetime) => true,
-            TypeRef::Optional(inner) => type_serializes_as_datetime(inner),
+            TypeRef::Primitive(value) => *value == primitive,
+            TypeRef::Optional(inner) => type_serializes_as(inner, primitive),
             _ => false,
         }
     }
@@ -3401,6 +3763,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(body)
             if !body.is_wildcard_media()
                 && (ep.reference_body_example.is_some()
+                    && !ep.body_schema_is_success_response
                     && matches!(body, RequestBody::Inline(_))
                     || !ep.header_params.is_empty()
                     || !ep.path_params.is_empty()
@@ -3443,9 +3806,14 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             lines.push(format!("                \"content-type\": \"{value}\","));
         }
         for hp in &ep.header_params {
+            let value = if hp.enum_value {
+                format!("{}.value", hp.py_name)
+            } else {
+                format!("str({})", hp.py_name)
+            };
             lines.push(format!(
-                "                \"{}\": str({}) if {} is not None else None,",
-                hp.wire_name, hp.py_name, hp.py_name
+                "                \"{}\": {value} if {} is not None else None,",
+                hp.wire_name, hp.py_name
             ));
         }
         lines.push("            },".to_string());
@@ -3485,7 +3853,12 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     imports.add_from("logging", "warning");
     imports.add_core("api_error", "ApiError");
     imports.add_core("http_sse._api", "EventSource");
+    imports.add_core("parse_error", "ParsingError");
     imports.add_core("pydantic_utilities", "parse_obj_as");
+    imports.add_from("pydantic", "ValidationError");
+    if !ep.path_params.is_empty() {
+        imports.add_core("jsonable_encoder", "encode_path_param");
+    }
 
     let (wrapper, iter_t, aiter, decorator, async_kw, async_with, for_kw, iter_sse, read) =
         if is_async {
@@ -3570,6 +3943,10 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
                     )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+                    )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield {yield_expr}",
@@ -3624,8 +4001,10 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
     if !ep.errors.is_empty() {
         imports.add_core("pydantic_utilities", "parse_obj_as");
     }
+    imports.add_core("parse_error", "ParsingError");
+    imports.add_from("pydantic", "ValidationError");
     if !ep.path_params.is_empty() {
-        imports.add_core("jsonable_encoder", "jsonable_encoder");
+        imports.add_core("jsonable_encoder", "encode_path_param");
     }
 
     let (wrapper, iter_t, data_iter, decorator, async_kw, async_with, read, iter_bytes, yield_expr) =
@@ -3686,6 +4065,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
     } else {
         format!("\n{error_branches}")
     };
+    let validation_error = "\n                except ValidationError as e:\n                    raise ParsingError(\n                        status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e\n                    )";
     let body = format!(
         "\
 {call}
@@ -3700,7 +4080,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
                 except JSONDecodeError:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
-                    )
+                    ){validation_error}
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield {yield_expr}",
@@ -3713,7 +4093,7 @@ fn raw_binary_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &s
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
     if let Some(summary) = &ep.docstring {
         for line in summary.split('\n') {
-            lines.push(format!("        {line}"));
+            lines.push(format!("        {}", python_doc_line(line)));
         }
         lines.push(String::new());
     }
@@ -3808,6 +4188,8 @@ fn root_client_file(
     imports.add_plain("httpx");
     imports.add_core("client_wrapper", "AsyncClientWrapper");
     imports.add_core("client_wrapper", "SyncClientWrapper");
+    imports.add_core("logging", "LogConfig");
+    imports.add_core("logging", "Logger");
     if !root_endpoints.is_empty() {
         imports.add_core("request_options", "RequestOptions");
         imports.add_from(".raw_client", &format!("Raw{client_name}"));
@@ -3895,6 +4277,9 @@ fn root_client_file(
         &root_methods,
         &cfg,
     )?);
+    body.push_str(
+        "\n\n\ndef _make_default_async_client(\n    timeout: typing.Optional[float],\n    follow_redirects: typing.Optional[bool],\n) -> httpx.AsyncClient:\n    try:\n        import httpx_aiohttp\n    except ImportError:\n        pass\n    else:\n        if follow_redirects is not None:\n            return httpx_aiohttp.HttpxAiohttpClient(timeout=timeout, follow_redirects=follow_redirects)\n        return httpx_aiohttp.HttpxAiohttpClient(timeout=timeout)\n\n    if follow_redirects is not None:\n        return httpx.AsyncClient(timeout=timeout, follow_redirects=follow_redirects)\n    return httpx.AsyncClient(timeout=timeout)",
+    );
     body.push_str("\n\n\n");
     body.push_str(&root_client_class(
         env,
@@ -3964,6 +4349,7 @@ fn root_client_methods(
         has_environment: true,
         tag_types: tag_map,
         global_headers,
+        empty_namespace: false,
     };
     let mut method_imports = Imports::at(RefLoc::PackageRoot, tag_map);
     let methods = endpoints
@@ -4018,10 +4404,16 @@ fn root_client_class(
         "str"
     };
     let env_doc = e.as_ref().map_or_else(String::new, |e| e.doc.clone());
+    let server_variable_doc = e
+        .as_ref()
+        .map_or_else(String::new, |e| e.server_variable_doc.clone());
     let base_url_ctor = e.as_ref().map_or_else(
         || "        base_url: str,\n".to_string(),
         |e| e.ctor.clone(),
     );
+    let server_variable_init = e
+        .as_ref()
+        .map_or_else(String::new, |e| e.server_variable_init.clone());
     let wrapper_base_url = e.as_ref().map_or_else(
         || "base_url".to_string(),
         |_| "_get_base_url(base_url=base_url, environment=environment)".to_string(),
@@ -4083,6 +4475,7 @@ fn root_client_class(
             }
         })
         .collect();
+    let has_async_token = is_async && matches!(auth, Auth::Bearer { .. });
     let view = RootClientView {
         class_name: class_name.to_string(),
         pkg: pkg.to_string(),
@@ -4094,7 +4487,9 @@ fn root_client_class(
         example_line: a.example_line,
         base_url_doc_ty: base_url_doc_ty.to_string(),
         env_doc,
+        server_variable_doc,
         base_url_ctor,
+        server_variable_init,
         wrapper_base_url,
         example_base_url: if e.is_some() {
             String::new()
@@ -4114,6 +4509,25 @@ fn root_client_class(
         },
         root_methods: root_methods.to_vec(),
         modules: module_views,
+        is_async,
+        async_token_doc: if has_async_token {
+            "    async_token : typing.Optional[typing.Callable[[], typing.Awaitable[str]]]\n        An async callable that returns a bearer token. Use this when token acquisition involves async I/O (e.g., refreshing tokens via an async HTTP client). When provided, this is used instead of the synchronous token for async requests.\n\n"
+        } else {
+            ""
+        }
+        .to_string(),
+        async_token_ctor: if has_async_token {
+            "        async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,\n"
+        } else {
+            ""
+        }
+        .to_string(),
+        async_token_wrapper: if has_async_token {
+            "            async_token=async_token,\n"
+        } else {
+            ""
+        }
+        .to_string(),
     };
     // The caller controls the separation between the sync/async classes and the
     // file's final newline, so drop the template's trailing newline.
@@ -4154,8 +4568,12 @@ struct RootClientView {
     base_url_doc_ty: String,
     /// The `environment` docstring `Parameters` block (empty without environments).
     env_doc: String,
+    /// Root-client parameter documentation for variables in the first server URL.
+    server_variable_doc: String,
     /// The `base_url` (and `environment`) constructor parameter line(s).
     base_url_ctor: String,
+    /// Constructor statements that apply explicitly supplied server URL variables.
+    server_variable_init: String,
     /// The value passed to the client wrapper's `base_url` (`base_url`, or a
     /// `_get_base_url(...)` call with environments).
     wrapper_base_url: String,
@@ -4172,6 +4590,12 @@ struct RootClientView {
     raw_client_cls: String,
     root_methods: Vec<String>,
     modules: Vec<RootModuleView>,
+    /// Selects the aiohttp-autodetecting default for the async root client.
+    is_async: bool,
+    /// Bearer-only asynchronous token provider fragments, present on the async client.
+    async_token_doc: String,
+    async_token_ctor: String,
+    async_token_wrapper: String,
 }
 
 /// The environment-varying fragments of the root client: the docstring block, the
@@ -4180,12 +4604,67 @@ struct RootClientView {
 struct EnvClientParts {
     doc: String,
     ctor: String,
+    server_variable_doc: String,
+    server_variable_init: String,
 }
 
 impl EnvClientParts {
     fn new(e: &crate::ir::Environment) -> Self {
         let enum_name = &e.enum_name;
         let default = e.default_ref();
+        let server_variable_doc = e
+            .variables
+            .iter()
+            .map(|variable| {
+                format!(
+                    "    {} : typing.Optional[str]\n        Server URL variable for '{}'. Defaults to '{}'.\n\n",
+                    variable.py_name,
+                    variable.wire_name,
+                    python_doc_line(&variable.default)
+                )
+            })
+            .collect();
+        let variable_ctor: String = e
+            .variables
+            .iter()
+            .map(|variable| {
+                format!(
+                    "        {}: typing.Optional[str] = None,\n",
+                    variable.py_name
+                )
+            })
+            .collect();
+        let format_args = e
+            .variables
+            .iter()
+            .map(|variable| format!("{}=_{}", variable.wire_name, variable.py_name))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let server_variable_init = if e.variables.is_empty() {
+            String::new()
+        } else {
+            let condition = e
+                .variables
+                .iter()
+                .map(|variable| format!("{} is not None", variable.py_name))
+                .collect::<Vec<_>>()
+                .join(" or ");
+            let defaults: String = e
+                .variables
+                .iter()
+                .map(|variable| {
+                    format!(
+                        "            _{name} = {name} if {name} is not None else \"{default}\"\n",
+                        name = variable.py_name,
+                        default = escape_py_str(&variable.default),
+                    )
+                })
+                .collect();
+            format!(
+                "        if {condition}:\n{defaults}            base_url = \"{url}\".format({format_args})\n",
+                url = escape_py_str(&e.url_template),
+            )
+        };
         EnvClientParts {
             // Fern's docstring here leaks the import statement onto the description
             // line and pads the block with blank lines; reproduced verbatim.
@@ -4193,8 +4672,10 @@ impl EnvClientParts {
                 "    environment : {enum_name}\n        The environment to use for requests from the client. from .environment import {enum_name}\n\n\n\n        Defaults to {default}\n\n\n\n"
             ),
             ctor: format!(
-                "        base_url: typing.Optional[str] = None,\n        environment: {enum_name} = {default},\n"
+                "        base_url: typing.Optional[str] = None,\n        environment: {enum_name} = {default},\n{variable_ctor}"
             ),
+            server_variable_doc,
+            server_variable_init,
         }
     }
 }
@@ -4224,6 +4705,8 @@ struct ClientCtx<'a> {
     has_environment: bool,
     tag_types: &'a BTreeMap<String, String>,
     global_headers: &'a [GlobalHeader],
+    /// Whether this tag client is Fern's explicit empty dotted namespace.
+    empty_namespace: bool,
 }
 
 /// Assemble a per-tag `client.py`: the sync and async high-level clients that
@@ -4431,15 +4914,26 @@ fn client_stream_docstring(
         types: cx.types,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
+        referenced_doc_order: Vec::new(),
         referenced_tag: BTreeSet::new(),
+        referenced_tag_doc_order: Vec::new(),
         uses_datetime: false,
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
         building: Default::default(),
+        documentation: false,
+        reference: false,
     };
-    if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
-    {
+    if let Some(ex_lines) = build_example(
+        ep,
+        is_async,
+        cx.module,
+        cx.pkg,
+        cx.client_name,
+        &mut ctx,
+        cx.empty_namespace,
+    ) {
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
@@ -4504,7 +4998,7 @@ fn client_binary_stream_docstring(
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
     if let Some(summary) = &ep.docstring {
         for line in summary.split('\n') {
-            lines.push(format!("        {line}"));
+            lines.push(format!("        {}", python_doc_line(line)));
         }
         lines.push(String::new());
     }
@@ -4537,15 +5031,26 @@ fn client_binary_stream_docstring(
         types: cx.types,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
+        referenced_doc_order: Vec::new(),
         referenced_tag: BTreeSet::new(),
+        referenced_tag_doc_order: Vec::new(),
         uses_datetime: false,
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
         building: Default::default(),
+        documentation: false,
+        reference: false,
     };
-    if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
-    {
+    if let Some(ex_lines) = build_example(
+        ep,
+        is_async,
+        cx.module,
+        cx.pkg,
+        cx.client_name,
+        &mut ctx,
+        cx.empty_namespace,
+    ) {
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
@@ -4568,7 +5073,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
     if let Some(summary) = &ep.docstring {
         for line in summary.split('\n') {
-            lines.push(format!("        {line}"));
+            lines.push(format!("        {}", python_doc_line(line)));
         }
         lines.push(String::new());
     }
@@ -4603,17 +5108,28 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         types: cx.types,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
+        referenced_doc_order: Vec::new(),
         referenced_tag: BTreeSet::new(),
+        referenced_tag_doc_order: Vec::new(),
         uses_datetime: false,
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
         building: Default::default(),
+        documentation: false,
+        reference: false,
     };
     // With an example, one blank line separates the `Returns` block from
     // `Examples`; without one, close straight after (like the raw docstring).
-    if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
-    {
+    if let Some(ex_lines) = build_example(
+        ep,
+        is_async,
+        cx.module,
+        cx.pkg,
+        cx.client_name,
+        &mut ctx,
+        cx.empty_namespace,
+    ) {
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
@@ -4642,8 +5158,14 @@ enum Example {
     /// A list supplied verbatim by the spec — wraps at the snippet line limit and
     /// retains Python's trailing commas when exploded.
     ExplicitList(Vec<Example>),
+    /// A list rendered by `reference.md`, which always expands supplied and
+    /// synthesized values recursively and omits only the final comma.
+    ReferenceList(Vec<Example>),
     /// A dict with fixed string keys — explodes only when a value does.
     Dict(Vec<(String, Example)>),
+    /// A reference-documentation dict. Fern's reference writer expands map
+    /// examples even when every value would fit on one line.
+    ReferenceDict(Vec<(String, Example)>),
 }
 
 impl Example {
@@ -4657,7 +5179,9 @@ impl Example {
             Example::List(items) | Example::ExplicitList(items) => {
                 items.iter().any(Example::forces_multiline)
             }
+            Example::ReferenceList(items) => !items.is_empty(),
             Example::Dict(pairs) => pairs.iter().any(|(_, v)| v.forces_multiline()),
+            Example::ReferenceDict(pairs) => !pairs.is_empty(),
         }
     }
 
@@ -4676,7 +5200,7 @@ impl Example {
                     .join(", ");
                 format!("{name}({inner})")
             }
-            Example::List(items) | Example::ExplicitList(items) => {
+            Example::List(items) | Example::ExplicitList(items) | Example::ReferenceList(items) => {
                 format!(
                     "[{}]",
                     items
@@ -4686,7 +5210,7 @@ impl Example {
                         .join(", ")
                 )
             }
-            Example::Dict(pairs) => {
+            Example::Dict(pairs) | Example::ReferenceDict(pairs) => {
                 if pairs.is_empty() {
                     return "{}".to_string();
                 }
@@ -4780,6 +5304,26 @@ impl Example {
                     .join("\n");
                 format!("[\n{body}\n{pad}]")
             }
+            Example::ReferenceList(items) => {
+                if items.is_empty() {
+                    return "[]".to_string();
+                }
+                let pad = " ".repeat(indent);
+                let inner_pad = " ".repeat(indent + 4);
+                let body = items
+                    .iter()
+                    .enumerate()
+                    .map(|(index, item)| {
+                        let comma = if index + 1 == items.len() { "" } else { "," };
+                        format!(
+                            "{inner_pad}{}{comma}",
+                            item.render_at(indent + 4, indent + 4)
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                format!("[\n{body}\n{pad}]")
+            }
             Example::Dict(pairs) => {
                 if !self.forces_multiline() {
                     return self.flat();
@@ -4792,6 +5336,26 @@ impl Example {
                         format!(
                             "{inner_pad}\"{k}\": {}",
                             v.render_at(indent + 4, indent + k.len() + 8)
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                format!("{{\n{body}\n{pad}}}")
+            }
+            Example::ReferenceDict(pairs) => {
+                if pairs.is_empty() {
+                    return "{}".to_string();
+                }
+                let pad = " ".repeat(indent);
+                let inner_pad = " ".repeat(indent + 4);
+                let body = pairs
+                    .iter()
+                    .enumerate()
+                    .map(|(index, (key, value))| {
+                        let comma = if index + 1 == pairs.len() { "" } else { "," };
+                        format!(
+                            "{inner_pad}\"{key}\": {}{comma}",
+                            value.render_at(indent + 4, indent + key.len() + 8)
                         )
                     })
                     .collect::<Vec<_>>()
@@ -4811,9 +5375,13 @@ struct ExampleCtx<'a> {
     /// Generated type names referenced as constructors (drives the example's
     /// `from <pkg> import ...`).
     referenced: BTreeSet<String>,
+    /// First-use order retained for Fern's Markdown import writer.
+    referenced_doc_order: Vec<String>,
     /// Referenced hoisted tag-types as `(tag module, type name)` — imported from
     /// their tag package on a separate line above the main import.
     referenced_tag: BTreeSet<(String, String)>,
+    /// Tag-scoped first-use order retained for Markdown imports.
+    referenced_tag_doc_order: Vec<(String, String)>,
     /// Whether any value is a datetime/date (drives an `import datetime`).
     uses_datetime: bool,
     /// The auth model, for the credential argument in the client instantiation.
@@ -4829,6 +5397,12 @@ struct ExampleCtx<'a> {
     /// the stack (issue #84): a list of an ancestor type renders empty, matching
     /// Fern's `children=[]`.
     building: std::collections::HashSet<String>,
+    /// Whether values are being rendered for README/reference snippets rather
+    /// than executable method docstrings.
+    documentation: bool,
+    /// Whether the active Markdown snippet belongs to `reference.md`, whose
+    /// literal and parameter-order writer differs from README examples.
+    reference: bool,
 }
 
 /// The slot a string value sits in, which decides its placeholder text: a named
@@ -4877,6 +5451,10 @@ impl<'a> ExampleCtx<'a> {
     fn example_is_temporal(&self, t: &TypeRef) -> bool {
         match t {
             TypeRef::Optional(inner) => self.example_is_temporal(inner),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.example_is_temporal(&alias.target),
+                _ => false,
+            },
             TypeRef::Primitive(Prim::Datetime | Prim::Date) => true,
             _ => false,
         }
@@ -4886,11 +5464,19 @@ impl<'a> ExampleCtx<'a> {
         if let TypeRef::Optional(inner) = t {
             return self.value_from_example(inner, example);
         }
+        if let TypeRef::Named(name) = t {
+            if let Some(TypeDecl::Alias(alias)) = self.find(name) {
+                let target = alias.target.clone();
+                return self.value_from_example(&target, example);
+            }
+        }
         if matches!(t, TypeRef::Primitive(Prim::Datetime | Prim::Date)) {
             let mut value: String = serde_json::from_str(example).ok()?;
             self.uses_datetime = true;
             let constructor = if matches!(t, TypeRef::Primitive(Prim::Datetime)) {
-                value = value.replacen('T', " ", 1);
+                if !self.documentation {
+                    value = value.replacen('T', " ", 1);
+                }
                 if let Some(without_z) = value.strip_suffix('Z') {
                     value = format!("{without_z}+00:00");
                 }
@@ -4906,7 +5492,9 @@ impl<'a> ExampleCtx<'a> {
         }
         if self.example_is_scalar(t) {
             let literal = match t {
-                TypeRef::Primitive(Prim::Float) if example.parse::<i64>().is_ok() => {
+                TypeRef::Primitive(Prim::Float)
+                    if !self.documentation && example.parse::<i64>().is_ok() =>
+                {
                     format!("{example}.0")
                 }
                 TypeRef::Primitive(Prim::Bool) => match example {
@@ -4914,16 +5502,29 @@ impl<'a> ExampleCtx<'a> {
                     "false" => "False".to_string(),
                     _ => example.to_string(),
                 },
+                TypeRef::Primitive(Prim::Str | Prim::Bytes)
+                    if self.reference && example.starts_with('\'') && example.ends_with('\'') =>
+                {
+                    let inner = &example[1..example.len() - 1];
+                    format!("\"{}\"", inner.replace('"', "\\\""))
+                }
                 _ => example.to_string(),
             };
             return Some(Example::Atom(literal));
         }
         if example.starts_with('{') && self.resolves_to_any(t) {
-            return serde_json::from_str(example).ok().map(example_from_json);
+            let value = serde_json::from_str(example).ok()?;
+            return Some(example_from_json(value));
         }
         if let TypeRef::List(inner) | TypeRef::Set(inner) = t {
             let values: Vec<serde_json::Value> = serde_json::from_str(example).ok()?;
-            let items = values
+            let mut unique = Vec::with_capacity(values.len());
+            for value in values {
+                if !self.example_is_temporal(inner) || !unique.contains(&value) {
+                    unique.push(value);
+                }
+            }
+            let items = unique
                 .into_iter()
                 .map(|value| {
                     if value.is_null() {
@@ -4934,7 +5535,11 @@ impl<'a> ExampleCtx<'a> {
                         .unwrap_or_else(|| example_from_json(value))
                 })
                 .collect();
-            return Some(Example::ExplicitList(items));
+            return Some(if self.documentation {
+                Example::ReferenceList(items)
+            } else {
+                Example::ExplicitList(items)
+            });
         }
         if let TypeRef::Union(variants) = t {
             let value: serde_json::Value = serde_json::from_str(example).ok()?;
@@ -4946,7 +5551,19 @@ impl<'a> ExampleCtx<'a> {
             return None;
         }
         if self.example_is_composite(t) && (example.starts_with('[') || example.starts_with('{')) {
-            return serde_json::from_str(example).ok().map(example_from_json);
+            let value = serde_json::from_str(example).ok()?;
+            if self.reference && matches!(t, TypeRef::Dict(_, _)) {
+                let serde_json::Value::Object(fields) = value else {
+                    return None;
+                };
+                return Some(Example::ReferenceDict(
+                    fields
+                        .into_iter()
+                        .map(|(key, value)| (key, example_from_json(value)))
+                        .collect(),
+                ));
+            }
+            return Some(example_from_json(value));
         }
         let TypeRef::Named(name) = t else {
             return None;
@@ -5012,9 +5629,8 @@ impl<'a> ExampleCtx<'a> {
                 .any(|variant| self.example_matches_type(variant, value)),
             TypeRef::List(_) | TypeRef::Set(_) => value.is_array(),
             TypeRef::Dict(_, _) => value.is_object(),
-            TypeRef::Primitive(Prim::Str | Prim::Datetime | Prim::Date) | TypeRef::Literal(_) => {
-                value.is_string()
-            }
+            TypeRef::Primitive(Prim::Str | Prim::Bytes | Prim::Datetime | Prim::Date)
+            | TypeRef::Literal(_) => value.is_string(),
             TypeRef::Primitive(Prim::Int | Prim::Long) => value.as_i64().is_some(),
             TypeRef::Primitive(Prim::Float) => value.is_number(),
             TypeRef::Primitive(Prim::Bool) => value.is_boolean(),
@@ -5036,10 +5652,15 @@ impl<'a> ExampleCtx<'a> {
     /// module (imported separately), a package-root type in the main import set.
     fn record_ref(&mut self, name: &str) {
         if let Some(tt) = self.tag_decls.iter().find(|tt| tt.decl.name() == name) {
-            self.referenced_tag
-                .insert((tt.module.clone(), name.to_string()));
+            let entry = (tt.module.clone(), name.to_string());
+            if self.referenced_tag.insert(entry.clone()) {
+                self.referenced_tag_doc_order.push(entry);
+            }
         } else {
-            self.referenced.insert(name.to_string());
+            let name = name.to_string();
+            if self.referenced.insert(name.clone()) {
+                self.referenced_doc_order.push(name);
+            }
         }
     }
 
@@ -5084,6 +5705,14 @@ impl<'a> ExampleCtx<'a> {
                 };
                 Example::Atom(format!("\"{s}\""))
             }
+            TypeRef::Primitive(Prim::Bytes) => Example::Atom(
+                if self.reference {
+                    "\"string\""
+                } else {
+                    "b\"string\""
+                }
+                .to_string(),
+            ),
             TypeRef::Primitive(Prim::Int) => Example::Atom("1".to_string()),
             TypeRef::Primitive(Prim::Long) => Example::Atom("1000000".to_string()),
             TypeRef::Primitive(Prim::Float) => Example::Atom("1.1".to_string()),
@@ -5094,7 +5723,14 @@ impl<'a> ExampleCtx<'a> {
                     "datetime.datetime.fromisoformat".to_string(),
                     vec![(
                         None,
-                        Example::Atom("\"2024-01-15 09:30:00+00:00\"".to_string()),
+                        Example::Atom(
+                            if self.documentation {
+                                "\"2024-01-15T09:30:00+00:00\""
+                            } else {
+                                "\"2024-01-15 09:30:00+00:00\""
+                            }
+                            .to_string(),
+                        ),
                     )],
                 )
             }
@@ -5117,9 +5753,18 @@ impl<'a> ExampleCtx<'a> {
                 // The element inherits the list's slot, so a `List[str]` field's
                 // example uses the field name (`all_field=["all_field"]`).
                 if self.resolves_to_building(inner) {
-                    Example::List(vec![])
+                    if self.documentation {
+                        Example::ReferenceList(vec![])
+                    } else {
+                        Example::List(vec![])
+                    }
                 } else {
-                    Example::List(vec![self.value(inner, slot)])
+                    let items = vec![self.value(inner, slot)];
+                    if self.documentation {
+                        Example::ReferenceList(items)
+                    } else {
+                        Example::List(items)
+                    }
                 }
             }
             TypeRef::Dict(_, v) => {
@@ -5133,15 +5778,26 @@ impl<'a> ExampleCtx<'a> {
                         TypeRef::Optional(inner) if matches!(inner.as_ref(), TypeRef::Primitive(Prim::Any))
                     );
                 if directly_any {
-                    Example::Dict(vec![(
-                        "key".to_string(),
-                        Example::Atom("\"value\"".to_string()),
-                    )])
+                    let pairs = vec![("key".to_string(), Example::Atom("\"value\"".to_string()))];
+                    if self.reference {
+                        Example::ReferenceDict(pairs)
+                    } else {
+                        Example::Dict(pairs)
+                    }
                 } else if self.resolves_to_any(v) {
-                    Example::Dict(vec![])
+                    if self.reference {
+                        Example::ReferenceDict(vec![])
+                    } else {
+                        Example::Dict(vec![])
+                    }
                 } else {
                     let val = self.value(v, Slot::Map);
-                    Example::Dict(vec![("key".to_string(), val)])
+                    let pairs = vec![("key".to_string(), val)];
+                    if self.reference {
+                        Example::ReferenceDict(pairs)
+                    } else {
+                        Example::Dict(pairs)
+                    }
                 }
             }
             TypeRef::Union(variants) => self.union_value(variants, slot),
@@ -5197,10 +5853,15 @@ impl<'a> ExampleCtx<'a> {
                         let v = match example {
                             Some(example) if example_scalar(&ty) => Example::Atom(example),
                             Some(example) if example.starts_with(['{', '[']) => {
-                                serde_json::from_str(&example).map_or_else(
-                                    |_| self.value(&ty, Slot::Named(&wire)),
-                                    example_from_json,
-                                )
+                                if self.reference {
+                                    self.value_from_example(&ty, &example)
+                                        .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire)))
+                                } else {
+                                    serde_json::from_str(&example).map_or_else(
+                                        |_| self.value(&ty, Slot::Named(&wire)),
+                                        example_from_json,
+                                    )
+                                }
                             }
                             None => self.value(&ty, Slot::Named(&wire)),
                             Some(_) => self.value(&ty, Slot::Named(&wire)),
@@ -5225,7 +5886,7 @@ impl<'a> ExampleCtx<'a> {
             }
             Some(TypeDecl::DiscriminatedUnion(u)) => match u.members.first() {
                 Some(m) => {
-                    self.referenced.insert(m.class_name.clone());
+                    self.record_ref(&m.class_name);
                     // The discriminant field carries a default (`= "circle"`), so
                     // Fern's example omits it and sets only the required fields.
                     let mut args = Vec::new();
@@ -5315,7 +5976,7 @@ fn example_scalar(t: &TypeRef) -> bool {
         TypeRef::Primitive(p) => {
             matches!(
                 p,
-                Prim::Str | Prim::Int | Prim::Long | Prim::Float | Prim::Bool
+                Prim::Str | Prim::Bytes | Prim::Int | Prim::Long | Prim::Float | Prim::Bool
             )
         }
         _ => false,
@@ -5340,11 +6001,59 @@ fn build_example(
     pkg: &str,
     client_name: &str,
     ctx: &mut ExampleCtx,
+    empty_namespace: bool,
 ) -> Option<Vec<String>> {
-    build_example_with_body_example(ep, is_async, module, pkg, client_name, ctx, None)
+    build_example_inner(
+        ep,
+        is_async,
+        module,
+        pkg,
+        client_name,
+        ctx,
+        None,
+        false,
+        None,
+        false,
+        empty_namespace,
+    )
 }
 
-fn build_example_with_body_example(
+#[allow(
+    clippy::too_many_arguments,
+    reason = "documentation example emission also selects the README/reference writer"
+)]
+fn build_documentation_example(
+    ep: &Endpoint,
+    is_async: bool,
+    module: &str,
+    pkg: &str,
+    client_name: &str,
+    ctx: &mut ExampleCtx,
+    environment: Option<&crate::ir::Environment>,
+    reference: bool,
+) -> Option<Vec<String>> {
+    build_example_inner(
+        ep,
+        is_async,
+        module,
+        pkg,
+        client_name,
+        ctx,
+        reference
+            .then_some(ep.reference_body_example.as_ref())
+            .flatten(),
+        true,
+        environment,
+        reference,
+        false,
+    )
+}
+
+#[allow(
+    clippy::too_many_arguments,
+    reason = "example emission needs endpoint, client, value context, and documentation-mode inputs"
+)]
+fn build_example_inner(
     ep: &Endpoint,
     is_async: bool,
     module: &str,
@@ -5352,6 +6061,10 @@ fn build_example_with_body_example(
     client_name: &str,
     ctx: &mut ExampleCtx,
     body_example: Option<&serde_json::Value>,
+    documentation: bool,
+    environment: Option<&crate::ir::Environment>,
+    reference: bool,
+    empty_namespace: bool,
 ) -> Option<Vec<String>> {
     if matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
         || !endpoint_has_worked_example(ep)
@@ -5359,12 +6072,17 @@ fn build_example_with_body_example(
         return None;
     }
 
+    ctx.documentation = documentation;
+    ctx.reference = reference;
     // The example call's keyword arguments, in signature order: path params,
     // required query/header params, then the request body (a single `request`, or
     // each required inlined field).
     let mut args: Vec<(Option<String>, Example)> = Vec::new();
     if !ep.markdown_response && !ep.wildcard_binary_response {
         for pp in &ep.path_params {
+            if reference && matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
+                continue;
+            }
             let v = if matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
                 // Fern's path placeholder stays a string even for the unusual array
                 // path parameters accepted by its OpenAPI importer.
@@ -5373,10 +6091,8 @@ fn build_example_with_body_example(
                 pp.example
                     .as_ref()
                     .filter(|_| !ep.binary_response && ctx.example_is_scalar(&pp.type_ref))
-                    .map_or_else(
-                        || ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)),
-                        |example| Example::Atom(example.clone()),
-                    )
+                    .and_then(|example| ctx.value_from_example(&pp.type_ref, example))
+                    .unwrap_or_else(|| ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)))
             };
             args.push((Some(pp.py_name.clone()), v));
         }
@@ -5404,14 +6120,20 @@ fn build_example_with_body_example(
             continue;
         }
         let v = if let Some(ex) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
-            Example::Atom(ex.clone())
+            ctx.value_from_example(&qp.type_ref, ex)
+                .unwrap_or_else(|| Example::Atom(ex.clone()))
         } else if let TypeRef::List(inner) = &qp.type_ref {
             Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
         } else if let TypeRef::Dict(_, value) = &qp.type_ref {
-            Example::Dict(vec![(
+            let pairs = vec![(
                 qp.wire_name.clone(),
                 ctx.value(value, Slot::Named(&qp.wire_name)),
-            )])
+            )];
+            if reference {
+                Example::ReferenceDict(pairs)
+            } else {
+                Example::Dict(pairs)
+            }
         } else {
             ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
         };
@@ -5420,19 +6142,17 @@ fn build_example_with_body_example(
     for hp in ep
         .header_params
         .iter()
-        .filter(|header| !ep.wildcard_binary_response && header.required)
+        .filter(|header| !ep.wildcard_binary_response && header.required && !reference)
     {
         let v = hp
             .example
             .as_ref()
             .filter(|_| ctx.example_is_scalar(&hp.type_ref))
-            .map_or_else(
-                || ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)),
-                |example| Example::Atom(example.clone()),
-            );
+            .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+            .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
         args.push((Some(hp.py_name.clone()), v));
     }
-    if wildcard_request {
+    if wildcard_request && !reference {
         for hp in ep.header_params.iter().filter(|header| {
             !ep.wildcard_binary_response && !header.required && header.example.is_some()
         }) {
@@ -5440,10 +6160,8 @@ fn build_example_with_body_example(
                 .example
                 .as_ref()
                 .filter(|_| ctx.example_is_scalar(&hp.type_ref))
-                .map_or_else(
-                    || ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)),
-                    |example| Example::Atom(example.clone()),
-                );
+                .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
             args.push((Some(hp.py_name.clone()), value));
         }
         for qp in ep
@@ -5453,13 +6171,56 @@ fn build_example_with_body_example(
         {
             let value = if let Some(example) = qp.example.as_ref().filter(|_| qp.example_is_scalar)
             {
-                Example::Atom(example.clone())
+                ctx.value_from_example(&qp.type_ref, example)
+                    .unwrap_or_else(|| Example::Atom(example.clone()))
             } else if let TypeRef::List(inner) = &qp.type_ref {
                 Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
             } else {
                 ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
             };
             args.push((Some(qp.py_name.clone()), value));
+        }
+    }
+    if wildcard_request && reference {
+        for qp in ep
+            .query_params
+            .iter()
+            .filter(|qp| !ep.wildcard_binary_response && qp.required)
+        {
+            let value = if let Some(example) = qp.example.as_ref().filter(|_| qp.example_is_scalar)
+            {
+                ctx.value_from_example(&qp.type_ref, example)
+                    .unwrap_or_else(|| Example::Atom(example.clone()))
+            } else if let TypeRef::List(inner) = &qp.type_ref {
+                Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
+            } else {
+                ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
+            };
+            args.push((Some(qp.py_name.clone()), value));
+        }
+        for hp in ep
+            .header_params
+            .iter()
+            .filter(|header| !ep.wildcard_binary_response && header.required)
+        {
+            let value = hp
+                .example
+                .as_ref()
+                .filter(|_| ctx.example_is_scalar(&hp.type_ref))
+                .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+            args.push((Some(hp.py_name.clone()), value));
+        }
+        for hp in ep.header_params.iter().filter(|header| {
+            !ep.wildcard_binary_response && !header.required && header.example.is_some()
+        }) {
+            let value = hp
+                .example
+                .as_ref()
+                .filter(|_| ctx.example_is_scalar(&hp.type_ref))
+                .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+            args.push((Some(hp.py_name.clone()), value));
         }
     }
     for qp in ep
@@ -5474,16 +6235,33 @@ fn build_example_with_body_example(
         // first example's type (Xero's `where` + `order` strings), but omits other
         // types (Discourse omits the integer `page` after its string `q`).
         // Body-bearing operations retain every optional example.
-        if ep.request_body.is_none() {
+        if ep.request_body.is_none() && !ctx.example_is_temporal(&qp.type_ref) {
             if optional_query_example_type.is_some_and(|first| first != &qp.type_ref) {
                 continue;
             }
             optional_query_example_type.get_or_insert(&qp.type_ref);
         }
+        let example = qp.example.as_deref().unwrap_or_default();
         args.push((
             Some(qp.py_name.clone()),
-            Example::Atom(qp.example.clone().unwrap_or_default()),
+            ctx.value_from_example(&qp.type_ref, example)
+                .unwrap_or_else(|| Example::Atom(example.to_string())),
         ));
+    }
+    if reference && !wildcard_request {
+        for hp in ep
+            .header_params
+            .iter()
+            .filter(|header| !ep.wildcard_binary_response && header.required)
+        {
+            let value = hp
+                .example
+                .as_ref()
+                .filter(|_| ctx.example_is_scalar(&hp.type_ref))
+                .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+            args.push((Some(hp.py_name.clone()), value));
+        }
     }
     for hp in ep.header_params.iter().filter(|header| {
         !ep.wildcard_binary_response
@@ -5495,10 +6273,8 @@ fn build_example_with_body_example(
             .example
             .as_ref()
             .filter(|_| ctx.example_is_scalar(&hp.type_ref))
-            .map_or_else(
-                || ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)),
-                |example| Example::Atom(example.clone()),
-            );
+            .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+            .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
         args.push((Some(hp.py_name.clone()), value));
     }
     match &ep.request_body {
@@ -5521,11 +6297,45 @@ fn build_example_with_body_example(
             // (exhaustive's `unknown`), so the exclusion keys on nullability — an
             // `optional` field with a concrete (non-`Any`) type — not `optional` alone.
             let reference_fields = body_example.and_then(serde_json::Value::as_object);
-            for f in fields.iter().filter(|f| {
+            let selected = |f: &&BodyField| {
                 reference_fields.is_some_and(|values| values.contains_key(&f.wire_name))
                     || f.spec_required && (!f.optional || is_any_type(&f.type_ref))
                     || reference_fields.is_none() && f.media_example
-            }) {
+            };
+            let composed_request_media_example = ep.body_all_of
+                && fields
+                    .iter()
+                    .any(|field| field.media_example && !field.schema_body_example);
+            let mut example_fields: Vec<&BodyField> = if composed_request_media_example {
+                fields
+                    .iter()
+                    .filter(|field| field.spec_required)
+                    .filter(selected)
+                    .collect()
+            } else {
+                fields.iter().filter(selected).collect()
+            };
+            if composed_request_media_example {
+                if let Some(values) = reference_fields {
+                    // The reference writer takes required arguments in signature
+                    // order, then optional arguments in the selected named
+                    // example's declaration order.
+                    example_fields.extend(values.keys().filter_map(|wire_name| {
+                        fields
+                            .iter()
+                            .find(|field| !field.spec_required && field.wire_name == *wire_name)
+                            .filter(selected)
+                    }));
+                } else {
+                    example_fields.extend(
+                        fields
+                            .iter()
+                            .filter(|field| !field.spec_required)
+                            .filter(selected),
+                    );
+                }
+            }
+            for f in example_fields {
                 let v = f
                     .example
                     .as_deref()
@@ -5559,12 +6369,19 @@ fn build_example_with_body_example(
         // A form body: required non-file fields only (a file cannot be shown as a
         // literal, so Fern omits it from the example).
         Some(RequestBody::Form(form)) => {
-            for f in form.fields.iter().filter(|f| f.spec_required && !f.is_file) {
-                let v = f
-                    .example
-                    .as_deref()
-                    .and_then(|example| ctx.value_from_example(&f.type_ref, example))
-                    .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)));
+            for f in form
+                .fields
+                .iter()
+                .filter(|f| f.spec_required && (documentation || !f.is_file))
+            {
+                let v = if documentation && f.is_file {
+                    Example::Atom(format!("\"example_{}\"", f.py_name))
+                } else {
+                    f.example
+                        .as_deref()
+                        .and_then(|example| ctx.value_from_example(&f.type_ref, example))
+                        .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)))
+                };
                 args.push((Some(f.py_name.clone()), v));
             }
         }
@@ -5578,7 +6395,13 @@ fn build_example_with_body_example(
     };
     // The call, rendered at logical indent 0 (sync) or 4 (inside `main`, async).
     let call_indent = if is_async { 4 } else { 0 };
-    let receiver = if module.is_empty() {
+    let receiver = if empty_namespace {
+        format!(
+            "{}client..{}",
+            if is_async { "await " } else { "" },
+            ep.method_name
+        )
+    } else if module.is_empty() {
         format!(
             "{}client.{}",
             if is_async { "await " } else { "" },
@@ -5621,11 +6444,26 @@ fn build_example_with_body_example(
     // `from <pkg> import <client + referenced types>`, alphabetical, wrapped at
     // the snippet's import width (80). Fern's examples are laid out by hand
     // (not `ruff format`) — see `Example::render` for why.
-    let mut names: Vec<String> = ctx.referenced.iter().cloned().collect();
-    names.push(example_name.clone());
-    names.sort();
+    let mut names: Vec<String> = if documentation && is_async {
+        Vec::new()
+    } else if documentation {
+        ctx.referenced_doc_order.clone()
+    } else {
+        ctx.referenced.iter().cloned().collect()
+    };
+    if documentation {
+        names.insert(0, example_name.clone());
+    } else {
+        names.push(example_name.clone());
+        names.sort();
+    }
     let import_flat = format!("from {pkg} import {}", names.join(", "));
-    let import_lines: Vec<String> = if import_flat.len() <= 80 {
+    let import_width = if documentation && !is_async {
+        usize::MAX
+    } else {
+        80
+    };
+    let import_lines: Vec<String> = if import_flat.len() <= import_width {
         vec![import_flat]
     } else {
         let mut v = vec![format!("from {pkg} import (")];
@@ -5639,13 +6477,29 @@ fn build_example_with_body_example(
     // as a separate group above the main import (`from fern.items import ...`).
     let mut tag_import_lines: Vec<String> = Vec::new();
     {
-        let mut by_module: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
-        for (module, name) in &ctx.referenced_tag {
-            by_module.entry(module).or_default().push(name);
+        let mut by_module: Vec<(&str, Vec<&str>)> = Vec::new();
+        let tag_refs: Vec<(&String, &String)> = if documentation {
+            ctx.referenced_tag_doc_order
+                .iter()
+                .map(|(module, name)| (module, name))
+                .collect()
+        } else {
+            ctx.referenced_tag
+                .iter()
+                .map(|(module, name)| (module, name))
+                .collect()
+        };
+        for (module, name) in tag_refs {
+            if let Some((_, names)) = by_module.iter_mut().find(|(group, _)| *group == module) {
+                names.push(name);
+            } else {
+                by_module.push((module, vec![name]));
+            }
         }
         for (module, tag_names) in by_module {
             let flat = format!("from {pkg}.{module} import {}", tag_names.join(", "));
-            if flat.len() > 80 {
+            let import_width = if documentation { usize::MAX } else { 80 };
+            if flat.len() > import_width {
                 tag_import_lines.push(format!("from {pkg}.{module} import ("));
                 tag_import_lines.extend(tag_names.iter().map(|name| format!("    {name},")));
                 tag_import_lines.push(")".to_string());
@@ -5654,24 +6508,41 @@ fn build_example_with_body_example(
             }
         }
     }
-
     let mut client_args = Vec::new();
-    // Promoted global headers come first (`tenant="YOUR_TENANT"`), then the auth
-    // credential, then the hardcoded `base_url` (dropped when environments exist).
-    for h in ctx.global_headers {
-        client_args.push(format!(
-            "    {}=\"YOUR_{}\",",
-            h.py_name,
-            h.py_name.to_uppercase()
-        ));
-    }
-    for arg in auth_example_args(ctx.auth) {
-        client_args.push(format!("    {arg},"));
+    // Method docstrings follow constructor order (global headers, auth). Fern's
+    // Markdown snippets instead lead with auth and omit optional global headers.
+    if documentation {
+        for arg in documentation_auth_example_args(ctx.auth) {
+            client_args.push(format!("    {arg},"));
+        }
+        for h in ctx.global_headers.iter().filter(|header| header.required) {
+            client_args.push(format!("    {}=\"<{}>\",", h.py_name, h.wire_name));
+        }
+    } else {
+        for h in ctx.global_headers {
+            client_args.push(format!(
+                "    {}=\"YOUR_{}\",",
+                h.py_name,
+                h.py_name.to_uppercase()
+            ));
+        }
+        for arg in auth_example_args(ctx.auth) {
+            client_args.push(format!("    {arg},"));
+        }
     }
     if !ctx.has_environment {
         client_args.push("    base_url=\"https://yourhost.com/path/to/api\",".to_string());
     }
-    let client_block = if client_args.is_empty() {
+    let client_block = if empty_namespace && !client_args.is_empty() {
+        vec![format!(
+            "client = {example_name}({} )",
+            client_args
+                .iter()
+                .map(|argument| argument.trim())
+                .collect::<Vec<_>>()
+                .join(" ")
+        )]
+    } else if client_args.is_empty() {
         vec![format!("client = {example_name}()")]
     } else {
         let mut block = vec![format!("client = {example_name}(")];
@@ -5683,7 +6554,9 @@ fn build_example_with_body_example(
     let mut out: Vec<String> = Vec::new();
     if !preamble.is_empty() {
         out.extend(preamble);
-        out.push(String::new());
+        if !(documentation && is_async && !tag_import_lines.is_empty()) {
+            out.push(String::new());
+        }
     }
     if !tag_import_lines.is_empty() {
         out.extend(tag_import_lines);
@@ -5693,17 +6566,188 @@ fn build_example_with_body_example(
     out.push(String::new());
     out.extend(client_block);
     if is_async {
-        out.push(String::new());
-        out.push(String::new());
+        if !empty_namespace {
+            out.push(String::new());
+            out.push(String::new());
+        }
         out.push("async def main() -> None:".to_string());
         out.extend(call.split('\n').map(String::from));
-        out.push(String::new());
-        out.push(String::new());
+        if !empty_namespace {
+            out.push(String::new());
+            out.push(String::new());
+        }
         out.push("asyncio.run(main())".to_string());
     } else {
         out.extend(call.split('\n').map(String::from));
     }
-    Some(out)
+    if documentation {
+        Some(format_documentation_example(
+            out,
+            is_async,
+            pkg,
+            environment,
+            reference,
+        ))
+    } else {
+        Some(out)
+    }
+}
+
+fn documentation_auth_example_args(auth: &Auth) -> Vec<String> {
+    match auth {
+        Auth::ApiKey { .. } => vec!["api_key=\"<value>\"".to_string()],
+        Auth::Bearer { .. } => vec!["token=\"<token>\"".to_string()],
+        Auth::Basic { .. } => vec![
+            "username=\"<username>\"".to_string(),
+            "password=\"<password>\"".to_string(),
+        ],
+        Auth::None => Vec::new(),
+    }
+}
+
+fn format_documentation_example(
+    lines: Vec<String>,
+    is_async: bool,
+    pkg: &str,
+    environment: Option<&crate::ir::Environment>,
+    reference: bool,
+) -> Vec<String> {
+    let client_index = lines
+        .iter()
+        .position(|line| line.starts_with("client = "))
+        .unwrap_or(0);
+    let imports: Vec<String> = lines[..client_index]
+        .iter()
+        .filter(|line| !line.is_empty())
+        .cloned()
+        .collect();
+    let mut out = Vec::new();
+    if is_async {
+        out.extend_from_slice(&lines[..client_index]);
+    } else {
+        let main_start = imports
+            .iter()
+            .position(|line| line.starts_with(&format!("from {pkg} import ")))
+            .unwrap_or(0);
+        let main_end = if imports[main_start].ends_with('(') {
+            imports[main_start..]
+                .iter()
+                .position(|line| line == ")")
+                .map_or(main_start, |offset| main_start + offset)
+        } else {
+            main_start
+        };
+        out.extend_from_slice(&imports[main_start..=main_end]);
+        if let Some(environment) = environment {
+            out.push(format!(
+                "from {pkg}.environment import {}",
+                environment.enum_name
+            ));
+        }
+        out.extend(
+            imports
+                .iter()
+                .enumerate()
+                .filter(|(index, line)| {
+                    (*index < main_start || *index > main_end) && !line.starts_with("import ")
+                })
+                .map(|(_, line)| line.clone()),
+        );
+        out.extend(
+            imports
+                .iter()
+                .filter(|line| line.starts_with("import "))
+                .cloned(),
+        );
+        out.push(String::new());
+    }
+    let mut body = lines[client_index..].to_vec();
+    if let Some(environment) = environment {
+        let default_arg = format!("    environment={},", environment.default_ref());
+        if body.first().is_some_and(|line| line.ends_with("()")) {
+            let class = body[0].trim_end_matches("()").to_string();
+            body.splice(0..1, [format!("{class}("), default_arg, ")".to_string()]);
+        } else if let Some(close) = body.iter().position(|line| line == ")") {
+            body.insert(close, default_arg);
+        }
+    }
+    if !is_async {
+        if body.first().is_some_and(|line| line.ends_with("()")) {
+            body.insert(1, String::new());
+        } else if let Some(close) = body.iter().position(|line| line == ")") {
+            if body.get(close + 1).is_some_and(|line| !line.is_empty()) {
+                body.insert(close + 1, String::new());
+            }
+        }
+    }
+    out.extend(body);
+    compact_documentation_values(out, reference)
+}
+
+fn compact_documentation_values(lines: Vec<String>, reference: bool) -> Vec<String> {
+    let mut compact = Vec::with_capacity(lines.len());
+    let mut index = 0;
+    while index < lines.len() {
+        if index + 2 < lines.len()
+            && lines[index].contains("datetime.")
+            && lines[index].trim_end().ends_with(".fromisoformat(")
+            && matches!(lines[index + 2].trim(), ")" | "),")
+        {
+            let value = lines[index + 1].trim().trim_end_matches(',');
+            let comma = if lines[index + 2].trim().ends_with(',') {
+                ","
+            } else {
+                ""
+            };
+            compact.push(format!("{}{value}){comma}", lines[index]));
+            index += 3;
+            continue;
+        }
+        let line = &lines[index];
+        let trimmed = line.trim();
+        if let Some((head, items)) = trimmed
+            .strip_suffix("],")
+            .and_then(|value| value.split_once("=["))
+            .filter(|(_, items)| !items.is_empty())
+        {
+            let indent = line.len() - line.trim_start().len();
+            compact.push(format!("{}{head}=[", " ".repeat(indent)));
+            let items: Vec<&str> = items.split(", ").collect();
+            compact.extend(items.iter().enumerate().map(|(index, item)| {
+                let comma = if index + 1 == items.len() { "" } else { "," };
+                format!("{}{item}{comma}", " ".repeat(indent + 4))
+            }));
+            compact.push(format!("{}],", " ".repeat(indent)));
+            index += 1;
+            continue;
+        }
+        if !reference {
+            if let Some((head, item)) = trimmed
+                .strip_suffix("},")
+                .and_then(|value| value.split_once("={"))
+                .filter(|(_, item)| *item == "\"key\": \"value\"")
+            {
+                let indent = line.len() - line.trim_start().len();
+                compact.push(format!("{}{head}={{", " ".repeat(indent)));
+                compact.push(format!("{}{item}", " ".repeat(indent + 4)));
+                compact.push(format!("{}}},", " ".repeat(indent)));
+                index += 1;
+                continue;
+            }
+        }
+        if line.trim_end().ends_with(".0,") {
+            compact.push(format!("{},", line.trim_end_matches(".0,")));
+        } else {
+            compact.push(line.clone());
+        }
+        index += 1;
+    }
+    for index in 0..compact.len().saturating_sub(1) {
+        if compact[index].trim_end().ends_with(',') && compact[index + 1].trim().starts_with(']') {
+            compact[index].pop();
+        }
+    }
+    compact
 }
 
 fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
@@ -5729,8 +6773,11 @@ fn raw_client_file(
     module: &str,
     endpoints: &[&Endpoint],
     tag_types: &BTreeMap<String, String>,
+    empty_namespace: bool,
 ) -> Result<GeneratedFile> {
-    let loc = if module.is_empty() {
+    let loc = if empty_namespace {
+        RefLoc::Client(String::new())
+    } else if module.is_empty() {
         RefLoc::PackageRoot
     } else {
         RefLoc::Client(module.to_string())
@@ -5746,17 +6793,17 @@ fn raw_client_file(
     imports.add_core("http_response", "HttpResponse");
     imports.add_core("request_options", "RequestOptions");
 
-    let class_stem = if module.is_empty() {
+    let class_stem = if module.is_empty() && !empty_namespace {
         "FernApi".to_string()
     } else {
         naming::to_pascal_case(module)
     };
-    let sync_class = if module.is_empty() {
+    let sync_class = if module.is_empty() && !empty_namespace {
         format!("Raw{class_stem}")
     } else {
         format!("Raw{class_stem}Client")
     };
-    let async_class_name = if module.is_empty() {
+    let async_class_name = if module.is_empty() && !empty_namespace {
         format!("AsyncRaw{class_stem}")
     } else {
         format!("AsyncRaw{class_stem}Client")
@@ -5856,10 +6903,9 @@ pub fn clean_package_tree(root: &std::path::Path, package: &str) -> Result<()> {
 /// delegating line-wrapping to the tool Fern uses. Two classes of file are left
 /// untouched:
 ///
-/// - **Vendored `core/` runtime** — emitted verbatim from `assets/core/` (Fern's
-///   own already-`ruff`-formatted source). Re-formatting would change it: since
-///   these carry comments, `ruff format` then comment-strip does not commute with
-///   Fern's strip-only fixture, so formatting them breaks the byte match.
+/// - **Vendored Python assets** — the `core/` runtime, default-client helper, and
+///   generated aiohttp tests are already Fern-formatted. Re-formatting would
+///   change their post-comment-strip whitespace and break the byte match.
 /// - **Whitespace-only files** — the empty `py.typed` marker and the comment-only
 ///   endpoint `__init__.py` (emitted in its four-blank-line stripped form): there
 ///   is nothing to wrap and `ruff` would collapse them.
@@ -5873,6 +6919,9 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
     let core_root = PathBuf::from(format!("src/{pkg}/core"));
     let root_client = PathBuf::from(format!("src/{pkg}/client.py"));
     let root_raw_client = PathBuf::from(format!("src/{pkg}/raw_client.py"));
+    let default_clients = PathBuf::from(format!("src/{pkg}/_default_clients.py"));
+    let generated_aiohttp_test = PathBuf::from("tests/test_aiohttp_autodetect.py");
+    let generated_conftest = PathBuf::from("tests/conftest.py");
     for file in files.iter_mut() {
         let is_py = file.path.extension().and_then(|e| e.to_str()) == Some("py");
         // The `core/` tree is vendored verbatim (already ruff-formatted) EXCEPT
@@ -5880,8 +6929,11 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
         // model and so must be wrapped like every other generated file.
         let is_vendored = file.path.starts_with(&core_root)
             && file.path.file_name().and_then(|n| n.to_str()) != Some("client_wrapper.py");
+        let is_vendored_scaffolding = file.path == default_clients
+            || file.path == generated_aiohttp_test
+            || file.path == generated_conftest;
         let has_code = file.contents.chars().any(|c| !c.is_whitespace());
-        if is_py && !is_vendored && has_code {
+        if is_py && !is_vendored && !is_vendored_scaffolding && has_code {
             let name = file.path.to_string_lossy();
             file.contents =
                 crate::pyfmt::format_source(&name, &file.contents, crate::pyfmt::LINE_LENGTH)?;
@@ -5953,9 +7005,8 @@ mod tests {
         example_from_json, field_decl, is_complex_type, natural_cmp, object_body_complex,
         raw_method, raw_type_str, readme_endpoint, readme_endpoint_eligible,
         reference_param_annotation, render, render_class_body, render_enum, render_type_decl,
-        resolves_to_container, resolves_to_dict, url_arg, ClientCtx, Example, ExampleCtx,
-        FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView, RenderedField, RootClientView,
-        RootModuleView, Slot,
+        resolves_to_container, url_arg, ClientCtx, Example, ExampleCtx, FieldView, Imports,
+        ParamRow, RefLoc, ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -6094,8 +7145,10 @@ mod tests {
             pkg: "fern".to_string(),
             method: "get".to_string(),
             dots: "...",
+            return_type: " -> Widget".to_string(),
             description: None,
             example: "client.endpoints_urls.get()".to_string(),
+            example_gap: "\n",
             params: vec![ParamRow {
                 name: "id".to_string(),
                 annot: "str".to_string(),
@@ -6105,7 +7158,7 @@ mod tests {
         let out = render_tmpl("reference_entry.md", &view);
         assert!(out.contains(
             "<details><summary><code>client.endpoints_urls.\
-             <a href=\"src/fern/endpoints_urls/client.py\">get</a>(...)</code></summary>"
+             <a href=\"src/fern/endpoints_urls/client.py\">get</a>(...) -> Widget</code></summary>"
         ));
         // The param value line carries the suffix's trailing space, then the fixed
         // four-space line (driven by an expression, not fragile template whitespace).
@@ -6127,7 +7180,9 @@ mod tests {
             example_line: "        token=\"YOUR_TOKEN\",\n".to_string(),
             base_url_doc_ty: "str".to_string(),
             env_doc: String::new(),
+            server_variable_doc: String::new(),
             base_url_ctor: "        base_url: str,\n".to_string(),
+            server_variable_init: String::new(),
             wrapper_base_url: "base_url".to_string(),
             example_base_url: "        base_url=\"https://yourhost.com/path/to/api\",\n"
                 .to_string(),
@@ -6142,6 +7197,10 @@ mod tests {
                 cls: "EndpointsPutClient".to_string(),
                 wrap: false,
             }],
+            is_async: false,
+            async_token_doc: String::new(),
+            async_token_ctor: String::new(),
+            async_token_wrapper: String::new(),
         };
         let out = render_tmpl("root_client.py", &view);
         assert!(out.starts_with("class FernApi:"));
@@ -6187,34 +7246,32 @@ mod tests {
     }
 
     #[test]
-    fn abbrev_call_renders_empty_inline_and_wrapped() {
+    fn abbrev_call_keeps_fern_520_placeholders_inline() {
         // No complex body → empty parens.
         assert_eq!(abbrev_call(4, "client.a.b", false), "    client.a.b()");
         // Complex + short → inline `...`.
         assert_eq!(abbrev_call(4, "client.a.b", true), "    client.a.b(...)");
-        // Complex + over the 80-col snippet width → exploded onto its own line.
-        let long = format!("client.tag.{}", "m".repeat(90));
-        let wrapped = abbrev_call(0, &long, true);
-        assert_eq!(wrapped, format!("{long}(\n    ...\n)"));
-        // A long root raw-response expression that fits when indented inside
-        // parentheses wraps the assignment, matching Ruff's 80-column layout.
+        // Fern 5.20 keeps even unusually long descriptive operation names flat.
+        let long = format!("client.tag.{}", "m".repeat(120));
+        assert_eq!(abbrev_call(0, &long, true), format!("{long}(...)"));
+        // Raw-response assignments follow the same literal placeholder rule.
         let root_raw =
             "response = client.with_raw_response.get_all_colors_of_the_default_color_name_list";
         assert_eq!(
             abbrev_call(0, root_raw, true),
-            "response = (\n    client.with_raw_response.get_all_colors_of_the_default_color_name_list(...)\n)"
+            "response = client.with_raw_response.get_all_colors_of_the_default_color_name_list(...)"
         );
         let nested_raw =
             "response = client.account_access.with_raw_response.create_account_access_consents";
         assert_eq!(
             abbrev_call(0, nested_raw, true),
-            "response = (\n    client.account_access.with_raw_response.create_account_access_consents(...)\n)"
+            "response = client.account_access.with_raw_response.create_account_access_consents(...)"
         );
         let fitting_prefix =
             "response = client.attachment_public.with_raw_response.create_attachment_public";
         assert_eq!(
             abbrev_call(0, fitting_prefix, true),
-            "response = client.attachment_public.with_raw_response.create_attachment_public(\n    ...\n)"
+            "response = client.attachment_public.with_raw_response.create_attachment_public(...)"
         );
     }
 
@@ -6441,19 +7498,6 @@ mod tests {
             &tag_types,
         ));
 
-        assert!(resolves_to_dict(
-            &TypeRef::Named("DictAlias".to_string()),
-            &types,
-        ));
-        assert!(!resolves_to_dict(
-            &TypeRef::Named("CyclicAlias".to_string()),
-            &types,
-        ));
-        assert!(!resolves_to_dict(
-            &TypeRef::Named("RequiredObject".to_string()),
-            &types,
-        ));
-
         let mut bytes = endpoint("/bytes", Vec::new(), None);
         bytes.request_body = Some(RequestBody::Bytes {
             content_type: "application/octet-stream".to_string(),
@@ -6472,10 +7516,12 @@ mod tests {
             docstring: None,
             convert: true,
             is_file: false,
+            form_json: false,
             collision_prefix: None,
             example: None,
             media_example: false,
             schema_body_example: false,
+            reference_order: 0,
         }]));
         assert!(complex_body(&inline, &types, &tag_types));
 
@@ -6547,10 +7593,12 @@ mod tests {
             docstring: None,
             convert: false,
             is_file: false,
+            form_json: false,
             collision_prefix: None,
             example: None,
             media_example: false,
             schema_body_example: false,
+            reference_order: 0,
         }]));
 
         assert!(complex_body(&ep, &[], &[]));
@@ -6704,6 +7752,9 @@ mod tests {
             query_params: Vec::new(),
             header_params: Vec::new(),
             request_body: None,
+            reference_body_type: None,
+            request_body_doc: None,
+            request_body_schema_doc: None,
             body_codegen_named: false,
             body_description_empty: false,
             body_description_missing: false,
@@ -6728,6 +7779,7 @@ mod tests {
             body_response_same_ref: false,
             body_schema_is_success_response: false,
             response,
+            response_may_be_empty: false,
             response_doc: None,
             errors: Vec::new(),
             docstring: None,
@@ -6742,6 +7794,13 @@ mod tests {
     }
 
     fn ir_with(endpoints: Vec<Endpoint>) -> Ir {
+        let endpoint_modules = endpoints
+            .iter()
+            .filter(|endpoint| !endpoint.module.is_empty())
+            .map(|endpoint| endpoint.module.clone())
+            .collect::<std::collections::BTreeSet<_>>()
+            .into_iter()
+            .collect();
         Ir {
             openapi_31: false,
             package_name: "fern".to_string(),
@@ -6749,7 +7808,9 @@ mod tests {
             client_name: "FernApi".to_string(),
             types: Vec::new(),
             tag_types: Vec::new(),
-            endpoint_modules: Vec::new(),
+            endpoint_modules,
+            empty_endpoint_namespace: false,
+            empty_namespace_types: Vec::new(),
             endpoint_module_titles: Default::default(),
             endpoints,
             errors: Vec::new(),
@@ -6865,13 +7926,10 @@ mod tests {
     }
 
     #[test]
-    fn reference_wraps_long_optional_container_annotations() {
+    fn reference_normalizes_annotations_without_wrapping_long_names() {
         let long =
             "typing.Optional[typing.Sequence[PostMyNegotiationsIdCounterRequestOfferItemsItem]]";
-        assert_eq!(
-            reference_param_annotation(long),
-            "typing.Optional[\n    typing.Sequence[PostMyNegotiationsIdCounterRequestOfferItemsItem]\n]"
-        );
+        assert_eq!(reference_param_annotation(long), long);
         assert_eq!(
             reference_param_annotation("typing.Optional[typing.Sequence[str]]"),
             "typing.Optional[typing.Sequence[str]]"
@@ -6886,19 +7944,41 @@ mod tests {
             reference_param_annotation(
                 "typing.Optional[typing.Union[ResourceToImport, typing.Sequence[ResourceToImport]]]"
             ),
-            "typing.Optional[\n    typing.Union[ResourceToImport, typing.Sequence[ResourceToImport]]\n]"
+            "typing.Optional[typing.Union[ResourceToImport, typing.Sequence[ResourceToImport]]]"
         );
         assert_eq!(
             reference_param_annotation(
                 "typing.Optional[typing.Union[TypeConfigurationIdentifier, typing.Sequence[TypeConfigurationIdentifier]]]"
             ),
-            "typing.Optional[\n    typing.Union[\n        TypeConfigurationIdentifier,\n        typing.Sequence[TypeConfigurationIdentifier],\n    ]\n]"
+            "typing.Optional[typing.Union[TypeConfigurationIdentifier, typing.Sequence[TypeConfigurationIdentifier]]]"
         );
         assert_eq!(
             reference_param_annotation(
                 "typing.Optional[typing.Union[StackResourceDriftStatus, typing.Sequence[StackResourceDriftStatus]]]"
             ),
-            "typing.Optional[\n    typing.Union[\n        StackResourceDriftStatus, typing.Sequence[StackResourceDriftStatus]\n    ]\n]"
+            "typing.Optional[typing.Union[StackResourceDriftStatus, typing.Sequence[StackResourceDriftStatus]]]"
+        );
+        assert_eq!(
+            reference_param_annotation(
+                "typing.Optional[typing.Sequence[PostMyNegotiationsIdCounterRequestOfferItemsItemWithEnoughAdditionalContextToExceedTheReferenceWriterWidth]]"
+            ),
+            "typing.Optional[typing.Sequence[PostMyNegotiationsIdCounterRequestOfferItemsItemWithEnoughAdditionalContextToExceedTheReferenceWriterWidth]]"
+        );
+        assert_eq!(
+            reference_param_annotation(
+                "typing.Optional[typing.Union[TypeConfigurationIdentifierWithMoreContext, typing.Sequence[TypeConfigurationIdentifierWithMoreContext]]]"
+            ),
+            "typing.Optional[typing.Union[TypeConfigurationIdentifierWithMoreContext, typing.Sequence[TypeConfigurationIdentifierWithMoreContext]]]"
+        );
+        assert_eq!(
+            reference_param_annotation(
+                "typing.Optional[typing.Union[TypeConfigurationIdentifierWithEnoughAdditionalContext, typing.Sequence[TypeConfigurationIdentifierWithEnoughAdditionalContext]]]"
+            ),
+            "typing.Optional[typing.Union[TypeConfigurationIdentifierWithEnoughAdditionalContext, typing.Sequence[TypeConfigurationIdentifierWithEnoughAdditionalContext]]]"
+        );
+        assert_eq!(
+            reference_param_annotation("typing.Optional[typing.Optional[dt.date]]"),
+            "typing.Optional[datetime.date]"
         );
     }
 
@@ -6995,7 +8075,7 @@ mod tests {
             }],
             Some(TypeRef::Primitive(Prim::Str)),
         );
-        assert_eq!(url_arg(&interp), "f\"things/{jsonable_encoder(id)}\"");
+        assert_eq!(url_arg(&interp), "f\"things/{encode_path_param(id)}\"");
     }
 
     #[test]
@@ -7019,11 +8099,13 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
                 schema_body_example: false,
                 nullable: false,
+                reference_order: 0,
             },
             // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
             BodyField {
@@ -7035,11 +8117,13 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
                 schema_body_example: false,
                 nullable: false,
+                reference_order: 1,
             },
             // A convert field → convert-wrapped json entry keyed by the wire name.
             BodyField {
@@ -7051,11 +8135,13 @@ mod tests {
                 docstring: None,
                 convert: true,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
                 schema_body_example: false,
                 nullable: false,
+                reference_order: 2,
             },
         ]));
         let out = raw_method(&ep, false, &mut i);
@@ -7096,11 +8182,13 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
                 schema_body_example: true,
                 nullable: false,
+                reference_order: 0,
             },
             BodyField {
                 wire_name: "note".to_string(),
@@ -7111,11 +8199,13 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
                 schema_body_example: true,
                 nullable: false,
+                reference_order: 1,
             },
         ]));
         ep.body_schema_has_example = true;
@@ -7256,6 +8346,7 @@ mod tests {
             type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
             required: true,
             convert: false,
+            comma_separated: true,
             example: None,
             example_is_scalar: false,
             docstring: None,
@@ -7266,7 +8357,12 @@ mod tests {
             out.contains("tag: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None"),
             "{out}"
         );
-        assert!(out.contains("\"tag\": tag,"), "{out}");
+        assert!(
+            out.contains(
+                "\"tag\": \",\".join(map(str, tag)) if isinstance(tag, (list, tuple, set)) else tag,"
+            ),
+            "{out}"
+        );
     }
 
     #[test]
@@ -7280,6 +8376,7 @@ mod tests {
             type_ref: TypeRef::Primitive(Prim::Datetime),
             required: false,
             convert: false,
+            comma_separated: false,
             example: None,
             example_is_scalar: false,
             docstring: None,
@@ -7320,12 +8417,16 @@ mod tests {
             types,
             tag_decls,
             referenced: Default::default(),
+            referenced_doc_order: Default::default(),
             referenced_tag: Default::default(),
+            referenced_tag_doc_order: Default::default(),
             uses_datetime: false,
             auth,
             has_environment: false,
             global_headers: &[],
             building: Default::default(),
+            documentation: false,
+            reference: false,
         }
     }
 
@@ -7852,6 +8953,7 @@ mod tests {
                 type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
                 required: true,
                 convert: false,
+                comma_separated: false,
                 example: None,
                 example_is_scalar: false,
                 docstring: Some("Tags to include.".to_string()),
@@ -7862,6 +8964,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Int),
                 required: false,
                 convert: false,
+                comma_separated: false,
                 example: Some("3".to_string()),
                 example_is_scalar: true,
                 docstring: Some("Maximum results.".to_string()),
@@ -7874,6 +8977,7 @@ mod tests {
             required: false,
             docstring: Some("Trace token.".to_string()),
             example: Some("\"trace-1\"".to_string()),
+            enum_value: false,
         }];
         ep.request_body = Some(RequestBody::Single(SingleBody {
             type_ref: TypeRef::Primitive(Prim::Str),
@@ -7893,7 +8997,7 @@ mod tests {
         }];
         let mut ctx = example_ctx(&[], &[], &auth);
         ctx.global_headers = &global_headers;
-        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx)
+        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx, false)
             .expect("wildcard request has a worked example")
             .join("\n");
         let trace = rendered.find("trace=\"trace-1\"").unwrap();
@@ -7915,10 +9019,12 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: Some("\"2024-01-15T09:30:00Z\"".to_string()),
                 media_example: false,
                 schema_body_example: false,
+                reference_order: 0,
             },
             BodyField {
                 wire_name: "metadata".to_string(),
@@ -7930,14 +9036,16 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: Some(r#"{"source":"test"}"#.to_string()),
                 media_example: true,
                 schema_body_example: false,
+                reference_order: 1,
             },
         ]));
         let mut ctx = example_ctx(&[], &[], &Auth::None);
-        let rendered = build_example(&ep, true, "widgets", "acme", "AcmeApi", &mut ctx)
+        let rendered = build_example(&ep, true, "widgets", "acme", "AcmeApi", &mut ctx, false)
             .expect("inline request has an async example")
             .join("\n");
         assert!(rendered.contains("import asyncio"), "{rendered}");
@@ -7963,6 +9071,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 required: false,
                 convert: false,
+                comma_separated: false,
                 example: Some("\"active\"".to_string()),
                 example_is_scalar: true,
                 docstring: None,
@@ -7973,6 +9082,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 required: false,
                 convert: false,
+                comma_separated: false,
                 example: Some("\"name\"".to_string()),
                 example_is_scalar: true,
                 docstring: None,
@@ -7983,6 +9093,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Int),
                 required: false,
                 convert: false,
+                comma_separated: false,
                 example: Some("1".to_string()),
                 example_is_scalar: true,
                 docstring: None,
@@ -7990,7 +9101,7 @@ mod tests {
         ];
 
         let mut ctx = example_ctx(&[], &[], &Auth::None);
-        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx)
+        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx, false)
             .expect("bodyless query endpoint has a worked example")
             .join("\n");
         assert!(rendered.contains("where_=\"active\""), "{rendered}");
@@ -8020,6 +9131,7 @@ mod tests {
             type_ref: TypeRef::Primitive(Prim::Str),
             required: true,
             convert: false,
+            comma_separated: false,
             example: None,
             example_is_scalar: true,
             docstring: Some("Starting cursor.".to_string()),
@@ -8031,6 +9143,7 @@ mod tests {
             required: true,
             docstring: Some("Stream mode.".to_string()),
             example: None,
+            enum_value: false,
         });
         ep.request_body = Some(RequestBody::Form(FormBody {
             fields: vec![BodyField {
@@ -8043,10 +9156,12 @@ mod tests {
                 docstring: Some("Filter expression.".to_string()),
                 convert: false,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: Some("\"open\"".to_string()),
                 media_example: false,
                 schema_body_example: false,
+                reference_order: 0,
             }],
             multipart: false,
         }));
@@ -8063,6 +9178,7 @@ mod tests {
             has_environment: false,
             tag_types: &tags,
             global_headers: &[],
+            empty_namespace: false,
         };
         let mut imports = Imports::at(RefLoc::Client("events".to_string()), &tags);
         let raw_sync = raw_method(&ep, false, &mut imports);
@@ -8114,7 +9230,7 @@ mod tests {
             &Default::default(),
             crate::settings::ExtraFields::Allow,
             &std::collections::HashSet::from(["Node".to_string()]),
-            false,
+            None,
         )
         .expect("recursive alias renders");
         assert!(rendered.contains("from __future__ import annotations"));
@@ -8135,8 +9251,11 @@ mod tests {
                 }],
                 docstring: Some("State enum.".to_string()),
             },
+            &RefLoc::RootTypes,
         )
         .expect("documented enum renders");
+        assert!(enum_output.contains("from ..core import enum"));
+        assert!(enum_output.contains("class State(enum.StrEnum):"));
         assert!(enum_output.contains("State enum."));
         assert!(enum_output.contains("READY = \"ready\\\"now\""));
         assert!(enum_output.contains("Ready member."));

@@ -14,9 +14,11 @@ class AppPkgInfoLinks(UniversalBaseModel):
     Links to resources related to this resource.
     """
 
-    app_d: typing_extensions.Annotated[LinkType, FieldMetadata(alias="appD")]
-    app_pkg_content: typing_extensions.Annotated[LinkType, FieldMetadata(alias="appPkgContent")]
-    self_: typing_extensions.Annotated[LinkType, FieldMetadata(alias="self")]
+    app_d: typing_extensions.Annotated[LinkType, FieldMetadata(alias="appD"), pydantic.Field(alias="appD")]
+    app_pkg_content: typing_extensions.Annotated[
+        LinkType, FieldMetadata(alias="appPkgContent"), pydantic.Field(alias="appPkgContent")
+    ]
+    self_: typing_extensions.Annotated[LinkType, FieldMetadata(alias="self"), pydantic.Field(alias="self")]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObFeeFrequency1Code1(str, enum.Enum):
+class ObFeeFrequency1Code1(enum.StrEnum):
     """
     How often is the overdraft fee/charge calculated for the account.
     """

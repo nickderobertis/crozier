@@ -15,7 +15,7 @@ from .service_protocol import ServiceProtocol
 class Service(UniversalBaseModel):
     comments: typing.Optional[str] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     device: typing.Optional[NestedDevice] = None
     display: typing.Optional[str] = None

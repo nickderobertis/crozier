@@ -13,9 +13,13 @@ class DescribeAccountLimitsInput(UniversalBaseModel):
     The input for the <a>DescribeAccountLimits</a> action.
     """
 
-    next_token: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="NextToken")] = pydantic.Field(
-        default=None
-    )
+    next_token: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="NextToken"),
+        pydantic.Field(
+            alias="NextToken", description="A string that identifies the next page of limits that you want to retrieve."
+        ),
+    ] = None
     """
     A string that identifies the next page of limits that you want to retrieve.
     """

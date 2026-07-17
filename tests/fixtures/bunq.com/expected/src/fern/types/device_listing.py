@@ -10,9 +10,11 @@ from .device_server import DeviceServer
 
 
 class DeviceListing(UniversalBaseModel):
-    device_server: typing_extensions.Annotated[typing.Optional[DeviceServer], FieldMetadata(alias="DeviceServer")] = (
-        pydantic.Field(default=None)
-    )
+    device_server: typing_extensions.Annotated[
+        typing.Optional[DeviceServer],
+        FieldMetadata(alias="DeviceServer"),
+        pydantic.Field(alias="DeviceServer", description=""),
+    ] = None
     """
     
     """

@@ -13,7 +13,9 @@ class DestinyDefinitionsDestinyVendorInteractionSackEntryDefinition(UniversalBas
     Compare this sackType to the sack identifier in the DestinyInventoryItemDefinition.vendorSackType property of items. If they match, show this sack with this interaction.
     """
 
-    sack_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="sackType")] = None
+    sack_type: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="sackType"), pydantic.Field(alias="sackType")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

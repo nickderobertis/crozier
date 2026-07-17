@@ -44,6 +44,7 @@ if typing.TYPE_CHECKING:
         User,
     )
     from . import account, avatars, database, functions, locale, storage, teams
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
@@ -56,6 +57,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CountryList": ".types",
     "Currency": ".types",
     "CurrencyList": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "Document": ".types",
     "DocumentList": ".types",
     "Error": ".types",
@@ -127,6 +130,8 @@ __all__ = [
     "CountryList",
     "Currency",
     "CurrencyList",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "Document",
     "DocumentList",
     "Error",

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "amazonaws.com-cloudformation",
+  "corpus_spec_ref": "2010-05-15",
+  "corpus_spec_url": "https://api.apis.guru/v2/specs/amazonaws.com/cloudformation/2010-05-15/openapi.json"
+}

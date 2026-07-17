@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObpcaData1OtherFeesChargesFeeChargeDetailItemFeeChargeCapItemCappingPeriod(str, enum.Enum):
+class ObpcaData1OtherFeesChargesFeeChargeDetailItemFeeChargeCapItemCappingPeriod(enum.StrEnum):
     """
     Period e.g. day, week, month etc. for which the fee/charge is capped
     """

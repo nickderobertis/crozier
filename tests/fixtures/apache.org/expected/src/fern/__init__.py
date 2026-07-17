@@ -118,6 +118,7 @@ if typing.TYPE_CHECKING:
         variable,
         x_com,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .dag import GetDagSourceResponse, UpdateTaskInstancesStateNewState
     from .dag_run import UpdateDagRunStateState
@@ -158,6 +159,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DatasetCollection": ".types",
     "DatasetEvent": ".types",
     "DatasetEventCollection": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "Error": ".types",
     "EventLog": ".types",
     "EventLogCollection": ".types",
@@ -298,6 +301,8 @@ __all__ = [
     "DatasetCollection",
     "DatasetEvent",
     "DatasetEventCollection",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "Error",
     "EventLog",
     "EventLogCollection",

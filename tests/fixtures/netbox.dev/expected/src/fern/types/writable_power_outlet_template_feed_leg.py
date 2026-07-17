@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritablePowerOutletTemplateFeedLeg(str, enum.Enum):
+class WritablePowerOutletTemplateFeedLeg(enum.StrEnum):
     """
     Phase (for three-phase feeds)
     """

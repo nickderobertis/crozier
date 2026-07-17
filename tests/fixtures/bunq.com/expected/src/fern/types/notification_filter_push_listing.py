@@ -26,4 +26,4 @@ class NotificationFilterPushListing(UniversalBaseModel):
 
 from .notification_filter_push import NotificationFilterPush
 
-update_forward_refs(NotificationFilterPushListing)
+update_forward_refs(NotificationFilterPushListing, NotificationFilterPush=NotificationFilterPush)

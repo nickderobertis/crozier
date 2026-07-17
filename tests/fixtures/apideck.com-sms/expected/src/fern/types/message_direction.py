@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MessageDirection(str, enum.Enum):
+class MessageDirection(enum.StrEnum):
     """
     The direction of the message.
     """

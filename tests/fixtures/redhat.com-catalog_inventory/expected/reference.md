@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">post_graph_ql</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_graph_ql</a>(...) -> GraphQlResponse</code></summary>
 <dl>
 <dd>
 
@@ -27,11 +27,14 @@ Performs a GraphQL Query
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_graph_ql(
     query="query",
 )
@@ -66,7 +69,7 @@ client.post_graph_ql(
 <dl>
 <dd>
 
-**variables:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Optional Query variables
+**variables:** `typing.Optional[typing.Dict[str, typing.Any]]` — Optional Query variables
     
 </dd>
 </dl>
@@ -86,7 +89,7 @@ client.post_graph_ql(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_documentation</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_documentation</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -100,11 +103,14 @@ client.post_graph_ql(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_documentation()
 
 ```
@@ -134,7 +140,7 @@ client.get_documentation()
 </details>
 
 ## ServiceCredentialType
-<details><summary><code>client.service_credential_type.<a href="src/fern/service_credential_type/client.py">list_service_credential_types</a>(...)</code></summary>
+<details><summary><code>client.service_credential_type.<a href="src/fern/service_credential_type/client.py">list_service_credential_types</a>(...) -> ServiceCredentialTypesCollection</code></summary>
 <dl>
 <dd>
 
@@ -162,11 +168,14 @@ Returns an array of ServiceCredentialType objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_credential_type.list_service_credential_types()
 
 ```
@@ -199,7 +208,7 @@ client.service_credential_type.list_service_credential_types()
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -207,7 +216,7 @@ client.service_credential_type.list_service_credential_types()
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -227,7 +236,7 @@ client.service_credential_type.list_service_credential_types()
 </dl>
 </details>
 
-<details><summary><code>client.service_credential_type.<a href="src/fern/service_credential_type/client.py">show_service_credential_type</a>(...)</code></summary>
+<details><summary><code>client.service_credential_type.<a href="src/fern/service_credential_type/client.py">show_service_credential_type</a>(...) -> ServiceCredentialType</code></summary>
 <dl>
 <dd>
 
@@ -255,11 +264,14 @@ Returns a ServiceCredentialType object
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_credential_type.show_service_credential_type(
     id="id",
 )
@@ -299,7 +311,7 @@ client.service_credential_type.show_service_credential_type(
 </details>
 
 ## ServiceCredential
-<details><summary><code>client.service_credential.<a href="src/fern/service_credential/client.py">list_service_credentials</a>(...)</code></summary>
+<details><summary><code>client.service_credential.<a href="src/fern/service_credential/client.py">list_service_credentials</a>(...) -> ServiceCredentialsCollection</code></summary>
 <dl>
 <dd>
 
@@ -327,11 +339,14 @@ Returns an array of ServiceCredential objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_credential.list_service_credentials()
 
 ```
@@ -364,7 +379,7 @@ client.service_credential.list_service_credentials()
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -372,7 +387,7 @@ client.service_credential.list_service_credentials()
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -392,7 +407,7 @@ client.service_credential.list_service_credentials()
 </dl>
 </details>
 
-<details><summary><code>client.service_credential.<a href="src/fern/service_credential/client.py">show_service_credential</a>(...)</code></summary>
+<details><summary><code>client.service_credential.<a href="src/fern/service_credential/client.py">show_service_credential</a>(...) -> ServiceCredential</code></summary>
 <dl>
 <dd>
 
@@ -420,11 +435,14 @@ Returns a ServiceCredential object
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_credential.show_service_credential(
     id="id",
 )
@@ -464,7 +482,7 @@ client.service_credential.show_service_credential(
 </details>
 
 ## ServiceInstance
-<details><summary><code>client.service_instance.<a href="src/fern/service_instance/client.py">list_service_instances</a>(...)</code></summary>
+<details><summary><code>client.service_instance.<a href="src/fern/service_instance/client.py">list_service_instances</a>(...) -> ServiceInstancesCollection</code></summary>
 <dl>
 <dd>
 
@@ -492,11 +510,14 @@ Returns an array of ServiceInstance objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_instance.list_service_instances()
 
 ```
@@ -529,7 +550,7 @@ client.service_instance.list_service_instances()
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -537,7 +558,7 @@ client.service_instance.list_service_instances()
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -557,7 +578,7 @@ client.service_instance.list_service_instances()
 </dl>
 </details>
 
-<details><summary><code>client.service_instance.<a href="src/fern/service_instance/client.py">show_service_instance</a>(...)</code></summary>
+<details><summary><code>client.service_instance.<a href="src/fern/service_instance/client.py">show_service_instance</a>(...) -> ServiceInstance</code></summary>
 <dl>
 <dd>
 
@@ -585,11 +606,14 @@ Returns a ServiceInstance object
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_instance.show_service_instance(
     id="id",
 )
@@ -629,7 +653,7 @@ client.service_instance.show_service_instance(
 </details>
 
 ## ServiceInventory
-<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py">list_service_inventories</a>(...)</code></summary>
+<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py">list_service_inventories</a>(...) -> ServiceInventoriesCollection</code></summary>
 <dl>
 <dd>
 
@@ -657,11 +681,14 @@ Returns an array of ServiceInventory objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_inventory.list_service_inventories()
 
 ```
@@ -694,7 +721,7 @@ client.service_inventory.list_service_inventories()
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -702,7 +729,7 @@ client.service_inventory.list_service_inventories()
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -722,7 +749,7 @@ client.service_inventory.list_service_inventories()
 </dl>
 </details>
 
-<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py">show_service_inventory</a>(...)</code></summary>
+<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py">show_service_inventory</a>(...) -> ServiceInventory</code></summary>
 <dl>
 <dd>
 
@@ -750,11 +777,14 @@ Returns a ServiceInventory object
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_inventory.show_service_inventory(
     id="id",
 )
@@ -793,7 +823,7 @@ client.service_inventory.show_service_inventory(
 </dl>
 </details>
 
-<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py">tag_service_inventory</a>(...)</code></summary>
+<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py">tag_service_inventory</a>(...) -> typing.List[Tag]</code></summary>
 <dl>
 <dd>
 
@@ -821,14 +851,19 @@ Tags a ServiceInventory object
 
 ```python
 from fern import FernApi, Tag
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_inventory.tag_service_inventory(
     id="id",
-    request=[Tag()],
+    request=[
+        Tag()
+    ],
 )
 
 ```
@@ -853,7 +888,7 @@ client.service_inventory.tag_service_inventory(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[Tag]` 
+**request:** `typing.List[Tag]` 
     
 </dd>
 </dl>
@@ -873,7 +908,7 @@ client.service_inventory.tag_service_inventory(
 </dl>
 </details>
 
-<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py">list_service_inventory_tags</a>(...)</code></summary>
+<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py">list_service_inventory_tags</a>(...) -> TagsCollection</code></summary>
 <dl>
 <dd>
 
@@ -901,11 +936,14 @@ Returns an array of Tag objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_inventory.list_service_inventory_tags(
     id="id",
 )
@@ -948,7 +986,7 @@ client.service_inventory.list_service_inventory_tags(
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -956,7 +994,7 @@ client.service_inventory.list_service_inventory_tags(
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -1004,14 +1042,19 @@ Untags a ServiceInventory object
 
 ```python
 from fern import FernApi, Tag
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_inventory.untag_service_inventory(
     id="id",
-    request=[Tag()],
+    request=[
+        Tag()
+    ],
 )
 
 ```
@@ -1036,7 +1079,7 @@ client.service_inventory.untag_service_inventory(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[Tag]` 
+**request:** `typing.List[Tag]` 
     
 </dd>
 </dl>
@@ -1057,7 +1100,7 @@ client.service_inventory.untag_service_inventory(
 </details>
 
 ## ServiceOfferingNode
-<details><summary><code>client.service_offering_node.<a href="src/fern/service_offering_node/client.py">list_service_offering_nodes</a>(...)</code></summary>
+<details><summary><code>client.service_offering_node.<a href="src/fern/service_offering_node/client.py">list_service_offering_nodes</a>(...) -> ServiceOfferingNodesCollection</code></summary>
 <dl>
 <dd>
 
@@ -1085,11 +1128,14 @@ Returns an array of ServiceOfferingNode objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_offering_node.list_service_offering_nodes()
 
 ```
@@ -1122,7 +1168,7 @@ client.service_offering_node.list_service_offering_nodes()
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -1130,7 +1176,7 @@ client.service_offering_node.list_service_offering_nodes()
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -1150,7 +1196,7 @@ client.service_offering_node.list_service_offering_nodes()
 </dl>
 </details>
 
-<details><summary><code>client.service_offering_node.<a href="src/fern/service_offering_node/client.py">show_service_offering_node</a>(...)</code></summary>
+<details><summary><code>client.service_offering_node.<a href="src/fern/service_offering_node/client.py">show_service_offering_node</a>(...) -> ServiceOfferingNode</code></summary>
 <dl>
 <dd>
 
@@ -1178,11 +1224,14 @@ Returns a ServiceOfferingNode object
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_offering_node.show_service_offering_node(
     id="id",
 )
@@ -1222,7 +1271,7 @@ client.service_offering_node.show_service_offering_node(
 </details>
 
 ## ServiceOffering
-<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">list_service_offerings</a>(...)</code></summary>
+<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">list_service_offerings</a>(...) -> ServiceOfferingsCollection</code></summary>
 <dl>
 <dd>
 
@@ -1250,11 +1299,14 @@ Returns an array of ServiceOffering objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_offering.list_service_offerings()
 
 ```
@@ -1287,7 +1339,7 @@ client.service_offering.list_service_offerings()
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -1295,7 +1347,7 @@ client.service_offering.list_service_offerings()
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -1315,7 +1367,7 @@ client.service_offering.list_service_offerings()
 </dl>
 </details>
 
-<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">show_service_offering</a>(...)</code></summary>
+<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">show_service_offering</a>(...) -> ServiceOffering</code></summary>
 <dl>
 <dd>
 
@@ -1343,11 +1395,14 @@ Returns a ServiceOffering object
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_offering.show_service_offering(
     id="id",
 )
@@ -1386,7 +1441,7 @@ client.service_offering.show_service_offering(
 </dl>
 </details>
 
-<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">applied_inventories_tags_for_service_offering</a>(...)</code></summary>
+<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">applied_inventories_tags_for_service_offering</a>(...) -> typing.List[Tag]</code></summary>
 <dl>
 <dd>
 
@@ -1414,11 +1469,14 @@ Returns an array of inventories tags
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_offering.applied_inventories_tags_for_service_offering(
     id="id",
 )
@@ -1445,7 +1503,7 @@ client.service_offering.applied_inventories_tags_for_service_offering(
 <dl>
 <dd>
 
-**service_parameters:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The provider specific parameters needed to compute list of used service inventories
+**service_parameters:** `typing.Optional[typing.Dict[str, typing.Any]]` — The provider specific parameters needed to compute list of used service inventories
     
 </dd>
 </dl>
@@ -1465,7 +1523,7 @@ client.service_offering.applied_inventories_tags_for_service_offering(
 </dl>
 </details>
 
-<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">order_service_offering</a>(...)</code></summary>
+<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">order_service_offering</a>(...) -> OrderServiceOfferingResponse</code></summary>
 <dl>
 <dd>
 
@@ -1493,11 +1551,14 @@ Returns a Task id
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_offering.order_service_offering(
     id="id",
 )
@@ -1524,7 +1585,7 @@ client.service_offering.order_service_offering(
 <dl>
 <dd>
 
-**provider_control_parameters:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The provider specific parameters needed to provision this service. This might include namespaces, special keys
+**provider_control_parameters:** `typing.Optional[typing.Dict[str, typing.Any]]` — The provider specific parameters needed to provision this service. This might include namespaces, special keys
     
 </dd>
 </dl>
@@ -1532,7 +1593,7 @@ client.service_offering.order_service_offering(
 <dl>
 <dd>
 
-**service_parameters:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — JSON object with provisioning parameters
+**service_parameters:** `typing.Optional[typing.Dict[str, typing.Any]]` — JSON object with provisioning parameters
     
 </dd>
 </dl>
@@ -1552,7 +1613,7 @@ client.service_offering.order_service_offering(
 </dl>
 </details>
 
-<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">list_service_offering_service_instances</a>(...)</code></summary>
+<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">list_service_offering_service_instances</a>(...) -> ServiceInstancesCollection</code></summary>
 <dl>
 <dd>
 
@@ -1580,11 +1641,14 @@ Returns an array of ServiceInstance objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_offering.list_service_offering_service_instances(
     id="id",
 )
@@ -1627,7 +1691,7 @@ client.service_offering.list_service_offering_service_instances(
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -1635,7 +1699,7 @@ client.service_offering.list_service_offering_service_instances(
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -1655,7 +1719,7 @@ client.service_offering.list_service_offering_service_instances(
 </dl>
 </details>
 
-<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">list_service_offering_service_offering_nodes</a>(...)</code></summary>
+<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">list_service_offering_service_offering_nodes</a>(...) -> ServiceOfferingNodesCollection</code></summary>
 <dl>
 <dd>
 
@@ -1683,11 +1747,14 @@ Returns an array of ServiceOfferingNode objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_offering.list_service_offering_service_offering_nodes(
     id="id",
 )
@@ -1730,7 +1797,7 @@ client.service_offering.list_service_offering_service_offering_nodes(
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -1738,7 +1805,7 @@ client.service_offering.list_service_offering_service_offering_nodes(
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -1758,7 +1825,7 @@ client.service_offering.list_service_offering_service_offering_nodes(
 </dl>
 </details>
 
-<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">list_service_offering_service_plans</a>(...)</code></summary>
+<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">list_service_offering_service_plans</a>(...) -> ServicePlansCollection</code></summary>
 <dl>
 <dd>
 
@@ -1786,11 +1853,14 @@ Returns an array of ServicePlan objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_offering.list_service_offering_service_plans(
     id="id",
 )
@@ -1833,7 +1903,7 @@ client.service_offering.list_service_offering_service_plans(
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -1841,7 +1911,7 @@ client.service_offering.list_service_offering_service_plans(
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -1862,7 +1932,7 @@ client.service_offering.list_service_offering_service_plans(
 </details>
 
 ## ServicePlan
-<details><summary><code>client.service_plan.<a href="src/fern/service_plan/client.py">list_service_plans</a>(...)</code></summary>
+<details><summary><code>client.service_plan.<a href="src/fern/service_plan/client.py">list_service_plans</a>(...) -> ServicePlansCollection</code></summary>
 <dl>
 <dd>
 
@@ -1890,11 +1960,14 @@ Returns an array of ServicePlan objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_plan.list_service_plans()
 
 ```
@@ -1927,7 +2000,7 @@ client.service_plan.list_service_plans()
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -1935,7 +2008,7 @@ client.service_plan.list_service_plans()
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -1955,7 +2028,7 @@ client.service_plan.list_service_plans()
 </dl>
 </details>
 
-<details><summary><code>client.service_plan.<a href="src/fern/service_plan/client.py">show_service_plan</a>(...)</code></summary>
+<details><summary><code>client.service_plan.<a href="src/fern/service_plan/client.py">show_service_plan</a>(...) -> ServicePlan</code></summary>
 <dl>
 <dd>
 
@@ -1983,11 +2056,14 @@ Returns a ServicePlan object
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.service_plan.show_service_plan(
     id="id",
 )
@@ -2027,7 +2103,7 @@ client.service_plan.show_service_plan(
 </details>
 
 ## Source
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_sources</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">list_sources</a>(...) -> SourcesCollection</code></summary>
 <dl>
 <dd>
 
@@ -2055,11 +2131,14 @@ Returns an array of Source objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.list_sources()
 
 ```
@@ -2092,7 +2171,7 @@ client.source.list_sources()
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -2100,7 +2179,7 @@ client.source.list_sources()
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -2120,7 +2199,7 @@ client.source.list_sources()
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">show_source</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">show_source</a>(...) -> Source</code></summary>
 <dl>
 <dd>
 
@@ -2148,11 +2227,14 @@ Returns a Source object
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.show_source(
     id="id",
 )
@@ -2219,11 +2301,14 @@ Incremental Refresh a source object
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.incremental_refresh_source(
     id="id",
 )
@@ -2290,11 +2375,14 @@ Refresh a source object
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.refresh_source(
     id="id",
 )
@@ -2333,7 +2421,7 @@ client.source.refresh_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_service_instances</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_service_instances</a>(...) -> ServiceInstancesCollection</code></summary>
 <dl>
 <dd>
 
@@ -2361,11 +2449,14 @@ Returns an array of ServiceInstance objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.list_source_service_instances(
     id="id",
 )
@@ -2408,7 +2499,7 @@ client.source.list_source_service_instances(
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -2416,7 +2507,7 @@ client.source.list_source_service_instances(
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -2436,7 +2527,7 @@ client.source.list_source_service_instances(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_service_inventories</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_service_inventories</a>(...) -> ServiceInventoriesCollection</code></summary>
 <dl>
 <dd>
 
@@ -2464,11 +2555,14 @@ Returns an array of ServiceInventory objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.list_source_service_inventories(
     id="id",
 )
@@ -2511,7 +2605,7 @@ client.source.list_source_service_inventories(
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -2519,7 +2613,7 @@ client.source.list_source_service_inventories(
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -2539,7 +2633,7 @@ client.source.list_source_service_inventories(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_service_offering_nodes</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_service_offering_nodes</a>(...) -> ServiceOfferingNodesCollection</code></summary>
 <dl>
 <dd>
 
@@ -2567,11 +2661,14 @@ Returns an array of ServiceOfferingNode objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.list_source_service_offering_nodes(
     id="id",
 )
@@ -2614,7 +2711,7 @@ client.source.list_source_service_offering_nodes(
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -2622,7 +2719,7 @@ client.source.list_source_service_offering_nodes(
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -2642,7 +2739,7 @@ client.source.list_source_service_offering_nodes(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_service_offerings</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_service_offerings</a>(...) -> ServiceOfferingsCollection</code></summary>
 <dl>
 <dd>
 
@@ -2670,11 +2767,14 @@ Returns an array of ServiceOffering objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.list_source_service_offerings(
     id="id",
 )
@@ -2717,7 +2817,7 @@ client.source.list_source_service_offerings(
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -2725,7 +2825,7 @@ client.source.list_source_service_offerings(
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -2745,7 +2845,7 @@ client.source.list_source_service_offerings(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_service_plans</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_service_plans</a>(...) -> ServicePlansCollection</code></summary>
 <dl>
 <dd>
 
@@ -2773,11 +2873,14 @@ Returns an array of ServicePlan objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.list_source_service_plans(
     id="id",
 )
@@ -2820,7 +2923,7 @@ client.source.list_source_service_plans(
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -2828,7 +2931,7 @@ client.source.list_source_service_plans(
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -2848,7 +2951,7 @@ client.source.list_source_service_plans(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_tasks</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_tasks</a>(...) -> TasksCollection</code></summary>
 <dl>
 <dd>
 
@@ -2876,11 +2979,14 @@ Returns an array of Task objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.list_source_tasks(
     id="id",
 )
@@ -2923,7 +3029,7 @@ client.source.list_source_tasks(
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -2931,7 +3037,7 @@ client.source.list_source_tasks(
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -2952,7 +3058,7 @@ client.source.list_source_tasks(
 </details>
 
 ## Tags
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">list_tags</a>(...)</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py">list_tags</a>(...) -> TagsCollection</code></summary>
 <dl>
 <dd>
 
@@ -2980,11 +3086,14 @@ Returns an array of Tag objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tags.list_tags()
 
 ```
@@ -3017,7 +3126,7 @@ client.tags.list_tags()
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -3025,7 +3134,7 @@ client.tags.list_tags()
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -3046,7 +3155,7 @@ client.tags.list_tags()
 </details>
 
 ## Task
-<details><summary><code>client.task.<a href="src/fern/task/client.py">list_tasks</a>(...)</code></summary>
+<details><summary><code>client.task.<a href="src/fern/task/client.py">list_tasks</a>(...) -> TasksCollection</code></summary>
 <dl>
 <dd>
 
@@ -3074,11 +3183,14 @@ Returns an array of Task objects
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.task.list_tasks()
 
 ```
@@ -3111,7 +3223,7 @@ client.task.list_tasks()
 <dl>
 <dd>
 
-**filter:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Filter for querying collections.
+**filter:** `typing.Optional[typing.Dict[str, typing.Any]]` — Filter for querying collections.
     
 </dd>
 </dl>
@@ -3119,7 +3231,7 @@ client.task.list_tasks()
 <dl>
 <dd>
 
-**sort_by:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The list of attribute and order to sort the result set by.
+**sort_by:** `typing.Optional[typing.Dict[str, typing.Any]]` — The list of attribute and order to sort the result set by.
     
 </dd>
 </dl>
@@ -3139,7 +3251,7 @@ client.task.list_tasks()
 </dl>
 </details>
 
-<details><summary><code>client.task.<a href="src/fern/task/client.py">show_task</a>(...)</code></summary>
+<details><summary><code>client.task.<a href="src/fern/task/client.py">show_task</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -3167,11 +3279,14 @@ Returns a Task object
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.task.show_task(
     id="id",
 )
@@ -3238,11 +3353,14 @@ Updates a Task object
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.task.update_task(
     id_="id",
 )
@@ -3261,7 +3379,7 @@ client.task.update_task(
 <dl>
 <dd>
 
-**id_:** `str` — UUID of task
+**id:** `str` — UUID of task
     
 </dd>
 </dl>
@@ -3269,143 +3387,7 @@ client.task.update_task(
 <dl>
 <dd>
 
-**archived_at:** `typing.Optional[dt.datetime]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**child_task_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**completed_at:** `typing.Optional[dt.datetime]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**controller_message_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[dt.datetime]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Uuid]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**input:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**message:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**output:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**owner:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**source_id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**state:** `typing.Optional[TaskState]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[TaskStatus]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**target_source_ref:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**target_type:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[dt.datetime]` 
+**request:** `Task` 
     
 </dd>
 </dl>

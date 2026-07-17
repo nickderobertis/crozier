@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LocationCapability(str, enum.Enum):
+class LocationCapability(enum.StrEnum):
     """
     The capabilities a location may have.
     """

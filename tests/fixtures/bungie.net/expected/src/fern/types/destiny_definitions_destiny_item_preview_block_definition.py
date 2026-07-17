@@ -17,9 +17,14 @@ class DestinyDefinitionsDestinyItemPreviewBlockDefinition(UniversalBaseModel):
     This defines those categories, and gives some insights into that data's source.
     """
 
-    artifact_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="artifactHash")] = (
-        pydantic.Field(default=None)
-    )
+    artifact_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="artifactHash"),
+        pydantic.Field(
+            alias="artifactHash",
+            description="If this item should show you Artifact information when you preview it, this is the hash identifier of the DestinyArtifactDefinition for the artifact whose data should be shown.",
+        ),
+    ] = None
     """
     If this item should show you Artifact information when you preview it, this is the hash identifier of the DestinyArtifactDefinition for the artifact whose data should be shown.
     """
@@ -27,28 +32,47 @@ class DestinyDefinitionsDestinyItemPreviewBlockDefinition(UniversalBaseModel):
     derived_item_categories: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsItemsDestinyDerivedItemCategoryDefinition]],
         FieldMetadata(alias="derivedItemCategories"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="derivedItemCategories",
+            description="This is a list of the items being previewed, categorized in the same way as they are in the preview UI.",
+        ),
+    ] = None
     """
     This is a list of the items being previewed, categorized in the same way as they are in the preview UI.
     """
 
     preview_action_string: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="previewActionString")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="previewActionString"),
+        pydantic.Field(
+            alias="previewActionString",
+            description='If the preview has an associated action (like "Open"), this will be the localized string for that action.',
+        ),
+    ] = None
     """
     If the preview has an associated action (like "Open"), this will be the localized string for that action.
     """
 
-    preview_vendor_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="previewVendorHash")] = (
-        pydantic.Field(default=None)
-    )
+    preview_vendor_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="previewVendorHash"),
+        pydantic.Field(
+            alias="previewVendorHash",
+            description='If the preview data is derived from a fake "Preview" Vendor, this will be the hash identifier for the DestinyVendorDefinition of that fake vendor.',
+        ),
+    ] = None
     """
     If the preview data is derived from a fake "Preview" Vendor, this will be the hash identifier for the DestinyVendorDefinition of that fake vendor.
     """
 
-    screen_style: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="screenStyle")] = (
-        pydantic.Field(default=None)
-    )
+    screen_style: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="screenStyle"),
+        pydantic.Field(
+            alias="screenStyle",
+            description="A string that the game UI uses as a hint for which detail screen to show for the item. You, too, can leverage this for your own custom screen detail views. Note, however, that these are arbitrarily defined by designers: there's no guarantees of a fixed, known number of these - so fall back to something reasonable if you don't recognize it.",
+        ),
+    ] = None
     """
     A string that the game UI uses as a hint for which detail screen to show for the item. You, too, can leverage this for your own custom screen detail views. Note, however, that these are arbitrarily defined by designers: there's no guarantees of a fixed, known number of these - so fall back to something reasonable if you don't recognize it.
     """

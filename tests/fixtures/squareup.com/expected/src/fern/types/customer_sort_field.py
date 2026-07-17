@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CustomerSortField(str, enum.Enum):
+class CustomerSortField(enum.StrEnum):
     """
     Specifies customer attributes as the sort key to customer profiles returned from a search.
     """

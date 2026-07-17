@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DagState(str, enum.Enum):
+class DagState(enum.StrEnum):
     """
     DAG State.
 

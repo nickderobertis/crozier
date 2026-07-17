@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AttemptFailureOrigin(str, enum.Enum):
+class AttemptFailureOrigin(enum.StrEnum):
     """
     Indicates where the error originated. If not set, the origin of error is not well known.
     """

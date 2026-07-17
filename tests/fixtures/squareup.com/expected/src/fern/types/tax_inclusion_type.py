@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TaxInclusionType(str, enum.Enum):
+class TaxInclusionType(enum.StrEnum):
     """
     Whether to the tax amount should be additional to or included in the CatalogItem price.
     """

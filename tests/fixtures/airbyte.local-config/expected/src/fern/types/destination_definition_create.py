@@ -10,13 +10,21 @@ from .actor_definition_resource_requirements import ActorDefinitionResourceRequi
 
 
 class DestinationDefinitionCreate(UniversalBaseModel):
-    docker_image_tag: typing_extensions.Annotated[str, FieldMetadata(alias="dockerImageTag")]
-    docker_repository: typing_extensions.Annotated[str, FieldMetadata(alias="dockerRepository")]
-    documentation_url: typing_extensions.Annotated[str, FieldMetadata(alias="documentationUrl")]
+    docker_image_tag: typing_extensions.Annotated[
+        str, FieldMetadata(alias="dockerImageTag"), pydantic.Field(alias="dockerImageTag")
+    ]
+    docker_repository: typing_extensions.Annotated[
+        str, FieldMetadata(alias="dockerRepository"), pydantic.Field(alias="dockerRepository")
+    ]
+    documentation_url: typing_extensions.Annotated[
+        str, FieldMetadata(alias="documentationUrl"), pydantic.Field(alias="documentationUrl")
+    ]
     icon: typing.Optional[str] = None
     name: str
     resource_requirements: typing_extensions.Annotated[
-        typing.Optional[ActorDefinitionResourceRequirements], FieldMetadata(alias="resourceRequirements")
+        typing.Optional[ActorDefinitionResourceRequirements],
+        FieldMetadata(alias="resourceRequirements"),
+        pydantic.Field(alias="resourceRequirements"),
     ] = None
 
     if IS_PYDANTIC_V2:

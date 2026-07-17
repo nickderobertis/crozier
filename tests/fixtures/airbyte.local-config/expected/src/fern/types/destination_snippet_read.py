@@ -12,10 +12,16 @@ from .destination_id import DestinationId
 
 class DestinationSnippetRead(UniversalBaseModel):
     destination_definition_id: typing_extensions.Annotated[
-        DestinationDefinitionId, FieldMetadata(alias="destinationDefinitionId")
+        DestinationDefinitionId,
+        FieldMetadata(alias="destinationDefinitionId"),
+        pydantic.Field(alias="destinationDefinitionId"),
     ]
-    destination_id: typing_extensions.Annotated[DestinationId, FieldMetadata(alias="destinationId")]
-    destination_name: typing_extensions.Annotated[str, FieldMetadata(alias="destinationName")]
+    destination_id: typing_extensions.Annotated[
+        DestinationId, FieldMetadata(alias="destinationId"), pydantic.Field(alias="destinationId")
+    ]
+    destination_name: typing_extensions.Annotated[
+        str, FieldMetadata(alias="destinationName"), pydantic.Field(alias="destinationName")
+    ]
     icon: typing.Optional[str] = None
     name: str
 

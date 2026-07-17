@@ -33,9 +33,11 @@ class ScriptCompilationError(UniversalBaseModel):
     The message to display for the error
     """
 
-    raw_message: typing_extensions.Annotated[typing.Dict[str, str], FieldMetadata(alias="rawMessage")] = (
-        pydantic.Field()
-    )
+    raw_message: typing_extensions.Annotated[
+        typing.Dict[str, str],
+        FieldMetadata(alias="rawMessage"),
+        pydantic.Field(alias="rawMessage", description="The raw message from the compiler"),
+    ]
     """
     The raw message from the compiler
     """

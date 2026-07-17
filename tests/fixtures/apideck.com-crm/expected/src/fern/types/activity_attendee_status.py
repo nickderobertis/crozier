@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ActivityAttendeeStatus(str, enum.Enum):
+class ActivityAttendeeStatus(enum.StrEnum):
     ACCEPTED = "accepted"
     TENTATIVE = "tentative"
     DECLINED = "declined"

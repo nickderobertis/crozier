@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LeadEventType(str, enum.Enum):
+class LeadEventType(enum.StrEnum):
     ALL = "*"
     LEAD_LEAD_CREATED = "lead.lead.created"
     LEAD_LEAD_UPDATED = "lead.lead.updated"

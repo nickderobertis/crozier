@@ -13,11 +13,19 @@ class Links(UniversalBaseModel):
     Links relevant to the payload
     """
 
-    first: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="First")] = None
-    last: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Last")] = None
-    next: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Next")] = None
-    prev: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Prev")] = None
-    self_: typing_extensions.Annotated[str, FieldMetadata(alias="Self")]
+    first: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="First"), pydantic.Field(alias="First")
+    ] = None
+    last: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="Last"), pydantic.Field(alias="Last")
+    ] = None
+    next: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="Next"), pydantic.Field(alias="Next")
+    ] = None
+    prev: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="Prev"), pydantic.Field(alias="Prev")
+    ] = None
+    self_: typing_extensions.Annotated[str, FieldMetadata(alias="Self"), pydantic.Field(alias="Self")]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

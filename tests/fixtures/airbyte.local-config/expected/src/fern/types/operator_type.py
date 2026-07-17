@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OperatorType(str, enum.Enum):
+class OperatorType(enum.StrEnum):
     NORMALIZATION = "normalization"
     DBT = "dbt"
     WEBHOOK = "webhook"

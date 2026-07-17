@@ -6,13 +6,15 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.membership import Membership
 from ..types.membership_list import MembershipList
 from ..types.team import Team
 from ..types.team_list import TeamList
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -80,6 +82,10 @@ class RawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create(
@@ -134,6 +140,10 @@ class RawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get(self, team_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Team]:
@@ -154,7 +164,7 @@ class RawTeamsClient:
             Team
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}",
+            f"teams/{encode_path_param(team_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -171,6 +181,10 @@ class RawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update(
@@ -196,7 +210,7 @@ class RawTeamsClient:
             Team
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}",
+            f"teams/{encode_path_param(team_id)}",
             method="PUT",
             json={
                 "name": name,
@@ -220,6 +234,10 @@ class RawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete(self, team_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -239,7 +257,7 @@ class RawTeamsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}",
+            f"teams/{encode_path_param(team_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -249,6 +267,10 @@ class RawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_memberships(
@@ -290,7 +312,7 @@ class RawTeamsClient:
             Memberships List
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}/memberships",
+            f"teams/{encode_path_param(team_id)}/memberships",
             method="GET",
             params={
                 "search": search,
@@ -313,6 +335,10 @@ class RawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_membership(
@@ -358,7 +384,7 @@ class RawTeamsClient:
             Membership
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}/memberships",
+            f"teams/{encode_path_param(team_id)}/memberships",
             method="POST",
             json={
                 "email": email,
@@ -385,6 +411,10 @@ class RawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_membership(
@@ -409,7 +439,7 @@ class RawTeamsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}/memberships/{jsonable_encoder(membership_id)}",
+            f"teams/{encode_path_param(team_id)}/memberships/{encode_path_param(membership_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -419,6 +449,10 @@ class RawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_membership_roles(
@@ -452,7 +486,7 @@ class RawTeamsClient:
             Membership
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}/memberships/{jsonable_encoder(membership_id)}",
+            f"teams/{encode_path_param(team_id)}/memberships/{encode_path_param(membership_id)}",
             method="PATCH",
             json={
                 "roles": roles,
@@ -476,6 +510,10 @@ class RawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_membership_status(
@@ -513,7 +551,7 @@ class RawTeamsClient:
             Membership
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}/memberships/{jsonable_encoder(membership_id)}/status",
+            f"teams/{encode_path_param(team_id)}/memberships/{encode_path_param(membership_id)}/status",
             method="PATCH",
             json={
                 "secret": secret,
@@ -538,6 +576,10 @@ class RawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -603,6 +645,10 @@ class AsyncRawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create(
@@ -657,6 +703,10 @@ class AsyncRawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get(
@@ -679,7 +729,7 @@ class AsyncRawTeamsClient:
             Team
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}",
+            f"teams/{encode_path_param(team_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -696,6 +746,10 @@ class AsyncRawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update(
@@ -721,7 +775,7 @@ class AsyncRawTeamsClient:
             Team
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}",
+            f"teams/{encode_path_param(team_id)}",
             method="PUT",
             json={
                 "name": name,
@@ -745,6 +799,10 @@ class AsyncRawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
@@ -766,7 +824,7 @@ class AsyncRawTeamsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}",
+            f"teams/{encode_path_param(team_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -776,6 +834,10 @@ class AsyncRawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_memberships(
@@ -817,7 +879,7 @@ class AsyncRawTeamsClient:
             Memberships List
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}/memberships",
+            f"teams/{encode_path_param(team_id)}/memberships",
             method="GET",
             params={
                 "search": search,
@@ -840,6 +902,10 @@ class AsyncRawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_membership(
@@ -885,7 +951,7 @@ class AsyncRawTeamsClient:
             Membership
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}/memberships",
+            f"teams/{encode_path_param(team_id)}/memberships",
             method="POST",
             json={
                 "email": email,
@@ -912,6 +978,10 @@ class AsyncRawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_membership(
@@ -936,7 +1006,7 @@ class AsyncRawTeamsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}/memberships/{jsonable_encoder(membership_id)}",
+            f"teams/{encode_path_param(team_id)}/memberships/{encode_path_param(membership_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -946,6 +1016,10 @@ class AsyncRawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_membership_roles(
@@ -979,7 +1053,7 @@ class AsyncRawTeamsClient:
             Membership
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}/memberships/{jsonable_encoder(membership_id)}",
+            f"teams/{encode_path_param(team_id)}/memberships/{encode_path_param(membership_id)}",
             method="PATCH",
             json={
                 "roles": roles,
@@ -1003,6 +1077,10 @@ class AsyncRawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_membership_status(
@@ -1040,7 +1118,7 @@ class AsyncRawTeamsClient:
             Membership
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"teams/{jsonable_encoder(team_id)}/memberships/{jsonable_encoder(membership_id)}/status",
+            f"teams/{encode_path_param(team_id)}/memberships/{encode_path_param(membership_id)}/status",
             method="PATCH",
             json={
                 "secret": secret,
@@ -1065,4 +1143,8 @@ class AsyncRawTeamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

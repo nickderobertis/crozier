@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ChangeSetType(str, enum.Enum):
+class ChangeSetType(enum.StrEnum):
     CREATE = "CREATE"
     UPDATE = "UPDATE"
     IMPORT = "IMPORT"

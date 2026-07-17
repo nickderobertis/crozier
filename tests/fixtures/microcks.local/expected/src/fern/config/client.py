@@ -28,9 +28,7 @@ class ConfigClient:
         """
         return self._raw_client
 
-    def get_features_configuration(
-        self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Optional[typing.Any]:
+    def get_features_configuration(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.Any:
         """
         Parameters
         ----------
@@ -39,7 +37,7 @@ class ConfigClient:
 
         Returns
         -------
-        typing.Optional[typing.Any]
+        typing.Any
             Get features configuration
 
         Examples
@@ -315,7 +313,7 @@ class AsyncConfigClient:
 
     async def get_features_configuration(
         self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Optional[typing.Any]:
+    ) -> typing.Any:
         """
         Parameters
         ----------
@@ -324,7 +322,7 @@ class AsyncConfigClient:
 
         Returns
         -------
-        typing.Optional[typing.Any]
+        typing.Any
             Get features configuration
 
         Examples

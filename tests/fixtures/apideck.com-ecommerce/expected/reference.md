@@ -1,6 +1,6 @@
 # Reference
 ## Customers
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">all</a>(...) -> GetEcommerceCustomersResponse</code></summary>
 <dl>
 <dd>
 
@@ -28,13 +28,15 @@ List Customers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.all_(
     fields="id,updated_at",
 )
@@ -105,7 +107,7 @@ client.customers.all_(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">one</a>(...) -> GetEcommerceCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -133,13 +135,15 @@ Get Customer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.one(
     id="id",
     fields="id,updated_at",
@@ -196,7 +200,7 @@ client.customers.one(
 </details>
 
 ## Orders
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py">all</a>(...) -> GetEcommerceOrdersResponse</code></summary>
 <dl>
 <dd>
 
@@ -224,13 +228,15 @@ List Orders
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.orders.all_(
     fields="id,updated_at",
 )
@@ -301,7 +307,7 @@ client.orders.all_(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py">one</a>(...) -> GetEcommerceOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -329,13 +335,15 @@ Get Order
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.orders.one(
     id="id",
     fields="id,updated_at",
@@ -392,7 +400,7 @@ client.orders.one(
 </details>
 
 ## Products
-<details><summary><code>client.products.<a href="src/fern/products/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py">all</a>(...) -> GetProductsResponse</code></summary>
 <dl>
 <dd>
 
@@ -420,13 +428,15 @@ List Products
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.products.all_(
     fields="id,updated_at",
 )
@@ -489,7 +499,7 @@ client.products.all_(
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py">one</a>(...) -> GetProductResponse</code></summary>
 <dl>
 <dd>
 
@@ -517,13 +527,15 @@ Get Product
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.products.one(
     id="id",
     fields="id,updated_at",
@@ -580,7 +592,7 @@ client.products.one(
 </details>
 
 ## Stores
-<details><summary><code>client.stores.<a href="src/fern/stores/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.stores.<a href="src/fern/stores/client.py">one</a>(...) -> GetStoreResponse</code></summary>
 <dl>
 <dd>
 
@@ -608,13 +620,15 @@ Get Store
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.stores.one(
     fields="id,updated_at",
 )

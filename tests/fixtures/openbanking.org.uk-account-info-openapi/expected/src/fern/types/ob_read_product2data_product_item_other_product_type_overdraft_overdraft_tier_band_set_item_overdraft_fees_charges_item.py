@@ -28,12 +28,14 @@ class ObReadProduct2DataProductItemOtherProductTypeOverdraftOverdraftTierBandSet
             ]
         ],
         FieldMetadata(alias="OverdraftFeeChargeCap"),
+        pydantic.Field(alias="OverdraftFeeChargeCap"),
     ] = None
     overdraft_fee_charge_detail: typing_extensions.Annotated[
         typing.List[
             ObReadProduct2DataProductItemOtherProductTypeOverdraftOverdraftTierBandSetItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItem
         ],
         FieldMetadata(alias="OverdraftFeeChargeDetail"),
+        pydantic.Field(alias="OverdraftFeeChargeDetail"),
     ]
 
     if IS_PYDANTIC_V2:

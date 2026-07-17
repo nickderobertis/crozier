@@ -19,7 +19,9 @@ class ImageSource(UniversalBaseModel):
 
     archive: typing.Optional[AnalysisArchiveSource] = None
     digest: typing.Optional[RegistryDigestSource] = None
-    import_: typing_extensions.Annotated[typing.Optional[ImageImportManifest], FieldMetadata(alias="import")] = None
+    import_: typing_extensions.Annotated[
+        typing.Optional[ImageImportManifest], FieldMetadata(alias="import"), pydantic.Field(alias="import")
+    ] = None
     tag: typing.Optional[RegistryTagSource] = None
 
     if IS_PYDANTIC_V2:

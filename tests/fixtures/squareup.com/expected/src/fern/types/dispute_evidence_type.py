@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DisputeEvidenceType(str, enum.Enum):
+class DisputeEvidenceType(enum.StrEnum):
     """
     The type of the dispute evidence.
     """

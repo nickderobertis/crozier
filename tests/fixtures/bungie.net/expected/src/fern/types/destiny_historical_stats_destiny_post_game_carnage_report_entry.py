@@ -14,9 +14,11 @@ from .destiny_historical_stats_destiny_post_game_carnage_report_extended_data im
 
 
 class DestinyHistoricalStatsDestinyPostGameCarnageReportEntry(UniversalBaseModel):
-    character_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="characterId")] = (
-        pydantic.Field(default=None)
-    )
+    character_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="characterId"),
+        pydantic.Field(alias="characterId", description="ID of the player's character used in the activity."),
+    ] = None
     """
     ID of the player's character used in the activity.
     """

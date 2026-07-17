@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CalendarType(str, enum.Enum):
+class CalendarType(enum.StrEnum):
     WEEKLY = "WEEKLY"
     FORTNIGHTLY = "FORTNIGHTLY"
     FOURWEEKLY = "FOURWEEKLY"

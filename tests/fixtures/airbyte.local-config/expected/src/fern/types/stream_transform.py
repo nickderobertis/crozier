@@ -12,11 +12,17 @@ from .stream_transform_transform_type import StreamTransformTransformType
 
 
 class StreamTransform(UniversalBaseModel):
-    stream_descriptor: typing_extensions.Annotated[StreamDescriptor, FieldMetadata(alias="streamDescriptor")]
-    transform_type: typing_extensions.Annotated[StreamTransformTransformType, FieldMetadata(alias="transformType")]
+    stream_descriptor: typing_extensions.Annotated[
+        StreamDescriptor, FieldMetadata(alias="streamDescriptor"), pydantic.Field(alias="streamDescriptor")
+    ]
+    transform_type: typing_extensions.Annotated[
+        StreamTransformTransformType, FieldMetadata(alias="transformType"), pydantic.Field(alias="transformType")
+    ]
     update_stream: typing_extensions.Annotated[
-        typing.Optional[typing.List[FieldTransform]], FieldMetadata(alias="updateStream")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[FieldTransform]],
+        FieldMetadata(alias="updateStream"),
+        pydantic.Field(alias="updateStream", description="list of field transformations. order does not matter."),
+    ] = None
     """
     list of field transformations. order does not matter.
     """

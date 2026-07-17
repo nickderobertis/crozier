@@ -9,8 +9,8 @@ from ...core.serialization import FieldMetadata
 
 
 class GetUserIdentiyProviderExternalIdResponseUserUserFields(UniversalBaseModel):
-    f_1: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="1")] = None
-    f_2: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="2")] = None
+    f_1: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="1"), pydantic.Field(alias="1")] = None
+    f_2: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="2"), pydantic.Field(alias="2")] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

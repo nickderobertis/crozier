@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PublisherStatus(str, enum.Enum):
+class PublisherStatus(enum.StrEnum):
     VERIFIED = "VERIFIED"
     UNVERIFIED = "UNVERIFIED"
 

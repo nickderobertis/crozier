@@ -12,15 +12,21 @@ from .trait_trait_specific_breath_weapon_breath_weapon import TraitTraitSpecific
 
 class TraitTraitSpecificBreathWeapon(UniversalBaseModel):
     breath_weapon: typing_extensions.Annotated[
-        typing.Optional[TraitTraitSpecificBreathWeaponBreathWeapon], FieldMetadata(alias="breath-weapon")
-    ] = pydantic.Field(default=None)
+        typing.Optional[TraitTraitSpecificBreathWeaponBreathWeapon],
+        FieldMetadata(alias="breath-weapon"),
+        pydantic.Field(
+            alias="breath-weapon", description="The breath weapon action associated with a draconic ancestry."
+        ),
+    ] = None
     """
     The breath weapon action associated with a draconic ancestry.
     """
 
-    damage_type: typing_extensions.Annotated[typing.Optional[ApiReference], FieldMetadata(alias="damage-type")] = (
-        pydantic.Field(default=None)
-    )
+    damage_type: typing_extensions.Annotated[
+        typing.Optional[ApiReference],
+        FieldMetadata(alias="damage-type"),
+        pydantic.Field(alias="damage-type", description="A damage type associated with this trait."),
+    ] = None
     """
     A damage type associated with this trait.
     """

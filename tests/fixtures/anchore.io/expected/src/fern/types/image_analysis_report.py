@@ -2,4 +2,7 @@
 
 import typing
 
-ImageAnalysisReport = typing.Dict[str, typing.Optional[typing.Any]]
+ImageAnalysisReport = typing.Dict[str, typing.Any]
+"""
+Analysis report json to be imported
+"""

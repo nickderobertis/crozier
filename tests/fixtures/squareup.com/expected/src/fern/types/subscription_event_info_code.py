@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SubscriptionEventInfoCode(str, enum.Enum):
+class SubscriptionEventInfoCode(enum.StrEnum):
     """
     The possible subscription event info codes.
     """

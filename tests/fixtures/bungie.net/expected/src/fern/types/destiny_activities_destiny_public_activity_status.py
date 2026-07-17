@@ -15,22 +15,37 @@ class DestinyActivitiesDestinyPublicActivityStatus(UniversalBaseModel):
     """
 
     challenge_objective_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="challengeObjectiveHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="challengeObjectiveHashes"),
+        pydantic.Field(
+            alias="challengeObjectiveHashes",
+            description="Active Challenges for the activity, if any - represented as hashes for DestinyObjectiveDefinitions.",
+        ),
+    ] = None
     """
     Active Challenges for the activity, if any - represented as hashes for DestinyObjectiveDefinitions.
     """
 
     modifier_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="modifierHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="modifierHashes"),
+        pydantic.Field(
+            alias="modifierHashes",
+            description="The active modifiers on this activity, if any - represented as hashes for DestinyActivityModifierDefinitions.",
+        ),
+    ] = None
     """
     The active modifiers on this activity, if any - represented as hashes for DestinyActivityModifierDefinitions.
     """
 
     reward_tooltip_items: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinyDestinyItemQuantity]], FieldMetadata(alias="rewardTooltipItems")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[DestinyDestinyItemQuantity]],
+        FieldMetadata(alias="rewardTooltipItems"),
+        pydantic.Field(
+            alias="rewardTooltipItems",
+            description='If the activity itself provides any specific "mock" rewards, this will be the items and their quantity.\r\nWhy "mock", you ask? Because these are the rewards as they are represented in the tooltip of the Activity.\r\nThese are often pointers to fake items that look good in a tooltip, but represent an abstract concept of what you will get for a reward rather than the specific items you may obtain.',
+        ),
+    ] = None
     """
     If the activity itself provides any specific "mock" rewards, this will be the items and their quantity.
     Why "mock", you ask? Because these are the rewards as they are represented in the tooltip of the Activity.

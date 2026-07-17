@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PhoneNumberType(str, enum.Enum):
+class PhoneNumberType(enum.StrEnum):
     PRIMARY = "primary"
     SECONDARY = "secondary"
     HOME = "home"

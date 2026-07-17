@@ -14,16 +14,26 @@ from .post_portfolio_analysis_sharpe_ratio_probabilistic_minimum_track_record_le
 class PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkSharpeRatio(
     UniversalBaseModel
 ):
-    benchmark_sharpe_ratio: typing_extensions.Annotated[float, FieldMetadata(alias="benchmarkSharpeRatio")] = (
-        pydantic.Field()
-    )
+    benchmark_sharpe_ratio: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="benchmarkSharpeRatio"),
+        pydantic.Field(
+            alias="benchmarkSharpeRatio",
+            description="The Sharpe ratio of the benchmark, in the same sampling frequency as the sampling frequency of the portfolio values",
+        ),
+    ]
     """
     The Sharpe ratio of the benchmark, in the same sampling frequency as the sampling frequency of the portfolio values
     """
 
-    confidence_level: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="confidenceLevel")] = (
-        pydantic.Field(default=None)
-    )
+    confidence_level: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="confidenceLevel"),
+        pydantic.Field(
+            alias="confidenceLevel",
+            description="The confidence level of the minimum track record length, in percentage",
+        ),
+    ] = None
     """
     The confidence level of the minimum track record length, in percentage
     """
@@ -31,7 +41,11 @@ class PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthReque
     portfolios: typing.List[
         PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkSharpeRatioPortfoliosItem
     ]
-    risk_free_rate: typing_extensions.Annotated[float, FieldMetadata(alias="riskFreeRate")] = pydantic.Field()
+    risk_free_rate: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="riskFreeRate"),
+        pydantic.Field(alias="riskFreeRate", description="The risk free rate"),
+    ]
     """
     The risk free rate
     """

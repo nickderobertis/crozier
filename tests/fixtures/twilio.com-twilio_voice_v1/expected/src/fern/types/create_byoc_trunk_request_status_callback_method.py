@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CreateByocTrunkRequestStatusCallbackMethod(str, enum.Enum):
+class CreateByocTrunkRequestStatusCallbackMethod(enum.StrEnum):
     """
     The HTTP method we should use to call `status_callback_url`. Can be: `GET` or `POST`.
     """

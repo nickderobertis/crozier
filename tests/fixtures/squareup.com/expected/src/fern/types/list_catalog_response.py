@@ -38,6 +38,15 @@ class ListCatalogResponse(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
+from .catalog_item import CatalogItem
+from .catalog_item_option import CatalogItemOption
+from .catalog_modifier_list import CatalogModifierList
 from .catalog_object import CatalogObject
 
-update_forward_refs(ListCatalogResponse)
+update_forward_refs(
+    ListCatalogResponse,
+    CatalogItem=CatalogItem,
+    CatalogItemOption=CatalogItemOption,
+    CatalogModifierList=CatalogModifierList,
+    CatalogObject=CatalogObject,
+)

@@ -18,8 +18,13 @@ class DestinyEntitiesCharactersDestinyCharacterRenderComponent(UniversalBaseMode
     """
 
     custom_dyes: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinyDyeReference]], FieldMetadata(alias="customDyes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[DestinyDyeReference]],
+        FieldMetadata(alias="customDyes"),
+        pydantic.Field(
+            alias="customDyes",
+            description="Custom dyes, calculated by iterating over the character's equipped items. Useful for pre-fetching all of the dye data needed from our server.",
+        ),
+    ] = None
     """
     Custom dyes, calculated by iterating over the character's equipped items. Useful for pre-fetching all of the dye data needed from our server.
     """
@@ -30,8 +35,13 @@ class DestinyEntitiesCharactersDestinyCharacterRenderComponent(UniversalBaseMode
     """
 
     peer_view: typing_extensions.Annotated[
-        typing.Optional[DestinyCharacterDestinyCharacterPeerView], FieldMetadata(alias="peerView")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyCharacterDestinyCharacterPeerView],
+        FieldMetadata(alias="peerView"),
+        pydantic.Field(
+            alias="peerView",
+            description="A minimal view of:\r\n- Equipped items\r\n- The rendering-related custom options on those equipped items\r\nCombined, that should be enough to render all of the items on the equipped character.",
+        ),
+    ] = None
     """
     A minimal view of:
     - Equipped items

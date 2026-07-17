@@ -9,9 +9,11 @@ from ..core.serialization import FieldMetadata
 
 
 class UpdateTerminationProtectionOutput(UniversalBaseModel):
-    stack_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="StackId")] = pydantic.Field(
-        default=None
-    )
+    stack_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="StackId"),
+        pydantic.Field(alias="StackId", description="The unique ID of the stack."),
+    ] = None
     """
     The unique ID of the stack.
     """

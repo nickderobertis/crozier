@@ -17,11 +17,16 @@ class DestinyDefinitionsDestinyDisplayCategoryDefinition(UniversalBaseModel):
     """
 
     display_category_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="displayCategoryHash")
+        typing.Optional[int], FieldMetadata(alias="displayCategoryHash"), pydantic.Field(alias="displayCategoryHash")
     ] = None
-    display_in_banner: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="displayInBanner")] = (
-        pydantic.Field(default=None)
-    )
+    display_in_banner: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="displayInBanner"),
+        pydantic.Field(
+            alias="displayInBanner",
+            description='If true, this category should be displayed in the "Banner" section of the vendor\'s UI.',
+        ),
+    ] = None
     """
     If true, this category should be displayed in the "Banner" section of the vendor's UI.
     """
@@ -29,17 +34,28 @@ class DestinyDefinitionsDestinyDisplayCategoryDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
-    display_style_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="displayStyleHash")] = (
-        pydantic.Field(default=None)
-    )
+    display_style_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="displayStyleHash"),
+        pydantic.Field(
+            alias="displayStyleHash",
+            description="An indicator of how the category will be displayed in the UI. It's up to you to do something cool or interesting in response to this, or just to treat it as a normal category.",
+        ),
+    ] = None
     """
     An indicator of how the category will be displayed in the UI. It's up to you to do something cool or interesting in response to this, or just to treat it as a normal category.
     """
 
     display_style_identifier: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="displayStyleIdentifier")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="displayStyleIdentifier"),
+        pydantic.Field(
+            alias="displayStyleIdentifier",
+            description="An indicator of how the category will be displayed in the UI. It's up to you to do something cool or interesting in response to this, or just to treat it as a normal category.",
+        ),
+    ] = None
     """
     An indicator of how the category will be displayed in the UI. It's up to you to do something cool or interesting in response to this, or just to treat it as a normal category.
     """
@@ -50,17 +66,27 @@ class DestinyDefinitionsDestinyDisplayCategoryDefinition(UniversalBaseModel):
     """
 
     index: typing.Optional[int] = None
-    progression_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="progressionHash")] = (
-        pydantic.Field(default=None)
-    )
+    progression_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="progressionHash"),
+        pydantic.Field(
+            alias="progressionHash",
+            description="If it exists, this is the hash identifier of a DestinyProgressionDefinition that represents the progression to show on this display category.\r\nSpecific categories can now have thier own distinct progression, apparently. So that's cool.",
+        ),
+    ] = None
     """
     If it exists, this is the hash identifier of a DestinyProgressionDefinition that represents the progression to show on this display category.
     Specific categories can now have thier own distinct progression, apparently. So that's cool.
     """
 
-    sort_order: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="sortOrder")] = pydantic.Field(
-        default=None
-    )
+    sort_order: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="sortOrder"),
+        pydantic.Field(
+            alias="sortOrder",
+            description="If this category sorts items in a nonstandard way, this will be the way we sort.",
+        ),
+    ] = None
     """
     If this category sorts items in a nonstandard way, this will be the way we sort.
     """

@@ -13,9 +13,14 @@ class LargeRequestFaultConfig(UniversalBaseModel):
     Config for large request injection fault
     """
 
-    additional_request_size: typing_extensions.Annotated[int, FieldMetadata(alias="additionalRequestSize")] = (
-        pydantic.Field()
-    )
+    additional_request_size: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="additionalRequestSize"),
+        pydantic.Field(
+            alias="additionalRequestSize",
+            description="The size added to the request body in bytes. Added payload will be spaces only.",
+        ),
+    ]
     """
     The size added to the request body in bytes. Added payload will be spaces only.
     """

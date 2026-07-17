@@ -9,7 +9,14 @@ from ...core.serialization import FieldMetadata
 
 
 class PostPortfolioAnalysisBetaResponsePortfoliosItem(UniversalBaseModel):
-    portfolio_beta: typing_extensions.Annotated[float, FieldMetadata(alias="portfolioBeta")] = pydantic.Field()
+    portfolio_beta: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="portfolioBeta"),
+        pydantic.Field(
+            alias="portfolioBeta",
+            description="The portfolio beta, which correponds to the portfolio systematic risk in the Capital Asset Pricing Model (CAPM)",
+        ),
+    ]
     """
     The portfolio beta, which correponds to the portfolio systematic risk in the Capital Asset Pricing Model (CAPM)
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ResourceStatus(str, enum.Enum):
+class ResourceStatus(enum.StrEnum):
     CREATE_IN_PROGRESS = "CREATE_IN_PROGRESS"
     CREATE_FAILED = "CREATE_FAILED"
     CREATE_COMPLETE = "CREATE_COMPLETE"

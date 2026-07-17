@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetUpdateTerminationProtectionRequestAction(str, enum.Enum):
+class GetUpdateTerminationProtectionRequestAction(enum.StrEnum):
     UPDATE_TERMINATION_PROTECTION = "UpdateTerminationProtection"
 
     def visit(self, update_termination_protection: typing.Callable[[], T_Result]) -> T_Result:

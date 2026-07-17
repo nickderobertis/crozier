@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class V1OrderHistoryEntryAction(str, enum.Enum):
+class V1OrderHistoryEntryAction(enum.StrEnum):
     """ """
 
     ORDER_PLACED = "ORDER_PLACED"

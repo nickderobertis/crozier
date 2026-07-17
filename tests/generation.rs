@@ -116,6 +116,7 @@ components:
         - red
         - green
     Shape:
+      description: A documented union.
       oneOf:
         - $ref: "#/components/schemas/Owner"
         - type: string
@@ -149,10 +150,10 @@ fn object_fields_render_with_fern_conventions() {
     // Described field: pydantic.Field(default=None) + docstring line.
     assert!(widget.contains("described: typing.Optional[str] = pydantic.Field(default=None)"));
     assert!(widget.contains("A described optional field."));
-    // Reserved name is munged and aliased; the wire alias lives only in
-    // FieldMetadata (not pydantic.Field).
+    // Reserved name is munged and aliased; Fern 5.20 carries the wire alias in
+    // both its serialization metadata and pydantic's field metadata.
     assert!(widget.contains(
-        "list_: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias=\"list\")] = None"
+        "list_: typing_extensions.Annotated[\n        typing.Optional[typing.List[str]], FieldMetadata(alias=\"list\"), pydantic.Field(alias=\"list\")\n    ] = None"
     ), "aliased list field: {widget}");
     // Primitive mappings.
     assert!(widget.contains("when: typing.Optional[dt.datetime] = None"));
@@ -190,18 +191,21 @@ from .owner import Owner
 #[test]
 fn union_alias_and_scalar_alias_render() {
     let files = render(RICH_SPEC);
-    assert!(files["src/acme/types/shape.py"].contains("Shape = typing.Union[Owner, str]"));
+    let shape = &files["src/acme/types/shape.py"];
+    assert!(shape.contains("Shape = typing.Union[Owner, str]"));
+    assert!(!shape.contains("A documented union."), "{shape}");
     assert!(files["src/acme/types/alias.py"].contains("Alias = str"));
 }
 
 #[test]
 fn string_enum_renders_as_enum_class() {
-    // crozier renders an OpenAPI string enum as a real `enum.Enum` class (Fern's
+    // crozier renders an OpenAPI string enum as Fern's compatibility `StrEnum`
     // `enum_type: python_enums` shape), with SCREAMING_SNAKE members over the wire
     // values and a `visit` dispatch method — not an open `Literal` union.
     let files = render(RICH_SPEC);
     let color = &files["src/acme/types/color.py"];
-    assert!(color.contains("class Color(str, enum.Enum):"), "{color}");
+    assert!(color.contains("from ..core import enum"), "{color}");
+    assert!(color.contains("class Color(enum.StrEnum):"), "{color}");
     assert!(color.contains("    RED = \"red\"\n"), "{color}");
     assert!(color.contains("    GREEN = \"green\"\n"), "{color}");
     assert!(
@@ -318,7 +322,7 @@ fn additional_properties_true_maps_to_open_dict() {
     );
     // Fern types an open map (`additionalProperties: true`) as a dict to unknown.
     assert!(files["src/acme/types/bag.py"]
-        .contains("data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None"));
+        .contains("data: typing.Optional[typing.Dict[str, typing.Any]] = None"));
 }
 
 #[test]
@@ -343,15 +347,15 @@ fn nullable_scalar_alias_is_optional() {
 }
 
 #[test]
-fn unknown_schema_maps_to_optional_any() {
-    // An empty schema is an unknown type: an `Optional[Any]` alias, and an
-    // always-optional `Optional[Any]` field even when listed as required.
+fn unknown_schema_maps_to_any_with_field_absence_modeled_separately() {
+    // Fern 5.20 renders an empty alias and a required unknown field as bare `Any`.
+    // A containing field adds one Optional only when the property may be absent.
     let files = render(
         "openapi: 3.0.0\ninfo:\n  title: U\ncomponents:\n  schemas:\n    Unknown: {}\n    Holder:\n      type: object\n      required: [value]\n      properties:\n        value: {}\n        other: {}\n    Patch:\n      type: object\n      properties:\n        value: {}\n",
     );
-    assert!(files["src/acme/types/unknown.py"].contains("Unknown = typing.Optional[typing.Any]"));
+    assert!(files["src/acme/types/unknown.py"].contains("Unknown = typing.Any"));
     assert!(
-        files["src/acme/types/holder.py"].contains("value: typing.Optional[typing.Any] = None"),
+        files["src/acme/types/holder.py"].contains("value: typing.Any\n"),
         "{}",
         files["src/acme/types/holder.py"]
     );
@@ -361,8 +365,7 @@ fn unknown_schema_maps_to_optional_any() {
         files["src/acme/types/holder.py"]
     );
     assert!(
-        files["src/acme/types/patch.py"]
-            .contains("value: typing.Optional[typing.Optional[typing.Any]] = None"),
+        files["src/acme/types/patch.py"].contains("value: typing.Optional[typing.Any] = None"),
         "{}",
         files["src/acme/types/patch.py"]
     );
@@ -395,7 +398,7 @@ fn wide_string_enum_wraps_like_ruff() {
         members.concat()
     );
     let big = render(&spec)["src/acme/types/big.py"].clone();
-    assert!(big.contains("class Big(str, enum.Enum):"), "{big}");
+    assert!(big.contains("class Big(enum.StrEnum):"), "{big}");
     assert!(
         big.contains("    VALUE_NUMBER_00_WITH_PADDING = \"VALUE_NUMBER_00_WITH_PADDING\"\n"),
         "{big}"
@@ -609,11 +612,11 @@ fn emits_raw_client_only_for_supported_modules() {
     assert!(raw.contains("class RawThingsClient:"), "{raw}");
     assert!(raw.contains("class AsyncRawThingsClient:"), "{raw}");
     assert!(raw.contains("from ..types.thing import Thing"), "{raw}");
-    assert!(raw.contains("from ..core.jsonable_encoder import jsonable_encoder"));
+    assert!(raw.contains("from ..core.jsonable_encoder import encode_path_param"));
     // `things_getById`: a single-segment group, so the method name is the
     // lowercased suffix; the path param drives an f-string URL and `HttpResponse[Thing]`.
     assert!(raw.contains("def getbyid("), "{raw}");
-    assert!(raw.contains("f\"things/{jsonable_encoder(id)}\""), "{raw}");
+    assert!(raw.contains("f\"things/{encode_path_param(id)}\""), "{raw}");
     assert!(raw.contains("-> HttpResponse[Thing]:"), "{raw}");
     assert!(raw.contains("async def getbyid("), "{raw}");
     // `things_count`: no params, a scalar `int` response, and its description
@@ -813,6 +816,40 @@ fn emits_core_runtime_with_substituted_sdk_name() {
         !cw.contains("@@CROZIER"),
         "placeholder left unsubstituted: {cw}"
     );
+    assert!(cw.contains("\"X-Crozier-Runtime\""), "{cw}");
+    assert!(cw.contains("\"X-Crozier-Platform\""), "{cw}");
+    assert!(
+        cw.contains("base_max_retries=self.get_max_retries()"),
+        "{cw}"
+    );
+    assert!(cw.contains("logging_config=self._logging"), "{cw}");
+    assert!(
+        cw.contains("async_base_headers=self.async_get_headers"),
+        "{cw}"
+    );
+
+    let client_files = render(HEADER_SPEC);
+    let client = &client_files["src/acme/client.py"];
+    assert!(
+        client.contains("max_retries: typing.Optional[int] = None"),
+        "{client}"
+    );
+    assert!(
+        client.contains("stream_reconnection_enabled: typing.Optional[bool] = None"),
+        "{client}"
+    );
+    assert!(
+        client.contains("logging: typing.Optional[typing.Union[LogConfig, Logger]] = None"),
+        "{client}"
+    );
+    assert!(
+        client.contains("def _make_default_async_client("),
+        "{client}"
+    );
+
+    let init = &client_files["src/acme/__init__.py"];
+    assert!(init.contains("DefaultAioHttpClient"), "{init}");
+    assert!(init.contains("DefaultAsyncHttpxClient"), "{init}");
 }
 
 #[test]
@@ -865,10 +902,7 @@ components:
     assert!(zero.contains("class PetZero(Dog):"), "{zero}");
     assert!(zero.contains("    kind: PetZeroKind\n"), "{zero}");
     let kind = &files["src/acme/types/pet_zero_kind.py"];
-    assert!(
-        kind.contains("class PetZeroKind(str, enum.Enum):"),
-        "{kind}"
-    );
+    assert!(kind.contains("class PetZeroKind(enum.StrEnum):"), "{kind}");
     assert!(kind.contains("    DOG = \"dog\"\n"), "{kind}");
     // Variant 1: no base, so it extends UniversalBaseModel; its field is optional.
     let one = &files["src/acme/types/pet_meow.py"];
@@ -897,8 +931,7 @@ fn named_explicit_empty_properties_is_model_while_omitted_is_dict_alias() {
         "{closed}"
     );
     assert!(closed.contains("extra=\"allow\""), "{closed}");
-    assert!(files["src/acme/types/open.py"]
-        .contains("Open = typing.Dict[str, typing.Optional[typing.Any]]"));
+    assert!(files["src/acme/types/open.py"].contains("Open = typing.Dict[str, typing.Any]"));
 }
 
 #[test]
@@ -1346,6 +1379,14 @@ fn unauthenticated_operation_makes_the_token_optional() {
     let wrapper = &files["src/acme/core/client_wrapper.py"];
     assert!(wrapper
         .contains("token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,"));
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains(
+            "async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,"
+        ),
+        "{client}"
+    );
+    assert!(client.contains("async_token=async_token,"), "{client}");
 }
 
 /// An integer `enum` becomes a plain `int` alias, and a `$ref` integer-enum
@@ -1432,8 +1473,7 @@ fn read_only_field_is_optional_and_open_map_is_dict() {
     // `id` is readOnly → optional despite being required; `name` stays required.
     assert!(rec.contains("id: typing.Optional[str] = None"));
     assert!(rec.contains("name: str\n"));
-    assert!(rec
-        .contains("extra: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None"));
+    assert!(rec.contains("extra: typing.Optional[typing.Dict[str, typing.Any]] = None"));
 }
 
 /// A schema used only as an inlined (`$ref`-object) request body is not emitted as
@@ -1569,7 +1609,7 @@ fn cookie_dropped_and_optional_header_promoted_to_client_wrapper() {
     assert!(wrapper.contains("self._tenant = tenant"));
     assert!(wrapper.contains("if self._tenant is not None:"));
     assert!(wrapper.contains("headers[\"X-Tenant\"] = self._tenant"));
-    assert!(wrapper.contains("super().__init__(tenant=tenant, token=token,"));
+    assert!(wrapper.contains("tenant=tenant,\n            token=token,"));
 
     // And threaded through the root client (ctor, example, wrapper call).
     let client = &files["src/acme/client.py"];
@@ -2185,9 +2225,9 @@ components:
         "the recursive variant field is a same-file forward ref:\n{node}"
     );
     assert!(
-        node.contains("update_forward_refs(Node_And)")
+        node.contains("update_forward_refs(Node_And, Node=Node)")
             && !node.contains("update_forward_refs(Node_Leaf)"),
-        "only the recursive wrapper is repaired:\n{node}"
+        "only the recursive wrapper is repaired with the full cycle closure:\n{node}"
     );
     // The referenced schema defers its cross-module import to after the class.
     let and_node = &files["src/acme/types/and_node.py"];
@@ -2200,7 +2240,7 @@ components:
     );
     assert!(
         after_class.contains("from .node import Node")
-            && after_class.contains("update_forward_refs(AndNode)"),
+            && after_class.contains("update_forward_refs(AndNode, Node=Node)"),
         "the cyclic import is deferred and repaired:\n{and_node}"
     );
 }
@@ -2255,10 +2295,9 @@ paths:
         ("null_node", "nullNode"),
     ] {
         assert!(
-            resp.contains(&format!(
-                "{field}: typing_extensions.Annotated[\n        \
-                 typing.Optional[typing.Optional[typing.Any]], FieldMetadata(alias=\"{wire_name}\")\n    ] = None"
-            )),
+            resp.contains(&format!("{field}: typing_extensions.Annotated["))
+                && resp.contains(&format!("FieldMetadata(alias=\"{wire_name}\")"))
+                && resp.contains(&format!("pydantic.Field(alias=\"{wire_name}\")")),
             "the malformed scalar property {field} must degrade independently:\n{resp}"
         );
     }
@@ -2638,23 +2677,14 @@ components:
     );
 
     let error = &files["src/acme/errors/bad_request_error.py"];
-    assert!(
-        error.contains("body: typing.Optional[typing.Any]"),
-        "{error}"
-    );
+    assert!(error.contains("body: typing.Any"), "{error}");
     for raw_path in [
         "src/acme/alpha/raw_client.py",
         "src/acme/beta/raw_client.py",
     ] {
         let raw = &files[raw_path];
-        assert!(
-            raw.contains("typing.Optional[typing.Any],"),
-            "{raw_path}:\n{raw}"
-        );
-        assert!(
-            raw.contains("type_=typing.Optional[typing.Any]"),
-            "{raw_path}:\n{raw}"
-        );
+        assert!(raw.contains("typing.Any,"), "{raw_path}:\n{raw}");
+        assert!(raw.contains("type_=typing.Any"), "{raw_path}:\n{raw}");
     }
 }
 
@@ -2755,7 +2785,7 @@ paths:
 "#,
     );
     let response = &files["src/acme/shapes/types/shapes_get_response.py"];
-    assert!(response.contains("day0end_time: typing_extensions.Annotated[int, FieldMetadata(alias=\"day_0_end_time\")]"), "{response}");
+    assert!(response.contains("day0end_time: typing_extensions.Annotated[\n        int, FieldMetadata(alias=\"day_0_end_time\"), pydantic.Field(alias=\"day_0_end_time\")\n    ]"), "{response}");
     assert!(
         response.contains("metadata: ShapesGetResponseMetadata"),
         "{response}"
@@ -2804,9 +2834,7 @@ paths:
         "{model}"
     );
     assert_eq!(
-        model
-            .matches("typing.List[typing.Optional[typing.Any]]")
-            .count(),
+        model.matches("typing.List[typing.Any]").count(),
         2,
         "null-only and missing item schemas both use the unknown fallback: {model}"
     );
@@ -2884,6 +2912,8 @@ paths:
               type: object
               properties:
                 payload: {}
+                labels: { type: array, items: { type: string } }
+                note: { type: string }
       responses:
         '204': { description: Created }
   /file:
@@ -2905,8 +2935,20 @@ paths:
     );
     let raw = &files["src/acme/uploads/raw_client.py"];
     assert!(
-        raw.contains("payload: typing.Optional[typing.Optional[typing.Any]] = OMIT"),
+        raw.contains("payload: typing.Optional[typing.Any] = OMIT"),
         "{raw}"
+    );
+    assert!(
+        raw.contains(
+            r#""payload": json.dumps(jsonable_encoder(payload)) if payload is not OMIT else OMIT"#
+        ) && raw.contains(
+            r#""labels": json.dumps(jsonable_encoder(labels)) if labels is not OMIT else OMIT"#
+        ),
+        "unknown and collection form values must be JSON encoded: {raw}"
+    );
+    assert!(
+        raw.contains(r#""note": note"#),
+        "scalar form values stay unencoded: {raw}"
     );
     assert!(raw.contains("document: core.File"), "{raw}");
     assert!(
@@ -3018,7 +3060,7 @@ components:
     );
     let imports = &files["src/acme/imports/raw_client.py"];
     assert!(
-        imports.contains("request: typing.Dict[str, typing.Optional[typing.Any]]"),
+        imports.contains("request: typing.Dict[str, typing.Any]"),
         "{imports}"
     );
     assert!(
@@ -3055,6 +3097,17 @@ paths:
             schema: { $ref: "#/components/schemas/CreateWidget" }
       responses:
         '204': { description: Created }
+  /raw:
+    post:
+      operationId: widgets_raw
+      tags: [Widgets]
+      requestBody:
+        required: true
+        content:
+          '*/*':
+            schema: { type: string, format: binary }
+      responses:
+        '204': { description: Accepted }
   /export:
     get:
       operationId: widgets_export
@@ -3090,6 +3143,30 @@ components:
         create.contains("json=request,") && !create.contains("\"content-type\": \"*/*\""),
         "wildcard selection uses the JSON-compatible request path: {create}"
     );
+    let raw_upload = raw
+        .split("def raw(")
+        .nth(1)
+        .expect("inline wildcard request method");
+    assert!(
+        raw_upload.contains("request: bytes") && raw_upload.contains("json=request,"),
+        "inline wildcard binary bodies use Fern's bytes contract: {raw_upload}"
+    );
+    let client = &files["src/acme/widgets/client.py"];
+    let raw_example = client
+        .split("def raw(")
+        .nth(1)
+        .expect("inline wildcard high-level method");
+    assert!(
+        raw_example.contains("request: bytes")
+            && raw_example.contains("request=\"string\"")
+            && !raw_example.contains("request=b\"string\""),
+        "Fern's high-level bytes contract keeps its string example: {raw_example}"
+    );
+    let reference = &files["reference.md"];
+    assert!(
+        reference.contains("**request:** `str`"),
+        "Fern's reference writer retains the OpenAPI string type: {reference}"
+    );
     assert!(
         raw.contains("@contextlib.contextmanager"),
         "referenced binary responses stream: {raw}"
@@ -3101,6 +3178,35 @@ components:
     assert!(
         raw.contains("Exports all widgets.\n\n        Parameters"),
         "{raw}"
+    );
+}
+
+#[test]
+fn referenced_unknown_response_keeps_empty_body_guard() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Proxy, version: 1.0.0 }
+paths:
+  /proxy:
+    get:
+      operationId: proxy_get
+      tags: [Proxy]
+      responses:
+        '200': { $ref: "#/components/responses/Ok" }
+components:
+  responses:
+    Ok:
+      description: Arbitrary JSON
+      content:
+        application/json:
+          schema: {}
+"##,
+    );
+    let raw = &files["src/acme/proxy/raw_client.py"];
+    assert!(raw.contains("HttpResponse[typing.Any]"), "{raw}");
+    assert!(
+        raw.contains("if _response is None or not _response.text.strip():"),
+        "a referenced unknown response keeps Fern's empty-body guard: {raw}"
     );
 }
 
@@ -3681,6 +3787,17 @@ paths:
         client.contains("def _get_base_url(*, base_url: typing.Optional[str] = None, environment:"),
         "{client}"
     );
+    assert!(
+        client.contains("region : typing.Optional[str]\n        Server URL variable for 'region'. Defaults to 'us-east'.")
+            && client.contains("version : typing.Optional[str]\n        Server URL variable for 'version'. Defaults to 'v2'.")
+            && client.contains("if region is not None or version is not None:")
+            && client.contains("_region = region if region is not None else \"us-east\"")
+            && client.contains("_version = version if version is not None else \"v2\"")
+            && client.contains(
+                "base_url = \"https://{region}.example.com/{version}\".format(region=_region, version=_version)"
+            ),
+        "all server variables should be documented and resolved together: {client}"
+    );
 }
 
 #[test]
@@ -3871,7 +3988,7 @@ components:
 }
 
 #[test]
-fn unknown_alias_variants_collapse_to_optional_any() {
+fn unknown_alias_variants_collapse_to_any() {
     let files = render(
         r#"openapi: 3.1.0
 info: { title: Unknown Aliases, version: 1.0.0 }
@@ -3883,12 +4000,15 @@ components:
       nullable: true
 "#,
     );
-    for name in ["null_only", "nullable_unknown"] {
+    for (name, alias) in [
+        ("null_only", "NullOnly = typing.Any"),
+        ("nullable_unknown", "NullableUnknown = typing.Any"),
+    ] {
         let path = format!("src/acme/types/{name}.py");
         let module = &files[&path];
         assert!(
-            module.contains("typing.Optional[typing.Any]"),
-            "{name} must use the optional unknown fallback: {module}"
+            module.contains(alias),
+            "{name} must use the Fern 5.20 unknown fallback: {module}"
         );
     }
 }
@@ -3975,7 +4095,12 @@ paths:
         - name: labels
           in: query
           style: spaceDelimited
+          explode: false
           schema: { type: array, items: { type: string } }
+        - name: term
+          in: query
+          explode: false
+          schema: { type: string }
         - name: X-Limit
           in: header
           required: true
@@ -3994,6 +4119,11 @@ paths:
     );
     assert!(raw.contains("\"filters\": filters"), "{raw}");
     assert!(raw.contains("\"labels\": labels"), "{raw}");
+    assert!(raw.contains("\"term\": term"), "{raw}");
+    assert!(
+        !raw.contains("join(map(str, labels))") && !raw.contains("join(map(str, term))"),
+        "only form-style arrays use comma serialization: {raw}"
+    );
     assert!(client.contains("ids=\"ids\""), "{client}");
     assert!(client.contains("page=1"), "{client}");
     assert!(client.contains("ratio=2.0"), "{client}");
@@ -4107,8 +4237,7 @@ paths:
     );
     let raw = &files["src/acme/jobs/raw_client.py"];
     let client = &files["src/acme/jobs/client.py"];
-    assert!(files["src/acme/types/schema_document.py"]
-        .contains("typing.Dict[str, typing.Optional[typing.Any]]"));
+    assert!(files["src/acme/types/schema_document.py"].contains("typing.Dict[str, typing.Any]"));
     assert!(
         client.contains("configuration={\"user\": \"charles\"}"),
         "{client}"
@@ -4127,6 +4256,104 @@ paths:
         private.contains("\"content-type\": \"application/json\""),
         "{private}"
     );
+}
+
+#[test]
+fn reusable_request_examples_and_date_queries_keep_fern_semantics() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Museum, version: 1.0.0 }
+paths:
+  /events:
+    get:
+      operationId: events_list
+      tags: [Events]
+      parameters:
+        - name: startDate
+          in: query
+          schema: { type: string, format: date, example: '2024-02-03' }
+        - name: page
+          in: query
+          schema: { type: integer, example: 2 }
+        - name: limit
+          in: query
+          schema: { type: integer, example: 15 }
+        - name: updatedAfter
+          in: query
+          schema: { type: string, format: date-time }
+      responses: { '204': { description: Found } }
+    post:
+      operationId: events_create
+      tags: [Events]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateEvent' }
+            examples:
+              primary: { $ref: '#/components/examples/PrimaryEvent' }
+              alternate: { $ref: '#/components/examples/AlternateEvent' }
+      responses: { '204': { description: Created } }
+components:
+  schemas:
+    Date: { type: string, format: date }
+    Dates: { type: array, items: { $ref: '#/components/schemas/Date' } }
+    Price: { type: number, format: float }
+    BaseEvent:
+      type: object
+      required: [dates, price]
+      properties:
+        dates: { $ref: '#/components/schemas/Dates' }
+        price: { $ref: '#/components/schemas/Price' }
+    CreateEvent:
+      allOf:
+        - { $ref: '#/components/schemas/BaseEvent' }
+        - type: object
+          properties:
+            note: { type: string }
+            code: { type: string }
+  examples:
+    PrimaryEvent:
+      value:
+        dates: ['2024-02-03', '2024-02-03', '2024-02-04']
+        price: 0
+        note: Primary
+    AlternateEvent:
+      value:
+        dates: ['2024-03-05']
+        price: 15
+        code: ALT-1
+        note: Alternate
+"##,
+    );
+
+    let client = &files["src/acme/events/client.py"];
+    let raw = &files["src/acme/events/raw_client.py"];
+    let reference = &files["reference.md"];
+    assert_eq!(client.matches("\"2024-02-03\"").count(), 4, "{client}");
+    assert!(
+        client.contains("price=0.0") && client.contains("note=\"Primary\""),
+        "{client}"
+    );
+    assert!(
+        client.contains("start_date=datetime.date.fromisoformat(")
+            && client.contains("page=2")
+            && client.contains("limit=15"),
+        "{client}"
+    );
+    assert!(
+        raw.contains("\"startDate\": str(start_date) if start_date is not None else None,")
+            && raw.contains(
+                "\"updatedAfter\": serialize_datetime(updated_after) if updated_after is not None else None,"
+            )
+            && raw.matches("\"content-type\": \"application/json\"").count() == 2,
+        "{raw}"
+    );
+    assert!(
+        reference.contains("price=0") && reference.contains("note=\"Primary\""),
+        "{reference}"
+    );
+    assert!(!reference.contains("code=\"ALT-1\""), "{reference}");
 }
 
 #[test]
@@ -4187,7 +4414,7 @@ components:
 }
 
 #[test]
-fn no_argument_binary_download_omits_examples_and_unused_error_parser() {
+fn no_argument_binary_download_omits_method_examples_but_stays_in_reference() {
     let files = render(
         r##"openapi: 3.0.3
 info: { title: Binary Probe, version: 1.0.0 }
@@ -4212,7 +4439,11 @@ paths:
     assert!(!client.contains("Examples\n"), "{client}");
     let reference = &files["reference.md"];
     assert!(reference.contains("## Archives"), "{reference}");
-    assert!(!reference.contains("download</a>"), "{reference}");
+    assert!(reference.contains("download</a>()"), "{reference}");
+    assert!(
+        reference.contains("client.archives.download()"),
+        "{reference}"
+    );
 }
 
 #[test]
@@ -4368,7 +4599,7 @@ paths:
     );
     let wild_method = raw.split("def wild(").nth(1).expect("wild raw method");
     assert!(
-        wild_method.contains("request: typing.Dict[str, typing.Optional[typing.Any]]"),
+        wild_method.contains("request: typing.Dict[str, typing.Any]"),
         "{wild_method}"
     );
     assert!(wild_method.contains("json=request"), "{wild_method}");
@@ -4531,7 +4762,7 @@ paths:
 }
 
 #[test]
-fn readme_marks_bodyless_dictionary_get_as_complex() {
+fn readme_keeps_bodyless_dictionary_get_simple() {
     let files = render(
         r#"openapi: 3.0.3
 info: { title: Dictionary Readme, version: 1.0.0 }
@@ -4548,13 +4779,7 @@ paths:
 "#,
     );
     let readme = &files["README.md"];
-    assert!(
-        readme
-            .matches("client.settings(..., request_options={")
-            .count()
-            >= 2,
-        "{readme}"
-    );
+    assert!(readme.matches("client.settings()").count() >= 2, "{readme}");
 }
 
 #[test]
@@ -4700,7 +4925,7 @@ paths:
     let closed = &raw[closed_start..open_start];
     assert!(!closed.contains("request:"), "{closed}");
     assert!(
-        raw[open_start..].contains("request: typing.Dict[str, typing.Optional[typing.Any]]"),
+        raw[open_start..].contains("request: typing.Dict[str, typing.Any]"),
         "{raw}"
     );
 }
@@ -4775,7 +5000,7 @@ paths:
 }
 
 #[test]
-fn explicit_empty_operation_id_is_distinct_and_keeps_readme_calls_simple() {
+fn explicit_empty_operation_id_is_distinct_and_keeps_readme_body_fields() {
     let files = render(
         r#"openapi: 3.0.3
 info: { title: Empty Operation Id, version: 1.0.0 }
@@ -4803,8 +5028,10 @@ paths:
     assert!(client.contains("def _("), "{client}");
     assert!(client.contains("def get_widgets("), "{client}");
     let readme = &files["README.md"];
-    assert!(readme.contains("client._()"), "{readme}");
-    assert!(!readme.contains("client._(...)"), "{readme}");
+    assert!(
+        readme.contains("client._(\n    left=\"left\",\n    right=\"right\",\n)"),
+        "{readme}"
+    );
 }
 
 #[test]

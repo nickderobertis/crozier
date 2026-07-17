@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObpcaData1CreditInterestTierBandSetItemTierBandMethod(str, enum.Enum):
+class ObpcaData1CreditInterestTierBandSetItemTierBandMethod(enum.StrEnum):
     """
     The methodology of how credit interest is charged. It can be:-
 

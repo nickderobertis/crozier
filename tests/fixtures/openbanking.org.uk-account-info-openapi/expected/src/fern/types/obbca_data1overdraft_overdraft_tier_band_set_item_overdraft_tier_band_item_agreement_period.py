@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemAgreementPeriod(str, enum.Enum):
+class ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemAgreementPeriod(enum.StrEnum):
     """
     Specifies the period of a fixed length overdraft agreement
     """

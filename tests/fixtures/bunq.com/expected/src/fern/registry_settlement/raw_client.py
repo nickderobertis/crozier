@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -14,6 +15,7 @@ from ..types.registry_settlement import RegistrySettlement
 from ..types.registry_settlement_create import RegistrySettlementCreate
 from ..types.registry_settlement_listing import RegistrySettlementListing
 from ..types.registry_settlement_read import RegistrySettlementRead
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -46,7 +48,7 @@ class RawRegistrySettlementClient:
             Used to settle a Slice group.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/registry/{jsonable_encoder(registry_id)}/registry-settlement",
+            f"user/{encode_path_param(user_id)}/registry/{encode_path_param(registry_id)}/registry-settlement",
             method="GET",
             request_options=request_options,
         )
@@ -64,9 +66,9 @@ class RawRegistrySettlementClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -74,6 +76,10 @@ class RawRegistrySettlementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_registry_settlement_for_user_registry(
@@ -106,7 +112,7 @@ class RawRegistrySettlementClient:
             Used to settle a Slice group.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/registry/{jsonable_encoder(registry_id)}/registry-settlement",
+            f"user/{encode_path_param(user_id)}/registry/{encode_path_param(registry_id)}/registry-settlement",
             method="POST",
             json=request,
             headers={
@@ -129,9 +135,9 @@ class RawRegistrySettlementClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -139,6 +145,10 @@ class RawRegistrySettlementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_registry_settlement_for_user_registry(
@@ -167,7 +177,7 @@ class RawRegistrySettlementClient:
             Used to settle a Slice group.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/registry/{jsonable_encoder(registry_id)}/registry-settlement/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/registry/{encode_path_param(registry_id)}/registry-settlement/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -185,9 +195,9 @@ class RawRegistrySettlementClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -195,6 +205,10 @@ class RawRegistrySettlementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -225,7 +239,7 @@ class AsyncRawRegistrySettlementClient:
             Used to settle a Slice group.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/registry/{jsonable_encoder(registry_id)}/registry-settlement",
+            f"user/{encode_path_param(user_id)}/registry/{encode_path_param(registry_id)}/registry-settlement",
             method="GET",
             request_options=request_options,
         )
@@ -243,9 +257,9 @@ class AsyncRawRegistrySettlementClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -253,6 +267,10 @@ class AsyncRawRegistrySettlementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_registry_settlement_for_user_registry(
@@ -285,7 +303,7 @@ class AsyncRawRegistrySettlementClient:
             Used to settle a Slice group.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/registry/{jsonable_encoder(registry_id)}/registry-settlement",
+            f"user/{encode_path_param(user_id)}/registry/{encode_path_param(registry_id)}/registry-settlement",
             method="POST",
             json=request,
             headers={
@@ -308,9 +326,9 @@ class AsyncRawRegistrySettlementClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -318,6 +336,10 @@ class AsyncRawRegistrySettlementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_registry_settlement_for_user_registry(
@@ -346,7 +368,7 @@ class AsyncRawRegistrySettlementClient:
             Used to settle a Slice group.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/registry/{jsonable_encoder(registry_id)}/registry-settlement/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/registry/{encode_path_param(registry_id)}/registry-settlement/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -364,9 +386,9 @@ class AsyncRawRegistrySettlementClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -374,4 +396,8 @@ class AsyncRawRegistrySettlementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

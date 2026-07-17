@@ -1,6 +1,6 @@
 # Reference
 ## Leads
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py">all</a>(...) -> GetLeadsResponse</code></summary>
 <dl>
 <dd>
 
@@ -28,13 +28,15 @@ List leads
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    environment=FernApiEnvironment.PRODUCTION,
 )
+
 client.leads.all_(
     fields="id,updated_at",
 )
@@ -113,7 +115,7 @@ client.leads.all_(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py">add</a>(...) -> CreateLeadResponse</code></summary>
 <dl>
 <dd>
 
@@ -141,13 +143,15 @@ Create lead
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    environment=FernApiEnvironment.PRODUCTION,
 )
+
 client.leads.add(
     name="Elon Musk",
 )
@@ -166,7 +170,7 @@ client.leads.add(
 <dl>
 <dd>
 
-**name:** `str` 
+**request:** `Lead` 
     
 </dd>
 </dl>
@@ -175,206 +179,6 @@ client.leads.add(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**addresses:** `typing.Optional[typing.Sequence[Address]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**company_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**company_name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**contact_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**currency:** `typing.Optional[Currency]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**custom_fields:** `typing.Optional[typing.Sequence[CustomField]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**emails:** `typing.Optional[typing.Sequence[Email]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**fax:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**first_name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**language:** `typing.Optional[str]` — language code according to ISO 639-1. For the United States - EN
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**lead_source:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**monetary_amount:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**owner_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**phone_numbers:** `typing.Optional[typing.Sequence[PhoneNumber]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**prefix:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**social_links:** `typing.Optional[typing.Sequence[SocialLink]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tags:** `typing.Optional[Tags]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**title:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**websites:** `typing.Optional[typing.Sequence[Website]]` 
     
 </dd>
 </dl>
@@ -394,7 +198,7 @@ client.leads.add(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py">one</a>(...) -> GetLeadResponse</code></summary>
 <dl>
 <dd>
 
@@ -422,13 +226,15 @@ Get lead
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    environment=FernApiEnvironment.PRODUCTION,
 )
+
 client.leads.one(
     id="id",
     fields="id,updated_at",
@@ -484,7 +290,7 @@ client.leads.one(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py">delete</a>(...) -> DeleteLeadResponse</code></summary>
 <dl>
 <dd>
 
@@ -512,13 +318,15 @@ Delete lead
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    environment=FernApiEnvironment.PRODUCTION,
 )
+
 client.leads.delete(
     id="id",
 )
@@ -565,7 +373,7 @@ client.leads.delete(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py">update</a>(...) -> UpdateLeadResponse</code></summary>
 <dl>
 <dd>
 
@@ -593,13 +401,15 @@ Update lead
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    environment=FernApiEnvironment.PRODUCTION,
 )
+
 client.leads.update(
     id_="id",
     name="Elon Musk",
@@ -619,7 +429,7 @@ client.leads.update(
 <dl>
 <dd>
 
-**id_:** `str` — ID of the record you are acting upon.
+**id:** `str` — ID of the record you are acting upon.
     
 </dd>
 </dl>
@@ -627,7 +437,7 @@ client.leads.update(
 <dl>
 <dd>
 
-**name:** `str` 
+**request:** `Lead` 
     
 </dd>
 </dl>
@@ -636,206 +446,6 @@ client.leads.update(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**addresses:** `typing.Optional[typing.Sequence[Address]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**company_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**company_name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**contact_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**currency:** `typing.Optional[Currency]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**custom_fields:** `typing.Optional[typing.Sequence[CustomField]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**emails:** `typing.Optional[typing.Sequence[Email]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**fax:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**first_name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**language:** `typing.Optional[str]` — language code according to ISO 639-1. For the United States - EN
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**lead_source:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**monetary_amount:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**owner_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**phone_numbers:** `typing.Optional[typing.Sequence[PhoneNumber]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**prefix:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**social_links:** `typing.Optional[typing.Sequence[SocialLink]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tags:** `typing.Optional[Tags]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**title:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**websites:** `typing.Optional[typing.Sequence[Website]]` 
     
 </dd>
 </dl>

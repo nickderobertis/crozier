@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SharedLinkScope(str, enum.Enum):
+class SharedLinkScope(enum.StrEnum):
     """
     The scope of the shared link.
     """

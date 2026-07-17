@@ -6,11 +6,13 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.config_mqtt import ConfigMqtt
+from pydantic import ValidationError
 
 
 class RawMqttClient:
@@ -37,7 +39,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/get/protstate",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/get/protstate",
             method="GET",
             request_options=request_options,
         )
@@ -55,9 +57,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -65,6 +67,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_get_state(
@@ -87,7 +93,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/get/state",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/get/state",
             method="GET",
             request_options=request_options,
         )
@@ -105,9 +111,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -115,6 +121,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_message_card(
@@ -137,7 +147,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/message/card",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/message/card",
             method="GET",
             request_options=request_options,
         )
@@ -155,9 +165,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -165,6 +175,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_message_get(
@@ -193,7 +207,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/message/get/{jsonable_encoder(msg_num)}/{jsonable_encoder(attr)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/message/get/{encode_path_param(msg_num)}/{encode_path_param(attr)}",
             method="GET",
             request_options=request_options,
         )
@@ -211,9 +225,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -221,6 +235,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_message_set(
@@ -258,7 +276,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/message/set/{jsonable_encoder(msg_num)}/{jsonable_encoder(attr)}/{jsonable_encoder(value)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/message/set/{encode_path_param(msg_num)}/{encode_path_param(attr)}/{encode_path_param(value)}",
             method="PUT",
             request_options=request_options,
         )
@@ -276,9 +294,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -286,6 +304,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_resubscribe(
@@ -311,7 +333,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/resubscribe/{jsonable_encoder(sub_num)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/resubscribe/{encode_path_param(sub_num)}",
             method="PUT",
             request_options=request_options,
         )
@@ -329,9 +351,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -339,6 +361,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_runtime_abort(
@@ -361,7 +387,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/runtime/abort",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/runtime/abort",
             method="PUT",
             request_options=request_options,
         )
@@ -379,9 +405,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -389,6 +415,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_runtime_connect(
@@ -411,7 +441,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/runtime/connect",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/runtime/connect",
             method="PUT",
             request_options=request_options,
         )
@@ -429,9 +459,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -439,6 +469,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_runtime_disconnect(
@@ -461,7 +495,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/runtime/disconnect",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/runtime/disconnect",
             method="PUT",
             request_options=request_options,
         )
@@ -479,9 +513,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -489,6 +523,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_set_broker(
@@ -514,7 +552,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/broker/{jsonable_encoder(broker_addr)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/broker/{encode_path_param(broker_addr)}",
             method="PUT",
             request_options=request_options,
         )
@@ -532,9 +570,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -542,6 +580,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_set_cleansession(
@@ -567,7 +609,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/cleansession/{jsonable_encoder(clean_or_not)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/cleansession/{encode_path_param(clean_or_not)}",
             method="PUT",
             request_options=request_options,
         )
@@ -585,9 +627,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -595,6 +637,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_set_clientid(
@@ -620,7 +666,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/clientid/{jsonable_encoder(client_id)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/clientid/{encode_path_param(client_id)}",
             method="PUT",
             request_options=request_options,
         )
@@ -638,9 +684,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -648,6 +694,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_set_keepalive(
@@ -673,7 +723,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/keepalive/{jsonable_encoder(alive_time)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/keepalive/{encode_path_param(alive_time)}",
             method="PUT",
             request_options=request_options,
         )
@@ -691,9 +741,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -701,6 +751,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_set_on_disconnect(
@@ -726,7 +780,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/on_disconnect/{jsonable_encoder(action)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/on_disconnect/{encode_path_param(action)}",
             method="PUT",
             request_options=request_options,
         )
@@ -744,9 +798,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -754,6 +808,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_set_password(
@@ -779,7 +837,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/password/{jsonable_encoder(password)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/password/{encode_path_param(password)}",
             method="PUT",
             request_options=request_options,
         )
@@ -797,9 +855,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -807,6 +865,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_set_port(
@@ -832,7 +894,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/port/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/port/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -850,9 +912,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -860,6 +922,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_set_username(
@@ -885,7 +951,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/username/{jsonable_encoder(username)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/username/{encode_path_param(username)}",
             method="PUT",
             request_options=request_options,
         )
@@ -903,9 +969,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -913,6 +979,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_set_willmsg(
@@ -938,7 +1008,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/willmsg/{jsonable_encoder(msg)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/willmsg/{encode_path_param(msg)}",
             method="PUT",
             request_options=request_options,
         )
@@ -956,9 +1026,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -966,6 +1036,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_set_willqos(
@@ -991,7 +1065,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/willqos/{jsonable_encoder(qos)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/willqos/{encode_path_param(qos)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1009,9 +1083,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1019,6 +1093,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_set_willretain(
@@ -1044,7 +1122,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/willretain/{jsonable_encoder(retain)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/willretain/{encode_path_param(retain)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1062,9 +1140,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1072,6 +1150,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_set_willtopic(
@@ -1097,7 +1179,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/willtopic/{jsonable_encoder(topic)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/willtopic/{encode_path_param(topic)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1115,9 +1197,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1125,6 +1207,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_subscribe_card(
@@ -1147,7 +1233,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/subscribe/card",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/subscribe/card",
             method="GET",
             request_options=request_options,
         )
@@ -1165,9 +1251,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1175,6 +1261,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_subscribe_get(
@@ -1203,7 +1293,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/subscribe/get/{jsonable_encoder(sub_num)}/{jsonable_encoder(attr)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/subscribe/get/{encode_path_param(sub_num)}/{encode_path_param(attr)}",
             method="GET",
             request_options=request_options,
         )
@@ -1221,9 +1311,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1231,6 +1321,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_subscribe_set(
@@ -1268,7 +1362,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/subscribe/set/{jsonable_encoder(sub_num)}/{jsonable_encoder(attr)}/{jsonable_encoder(value)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/subscribe/set/{encode_path_param(sub_num)}/{encode_path_param(attr)}/{encode_path_param(value)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1286,9 +1380,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1296,6 +1390,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_client_unsubscribe(
@@ -1321,7 +1419,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/unsubscribe/{jsonable_encoder(sub_num)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/unsubscribe/{encode_path_param(sub_num)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1339,9 +1437,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1349,11 +1447,15 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> HttpResponse[typing.Dict[str, typing.Any]]:
         """
         Agent's MQTT configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -1367,20 +1469,20 @@ class RawMqttClient:
 
         Returns
         -------
-        HttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]
+        HttpResponse[typing.Dict[str, typing.Any]]
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/get/args",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/get/args",
             method="GET",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.Dict[str, typing.Optional[typing.Any]],
+                    typing.Dict[str, typing.Any],
                     parse_obj_as(
-                        type_=typing.Dict[str, typing.Optional[typing.Any]],
+                        type_=typing.Dict[str, typing.Any],
                         object_=_response.json(),
                     ),
                 )
@@ -1389,9 +1491,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1399,6 +1501,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_get_config(
@@ -1421,7 +1527,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/get/config",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/get/config",
             method="GET",
             request_options=request_options,
         )
@@ -1439,9 +1545,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1449,6 +1555,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_get_statistics(
@@ -1471,7 +1581,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/get/statistics",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/get/statistics",
             method="GET",
             request_options=request_options,
         )
@@ -1489,9 +1599,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1499,6 +1609,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_get_trace(
@@ -1521,7 +1635,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/get/trace",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/get/trace",
             method="GET",
             request_options=request_options,
         )
@@ -1539,9 +1653,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1549,6 +1663,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_set_config(
@@ -1577,7 +1695,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/set/config/{jsonable_encoder(argument)}/{jsonable_encoder(value)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/set/config/{encode_path_param(argument)}/{encode_path_param(value)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1595,9 +1713,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1605,6 +1723,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_set_trace(
@@ -1630,7 +1752,7 @@ class RawMqttClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/set/trace/{jsonable_encoder(enable_or_not)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/set/trace/{encode_path_param(enable_or_not)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1648,9 +1770,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1658,6 +1780,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_mqtt_get_stats_hdr(
@@ -1695,9 +1821,9 @@ class RawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1705,6 +1831,10 @@ class RawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1732,7 +1862,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/get/protstate",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/get/protstate",
             method="GET",
             request_options=request_options,
         )
@@ -1750,9 +1880,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1760,6 +1890,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_get_state(
@@ -1782,7 +1916,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/get/state",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/get/state",
             method="GET",
             request_options=request_options,
         )
@@ -1800,9 +1934,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1810,6 +1944,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_message_card(
@@ -1832,7 +1970,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/message/card",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/message/card",
             method="GET",
             request_options=request_options,
         )
@@ -1850,9 +1988,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1860,6 +1998,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_message_get(
@@ -1888,7 +2030,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/message/get/{jsonable_encoder(msg_num)}/{jsonable_encoder(attr)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/message/get/{encode_path_param(msg_num)}/{encode_path_param(attr)}",
             method="GET",
             request_options=request_options,
         )
@@ -1906,9 +2048,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1916,6 +2058,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_message_set(
@@ -1953,7 +2099,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/message/set/{jsonable_encoder(msg_num)}/{jsonable_encoder(attr)}/{jsonable_encoder(value)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/message/set/{encode_path_param(msg_num)}/{encode_path_param(attr)}/{encode_path_param(value)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1971,9 +2117,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1981,6 +2127,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_resubscribe(
@@ -2006,7 +2156,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/resubscribe/{jsonable_encoder(sub_num)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/resubscribe/{encode_path_param(sub_num)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2024,9 +2174,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2034,6 +2184,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_runtime_abort(
@@ -2056,7 +2210,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/runtime/abort",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/runtime/abort",
             method="PUT",
             request_options=request_options,
         )
@@ -2074,9 +2228,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2084,6 +2238,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_runtime_connect(
@@ -2106,7 +2264,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/runtime/connect",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/runtime/connect",
             method="PUT",
             request_options=request_options,
         )
@@ -2124,9 +2282,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2134,6 +2292,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_runtime_disconnect(
@@ -2156,7 +2318,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/runtime/disconnect",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/runtime/disconnect",
             method="PUT",
             request_options=request_options,
         )
@@ -2174,9 +2336,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2184,6 +2346,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_set_broker(
@@ -2209,7 +2375,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/broker/{jsonable_encoder(broker_addr)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/broker/{encode_path_param(broker_addr)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2227,9 +2393,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2237,6 +2403,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_set_cleansession(
@@ -2262,7 +2432,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/cleansession/{jsonable_encoder(clean_or_not)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/cleansession/{encode_path_param(clean_or_not)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2280,9 +2450,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2290,6 +2460,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_set_clientid(
@@ -2315,7 +2489,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/clientid/{jsonable_encoder(client_id)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/clientid/{encode_path_param(client_id)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2333,9 +2507,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2343,6 +2517,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_set_keepalive(
@@ -2368,7 +2546,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/keepalive/{jsonable_encoder(alive_time)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/keepalive/{encode_path_param(alive_time)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2386,9 +2564,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2396,6 +2574,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_set_on_disconnect(
@@ -2421,7 +2603,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/on_disconnect/{jsonable_encoder(action)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/on_disconnect/{encode_path_param(action)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2439,9 +2621,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2449,6 +2631,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_set_password(
@@ -2474,7 +2660,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/password/{jsonable_encoder(password)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/password/{encode_path_param(password)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2492,9 +2678,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2502,6 +2688,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_set_port(
@@ -2527,7 +2717,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/port/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/port/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2545,9 +2735,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2555,6 +2745,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_set_username(
@@ -2580,7 +2774,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/username/{jsonable_encoder(username)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/username/{encode_path_param(username)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2598,9 +2792,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2608,6 +2802,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_set_willmsg(
@@ -2633,7 +2831,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/willmsg/{jsonable_encoder(msg)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/willmsg/{encode_path_param(msg)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2651,9 +2849,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2661,6 +2859,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_set_willqos(
@@ -2686,7 +2888,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/willqos/{jsonable_encoder(qos)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/willqos/{encode_path_param(qos)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2704,9 +2906,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2714,6 +2916,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_set_willretain(
@@ -2739,7 +2945,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/willretain/{jsonable_encoder(retain)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/willretain/{encode_path_param(retain)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2757,9 +2963,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2767,6 +2973,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_set_willtopic(
@@ -2792,7 +3002,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/set/willtopic/{jsonable_encoder(topic)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/set/willtopic/{encode_path_param(topic)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2810,9 +3020,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2820,6 +3030,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_subscribe_card(
@@ -2842,7 +3056,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/subscribe/card",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/subscribe/card",
             method="GET",
             request_options=request_options,
         )
@@ -2860,9 +3074,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2870,6 +3084,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_subscribe_get(
@@ -2898,7 +3116,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/subscribe/get/{jsonable_encoder(sub_num)}/{jsonable_encoder(attr)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/subscribe/get/{encode_path_param(sub_num)}/{encode_path_param(attr)}",
             method="GET",
             request_options=request_options,
         )
@@ -2916,9 +3134,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2926,6 +3144,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_subscribe_set(
@@ -2963,7 +3185,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/subscribe/set/{jsonable_encoder(sub_num)}/{jsonable_encoder(attr)}/{jsonable_encoder(value)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/subscribe/set/{encode_path_param(sub_num)}/{encode_path_param(attr)}/{encode_path_param(value)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2981,9 +3203,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2991,6 +3213,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_client_unsubscribe(
@@ -3016,7 +3242,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/client/unsubscribe/{jsonable_encoder(sub_num)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/client/unsubscribe/{encode_path_param(sub_num)}",
             method="PUT",
             request_options=request_options,
         )
@@ -3034,9 +3260,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3044,11 +3270,15 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> AsyncHttpResponse[typing.Dict[str, typing.Any]]:
         """
         Agent's MQTT configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -3062,20 +3292,20 @@ class AsyncRawMqttClient:
 
         Returns
         -------
-        AsyncHttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]
+        AsyncHttpResponse[typing.Dict[str, typing.Any]]
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/get/args",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/get/args",
             method="GET",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.Dict[str, typing.Optional[typing.Any]],
+                    typing.Dict[str, typing.Any],
                     parse_obj_as(
-                        type_=typing.Dict[str, typing.Optional[typing.Any]],
+                        type_=typing.Dict[str, typing.Any],
                         object_=_response.json(),
                     ),
                 )
@@ -3084,9 +3314,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3094,6 +3324,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_get_config(
@@ -3116,7 +3350,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/get/config",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/get/config",
             method="GET",
             request_options=request_options,
         )
@@ -3134,9 +3368,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3144,6 +3378,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_get_statistics(
@@ -3166,7 +3404,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/get/statistics",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/get/statistics",
             method="GET",
             request_options=request_options,
         )
@@ -3184,9 +3422,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3194,6 +3432,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_get_trace(
@@ -3216,7 +3458,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/get/trace",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/get/trace",
             method="GET",
             request_options=request_options,
         )
@@ -3234,9 +3476,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3244,6 +3486,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_set_config(
@@ -3272,7 +3518,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/set/config/{jsonable_encoder(argument)}/{jsonable_encoder(value)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/set/config/{encode_path_param(argument)}/{encode_path_param(value)}",
             method="PUT",
             request_options=request_options,
         )
@@ -3290,9 +3536,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3300,6 +3546,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_set_trace(
@@ -3325,7 +3575,7 @@ class AsyncRawMqttClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/mqtt/set/trace/{jsonable_encoder(enable_or_not)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/mqtt/set/trace/{encode_path_param(enable_or_not)}",
             method="PUT",
             request_options=request_options,
         )
@@ -3343,9 +3593,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3353,6 +3603,10 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_mqtt_get_stats_hdr(
@@ -3390,9 +3644,9 @@ class AsyncRawMqttClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3400,4 +3654,8 @@ class AsyncRawMqttClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

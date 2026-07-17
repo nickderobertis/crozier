@@ -12,7 +12,9 @@ from .destiny_quests_destiny_objective_progress import DestinyQuestsDestinyObjec
 class DestinyComponentsMetricsDestinyMetricComponent(UniversalBaseModel):
     invisible: typing.Optional[bool] = None
     objective_progress: typing_extensions.Annotated[
-        typing.Optional[DestinyQuestsDestinyObjectiveProgress], FieldMetadata(alias="objectiveProgress")
+        typing.Optional[DestinyQuestsDestinyObjectiveProgress],
+        FieldMetadata(alias="objectiveProgress"),
+        pydantic.Field(alias="objectiveProgress"),
     ] = None
 
     if IS_PYDANTIC_V2:

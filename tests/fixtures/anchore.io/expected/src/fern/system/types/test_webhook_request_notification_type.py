@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TestWebhookRequestNotificationType(str, enum.Enum):
+class TestWebhookRequestNotificationType(enum.StrEnum):
     TAG_UPDATE = "tag_update"
     ANALYSIS_UPDATE = "analysis_update"
     VULN_UPDATE = "vuln_update"

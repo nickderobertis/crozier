@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GroupSyncResultStatus(str, enum.Enum):
+class GroupSyncResultStatus(enum.StrEnum):
     SUCCESS = "success"
     FAILURE = "failure"
 

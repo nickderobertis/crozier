@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetContinueUpdateRollbackRequestAction(str, enum.Enum):
+class GetContinueUpdateRollbackRequestAction(enum.StrEnum):
     CONTINUE_UPDATE_ROLLBACK = "ContinueUpdateRollback"
 
     def visit(self, continue_update_rollback: typing.Callable[[], T_Result]) -> T_Result:

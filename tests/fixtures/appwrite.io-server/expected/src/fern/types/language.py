@@ -23,7 +23,9 @@ class Language(UniversalBaseModel):
     Language name.
     """
 
-    native_name: typing_extensions.Annotated[str, FieldMetadata(alias="nativeName")] = pydantic.Field()
+    native_name: typing_extensions.Annotated[
+        str, FieldMetadata(alias="nativeName"), pydantic.Field(alias="nativeName", description="Language native name.")
+    ]
     """
     Language native name.
     """

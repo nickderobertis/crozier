@@ -13,22 +13,38 @@ class CorsSettings(UniversalBaseModel):
     The configuration for cors support
     """
 
-    allow_credentials: typing_extensions.Annotated[bool, FieldMetadata(alias="allowCredentials")] = pydantic.Field()
+    allow_credentials: typing_extensions.Annotated[
+        bool,
+        FieldMetadata(alias="allowCredentials"),
+        pydantic.Field(alias="allowCredentials", description="Allow to pass credentials"),
+    ]
     """
     Allow to pass credentials
     """
 
-    allow_headers: typing_extensions.Annotated[typing.List[str], FieldMetadata(alias="allowHeaders")] = pydantic.Field()
+    allow_headers: typing_extensions.Annotated[
+        typing.List[str],
+        FieldMetadata(alias="allowHeaders"),
+        pydantic.Field(alias="allowHeaders", description="The cors allowed headers"),
+    ]
     """
     The cors allowed headers
     """
 
-    allow_methods: typing_extensions.Annotated[typing.List[str], FieldMetadata(alias="allowMethods")] = pydantic.Field()
+    allow_methods: typing_extensions.Annotated[
+        typing.List[str],
+        FieldMetadata(alias="allowMethods"),
+        pydantic.Field(alias="allowMethods", description="The cors allowed methods"),
+    ]
     """
     The cors allowed methods
     """
 
-    allow_origin: typing_extensions.Annotated[str, FieldMetadata(alias="allowOrigin")] = pydantic.Field()
+    allow_origin: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="allowOrigin"),
+        pydantic.Field(alias="allowOrigin", description="The cors allowed origin"),
+    ]
     """
     The cors allowed origin
     """
@@ -38,21 +54,27 @@ class CorsSettings(UniversalBaseModel):
     Whether or not cors is enabled
     """
 
-    excluded_patterns: typing_extensions.Annotated[typing.List[str], FieldMetadata(alias="excludedPatterns")] = (
-        pydantic.Field()
-    )
+    excluded_patterns: typing_extensions.Annotated[
+        typing.List[str],
+        FieldMetadata(alias="excludedPatterns"),
+        pydantic.Field(alias="excludedPatterns", description="The cors excluded patterns"),
+    ]
     """
     The cors excluded patterns
     """
 
-    expose_headers: typing_extensions.Annotated[typing.List[str], FieldMetadata(alias="exposeHeaders")] = (
-        pydantic.Field()
-    )
+    expose_headers: typing_extensions.Annotated[
+        typing.List[str],
+        FieldMetadata(alias="exposeHeaders"),
+        pydantic.Field(alias="exposeHeaders", description="The cors exposed header"),
+    ]
     """
     The cors exposed header
     """
 
-    max_age: typing_extensions.Annotated[int, FieldMetadata(alias="maxAge")] = pydantic.Field()
+    max_age: typing_extensions.Annotated[
+        int, FieldMetadata(alias="maxAge"), pydantic.Field(alias="maxAge", description="Cors max age")
+    ]
     """
     Cors max age
     """

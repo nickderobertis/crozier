@@ -6,12 +6,14 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..errors.not_found_error import NotFoundError
 from ..types.api_response import ApiResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -55,6 +57,10 @@ class RawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_queue(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[ApiResponse]:
@@ -90,9 +96,9 @@ class RawQueuesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -100,6 +106,10 @@ class RawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_queue(
@@ -127,7 +137,7 @@ class RawQueuesClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"queues/{jsonable_encoder(queue_name)}",
+            f"queues/{encode_path_param(queue_name)}",
             method="DELETE",
             params={
                 "confirm": confirm,
@@ -148,9 +158,9 @@ class RawQueuesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -158,6 +168,10 @@ class RawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_queue_config(
@@ -180,7 +194,7 @@ class RawQueuesClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"queues/{jsonable_encoder(queue_name)}/config",
+            f"queues/{encode_path_param(queue_name)}/config",
             method="GET",
             request_options=request_options,
         )
@@ -198,9 +212,9 @@ class RawQueuesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -208,6 +222,10 @@ class RawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_queue_config(
@@ -229,7 +247,7 @@ class RawQueuesClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"queues/{jsonable_encoder(queue_name)}/config",
+            f"queues/{encode_path_param(queue_name)}/config",
             method="PUT",
             request_options=request_options,
         )
@@ -247,9 +265,9 @@ class RawQueuesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -257,6 +275,10 @@ class RawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_message_data(
@@ -282,7 +304,7 @@ class RawQueuesClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"queues/{jsonable_encoder(queue_name)}/data/{jsonable_encoder(queue_message_id)}",
+            f"queues/{encode_path_param(queue_name)}/data/{encode_path_param(queue_message_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -300,9 +322,9 @@ class RawQueuesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -311,9 +333,9 @@ class RawQueuesClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -321,6 +343,10 @@ class RawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_next_messages(
@@ -350,7 +376,7 @@ class RawQueuesClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"queues/{jsonable_encoder(queue_name)}/messages",
+            f"queues/{encode_path_param(queue_name)}/messages",
             method="GET",
             params={
                 "count": count,
@@ -371,9 +397,9 @@ class RawQueuesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -381,6 +407,10 @@ class RawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def send_message_binary(
@@ -423,7 +453,7 @@ class RawQueuesClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"queues/{jsonable_encoder(queue_name)}/messages",
+            f"queues/{encode_path_param(queue_name)}/messages",
             method="POST",
             params={
                 "regions": regions,
@@ -451,6 +481,10 @@ class RawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def ack_message(
@@ -476,7 +510,7 @@ class RawQueuesClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"queues/{jsonable_encoder(queue_name)}/messages/{jsonable_encoder(queue_message_id)}",
+            f"queues/{encode_path_param(queue_name)}/messages/{encode_path_param(queue_message_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -494,9 +528,9 @@ class RawQueuesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -504,6 +538,10 @@ class RawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -545,6 +583,10 @@ class AsyncRawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_queue(
@@ -582,9 +624,9 @@ class AsyncRawQueuesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -592,6 +634,10 @@ class AsyncRawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_queue(
@@ -619,7 +665,7 @@ class AsyncRawQueuesClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"queues/{jsonable_encoder(queue_name)}",
+            f"queues/{encode_path_param(queue_name)}",
             method="DELETE",
             params={
                 "confirm": confirm,
@@ -640,9 +686,9 @@ class AsyncRawQueuesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -650,6 +696,10 @@ class AsyncRawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_queue_config(
@@ -672,7 +722,7 @@ class AsyncRawQueuesClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"queues/{jsonable_encoder(queue_name)}/config",
+            f"queues/{encode_path_param(queue_name)}/config",
             method="GET",
             request_options=request_options,
         )
@@ -690,9 +740,9 @@ class AsyncRawQueuesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -700,6 +750,10 @@ class AsyncRawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_queue_config(
@@ -721,7 +775,7 @@ class AsyncRawQueuesClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"queues/{jsonable_encoder(queue_name)}/config",
+            f"queues/{encode_path_param(queue_name)}/config",
             method="PUT",
             request_options=request_options,
         )
@@ -739,9 +793,9 @@ class AsyncRawQueuesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -749,6 +803,10 @@ class AsyncRawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_message_data(
@@ -774,7 +832,7 @@ class AsyncRawQueuesClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"queues/{jsonable_encoder(queue_name)}/data/{jsonable_encoder(queue_message_id)}",
+            f"queues/{encode_path_param(queue_name)}/data/{encode_path_param(queue_message_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -792,9 +850,9 @@ class AsyncRawQueuesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -803,9 +861,9 @@ class AsyncRawQueuesClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -813,6 +871,10 @@ class AsyncRawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_next_messages(
@@ -842,7 +904,7 @@ class AsyncRawQueuesClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"queues/{jsonable_encoder(queue_name)}/messages",
+            f"queues/{encode_path_param(queue_name)}/messages",
             method="GET",
             params={
                 "count": count,
@@ -863,9 +925,9 @@ class AsyncRawQueuesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -873,6 +935,10 @@ class AsyncRawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def send_message_binary(
@@ -915,7 +981,7 @@ class AsyncRawQueuesClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"queues/{jsonable_encoder(queue_name)}/messages",
+            f"queues/{encode_path_param(queue_name)}/messages",
             method="POST",
             params={
                 "regions": regions,
@@ -943,6 +1009,10 @@ class AsyncRawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def ack_message(
@@ -968,7 +1038,7 @@ class AsyncRawQueuesClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"queues/{jsonable_encoder(queue_name)}/messages/{jsonable_encoder(queue_message_id)}",
+            f"queues/{encode_path_param(queue_name)}/messages/{encode_path_param(queue_message_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -986,9 +1056,9 @@ class AsyncRawQueuesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -996,4 +1066,8 @@ class AsyncRawQueuesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

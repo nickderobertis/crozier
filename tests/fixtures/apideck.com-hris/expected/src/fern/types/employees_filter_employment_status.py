@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EmployeesFilterEmploymentStatus(str, enum.Enum):
+class EmployeesFilterEmploymentStatus(enum.StrEnum):
     """
     Employment status to filter on
     """

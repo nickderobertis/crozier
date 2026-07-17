@@ -9,9 +9,15 @@ from ..core.serialization import FieldMetadata
 
 
 class GroupsV2GroupOptionalConversationEditRequest(UniversalBaseModel):
-    chat_enabled: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="chatEnabled")] = None
-    chat_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="chatName")] = None
-    chat_security: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="chatSecurity")] = None
+    chat_enabled: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="chatEnabled"), pydantic.Field(alias="chatEnabled")
+    ] = None
+    chat_name: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="chatName"), pydantic.Field(alias="chatName")
+    ] = None
+    chat_security: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="chatSecurity"), pydantic.Field(alias="chatSecurity")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

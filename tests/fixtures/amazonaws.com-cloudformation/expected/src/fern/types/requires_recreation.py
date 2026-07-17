@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class RequiresRecreation(str, enum.Enum):
+class RequiresRecreation(enum.StrEnum):
     NEVER = "Never"
     CONDITIONALLY = "Conditionally"
     ALWAYS = "Always"

@@ -14,18 +14,38 @@ class ObErrorResponse1(UniversalBaseModel):
     An array of detail error codes, and messages, and URLs to documentation to help remediation.
     """
 
-    code: typing_extensions.Annotated[str, FieldMetadata(alias="Code")] = pydantic.Field()
+    code: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="Code"),
+        pydantic.Field(alias="Code", description="High level textual error code, to help categorize the errors."),
+    ]
     """
     High level textual error code, to help categorize the errors.
     """
 
-    errors: typing_extensions.Annotated[typing.List[ObError1], FieldMetadata(alias="Errors")]
-    id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Id")] = pydantic.Field(default=None)
+    errors: typing_extensions.Annotated[
+        typing.List[ObError1], FieldMetadata(alias="Errors"), pydantic.Field(alias="Errors")
+    ]
+    id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Id"),
+        pydantic.Field(
+            alias="Id",
+            description="A unique reference for the error instance, for audit purposes, in case of unknown/unclassified errors.",
+        ),
+    ] = None
     """
     A unique reference for the error instance, for audit purposes, in case of unknown/unclassified errors.
     """
 
-    message: typing_extensions.Annotated[str, FieldMetadata(alias="Message")] = pydantic.Field()
+    message: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="Message"),
+        pydantic.Field(
+            alias="Message",
+            description="Brief Error message, e.g., 'There is something wrong with the request parameters provided'",
+        ),
+    ]
     """
     Brief Error message, e.g., 'There is something wrong with the request parameters provided'
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class Trend(str, enum.Enum):
+class Trend(enum.StrEnum):
     """
     Evolution trend qualifier
     """

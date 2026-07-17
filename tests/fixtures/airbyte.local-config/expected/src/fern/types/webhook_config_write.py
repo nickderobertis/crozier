@@ -9,9 +9,13 @@ from ..core.serialization import FieldMetadata
 
 
 class WebhookConfigWrite(UniversalBaseModel):
-    auth_token: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="authToken")] = pydantic.Field(
-        default=None
-    )
+    auth_token: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="authToken"),
+        pydantic.Field(
+            alias="authToken", description="an auth token, to be passed as the value for an HTTP Authorization header."
+        ),
+    ] = None
     """
     an auth token, to be passed as the value for an HTTP Authorization header.
     """
@@ -21,9 +25,14 @@ class WebhookConfigWrite(UniversalBaseModel):
     human readable name for this webhook e.g. for UI display.
     """
 
-    validation_url: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="validationUrl")] = (
-        pydantic.Field(default=None)
-    )
+    validation_url: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="validationUrl"),
+        pydantic.Field(
+            alias="validationUrl",
+            description="if supplied, the webhook config will be validated by checking that this URL returns a 2xx response.",
+        ),
+    ] = None
     """
     if supplied, the webhook config will be validated by checking that this URL returns a 2xx response.
     """

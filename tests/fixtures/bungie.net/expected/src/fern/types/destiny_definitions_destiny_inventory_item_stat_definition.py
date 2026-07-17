@@ -14,9 +14,14 @@ class DestinyDefinitionsDestinyInventoryItemStatDefinition(UniversalBaseModel):
     Not guaranteed to match real-world instances of the item, but should hopefully at least be close. If it's not close, let us know on the Bungie API forums.
     """
 
-    display_maximum: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="displayMaximum")] = (
-        pydantic.Field(default=None)
-    )
+    display_maximum: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="displayMaximum"),
+        pydantic.Field(
+            alias="displayMaximum",
+            description="The maximum possible value for the stat as shown in the UI, if it is being shown somewhere that reveals maximum in the UI (such as a bar chart-style view).\r\nThis is pulled directly from the item's DestinyStatGroupDefinition, and placed here for convenience.\r\nIf not returned, there is no maximum to use (and thus the stat should not be shown in a way that assumes there is a limit to the stat)",
+        ),
+    ] = None
     """
     The maximum possible value for the stat as shown in the UI, if it is being shown somewhere that reveals maximum in the UI (such as a bar chart-style view).
     This is pulled directly from the item's DestinyStatGroupDefinition, and placed here for convenience.
@@ -34,9 +39,11 @@ class DestinyDefinitionsDestinyInventoryItemStatDefinition(UniversalBaseModel):
     The minimum possible value for this stat that we think the item can roll.
     """
 
-    stat_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="statHash")] = pydantic.Field(
-        default=None
-    )
+    stat_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="statHash"),
+        pydantic.Field(alias="statHash", description="The hash for the DestinyStatDefinition representing this stat."),
+    ] = None
     """
     The hash for the DestinyStatDefinition representing this stat.
     """

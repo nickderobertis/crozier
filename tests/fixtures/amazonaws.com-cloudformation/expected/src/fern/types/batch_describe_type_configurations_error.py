@@ -14,22 +14,28 @@ class BatchDescribeTypeConfigurationsError(UniversalBaseModel):
     Detailed information concerning an error generated during the setting of configuration data for a CloudFormation extension.
     """
 
-    error_code: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="ErrorCode")] = pydantic.Field(
-        default=None
-    )
+    error_code: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="ErrorCode"),
+        pydantic.Field(alias="ErrorCode", description="The error code."),
+    ] = None
     """
     The error code.
     """
 
-    error_message: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="ErrorMessage")] = (
-        pydantic.Field(default=None)
-    )
+    error_message: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="ErrorMessage"),
+        pydantic.Field(alias="ErrorMessage", description="The error message."),
+    ] = None
     """
     The error message.
     """
 
     type_configuration_identifier: typing_extensions.Annotated[
-        typing.Optional[TypeConfigurationIdentifier], FieldMetadata(alias="TypeConfigurationIdentifier")
+        typing.Optional[TypeConfigurationIdentifier],
+        FieldMetadata(alias="TypeConfigurationIdentifier"),
+        pydantic.Field(alias="TypeConfigurationIdentifier"),
     ] = None
 
     if IS_PYDANTIC_V2:

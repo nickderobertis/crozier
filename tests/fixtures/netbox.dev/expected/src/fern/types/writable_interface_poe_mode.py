@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableInterfacePoeMode(str, enum.Enum):
+class WritableInterfacePoeMode(enum.StrEnum):
     PD = "pd"
     PSE = "pse"
 

@@ -1,10 +1,26 @@
 # Maintaining Fern goldens
 
-The normal maintenance path for numbered rows in
-[`tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md) is the manually
-dispatched **Fern goldens** GitHub Actions workflow. It runs Fern in the hosted
-environment, records reproducible provenance, compares Crozier, and safely
-publishes every complete Fern result back to the selected feature branch.
+The **Fern goldens** GitHub Actions workflow is the normal maintenance path for
+numbered rows in [`tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). It
+runs Fern in the hosted environment, records reproducible provenance, compares
+Crozier, and safely publishes every complete Fern result back to its branch.
+
+It has two trigger contracts:
+
+- Every Monday at 05:17 UTC, the schedule runs from `main`. Scheduled events
+  have no dispatch inputs, so both values are explicitly treated as blank: the
+  run resolves the latest stable Fern version and selects every corpus row with
+  an existing managed golden. Current provenance takes the normal per-fixture
+  skip path; when everything is current and matched, publication is a no-op and
+  the aggregate comparison is green.
+- An operator can use **Actions → Fern goldens → Run workflow**, select any
+  branch, and optionally enter an exact `fern-version` and comma-separated
+  `fixtures` subset. Tag dispatches are rejected. Use a feature branch for new
+  fixtures and expected-red Fern upgrades so the repair cycle remains isolated.
+
+Both events use the selected branch ref for checkout, concurrency, and normal
+fast-forward publication. Runs for one branch queue instead of cancelling a
+writer midway; different branches remain independent.
 
 ## Add or change a fixture
 
@@ -15,8 +31,8 @@ Work on one corpus row at a time:
    source ref. A direct spec URL must end in `.json`, `.yaml`, or `.yml`.
 2. For a new fixture, register the same name as a `Corpus` in `tests/e2e.rs` with
    `matched: &[]`. Keep `matched` empty until Crozier reproduces files exactly.
-3. Commit and push the branch, then open **Actions → Fern goldens → Run
-   workflow** and select that branch. The workflow inputs are:
+3. Commit and push the branch, then manually run **Fern goldens** and select that
+   branch. The optional workflow inputs are:
 
    - `fern-version` — an exact `fernapi/fern-python-sdk` semantic version. Leaving
      it blank deliberately starts an upgrade to the latest stable image tag; it
@@ -26,44 +42,68 @@ Work on one corpus row at a time:
      that already have committed goldens.
 
 4. Expect the first run for a new fixture, a changed URL/ref, or a Fern upgrade
-   to be red. Generation runs each selection independently. Every successful
-   fixture is installed atomically. Before comparison starts, the publication
-   job commits all successful fixture trees together, pushes them with
+   branch to be red. Generation runs each selection independently. Every
+   successful fixture is installed atomically. Before comparison starts, the
+   publication job makes one best-effort commit of all successful fixture trees,
+   pushes it with
    `expected/.crozier-fern-golden.json`, which records the exact generator
    version and the manifest name, ref, and URL, and uploads immutable generation
    evidence. A failed fixture preserves its prior complete golden and provenance;
    it does not discard successful sibling results.
-5. Inspect the run summary and the generation, publication, and comparison job
-   logs. The `fern-goldens-generation-<run-id>-<attempt>` artifact contains
-   `generation-summary.txt`, `generation-failures.txt`, per-fixture generation
-   logs, and the patch/archive of successful output. The later
+5. Inspect the GitHub job summaries and the generation, publication, and
+   comparison logs. The `fern-goldens-generation-<run-id>-<attempt>` artifact
+   contains `generation-summary.txt`, `generation-failures.txt`, the exact known
+   upstream failure list, per-fixture generation logs, and the patch/archive of
+   successful output. The later
    `fern-goldens-comparison-<run-id>-<attempt>` artifact contains
-   `comparison-summary.txt`, `comparison.log`, and separate spec-fetch and
-   comparison-process failure reports. Comparison covers every available managed
-   corpus golden, not only the fixtures selected for generation. It runs one
-   fixture per process with progress heartbeats and reports differing paths,
-   Crozier generation failures, processing failures, and fetch failures without
-   fail-fast. Run `just fixtures-diff <fixture>` locally when a full unified diff
-   is needed.
+   `comparison-summary.txt`, `comparison.log`, and separate known-upstream,
+   spec-fetch, and comparison-process failure reports. Comparison covers every
+   available managed corpus golden, not only the fixtures selected for
+   generation. It runs one fixture per process with progress heartbeats and
+   reports differing paths, Crozier generation failures, processing failures,
+   and fetch failures without fail-fast. Run `just fixtures-diff <fixture>`
+   locally when a full unified diff is needed.
 6. Repair Crozier on the same feature branch. Use `just fixtures-candidates` to
    add only newly byte-matched paths to each `matched` list; never edit Fern's
    output to make Crozier pass. Commit and push the repair, then dispatch the
    workflow again with the same inputs. Repeat until the aggregate comparison is
-   green.
+   green and the final run reports no generated changes and no publication.
 
 Once a fixture's exact generator version and manifest identity are current, a
-rerun fetches the source but skips Fern generation. A fully repaired rerun then
-compares green and publication is a no-op. When `fern-version` was initially
+rerun fetches the source but skips Fern generation. A fully repaired final rerun
+then compares green with no generated changes, and publication is a no-op. When
+`fern-version` was initially
 blank, the expected repair includes updating Crozier's pinned Fern-derived
 runtime/scaffolding metadata and `NOTICE` when the aggregate diff requires it.
 Use the exact resolved version shown in the run evidence on later reruns so a
 newly released Fern version cannot join the same repair cycle.
 
-Red is expected during this loop. Successful fixtures are committed and remain
-usable even when another selection fails generation or Crozier still differs.
-Publication and generation evidence complete before the isolated comparison job
-can start, so a terminated comparison runner cannot lose successful Fern output.
-The final status job accounts for generation, publication, comparison, and both
+### Exact known upstream failures
+
+`calorieninjas.com` is the single registered exception at
+`fernapi/fern-python-sdk:5.20.0`. Its source operation has no `operationId`, and
+Fern emits unnamed methods (`def (` and `_raw_client.(`) before Ruff rejects the
+SDK. [`known-fern-failure.json`](../tests/fixtures/calorieninjas.com/known-fern-failure.json)
+binds the exception to the exact generator version, corpus name/ref/URL, exit
+code, six ordered syntax diagnostics and source lines, Ruff summary, and failed
+command.
+
+Generation always retries that fixture, even after an exact reproduction. Only
+the normalized fingerprint is warning-only; a changed exit, diagnostic, source
+line, command, corpus identity, malformed registration, or unexpected Fern
+success is fatal. The prior Fern tree remains untouched in every case. Comparison
+does not call that older tree a 5.20 golden: it validates the registration and
+drives Crozier over the real cached spec as a subprocess, then reports the known
+upstream failure separately from the four zero-valued comparison failure counts.
+Remove the registration through a deliberate fixture refresh when a future Fern
+version generates a complete valid tree.
+
+Red is expected during an upgrade loop. Successful fixtures are committed on a
+best-effort basis and remain usable even when another selection fails generation
+or Crozier still differs. Publication, the generation summary, and generation
+evidence complete before the isolated comparison job can start, so a terminated
+comparison runner cannot lose successful Fern output. The final status job
+accounts for generation, publication, both job summaries, comparison, and both
 required evidence uploads; a missing/failed phase stays red. If the comparison
 runner is terminated before its upload step, the comparison artifact may be
 absent, but the earlier generation artifact and published fixture commit remain.
@@ -91,7 +131,7 @@ and Ruff prerequisites as the workflow and do not publish a branch.
 Generate selected fixtures and then run the aggregate comparison:
 
 ```sh
-just fern-goldens --version 4.35.0 --fixture anchore.io
+just fern-goldens --version 5.20.0 --fixture anchore.io
 ```
 
 Repeat `--fixture` for an exact multi-fixture selection. Omit `--version` to use
@@ -101,7 +141,7 @@ corpus goldens.
 Keep generation and comparison separate when diagnosing a phase:
 
 ```sh
-just fern-goldens-generate --version 4.35.0 --fixture anchore.io
+just fern-goldens-generate --version 5.20.0 --fixture anchore.io
 just fern-goldens-compare
 ```
 

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SortOrder(str, enum.Enum):
+class SortOrder(enum.StrEnum):
     """
     The order (e.g., chronological or alphabetical) in which results from a request are returned.
     """

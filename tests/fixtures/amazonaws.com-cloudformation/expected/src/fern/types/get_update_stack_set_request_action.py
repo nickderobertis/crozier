@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetUpdateStackSetRequestAction(str, enum.Enum):
+class GetUpdateStackSetRequestAction(enum.StrEnum):
     UPDATE_STACK_SET = "UpdateStackSet"
 
     def visit(self, update_stack_set: typing.Callable[[], T_Result]) -> T_Result:

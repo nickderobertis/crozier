@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PowerOutletFeedLegValue(str, enum.Enum):
+class PowerOutletFeedLegValue(enum.StrEnum):
     A = "A"
     B = "B"
     C = "C"

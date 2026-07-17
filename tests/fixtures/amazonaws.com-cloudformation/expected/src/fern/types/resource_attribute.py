@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ResourceAttribute(str, enum.Enum):
+class ResourceAttribute(enum.StrEnum):
     PROPERTIES = "Properties"
     METADATA = "Metadata"
     CREATION_POLICY = "CreationPolicy"

@@ -6,9 +6,11 @@ from json.decoder import JSONDecodeError
 from .core.api_error import ApiError
 from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.http_response import AsyncHttpResponse, HttpResponse
+from .core.parse_error import ParsingError
 from .core.pydantic_utilities import parse_obj_as
 from .core.request_options import RequestOptions
 from .types.graph_ql_response import GraphQlResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -23,7 +25,7 @@ class RawFernApi:
         *,
         query: str,
         operation_name: typing.Optional[str] = OMIT,
-        variables: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        variables: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[GraphQlResponse]:
         """
@@ -37,7 +39,7 @@ class RawFernApi:
         operation_name : typing.Optional[str]
             If the Query contains several named operations, the operationName controls which one should be executed
 
-        variables : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        variables : typing.Optional[typing.Dict[str, typing.Any]]
             Optional Query variables
 
         request_options : typing.Optional[RequestOptions]
@@ -75,11 +77,15 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_documentation(
         self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> HttpResponse[typing.Dict[str, typing.Any]]:
         """
         Parameters
         ----------
@@ -88,7 +94,7 @@ class RawFernApi:
 
         Returns
         -------
-        HttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]
+        HttpResponse[typing.Dict[str, typing.Any]]
             The API document for this version of the API
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -99,9 +105,9 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.Dict[str, typing.Optional[typing.Any]],
+                    typing.Dict[str, typing.Any],
                     parse_obj_as(
-                        type_=typing.Dict[str, typing.Optional[typing.Any]],
+                        type_=typing.Dict[str, typing.Any],
                         object_=_response.json(),
                     ),
                 )
@@ -109,6 +115,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -121,7 +131,7 @@ class AsyncRawFernApi:
         *,
         query: str,
         operation_name: typing.Optional[str] = OMIT,
-        variables: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        variables: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[GraphQlResponse]:
         """
@@ -135,7 +145,7 @@ class AsyncRawFernApi:
         operation_name : typing.Optional[str]
             If the Query contains several named operations, the operationName controls which one should be executed
 
-        variables : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        variables : typing.Optional[typing.Dict[str, typing.Any]]
             Optional Query variables
 
         request_options : typing.Optional[RequestOptions]
@@ -173,11 +183,15 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_documentation(
         self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> AsyncHttpResponse[typing.Dict[str, typing.Any]]:
         """
         Parameters
         ----------
@@ -186,7 +200,7 @@ class AsyncRawFernApi:
 
         Returns
         -------
-        AsyncHttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]
+        AsyncHttpResponse[typing.Dict[str, typing.Any]]
             The API document for this version of the API
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -197,9 +211,9 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.Dict[str, typing.Optional[typing.Any]],
+                    typing.Dict[str, typing.Any],
                     parse_obj_as(
-                        type_=typing.Dict[str, typing.Optional[typing.Any]],
+                        type_=typing.Dict[str, typing.Any],
                         object_=_response.json(),
                     ),
                 )
@@ -207,4 +221,8 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

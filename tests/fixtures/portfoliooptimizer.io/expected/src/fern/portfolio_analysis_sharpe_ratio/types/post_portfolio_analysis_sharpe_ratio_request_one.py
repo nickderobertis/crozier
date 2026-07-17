@@ -13,7 +13,11 @@ from .post_portfolio_analysis_sharpe_ratio_request_one_portfolios_item import (
 
 class PostPortfolioAnalysisSharpeRatioRequestOne(UniversalBaseModel):
     portfolios: typing.List[PostPortfolioAnalysisSharpeRatioRequestOnePortfoliosItem]
-    risk_free_rate: typing_extensions.Annotated[float, FieldMetadata(alias="riskFreeRate")] = pydantic.Field()
+    risk_free_rate: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="riskFreeRate"),
+        pydantic.Field(alias="riskFreeRate", description="The risk free rate"),
+    ]
     """
     The risk free rate
     """

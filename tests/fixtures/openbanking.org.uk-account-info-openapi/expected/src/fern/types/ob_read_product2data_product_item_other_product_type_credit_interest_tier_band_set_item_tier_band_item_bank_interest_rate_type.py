@@ -1,13 +1,14 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
 class ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemBankInterestRateType(
-    str, enum.Enum
+    enum.StrEnum
 ):
     """
     Interest rate types, other than AER, which financial institutions may use to describe the annual interest rate payable to the account holder's account.

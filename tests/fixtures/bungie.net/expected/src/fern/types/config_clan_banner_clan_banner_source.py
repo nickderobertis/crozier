@@ -2,4 +2,4 @@
 
 import typing
 
-ConfigClanBannerClanBannerSource = typing.Dict[str, typing.Optional[typing.Any]]
+ConfigClanBannerClanBannerSource = typing.Dict[str, typing.Any]

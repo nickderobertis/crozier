@@ -13,14 +13,20 @@ class CreateChangeSetOutput(UniversalBaseModel):
     The output for the <a>CreateChangeSet</a> action.
     """
 
-    id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Id")] = pydantic.Field(default=None)
+    id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Id"),
+        pydantic.Field(alias="Id", description="The Amazon Resource Name (ARN) of the change set."),
+    ] = None
     """
     The Amazon Resource Name (ARN) of the change set.
     """
 
-    stack_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="StackId")] = pydantic.Field(
-        default=None
-    )
+    stack_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="StackId"),
+        pydantic.Field(alias="StackId", description="The unique ID of the stack."),
+    ] = None
     """
     The unique ID of the stack.
     """

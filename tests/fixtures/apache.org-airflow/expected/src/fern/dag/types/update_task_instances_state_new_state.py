@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class UpdateTaskInstancesStateNewState(str, enum.Enum):
+class UpdateTaskInstancesStateNewState(enum.StrEnum):
     """
     Expected new state.
     """

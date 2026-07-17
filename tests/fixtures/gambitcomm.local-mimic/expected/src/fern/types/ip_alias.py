@@ -9,7 +9,7 @@ from ..core.serialization import FieldMetadata
 
 
 class IpAlias(UniversalBaseModel):
-    ip: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="IP")] = None
+    ip: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="IP"), pydantic.Field(alias="IP")] = None
     interface: typing.Optional[str] = None
     mask: typing.Optional[str] = None
     port: typing.Optional[int] = None

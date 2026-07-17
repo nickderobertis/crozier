@@ -10,7 +10,7 @@ from ..core.serialization import FieldMetadata
 
 class DestinyDefinitionsDestinyPlugItemCraftingUnlockRequirement(UniversalBaseModel):
     failure_description: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="failureDescription")
+        typing.Optional[str], FieldMetadata(alias="failureDescription"), pydantic.Field(alias="failureDescription")
     ] = None
 
     if IS_PYDANTIC_V2:

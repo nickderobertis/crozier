@@ -10,18 +10,24 @@ from .content_news_article_rss_item import ContentNewsArticleRssItem
 
 
 class ContentNewsArticleRssResponse(UniversalBaseModel):
-    category_filter: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="CategoryFilter")] = None
+    category_filter: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="CategoryFilter"), pydantic.Field(alias="CategoryFilter")
+    ] = None
     current_pagination_token: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="CurrentPaginationToken")
+        typing.Optional[int],
+        FieldMetadata(alias="CurrentPaginationToken"),
+        pydantic.Field(alias="CurrentPaginationToken"),
     ] = None
     news_articles: typing_extensions.Annotated[
-        typing.Optional[typing.List[ContentNewsArticleRssItem]], FieldMetadata(alias="NewsArticles")
+        typing.Optional[typing.List[ContentNewsArticleRssItem]],
+        FieldMetadata(alias="NewsArticles"),
+        pydantic.Field(alias="NewsArticles"),
     ] = None
     next_pagination_token: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="NextPaginationToken")
+        typing.Optional[int], FieldMetadata(alias="NextPaginationToken"), pydantic.Field(alias="NextPaginationToken")
     ] = None
     result_count_this_page: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="ResultCountThisPage")
+        typing.Optional[int], FieldMetadata(alias="ResultCountThisPage"), pydantic.Field(alias="ResultCountThisPage")
     ] = None
 
     if IS_PYDANTIC_V2:

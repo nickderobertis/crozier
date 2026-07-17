@@ -15,66 +15,104 @@ from .user_email_settings import UserEmailSettings
 
 class CommonModelsCoreSettingsConfiguration(UniversalBaseModel):
     clan_banner_decal_colors: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="clanBannerDecalColors")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="clanBannerDecalColors"),
+        pydantic.Field(alias="clanBannerDecalColors"),
     ] = None
     clan_banner_decals: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="clanBannerDecals")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="clanBannerDecals"),
+        pydantic.Field(alias="clanBannerDecals"),
     ] = None
     clan_banner_gonfalon_colors: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="clanBannerGonfalonColors")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="clanBannerGonfalonColors"),
+        pydantic.Field(alias="clanBannerGonfalonColors"),
     ] = None
     clan_banner_gonfalon_detail_colors: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="clanBannerGonfalonDetailColors")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="clanBannerGonfalonDetailColors"),
+        pydantic.Field(alias="clanBannerGonfalonDetailColors"),
     ] = None
     clan_banner_gonfalon_details: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="clanBannerGonfalonDetails")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="clanBannerGonfalonDetails"),
+        pydantic.Field(alias="clanBannerGonfalonDetails"),
     ] = None
     clan_banner_gonfalons: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="clanBannerGonfalons")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="clanBannerGonfalons"),
+        pydantic.Field(alias="clanBannerGonfalons"),
     ] = None
     clan_banner_standards: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="clanBannerStandards")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="clanBannerStandards"),
+        pydantic.Field(alias="clanBannerStandards"),
     ] = None
     default_group_theme: typing_extensions.Annotated[
-        typing.Optional["CommonModelsCoreSetting"], FieldMetadata(alias="defaultGroupTheme")
+        typing.Optional["CommonModelsCoreSetting"],
+        FieldMetadata(alias="defaultGroupTheme"),
+        pydantic.Field(alias="defaultGroupTheme"),
     ] = None
     destiny2core_settings: typing_extensions.Annotated[
-        typing.Optional[CommonModelsDestiny2CoreSettings], FieldMetadata(alias="destiny2CoreSettings")
+        typing.Optional[CommonModelsDestiny2CoreSettings],
+        FieldMetadata(alias="destiny2CoreSettings"),
+        pydantic.Field(alias="destiny2CoreSettings"),
     ] = None
     destiny_membership_types: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="destinyMembershipTypes")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="destinyMembershipTypes"),
+        pydantic.Field(alias="destinyMembershipTypes"),
     ] = None
     email_settings: typing_extensions.Annotated[
-        typing.Optional[UserEmailSettings], FieldMetadata(alias="emailSettings")
+        typing.Optional[UserEmailSettings], FieldMetadata(alias="emailSettings"), pydantic.Field(alias="emailSettings")
     ] = None
     environment: typing.Optional[str] = None
     fireteam_activities: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="fireteamActivities")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="fireteamActivities"),
+        pydantic.Field(alias="fireteamActivities"),
     ] = None
     forum_categories: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="forumCategories")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="forumCategories"),
+        pydantic.Field(alias="forumCategories"),
     ] = None
     group_avatars: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="groupAvatars")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="groupAvatars"),
+        pydantic.Field(alias="groupAvatars"),
     ] = None
     ignore_reasons: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="ignoreReasons")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="ignoreReasons"),
+        pydantic.Field(alias="ignoreReasons"),
     ] = None
     recruitment_activities: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="recruitmentActivities")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="recruitmentActivities"),
+        pydantic.Field(alias="recruitmentActivities"),
     ] = None
     recruitment_misc_tags: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="recruitmentMiscTags")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="recruitmentMiscTags"),
+        pydantic.Field(alias="recruitmentMiscTags"),
     ] = None
     recruitment_platform_tags: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="recruitmentPlatformTags")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="recruitmentPlatformTags"),
+        pydantic.Field(alias="recruitmentPlatformTags"),
     ] = None
     system_content_locales: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="systemContentLocales")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="systemContentLocales"),
+        pydantic.Field(alias="systemContentLocales"),
     ] = None
     systems: typing.Optional[typing.Dict[str, CommonModelsCoreSystem]] = None
     user_content_locales: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="userContentLocales")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="userContentLocales"),
+        pydantic.Field(alias="userContentLocales"),
     ] = None
 
     if IS_PYDANTIC_V2:
@@ -89,4 +127,4 @@ class CommonModelsCoreSettingsConfiguration(UniversalBaseModel):
 
 from .common_models_core_setting import CommonModelsCoreSetting
 
-update_forward_refs(CommonModelsCoreSettingsConfiguration)
+update_forward_refs(CommonModelsCoreSettingsConfiguration, CommonModelsCoreSetting=CommonModelsCoreSetting)

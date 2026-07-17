@@ -13,7 +13,7 @@ class RelativeDelta(UniversalBaseModel):
     Relative delta
     """
 
-    type: typing_extensions.Annotated[str, FieldMetadata(alias="__type")]
+    type: typing_extensions.Annotated[str, FieldMetadata(alias="__type"), pydantic.Field(alias="__type")]
     day: int
     days: int
     hour: int

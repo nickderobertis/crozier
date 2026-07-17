@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -14,6 +15,7 @@ from ..types.export_statement_card_csv_create import ExportStatementCardCsvCreat
 from ..types.export_statement_card_csv_delete import ExportStatementCardCsvDelete
 from ..types.export_statement_card_csv_listing import ExportStatementCardCsvListing
 from ..types.export_statement_card_csv_read import ExportStatementCardCsvRead
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -46,7 +48,7 @@ class RawExportStatementCardCsvClient:
             Used to serialize ExportStatementCardCsv
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-csv",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-csv",
             method="GET",
             request_options=request_options,
         )
@@ -64,9 +66,9 @@ class RawExportStatementCardCsvClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -74,6 +76,10 @@ class RawExportStatementCardCsvClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_export_statement_card_csv_for_user_card(
@@ -115,7 +121,7 @@ class RawExportStatementCardCsvClient:
             Used to serialize ExportStatementCardCsv
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-csv",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-csv",
             method="POST",
             json={
                 "date_end": date_end,
@@ -142,9 +148,9 @@ class RawExportStatementCardCsvClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -152,6 +158,10 @@ class RawExportStatementCardCsvClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_export_statement_card_csv_for_user_card(
@@ -180,7 +190,7 @@ class RawExportStatementCardCsvClient:
             Used to serialize ExportStatementCardCsv
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-csv/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-csv/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -198,9 +208,9 @@ class RawExportStatementCardCsvClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -208,6 +218,10 @@ class RawExportStatementCardCsvClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_export_statement_card_csv_for_user_card(
@@ -236,7 +250,7 @@ class RawExportStatementCardCsvClient:
             Used to serialize ExportStatementCardCsv
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-csv/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-csv/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -254,9 +268,9 @@ class RawExportStatementCardCsvClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -264,6 +278,10 @@ class RawExportStatementCardCsvClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -294,7 +312,7 @@ class AsyncRawExportStatementCardCsvClient:
             Used to serialize ExportStatementCardCsv
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-csv",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-csv",
             method="GET",
             request_options=request_options,
         )
@@ -312,9 +330,9 @@ class AsyncRawExportStatementCardCsvClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -322,6 +340,10 @@ class AsyncRawExportStatementCardCsvClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_export_statement_card_csv_for_user_card(
@@ -363,7 +385,7 @@ class AsyncRawExportStatementCardCsvClient:
             Used to serialize ExportStatementCardCsv
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-csv",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-csv",
             method="POST",
             json={
                 "date_end": date_end,
@@ -390,9 +412,9 @@ class AsyncRawExportStatementCardCsvClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -400,6 +422,10 @@ class AsyncRawExportStatementCardCsvClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_export_statement_card_csv_for_user_card(
@@ -428,7 +454,7 @@ class AsyncRawExportStatementCardCsvClient:
             Used to serialize ExportStatementCardCsv
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-csv/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-csv/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -446,9 +472,9 @@ class AsyncRawExportStatementCardCsvClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -456,6 +482,10 @@ class AsyncRawExportStatementCardCsvClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_export_statement_card_csv_for_user_card(
@@ -484,7 +514,7 @@ class AsyncRawExportStatementCardCsvClient:
             Used to serialize ExportStatementCardCsv
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-csv/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-csv/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -502,9 +532,9 @@ class AsyncRawExportStatementCardCsvClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -512,4 +542,8 @@ class AsyncRawExportStatementCardCsvClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

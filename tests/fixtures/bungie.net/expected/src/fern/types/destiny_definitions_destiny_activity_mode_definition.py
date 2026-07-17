@@ -18,15 +18,24 @@ class DestinyDefinitionsDestinyActivityModeDefinition(UniversalBaseModel):
     """
 
     activity_mode_category: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="activityModeCategory")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="activityModeCategory"),
+        pydantic.Field(
+            alias="activityModeCategory", description="The type of play being performed in broad terms (PVP, PVE)"
+        ),
+    ] = None
     """
     The type of play being performed in broad terms (PVP, PVE)
     """
 
     activity_mode_mappings: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, int]], FieldMetadata(alias="activityModeMappings")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.Dict[str, int]],
+        FieldMetadata(alias="activityModeMappings"),
+        pydantic.Field(
+            alias="activityModeMappings",
+            description="If this exists, the mode has specific Activities (referred to by the Key) that should instead map to other Activity Modes when they are played. This was useful in D1 for Private Matches, where we wanted to have Private Matches as an activity mode while still referring to the specific mode being played.",
+        ),
+    ] = None
     """
     If this exists, the mode has specific Activities (referred to by the Key) that should instead map to other Activity Modes when they are played. This was useful in D1 for Private Matches, where we wanted to have Private Matches as an activity mode while still referring to the specific mode being played.
     """
@@ -39,10 +48,16 @@ class DestinyDefinitionsDestinyActivityModeDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
-    friendly_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="friendlyName")] = (
-        pydantic.Field(default=None)
-    )
+    friendly_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="friendlyName"),
+        pydantic.Field(
+            alias="friendlyName",
+            description="A Friendly identifier you can use for referring to this Activity Mode. We really only used this in our URLs, so... you know, take that for whatever it's worth.",
+        ),
+    ] = None
     """
     A Friendly identifier you can use for referring to this Activity Mode. We really only used this in our URLs, so... you know, take that for whatever it's worth.
     """
@@ -58,24 +73,39 @@ class DestinyDefinitionsDestinyActivityModeDefinition(UniversalBaseModel):
     The index of the entity as it was found in the investment tables.
     """
 
-    is_aggregate_mode: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isAggregateMode")] = (
-        pydantic.Field(default=None)
-    )
+    is_aggregate_mode: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="isAggregateMode"),
+        pydantic.Field(
+            alias="isAggregateMode",
+            description="If true, this mode is an aggregation of other, more specific modes rather than being a mode in itself. This includes modes that group Features/Events rather than Gameplay, such as Trials of The Nine: Trials of the Nine being an Event that is interesting to see aggregate data for, but when you play the activities within Trials of the Nine they are more specific activity modes such as Clash.",
+        ),
+    ] = None
     """
     If true, this mode is an aggregation of other, more specific modes rather than being a mode in itself. This includes modes that group Features/Events rather than Gameplay, such as Trials of The Nine: Trials of the Nine being an Event that is interesting to see aggregate data for, but when you play the activities within Trials of the Nine they are more specific activity modes such as Clash.
     """
 
-    is_team_based: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isTeamBased")] = (
-        pydantic.Field(default=None)
-    )
+    is_team_based: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="isTeamBased"),
+        pydantic.Field(
+            alias="isTeamBased",
+            description='If True, this mode has oppositional teams fighting against each other rather than "Free-For-All" or Co-operative modes of play.\r\nNote that Aggregate modes are never marked as team based, even if they happen to be team based at the moment. At any time, an aggregate whose subordinates are only team based could be changed so that one or more aren\'t team based, and then this boolean won\'t make much sense (the aggregation would become "sometimes team based"). Let\'s not deal with that right now.',
+        ),
+    ] = None
     """
     If True, this mode has oppositional teams fighting against each other rather than "Free-For-All" or Co-operative modes of play.
     Note that Aggregate modes are never marked as team based, even if they happen to be team based at the moment. At any time, an aggregate whose subordinates are only team based could be changed so that one or more aren't team based, and then this boolean won't make much sense (the aggregation would become "sometimes team based"). Let's not deal with that right now.
     """
 
-    mode_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="modeType")] = pydantic.Field(
-        default=None
-    )
+    mode_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="modeType"),
+        pydantic.Field(
+            alias="modeType",
+            description="The Enumeration value for this Activity Mode. Pass this identifier into Stats endpoints to get aggregate stats for this mode.",
+        ),
+    ] = None
     """
     The Enumeration value for this Activity Mode. Pass this identifier into Stats endpoints to get aggregate stats for this mode.
     """
@@ -86,15 +116,25 @@ class DestinyDefinitionsDestinyActivityModeDefinition(UniversalBaseModel):
     """
 
     parent_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="parentHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="parentHashes"),
+        pydantic.Field(
+            alias="parentHashes",
+            description='The hash identifiers of the DestinyActivityModeDefinitions that represent all of the "parent" modes for this mode. For instance, the Nightfall Mode is also a member of AllStrikes and AllPvE.',
+        ),
+    ] = None
     """
     The hash identifiers of the DestinyActivityModeDefinitions that represent all of the "parent" modes for this mode. For instance, the Nightfall Mode is also a member of AllStrikes and AllPvE.
     """
 
-    pgcr_image: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="pgcrImage")] = pydantic.Field(
-        default=None
-    )
+    pgcr_image: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="pgcrImage"),
+        pydantic.Field(
+            alias="pgcrImage",
+            description="If this activity mode has a related PGCR image, this will be the path to said image.",
+        ),
+    ] = None
     """
     If this activity mode has a related PGCR image, this will be the path to said image.
     """

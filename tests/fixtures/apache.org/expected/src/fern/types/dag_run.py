@@ -10,7 +10,7 @@ from .dag_state import DagState
 
 
 class DagRun(UniversalBaseModel):
-    conf: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    conf: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     JSON object describing additional configuration parameters.
     

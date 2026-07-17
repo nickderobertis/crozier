@@ -11,7 +11,9 @@ from .private_source_definition_read import PrivateSourceDefinitionRead
 
 class PrivateSourceDefinitionReadList(UniversalBaseModel):
     source_definitions: typing_extensions.Annotated[
-        typing.List[PrivateSourceDefinitionRead], FieldMetadata(alias="sourceDefinitions")
+        typing.List[PrivateSourceDefinitionRead],
+        FieldMetadata(alias="sourceDefinitions"),
+        pydantic.Field(alias="sourceDefinitions"),
     ]
 
     if IS_PYDANTIC_V2:

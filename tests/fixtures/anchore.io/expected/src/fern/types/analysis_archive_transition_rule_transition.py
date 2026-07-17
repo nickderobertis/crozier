@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AnalysisArchiveTransitionRuleTransition(str, enum.Enum):
+class AnalysisArchiveTransitionRuleTransition(enum.StrEnum):
     """
     The type of transition to make. If "archive", then archive an image from the working set and remove it from the working set. If "delete", then match against archived images and delete from the archive if match.
     """

@@ -1,6 +1,6 @@
 # Reference
 ## APIs
-<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">list_ap_is</a>()</code></summary>
+<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">list_ap_is</a>() -> ApIs</code></summary>
 <dl>
 <dd>
 
@@ -32,8 +32,12 @@ This allows you to generate some simple views without needing to fetch the OpenA
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.ap_is.list_ap_is()
 
 ```
@@ -62,7 +66,7 @@ client.ap_is.list_ap_is()
 </dl>
 </details>
 
-<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_metrics</a>()</code></summary>
+<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_metrics</a>() -> Metrics</code></summary>
 <dl>
 <dd>
 
@@ -91,8 +95,12 @@ Just stunning numbers to put on a front page and are intended purely for WoW eff
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.ap_is.get_metrics()
 
 ```
@@ -121,7 +129,7 @@ client.ap_is.get_metrics()
 </dl>
 </details>
 
-<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_providers</a>()</code></summary>
+<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_providers</a>() -> GetProvidersResponse</code></summary>
 <dl>
 <dd>
 
@@ -149,8 +157,12 @@ List all the providers in the directory
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.ap_is.get_providers()
 
 ```
@@ -179,7 +191,7 @@ client.ap_is.get_providers()
 </dl>
 </details>
 
-<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_api</a>(...)</code></summary>
+<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_api</a>(...) -> Api</code></summary>
 <dl>
 <dd>
 
@@ -207,8 +219,12 @@ Returns the API entry for one specific version of an API where there is no servi
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.ap_is.get_api(
     provider="apis.guru",
     api="2.1.0",
@@ -256,7 +272,7 @@ client.ap_is.get_api(
 </dl>
 </details>
 
-<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_service_api</a>(...)</code></summary>
+<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_service_api</a>(...) -> Api</code></summary>
 <dl>
 <dd>
 
@@ -284,8 +300,12 @@ Returns the API entry for one specific version of an API where there is a servic
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.ap_is.get_service_api(
     provider="apis.guru",
     service="graph",
@@ -342,7 +362,7 @@ client.ap_is.get_service_api(
 </dl>
 </details>
 
-<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_provider</a>(...)</code></summary>
+<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_provider</a>(...) -> ApIs</code></summary>
 <dl>
 <dd>
 
@@ -371,8 +391,12 @@ Returns links to the individual API entry for each API.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.ap_is.get_provider(
     provider="apis.guru",
 )
@@ -411,7 +435,7 @@ client.ap_is.get_provider(
 </dl>
 </details>
 
-<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_services</a>(...)</code></summary>
+<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_services</a>(...) -> GetServicesResponse</code></summary>
 <dl>
 <dd>
 
@@ -439,8 +463,12 @@ List all serviceNames in the directory for a particular providerName
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.ap_is.get_services(
     provider="apis.guru",
 )

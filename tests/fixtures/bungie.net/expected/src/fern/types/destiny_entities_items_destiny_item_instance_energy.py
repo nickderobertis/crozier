@@ -9,37 +9,57 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyEntitiesItemsDestinyItemInstanceEnergy(UniversalBaseModel):
-    energy_capacity: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="energyCapacity")] = (
-        pydantic.Field(default=None)
-    )
+    energy_capacity: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="energyCapacity"),
+        pydantic.Field(
+            alias="energyCapacity",
+            description="The total capacity of Energy that the item currently has, regardless of if it is currently being used.",
+        ),
+    ] = None
     """
     The total capacity of Energy that the item currently has, regardless of if it is currently being used.
     """
 
-    energy_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="energyType")] = pydantic.Field(
-        default=None
-    )
+    energy_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="energyType"),
+        pydantic.Field(
+            alias="energyType", description="This is the enum version of the Energy Type value, for convenience."
+        ),
+    ] = None
     """
     This is the enum version of the Energy Type value, for convenience.
     """
 
-    energy_type_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="energyTypeHash")] = (
-        pydantic.Field(default=None)
-    )
+    energy_type_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="energyTypeHash"),
+        pydantic.Field(
+            alias="energyTypeHash",
+            description='The type of energy for this item. Plugs that require Energy can only be inserted if they have the "Any" Energy Type or the matching energy type of this item. This is a reference to the DestinyEnergyTypeDefinition for the energy type, where you can find extended info about it.',
+        ),
+    ] = None
     """
     The type of energy for this item. Plugs that require Energy can only be inserted if they have the "Any" Energy Type or the matching energy type of this item. This is a reference to the DestinyEnergyTypeDefinition for the energy type, where you can find extended info about it.
     """
 
-    energy_unused: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="energyUnused")] = (
-        pydantic.Field(default=None)
-    )
+    energy_unused: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="energyUnused"),
+        pydantic.Field(
+            alias="energyUnused", description="The amount of energy still available for inserting new plugs."
+        ),
+    ] = None
     """
     The amount of energy still available for inserting new plugs.
     """
 
-    energy_used: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="energyUsed")] = pydantic.Field(
-        default=None
-    )
+    energy_used: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="energyUsed"),
+        pydantic.Field(alias="energyUsed", description="The amount of Energy currently in use by inserted plugs."),
+    ] = None
     """
     The amount of Energy currently in use by inserted plugs.
     """

@@ -16,13 +16,21 @@ class ObReadProduct2(UniversalBaseModel):
     Product details of Other Product which is not avaiable in the standard list
     """
 
-    data: typing_extensions.Annotated[ObReadProduct2Data, FieldMetadata(alias="Data")] = pydantic.Field()
+    data: typing_extensions.Annotated[
+        ObReadProduct2Data,
+        FieldMetadata(alias="Data"),
+        pydantic.Field(alias="Data", description="Aligning with the read write specs structure."),
+    ]
     """
     Aligning with the read write specs structure.
     """
 
-    links: typing_extensions.Annotated[typing.Optional[Links], FieldMetadata(alias="Links")] = None
-    meta: typing_extensions.Annotated[typing.Optional[Meta], FieldMetadata(alias="Meta")] = None
+    links: typing_extensions.Annotated[
+        typing.Optional[Links], FieldMetadata(alias="Links"), pydantic.Field(alias="Links")
+    ] = None
+    meta: typing_extensions.Annotated[
+        typing.Optional[Meta], FieldMetadata(alias="Meta"), pydantic.Field(alias="Meta")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

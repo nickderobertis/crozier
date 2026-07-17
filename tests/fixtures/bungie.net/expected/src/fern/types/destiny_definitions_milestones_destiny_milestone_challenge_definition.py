@@ -10,8 +10,10 @@ from ..core.serialization import FieldMetadata
 
 class DestinyDefinitionsMilestonesDestinyMilestoneChallengeDefinition(UniversalBaseModel):
     challenge_objective_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="challengeObjectiveHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="challengeObjectiveHash"),
+        pydantic.Field(alias="challengeObjectiveHash", description="The challenge related to this milestone."),
+    ] = None
     """
     The challenge related to this milestone.
     """

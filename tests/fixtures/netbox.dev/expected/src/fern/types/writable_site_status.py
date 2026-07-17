@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableSiteStatus(str, enum.Enum):
+class WritableSiteStatus(enum.StrEnum):
     PLANNED = "planned"
     STAGING = "staging"
     ACTIVE = "active"

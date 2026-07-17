@@ -42,9 +42,11 @@ class ListPaymentsRequest(UniversalBaseModel):
     Default: The current time.
     """
 
-    last4: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="last_4")] = pydantic.Field(
-        default=None
-    )
+    last4: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="last_4"),
+        pydantic.Field(alias="last_4", description="The last four digits of a payment card."),
+    ] = None
     """
     The last four digits of a payment card.
     """

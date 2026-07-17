@@ -137,6 +137,7 @@ if typing.TYPE_CHECKING:
         templates,
         validation_authorities,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .auth_config import (
         CreateGlobalAuthModuleRequest,
         CreateGlobalAuthModuleResponse,
@@ -181,6 +182,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DataExporterConfig": ".types",
     "DataExporterConfigConfig": ".types",
     "DataExporterConfigTyp": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "DeletebulkDataExporterConfigResponseItem": ".data_exporter_configs",
     "DeletebulkDataExporterConfigResponseItemStatus": ".data_exporter_configs",
     "Deleted": ".types",
@@ -354,6 +357,8 @@ __all__ = [
     "DataExporterConfig",
     "DataExporterConfigConfig",
     "DataExporterConfigTyp",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "DeletebulkDataExporterConfigResponseItem",
     "DeletebulkDataExporterConfigResponseItemStatus",
     "Deleted",

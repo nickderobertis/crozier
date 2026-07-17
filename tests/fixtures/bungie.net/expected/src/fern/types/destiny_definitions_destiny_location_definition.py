@@ -29,7 +29,11 @@ class DestinyDefinitionsDestinyLocationDefinition(UniversalBaseModel):
     location_releases: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyLocationReleaseDefinition]],
         FieldMetadata(alias="locationReleases"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="locationReleases",
+            description="A Location may refer to different specific spots in the world based on the world's current state. This is a list of those potential spots, and the data we can use at runtime to determine which one of the spots is the currently valid one.",
+        ),
+    ] = None
     """
     A Location may refer to different specific spots in the world based on the world's current state. This is a list of those potential spots, and the data we can use at runtime to determine which one of the spots is the currently valid one.
     """
@@ -39,9 +43,14 @@ class DestinyDefinitionsDestinyLocationDefinition(UniversalBaseModel):
     If this is true, then there is an entity with this identifier/type combination, but BNet is not yet allowed to show it. Sorry!
     """
 
-    vendor_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="vendorHash")] = pydantic.Field(
-        default=None
-    )
+    vendor_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="vendorHash"),
+        pydantic.Field(
+            alias="vendorHash",
+            description="If the location has a Vendor on it, this is the hash identifier for that Vendor. Look them up with DestinyVendorDefinition.",
+        ),
+    ] = None
     """
     If the location has a Vendor on it, this is the hash identifier for that Vendor. Look them up with DestinyVendorDefinition.
     """

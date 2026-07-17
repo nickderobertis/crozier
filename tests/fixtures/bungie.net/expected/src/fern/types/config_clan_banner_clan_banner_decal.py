@@ -9,8 +9,12 @@ from ..core.serialization import FieldMetadata
 
 
 class ConfigClanBannerClanBannerDecal(UniversalBaseModel):
-    background_path: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="backgroundPath")] = None
-    foreground_path: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="foregroundPath")] = None
+    background_path: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="backgroundPath"), pydantic.Field(alias="backgroundPath")
+    ] = None
+    foreground_path: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="foregroundPath"), pydantic.Field(alias="foregroundPath")
+    ] = None
     identifier: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

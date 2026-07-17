@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ChangeSetStatus(str, enum.Enum):
+class ChangeSetStatus(enum.StrEnum):
     CREATE_PENDING = "CREATE_PENDING"
     CREATE_IN_PROGRESS = "CREATE_IN_PROGRESS"
     CREATE_COMPLETE = "CREATE_COMPLETE"

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WebsiteType(str, enum.Enum):
+class WebsiteType(enum.StrEnum):
     PRIMARY = "primary"
     SECONDARY = "secondary"
     WORK = "work"

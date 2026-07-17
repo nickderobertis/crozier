@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ChangeType(str, enum.Enum):
+class ChangeType(enum.StrEnum):
     """
     The type of entity that CloudFormation changes. Currently, the only entity type is <code>Resource</code>.
     """

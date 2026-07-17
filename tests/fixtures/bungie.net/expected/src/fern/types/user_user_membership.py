@@ -14,36 +14,49 @@ class UserUserMembership(UniversalBaseModel):
     """
 
     bungie_global_display_name: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="bungieGlobalDisplayName")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="bungieGlobalDisplayName"),
+        pydantic.Field(alias="bungieGlobalDisplayName", description="The bungie global display name, if set."),
+    ] = None
     """
     The bungie global display name, if set.
     """
 
     bungie_global_display_name_code: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="bungieGlobalDisplayNameCode")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="bungieGlobalDisplayNameCode"),
+        pydantic.Field(alias="bungieGlobalDisplayNameCode", description="The bungie global display name code, if set."),
+    ] = None
     """
     The bungie global display name code, if set.
     """
 
-    display_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="displayName")] = (
-        pydantic.Field(default=None)
-    )
+    display_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="displayName"),
+        pydantic.Field(
+            alias="displayName",
+            description="Display Name the player has chosen for themselves. The display name is optional when the data type is used as input to a platform API.",
+        ),
+    ] = None
     """
     Display Name the player has chosen for themselves. The display name is optional when the data type is used as input to a platform API.
     """
 
-    membership_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="membershipId")] = (
-        pydantic.Field(default=None)
-    )
+    membership_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="membershipId"),
+        pydantic.Field(alias="membershipId", description="Membership ID as they user is known in the Accounts service"),
+    ] = None
     """
     Membership ID as they user is known in the Accounts service
     """
 
-    membership_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="membershipType")] = (
-        pydantic.Field(default=None)
-    )
+    membership_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="membershipType"),
+        pydantic.Field(alias="membershipType", description="Type of the membership. Not necessarily the native type."),
+    ] = None
     """
     Type of the membership. Not necessarily the native type.
     """

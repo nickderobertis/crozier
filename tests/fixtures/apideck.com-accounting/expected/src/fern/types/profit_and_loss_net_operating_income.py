@@ -26,5 +26,12 @@ class ProfitAndLossNetOperatingIncome(UniversalBaseModel):
 
 
 from .profit_and_loss_records import ProfitAndLossRecords
+from .profit_and_loss_records_item import ProfitAndLossRecordsItem
+from .profit_and_loss_section import ProfitAndLossSection
 
-update_forward_refs(ProfitAndLossNetOperatingIncome)
+update_forward_refs(
+    ProfitAndLossNetOperatingIncome,
+    ProfitAndLossRecords=ProfitAndLossRecords,
+    ProfitAndLossRecordsItem=ProfitAndLossRecordsItem,
+    ProfitAndLossSection=ProfitAndLossSection,
+)

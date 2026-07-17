@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OrderLineItemDiscountType(str, enum.Enum):
+class OrderLineItemDiscountType(enum.StrEnum):
     """
     Indicates how the discount is applied to the associated line item or order.
     """

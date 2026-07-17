@@ -13,7 +13,7 @@ class CronExpression(UniversalBaseModel):
     Cron expression
     """
 
-    type: typing_extensions.Annotated[str, FieldMetadata(alias="__type")]
+    type: typing_extensions.Annotated[str, FieldMetadata(alias="__type"), pydantic.Field(alias="__type")]
     value: str
 
     if IS_PYDANTIC_V2:

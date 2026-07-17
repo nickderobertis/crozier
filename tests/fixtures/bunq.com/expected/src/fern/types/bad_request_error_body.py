@@ -10,7 +10,9 @@ from .error import Error
 
 
 class BadRequestErrorBody(UniversalBaseModel):
-    error: typing_extensions.Annotated[typing.Optional[Error], FieldMetadata(alias="Error")] = None
+    error: typing_extensions.Annotated[
+        typing.Optional[Error], FieldMetadata(alias="Error"), pydantic.Field(alias="Error")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

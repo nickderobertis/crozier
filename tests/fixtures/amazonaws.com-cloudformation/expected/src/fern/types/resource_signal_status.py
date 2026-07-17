@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ResourceSignalStatus(str, enum.Enum):
+class ResourceSignalStatus(enum.StrEnum):
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
 

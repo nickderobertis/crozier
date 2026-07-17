@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObpcaData1OverdraftOverdraftTierBandSetItemTierBandMethod(str, enum.Enum):
+class ObpcaData1OverdraftOverdraftTierBandSetItemTierBandMethod(enum.StrEnum):
     """
     The methodology of how overdraft is charged. It can be:
     'Whole'  Where the same charge/rate is applied to the entirety of the overdraft balance (where charges are applicable).

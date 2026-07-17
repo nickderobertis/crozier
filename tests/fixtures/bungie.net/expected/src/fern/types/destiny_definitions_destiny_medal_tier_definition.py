@@ -35,9 +35,11 @@ class DestinyDefinitionsDestinyMedalTierDefinition(UniversalBaseModel):
     If this is true, then there is an entity with this identifier/type combination, but BNet is not yet allowed to show it. Sorry!
     """
 
-    tier_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="tierName")] = pydantic.Field(
-        default=None
-    )
+    tier_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="tierName"),
+        pydantic.Field(alias="tierName", description="The name of the tier."),
+    ] = None
     """
     The name of the tier.
     """

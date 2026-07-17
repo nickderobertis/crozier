@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MagicItemRarityName(str, enum.Enum):
+class MagicItemRarityName(enum.StrEnum):
     """
     The rarity of the item.
     """

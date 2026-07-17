@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -30,6 +31,7 @@ from ..types.payment_required_response import PaymentRequiredResponse
 from ..types.unauthorized_response import UnauthorizedResponse
 from ..types.unprocessable_response import UnprocessableResponse
 from ..types.update_file_response import UpdateFileResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -171,13 +173,17 @@ class RawFilesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def upload(
         self,
         *,
         apideck_metadata: str,
-        request: str,
+        request: bytes,
         raw: typing.Optional[bool] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CreateFileResponse]:
@@ -189,7 +195,7 @@ class RawFilesClient:
         apideck_metadata : str
             Metadata to attach to the file
 
-        request : str
+        request : bytes
 
         raw : typing.Optional[bool]
             Include raw response. Mostly used for debugging purposes
@@ -283,6 +289,10 @@ class RawFilesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def search(
@@ -406,6 +416,10 @@ class RawFilesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def one(
@@ -439,7 +453,7 @@ class RawFilesClient:
             File
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"file-storage/files/{jsonable_encoder(id)}",
+            f"file-storage/files/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -515,6 +529,10 @@ class RawFilesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete(
@@ -540,7 +558,7 @@ class RawFilesClient:
             Files
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"file-storage/files/{jsonable_encoder(id)}",
+            f"file-storage/files/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -615,6 +633,10 @@ class RawFilesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update(
@@ -655,7 +677,7 @@ class RawFilesClient:
             Files
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"file-storage/files/{jsonable_encoder(id)}",
+            f"file-storage/files/{encode_path_param(id)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -739,6 +761,10 @@ class RawFilesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.contextmanager
@@ -765,7 +791,7 @@ class RawFilesClient:
             File Download
         """
         with self._client_wrapper.httpx_client.stream(
-            f"file-storage/files/{jsonable_encoder(id)}/download",
+            f"file-storage/files/{encode_path_param(id)}/download",
             method="GET",
             params={
                 "fields": fields,
@@ -840,6 +866,13 @@ class RawFilesClient:
                 except JSONDecodeError:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
                     )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
@@ -982,13 +1015,17 @@ class AsyncRawFilesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def upload(
         self,
         *,
         apideck_metadata: str,
-        request: str,
+        request: bytes,
         raw: typing.Optional[bool] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CreateFileResponse]:
@@ -1000,7 +1037,7 @@ class AsyncRawFilesClient:
         apideck_metadata : str
             Metadata to attach to the file
 
-        request : str
+        request : bytes
 
         raw : typing.Optional[bool]
             Include raw response. Mostly used for debugging purposes
@@ -1094,6 +1131,10 @@ class AsyncRawFilesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def search(
@@ -1217,6 +1258,10 @@ class AsyncRawFilesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def one(
@@ -1250,7 +1295,7 @@ class AsyncRawFilesClient:
             File
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"file-storage/files/{jsonable_encoder(id)}",
+            f"file-storage/files/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -1326,6 +1371,10 @@ class AsyncRawFilesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
@@ -1351,7 +1400,7 @@ class AsyncRawFilesClient:
             Files
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"file-storage/files/{jsonable_encoder(id)}",
+            f"file-storage/files/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -1426,6 +1475,10 @@ class AsyncRawFilesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update(
@@ -1466,7 +1519,7 @@ class AsyncRawFilesClient:
             Files
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"file-storage/files/{jsonable_encoder(id)}",
+            f"file-storage/files/{encode_path_param(id)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -1550,6 +1603,10 @@ class AsyncRawFilesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.asynccontextmanager
@@ -1576,7 +1633,7 @@ class AsyncRawFilesClient:
             File Download
         """
         async with self._client_wrapper.httpx_client.stream(
-            f"file-storage/files/{jsonable_encoder(id)}/download",
+            f"file-storage/files/{encode_path_param(id)}/download",
             method="GET",
             params={
                 "fields": fields,
@@ -1652,6 +1709,13 @@ class AsyncRawFilesClient:
                 except JSONDecodeError:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
                     )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 

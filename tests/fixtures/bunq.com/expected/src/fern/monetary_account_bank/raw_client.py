@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -17,6 +18,7 @@ from ..types.monetary_account_bank_listing import MonetaryAccountBankListing
 from ..types.monetary_account_bank_read import MonetaryAccountBankRead
 from ..types.monetary_account_bank_update import MonetaryAccountBankUpdate
 from ..types.monetary_account_setting import MonetaryAccountSetting
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -46,7 +48,7 @@ class RawMonetaryAccountBankClient:
             With MonetaryAccountBank you can create a new bank account, retrieve information regarding your existing MonetaryAccountBanks and update specific fields of an existing MonetaryAccountBank. Examples of fields that can be updated are the description, the daily limit and the avatar of the account.<br/><br/>Notification filters can be set on a monetary account level to receive callbacks. For more information check the <a href="/api/1/page/callbacks">dedicated callbacks page</a>.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-bank",
+            f"user/{encode_path_param(user_id)}/monetary-account-bank",
             method="GET",
             request_options=request_options,
         )
@@ -64,9 +66,9 @@ class RawMonetaryAccountBankClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -74,6 +76,10 @@ class RawMonetaryAccountBankClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_monetary_account_bank_for_user(
@@ -143,7 +149,7 @@ class RawMonetaryAccountBankClient:
             With MonetaryAccountBank you can create a new bank account, retrieve information regarding your existing MonetaryAccountBanks and update specific fields of an existing MonetaryAccountBank. Examples of fields that can be updated are the description, the daily limit and the avatar of the account.<br/><br/>Notification filters can be set on a monetary account level to receive callbacks. For more information check the <a href="/api/1/page/callbacks">dedicated callbacks page</a>.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-bank",
+            f"user/{encode_path_param(user_id)}/monetary-account-bank",
             method="POST",
             json={
                 "avatar_uuid": avatar_uuid,
@@ -182,9 +188,9 @@ class RawMonetaryAccountBankClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -192,6 +198,10 @@ class RawMonetaryAccountBankClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_monetary_account_bank_for_user(
@@ -217,7 +227,7 @@ class RawMonetaryAccountBankClient:
             With MonetaryAccountBank you can create a new bank account, retrieve information regarding your existing MonetaryAccountBanks and update specific fields of an existing MonetaryAccountBank. Examples of fields that can be updated are the description, the daily limit and the avatar of the account.<br/><br/>Notification filters can be set on a monetary account level to receive callbacks. For more information check the <a href="/api/1/page/callbacks">dedicated callbacks page</a>.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-bank/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account-bank/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -235,9 +245,9 @@ class RawMonetaryAccountBankClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -245,6 +255,10 @@ class RawMonetaryAccountBankClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_monetary_account_bank_for_user(
@@ -318,7 +332,7 @@ class RawMonetaryAccountBankClient:
             With MonetaryAccountBank you can create a new bank account, retrieve information regarding your existing MonetaryAccountBanks and update specific fields of an existing MonetaryAccountBank. Examples of fields that can be updated are the description, the daily limit and the avatar of the account.<br/><br/>Notification filters can be set on a monetary account level to receive callbacks. For more information check the <a href="/api/1/page/callbacks">dedicated callbacks page</a>.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-bank/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account-bank/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "avatar_uuid": avatar_uuid,
@@ -357,9 +371,9 @@ class RawMonetaryAccountBankClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -367,6 +381,10 @@ class RawMonetaryAccountBankClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -394,7 +412,7 @@ class AsyncRawMonetaryAccountBankClient:
             With MonetaryAccountBank you can create a new bank account, retrieve information regarding your existing MonetaryAccountBanks and update specific fields of an existing MonetaryAccountBank. Examples of fields that can be updated are the description, the daily limit and the avatar of the account.<br/><br/>Notification filters can be set on a monetary account level to receive callbacks. For more information check the <a href="/api/1/page/callbacks">dedicated callbacks page</a>.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-bank",
+            f"user/{encode_path_param(user_id)}/monetary-account-bank",
             method="GET",
             request_options=request_options,
         )
@@ -412,9 +430,9 @@ class AsyncRawMonetaryAccountBankClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -422,6 +440,10 @@ class AsyncRawMonetaryAccountBankClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_monetary_account_bank_for_user(
@@ -491,7 +513,7 @@ class AsyncRawMonetaryAccountBankClient:
             With MonetaryAccountBank you can create a new bank account, retrieve information regarding your existing MonetaryAccountBanks and update specific fields of an existing MonetaryAccountBank. Examples of fields that can be updated are the description, the daily limit and the avatar of the account.<br/><br/>Notification filters can be set on a monetary account level to receive callbacks. For more information check the <a href="/api/1/page/callbacks">dedicated callbacks page</a>.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-bank",
+            f"user/{encode_path_param(user_id)}/monetary-account-bank",
             method="POST",
             json={
                 "avatar_uuid": avatar_uuid,
@@ -530,9 +552,9 @@ class AsyncRawMonetaryAccountBankClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -540,6 +562,10 @@ class AsyncRawMonetaryAccountBankClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_monetary_account_bank_for_user(
@@ -565,7 +591,7 @@ class AsyncRawMonetaryAccountBankClient:
             With MonetaryAccountBank you can create a new bank account, retrieve information regarding your existing MonetaryAccountBanks and update specific fields of an existing MonetaryAccountBank. Examples of fields that can be updated are the description, the daily limit and the avatar of the account.<br/><br/>Notification filters can be set on a monetary account level to receive callbacks. For more information check the <a href="/api/1/page/callbacks">dedicated callbacks page</a>.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-bank/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account-bank/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -583,9 +609,9 @@ class AsyncRawMonetaryAccountBankClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -593,6 +619,10 @@ class AsyncRawMonetaryAccountBankClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_monetary_account_bank_for_user(
@@ -666,7 +696,7 @@ class AsyncRawMonetaryAccountBankClient:
             With MonetaryAccountBank you can create a new bank account, retrieve information regarding your existing MonetaryAccountBanks and update specific fields of an existing MonetaryAccountBank. Examples of fields that can be updated are the description, the daily limit and the avatar of the account.<br/><br/>Notification filters can be set on a monetary account level to receive callbacks. For more information check the <a href="/api/1/page/callbacks">dedicated callbacks page</a>.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account-bank/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account-bank/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "avatar_uuid": avatar_uuid,
@@ -705,9 +735,9 @@ class AsyncRawMonetaryAccountBankClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -715,4 +745,8 @@ class AsyncRawMonetaryAccountBankClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

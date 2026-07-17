@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class Category(str, enum.Enum):
+class Category(enum.StrEnum):
     REGISTERED = "REGISTERED"
     ACTIVATED = "ACTIVATED"
     THIRD_PARTY = "THIRD_PARTY"

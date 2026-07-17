@@ -13,12 +13,18 @@ class Team(UniversalBaseModel):
     Team
     """
 
-    id: typing_extensions.Annotated[str, FieldMetadata(alias="$id")] = pydantic.Field()
+    id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="$id"), pydantic.Field(alias="$id", description="Team ID.")
+    ]
     """
     Team ID.
     """
 
-    date_created: typing_extensions.Annotated[int, FieldMetadata(alias="dateCreated")] = pydantic.Field()
+    date_created: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="dateCreated"),
+        pydantic.Field(alias="dateCreated", description="Team creation date in Unix timestamp."),
+    ]
     """
     Team creation date in Unix timestamp.
     """

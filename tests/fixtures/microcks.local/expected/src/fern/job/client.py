@@ -372,9 +372,7 @@ class JobClient:
         )
         return _response.data
 
-    def delete_import_job(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Optional[typing.Any]:
+    def delete_import_job(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> typing.Any:
         """
         Delete an ImportJob
 
@@ -388,7 +386,7 @@ class JobClient:
 
         Returns
         -------
-        typing.Optional[typing.Any]
+        typing.Any
             ImportJob deleted
 
         Examples
@@ -898,7 +896,7 @@ class AsyncJobClient:
 
     async def delete_import_job(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Optional[typing.Any]:
+    ) -> typing.Any:
         """
         Delete an ImportJob
 
@@ -912,7 +910,7 @@ class AsyncJobClient:
 
         Returns
         -------
-        typing.Optional[typing.Any]
+        typing.Any
             ImportJob deleted
 
         Examples

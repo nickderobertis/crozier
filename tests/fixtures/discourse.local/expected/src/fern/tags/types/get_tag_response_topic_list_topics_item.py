@@ -34,7 +34,7 @@ class GetTagResponseTopicListTopicsItem(UniversalBaseModel):
     posts_count: typing.Optional[int] = None
     reply_count: typing.Optional[int] = None
     slug: typing.Optional[str] = None
-    tags: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    tags: typing.Optional[typing.List[typing.Any]] = None
     title: typing.Optional[str] = None
     unpinned: typing.Optional[str] = None
     unread_posts: typing.Optional[int] = None

@@ -12,9 +12,11 @@ from .writable_location_status import WritableLocationStatus
 
 
 class WritableLocation(UniversalBaseModel):
-    depth: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="_depth")] = None
+    depth: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="_depth"), pydantic.Field(alias="_depth")
+    ] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     device_count: typing.Optional[int] = None
     display: typing.Optional[str] = None

@@ -15,7 +15,11 @@ class UnidirectionalEvent(AbstractExchange):
     Representation of an unidirectional exchange as an event message
     """
 
-    event_message: typing_extensions.Annotated[EventMessage, FieldMetadata(alias="eventMessage")] = pydantic.Field()
+    event_message: typing_extensions.Annotated[
+        EventMessage,
+        FieldMetadata(alias="eventMessage"),
+        pydantic.Field(alias="eventMessage", description="Asynchronous message for this unidirectional event"),
+    ]
     """
     Asynchronous message for this unidirectional event
     """

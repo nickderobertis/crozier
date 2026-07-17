@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostPortfolioAnalysisSharpeRatioConfidenceIntervalRequestConfidenceIntervalType(str, enum.Enum):
+class PostPortfolioAnalysisSharpeRatioConfidenceIntervalRequestConfidenceIntervalType(enum.StrEnum):
     """
     The type of confidence interval to build
     """

@@ -10,9 +10,11 @@ from .mailer_mailgun_exporter_config_type import MailerMailgunExporterConfigType
 
 
 class MailerMailgunExporterConfig(UniversalBaseModel):
-    api_key: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="apiKey")] = pydantic.Field(
-        default=None
-    )
+    api_key: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="apiKey"),
+        pydantic.Field(alias="apiKey", description="Mailgun apiKey"),
+    ] = None
     """
     Mailgun apiKey
     """

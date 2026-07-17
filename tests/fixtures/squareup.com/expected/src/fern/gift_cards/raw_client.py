@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -18,6 +19,7 @@ from ..types.retrieve_gift_card_from_gan_response import RetrieveGiftCardFromGan
 from ..types.retrieve_gift_card_from_nonce_response import RetrieveGiftCardFromNonceResponse
 from ..types.retrieve_gift_card_response import RetrieveGiftCardResponse
 from ..types.unlink_customer_from_gift_card_response import UnlinkCustomerFromGiftCardResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -99,6 +101,10 @@ class RawGiftCardsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_gift_card(
@@ -161,6 +167,10 @@ class RawGiftCardsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_gift_card_from_gan(
@@ -209,6 +219,10 @@ class RawGiftCardsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_gift_card_from_nonce(
@@ -255,6 +269,10 @@ class RawGiftCardsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def link_customer_to_gift_card(
@@ -280,7 +298,7 @@ class RawGiftCardsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/gift-cards/{jsonable_encoder(gift_card_id)}/link-customer",
+            f"v2/gift-cards/{encode_path_param(gift_card_id)}/link-customer",
             method="POST",
             json={
                 "customer_id": customer_id,
@@ -304,6 +322,10 @@ class RawGiftCardsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def unlink_customer_from_gift_card(
@@ -329,7 +351,7 @@ class RawGiftCardsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/gift-cards/{jsonable_encoder(gift_card_id)}/unlink-customer",
+            f"v2/gift-cards/{encode_path_param(gift_card_id)}/unlink-customer",
             method="POST",
             json={
                 "customer_id": customer_id,
@@ -353,6 +375,10 @@ class RawGiftCardsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_gift_card(
@@ -375,7 +401,7 @@ class RawGiftCardsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/gift-cards/{jsonable_encoder(id)}",
+            f"v2/gift-cards/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -392,6 +418,10 @@ class RawGiftCardsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -471,6 +501,10 @@ class AsyncRawGiftCardsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_gift_card(
@@ -533,6 +567,10 @@ class AsyncRawGiftCardsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_gift_card_from_gan(
@@ -581,6 +619,10 @@ class AsyncRawGiftCardsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_gift_card_from_nonce(
@@ -627,6 +669,10 @@ class AsyncRawGiftCardsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def link_customer_to_gift_card(
@@ -652,7 +698,7 @@ class AsyncRawGiftCardsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/gift-cards/{jsonable_encoder(gift_card_id)}/link-customer",
+            f"v2/gift-cards/{encode_path_param(gift_card_id)}/link-customer",
             method="POST",
             json={
                 "customer_id": customer_id,
@@ -676,6 +722,10 @@ class AsyncRawGiftCardsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def unlink_customer_from_gift_card(
@@ -701,7 +751,7 @@ class AsyncRawGiftCardsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/gift-cards/{jsonable_encoder(gift_card_id)}/unlink-customer",
+            f"v2/gift-cards/{encode_path_param(gift_card_id)}/unlink-customer",
             method="POST",
             json={
                 "customer_id": customer_id,
@@ -725,6 +775,10 @@ class AsyncRawGiftCardsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_gift_card(
@@ -747,7 +801,7 @@ class AsyncRawGiftCardsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/gift-cards/{jsonable_encoder(id)}",
+            f"v2/gift-cards/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -764,4 +818,8 @@ class AsyncRawGiftCardsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

@@ -9,7 +9,7 @@ from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 class GetSiteResponseArchetypesItem(UniversalBaseModel):
     id: str
     name: str
-    options: typing.List[typing.Optional[typing.Any]]
+    options: typing.List[typing.Any]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

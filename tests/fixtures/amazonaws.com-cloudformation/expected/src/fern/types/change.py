@@ -15,23 +15,38 @@ class Change(UniversalBaseModel):
     The <code>Change</code> structure describes the changes CloudFormation will perform if you execute the change set.
     """
 
-    type: typing_extensions.Annotated[typing.Optional[ChangeType], FieldMetadata(alias="Type")] = pydantic.Field(
-        default=None
-    )
+    type: typing_extensions.Annotated[
+        typing.Optional[ChangeType],
+        FieldMetadata(alias="Type"),
+        pydantic.Field(
+            alias="Type",
+            description="The type of entity that CloudFormation changes. Currently, the only entity type is <code>Resource</code>.",
+        ),
+    ] = None
     """
     The type of entity that CloudFormation changes. Currently, the only entity type is <code>Resource</code>.
     """
 
     hook_invocation_count: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="HookInvocationCount")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="HookInvocationCount"),
+        pydantic.Field(
+            alias="HookInvocationCount",
+            description="Is either <code>null</code>, if no hooks invoke for the resource, or contains the number of hooks that will invoke for the resource.",
+        ),
+    ] = None
     """
     Is either <code>null</code>, if no hooks invoke for the resource, or contains the number of hooks that will invoke for the resource.
     """
 
     resource_change: typing_extensions.Annotated[
-        typing.Optional[ChangeResourceChange], FieldMetadata(alias="ResourceChange")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ChangeResourceChange],
+        FieldMetadata(alias="ResourceChange"),
+        pydantic.Field(
+            alias="ResourceChange",
+            description="A <code>ResourceChange</code> structure that describes the resource and action that CloudFormation will perform.",
+        ),
+    ] = None
     """
     A <code>ResourceChange</code> structure that describes the resource and action that CloudFormation will perform.
     """

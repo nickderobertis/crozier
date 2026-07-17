@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DisputeState(str, enum.Enum):
+class DisputeState(enum.StrEnum):
     """
     The list of possible dispute states.
     """

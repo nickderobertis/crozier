@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedRequestClusteringMethod(str, enum.Enum):
+class PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedRequestClusteringMethod(enum.StrEnum):
     """
     The hierarchical clustering method to use
     """

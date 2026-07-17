@@ -10,7 +10,9 @@ from .connection_id import ConnectionId
 
 
 class ConnectionIdRequestBody(UniversalBaseModel):
-    connection_id: typing_extensions.Annotated[ConnectionId, FieldMetadata(alias="connectionId")]
+    connection_id: typing_extensions.Annotated[
+        ConnectionId, FieldMetadata(alias="connectionId"), pydantic.Field(alias="connectionId")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -14,7 +14,11 @@ class PostListingsRequestCondition(UniversalBaseModel):
     Condition
     """
 
-    uuid_: typing_extensions.Annotated[PostListingsRequestConditionUuid, FieldMetadata(alias="uuid")] = pydantic.Field()
+    uuid_: typing_extensions.Annotated[
+        PostListingsRequestConditionUuid,
+        FieldMetadata(alias="uuid"),
+        pydantic.Field(alias="uuid", description="Condition UUID"),
+    ]
     """
     Condition UUID
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class StackSummaryStackStatus(str, enum.Enum):
+class StackSummaryStackStatus(enum.StrEnum):
     """
     The current status of the stack.
     """

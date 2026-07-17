@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DayOfWeek(str, enum.Enum):
+class DayOfWeek(enum.StrEnum):
     """
     Indicates the specific day  of the week.
     """

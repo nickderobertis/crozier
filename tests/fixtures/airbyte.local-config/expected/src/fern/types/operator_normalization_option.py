@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OperatorNormalizationOption(str, enum.Enum):
+class OperatorNormalizationOption(enum.StrEnum):
     BASIC = "basic"
 
     def visit(self, basic: typing.Callable[[], T_Result]) -> T_Result:

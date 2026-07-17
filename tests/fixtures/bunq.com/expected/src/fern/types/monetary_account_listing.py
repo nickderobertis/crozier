@@ -16,43 +16,55 @@ from .monetary_account_savings import MonetaryAccountSavings
 
 class MonetaryAccountListing(UniversalBaseModel):
     monetary_account_bank: typing_extensions.Annotated[
-        typing.Optional[MonetaryAccountBank], FieldMetadata(alias="MonetaryAccountBank")
-    ] = pydantic.Field(default=None)
+        typing.Optional[MonetaryAccountBank],
+        FieldMetadata(alias="MonetaryAccountBank"),
+        pydantic.Field(alias="MonetaryAccountBank", description=""),
+    ] = None
     """
     
     """
 
     monetary_account_external: typing_extensions.Annotated[
-        typing.Optional[MonetaryAccountExternal], FieldMetadata(alias="MonetaryAccountExternal")
-    ] = pydantic.Field(default=None)
+        typing.Optional[MonetaryAccountExternal],
+        FieldMetadata(alias="MonetaryAccountExternal"),
+        pydantic.Field(alias="MonetaryAccountExternal", description=""),
+    ] = None
     """
     
     """
 
     monetary_account_investment: typing_extensions.Annotated[
-        typing.Optional[MonetaryAccountInvestment], FieldMetadata(alias="MonetaryAccountInvestment")
-    ] = pydantic.Field(default=None)
+        typing.Optional[MonetaryAccountInvestment],
+        FieldMetadata(alias="MonetaryAccountInvestment"),
+        pydantic.Field(alias="MonetaryAccountInvestment", description=""),
+    ] = None
     """
     
     """
 
     monetary_account_joint: typing_extensions.Annotated[
-        typing.Optional[MonetaryAccountJoint], FieldMetadata(alias="MonetaryAccountJoint")
-    ] = pydantic.Field(default=None)
+        typing.Optional[MonetaryAccountJoint],
+        FieldMetadata(alias="MonetaryAccountJoint"),
+        pydantic.Field(alias="MonetaryAccountJoint", description=""),
+    ] = None
     """
     
     """
 
     monetary_account_light: typing_extensions.Annotated[
-        typing.Optional[MonetaryAccountLight], FieldMetadata(alias="MonetaryAccountLight")
-    ] = pydantic.Field(default=None)
+        typing.Optional[MonetaryAccountLight],
+        FieldMetadata(alias="MonetaryAccountLight"),
+        pydantic.Field(alias="MonetaryAccountLight", description=""),
+    ] = None
     """
     
     """
 
     monetary_account_savings: typing_extensions.Annotated[
-        typing.Optional[MonetaryAccountSavings], FieldMetadata(alias="MonetaryAccountSavings")
-    ] = pydantic.Field(default=None)
+        typing.Optional[MonetaryAccountSavings],
+        FieldMetadata(alias="MonetaryAccountSavings"),
+        pydantic.Field(alias="MonetaryAccountSavings", description=""),
+    ] = None
     """
     
     """

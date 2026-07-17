@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableWirelessLinkStatus(str, enum.Enum):
+class WritableWirelessLinkStatus(enum.StrEnum):
     CONNECTED = "connected"
     PLANNED = "planned"
     DECOMMISSIONING = "decommissioning"

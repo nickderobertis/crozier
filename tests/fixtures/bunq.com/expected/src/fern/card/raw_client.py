@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -18,6 +19,7 @@ from ..types.card_pin_assignment import CardPinAssignment
 from ..types.card_primary_account_number import CardPrimaryAccountNumber
 from ..types.card_read import CardRead
 from ..types.card_update import CardUpdate
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -47,7 +49,7 @@ class RawCardClient:
             Endpoint for retrieving details for the cards the user has access to.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card",
+            f"user/{encode_path_param(user_id)}/card",
             method="GET",
             request_options=request_options,
         )
@@ -65,9 +67,9 @@ class RawCardClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -75,6 +77,10 @@ class RawCardClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_card_for_user(
@@ -100,7 +106,7 @@ class RawCardClient:
             Endpoint for retrieving details for the cards the user has access to.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -118,9 +124,9 @@ class RawCardClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -128,6 +134,10 @@ class RawCardClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_card_for_user(
@@ -197,7 +207,7 @@ class RawCardClient:
             Endpoint for retrieving details for the cards the user has access to.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "activation_code": activation_code,
@@ -243,9 +253,9 @@ class RawCardClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -253,6 +263,10 @@ class RawCardClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -280,7 +294,7 @@ class AsyncRawCardClient:
             Endpoint for retrieving details for the cards the user has access to.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card",
+            f"user/{encode_path_param(user_id)}/card",
             method="GET",
             request_options=request_options,
         )
@@ -298,9 +312,9 @@ class AsyncRawCardClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -308,6 +322,10 @@ class AsyncRawCardClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_card_for_user(
@@ -333,7 +351,7 @@ class AsyncRawCardClient:
             Endpoint for retrieving details for the cards the user has access to.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -351,9 +369,9 @@ class AsyncRawCardClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -361,6 +379,10 @@ class AsyncRawCardClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_card_for_user(
@@ -430,7 +452,7 @@ class AsyncRawCardClient:
             Endpoint for retrieving details for the cards the user has access to.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "activation_code": activation_code,
@@ -476,9 +498,9 @@ class AsyncRawCardClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -486,4 +508,8 @@ class AsyncRawCardClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

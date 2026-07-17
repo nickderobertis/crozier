@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DataType(str, enum.Enum):
+class DataType(enum.StrEnum):
     STRING = "string"
     NUMBER = "number"
     BOOLEAN = "boolean"

@@ -35,24 +35,39 @@ class ObReadProduct2DataProductItemOtherProductType(UniversalBaseModel):
     credit_interest: typing_extensions.Annotated[
         typing.Optional[ObReadProduct2DataProductItemOtherProductTypeCreditInterest],
         FieldMetadata(alias="CreditInterest"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="CreditInterest", description="Details about the interest that may be payable to the Account holders"
+        ),
+    ] = None
     """
     Details about the interest that may be payable to the Account holders
     """
 
-    description: typing_extensions.Annotated[str, FieldMetadata(alias="Description")] = pydantic.Field()
+    description: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="Description"),
+        pydantic.Field(alias="Description", description="Description of the Product associated with the account"),
+    ]
     """
     Description of the Product associated with the account
     """
 
     loan_interest: typing_extensions.Annotated[
-        typing.Optional[ObReadProduct2DataProductItemOtherProductTypeLoanInterest], FieldMetadata(alias="LoanInterest")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObReadProduct2DataProductItemOtherProductTypeLoanInterest],
+        FieldMetadata(alias="LoanInterest"),
+        pydantic.Field(
+            alias="LoanInterest", description="Details about the interest that may be payable to the SME Loan holders"
+        ),
+    ] = None
     """
     Details about the interest that may be payable to the SME Loan holders
     """
 
-    name: typing_extensions.Annotated[str, FieldMetadata(alias="Name")] = pydantic.Field()
+    name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="Name"),
+        pydantic.Field(alias="Name", description="Long name associated with the product"),
+    ]
     """
     Long name associated with the product
     """
@@ -60,10 +75,13 @@ class ObReadProduct2DataProductItemOtherProductType(UniversalBaseModel):
     other_fees_charges: typing_extensions.Annotated[
         typing.Optional[typing.List[ObReadProduct2DataProductItemOtherProductTypeOtherFeesChargesItem]],
         FieldMetadata(alias="OtherFeesCharges"),
+        pydantic.Field(alias="OtherFeesCharges"),
     ] = None
     overdraft: typing_extensions.Annotated[
-        typing.Optional[ObReadProduct2DataProductItemOtherProductTypeOverdraft], FieldMetadata(alias="Overdraft")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObReadProduct2DataProductItemOtherProductTypeOverdraft],
+        FieldMetadata(alias="Overdraft"),
+        pydantic.Field(alias="Overdraft", description="Borrowing details"),
+    ] = None
     """
     Borrowing details
     """
@@ -71,16 +89,21 @@ class ObReadProduct2DataProductItemOtherProductType(UniversalBaseModel):
     product_details: typing_extensions.Annotated[
         typing.Optional[ObReadProduct2DataProductItemOtherProductTypeProductDetails],
         FieldMetadata(alias="ProductDetails"),
+        pydantic.Field(alias="ProductDetails"),
     ] = None
     repayment: typing_extensions.Annotated[
-        typing.Optional[ObReadProduct2DataProductItemOtherProductTypeRepayment], FieldMetadata(alias="Repayment")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObReadProduct2DataProductItemOtherProductTypeRepayment],
+        FieldMetadata(alias="Repayment"),
+        pydantic.Field(alias="Repayment", description="Repayment details of the Loan product"),
+    ] = None
     """
     Repayment details of the Loan product
     """
 
     supplementary_data: typing_extensions.Annotated[
-        typing.Optional[ObSupplementaryData1], FieldMetadata(alias="SupplementaryData")
+        typing.Optional[ObSupplementaryData1],
+        FieldMetadata(alias="SupplementaryData"),
+        pydantic.Field(alias="SupplementaryData"),
     ] = None
 
     if IS_PYDANTIC_V2:

@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -18,6 +19,7 @@ from ..types.share_detail import ShareDetail
 from ..types.share_invite_monetary_account_response_listing import ShareInviteMonetaryAccountResponseListing
 from ..types.share_invite_monetary_account_response_read import ShareInviteMonetaryAccountResponseRead
 from ..types.share_invite_monetary_account_response_update import ShareInviteMonetaryAccountResponseUpdate
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -47,7 +49,7 @@ class RawShareInviteMonetaryAccountResponseClient:
             Used to view or respond to shares a user was invited to. See 'share-invite-bank-inquiry' for more information about the inquiring endpoint.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/share-invite-monetary-account-response",
+            f"user/{encode_path_param(user_id)}/share-invite-monetary-account-response",
             method="GET",
             request_options=request_options,
         )
@@ -65,9 +67,9 @@ class RawShareInviteMonetaryAccountResponseClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -75,6 +77,10 @@ class RawShareInviteMonetaryAccountResponseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_share_invite_monetary_account_response_for_user(
@@ -100,7 +106,7 @@ class RawShareInviteMonetaryAccountResponseClient:
             Used to view or respond to shares a user was invited to. See 'share-invite-bank-inquiry' for more information about the inquiring endpoint.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/share-invite-monetary-account-response/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/share-invite-monetary-account-response/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -118,9 +124,9 @@ class RawShareInviteMonetaryAccountResponseClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -128,6 +134,10 @@ class RawShareInviteMonetaryAccountResponseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_share_invite_monetary_account_response_for_user(
@@ -221,7 +231,7 @@ class RawShareInviteMonetaryAccountResponseClient:
             Used to view or respond to shares a user was invited to. See 'share-invite-bank-inquiry' for more information about the inquiring endpoint.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/share-invite-monetary-account-response/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/share-invite-monetary-account-response/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "access_type": access_type,
@@ -269,9 +279,9 @@ class RawShareInviteMonetaryAccountResponseClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -279,6 +289,10 @@ class RawShareInviteMonetaryAccountResponseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -306,7 +320,7 @@ class AsyncRawShareInviteMonetaryAccountResponseClient:
             Used to view or respond to shares a user was invited to. See 'share-invite-bank-inquiry' for more information about the inquiring endpoint.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/share-invite-monetary-account-response",
+            f"user/{encode_path_param(user_id)}/share-invite-monetary-account-response",
             method="GET",
             request_options=request_options,
         )
@@ -324,9 +338,9 @@ class AsyncRawShareInviteMonetaryAccountResponseClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -334,6 +348,10 @@ class AsyncRawShareInviteMonetaryAccountResponseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_share_invite_monetary_account_response_for_user(
@@ -359,7 +377,7 @@ class AsyncRawShareInviteMonetaryAccountResponseClient:
             Used to view or respond to shares a user was invited to. See 'share-invite-bank-inquiry' for more information about the inquiring endpoint.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/share-invite-monetary-account-response/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/share-invite-monetary-account-response/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -377,9 +395,9 @@ class AsyncRawShareInviteMonetaryAccountResponseClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -387,6 +405,10 @@ class AsyncRawShareInviteMonetaryAccountResponseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_share_invite_monetary_account_response_for_user(
@@ -480,7 +502,7 @@ class AsyncRawShareInviteMonetaryAccountResponseClient:
             Used to view or respond to shares a user was invited to. See 'share-invite-bank-inquiry' for more information about the inquiring endpoint.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/share-invite-monetary-account-response/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/share-invite-monetary-account-response/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "access_type": access_type,
@@ -528,9 +550,9 @@ class AsyncRawShareInviteMonetaryAccountResponseClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -538,4 +560,8 @@ class AsyncRawShareInviteMonetaryAccountResponseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

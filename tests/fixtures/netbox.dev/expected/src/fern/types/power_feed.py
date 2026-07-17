@@ -18,7 +18,9 @@ from .power_feed_type import PowerFeedType
 
 
 class PowerFeed(UniversalBaseModel):
-    occupied: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="_occupied")] = None
+    occupied: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="_occupied"), pydantic.Field(alias="_occupied")
+    ] = None
     amperage: typing.Optional[int] = None
     cable: typing.Optional[NestedCable] = None
     cable_end: typing.Optional[str] = None
@@ -32,7 +34,7 @@ class PowerFeed(UniversalBaseModel):
     connected_endpoints_reachable: typing.Optional[bool] = None
     connected_endpoints_type: typing.Optional[str] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     display: typing.Optional[str] = None
     id: typing.Optional[int] = None

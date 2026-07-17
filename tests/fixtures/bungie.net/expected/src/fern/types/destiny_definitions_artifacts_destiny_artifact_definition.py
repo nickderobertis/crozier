@@ -26,7 +26,11 @@ class DestinyDefinitionsArtifactsDestinyArtifactDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="displayProperties",
+            description="Any basic display info we know about the Artifact. Currently sourced from a related inventory item, but the source of this data is subject to change.",
+        ),
+    ] = None
     """
     Any basic display info we know about the Artifact. Currently sourced from a related inventory item, but the source of this data is subject to change.
     """
@@ -57,7 +61,11 @@ class DestinyDefinitionsArtifactsDestinyArtifactDefinition(UniversalBaseModel):
     translation_block: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsDestinyItemTranslationBlockDefinition],
         FieldMetadata(alias="translationBlock"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="translationBlock",
+            description="Any Geometry/3D info we know about the Artifact. Currently sourced from a related inventory item's gearset information, but the source of this data is subject to change.",
+        ),
+    ] = None
     """
     Any Geometry/3D info we know about the Artifact. Currently sourced from a related inventory item's gearset information, but the source of this data is subject to change.
     """

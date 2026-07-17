@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InterfaceModeValue(str, enum.Enum):
+class InterfaceModeValue(enum.StrEnum):
     ACCESS = "access"
     TAGGED = "tagged"
     TAGGED_ALL = "tagged-all"

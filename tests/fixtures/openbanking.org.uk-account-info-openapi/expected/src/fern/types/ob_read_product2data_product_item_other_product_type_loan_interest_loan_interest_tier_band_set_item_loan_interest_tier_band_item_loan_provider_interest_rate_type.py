@@ -1,13 +1,14 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
 class ObReadProduct2DataProductItemOtherProductTypeLoanInterestLoanInterestTierBandSetItemLoanInterestTierBandItemLoanProviderInterestRateType(
-    str, enum.Enum
+    enum.StrEnum
 ):
     """
     Interest rate types, other than APR, which financial institutions may use to describe the annual interest rate payable for the SME Loan.

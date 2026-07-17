@@ -21,7 +21,7 @@ class Dataset(UniversalBaseModel):
     The dataset creation time
     """
 
-    extra: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    extra: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     The dataset extra
     """

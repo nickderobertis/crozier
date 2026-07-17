@@ -26,12 +26,14 @@ class ObReadProduct2DataProductItemOtherProductTypeRepaymentRepaymentFeeCharges(
             ]
         ],
         FieldMetadata(alias="RepaymentFeeChargeCap"),
+        pydantic.Field(alias="RepaymentFeeChargeCap"),
     ] = None
     repayment_fee_charge_detail: typing_extensions.Annotated[
         typing.List[
             ObReadProduct2DataProductItemOtherProductTypeRepaymentRepaymentFeeChargesRepaymentFeeChargeDetailItem
         ],
         FieldMetadata(alias="RepaymentFeeChargeDetail"),
+        pydantic.Field(alias="RepaymentFeeChargeDetail"),
     ]
 
     if IS_PYDANTIC_V2:

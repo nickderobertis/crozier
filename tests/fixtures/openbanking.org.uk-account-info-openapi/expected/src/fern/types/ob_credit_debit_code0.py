@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObCreditDebitCode0(str, enum.Enum):
+class ObCreditDebitCode0(enum.StrEnum):
     """
     Indicates whether the amount is a credit or a debit.
     Usage: A zero amount is considered to be a credit amount.

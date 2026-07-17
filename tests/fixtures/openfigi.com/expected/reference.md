@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">post_mapping</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_mapping</a>(...) -> BulkMappingJobResult</code></summary>
 <dl>
 <dd>
 
@@ -27,10 +27,13 @@ Allows mapping from third-party identifiers to FIGIs.
 
 ```python
 from fern import FernApi, MappingJob, MappingJobIdType
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_mapping(
     request=[
         MappingJob(
@@ -74,7 +77,7 @@ client.post_mapping(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_mapping_values_key</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_mapping_values_key</a>(...) -> GetMappingValuesKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -102,10 +105,13 @@ Get values for enum-like fields.
 
 ```python
 from fern import FernApi, GetMappingValuesKeyRequestKey
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_mapping_values_key(
     key=GetMappingValuesKeyRequestKey.ID_TYPE,
 )

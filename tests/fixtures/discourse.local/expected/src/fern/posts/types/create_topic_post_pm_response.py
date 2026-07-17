@@ -30,7 +30,7 @@ class CreateTopicPostPmResponse(UniversalBaseModel):
     hidden: bool
     id: int
     incoming_link_count: int
-    mentioned_users: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    mentioned_users: typing.Optional[typing.List[typing.Any]] = None
     moderator: bool
     name: typing.Optional[str] = None
     post_number: int

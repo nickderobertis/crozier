@@ -13,16 +13,20 @@ class KafkaConfig(UniversalBaseModel):
     The configuration for kafka access
     """
 
-    key_pass: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="keyPass")] = pydantic.Field(
-        default=None
-    )
+    key_pass: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="keyPass"),
+        pydantic.Field(alias="keyPass", description="Optional keypass"),
+    ] = None
     """
     Optional keypass
     """
 
-    key_store: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="keyStore")] = pydantic.Field(
-        default=None
-    )
+    key_store: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="keyStore"),
+        pydantic.Field(alias="keyStore", description="Optional path to keystore"),
+    ] = None
     """
     Optional path to keystore
     """

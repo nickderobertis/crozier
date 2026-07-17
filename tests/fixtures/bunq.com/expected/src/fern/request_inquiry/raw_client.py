@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -22,6 +23,7 @@ from ..types.request_inquiry_listing import RequestInquiryListing
 from ..types.request_inquiry_read import RequestInquiryRead
 from ..types.request_inquiry_update import RequestInquiryUpdate
 from ..types.request_reference_split_the_bill_anchor_object import RequestReferenceSplitTheBillAnchorObject
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -54,7 +56,7 @@ class RawRequestInquiryClient:
             RequestInquiry, aka 'RFP' (Request for Payment), is one of the innovative features that bunq offers. To request payment from another bunq account a new Request Inquiry is created. As with payments you can add attachments to a RFP. Requests for Payment are the foundation for a number of consumer features like 'Split the bill' and 'Request forwarding'. We invite you to invent your own based on the bunq api!
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry",
             method="GET",
             request_options=request_options,
         )
@@ -72,9 +74,9 @@ class RawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -82,6 +84,10 @@ class RawRequestInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_request_inquiry_for_user_monetary_account(
@@ -231,7 +237,7 @@ class RawRequestInquiryClient:
             RequestInquiry, aka 'RFP' (Request for Payment), is one of the innovative features that bunq offers. To request payment from another bunq account a new Request Inquiry is created. As with payments you can add attachments to a RFP. Requests for Payment are the foundation for a number of consumer features like 'Split the bill' and 'Request forwarding'. We invite you to invent your own based on the bunq api!
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id_)}/request-inquiry",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id_)}/request-inquiry",
             method="POST",
             json={
                 "address_billing": convert_and_respect_annotation_metadata(
@@ -307,9 +313,9 @@ class RawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -317,6 +323,10 @@ class RawRequestInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_request_inquiry_for_user_monetary_account(
@@ -350,7 +360,7 @@ class RawRequestInquiryClient:
             RequestInquiry, aka 'RFP' (Request for Payment), is one of the innovative features that bunq offers. To request payment from another bunq account a new Request Inquiry is created. As with payments you can add attachments to a RFP. Requests for Payment are the foundation for a number of consumer features like 'Split the bill' and 'Request forwarding'. We invite you to invent your own based on the bunq api!
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -368,9 +378,9 @@ class RawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -378,6 +388,10 @@ class RawRequestInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_request_inquiry_for_user_monetary_account(
@@ -531,7 +545,7 @@ class RawRequestInquiryClient:
             RequestInquiry, aka 'RFP' (Request for Payment), is one of the innovative features that bunq offers. To request payment from another bunq account a new Request Inquiry is created. As with payments you can add attachments to a RFP. Requests for Payment are the foundation for a number of consumer features like 'Split the bill' and 'Request forwarding'. We invite you to invent your own based on the bunq api!
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id_)}/request-inquiry/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id_)}/request-inquiry/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "address_billing": convert_and_respect_annotation_metadata(
@@ -607,9 +621,9 @@ class RawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -617,6 +631,10 @@ class RawRequestInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -647,7 +665,7 @@ class AsyncRawRequestInquiryClient:
             RequestInquiry, aka 'RFP' (Request for Payment), is one of the innovative features that bunq offers. To request payment from another bunq account a new Request Inquiry is created. As with payments you can add attachments to a RFP. Requests for Payment are the foundation for a number of consumer features like 'Split the bill' and 'Request forwarding'. We invite you to invent your own based on the bunq api!
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry",
             method="GET",
             request_options=request_options,
         )
@@ -665,9 +683,9 @@ class AsyncRawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -675,6 +693,10 @@ class AsyncRawRequestInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_request_inquiry_for_user_monetary_account(
@@ -824,7 +846,7 @@ class AsyncRawRequestInquiryClient:
             RequestInquiry, aka 'RFP' (Request for Payment), is one of the innovative features that bunq offers. To request payment from another bunq account a new Request Inquiry is created. As with payments you can add attachments to a RFP. Requests for Payment are the foundation for a number of consumer features like 'Split the bill' and 'Request forwarding'. We invite you to invent your own based on the bunq api!
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id_)}/request-inquiry",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id_)}/request-inquiry",
             method="POST",
             json={
                 "address_billing": convert_and_respect_annotation_metadata(
@@ -900,9 +922,9 @@ class AsyncRawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -910,6 +932,10 @@ class AsyncRawRequestInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_request_inquiry_for_user_monetary_account(
@@ -943,7 +969,7 @@ class AsyncRawRequestInquiryClient:
             RequestInquiry, aka 'RFP' (Request for Payment), is one of the innovative features that bunq offers. To request payment from another bunq account a new Request Inquiry is created. As with payments you can add attachments to a RFP. Requests for Payment are the foundation for a number of consumer features like 'Split the bill' and 'Request forwarding'. We invite you to invent your own based on the bunq api!
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-inquiry/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-inquiry/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -961,9 +987,9 @@ class AsyncRawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -971,6 +997,10 @@ class AsyncRawRequestInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_request_inquiry_for_user_monetary_account(
@@ -1124,7 +1154,7 @@ class AsyncRawRequestInquiryClient:
             RequestInquiry, aka 'RFP' (Request for Payment), is one of the innovative features that bunq offers. To request payment from another bunq account a new Request Inquiry is created. As with payments you can add attachments to a RFP. Requests for Payment are the foundation for a number of consumer features like 'Split the bill' and 'Request forwarding'. We invite you to invent your own based on the bunq api!
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id_)}/request-inquiry/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id_)}/request-inquiry/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "address_billing": convert_and_respect_annotation_metadata(
@@ -1200,9 +1230,9 @@ class AsyncRawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1210,4 +1240,8 @@ class AsyncRawRequestInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

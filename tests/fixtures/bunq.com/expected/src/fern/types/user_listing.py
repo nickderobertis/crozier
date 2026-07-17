@@ -13,30 +13,38 @@ from .user_person import UserPerson
 
 
 class UserListing(UniversalBaseModel):
-    user_api_key: typing_extensions.Annotated[typing.Optional[UserApiKey], FieldMetadata(alias="UserApiKey")] = (
-        pydantic.Field(default=None)
-    )
+    user_api_key: typing_extensions.Annotated[
+        typing.Optional[UserApiKey],
+        FieldMetadata(alias="UserApiKey"),
+        pydantic.Field(alias="UserApiKey", description=""),
+    ] = None
     """
     
     """
 
-    user_company: typing_extensions.Annotated[typing.Optional[UserCompany], FieldMetadata(alias="UserCompany")] = (
-        pydantic.Field(default=None)
-    )
+    user_company: typing_extensions.Annotated[
+        typing.Optional[UserCompany],
+        FieldMetadata(alias="UserCompany"),
+        pydantic.Field(alias="UserCompany", description=""),
+    ] = None
     """
     
     """
 
     user_payment_service_provider: typing_extensions.Annotated[
-        typing.Optional[UserPaymentServiceProvider], FieldMetadata(alias="UserPaymentServiceProvider")
-    ] = pydantic.Field(default=None)
+        typing.Optional[UserPaymentServiceProvider],
+        FieldMetadata(alias="UserPaymentServiceProvider"),
+        pydantic.Field(alias="UserPaymentServiceProvider", description=""),
+    ] = None
     """
     
     """
 
-    user_person: typing_extensions.Annotated[typing.Optional[UserPerson], FieldMetadata(alias="UserPerson")] = (
-        pydantic.Field(default=None)
-    )
+    user_person: typing_extensions.Annotated[
+        typing.Optional[UserPerson],
+        FieldMetadata(alias="UserPerson"),
+        pydantic.Field(alias="UserPerson", description=""),
+    ] = None
     """
     
     """

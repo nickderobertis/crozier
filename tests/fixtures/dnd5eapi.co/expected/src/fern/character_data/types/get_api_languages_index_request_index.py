@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetApiLanguagesIndexRequestIndex(str, enum.Enum):
+class GetApiLanguagesIndexRequestIndex(enum.StrEnum):
     ABYSSAL = "abyssal"
     CELESTIAL = "celestial"
     COMMON = "common"

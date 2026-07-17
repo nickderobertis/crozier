@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritablePowerOutletType(str, enum.Enum):
+class WritablePowerOutletType(enum.StrEnum):
     """
     Physical port type
     """

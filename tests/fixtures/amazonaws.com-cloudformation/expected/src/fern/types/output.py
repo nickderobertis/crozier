@@ -13,30 +13,38 @@ class Output(UniversalBaseModel):
     The Output data type.
     """
 
-    output_key: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="OutputKey")] = pydantic.Field(
-        default=None
-    )
+    output_key: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="OutputKey"),
+        pydantic.Field(alias="OutputKey", description="The key associated with the output."),
+    ] = None
     """
     The key associated with the output.
     """
 
-    output_value: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="OutputValue")] = (
-        pydantic.Field(default=None)
-    )
+    output_value: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="OutputValue"),
+        pydantic.Field(alias="OutputValue", description="The value associated with the output."),
+    ] = None
     """
     The value associated with the output.
     """
 
-    description: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Description")] = pydantic.Field(
-        default=None
-    )
+    description: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Description"),
+        pydantic.Field(alias="Description", description="User defined description associated with the output."),
+    ] = None
     """
     User defined description associated with the output.
     """
 
-    export_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="ExportName")] = pydantic.Field(
-        default=None
-    )
+    export_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="ExportName"),
+        pydantic.Field(alias="ExportName", description="The name of the export associated with the output."),
+    ] = None
     """
     The name of the export associated with the output.
     """

@@ -1,6 +1,6 @@
 # Reference
 ## Common
-<details><summary><code>client.common.<a href="src/fern/common/client.py">get_all_resource_ur_ls</a>()</code></summary>
+<details><summary><code>client.common.<a href="src/fern/common/client.py">get_all_resource_ur_ls</a>() -> typing.Dict[str, str]</code></summary>
 <dl>
 <dd>
 
@@ -28,8 +28,12 @@ Making a request to the API's base URL returns an object containing available en
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.common.get_all_resource_ur_ls()
 
 ```
@@ -58,7 +62,7 @@ client.common.get_all_resource_ur_ls()
 </dl>
 </details>
 
-<details><summary><code>client.common.<a href="src/fern/common/client.py">get_list_of_all_available_resources_for_an_endpoint</a>(...)</code></summary>
+<details><summary><code>client.common.<a href="src/fern/common/client.py">get_list_of_all_available_resources_for_an_endpoint</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -85,11 +89,14 @@ Currently only the [`/spells`](#get-/api/spells) and [`/monsters`](#get-/api/mon
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.common import GetApiEndpointRequestEndpoint
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.common.get_list_of_all_available_resources_for_an_endpoint(
     endpoint=GetApiEndpointRequestEndpoint.ABILITY_SCORES,
 )
@@ -129,7 +136,7 @@ client.common.get_list_of_all_available_resources_for_an_endpoint(
 </details>
 
 ## CharacterData
-<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_an_ability_score_by_index</a>(...)</code></summary>
+<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_an_ability_score_by_index</a>(...) -> AbilityScore</code></summary>
 <dl>
 <dd>
 
@@ -158,11 +165,14 @@ Represents one of the six abilities that describes a creature's physical and men
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.character_data import GetApiAbilityScoresIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.character_data.get_an_ability_score_by_index(
     index=GetApiAbilityScoresIndexRequestIndex.CHA,
 )
@@ -201,7 +211,7 @@ client.character_data.get_an_ability_score_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_an_alignment_by_index</a>(...)</code></summary>
+<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_an_alignment_by_index</a>(...) -> Alignment</code></summary>
 <dl>
 <dd>
 
@@ -230,11 +240,14 @@ A typical creature in the game world has an alignment, which broadly describes i
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.character_data import GetApiAlignmentsIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.character_data.get_an_alignment_by_index(
     index=GetApiAlignmentsIndexRequestIndex.CHAOTIC_NEUTRAL,
 )
@@ -273,7 +286,7 @@ client.character_data.get_an_alignment_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_a_background_by_index</a>(...)</code></summary>
+<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_a_background_by_index</a>(...) -> Background</code></summary>
 <dl>
 <dd>
 
@@ -304,11 +317,14 @@ _Note:_ acolyte is the only background included in the SRD.
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.character_data import GetApiBackgroundsIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.character_data.get_a_background_by_index(
     index=GetApiBackgroundsIndexRequestIndex.ACOLYTE,
 )
@@ -347,7 +363,7 @@ client.character_data.get_a_background_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_a_language_by_index</a>(...)</code></summary>
+<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_a_language_by_index</a>(...) -> Language</code></summary>
 <dl>
 <dd>
 
@@ -376,11 +392,14 @@ Your race indicates the languages your character can speak by default, and your 
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.character_data import GetApiLanguagesIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.character_data.get_a_language_by_index(
     index=GetApiLanguagesIndexRequestIndex.ABYSSAL,
 )
@@ -419,7 +438,7 @@ client.character_data.get_a_language_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_a_proficiency_by_index</a>(...)</code></summary>
+<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_a_proficiency_by_index</a>(...) -> Proficiency</code></summary>
 <dl>
 <dd>
 
@@ -449,8 +468,12 @@ By virtue of race, class, and background a character is proficient at using cert
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.character_data.get_a_proficiency_by_index(
     index="medium-armor",
 )
@@ -493,7 +516,7 @@ Available values can be found in the [`ResourceList`](#get-/api/-endpoint-) for 
 </dl>
 </details>
 
-<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_a_skill_by_index</a>(...)</code></summary>
+<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_a_skill_by_index</a>(...) -> Skill</code></summary>
 <dl>
 <dd>
 
@@ -522,11 +545,14 @@ Each ability covers a broad range of capabilities, including skills that a chara
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.character_data import GetApiSkillsIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.character_data.get_a_skill_by_index(
     index=GetApiSkillsIndexRequestIndex.ACROBATICS,
 )
@@ -566,7 +592,7 @@ client.character_data.get_a_skill_by_index(
 </details>
 
 ## Class
-<details><summary><code>client.class_.<a href="src/fern/class_/client.py">get_a_class_by_index</a>(...)</code></summary>
+<details><summary><code>client.class_.<a href="src/fern/class_/client.py">get_a_class_by_index</a>(...) -> Class</code></summary>
 <dl>
 <dd>
 
@@ -598,11 +624,14 @@ A character's class affects a character's available skills and abilities. [[SRD 
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.class_ import GetApiClassesIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.class_.get_a_class_by_index(
     index=GetApiClassesIndexRequestIndex.BARBARIAN,
 )
@@ -641,7 +670,7 @@ client.class_.get_a_class_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.class_.<a href="src/fern/class_/client.py">get_multiclassing_resource_for_a_class</a>(...)</code></summary>
+<details><summary><code>client.class_.<a href="src/fern/class_/client.py">get_multiclassing_resource_for_a_class</a>(...) -> Multiclassing</code></summary>
 <dl>
 <dd>
 
@@ -654,11 +683,14 @@ client.class_.get_a_class_by_index(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.class_ import GetApiClassesIndexMultiClassingRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.class_.get_multiclassing_resource_for_a_class(
     index=GetApiClassesIndexMultiClassingRequestIndex.BARBARIAN,
 )
@@ -697,7 +729,7 @@ client.class_.get_multiclassing_resource_for_a_class(
 </dl>
 </details>
 
-<details><summary><code>client.class_.<a href="src/fern/class_/client.py">get_spellcasting_info_for_a_class</a>(...)</code></summary>
+<details><summary><code>client.class_.<a href="src/fern/class_/client.py">get_spellcasting_info_for_a_class</a>(...) -> Spellcasting</code></summary>
 <dl>
 <dd>
 
@@ -710,11 +742,14 @@ client.class_.get_multiclassing_resource_for_a_class(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.class_ import GetApiClassesIndexSpellcastingRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.class_.get_spellcasting_info_for_a_class(
     index=GetApiClassesIndexSpellcastingRequestIndex.BARBARIAN,
 )
@@ -754,7 +789,7 @@ client.class_.get_spellcasting_info_for_a_class(
 </details>
 
 ## ClassResourceLists
-<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py">get_features_available_for_a_class</a>(...)</code></summary>
+<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py">get_features_available_for_a_class</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -767,11 +802,14 @@ client.class_.get_spellcasting_info_for_a_class(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.class_resource_lists import GetApiClassesIndexFeaturesRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.class_resource_lists.get_features_available_for_a_class(
     index=GetApiClassesIndexFeaturesRequestIndex.BARBARIAN,
 )
@@ -810,7 +848,7 @@ client.class_resource_lists.get_features_available_for_a_class(
 </dl>
 </details>
 
-<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py">get_proficiencies_available_for_a_class</a>(...)</code></summary>
+<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py">get_proficiencies_available_for_a_class</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -823,13 +861,14 @@ client.class_resource_lists.get_features_available_for_a_class(
 <dd>
 
 ```python
-from fern.class_resource_lists import (
-    GetApiClassesIndexProficienciesRequestIndex,
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.class_resource_lists import GetApiClassesIndexProficienciesRequestIndex
+
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
 )
 
-from fern import FernApi
-
-client = FernApi()
 client.class_resource_lists.get_proficiencies_available_for_a_class(
     index=GetApiClassesIndexProficienciesRequestIndex.BARBARIAN,
 )
@@ -868,7 +907,7 @@ client.class_resource_lists.get_proficiencies_available_for_a_class(
 </dl>
 </details>
 
-<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py">get_spells_available_for_a_class</a>(...)</code></summary>
+<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py">get_spells_available_for_a_class</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -881,11 +920,14 @@ client.class_resource_lists.get_proficiencies_available_for_a_class(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.class_resource_lists import GetApiClassesIndexSpellsRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.class_resource_lists.get_spells_available_for_a_class(
     index=GetApiClassesIndexSpellsRequestIndex.BARBARIAN,
 )
@@ -924,7 +966,7 @@ client.class_resource_lists.get_spells_available_for_a_class(
 </dl>
 </details>
 
-<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py">get_subclasses_available_for_a_class</a>(...)</code></summary>
+<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py">get_subclasses_available_for_a_class</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -937,11 +979,14 @@ client.class_resource_lists.get_spells_available_for_a_class(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.class_resource_lists import GetApiClassesIndexSubclassesRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.class_resource_lists.get_subclasses_available_for_a_class(
     index=GetApiClassesIndexSubclassesRequestIndex.BARBARIAN,
 )
@@ -981,7 +1026,7 @@ client.class_resource_lists.get_subclasses_available_for_a_class(
 </details>
 
 ## ClassLevels
-<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py">get_all_level_resources_for_a_class</a>(...)</code></summary>
+<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py">get_all_level_resources_for_a_class</a>(...) -> typing.List[ClassLevel]</code></summary>
 <dl>
 <dd>
 
@@ -994,11 +1039,14 @@ client.class_resource_lists.get_subclasses_available_for_a_class(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.class_levels import GetApiClassesIndexLevelsRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.class_levels.get_all_level_resources_for_a_class(
     index=GetApiClassesIndexLevelsRequestIndex.BARBARIAN,
     subclass="ber",
@@ -1046,7 +1094,7 @@ client.class_levels.get_all_level_resources_for_a_class(
 </dl>
 </details>
 
-<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py">get_level_resource_for_a_class_and_level</a>(...)</code></summary>
+<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py">get_level_resource_for_a_class_and_level</a>(...) -> ClassLevel</code></summary>
 <dl>
 <dd>
 
@@ -1059,14 +1107,17 @@ client.class_levels.get_all_level_resources_for_a_class(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.class_levels import GetApiClassesIndexLevelsClassLevelRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.class_levels.get_level_resource_for_a_class_and_level(
     index=GetApiClassesIndexLevelsClassLevelRequestIndex.BARBARIAN,
-    class_level=3.0,
+    class_level=3,
 )
 
 ```
@@ -1111,7 +1162,7 @@ client.class_levels.get_level_resource_for_a_class_and_level(
 </dl>
 </details>
 
-<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py">get_features_available_to_a_class_at_the_requested_level</a>(...)</code></summary>
+<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py">get_features_available_to_a_class_at_the_requested_level</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -1124,16 +1175,17 @@ client.class_levels.get_level_resource_for_a_class_and_level(
 <dd>
 
 ```python
-from fern.class_levels import (
-    GetApiClassesIndexLevelsClassLevelFeaturesRequestIndex,
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.class_levels import GetApiClassesIndexLevelsClassLevelFeaturesRequestIndex
+
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
 )
 
-from fern import FernApi
-
-client = FernApi()
 client.class_levels.get_features_available_to_a_class_at_the_requested_level(
     index=GetApiClassesIndexLevelsClassLevelFeaturesRequestIndex.BARBARIAN,
-    class_level=3.0,
+    class_level=3,
 )
 
 ```
@@ -1178,7 +1230,7 @@ client.class_levels.get_features_available_to_a_class_at_the_requested_level(
 </dl>
 </details>
 
-<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py">get_spells_of_the_requested_level_available_to_the_class</a>(...)</code></summary>
+<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py">get_spells_of_the_requested_level_available_to_the_class</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -1191,16 +1243,17 @@ client.class_levels.get_features_available_to_a_class_at_the_requested_level(
 <dd>
 
 ```python
-from fern.class_levels import (
-    GetApiClassesIndexLevelsSpellLevelSpellsRequestIndex,
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.class_levels import GetApiClassesIndexLevelsSpellLevelSpellsRequestIndex
+
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
 )
 
-from fern import FernApi
-
-client = FernApi()
 client.class_levels.get_spells_of_the_requested_level_available_to_the_class(
     index=GetApiClassesIndexLevelsSpellLevelSpellsRequestIndex.BARBARIAN,
-    spell_level=4.0,
+    spell_level=4,
 )
 
 ```
@@ -1246,7 +1299,7 @@ client.class_levels.get_spells_of_the_requested_level_available_to_the_class(
 </details>
 
 ## GameMechanics
-<details><summary><code>client.game_mechanics.<a href="src/fern/game_mechanics/client.py">get_a_condition_by_index</a>(...)</code></summary>
+<details><summary><code>client.game_mechanics.<a href="src/fern/game_mechanics/client.py">get_a_condition_by_index</a>(...) -> Condition</code></summary>
 <dl>
 <dd>
 
@@ -1278,11 +1331,14 @@ as invisible, can be advantageous.
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.game_mechanics import GetApiConditionsIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.game_mechanics.get_a_condition_by_index(
     index=GetApiConditionsIndexRequestIndex.BLINDED,
 )
@@ -1321,7 +1377,7 @@ client.game_mechanics.get_a_condition_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.game_mechanics.<a href="src/fern/game_mechanics/client.py">get_a_damage_type_by_index</a>(...)</code></summary>
+<details><summary><code>client.game_mechanics.<a href="src/fern/game_mechanics/client.py">get_a_damage_type_by_index</a>(...) -> DamageType</code></summary>
 <dl>
 <dd>
 
@@ -1352,11 +1408,14 @@ such as damage resistance, rely on the types.
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.game_mechanics import GetApiDamageTypesIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.game_mechanics.get_a_damage_type_by_index(
     index=GetApiDamageTypesIndexRequestIndex.ACID,
 )
@@ -1395,7 +1454,7 @@ client.game_mechanics.get_a_damage_type_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.game_mechanics.<a href="src/fern/game_mechanics/client.py">get_a_magic_school_by_index</a>(...)</code></summary>
+<details><summary><code>client.game_mechanics.<a href="src/fern/game_mechanics/client.py">get_a_magic_school_by_index</a>(...) -> MagicSchool</code></summary>
 <dl>
 <dd>
 
@@ -1427,11 +1486,14 @@ derives from rigorous study or is bestowed by a deity.
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.game_mechanics import GetApiMagicSchoolsIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.game_mechanics.get_a_magic_school_by_index(
     index=GetApiMagicSchoolsIndexRequestIndex.ABJURATION,
 )
@@ -1471,7 +1533,7 @@ client.game_mechanics.get_a_magic_school_by_index(
 </details>
 
 ## Equipment
-<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py">get_an_equipment_category_by_index</a>(...)</code></summary>
+<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py">get_an_equipment_category_by_index</a>(...) -> EquipmentCategory</code></summary>
 <dl>
 <dd>
 
@@ -1499,8 +1561,12 @@ These are the categories that various equipment fall under.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.equipment.get_an_equipment_category_by_index(
     index="waterborne-vehicles",
 )
@@ -1543,7 +1609,7 @@ Available values can be found in the resource list for this endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py">get_an_equipment_item_by_index</a>(...)</code></summary>
+<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py">get_an_equipment_item_by_index</a>(...) -> Equipment</code></summary>
 <dl>
 <dd>
 
@@ -1576,8 +1642,12 @@ can find buyers and merchants interested in your loot.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.equipment.get_an_equipment_item_by_index(
     index="club",
 )
@@ -1620,7 +1690,7 @@ Available values can be found in the [`ResourceList`](#get-/api/-endpoint-) for 
 </dl>
 </details>
 
-<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py">get_a_magic_item_by_index</a>(...)</code></summary>
+<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py">get_a_magic_item_by_index</a>(...) -> MagicItem</code></summary>
 <dl>
 <dd>
 
@@ -1648,8 +1718,12 @@ These are the various magic items you can find in the game.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.equipment.get_a_magic_item_by_index(
     index="adamantine-armor",
 )
@@ -1692,7 +1766,7 @@ Available values can be found in the resource list for this endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py">get_a_weapon_property_by_index</a>(...)</code></summary>
+<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py">get_a_weapon_property_by_index</a>(...) -> WeaponProperty</code></summary>
 <dl>
 <dd>
 
@@ -1705,11 +1779,14 @@ Available values can be found in the resource list for this endpoint.
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.equipment import GetApiWeaponPropertiesIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.equipment.get_a_weapon_property_by_index(
     index=GetApiWeaponPropertiesIndexRequestIndex.AMMUNITION,
 )
@@ -1749,7 +1826,7 @@ client.equipment.get_a_weapon_property_by_index(
 </details>
 
 ## Feats
-<details><summary><code>client.feats.<a href="src/fern/feats/client.py">get_a_feat_by_index</a>(...)</code></summary>
+<details><summary><code>client.feats.<a href="src/fern/feats/client.py">get_a_feat_by_index</a>(...) -> Feat</code></summary>
 <dl>
 <dd>
 
@@ -1778,11 +1855,14 @@ A feat is a boon a character can receive at level up instead of an ability score
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.feats import GetApiFeatsIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.feats.get_a_feat_by_index(
     index=GetApiFeatsIndexRequestIndex.GRAPPLER,
 )
@@ -1822,7 +1902,7 @@ client.feats.get_a_feat_by_index(
 </details>
 
 ## Features
-<details><summary><code>client.features.<a href="src/fern/features/client.py">get_a_feature_by_index</a>(...)</code></summary>
+<details><summary><code>client.features.<a href="src/fern/features/client.py">get_a_feature_by_index</a>(...) -> Feature</code></summary>
 <dl>
 <dd>
 
@@ -1855,8 +1935,12 @@ Extra Attack, Unarmored Defense, and Spellcasting.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.features.get_a_feature_by_index(
     index="action-surge-1-use",
 )
@@ -1900,7 +1984,7 @@ Available values can be found in the [`ResourceList`](#get-/api/-endpoint-) for 
 </details>
 
 ## Monsters
-<details><summary><code>client.monsters.<a href="src/fern/monsters/client.py">get_list_of_monsters_with_optional_filtering</a>(...)</code></summary>
+<details><summary><code>client.monsters.<a href="src/fern/monsters/client.py">get_list_of_monsters_with_optional_filtering</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -1914,8 +1998,12 @@ Available values can be found in the [`ResourceList`](#get-/api/-endpoint-) for 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.monsters.get_list_of_monsters_with_optional_filtering()
 
 ```
@@ -1952,7 +2040,7 @@ client.monsters.get_list_of_monsters_with_optional_filtering()
 </dl>
 </details>
 
-<details><summary><code>client.monsters.<a href="src/fern/monsters/client.py">get_monster_by_index</a>(...)</code></summary>
+<details><summary><code>client.monsters.<a href="src/fern/monsters/client.py">get_monster_by_index</a>(...) -> Monster</code></summary>
 <dl>
 <dd>
 
@@ -1966,8 +2054,12 @@ client.monsters.get_list_of_monsters_with_optional_filtering()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.monsters.get_monster_by_index(
     index="aboleth",
 )
@@ -2007,7 +2099,7 @@ client.monsters.get_monster_by_index(
 </details>
 
 ## Races
-<details><summary><code>client.races.<a href="src/fern/races/client.py">get_a_race_by_index</a>(...)</code></summary>
+<details><summary><code>client.races.<a href="src/fern/races/client.py">get_a_race_by_index</a>(...) -> Race</code></summary>
 <dl>
 <dd>
 
@@ -2034,11 +2126,14 @@ Each race grants your character ability and skill bonuses as well as racial trai
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.races import GetApiRacesIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.races.get_a_race_by_index(
     index=GetApiRacesIndexRequestIndex.DRAGONBORN,
 )
@@ -2077,7 +2172,7 @@ client.races.get_a_race_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.races.<a href="src/fern/races/client.py">get_proficiencies_available_for_a_race</a>(...)</code></summary>
+<details><summary><code>client.races.<a href="src/fern/races/client.py">get_proficiencies_available_for_a_race</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -2090,11 +2185,14 @@ client.races.get_a_race_by_index(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.races import GetApiRacesIndexProficienciesRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.races.get_proficiencies_available_for_a_race(
     index=GetApiRacesIndexProficienciesRequestIndex.DRAGONBORN,
 )
@@ -2133,7 +2231,7 @@ client.races.get_proficiencies_available_for_a_race(
 </dl>
 </details>
 
-<details><summary><code>client.races.<a href="src/fern/races/client.py">get_subraces_available_for_a_race</a>(...)</code></summary>
+<details><summary><code>client.races.<a href="src/fern/races/client.py">get_subraces_available_for_a_race</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -2146,11 +2244,14 @@ client.races.get_proficiencies_available_for_a_race(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.races import GetApiRacesIndexSubracesRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.races.get_subraces_available_for_a_race(
     index=GetApiRacesIndexSubracesRequestIndex.DRAGONBORN,
 )
@@ -2189,7 +2290,7 @@ client.races.get_subraces_available_for_a_race(
 </dl>
 </details>
 
-<details><summary><code>client.races.<a href="src/fern/races/client.py">get_traits_available_for_a_race</a>(...)</code></summary>
+<details><summary><code>client.races.<a href="src/fern/races/client.py">get_traits_available_for_a_race</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -2202,11 +2303,14 @@ client.races.get_subraces_available_for_a_race(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.races import GetApiRacesIndexTraitsRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.races.get_traits_available_for_a_race(
     index=GetApiRacesIndexTraitsRequestIndex.DRAGONBORN,
 )
@@ -2246,7 +2350,7 @@ client.races.get_traits_available_for_a_race(
 </details>
 
 ## Rules
-<details><summary><code>client.rules.<a href="src/fern/rules/client.py">get_a_rule_section_by_index</a>(...)</code></summary>
+<details><summary><code>client.rules.<a href="src/fern/rules/client.py">get_a_rule_section_by_index</a>(...) -> RuleSection</code></summary>
 <dl>
 <dd>
 
@@ -2273,11 +2377,14 @@ Rule sections represent a sub-heading and text that can be found underneath a ru
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.rules import GetApiRuleSectionsIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.rules.get_a_rule_section_by_index(
     index=GetApiRuleSectionsIndexRequestIndex.ABILITY_CHECKS,
 )
@@ -2316,7 +2423,7 @@ client.rules.get_a_rule_section_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.rules.<a href="src/fern/rules/client.py">get_a_rule_by_index</a>(...)</code></summary>
+<details><summary><code>client.rules.<a href="src/fern/rules/client.py">get_a_rule_by_index</a>(...) -> Rule</code></summary>
 <dl>
 <dd>
 
@@ -2347,11 +2454,14 @@ in the SRD. Rules also have subsections for each heading underneath the rule in 
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.rules import GetApiRulesIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.rules.get_a_rule_by_index(
     index=GetApiRulesIndexRequestIndex.ADVENTURING,
 )
@@ -2391,7 +2501,7 @@ client.rules.get_a_rule_by_index(
 </details>
 
 ## Spells
-<details><summary><code>client.spells.<a href="src/fern/spells/client.py">get_list_of_spells_with_optional_filtering</a>(...)</code></summary>
+<details><summary><code>client.spells.<a href="src/fern/spells/client.py">get_list_of_spells_with_optional_filtering</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -2405,8 +2515,12 @@ client.rules.get_a_rule_by_index(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.spells.get_list_of_spells_with_optional_filtering()
 
 ```
@@ -2451,7 +2565,7 @@ client.spells.get_list_of_spells_with_optional_filtering()
 </dl>
 </details>
 
-<details><summary><code>client.spells.<a href="src/fern/spells/client.py">get_a_spell_by_index</a>(...)</code></summary>
+<details><summary><code>client.spells.<a href="src/fern/spells/client.py">get_a_spell_by_index</a>(...) -> Spell</code></summary>
 <dl>
 <dd>
 
@@ -2465,8 +2579,12 @@ client.spells.get_list_of_spells_with_optional_filtering()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.spells.get_a_spell_by_index(
     index="sacred-flame",
 )
@@ -2510,7 +2628,7 @@ Available values can be found in the [`ResourceList`](#get-/api/-endpoint-) for 
 </details>
 
 ## Subclasses
-<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py">get_a_subclass_by_index</a>(...)</code></summary>
+<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py">get_a_subclass_by_index</a>(...) -> Subclass</code></summary>
 <dl>
 <dd>
 
@@ -2537,11 +2655,14 @@ Subclasses reflect the different paths a class may take as levels are gained.
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.subclasses import GetApiSubclassesIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.subclasses.get_a_subclass_by_index(
     index=GetApiSubclassesIndexRequestIndex.BERSERKER,
 )
@@ -2580,7 +2701,7 @@ client.subclasses.get_a_subclass_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py">get_features_available_for_a_subclass</a>(...)</code></summary>
+<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py">get_features_available_for_a_subclass</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -2593,11 +2714,14 @@ client.subclasses.get_a_subclass_by_index(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.subclasses import GetApiSubclassesIndexFeaturesRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.subclasses.get_features_available_for_a_subclass(
     index=GetApiSubclassesIndexFeaturesRequestIndex.BERSERKER,
 )
@@ -2636,7 +2760,7 @@ client.subclasses.get_features_available_for_a_subclass(
 </dl>
 </details>
 
-<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py">get_all_level_resources_for_a_subclass</a>(...)</code></summary>
+<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py">get_all_level_resources_for_a_subclass</a>(...) -> typing.List[SubclassLevelResource]</code></summary>
 <dl>
 <dd>
 
@@ -2649,11 +2773,14 @@ client.subclasses.get_features_available_for_a_subclass(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.subclasses import GetApiSubclassesIndexLevelsRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.subclasses.get_all_level_resources_for_a_subclass(
     index=GetApiSubclassesIndexLevelsRequestIndex.BERSERKER,
 )
@@ -2692,7 +2819,7 @@ client.subclasses.get_all_level_resources_for_a_subclass(
 </dl>
 </details>
 
-<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py">get_level_resources_for_a_subclass_and_level</a>(...)</code></summary>
+<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py">get_level_resources_for_a_subclass_and_level</a>(...) -> SubclassLevel</code></summary>
 <dl>
 <dd>
 
@@ -2705,11 +2832,14 @@ client.subclasses.get_all_level_resources_for_a_subclass(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.subclasses import GetApiSubclassesIndexLevelsSubclassLevelRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.subclasses.get_level_resources_for_a_subclass_and_level(
     index=GetApiSubclassesIndexLevelsSubclassLevelRequestIndex.BERSERKER,
     subclass_level=1,
@@ -2757,7 +2887,7 @@ client.subclasses.get_level_resources_for_a_subclass_and_level(
 </dl>
 </details>
 
-<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py">get_features_of_the_requested_spell_level_available_to_the_class</a>(...)</code></summary>
+<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py">get_features_of_the_requested_spell_level_available_to_the_class</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -2770,13 +2900,14 @@ client.subclasses.get_level_resources_for_a_subclass_and_level(
 <dd>
 
 ```python
-from fern.subclasses import (
-    GetApiSubclassesIndexLevelsSubclassLevelFeaturesRequestIndex,
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.subclasses import GetApiSubclassesIndexLevelsSubclassLevelFeaturesRequestIndex
+
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
 )
 
-from fern import FernApi
-
-client = FernApi()
 client.subclasses.get_features_of_the_requested_spell_level_available_to_the_class(
     index=GetApiSubclassesIndexLevelsSubclassLevelFeaturesRequestIndex.BERSERKER,
     subclass_level=1,
@@ -2825,7 +2956,7 @@ client.subclasses.get_features_of_the_requested_spell_level_available_to_the_cla
 </details>
 
 ## Subraces
-<details><summary><code>client.subraces.<a href="src/fern/subraces/client.py">get_a_subrace_by_index</a>(...)</code></summary>
+<details><summary><code>client.subraces.<a href="src/fern/subraces/client.py">get_a_subrace_by_index</a>(...) -> Subrace</code></summary>
 <dl>
 <dd>
 
@@ -2852,11 +2983,14 @@ Subraces reflect the different varieties of a certain parent race.
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.subraces import GetApiSubracesIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.subraces.get_a_subrace_by_index(
     index=GetApiSubracesIndexRequestIndex.HIGH_ELF,
 )
@@ -2895,7 +3029,7 @@ client.subraces.get_a_subrace_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.subraces.<a href="src/fern/subraces/client.py">get_proficiences_available_for_a_subrace</a>(...)</code></summary>
+<details><summary><code>client.subraces.<a href="src/fern/subraces/client.py">get_proficiences_available_for_a_subrace</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -2908,11 +3042,14 @@ client.subraces.get_a_subrace_by_index(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.subraces import GetApiSubracesIndexProficienciesRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.subraces.get_proficiences_available_for_a_subrace(
     index=GetApiSubracesIndexProficienciesRequestIndex.HIGH_ELF,
 )
@@ -2951,7 +3088,7 @@ client.subraces.get_proficiences_available_for_a_subrace(
 </dl>
 </details>
 
-<details><summary><code>client.subraces.<a href="src/fern/subraces/client.py">get_traits_available_for_a_subrace</a>(...)</code></summary>
+<details><summary><code>client.subraces.<a href="src/fern/subraces/client.py">get_traits_available_for_a_subrace</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -2964,11 +3101,14 @@ client.subraces.get_proficiences_available_for_a_subrace(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.subraces import GetApiSubracesIndexTraitsRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.subraces.get_traits_available_for_a_subrace(
     index=GetApiSubracesIndexTraitsRequestIndex.HIGH_ELF,
 )
@@ -3008,7 +3148,7 @@ client.subraces.get_traits_available_for_a_subrace(
 </details>
 
 ## Traits
-<details><summary><code>client.traits.<a href="src/fern/traits/client.py">get_a_trait_by_index</a>(...)</code></summary>
+<details><summary><code>client.traits.<a href="src/fern/traits/client.py">get_a_trait_by_index</a>(...) -> Trait</code></summary>
 <dl>
 <dd>
 
@@ -3021,11 +3161,14 @@ client.subraces.get_traits_available_for_a_subrace(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.traits import GetApiTraitsIndexRequestIndex
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
 
-client = FernApi()
 client.traits.get_a_trait_by_index(
     index=GetApiTraitsIndexRequestIndex.ARTIFICERS_LORE,
 )

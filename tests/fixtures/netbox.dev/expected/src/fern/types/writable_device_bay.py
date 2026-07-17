@@ -10,7 +10,7 @@ from .nested_tag import NestedTag
 
 class WritableDeviceBay(UniversalBaseModel):
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     device: int
     display: typing.Optional[str] = None

@@ -11,7 +11,9 @@ from .ob_scheduled_payment3 import ObScheduledPayment3
 
 class ObReadScheduledPayment3Data(UniversalBaseModel):
     scheduled_payment: typing_extensions.Annotated[
-        typing.Optional[typing.List[ObScheduledPayment3]], FieldMetadata(alias="ScheduledPayment")
+        typing.Optional[typing.List[ObScheduledPayment3]],
+        FieldMetadata(alias="ScheduledPayment"),
+        pydantic.Field(alias="ScheduledPayment"),
     ] = None
 
     if IS_PYDANTIC_V2:

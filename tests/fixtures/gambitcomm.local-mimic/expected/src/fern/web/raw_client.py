@@ -6,11 +6,13 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.config_web import ConfigWeb
+from pydantic import ValidationError
 
 
 class RawWebClient:
@@ -19,7 +21,7 @@ class RawWebClient:
 
     def protocol_web_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> HttpResponse[typing.Dict[str, typing.Any]]:
         """
         Agent's WEB configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -33,20 +35,20 @@ class RawWebClient:
 
         Returns
         -------
-        HttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]
+        HttpResponse[typing.Dict[str, typing.Any]]
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/get/args",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/get/args",
             method="GET",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.Dict[str, typing.Optional[typing.Any]],
+                    typing.Dict[str, typing.Any],
                     parse_obj_as(
-                        type_=typing.Dict[str, typing.Optional[typing.Any]],
+                        type_=typing.Dict[str, typing.Any],
                         object_=_response.json(),
                     ),
                 )
@@ -55,9 +57,9 @@ class RawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -65,6 +67,10 @@ class RawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_web_get_config(
@@ -87,7 +93,7 @@ class RawWebClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/get/config",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/get/config",
             method="GET",
             request_options=request_options,
         )
@@ -105,9 +111,9 @@ class RawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -115,6 +121,10 @@ class RawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_web_get_statistics(
@@ -137,7 +147,7 @@ class RawWebClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/get/statistics",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/get/statistics",
             method="GET",
             request_options=request_options,
         )
@@ -155,9 +165,9 @@ class RawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -165,6 +175,10 @@ class RawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_web_get_trace(
@@ -187,7 +201,7 @@ class RawWebClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/get/trace",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/get/trace",
             method="GET",
             request_options=request_options,
         )
@@ -205,9 +219,9 @@ class RawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -215,6 +229,10 @@ class RawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_web_port_add(
@@ -240,7 +258,7 @@ class RawWebClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/port/add/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/port/add/{encode_path_param(port)}",
             method="POST",
             request_options=request_options,
         )
@@ -258,9 +276,9 @@ class RawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -268,6 +286,10 @@ class RawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_web_port_exists(
@@ -293,7 +315,7 @@ class RawWebClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/port/exists/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/port/exists/{encode_path_param(port)}",
             method="GET",
             request_options=request_options,
         )
@@ -311,9 +333,9 @@ class RawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -321,6 +343,10 @@ class RawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_web_port_remove(
@@ -346,7 +372,7 @@ class RawWebClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/port/remove/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/port/remove/{encode_path_param(port)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -364,9 +390,9 @@ class RawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -374,6 +400,10 @@ class RawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_web_port_set(
@@ -411,7 +441,7 @@ class RawWebClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/port/set/{jsonable_encoder(port)}/{jsonable_encoder(protocol)}/{jsonable_encoder(version)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/port/set/{encode_path_param(port)}/{encode_path_param(protocol)}/{encode_path_param(version)}",
             method="PUT",
             request_options=request_options,
         )
@@ -429,9 +459,9 @@ class RawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -439,6 +469,10 @@ class RawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_web_port_start(
@@ -464,7 +498,7 @@ class RawWebClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/port/start/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/port/start/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -482,9 +516,9 @@ class RawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -492,6 +526,10 @@ class RawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_web_port_stop(
@@ -517,7 +555,7 @@ class RawWebClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/port/stop/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/port/stop/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -535,9 +573,9 @@ class RawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -545,6 +583,10 @@ class RawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_web_set_config(
@@ -573,7 +615,7 @@ class RawWebClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/set/config/{jsonable_encoder(argument)}/{jsonable_encoder(value)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/set/config/{encode_path_param(argument)}/{encode_path_param(value)}",
             method="PUT",
             request_options=request_options,
         )
@@ -591,9 +633,9 @@ class RawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -601,6 +643,10 @@ class RawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_web_set_trace(
@@ -626,7 +672,7 @@ class RawWebClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/set/trace/{jsonable_encoder(enable_or_not)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/set/trace/{encode_path_param(enable_or_not)}",
             method="PUT",
             request_options=request_options,
         )
@@ -644,9 +690,9 @@ class RawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -654,6 +700,10 @@ class RawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_web_get_stats_hdr(
@@ -691,9 +741,9 @@ class RawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -701,6 +751,10 @@ class RawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -710,7 +764,7 @@ class AsyncRawWebClient:
 
     async def protocol_web_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> AsyncHttpResponse[typing.Dict[str, typing.Any]]:
         """
         Agent's WEB configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -724,20 +778,20 @@ class AsyncRawWebClient:
 
         Returns
         -------
-        AsyncHttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]
+        AsyncHttpResponse[typing.Dict[str, typing.Any]]
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/get/args",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/get/args",
             method="GET",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.Dict[str, typing.Optional[typing.Any]],
+                    typing.Dict[str, typing.Any],
                     parse_obj_as(
-                        type_=typing.Dict[str, typing.Optional[typing.Any]],
+                        type_=typing.Dict[str, typing.Any],
                         object_=_response.json(),
                     ),
                 )
@@ -746,9 +800,9 @@ class AsyncRawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -756,6 +810,10 @@ class AsyncRawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_web_get_config(
@@ -778,7 +836,7 @@ class AsyncRawWebClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/get/config",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/get/config",
             method="GET",
             request_options=request_options,
         )
@@ -796,9 +854,9 @@ class AsyncRawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -806,6 +864,10 @@ class AsyncRawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_web_get_statistics(
@@ -828,7 +890,7 @@ class AsyncRawWebClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/get/statistics",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/get/statistics",
             method="GET",
             request_options=request_options,
         )
@@ -846,9 +908,9 @@ class AsyncRawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -856,6 +918,10 @@ class AsyncRawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_web_get_trace(
@@ -878,7 +944,7 @@ class AsyncRawWebClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/get/trace",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/get/trace",
             method="GET",
             request_options=request_options,
         )
@@ -896,9 +962,9 @@ class AsyncRawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -906,6 +972,10 @@ class AsyncRawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_web_port_add(
@@ -931,7 +1001,7 @@ class AsyncRawWebClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/port/add/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/port/add/{encode_path_param(port)}",
             method="POST",
             request_options=request_options,
         )
@@ -949,9 +1019,9 @@ class AsyncRawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -959,6 +1029,10 @@ class AsyncRawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_web_port_exists(
@@ -984,7 +1058,7 @@ class AsyncRawWebClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/port/exists/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/port/exists/{encode_path_param(port)}",
             method="GET",
             request_options=request_options,
         )
@@ -1002,9 +1076,9 @@ class AsyncRawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1012,6 +1086,10 @@ class AsyncRawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_web_port_remove(
@@ -1037,7 +1115,7 @@ class AsyncRawWebClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/port/remove/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/port/remove/{encode_path_param(port)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1055,9 +1133,9 @@ class AsyncRawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1065,6 +1143,10 @@ class AsyncRawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_web_port_set(
@@ -1102,7 +1184,7 @@ class AsyncRawWebClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/port/set/{jsonable_encoder(port)}/{jsonable_encoder(protocol)}/{jsonable_encoder(version)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/port/set/{encode_path_param(port)}/{encode_path_param(protocol)}/{encode_path_param(version)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1120,9 +1202,9 @@ class AsyncRawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1130,6 +1212,10 @@ class AsyncRawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_web_port_start(
@@ -1155,7 +1241,7 @@ class AsyncRawWebClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/port/start/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/port/start/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1173,9 +1259,9 @@ class AsyncRawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1183,6 +1269,10 @@ class AsyncRawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_web_port_stop(
@@ -1208,7 +1298,7 @@ class AsyncRawWebClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/port/stop/{jsonable_encoder(port)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/port/stop/{encode_path_param(port)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1226,9 +1316,9 @@ class AsyncRawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1236,6 +1326,10 @@ class AsyncRawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_web_set_config(
@@ -1264,7 +1358,7 @@ class AsyncRawWebClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/set/config/{jsonable_encoder(argument)}/{jsonable_encoder(value)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/set/config/{encode_path_param(argument)}/{encode_path_param(value)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1282,9 +1376,9 @@ class AsyncRawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1292,6 +1386,10 @@ class AsyncRawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_web_set_trace(
@@ -1317,7 +1415,7 @@ class AsyncRawWebClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/web/set/trace/{jsonable_encoder(enable_or_not)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/web/set/trace/{encode_path_param(enable_or_not)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1335,9 +1433,9 @@ class AsyncRawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1345,6 +1443,10 @@ class AsyncRawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_web_get_stats_hdr(
@@ -1382,9 +1484,9 @@ class AsyncRawWebClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1392,4 +1494,8 @@ class AsyncRawWebClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

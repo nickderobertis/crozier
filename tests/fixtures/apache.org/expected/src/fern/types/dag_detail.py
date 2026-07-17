@@ -52,7 +52,7 @@ class DagDetail(UniversalBaseModel):
     """
 
     orientation: typing.Optional[str] = None
-    params: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    params: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     User-specified DAG params.
     

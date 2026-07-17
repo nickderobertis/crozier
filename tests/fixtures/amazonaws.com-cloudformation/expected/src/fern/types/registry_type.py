@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class RegistryType(str, enum.Enum):
+class RegistryType(enum.StrEnum):
     RESOURCE = "RESOURCE"
     MODULE = "MODULE"
     HOOK = "HOOK"

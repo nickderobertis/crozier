@@ -15,8 +15,13 @@ class DescribeStackResourceOutput(UniversalBaseModel):
     """
 
     stack_resource_detail: typing_extensions.Annotated[
-        typing.Optional[DescribeStackResourceOutputStackResourceDetail], FieldMetadata(alias="StackResourceDetail")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DescribeStackResourceOutputStackResourceDetail],
+        FieldMetadata(alias="StackResourceDetail"),
+        pydantic.Field(
+            alias="StackResourceDetail",
+            description="A <code>StackResourceDetail</code> structure containing the description of the specified resource in the specified stack.",
+        ),
+    ] = None
     """
     A <code>StackResourceDetail</code> structure containing the description of the specified resource in the specified stack.
     """

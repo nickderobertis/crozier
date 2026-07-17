@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InterfaceTypeLabel(str, enum.Enum):
+class InterfaceTypeLabel(enum.StrEnum):
     VIRTUAL = "Virtual"
     BRIDGE = "Bridge"
     LINK_AGGREGATION_GROUP_LAG = "Link Aggregation Group (LAG)"

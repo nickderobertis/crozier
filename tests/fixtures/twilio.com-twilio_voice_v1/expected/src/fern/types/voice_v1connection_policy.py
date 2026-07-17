@@ -28,7 +28,7 @@ class VoiceV1ConnectionPolicy(UniversalBaseModel):
     The string that you assigned to describe the resource.
     """
 
-    links: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    links: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     The URLs of related resources.
     """

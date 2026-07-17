@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InterfaceTemplatePoeModeLabel(str, enum.Enum):
+class InterfaceTemplatePoeModeLabel(enum.StrEnum):
     PD = "PD"
     PSE = "PSE"
 

@@ -60,8 +60,13 @@ class CatalogObject(UniversalBaseModel):
     """
 
     catalog_v1ids: typing_extensions.Annotated[
-        typing.Optional[typing.List[CatalogV1Id]], FieldMetadata(alias="catalog_v1_ids")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[CatalogV1Id]],
+        FieldMetadata(alias="catalog_v1_ids"),
+        pydantic.Field(
+            alias="catalog_v1_ids",
+            description="The Connect v1 IDs for this object at each location where it is present, where they\ndiffer from the object's Connect V2 ID. The field will only be present for objects that\nhave been created or modified by legacy APIs.",
+        ),
+    ] = None
     """
     The Connect v1 IDs for this object at each location where it is present, where they
     differ from the object's Connect V2 ID. The field will only be present for objects that
@@ -174,4 +179,6 @@ from .catalog_item import CatalogItem
 from .catalog_item_option import CatalogItemOption
 from .catalog_modifier_list import CatalogModifierList
 
-update_forward_refs(CatalogObject)
+update_forward_refs(
+    CatalogObject, CatalogItem=CatalogItem, CatalogItemOption=CatalogItemOption, CatalogModifierList=CatalogModifierList
+)

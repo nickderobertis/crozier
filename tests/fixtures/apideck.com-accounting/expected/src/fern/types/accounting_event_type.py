@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AccountingEventType(str, enum.Enum):
+class AccountingEventType(enum.StrEnum):
     ALL = "*"
     ACCOUNTING_CUSTOMER_CREATED = "accounting.customer.created"
     ACCOUNTING_CUSTOMER_UPDATED = "accounting.customer.updated"

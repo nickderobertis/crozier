@@ -17,10 +17,17 @@ class DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition(UniversalBaseMo
     """
 
     description: typing.Optional[str] = None
-    has_icon: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="hasIcon")] = None
-    high_res_icon: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="highResIcon")] = (
-        pydantic.Field(default=None)
-    )
+    has_icon: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="hasIcon"), pydantic.Field(alias="hasIcon")
+    ] = None
+    high_res_icon: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="highResIcon"),
+        pydantic.Field(
+            alias="highResIcon",
+            description="If this item has a high-res icon (at least for now, many things won't), then the path to that icon will be here.",
+        ),
+    ] = None
     """
     If this item has a high-res icon (at least for now, many things won't), then the path to that icon will be here.
     """
@@ -35,6 +42,7 @@ class DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition(UniversalBaseMo
     icon_sequences: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsCommonDestinyIconSequenceDefinition]],
         FieldMetadata(alias="iconSequences"),
+        pydantic.Field(alias="iconSequences"),
     ] = None
     name: typing.Optional[str] = None
 

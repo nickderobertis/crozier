@@ -29,7 +29,11 @@ class InMemoryAuthModuleConfig(UniversalBaseModel):
     Name of the config
     """
 
-    session_max_age: typing_extensions.Annotated[str, FieldMetadata(alias="sessionMaxAge")] = pydantic.Field()
+    session_max_age: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="sessionMaxAge"),
+        pydantic.Field(alias="sessionMaxAge", description="Max age of the session"),
+    ]
     """
     Max age of the session
     """

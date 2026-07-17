@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ErrorCode(str, enum.Enum):
+class ErrorCode(enum.StrEnum):
     """
     Indicates the specific error that occurred during a request to a
     Square API.

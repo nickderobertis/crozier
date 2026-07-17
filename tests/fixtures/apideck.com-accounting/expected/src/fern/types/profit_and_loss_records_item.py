@@ -48,4 +48,8 @@ ProfitAndLossRecordsItem = typing_extensions.Annotated[
 ]
 from .profit_and_loss_records import ProfitAndLossRecords
 
-update_forward_refs(ProfitAndLossRecordsItem_Section)
+update_forward_refs(
+    ProfitAndLossRecordsItem_Section,
+    ProfitAndLossRecords=ProfitAndLossRecords,
+    ProfitAndLossRecordsItem=ProfitAndLossRecordsItem,
+)

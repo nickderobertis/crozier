@@ -11,7 +11,9 @@ from .groups_v2group_v2 import GroupsV2GroupV2
 
 class GroupsV2GroupMemberLeaveResult(UniversalBaseModel):
     group: typing.Optional[GroupsV2GroupV2] = None
-    group_deleted: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="groupDeleted")] = None
+    group_deleted: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="groupDeleted"), pydantic.Field(alias="groupDeleted")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

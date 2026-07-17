@@ -13,9 +13,9 @@ class DestinyMilestonesDestinyMilestoneContentItemCategory(UniversalBaseModel):
     Part of our dynamic, localized Milestone content is arbitrary categories of items. These are built in our content management system, and thus aren't the same as programmatically generated rewards.
     """
 
-    item_hashes: typing_extensions.Annotated[typing.Optional[typing.List[int]], FieldMetadata(alias="itemHashes")] = (
-        None
-    )
+    item_hashes: typing_extensions.Annotated[
+        typing.Optional[typing.List[int]], FieldMetadata(alias="itemHashes"), pydantic.Field(alias="itemHashes")
+    ] = None
     title: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

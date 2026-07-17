@@ -265,14 +265,14 @@ class ConnectionsClient:
         id: typing.Optional[str] = OMIT,
         integration_state: typing.Optional[IntegrationState] = OMIT,
         logo: typing.Optional[str] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         name: typing.Optional[str] = OMIT,
         oauth_grant_type: typing.Optional[OAuthGrantType] = OMIT,
         resource_schema_support: typing.Optional[typing.Sequence[str]] = OMIT,
         resource_settings_support: typing.Optional[typing.Sequence[str]] = OMIT,
         revoke_url: typing.Optional[str] = OMIT,
         service_id: typing.Optional[str] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         settings_required_for_authorization: typing.Optional[typing.Sequence[str]] = OMIT,
         state: typing.Optional[ConnectionState] = OMIT,
         status: typing.Optional[ConnectionStatus] = OMIT,
@@ -329,7 +329,7 @@ class ConnectionsClient:
         logo : typing.Optional[str]
             The logo of the connection, that will be shown in the Vault
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
         name : typing.Optional[str]
@@ -347,7 +347,7 @@ class ConnectionsClient:
         service_id : typing.Optional[str]
             The ID of the service this connection belongs to.
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         settings_required_for_authorization : typing.Optional[typing.Sequence[str]]
@@ -497,14 +497,14 @@ class ConnectionsClient:
         id: typing.Optional[str] = OMIT,
         integration_state: typing.Optional[IntegrationState] = OMIT,
         logo: typing.Optional[str] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         name: typing.Optional[str] = OMIT,
         oauth_grant_type: typing.Optional[OAuthGrantType] = OMIT,
         resource_schema_support: typing.Optional[typing.Sequence[str]] = OMIT,
         resource_settings_support: typing.Optional[typing.Sequence[str]] = OMIT,
         revoke_url: typing.Optional[str] = OMIT,
         service_id: typing.Optional[str] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         settings_required_for_authorization: typing.Optional[typing.Sequence[str]] = OMIT,
         state: typing.Optional[ConnectionState] = OMIT,
         status: typing.Optional[ConnectionStatus] = OMIT,
@@ -561,7 +561,7 @@ class ConnectionsClient:
         logo : typing.Optional[str]
             The logo of the connection, that will be shown in the Vault
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
         name : typing.Optional[str]
@@ -579,7 +579,7 @@ class ConnectionsClient:
         service_id : typing.Optional[str]
             The ID of the service this connection belongs to.
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         settings_required_for_authorization : typing.Optional[typing.Sequence[str]]
@@ -670,8 +670,8 @@ class ConnectionsClient:
         *,
         apideck_consumer_id: str,
         credentials: typing.Optional[ConnectionImportDataCredentials] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CreateConnectionResponse:
         """
@@ -690,10 +690,10 @@ class ConnectionsClient:
 
         credentials : typing.Optional[ConnectionImportDataCredentials]
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         request_options : typing.Optional[RequestOptions]
@@ -853,14 +853,14 @@ class ConnectionsClient:
         id: typing.Optional[str] = OMIT,
         integration_state: typing.Optional[IntegrationState] = OMIT,
         logo: typing.Optional[str] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         name: typing.Optional[str] = OMIT,
         oauth_grant_type: typing.Optional[OAuthGrantType] = OMIT,
         resource_schema_support: typing.Optional[typing.Sequence[str]] = OMIT,
         resource_settings_support: typing.Optional[typing.Sequence[str]] = OMIT,
         revoke_url: typing.Optional[str] = OMIT,
         service_id: typing.Optional[str] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         settings_required_for_authorization: typing.Optional[typing.Sequence[str]] = OMIT,
         state: typing.Optional[ConnectionState] = OMIT,
         status: typing.Optional[ConnectionStatus] = OMIT,
@@ -920,7 +920,7 @@ class ConnectionsClient:
         logo : typing.Optional[str]
             The logo of the connection, that will be shown in the Vault
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
         name : typing.Optional[str]
@@ -938,7 +938,7 @@ class ConnectionsClient:
         service_id : typing.Optional[str]
             The ID of the service this connection belongs to.
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         settings_required_for_authorization : typing.Optional[typing.Sequence[str]]
@@ -1358,14 +1358,14 @@ class AsyncConnectionsClient:
         id: typing.Optional[str] = OMIT,
         integration_state: typing.Optional[IntegrationState] = OMIT,
         logo: typing.Optional[str] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         name: typing.Optional[str] = OMIT,
         oauth_grant_type: typing.Optional[OAuthGrantType] = OMIT,
         resource_schema_support: typing.Optional[typing.Sequence[str]] = OMIT,
         resource_settings_support: typing.Optional[typing.Sequence[str]] = OMIT,
         revoke_url: typing.Optional[str] = OMIT,
         service_id: typing.Optional[str] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         settings_required_for_authorization: typing.Optional[typing.Sequence[str]] = OMIT,
         state: typing.Optional[ConnectionState] = OMIT,
         status: typing.Optional[ConnectionStatus] = OMIT,
@@ -1422,7 +1422,7 @@ class AsyncConnectionsClient:
         logo : typing.Optional[str]
             The logo of the connection, that will be shown in the Vault
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
         name : typing.Optional[str]
@@ -1440,7 +1440,7 @@ class AsyncConnectionsClient:
         service_id : typing.Optional[str]
             The ID of the service this connection belongs to.
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         settings_required_for_authorization : typing.Optional[typing.Sequence[str]]
@@ -1606,14 +1606,14 @@ class AsyncConnectionsClient:
         id: typing.Optional[str] = OMIT,
         integration_state: typing.Optional[IntegrationState] = OMIT,
         logo: typing.Optional[str] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         name: typing.Optional[str] = OMIT,
         oauth_grant_type: typing.Optional[OAuthGrantType] = OMIT,
         resource_schema_support: typing.Optional[typing.Sequence[str]] = OMIT,
         resource_settings_support: typing.Optional[typing.Sequence[str]] = OMIT,
         revoke_url: typing.Optional[str] = OMIT,
         service_id: typing.Optional[str] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         settings_required_for_authorization: typing.Optional[typing.Sequence[str]] = OMIT,
         state: typing.Optional[ConnectionState] = OMIT,
         status: typing.Optional[ConnectionStatus] = OMIT,
@@ -1670,7 +1670,7 @@ class AsyncConnectionsClient:
         logo : typing.Optional[str]
             The logo of the connection, that will be shown in the Vault
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
         name : typing.Optional[str]
@@ -1688,7 +1688,7 @@ class AsyncConnectionsClient:
         service_id : typing.Optional[str]
             The ID of the service this connection belongs to.
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         settings_required_for_authorization : typing.Optional[typing.Sequence[str]]
@@ -1787,8 +1787,8 @@ class AsyncConnectionsClient:
         *,
         apideck_consumer_id: str,
         credentials: typing.Optional[ConnectionImportDataCredentials] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CreateConnectionResponse:
         """
@@ -1807,10 +1807,10 @@ class AsyncConnectionsClient:
 
         credentials : typing.Optional[ConnectionImportDataCredentials]
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         request_options : typing.Optional[RequestOptions]
@@ -1994,14 +1994,14 @@ class AsyncConnectionsClient:
         id: typing.Optional[str] = OMIT,
         integration_state: typing.Optional[IntegrationState] = OMIT,
         logo: typing.Optional[str] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         name: typing.Optional[str] = OMIT,
         oauth_grant_type: typing.Optional[OAuthGrantType] = OMIT,
         resource_schema_support: typing.Optional[typing.Sequence[str]] = OMIT,
         resource_settings_support: typing.Optional[typing.Sequence[str]] = OMIT,
         revoke_url: typing.Optional[str] = OMIT,
         service_id: typing.Optional[str] = OMIT,
-        settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         settings_required_for_authorization: typing.Optional[typing.Sequence[str]] = OMIT,
         state: typing.Optional[ConnectionState] = OMIT,
         status: typing.Optional[ConnectionStatus] = OMIT,
@@ -2061,7 +2061,7 @@ class AsyncConnectionsClient:
         logo : typing.Optional[str]
             The logo of the connection, that will be shown in the Vault
 
-        metadata : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        metadata : typing.Optional[typing.Dict[str, typing.Any]]
             Attach your own consumer specific metadata
 
         name : typing.Optional[str]
@@ -2079,7 +2079,7 @@ class AsyncConnectionsClient:
         service_id : typing.Optional[str]
             The ID of the service this connection belongs to.
 
-        settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        settings : typing.Optional[typing.Dict[str, typing.Any]]
             Connection settings. Values will persist to `form_fields` with corresponding id
 
         settings_required_for_authorization : typing.Optional[typing.Sequence[str]]

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TaxCalculationPhase(str, enum.Enum):
+class TaxCalculationPhase(enum.StrEnum):
     """
     When to calculate the taxes due on a cart.
     """

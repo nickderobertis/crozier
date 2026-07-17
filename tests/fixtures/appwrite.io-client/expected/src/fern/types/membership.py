@@ -13,7 +13,9 @@ class Membership(UniversalBaseModel):
     Membership
     """
 
-    id: typing_extensions.Annotated[str, FieldMetadata(alias="$id")] = pydantic.Field()
+    id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="$id"), pydantic.Field(alias="$id", description="Membership ID.")
+    ]
     """
     Membership ID.
     """
@@ -48,12 +50,16 @@ class Membership(UniversalBaseModel):
     User list of roles
     """
 
-    team_id: typing_extensions.Annotated[str, FieldMetadata(alias="teamId")] = pydantic.Field()
+    team_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="teamId"), pydantic.Field(alias="teamId", description="Team ID.")
+    ]
     """
     Team ID.
     """
 
-    user_id: typing_extensions.Annotated[str, FieldMetadata(alias="userId")] = pydantic.Field()
+    user_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="userId"), pydantic.Field(alias="userId", description="User ID.")
+    ]
     """
     User ID.
     """

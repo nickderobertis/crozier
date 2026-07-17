@@ -20,16 +20,20 @@ class DestinyHistoricalStatsDestinyPostGameCarnageReportTeamEntry(UniversalBaseM
     Team's standing relative to other teams.
     """
 
-    team_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="teamId")] = pydantic.Field(
-        default=None
-    )
+    team_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="teamId"),
+        pydantic.Field(alias="teamId", description="Integer ID for the team."),
+    ] = None
     """
     Integer ID for the team.
     """
 
-    team_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="teamName")] = pydantic.Field(
-        default=None
-    )
+    team_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="teamName"),
+        pydantic.Field(alias="teamName", description="Alpha or Bravo"),
+    ] = None
     """
     Alpha or Bravo
     """

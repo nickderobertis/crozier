@@ -9,21 +9,34 @@ from ..core.serialization import FieldMetadata
 
 
 class RollbackStackInput(UniversalBaseModel):
-    stack_name: typing_extensions.Annotated[str, FieldMetadata(alias="StackName")] = pydantic.Field()
+    stack_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="StackName"),
+        pydantic.Field(alias="StackName", description="The name that's associated with the stack."),
+    ]
     """
     The name that's associated with the stack.
     """
 
-    role_arn: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="RoleARN")] = pydantic.Field(
-        default=None
-    )
+    role_arn: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="RoleARN"),
+        pydantic.Field(
+            alias="RoleARN",
+            description="The Amazon Resource Name (ARN) of an Identity and Access Management role that CloudFormation assumes to rollback the stack.",
+        ),
+    ] = None
     """
     The Amazon Resource Name (ARN) of an Identity and Access Management role that CloudFormation assumes to rollback the stack.
     """
 
     client_request_token: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="ClientRequestToken")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="ClientRequestToken"),
+        pydantic.Field(
+            alias="ClientRequestToken", description="A unique identifier for this <code>RollbackStack</code> request."
+        ),
+    ] = None
     """
     A unique identifier for this <code>RollbackStack</code> request.
     """

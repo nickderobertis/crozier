@@ -9,7 +9,14 @@ from ..core.serialization import FieldMetadata
 
 
 class ActivateTypeOutput(UniversalBaseModel):
-    arn: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Arn")] = pydantic.Field(default=None)
+    arn: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Arn"),
+        pydantic.Field(
+            alias="Arn",
+            description="The Amazon Resource Name (ARN) of the activated extension, in this account and region.",
+        ),
+    ] = None
     """
     The Amazon Resource Name (ARN) of the activated extension, in this account and region.
     """

@@ -15,14 +15,16 @@ class Sign(UniversalBaseModel):
     Strategy where signature and field values are verified, and then token si re-signed
     """
 
-    algo_settings: typing_extensions.Annotated[SignAlgoSettings, FieldMetadata(alias="algoSettings")]
+    algo_settings: typing_extensions.Annotated[
+        SignAlgoSettings, FieldMetadata(alias="algoSettings"), pydantic.Field(alias="algoSettings")
+    ]
     type: str = pydantic.Field()
     """
     String with value Sign
     """
 
     verification_settings: typing_extensions.Annotated[
-        VerificationSettings, FieldMetadata(alias="verificationSettings")
+        VerificationSettings, FieldMetadata(alias="verificationSettings"), pydantic.Field(alias="verificationSettings")
     ]
 
     if IS_PYDANTIC_V2:

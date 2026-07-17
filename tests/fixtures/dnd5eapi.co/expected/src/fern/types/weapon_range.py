@@ -9,9 +9,11 @@ from ..core.serialization import FieldMetadata
 
 
 class WeaponRange(UniversalBaseModel):
-    long_: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="long")] = pydantic.Field(
-        default=None
-    )
+    long_: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="long"),
+        pydantic.Field(alias="long", description="The weapon's long range in feet."),
+    ] = None
     """
     The weapon's long range in feet.
     """

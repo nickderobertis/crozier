@@ -13,16 +13,24 @@ class DestinyDefinitionsSeasonsDestinySeasonPreviewImageDefinition(UniversalBase
     Defines the thumbnail icon, high-res image, and video link for promotional images
     """
 
-    high_res_image: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="highResImage")] = (
-        pydantic.Field(default=None)
-    )
+    high_res_image: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="highResImage"),
+        pydantic.Field(
+            alias="highResImage", description="An optional path to a high-resolution image, probably 1920x1080."
+        ),
+    ] = None
     """
     An optional path to a high-resolution image, probably 1920x1080.
     """
 
-    thumbnail_image: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="thumbnailImage")] = (
-        pydantic.Field(default=None)
-    )
+    thumbnail_image: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="thumbnailImage"),
+        pydantic.Field(
+            alias="thumbnailImage", description="A thumbnail icon path to preview seasonal content, probably 480x270."
+        ),
+    ] = None
     """
     A thumbnail icon path to preview seasonal content, probably 480x270.
     """

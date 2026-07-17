@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -14,6 +15,7 @@ from ..errors.bad_request_error import BadRequestError
 from ..types.transferwise_account_requirement_create import TransferwiseAccountRequirementCreate
 from ..types.transferwise_account_requirement_listing import TransferwiseAccountRequirementListing
 from ..types.transferwise_requirement_field import TransferwiseRequirementField
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -46,7 +48,7 @@ class RawTransferwiseRecipientRequirementClient:
             Used to determine the recipient account requirements for Transferwise transfers.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/transferwise-quote/{jsonable_encoder(transferwise_quote_id)}/transferwise-recipient-requirement",
+            f"user/{encode_path_param(user_id)}/transferwise-quote/{encode_path_param(transferwise_quote_id)}/transferwise-recipient-requirement",
             method="GET",
             request_options=request_options,
         )
@@ -64,9 +66,9 @@ class RawTransferwiseRecipientRequirementClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -74,6 +76,10 @@ class RawTransferwiseRecipientRequirementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_transferwise_recipient_requirement_for_user_transferwise_quote(
@@ -119,7 +125,7 @@ class RawTransferwiseRecipientRequirementClient:
             Used to determine the recipient account requirements for Transferwise transfers.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/transferwise-quote/{jsonable_encoder(transferwise_quote_id)}/transferwise-recipient-requirement",
+            f"user/{encode_path_param(user_id)}/transferwise-quote/{encode_path_param(transferwise_quote_id)}/transferwise-recipient-requirement",
             method="POST",
             json={
                 "country": country,
@@ -149,9 +155,9 @@ class RawTransferwiseRecipientRequirementClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -159,6 +165,10 @@ class RawTransferwiseRecipientRequirementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -189,7 +199,7 @@ class AsyncRawTransferwiseRecipientRequirementClient:
             Used to determine the recipient account requirements for Transferwise transfers.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/transferwise-quote/{jsonable_encoder(transferwise_quote_id)}/transferwise-recipient-requirement",
+            f"user/{encode_path_param(user_id)}/transferwise-quote/{encode_path_param(transferwise_quote_id)}/transferwise-recipient-requirement",
             method="GET",
             request_options=request_options,
         )
@@ -207,9 +217,9 @@ class AsyncRawTransferwiseRecipientRequirementClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -217,6 +227,10 @@ class AsyncRawTransferwiseRecipientRequirementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_transferwise_recipient_requirement_for_user_transferwise_quote(
@@ -262,7 +276,7 @@ class AsyncRawTransferwiseRecipientRequirementClient:
             Used to determine the recipient account requirements for Transferwise transfers.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/transferwise-quote/{jsonable_encoder(transferwise_quote_id)}/transferwise-recipient-requirement",
+            f"user/{encode_path_param(user_id)}/transferwise-quote/{encode_path_param(transferwise_quote_id)}/transferwise-recipient-requirement",
             method="POST",
             json={
                 "country": country,
@@ -292,9 +306,9 @@ class AsyncRawTransferwiseRecipientRequirementClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -302,4 +316,8 @@ class AsyncRawTransferwiseRecipientRequirementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

@@ -27,23 +27,39 @@ class AppPkgInfo(UniversalBaseModel):
     'The data type AppPkgInfo represents the parameters for an application package resource'
     """
 
-    links: typing_extensions.Annotated[AppPkgInfoLinks, FieldMetadata(alias="_links")]
+    links: typing_extensions.Annotated[AppPkgInfoLinks, FieldMetadata(alias="_links"), pydantic.Field(alias="_links")]
     additional_artifacts: typing_extensions.Annotated[
-        typing.Optional[AppPkgArtifactInfo], FieldMetadata(alias="additionalArtifacts")
+        typing.Optional[AppPkgArtifactInfo],
+        FieldMetadata(alias="additionalArtifacts"),
+        pydantic.Field(alias="additionalArtifacts"),
     ] = None
-    app_d_id: typing_extensions.Annotated[AppDId, FieldMetadata(alias="appDId")]
-    app_d_version: typing_extensions.Annotated[AppDVersion, FieldMetadata(alias="appDVersion")]
-    app_name: typing_extensions.Annotated[AppName, FieldMetadata(alias="appName")]
-    app_provider: typing_extensions.Annotated[typing.Optional[AppProvider], FieldMetadata(alias="appProvider")] = None
-    app_software_version: typing_extensions.Annotated[AppSoftwareVersion, FieldMetadata(alias="appSoftwareVersion")]
+    app_d_id: typing_extensions.Annotated[AppDId, FieldMetadata(alias="appDId"), pydantic.Field(alias="appDId")]
+    app_d_version: typing_extensions.Annotated[
+        AppDVersion, FieldMetadata(alias="appDVersion"), pydantic.Field(alias="appDVersion")
+    ]
+    app_name: typing_extensions.Annotated[AppName, FieldMetadata(alias="appName"), pydantic.Field(alias="appName")]
+    app_provider: typing_extensions.Annotated[
+        typing.Optional[AppProvider], FieldMetadata(alias="appProvider"), pydantic.Field(alias="appProvider")
+    ] = None
+    app_software_version: typing_extensions.Annotated[
+        AppSoftwareVersion, FieldMetadata(alias="appSoftwareVersion"), pydantic.Field(alias="appSoftwareVersion")
+    ]
     checksum: Checksum
     id: AppPkgId
-    onboarding_state: typing_extensions.Annotated[OnboardingState, FieldMetadata(alias="onboardingState")]
-    operational_state: typing_extensions.Annotated[AppPkgOperationalState, FieldMetadata(alias="operationalState")]
-    software_images: typing_extensions.Annotated[AppPkgSwImageInfo, FieldMetadata(alias="softwareImages")]
-    usage_state: typing_extensions.Annotated[UsageState, FieldMetadata(alias="usageState")]
+    onboarding_state: typing_extensions.Annotated[
+        OnboardingState, FieldMetadata(alias="onboardingState"), pydantic.Field(alias="onboardingState")
+    ]
+    operational_state: typing_extensions.Annotated[
+        AppPkgOperationalState, FieldMetadata(alias="operationalState"), pydantic.Field(alias="operationalState")
+    ]
+    software_images: typing_extensions.Annotated[
+        AppPkgSwImageInfo, FieldMetadata(alias="softwareImages"), pydantic.Field(alias="softwareImages")
+    ]
+    usage_state: typing_extensions.Annotated[
+        UsageState, FieldMetadata(alias="usageState"), pydantic.Field(alias="usageState")
+    ]
     user_defined_data: typing_extensions.Annotated[
-        typing.Optional[KeyValuePairs], FieldMetadata(alias="userDefinedData")
+        typing.Optional[KeyValuePairs], FieldMetadata(alias="userDefinedData"), pydantic.Field(alias="userDefinedData")
     ] = None
 
     if IS_PYDANTIC_V2:

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableCustomFieldUiVisibility(str, enum.Enum):
+class WritableCustomFieldUiVisibility(enum.StrEnum):
     """
     Specifies the visibility of custom field in the UI
     """

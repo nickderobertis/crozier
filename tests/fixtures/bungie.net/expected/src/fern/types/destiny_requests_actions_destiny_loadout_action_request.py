@@ -9,15 +9,21 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyRequestsActionsDestinyLoadoutActionRequest(UniversalBaseModel):
-    character_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="characterId")] = None
-    loadout_index: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="loadoutIndex")] = (
-        pydantic.Field(default=None)
-    )
+    character_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="characterId"), pydantic.Field(alias="characterId")
+    ] = None
+    loadout_index: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="loadoutIndex"),
+        pydantic.Field(alias="loadoutIndex", description="The index of the loadout for this action request."),
+    ] = None
     """
     The index of the loadout for this action request.
     """
 
-    membership_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="membershipType")] = None
+    membership_type: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="membershipType"), pydantic.Field(alias="membershipType")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

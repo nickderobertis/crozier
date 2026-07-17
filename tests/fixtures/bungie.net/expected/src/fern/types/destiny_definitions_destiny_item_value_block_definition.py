@@ -17,15 +17,25 @@ class DestinyDefinitionsDestinyItemValueBlockDefinition(UniversalBaseModel):
     """
 
     item_value: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinyDestinyItemQuantity]], FieldMetadata(alias="itemValue")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[DestinyDestinyItemQuantity]],
+        FieldMetadata(alias="itemValue"),
+        pydantic.Field(
+            alias="itemValue",
+            description='References to the items that make up this item\'s "value", and the quantity.',
+        ),
+    ] = None
     """
     References to the items that make up this item's "value", and the quantity.
     """
 
-    value_description: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="valueDescription")] = (
-        pydantic.Field(default=None)
-    )
+    value_description: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="valueDescription"),
+        pydantic.Field(
+            alias="valueDescription",
+            description="If there's a localized text description of the value provided, this will be said description.",
+        ),
+    ] = None
     """
     If there's a localized text description of the value provided, this will be said description.
     """

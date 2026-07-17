@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ListTypesInputType(str, enum.Enum):
+class ListTypesInputType(enum.StrEnum):
     """
     The type of extension.
     """

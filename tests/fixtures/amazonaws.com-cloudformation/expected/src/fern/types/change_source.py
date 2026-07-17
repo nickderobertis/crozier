@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ChangeSource(str, enum.Enum):
+class ChangeSource(enum.StrEnum):
     RESOURCE_REFERENCE = "ResourceReference"
     PARAMETER_REFERENCE = "ParameterReference"
     RESOURCE_ATTRIBUTE = "ResourceAttribute"

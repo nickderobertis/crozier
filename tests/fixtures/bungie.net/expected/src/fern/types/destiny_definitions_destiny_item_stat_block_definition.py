@@ -19,31 +19,51 @@ class DestinyDefinitionsDestinyItemStatBlockDefinition(UniversalBaseModel):
     """
 
     disable_primary_stat_display: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="disablePrimaryStatDisplay")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="disablePrimaryStatDisplay"),
+        pydantic.Field(
+            alias="disablePrimaryStatDisplay",
+            description="If true, the game won't show the \"primary\" stat on this item when you inspect it.\r\nNOTE: This is being manually mapped, because I happen to want it in a block that isn't going to directly create this derivative block.",
+        ),
+    ] = None
     """
     If true, the game won't show the "primary" stat on this item when you inspect it.
     NOTE: This is being manually mapped, because I happen to want it in a block that isn't going to directly create this derivative block.
     """
 
     has_displayable_stats: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="hasDisplayableStats")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="hasDisplayableStats"),
+        pydantic.Field(
+            alias="hasDisplayableStats",
+            description='A quick and lazy way to determine whether any stat other than the "primary" stat is actually visible on the item. Items often have stats that we return in case people find them useful, but they\'re not part of the "Stat Group" and thus we wouldn\'t display them in our UI. If this is False, then we\'re not going to display any of these stats other than the primary one.',
+        ),
+    ] = None
     """
     A quick and lazy way to determine whether any stat other than the "primary" stat is actually visible on the item. Items often have stats that we return in case people find them useful, but they're not part of the "Stat Group" and thus we wouldn't display them in our UI. If this is False, then we're not going to display any of these stats other than the primary one.
     """
 
     primary_base_stat_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="primaryBaseStatHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="primaryBaseStatHash"),
+        pydantic.Field(
+            alias="primaryBaseStatHash",
+            description='This stat is determined to be the "primary" stat, and can be looked up in the stats or any other stat collection related to the item.\r\nUse this hash to look up the stat\'s value using DestinyInventoryItemDefinition.stats.stats, and the renderable data for the primary stat in the related DestinyStatDefinition.',
+        ),
+    ] = None
     """
     This stat is determined to be the "primary" stat, and can be looked up in the stats or any other stat collection related to the item.
     Use this hash to look up the stat's value using DestinyInventoryItemDefinition.stats.stats, and the renderable data for the primary stat in the related DestinyStatDefinition.
     """
 
-    stat_group_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="statGroupHash")] = (
-        pydantic.Field(default=None)
-    )
+    stat_group_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="statGroupHash"),
+        pydantic.Field(
+            alias="statGroupHash",
+            description="If the item's stats are meant to be modified by a DestinyStatGroupDefinition, this will be the identifier for that definition.\r\nIf you are using live data or precomputed stats data on the DestinyInventoryItemDefinition.stats.stats property, you don't have to worry about statGroupHash and how it alters stats: the already altered stats are provided to you. But if you want to see how the sausage gets made, or perform computations yourself, this is valuable information.",
+        ),
+    ] = None
     """
     If the item's stats are meant to be modified by a DestinyStatGroupDefinition, this will be the identifier for that definition.
     If you are using live data or precomputed stats data on the DestinyInventoryItemDefinition.stats.stats property, you don't have to worry about statGroupHash and how it alters stats: the already altered stats are provided to you. But if you want to see how the sausage gets made, or perform computations yourself, this is valuable information.

@@ -13,18 +13,30 @@ from .user_user_info_card import UserUserInfoCard
 
 class GroupsV2GroupBan(UniversalBaseModel):
     bungie_net_user_info: typing_extensions.Annotated[
-        typing.Optional[UserUserInfoCard], FieldMetadata(alias="bungieNetUserInfo")
+        typing.Optional[UserUserInfoCard],
+        FieldMetadata(alias="bungieNetUserInfo"),
+        pydantic.Field(alias="bungieNetUserInfo"),
     ] = None
     comment: typing.Optional[str] = None
-    created_by: typing_extensions.Annotated[typing.Optional[UserUserInfoCard], FieldMetadata(alias="createdBy")] = None
-    date_banned: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="dateBanned")] = None
-    date_expires: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="dateExpires")] = None
-    destiny_user_info: typing_extensions.Annotated[
-        typing.Optional[GroupsV2GroupUserInfoCard], FieldMetadata(alias="destinyUserInfo")
+    created_by: typing_extensions.Annotated[
+        typing.Optional[UserUserInfoCard], FieldMetadata(alias="createdBy"), pydantic.Field(alias="createdBy")
     ] = None
-    group_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="groupId")] = None
+    date_banned: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="dateBanned"), pydantic.Field(alias="dateBanned")
+    ] = None
+    date_expires: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="dateExpires"), pydantic.Field(alias="dateExpires")
+    ] = None
+    destiny_user_info: typing_extensions.Annotated[
+        typing.Optional[GroupsV2GroupUserInfoCard],
+        FieldMetadata(alias="destinyUserInfo"),
+        pydantic.Field(alias="destinyUserInfo"),
+    ] = None
+    group_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="groupId"), pydantic.Field(alias="groupId")
+    ] = None
     last_modified_by: typing_extensions.Annotated[
-        typing.Optional[UserUserInfoCard], FieldMetadata(alias="lastModifiedBy")
+        typing.Optional[UserUserInfoCard], FieldMetadata(alias="lastModifiedBy"), pydantic.Field(alias="lastModifiedBy")
     ] = None
 
     if IS_PYDANTIC_V2:

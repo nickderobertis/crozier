@@ -13,7 +13,14 @@ class EstimateTemplateCostOutput(UniversalBaseModel):
     The output for a <a>EstimateTemplateCost</a> action.
     """
 
-    url: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Url")] = pydantic.Field(default=None)
+    url: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Url"),
+        pydantic.Field(
+            alias="Url",
+            description="An Amazon Web Services Simple Monthly Calculator URL with a query string that describes the resources required to run the template.",
+        ),
+    ] = None
     """
     An Amazon Web Services Simple Monthly Calculator URL with a query string that describes the resources required to run the template.
     """

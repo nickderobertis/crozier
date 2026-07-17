@@ -9,7 +9,11 @@ from ...core.serialization import FieldMetadata
 
 
 class PostPortfolioAnalysisReturnResponsePortfoliosItem(UniversalBaseModel):
-    portfolio_return: typing_extensions.Annotated[float, FieldMetadata(alias="portfolioReturn")] = pydantic.Field()
+    portfolio_return: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="portfolioReturn"),
+        pydantic.Field(alias="portfolioReturn", description="The arithmetic return of the portfolio"),
+    ]
     """
     The arithmetic return of the portfolio
     """

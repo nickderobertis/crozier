@@ -18,12 +18,18 @@ class Phone(UniversalBaseModel):
     Phone code.
     """
 
-    country_code: typing_extensions.Annotated[str, FieldMetadata(alias="countryCode")] = pydantic.Field()
+    country_code: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="countryCode"),
+        pydantic.Field(alias="countryCode", description="Country two-character ISO 3166-1 alpha code."),
+    ]
     """
     Country two-character ISO 3166-1 alpha code.
     """
 
-    country_name: typing_extensions.Annotated[str, FieldMetadata(alias="countryName")] = pydantic.Field()
+    country_name: typing_extensions.Annotated[
+        str, FieldMetadata(alias="countryName"), pydantic.Field(alias="countryName", description="Country name.")
+    ]
     """
     Country name.
     """

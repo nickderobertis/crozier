@@ -14,28 +14,42 @@ from .obbca_data1product_details import ObbcaData1ProductDetails
 
 class ObbcaData1(UniversalBaseModel):
     credit_interest: typing_extensions.Annotated[
-        typing.Optional[ObbcaData1CreditInterest], FieldMetadata(alias="CreditInterest")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObbcaData1CreditInterest],
+        FieldMetadata(alias="CreditInterest"),
+        pydantic.Field(
+            alias="CreditInterest",
+            description="Details about the interest that may be payable to the BCA account holders",
+        ),
+    ] = None
     """
     Details about the interest that may be payable to the BCA account holders
     """
 
     other_fees_charges: typing_extensions.Annotated[
-        typing.Optional[typing.List[ObbcaData1OtherFeesChargesItem]], FieldMetadata(alias="OtherFeesCharges")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[ObbcaData1OtherFeesChargesItem]],
+        FieldMetadata(alias="OtherFeesCharges"),
+        pydantic.Field(
+            alias="OtherFeesCharges",
+            description="Contains details of fees and charges which are not associated with either Overdraft or features/benefits",
+        ),
+    ] = None
     """
     Contains details of fees and charges which are not associated with either Overdraft or features/benefits
     """
 
-    overdraft: typing_extensions.Annotated[typing.Optional[ObbcaData1Overdraft], FieldMetadata(alias="Overdraft")] = (
-        pydantic.Field(default=None)
-    )
+    overdraft: typing_extensions.Annotated[
+        typing.Optional[ObbcaData1Overdraft],
+        FieldMetadata(alias="Overdraft"),
+        pydantic.Field(alias="Overdraft", description="Borrowing details"),
+    ] = None
     """
     Borrowing details
     """
 
     product_details: typing_extensions.Annotated[
-        typing.Optional[ObbcaData1ProductDetails], FieldMetadata(alias="ProductDetails")
+        typing.Optional[ObbcaData1ProductDetails],
+        FieldMetadata(alias="ProductDetails"),
+        pydantic.Field(alias="ProductDetails"),
     ] = None
 
     if IS_PYDANTIC_V2:

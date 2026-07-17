@@ -21,14 +21,20 @@ class DestinyDefinitionsMilestonesDestinyMilestoneChallengeActivityDefinition(Un
     activity_graph_nodes: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsMilestonesDestinyMilestoneChallengeActivityGraphNodeEntry]],
         FieldMetadata(alias="activityGraphNodes"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="activityGraphNodes",
+            description="If the activity and its challenge is visible on any of these nodes, it will be returned.",
+        ),
+    ] = None
     """
     If the activity and its challenge is visible on any of these nodes, it will be returned.
     """
 
-    activity_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="activityHash")] = (
-        pydantic.Field(default=None)
-    )
+    activity_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="activityHash"),
+        pydantic.Field(alias="activityHash", description="The activity for which this challenge is active."),
+    ] = None
     """
     The activity for which this challenge is active.
     """

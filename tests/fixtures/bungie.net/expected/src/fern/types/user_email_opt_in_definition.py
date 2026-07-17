@@ -15,8 +15,12 @@ class UserEmailOptInDefinition(UniversalBaseModel):
     """
 
     dependent_subscriptions: typing_extensions.Annotated[
-        typing.Optional[typing.List[UserEmailSubscriptionDefinition]], FieldMetadata(alias="dependentSubscriptions")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[UserEmailSubscriptionDefinition]],
+        FieldMetadata(alias="dependentSubscriptions"),
+        pydantic.Field(
+            alias="dependentSubscriptions", description="Information about the dependent subscriptions for this opt-in."
+        ),
+    ] = None
     """
     Information about the dependent subscriptions for this opt-in.
     """
@@ -26,9 +30,14 @@ class UserEmailOptInDefinition(UniversalBaseModel):
     The unique identifier for this opt-in category.
     """
 
-    set_by_default: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="setByDefault")] = (
-        pydantic.Field(default=None)
-    )
+    set_by_default: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="setByDefault"),
+        pydantic.Field(
+            alias="setByDefault",
+            description="If true, this opt-in setting should be set by default in situations where accounts are created without explicit choices about what they're opting into.",
+        ),
+    ] = None
     """
     If true, this opt-in setting should be set by default in situations where accounts are created without explicit choices about what they're opting into.
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ExecutionStatus(str, enum.Enum):
+class ExecutionStatus(enum.StrEnum):
     UNAVAILABLE = "UNAVAILABLE"
     AVAILABLE = "AVAILABLE"
     EXECUTE_IN_PROGRESS = "EXECUTE_IN_PROGRESS"

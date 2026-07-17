@@ -30,7 +30,7 @@ class PerformPostActionResponse(UniversalBaseModel):
     incoming_link_count: typing.Optional[int] = None
     moderator: typing.Optional[bool] = None
     name: typing.Optional[str] = None
-    notice: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    notice: typing.Optional[typing.Dict[str, typing.Any]] = None
     post_number: typing.Optional[int] = None
     post_type: typing.Optional[int] = None
     primary_group_name: typing.Optional[str] = None

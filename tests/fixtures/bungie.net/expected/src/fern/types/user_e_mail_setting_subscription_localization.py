@@ -15,20 +15,28 @@ class UserEMailSettingSubscriptionLocalization(UniversalBaseModel):
 
     description: typing.Optional[str] = None
     known_user_action_text: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="knownUserActionText")
+        typing.Optional[str], FieldMetadata(alias="knownUserActionText"), pydantic.Field(alias="knownUserActionText")
     ] = None
     registered_user_description: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="registeredUserDescription")
+        typing.Optional[str],
+        FieldMetadata(alias="registeredUserDescription"),
+        pydantic.Field(alias="registeredUserDescription"),
     ] = None
     title: typing.Optional[str] = None
     unknown_user_action_text: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="unknownUserActionText")
+        typing.Optional[str],
+        FieldMetadata(alias="unknownUserActionText"),
+        pydantic.Field(alias="unknownUserActionText"),
     ] = None
     unknown_user_description: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="unknownUserDescription")
+        typing.Optional[str],
+        FieldMetadata(alias="unknownUserDescription"),
+        pydantic.Field(alias="unknownUserDescription"),
     ] = None
     unregistered_user_description: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="unregisteredUserDescription")
+        typing.Optional[str],
+        FieldMetadata(alias="unregisteredUserDescription"),
+        pydantic.Field(alias="unregisteredUserDescription"),
     ] = None
 
     if IS_PYDANTIC_V2:

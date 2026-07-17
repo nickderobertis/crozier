@@ -14,22 +14,37 @@ class DestinyDestinyItemQuantity(UniversalBaseModel):
     """
 
     has_conditional_visibility: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="hasConditionalVisibility")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="hasConditionalVisibility"),
+        pydantic.Field(
+            alias="hasConditionalVisibility",
+            description="Indicates that this item quantity may be conditionally shown or hidden, based on various sources of state. For example: server flags, account state, or character progress.",
+        ),
+    ] = None
     """
     Indicates that this item quantity may be conditionally shown or hidden, based on various sources of state. For example: server flags, account state, or character progress.
     """
 
-    item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemHash")] = pydantic.Field(
-        default=None
-    )
+    item_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="itemHash"),
+        pydantic.Field(
+            alias="itemHash",
+            description="The hash identifier for the item in question. Use it to look up the item's DestinyInventoryItemDefinition.",
+        ),
+    ] = None
     """
     The hash identifier for the item in question. Use it to look up the item's DestinyInventoryItemDefinition.
     """
 
-    item_instance_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemInstanceId")] = (
-        pydantic.Field(default=None)
-    )
+    item_instance_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="itemInstanceId"),
+        pydantic.Field(
+            alias="itemInstanceId",
+            description="If this quantity is referring to a specific instance of an item, this will have the item's instance ID. Normally, this will be null.",
+        ),
+    ] = None
     """
     If this quantity is referring to a specific instance of an item, this will have the item's instance ID. Normally, this will be null.
     """

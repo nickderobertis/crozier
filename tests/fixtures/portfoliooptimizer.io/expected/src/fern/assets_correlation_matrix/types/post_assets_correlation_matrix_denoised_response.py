@@ -10,8 +10,13 @@ from ...core.serialization import FieldMetadata
 
 class PostAssetsCorrelationMatrixDenoisedResponse(UniversalBaseModel):
     assets_correlation_matrix: typing_extensions.Annotated[
-        typing.List[typing.List[float]], FieldMetadata(alias="assetsCorrelationMatrix")
-    ] = pydantic.Field()
+        typing.List[typing.List[float]],
+        FieldMetadata(alias="assetsCorrelationMatrix"),
+        pydantic.Field(
+            alias="assetsCorrelationMatrix",
+            description="assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j; assetsCorrelationMatrix is possibly null in case the denoising method did not manage to denoise the provided asset correlation matrix",
+        ),
+    ]
     """
     assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j; assetsCorrelationMatrix is possibly null in case the denoising method did not manage to denoise the provided asset correlation matrix
     """

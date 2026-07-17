@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetApiBackgroundsIndexRequestIndex(str, enum.Enum):
+class GetApiBackgroundsIndexRequestIndex(enum.StrEnum):
     ACOLYTE = "acolyte"
 
     def visit(self, acolyte: typing.Callable[[], T_Result]) -> T_Result:

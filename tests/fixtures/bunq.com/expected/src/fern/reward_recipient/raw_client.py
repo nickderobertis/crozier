@@ -6,12 +6,14 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.reward_recipient_listing import RewardRecipientListing
 from ..types.reward_recipient_read import RewardRecipientRead
+from pydantic import ValidationError
 
 
 class RawRewardRecipientClient:
@@ -38,7 +40,7 @@ class RawRewardRecipientClient:
             Used to view Rewards.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/reward-recipient",
+            f"user/{encode_path_param(user_id)}/reward-recipient",
             method="GET",
             request_options=request_options,
         )
@@ -56,9 +58,9 @@ class RawRewardRecipientClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -66,6 +68,10 @@ class RawRewardRecipientClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_reward_recipient_for_user(
@@ -91,7 +97,7 @@ class RawRewardRecipientClient:
             Used to view Rewards.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/reward-recipient/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/reward-recipient/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -109,9 +115,9 @@ class RawRewardRecipientClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -119,6 +125,10 @@ class RawRewardRecipientClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -146,7 +156,7 @@ class AsyncRawRewardRecipientClient:
             Used to view Rewards.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/reward-recipient",
+            f"user/{encode_path_param(user_id)}/reward-recipient",
             method="GET",
             request_options=request_options,
         )
@@ -164,9 +174,9 @@ class AsyncRawRewardRecipientClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -174,6 +184,10 @@ class AsyncRawRewardRecipientClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_reward_recipient_for_user(
@@ -199,7 +213,7 @@ class AsyncRawRewardRecipientClient:
             Used to view Rewards.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/reward-recipient/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/reward-recipient/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -217,9 +231,9 @@ class AsyncRawRewardRecipientClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -227,4 +241,8 @@ class AsyncRawRewardRecipientClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

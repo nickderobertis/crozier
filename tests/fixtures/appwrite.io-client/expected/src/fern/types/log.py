@@ -13,59 +13,90 @@ class Log(UniversalBaseModel):
     Log
     """
 
-    client_code: typing_extensions.Annotated[str, FieldMetadata(alias="clientCode")] = pydantic.Field()
+    client_code: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="clientCode"),
+        pydantic.Field(
+            alias="clientCode",
+            description="Client code name. View list of [available options](https://github.com/appwrite/appwrite/blob/master/docs/lists/clients.json).",
+        ),
+    ]
     """
     Client code name. View list of [available options](https://github.com/appwrite/appwrite/blob/master/docs/lists/clients.json).
     """
 
-    client_engine: typing_extensions.Annotated[str, FieldMetadata(alias="clientEngine")] = pydantic.Field()
+    client_engine: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="clientEngine"),
+        pydantic.Field(alias="clientEngine", description="Client engine name."),
+    ]
     """
     Client engine name.
     """
 
-    client_engine_version: typing_extensions.Annotated[str, FieldMetadata(alias="clientEngineVersion")] = (
-        pydantic.Field()
-    )
+    client_engine_version: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="clientEngineVersion"),
+        pydantic.Field(alias="clientEngineVersion", description="Client engine name."),
+    ]
     """
     Client engine name.
     """
 
-    client_name: typing_extensions.Annotated[str, FieldMetadata(alias="clientName")] = pydantic.Field()
+    client_name: typing_extensions.Annotated[
+        str, FieldMetadata(alias="clientName"), pydantic.Field(alias="clientName", description="Client name.")
+    ]
     """
     Client name.
     """
 
-    client_type: typing_extensions.Annotated[str, FieldMetadata(alias="clientType")] = pydantic.Field()
+    client_type: typing_extensions.Annotated[
+        str, FieldMetadata(alias="clientType"), pydantic.Field(alias="clientType", description="Client type.")
+    ]
     """
     Client type.
     """
 
-    client_version: typing_extensions.Annotated[str, FieldMetadata(alias="clientVersion")] = pydantic.Field()
+    client_version: typing_extensions.Annotated[
+        str, FieldMetadata(alias="clientVersion"), pydantic.Field(alias="clientVersion", description="Client version.")
+    ]
     """
     Client version.
     """
 
-    country_code: typing_extensions.Annotated[str, FieldMetadata(alias="countryCode")] = pydantic.Field()
+    country_code: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="countryCode"),
+        pydantic.Field(alias="countryCode", description="Country two-character ISO 3166-1 alpha code."),
+    ]
     """
     Country two-character ISO 3166-1 alpha code.
     """
 
-    country_name: typing_extensions.Annotated[str, FieldMetadata(alias="countryName")] = pydantic.Field()
+    country_name: typing_extensions.Annotated[
+        str, FieldMetadata(alias="countryName"), pydantic.Field(alias="countryName", description="Country name.")
+    ]
     """
     Country name.
     """
 
-    device_brand: typing_extensions.Annotated[str, FieldMetadata(alias="deviceBrand")] = pydantic.Field()
+    device_brand: typing_extensions.Annotated[
+        str, FieldMetadata(alias="deviceBrand"), pydantic.Field(alias="deviceBrand", description="Device brand name.")
+    ]
     """
     Device brand name.
     """
 
-    device_model: typing_extensions.Annotated[str, FieldMetadata(alias="deviceModel")] = pydantic.Field()
+    device_model: typing_extensions.Annotated[
+        str, FieldMetadata(alias="deviceModel"), pydantic.Field(alias="deviceModel", description="Device model name.")
+    ]
     """
     Device model name.
     """
 
-    device_name: typing_extensions.Annotated[str, FieldMetadata(alias="deviceName")] = pydantic.Field()
+    device_name: typing_extensions.Annotated[
+        str, FieldMetadata(alias="deviceName"), pydantic.Field(alias="deviceName", description="Device name.")
+    ]
     """
     Device name.
     """
@@ -80,17 +111,30 @@ class Log(UniversalBaseModel):
     IP session in use when the session was created.
     """
 
-    os_code: typing_extensions.Annotated[str, FieldMetadata(alias="osCode")] = pydantic.Field()
+    os_code: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="osCode"),
+        pydantic.Field(
+            alias="osCode",
+            description="Operating system code name. View list of [available options](https://github.com/appwrite/appwrite/blob/master/docs/lists/os.json).",
+        ),
+    ]
     """
     Operating system code name. View list of [available options](https://github.com/appwrite/appwrite/blob/master/docs/lists/os.json).
     """
 
-    os_name: typing_extensions.Annotated[str, FieldMetadata(alias="osName")] = pydantic.Field()
+    os_name: typing_extensions.Annotated[
+        str, FieldMetadata(alias="osName"), pydantic.Field(alias="osName", description="Operating system name.")
+    ]
     """
     Operating system name.
     """
 
-    os_version: typing_extensions.Annotated[str, FieldMetadata(alias="osVersion")] = pydantic.Field()
+    os_version: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="osVersion"),
+        pydantic.Field(alias="osVersion", description="Operating system version."),
+    ]
     """
     Operating system version.
     """

@@ -1,6 +1,6 @@
 # Reference
 ## MobileAuthorization
-<details><summary><code>client.mobile_authorization.<a href="src/fern/mobile_authorization/client.py">create_mobile_authorization_code</a>(...)</code></summary>
+<details><summary><code>client.mobile_authorization.<a href="src/fern/mobile_authorization/client.py">create_mobile_authorization_code</a>(...) -> CreateMobileAuthorizationCodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -39,11 +39,14 @@ Replace `ACCESS_TOKEN` with a
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mobile_authorization.create_mobile_authorization_code()
 
 ```
@@ -81,7 +84,7 @@ client.mobile_authorization.create_mobile_authorization_code()
 </details>
 
 ## OAuth
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">renew_token</a>(...)</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">renew_token</a>(...) -> RenewTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -128,11 +131,14 @@ page in the [developer dashboard](https://developer.squareup.com/apps).
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.o_auth.renew_token(
     client_id="client_id",
 )
@@ -179,7 +185,7 @@ client.o_auth.renew_token(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">revoke_token</a>(...)</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">revoke_token</a>(...) -> RevokeTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -222,11 +228,14 @@ page in the [developer dashboard](https://developer.squareup.com/apps).
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.o_auth.revoke_token()
 
 ```
@@ -300,7 +309,7 @@ Default: `false`
 </dl>
 </details>
 
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">obtain_token</a>(...)</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">obtain_token</a>(...) -> ObtainTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -339,11 +348,14 @@ should never interact directly with OAuth tokens__.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.o_auth.obtain_token(
     client_id="client_id",
     client_secret="client_secret",
@@ -442,7 +454,7 @@ A valid refresh token is required if `grant_type` is set to `refresh_token` , to
 <dl>
 <dd>
 
-**scopes:** `typing.Optional[typing.Sequence[str]]` 
+**scopes:** `typing.Optional[typing.List[str]]` 
 
 A JSON list of strings representing the permissions the application is requesting.
 For example: "`["MERCHANT_PROFILE_READ","PAYMENTS_READ","BANK_ACCOUNTS_READ"]`"
@@ -480,7 +492,7 @@ The short-lived access token returned in the response will expire in 24 hours.
 </details>
 
 ## V1Employees
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">list_employees</a>(...)</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">list_employees</a>(...) -> typing.List[V1Employee]</code></summary>
 <dl>
 <dd>
 
@@ -508,11 +520,14 @@ Provides summary information for all of a business's employees.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1employees.list_employees()
 
 ```
@@ -616,7 +631,7 @@ original query to the endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">create_employee</a>(...)</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">create_employee</a>(...) -> V1Employee</code></summary>
 <dl>
 <dd>
 
@@ -651,11 +666,14 @@ set the employee's status to <code>INACTIVE</code>
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1employees.create_employee(
     first_name="first_name",
     last_name="last_name",
@@ -675,79 +693,7 @@ client.v1employees.create_employee(
 <dl>
 <dd>
 
-**first_name:** `str` — The employee's first name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_name:** `str` — The employee's last name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**authorized_location_ids:** `typing.Optional[typing.Sequence[str]]` — The IDs of the locations the employee is allowed to clock in at.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[str]` — The time when the employee entity was created, in ISO 8601 format.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**email:** `typing.Optional[str]` — The employee's email address.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**external_id:** `typing.Optional[str]` — An ID the merchant can set to associate the employee with an entity in another system.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` — The employee's unique ID.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**role_ids:** `typing.Optional[typing.Sequence[str]]` — The ids of the employee's associated roles. Currently, you can specify only one or zero roles per employee.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — Whether the employee is ACTIVE or INACTIVE. Inactive employees cannot sign in to Square Register.Merchants update this field from the Square Dashboard.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[str]` — The time when the employee entity was most recently updated, in ISO 8601 format.
+**request:** `V1Employee` 
     
 </dd>
 </dl>
@@ -767,7 +713,7 @@ client.v1employees.create_employee(
 </dl>
 </details>
 
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">retrieve_employee</a>(...)</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">retrieve_employee</a>(...) -> V1Employee</code></summary>
 <dl>
 <dd>
 
@@ -795,11 +741,14 @@ Provides the details for a single employee.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1employees.retrieve_employee(
     employee_id="employee_id",
 )
@@ -838,7 +787,7 @@ client.v1employees.retrieve_employee(
 </dl>
 </details>
 
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">update_employee</a>(...)</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">update_employee</a>(...) -> V1Employee</code></summary>
 <dl>
 <dd>
 
@@ -866,11 +815,14 @@ client.v1employees.retrieve_employee(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1employees.update_employee(
     employee_id="employee_id",
     first_name="first_name",
@@ -899,79 +851,7 @@ client.v1employees.update_employee(
 <dl>
 <dd>
 
-**first_name:** `str` — The employee's first name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_name:** `str` — The employee's last name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**authorized_location_ids:** `typing.Optional[typing.Sequence[str]]` — The IDs of the locations the employee is allowed to clock in at.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[str]` — The time when the employee entity was created, in ISO 8601 format.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**email:** `typing.Optional[str]` — The employee's email address.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**external_id:** `typing.Optional[str]` — An ID the merchant can set to associate the employee with an entity in another system.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` — The employee's unique ID.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**role_ids:** `typing.Optional[typing.Sequence[str]]` — The ids of the employee's associated roles. Currently, you can specify only one or zero roles per employee.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — Whether the employee is ACTIVE or INACTIVE. Inactive employees cannot sign in to Square Register.Merchants update this field from the Square Dashboard.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[str]` — The time when the employee entity was most recently updated, in ISO 8601 format.
+**request:** `V1Employee` 
     
 </dd>
 </dl>
@@ -991,7 +871,7 @@ client.v1employees.update_employee(
 </dl>
 </details>
 
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">list_employee_roles</a>(...)</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">list_employee_roles</a>(...) -> typing.List[V1EmployeeRole]</code></summary>
 <dl>
 <dd>
 
@@ -1019,11 +899,14 @@ Provides summary information for all of a business's employee roles.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1employees.list_employee_roles()
 
 ```
@@ -1079,7 +962,7 @@ original query to the endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">create_employee_role</a>(...)</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">create_employee_role</a>(...) -> V1EmployeeRole</code></summary>
 <dl>
 <dd>
 
@@ -1119,14 +1002,19 @@ with roles. All employees can accept payments with Square Point of Sale.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1employees.create_employee_role(
     name="name",
-    permissions=["permissions"],
+    permissions=[
+        "permissions"
+    ],
 )
 
 ```
@@ -1143,47 +1031,7 @@ client.v1employees.create_employee_role(
 <dl>
 <dd>
 
-**name:** `str` — The role's merchant-defined name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**permissions:** `typing.Sequence[str]` — The role's permissions.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[str]` — The time when the employee entity was created, in ISO 8601 format. Is set by Square when the Role is created.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` — The role's unique ID, Can only be set by Square.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**is_owner:** `typing.Optional[bool]` — If true, employees with this role have all permissions, regardless of the values indicated in permissions.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[str]` — The time when the employee entity was most recently updated, in ISO 8601 format. Is set by Square when the Role updated.
+**request:** `V1EmployeeRole` 
     
 </dd>
 </dl>
@@ -1203,7 +1051,7 @@ client.v1employees.create_employee_role(
 </dl>
 </details>
 
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">retrieve_employee_role</a>(...)</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">retrieve_employee_role</a>(...) -> V1EmployeeRole</code></summary>
 <dl>
 <dd>
 
@@ -1231,11 +1079,14 @@ Provides the details for a single employee role.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1employees.retrieve_employee_role(
     role_id="role_id",
 )
@@ -1274,7 +1125,7 @@ client.v1employees.retrieve_employee_role(
 </dl>
 </details>
 
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">update_employee_role</a>(...)</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">update_employee_role</a>(...) -> V1EmployeeRole</code></summary>
 <dl>
 <dd>
 
@@ -1302,15 +1153,20 @@ Modifies the details of an employee role.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1employees.update_employee_role(
     role_id="role_id",
     name="name",
-    permissions=["permissions"],
+    permissions=[
+        "permissions"
+    ],
 )
 
 ```
@@ -1335,47 +1191,7 @@ client.v1employees.update_employee_role(
 <dl>
 <dd>
 
-**name:** `str` — The role's merchant-defined name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**permissions:** `typing.Sequence[str]` — The role's permissions.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[str]` — The time when the employee entity was created, in ISO 8601 format. Is set by Square when the Role is created.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` — The role's unique ID, Can only be set by Square.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**is_owner:** `typing.Optional[bool]` — If true, employees with this role have all permissions, regardless of the values indicated in permissions.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[str]` — The time when the employee entity was most recently updated, in ISO 8601 format. Is set by Square when the Role updated.
+**request:** `V1EmployeeRole` 
     
 </dd>
 </dl>
@@ -1396,7 +1212,7 @@ client.v1employees.update_employee_role(
 </details>
 
 ## V1Transactions
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">list_orders</a>(...)</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">list_orders</a>(...) -> typing.List[V1Order]</code></summary>
 <dl>
 <dd>
 
@@ -1424,11 +1240,14 @@ Provides summary information for a merchant's online store orders.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1transactions.list_orders(
     location_id="location_id",
 )
@@ -1494,7 +1313,7 @@ original query to the endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">retrieve_order</a>(...)</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">retrieve_order</a>(...) -> V1Order</code></summary>
 <dl>
 <dd>
 
@@ -1522,11 +1341,14 @@ Provides comprehensive information for a single online store order, including th
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1transactions.retrieve_order(
     location_id="location_id",
     order_id="order_id",
@@ -1574,7 +1396,7 @@ client.v1transactions.retrieve_order(
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">update_order</a>(...)</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">update_order</a>(...) -> V1Order</code></summary>
 <dl>
 <dd>
 
@@ -1602,11 +1424,14 @@ Updates the details of an online store order. Every update you perform on an ord
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1transactions.update_order(
     location_id="location_id",
     order_id="order_id",
@@ -1695,7 +1520,7 @@ client.v1transactions.update_order(
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">list_payments</a>(...)</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">list_payments</a>(...) -> typing.List[V1Payment]</code></summary>
 <dl>
 <dd>
 
@@ -1733,11 +1558,14 @@ were seen in a previous request.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1transactions.list_payments(
     location_id="location_id",
 )
@@ -1827,7 +1655,7 @@ original query to the endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">retrieve_payment</a>(...)</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">retrieve_payment</a>(...) -> V1Payment</code></summary>
 <dl>
 <dd>
 
@@ -1855,11 +1683,14 @@ Provides comprehensive information for a single payment.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1transactions.retrieve_payment(
     location_id="location_id",
     payment_id="payment_id",
@@ -1907,7 +1738,7 @@ client.v1transactions.retrieve_payment(
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">list_refunds</a>(...)</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">list_refunds</a>(...) -> typing.List[V1Refund]</code></summary>
 <dl>
 <dd>
 
@@ -1935,11 +1766,14 @@ Provides the details for all refunds initiated by a merchant or any of the merch
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1transactions.list_refunds(
     location_id="location_id",
 )
@@ -2021,7 +1855,7 @@ original query to the endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">create_refund</a>(...)</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">create_refund</a>(...) -> V1Refund</code></summary>
 <dl>
 <dd>
 
@@ -2060,11 +1894,14 @@ refund them.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1transactions.create_refund(
     location_id="location_id",
     payment_id="payment_id",
@@ -2150,7 +1987,7 @@ particular tender you want to refund.
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">list_settlements</a>(...)</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">list_settlements</a>(...) -> typing.List[V1Settlement]</code></summary>
 <dl>
 <dd>
 
@@ -2183,11 +2020,14 @@ information.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1transactions.list_settlements(
     location_id="location_id",
 )
@@ -2277,7 +2117,7 @@ original query to the endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">retrieve_settlement</a>(...)</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">retrieve_settlement</a>(...) -> V1Settlement</code></summary>
 <dl>
 <dd>
 
@@ -2321,11 +2161,14 @@ take longer.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.v1transactions.retrieve_settlement(
     location_id="location_id",
     settlement_id="settlement_id",
@@ -2374,7 +2217,7 @@ client.v1transactions.retrieve_settlement(
 </details>
 
 ## ApplePay
-<details><summary><code>client.apple_pay.<a href="src/fern/apple_pay/client.py">register_domain</a>(...)</code></summary>
+<details><summary><code>client.apple_pay.<a href="src/fern/apple_pay/client.py">register_domain</a>(...) -> RegisterDomainResponse</code></summary>
 <dl>
 <dd>
 
@@ -2410,11 +2253,14 @@ To learn more about Web Apple Pay, see
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.apple_pay.register_domain(
     domain_name="domain_name",
 )
@@ -2454,7 +2300,7 @@ client.apple_pay.register_domain(
 </details>
 
 ## BankAccounts
-<details><summary><code>client.bank_accounts.<a href="src/fern/bank_accounts/client.py">list_bank_accounts</a>(...)</code></summary>
+<details><summary><code>client.bank_accounts.<a href="src/fern/bank_accounts/client.py">list_bank_accounts</a>(...) -> ListBankAccountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2482,11 +2328,14 @@ Returns a list of [BankAccount](https://developer.squareup.com/reference/square_
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bank_accounts.list_bank_accounts()
 
 ```
@@ -2552,7 +2401,7 @@ to retrieve only the linked bank accounts belonging to a specific location.
 </dl>
 </details>
 
-<details><summary><code>client.bank_accounts.<a href="src/fern/bank_accounts/client.py">get_bank_account_by_v1id</a>(...)</code></summary>
+<details><summary><code>client.bank_accounts.<a href="src/fern/bank_accounts/client.py">get_bank_account_by_v1id</a>(...) -> GetBankAccountByV1IdResponse</code></summary>
 <dl>
 <dd>
 
@@ -2580,11 +2429,14 @@ Returns details of a [BankAccount](https://developer.squareup.com/reference/squa
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bank_accounts.get_bank_account_by_v1id(
     v1bank_account_id="v1_bank_account_id",
 )
@@ -2626,7 +2478,7 @@ Connect V1 ID of the desired `BankAccount`. For more information, see
 </dl>
 </details>
 
-<details><summary><code>client.bank_accounts.<a href="src/fern/bank_accounts/client.py">get_bank_account</a>(...)</code></summary>
+<details><summary><code>client.bank_accounts.<a href="src/fern/bank_accounts/client.py">get_bank_account</a>(...) -> GetBankAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -2655,11 +2507,14 @@ linked to a Square account.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bank_accounts.get_bank_account(
     bank_account_id="bank_account_id",
 )
@@ -2699,7 +2554,7 @@ client.bank_accounts.get_bank_account(
 </details>
 
 ## Bookings
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">create_booking</a>(...)</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">create_booking</a>(...) -> CreateBookingResponse</code></summary>
 <dl>
 <dd>
 
@@ -2726,12 +2581,15 @@ Creates a booking.
 <dd>
 
 ```python
-from fern import AppointmentSegment, Booking, FernApi
+from fern import FernApi, Booking, AppointmentSegment
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bookings.create_booking(
     booking=Booking(
         appointment_segments=[
@@ -2790,7 +2648,7 @@ client.bookings.create_booking(
 </dl>
 </details>
 
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">search_availability</a>(...)</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">search_availability</a>(...) -> SearchAvailabilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -2817,19 +2675,15 @@ Searches for availabilities for booking.
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    FilterValue,
-    SearchAvailabilityFilter,
-    SearchAvailabilityQuery,
-    SegmentFilter,
-    TimeRange,
-)
+from fern import FernApi, SearchAvailabilityQuery, SearchAvailabilityFilter, SegmentFilter, FilterValue, TimeRange
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bookings.search_availability(
     query=SearchAvailabilityQuery(
         filter=SearchAvailabilityFilter(
@@ -2838,7 +2692,10 @@ client.bookings.search_availability(
                 SegmentFilter(
                     service_variation_id="RU3PBTZTK7DXZDQFCJHOK2MC",
                     team_member_id_filter=FilterValue(
-                        any=["TMXUrsBWWcHTt79t", "TMaJcbiRqPIGZuS9"],
+                        any=[
+                            "TMXUrsBWWcHTt79t",
+                            "TMaJcbiRqPIGZuS9"
+                        ],
                     ),
                 )
             ],
@@ -2884,7 +2741,7 @@ client.bookings.search_availability(
 </dl>
 </details>
 
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">retrieve_business_booking_profile</a>()</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">retrieve_business_booking_profile</a>() -> RetrieveBusinessBookingProfileResponse</code></summary>
 <dl>
 <dd>
 
@@ -2912,11 +2769,14 @@ Retrieves a seller's booking profile.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bookings.retrieve_business_booking_profile()
 
 ```
@@ -2945,7 +2805,7 @@ client.bookings.retrieve_business_booking_profile()
 </dl>
 </details>
 
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">list_team_member_booking_profiles</a>(...)</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">list_team_member_booking_profiles</a>(...) -> ListTeamMemberBookingProfilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2973,11 +2833,14 @@ Lists booking profiles for team members.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bookings.list_team_member_booking_profiles()
 
 ```
@@ -3038,7 +2901,7 @@ client.bookings.list_team_member_booking_profiles()
 </dl>
 </details>
 
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">retrieve_team_member_booking_profile</a>(...)</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">retrieve_team_member_booking_profile</a>(...) -> RetrieveTeamMemberBookingProfileResponse</code></summary>
 <dl>
 <dd>
 
@@ -3066,11 +2929,14 @@ Retrieves a team member's booking profile.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bookings.retrieve_team_member_booking_profile(
     team_member_id="team_member_id",
 )
@@ -3109,7 +2975,7 @@ client.bookings.retrieve_team_member_booking_profile(
 </dl>
 </details>
 
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">retrieve_booking</a>(...)</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">retrieve_booking</a>(...) -> RetrieveBookingResponse</code></summary>
 <dl>
 <dd>
 
@@ -3137,11 +3003,14 @@ Retrieves a booking.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bookings.retrieve_booking(
     booking_id="booking_id",
 )
@@ -3180,7 +3049,7 @@ client.bookings.retrieve_booking(
 </dl>
 </details>
 
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">update_booking</a>(...)</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">update_booking</a>(...) -> UpdateBookingResponse</code></summary>
 <dl>
 <dd>
 
@@ -3207,12 +3076,15 @@ Updates a booking.
 <dd>
 
 ```python
-from fern import Booking, FernApi
+from fern import FernApi, Booking
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bookings.update_booking(
     booking_id="booking_id",
     booking=Booking(
@@ -3271,7 +3143,7 @@ client.bookings.update_booking(
 </dl>
 </details>
 
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">cancel_booking</a>(...)</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">cancel_booking</a>(...) -> CancelBookingResponse</code></summary>
 <dl>
 <dd>
 
@@ -3299,11 +3171,14 @@ Cancels an existing booking.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.bookings.cancel_booking(
     booking_id="booking_id",
     booking_version=1,
@@ -3360,7 +3235,7 @@ client.bookings.cancel_booking(
 </details>
 
 ## Cards
-<details><summary><code>client.cards.<a href="src/fern/cards/client.py">list_cards</a>(...)</code></summary>
+<details><summary><code>client.cards.<a href="src/fern/cards/client.py">list_cards</a>(...) -> ListCardsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3389,11 +3264,14 @@ A max of 25 cards will be returned.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.cards.list_cards()
 
 ```
@@ -3476,7 +3354,7 @@ This field defaults to ASC.
 </dl>
 </details>
 
-<details><summary><code>client.cards.<a href="src/fern/cards/client.py">create_card</a>(...)</code></summary>
+<details><summary><code>client.cards.<a href="src/fern/cards/client.py">create_card</a>(...) -> CreateCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -3503,12 +3381,15 @@ Adds a card on file to an existing merchant.
 <dd>
 
 ```python
-from fern import Card, FernApi
+from fern import FernApi, Card
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.cards.create_card(
     card=Card(),
     idempotency_key="idempotency_key",
@@ -3586,7 +3467,7 @@ See the [SCA Overview](https://developer.squareup.com/docs/sca-overview).
 </dl>
 </details>
 
-<details><summary><code>client.cards.<a href="src/fern/cards/client.py">retrieve_card</a>(...)</code></summary>
+<details><summary><code>client.cards.<a href="src/fern/cards/client.py">retrieve_card</a>(...) -> RetrieveCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -3614,11 +3495,14 @@ Retrieves details for a specific Card.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.cards.retrieve_card(
     card_id="card_id",
 )
@@ -3657,7 +3541,7 @@ client.cards.retrieve_card(
 </dl>
 </details>
 
-<details><summary><code>client.cards.<a href="src/fern/cards/client.py">disable_card</a>(...)</code></summary>
+<details><summary><code>client.cards.<a href="src/fern/cards/client.py">disable_card</a>(...) -> DisableCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -3686,11 +3570,14 @@ Disabling an already disabled card is allowed but has no effect.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.cards.disable_card(
     card_id="card_id",
 )
@@ -3730,7 +3617,7 @@ client.cards.disable_card(
 </details>
 
 ## CashDrawers
-<details><summary><code>client.cash_drawers.<a href="src/fern/cash_drawers/client.py">list_cash_drawer_shifts</a>(...)</code></summary>
+<details><summary><code>client.cash_drawers.<a href="src/fern/cash_drawers/client.py">list_cash_drawer_shifts</a>(...) -> ListCashDrawerShiftsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3759,11 +3646,14 @@ in a date range.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.cash_drawers.list_cash_drawer_shifts(
     location_id="location_id",
 )
@@ -3848,7 +3738,7 @@ default, 1000 max).
 </dl>
 </details>
 
-<details><summary><code>client.cash_drawers.<a href="src/fern/cash_drawers/client.py">retrieve_cash_drawer_shift</a>(...)</code></summary>
+<details><summary><code>client.cash_drawers.<a href="src/fern/cash_drawers/client.py">retrieve_cash_drawer_shift</a>(...) -> RetrieveCashDrawerShiftResponse</code></summary>
 <dl>
 <dd>
 
@@ -3877,11 +3767,14 @@ Provides the summary details for a single cash drawer shift. See
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.cash_drawers.retrieve_cash_drawer_shift(
     shift_id="shift_id",
     location_id="location_id",
@@ -3929,7 +3822,7 @@ client.cash_drawers.retrieve_cash_drawer_shift(
 </dl>
 </details>
 
-<details><summary><code>client.cash_drawers.<a href="src/fern/cash_drawers/client.py">list_cash_drawer_shift_events</a>(...)</code></summary>
+<details><summary><code>client.cash_drawers.<a href="src/fern/cash_drawers/client.py">list_cash_drawer_shift_events</a>(...) -> ListCashDrawerShiftEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3957,11 +3850,14 @@ Provides a paginated list of events for a single cash drawer shift.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.cash_drawers.list_cash_drawer_shift_events(
     shift_id="shift_id",
     location_id="location_id",
@@ -4029,7 +3925,7 @@ default, 1000 max).
 </details>
 
 ## Catalog
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">batch_delete_catalog_objects</a>(...)</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">batch_delete_catalog_objects</a>(...) -> BatchDeleteCatalogObjectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4066,11 +3962,14 @@ actually deleted.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.catalog.batch_delete_catalog_objects()
 
 ```
@@ -4087,7 +3986,7 @@ client.catalog.batch_delete_catalog_objects()
 <dl>
 <dd>
 
-**object_ids:** `typing.Optional[typing.Sequence[str]]` 
+**object_ids:** `typing.Optional[typing.List[str]]` 
 
 The IDs of the CatalogObjects to be deleted. When an object is deleted, other objects
 in the graph that depend on that object will be deleted as well (for example, deleting a
@@ -4111,7 +4010,7 @@ CatalogItem will delete its CatalogItemVariation.
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">batch_retrieve_catalog_objects</a>(...)</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">batch_retrieve_catalog_objects</a>(...) -> BatchRetrieveCatalogObjectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4144,13 +4043,18 @@ any [CatalogTax](https://developer.squareup.com/reference/square_2021-08-18/obje
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.catalog.batch_retrieve_catalog_objects(
-    object_ids=["object_ids"],
+    object_ids=[
+        "object_ids"
+    ],
 )
 
 ```
@@ -4167,7 +4071,7 @@ client.catalog.batch_retrieve_catalog_objects(
 <dl>
 <dd>
 
-**object_ids:** `typing.Sequence[str]` — The IDs of the CatalogObjects to be retrieved.
+**object_ids:** `typing.List[str]` — The IDs of the CatalogObjects to be retrieved.
     
 </dd>
 </dl>
@@ -4217,7 +4121,7 @@ the response.
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">batch_upsert_catalog_objects</a>(...)</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">batch_upsert_catalog_objects</a>(...) -> BatchUpsertCatalogObjectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4252,12 +4156,15 @@ than 10,000.
 <dd>
 
 ```python
-from fern import CatalogObject, CatalogObjectBatch, FernApi
+from fern import FernApi, CatalogObjectBatch, CatalogObject
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.catalog.batch_upsert_catalog_objects(
     batches=[
         CatalogObjectBatch(
@@ -4286,7 +4193,7 @@ client.catalog.batch_upsert_catalog_objects(
 <dl>
 <dd>
 
-**batches:** `typing.Sequence[CatalogObjectBatch]` 
+**batches:** `typing.List[CatalogObjectBatch]` 
 
 A batch of CatalogObjects to be inserted/updated atomically.
 The objects within a batch will be inserted in an all-or-nothing fashion, i.e., if an error occurs
@@ -4346,7 +4253,7 @@ See [Idempotency](https://developer.squareup.com/docs/basics/api101/idempotency)
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">catalog_info</a>()</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">catalog_info</a>() -> CatalogInfoResponse</code></summary>
 <dl>
 <dd>
 
@@ -4375,11 +4282,14 @@ limits that can be used by the `BatchUpsertCatalogObjects` endpoint.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.catalog.catalog_info()
 
 ```
@@ -4408,7 +4318,7 @@ client.catalog.catalog_info()
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">list_catalog</a>(...)</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">list_catalog</a>(...) -> ListCatalogResponse</code></summary>
 <dl>
 <dd>
 
@@ -4444,11 +4354,14 @@ and set the `include_deleted_objects` attribute value to `true`.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.catalog.list_catalog()
 
 ```
@@ -4518,7 +4431,7 @@ the [CatalogObject](https://developer.squareup.com/reference/square_2021-08-18/o
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">upsert_catalog_object</a>(...)</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">upsert_catalog_object</a>(...) -> UpsertCatalogObjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -4545,12 +4458,15 @@ Creates or updates the target [CatalogObject](https://developer.squareup.com/ref
 <dd>
 
 ```python
-from fern import CatalogObject, FernApi
+from fern import FernApi, CatalogObject
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.catalog.upsert_catalog_object(
     idempotency_key="idempotency_key",
     object=CatalogObject(
@@ -4612,7 +4528,7 @@ See [Idempotency](https://developer.squareup.com/docs/basics/api101/idempotency)
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">retrieve_catalog_object</a>(...)</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">retrieve_catalog_object</a>(...) -> RetrieveCatalogObjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -4646,11 +4562,14 @@ any [CatalogTax](https://developer.squareup.com/reference/square_2021-08-18/obje
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.catalog.retrieve_catalog_object(
     object_id="object_id",
 )
@@ -4720,7 +4639,7 @@ in the version field of [CatalogObject](https://developer.squareup.com/reference
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">delete_catalog_object</a>(...)</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">delete_catalog_object</a>(...) -> DeleteCatalogObjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -4753,11 +4672,14 @@ will also delete all of its
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.catalog.delete_catalog_object(
     object_id="object_id",
 )
@@ -4800,7 +4722,7 @@ catalog item will delete its catalog item variations).
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">search_catalog_objects</a>(...)</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">search_catalog_objects</a>(...) -> SearchCatalogObjectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4837,11 +4759,14 @@ endpoint in the following aspects:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.catalog.search_catalog_objects()
 
 ```
@@ -4924,7 +4849,7 @@ is higher than the maximum limit of 1,000, it will be ignored.
 <dl>
 <dd>
 
-**object_types:** `typing.Optional[typing.Sequence[str]]` — The desired set of object types to appear in the search results.
+**object_types:** `typing.Optional[typing.List[str]]` — The desired set of object types to appear in the search results.
     
 </dd>
 </dl>
@@ -4952,7 +4877,7 @@ is higher than the maximum limit of 1,000, it will be ignored.
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">search_catalog_items</a>(...)</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">search_catalog_items</a>(...) -> SearchCatalogItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4989,11 +4914,14 @@ endpoint in the following aspects:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.catalog.search_catalog_items()
 
 ```
@@ -5010,7 +4938,7 @@ client.catalog.search_catalog_items()
 <dl>
 <dd>
 
-**category_ids:** `typing.Optional[typing.Sequence[str]]` — The category id query expression to return items containing the specified category IDs.
+**category_ids:** `typing.Optional[typing.List[str]]` — The category id query expression to return items containing the specified category IDs.
     
 </dd>
 </dl>
@@ -5026,7 +4954,7 @@ client.catalog.search_catalog_items()
 <dl>
 <dd>
 
-**custom_attribute_filters:** `typing.Optional[typing.Sequence[CustomAttributeFilter]]` 
+**custom_attribute_filters:** `typing.Optional[typing.List[CustomAttributeFilter]]` 
 
 The customer-attribute filter to return items or item variations matching the specified
 custom attribute expressions. A maximum number of 10 custom attribute expressions are supported in
@@ -5038,7 +4966,7 @@ a single call to the [SearchCatalogItems](https://developer.squareup.com/referen
 <dl>
 <dd>
 
-**enabled_location_ids:** `typing.Optional[typing.Sequence[str]]` — The enabled-location query expression to return items and item variations having specified enabled locations.
+**enabled_location_ids:** `typing.Optional[typing.List[str]]` — The enabled-location query expression to return items and item variations having specified enabled locations.
     
 </dd>
 </dl>
@@ -5054,7 +4982,7 @@ a single call to the [SearchCatalogItems](https://developer.squareup.com/referen
 <dl>
 <dd>
 
-**product_types:** `typing.Optional[typing.Sequence[str]]` — The product types query expression to return items or item variations having the specified product types.
+**product_types:** `typing.Optional[typing.List[str]]` — The product types query expression to return items or item variations having the specified product types.
     
 </dd>
 </dl>
@@ -5070,7 +4998,7 @@ a single call to the [SearchCatalogItems](https://developer.squareup.com/referen
 <dl>
 <dd>
 
-**stock_levels:** `typing.Optional[typing.Sequence[str]]` — The stock-level query expression to return item variations with the specified stock levels.
+**stock_levels:** `typing.Optional[typing.List[str]]` — The stock-level query expression to return item variations with the specified stock levels.
     
 </dd>
 </dl>
@@ -5102,7 +5030,7 @@ the `name`, `sku`, or `upc` attribute value of an item variation.
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">update_item_modifier_lists</a>(...)</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">update_item_modifier_lists</a>(...) -> UpdateItemModifierListsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5132,13 +5060,18 @@ to perform an upsert on the entire item.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.catalog.update_item_modifier_lists(
-    item_ids=["item_ids"],
+    item_ids=[
+        "item_ids"
+    ],
 )
 
 ```
@@ -5155,7 +5088,7 @@ client.catalog.update_item_modifier_lists(
 <dl>
 <dd>
 
-**item_ids:** `typing.Sequence[str]` — The IDs of the catalog items associated with the CatalogModifierList objects being updated.
+**item_ids:** `typing.List[str]` — The IDs of the catalog items associated with the CatalogModifierList objects being updated.
     
 </dd>
 </dl>
@@ -5163,7 +5096,7 @@ client.catalog.update_item_modifier_lists(
 <dl>
 <dd>
 
-**modifier_lists_to_disable:** `typing.Optional[typing.Sequence[str]]` — The IDs of the CatalogModifierList objects to disable for the CatalogItem.
+**modifier_lists_to_disable:** `typing.Optional[typing.List[str]]` — The IDs of the CatalogModifierList objects to disable for the CatalogItem.
     
 </dd>
 </dl>
@@ -5171,7 +5104,7 @@ client.catalog.update_item_modifier_lists(
 <dl>
 <dd>
 
-**modifier_lists_to_enable:** `typing.Optional[typing.Sequence[str]]` — The IDs of the CatalogModifierList objects to enable for the CatalogItem.
+**modifier_lists_to_enable:** `typing.Optional[typing.List[str]]` — The IDs of the CatalogModifierList objects to enable for the CatalogItem.
     
 </dd>
 </dl>
@@ -5191,7 +5124,7 @@ client.catalog.update_item_modifier_lists(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">update_item_taxes</a>(...)</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">update_item_taxes</a>(...) -> UpdateItemTaxesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5221,13 +5154,18 @@ upsert on the entire item.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.catalog.update_item_taxes(
-    item_ids=["item_ids"],
+    item_ids=[
+        "item_ids"
+    ],
 )
 
 ```
@@ -5244,7 +5182,7 @@ client.catalog.update_item_taxes(
 <dl>
 <dd>
 
-**item_ids:** `typing.Sequence[str]` — IDs for the CatalogItems associated with the CatalogTax objects being updated.
+**item_ids:** `typing.List[str]` — IDs for the CatalogItems associated with the CatalogTax objects being updated.
     
 </dd>
 </dl>
@@ -5252,7 +5190,7 @@ client.catalog.update_item_taxes(
 <dl>
 <dd>
 
-**taxes_to_disable:** `typing.Optional[typing.Sequence[str]]` — IDs of the CatalogTax objects to disable.
+**taxes_to_disable:** `typing.Optional[typing.List[str]]` — IDs of the CatalogTax objects to disable.
     
 </dd>
 </dl>
@@ -5260,7 +5198,7 @@ client.catalog.update_item_taxes(
 <dl>
 <dd>
 
-**taxes_to_enable:** `typing.Optional[typing.Sequence[str]]` — IDs of the CatalogTax objects to enable.
+**taxes_to_enable:** `typing.Optional[typing.List[str]]` — IDs of the CatalogTax objects to enable.
     
 </dd>
 </dl>
@@ -5281,7 +5219,7 @@ client.catalog.update_item_taxes(
 </details>
 
 ## Customers
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">list_customers</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">list_customers</a>(...) -> ListCustomersResponse</code></summary>
 <dl>
 <dd>
 
@@ -5313,11 +5251,14 @@ profiles can take closer to one minute or longer, especially during network inci
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.list_customers()
 
 ```
@@ -5397,7 +5338,7 @@ The default value is `ASC`.
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">create_customer</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">create_customer</a>(...) -> CreateCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -5434,11 +5375,14 @@ endpoint:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.create_customer()
 
 ```
@@ -5565,7 +5509,7 @@ entity in another system.
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">search_customers</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">search_customers</a>(...) -> SearchCustomersResponse</code></summary>
 <dl>
 <dd>
 
@@ -5601,11 +5545,14 @@ profiles can take closer to one minute or longer, especially during network inci
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.search_customers()
 
 ```
@@ -5668,7 +5615,7 @@ For more information, see [Pagination](https://developer.squareup.com/docs/worki
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">retrieve_customer</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">retrieve_customer</a>(...) -> RetrieveCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -5696,11 +5643,14 @@ Returns details for a single customer.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.retrieve_customer(
     customer_id="customer_id",
 )
@@ -5739,7 +5689,7 @@ client.customers.retrieve_customer(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">update_customer</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">update_customer</a>(...) -> UpdateCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -5773,11 +5723,14 @@ You cannot use this endpoint to change cards on file. To make changes, use the [
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.update_customer(
     customer_id="customer_id",
 )
@@ -5915,7 +5868,7 @@ As a best practice, you should include this field to enable [optimistic concurre
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">delete_customer</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">delete_customer</a>(...) -> DeleteCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -5947,11 +5900,14 @@ To delete a customer profile that was created by merging existing profiles, you 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.delete_customer(
     customer_id="customer_id",
 )
@@ -6002,7 +5958,7 @@ As a best practice, you should include this parameter to enable [optimistic conc
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">create_customer_card</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">create_customer_card</a>(...) -> CreateCustomerCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -6034,11 +5990,14 @@ with the provided nonce during the _first_ call.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.create_customer_card(
     customer_id="customer_id",
     card_nonce="card_nonce",
@@ -6123,7 +6082,7 @@ challenge results to indicate that Square has verified the buyer identity.
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">delete_customer_card</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">delete_customer_card</a>(...) -> DeleteCustomerCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -6151,11 +6110,14 @@ Removes a card on file from a customer.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.delete_customer_card(
     customer_id="customer_id",
     card_id="card_id",
@@ -6203,7 +6165,7 @@ client.customers.delete_customer_card(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">add_group_to_customer</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">add_group_to_customer</a>(...) -> AddGroupToCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -6234,11 +6196,14 @@ and the customer group is identified by the `group_id` value.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.add_group_to_customer(
     customer_id="customer_id",
     group_id="group_id",
@@ -6286,7 +6251,7 @@ client.customers.add_group_to_customer(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">remove_group_from_customer</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py">remove_group_from_customer</a>(...) -> RemoveGroupFromCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -6317,11 +6282,14 @@ and the customer group is identified by the `group_id` value.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customers.remove_group_from_customer(
     customer_id="customer_id",
     group_id="group_id",
@@ -6370,7 +6338,7 @@ client.customers.remove_group_from_customer(
 </details>
 
 ## CustomerGroups
-<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py">list_customer_groups</a>(...)</code></summary>
+<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py">list_customer_groups</a>(...) -> ListCustomerGroupsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6398,11 +6366,14 @@ Retrieves the list of customer groups of a business.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customer_groups.list_customer_groups()
 
 ```
@@ -6457,7 +6428,7 @@ For more information, see [Pagination](https://developer.squareup.com/docs/worki
 </dl>
 </details>
 
-<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py">create_customer_group</a>(...)</code></summary>
+<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py">create_customer_group</a>(...) -> CreateCustomerGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -6486,12 +6457,15 @@ The request must include the `name` value of the group.
 <dd>
 
 ```python
-from fern import CustomerGroup, FernApi
+from fern import FernApi, CustomerGroup
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customer_groups.create_customer_group(
     group=CustomerGroup(
         name="name",
@@ -6540,7 +6514,7 @@ client.customer_groups.create_customer_group(
 </dl>
 </details>
 
-<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py">retrieve_customer_group</a>(...)</code></summary>
+<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py">retrieve_customer_group</a>(...) -> RetrieveCustomerGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -6568,11 +6542,14 @@ Retrieves a specific customer group as identified by the `group_id` value.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customer_groups.retrieve_customer_group(
     group_id="group_id",
 )
@@ -6611,7 +6588,7 @@ client.customer_groups.retrieve_customer_group(
 </dl>
 </details>
 
-<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py">update_customer_group</a>(...)</code></summary>
+<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py">update_customer_group</a>(...) -> UpdateCustomerGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -6638,12 +6615,15 @@ Updates a customer group as identified by the `group_id` value.
 <dd>
 
 ```python
-from fern import CustomerGroup, FernApi
+from fern import FernApi, CustomerGroup
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customer_groups.update_customer_group(
     group_id="group_id",
     group=CustomerGroup(
@@ -6693,7 +6673,7 @@ client.customer_groups.update_customer_group(
 </dl>
 </details>
 
-<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py">delete_customer_group</a>(...)</code></summary>
+<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py">delete_customer_group</a>(...) -> DeleteCustomerGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -6721,11 +6701,14 @@ Deletes a customer group as identified by the `group_id` value.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customer_groups.delete_customer_group(
     group_id="group_id",
 )
@@ -6765,7 +6748,7 @@ client.customer_groups.delete_customer_group(
 </details>
 
 ## CustomerSegments
-<details><summary><code>client.customer_segments.<a href="src/fern/customer_segments/client.py">list_customer_segments</a>(...)</code></summary>
+<details><summary><code>client.customer_segments.<a href="src/fern/customer_segments/client.py">list_customer_segments</a>(...) -> ListCustomerSegmentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6793,11 +6776,14 @@ Retrieves the list of customer segments of a business.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customer_segments.list_customer_segments()
 
 ```
@@ -6852,7 +6838,7 @@ For more information, see [Pagination](https://developer.squareup.com/docs/worki
 </dl>
 </details>
 
-<details><summary><code>client.customer_segments.<a href="src/fern/customer_segments/client.py">retrieve_customer_segment</a>(...)</code></summary>
+<details><summary><code>client.customer_segments.<a href="src/fern/customer_segments/client.py">retrieve_customer_segment</a>(...) -> RetrieveCustomerSegmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -6880,11 +6866,14 @@ Retrieves a specific customer segment as identified by the `segment_id` value.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.customer_segments.retrieve_customer_segment(
     segment_id="segment_id",
 )
@@ -6924,7 +6913,7 @@ client.customer_segments.retrieve_customer_segment(
 </details>
 
 ## Devices
-<details><summary><code>client.devices.<a href="src/fern/devices/client.py">list_device_codes</a>(...)</code></summary>
+<details><summary><code>client.devices.<a href="src/fern/devices/client.py">list_device_codes</a>(...) -> ListDeviceCodesResponse</code></summary>
 <dl>
 <dd>
 
@@ -6952,11 +6941,14 @@ Lists all DeviceCodes associated with the merchant.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.devices.list_device_codes()
 
 ```
@@ -7031,7 +7023,7 @@ Returns DeviceCodes of status `PAIRED` and `UNPAIRED` if empty.
 </dl>
 </details>
 
-<details><summary><code>client.devices.<a href="src/fern/devices/client.py">create_device_code</a>(...)</code></summary>
+<details><summary><code>client.devices.<a href="src/fern/devices/client.py">create_device_code</a>(...) -> CreateDeviceCodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -7059,12 +7051,15 @@ terminal mode.
 <dd>
 
 ```python
-from fern import DeviceCode, FernApi
+from fern import FernApi, DeviceCode
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.devices.create_device_code(
     device_code=DeviceCode(
         product_type="product_type",
@@ -7119,7 +7114,7 @@ See [Idempotency keys](https://developer.squareup.com/docs/basics/api101/idempot
 </dl>
 </details>
 
-<details><summary><code>client.devices.<a href="src/fern/devices/client.py">get_device_code</a>(...)</code></summary>
+<details><summary><code>client.devices.<a href="src/fern/devices/client.py">get_device_code</a>(...) -> GetDeviceCodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -7147,11 +7142,14 @@ Retrieves DeviceCode with the associated ID.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.devices.get_device_code(
     id="id",
 )
@@ -7191,7 +7189,7 @@ client.devices.get_device_code(
 </details>
 
 ## Disputes
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">list_disputes</a>(...)</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">list_disputes</a>(...) -> ListDisputesResponse</code></summary>
 <dl>
 <dd>
 
@@ -7219,11 +7217,14 @@ Returns a list of disputes associated with a particular account.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.disputes.list_disputes()
 
 ```
@@ -7287,7 +7288,7 @@ all open disputes (the dispute status is not `INQUIRY_CLOSED`, `WON`, or `LOST`)
 </dl>
 </details>
 
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">retrieve_dispute</a>(...)</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">retrieve_dispute</a>(...) -> RetrieveDisputeResponse</code></summary>
 <dl>
 <dd>
 
@@ -7315,11 +7316,14 @@ Returns details about a specific dispute.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.disputes.retrieve_dispute(
     dispute_id="dispute_id",
 )
@@ -7358,7 +7362,7 @@ client.disputes.retrieve_dispute(
 </dl>
 </details>
 
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">accept_dispute</a>(...)</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">accept_dispute</a>(...) -> AcceptDisputeResponse</code></summary>
 <dl>
 <dd>
 
@@ -7390,11 +7394,14 @@ does not have sufficient funds, Square debits the associated bank account.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.disputes.accept_dispute(
     dispute_id="dispute_id",
 )
@@ -7433,7 +7440,7 @@ client.disputes.accept_dispute(
 </dl>
 </details>
 
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">list_dispute_evidence</a>(...)</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">list_dispute_evidence</a>(...) -> ListDisputeEvidenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -7461,11 +7468,14 @@ Returns a list of evidence associated with a dispute.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.disputes.list_dispute_evidence(
     dispute_id="dispute_id",
 )
@@ -7516,7 +7526,7 @@ For more information, see [Pagination](https://developer.squareup.com/docs/basic
 </dl>
 </details>
 
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">create_dispute_evidence_text</a>(...)</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">create_dispute_evidence_text</a>(...) -> CreateDisputeEvidenceTextResponse</code></summary>
 <dl>
 <dd>
 
@@ -7544,11 +7554,14 @@ Uploads text to use as evidence for a dispute challenge.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.disputes.create_dispute_evidence_text(
     dispute_id="dispute_id",
     evidence_text="evidence_text",
@@ -7613,7 +7626,7 @@ client.disputes.create_dispute_evidence_text(
 </dl>
 </details>
 
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">retrieve_dispute_evidence</a>(...)</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">retrieve_dispute_evidence</a>(...) -> RetrieveDisputeEvidenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -7644,11 +7657,14 @@ download the evidence after you upload it.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.disputes.retrieve_dispute_evidence(
     dispute_id="dispute_id",
     evidence_id="evidence_id",
@@ -7696,7 +7712,7 @@ client.disputes.retrieve_dispute_evidence(
 </dl>
 </details>
 
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">delete_dispute_evidence</a>(...)</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">delete_dispute_evidence</a>(...) -> DeleteDisputeEvidenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -7727,11 +7743,14 @@ submitting it to the bank using [SubmitEvidence](https://developer.squareup.com/
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.disputes.delete_dispute_evidence(
     dispute_id="dispute_id",
     evidence_id="evidence_id",
@@ -7779,7 +7798,7 @@ client.disputes.delete_dispute_evidence(
 </dl>
 </details>
 
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">submit_evidence</a>(...)</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">submit_evidence</a>(...) -> SubmitEvidenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -7812,11 +7831,14 @@ evidence automatically provided by Square, when available.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.disputes.submit_evidence(
     dispute_id="dispute_id",
 )
@@ -7856,7 +7878,7 @@ client.disputes.submit_evidence(
 </details>
 
 ## Employees
-<details><summary><code>client.employees.<a href="src/fern/employees/client.py">list_employees</a>(...)</code></summary>
+<details><summary><code>client.employees.<a href="src/fern/employees/client.py">list_employees</a>(...) -> ListEmployeesResponse</code></summary>
 <dl>
 <dd>
 
@@ -7884,11 +7906,14 @@ client.disputes.submit_evidence(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.employees.list_employees()
 
 ```
@@ -7949,7 +7974,7 @@ client.employees.list_employees()
 </dl>
 </details>
 
-<details><summary><code>client.employees.<a href="src/fern/employees/client.py">retrieve_employee</a>(...)</code></summary>
+<details><summary><code>client.employees.<a href="src/fern/employees/client.py">retrieve_employee</a>(...) -> RetrieveEmployeeResponse</code></summary>
 <dl>
 <dd>
 
@@ -7977,11 +8002,14 @@ client.employees.list_employees()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.employees.retrieve_employee(
     id="id",
 )
@@ -8021,7 +8049,7 @@ client.employees.retrieve_employee(
 </details>
 
 ## GiftCards
-<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">list_gift_cards</a>(...)</code></summary>
+<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">list_gift_cards</a>(...) -> ListGiftCardsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8050,11 +8078,14 @@ a subset of the gift cards.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.gift_cards.list_gift_cards()
 
 ```
@@ -8139,7 +8170,7 @@ For more information, see [Pagination](https://developer.squareup.com/docs/docs/
 </dl>
 </details>
 
-<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">create_gift_card</a>(...)</code></summary>
+<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">create_gift_card</a>(...) -> CreateGiftCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -8169,11 +8200,14 @@ it can be used for payment. For more information, see
 
 ```python
 from fern import FernApi, GiftCard
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.gift_cards.create_gift_card(
     gift_card=GiftCard(
         type={"key": "value"},
@@ -8232,7 +8266,7 @@ client.gift_cards.create_gift_card(
 </dl>
 </details>
 
-<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">retrieve_gift_card_from_gan</a>(...)</code></summary>
+<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">retrieve_gift_card_from_gan</a>(...) -> RetrieveGiftCardFromGanResponse</code></summary>
 <dl>
 <dd>
 
@@ -8260,11 +8294,14 @@ Retrieves a gift card using the gift card account number (GAN).
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.gift_cards.retrieve_gift_card_from_gan(
     gan="gan",
 )
@@ -8307,7 +8344,7 @@ Square-issued gift cards have 16-digit GANs.
 </dl>
 </details>
 
-<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">retrieve_gift_card_from_nonce</a>(...)</code></summary>
+<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">retrieve_gift_card_from_nonce</a>(...) -> RetrieveGiftCardFromNonceResponse</code></summary>
 <dl>
 <dd>
 
@@ -8335,11 +8372,14 @@ Retrieves a gift card using a nonce (a secure token) that represents the gift ca
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.gift_cards.retrieve_gift_card_from_nonce(
     nonce="nonce",
 )
@@ -8378,7 +8418,7 @@ client.gift_cards.retrieve_gift_card_from_nonce(
 </dl>
 </details>
 
-<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">link_customer_to_gift_card</a>(...)</code></summary>
+<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">link_customer_to_gift_card</a>(...) -> LinkCustomerToGiftCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -8406,11 +8446,14 @@ Links a customer to a gift card
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.gift_cards.link_customer_to_gift_card(
     gift_card_id="gift_card_id",
     customer_id="customer_id",
@@ -8458,7 +8501,7 @@ client.gift_cards.link_customer_to_gift_card(
 </dl>
 </details>
 
-<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">unlink_customer_from_gift_card</a>(...)</code></summary>
+<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">unlink_customer_from_gift_card</a>(...) -> UnlinkCustomerFromGiftCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -8486,11 +8529,14 @@ Unlinks a customer from a gift card
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.gift_cards.unlink_customer_from_gift_card(
     gift_card_id="gift_card_id",
     customer_id="customer_id",
@@ -8538,7 +8584,7 @@ client.gift_cards.unlink_customer_from_gift_card(
 </dl>
 </details>
 
-<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">retrieve_gift_card</a>(...)</code></summary>
+<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">retrieve_gift_card</a>(...) -> RetrieveGiftCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -8566,11 +8612,14 @@ Retrieves a gift card using its ID.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.gift_cards.retrieve_gift_card(
     id="id",
 )
@@ -8610,7 +8659,7 @@ client.gift_cards.retrieve_gift_card(
 </details>
 
 ## GiftCardActivities
-<details><summary><code>client.gift_card_activities.<a href="src/fern/gift_card_activities/client.py">list_gift_card_activities</a>(...)</code></summary>
+<details><summary><code>client.gift_card_activities.<a href="src/fern/gift_card_activities/client.py">list_gift_card_activities</a>(...) -> ListGiftCardActivitiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -8641,11 +8690,14 @@ for all gift cards in a specific region, or for activities within a time window.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.gift_card_activities.list_gift_card_activities()
 
 ```
@@ -8765,7 +8817,7 @@ The order in which the endpoint returns the activities, based on `created_at`.
 </dl>
 </details>
 
-<details><summary><code>client.gift_card_activities.<a href="src/fern/gift_card_activities/client.py">create_gift_card_activity</a>(...)</code></summary>
+<details><summary><code>client.gift_card_activities.<a href="src/fern/gift_card_activities/client.py">create_gift_card_activity</a>(...) -> CreateGiftCardActivityResponse</code></summary>
 <dl>
 <dd>
 
@@ -8795,11 +8847,14 @@ Creates a gift card activity. For more information, see
 
 ```python
 from fern import FernApi, GiftCardActivity
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.gift_card_activities.create_gift_card_activity(
     gift_card_activity=GiftCardActivity(
         location_id="location_id",
@@ -8851,7 +8906,7 @@ client.gift_card_activities.create_gift_card_activity(
 </details>
 
 ## Inventory
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">deprecated_retrieve_inventory_adjustment</a>(...)</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">deprecated_retrieve_inventory_adjustment</a>(...) -> RetrieveInventoryAdjustmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -8880,11 +8935,14 @@ is updated to conform to the standard convention.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.inventory.deprecated_retrieve_inventory_adjustment(
     adjustment_id="adjustment_id",
 )
@@ -8923,7 +8981,7 @@ client.inventory.deprecated_retrieve_inventory_adjustment(
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">retrieve_inventory_adjustment</a>(...)</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">retrieve_inventory_adjustment</a>(...) -> RetrieveInventoryAdjustmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -8952,11 +9010,14 @@ with the provided `adjustment_id`.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.inventory.retrieve_inventory_adjustment(
     adjustment_id="adjustment_id",
 )
@@ -8995,7 +9056,7 @@ client.inventory.retrieve_inventory_adjustment(
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">deprecated_batch_change_inventory</a>(...)</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">deprecated_batch_change_inventory</a>(...) -> BatchChangeInventoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -9024,11 +9085,14 @@ is updated to conform to the standard convention.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.inventory.deprecated_batch_change_inventory(
     idempotency_key="idempotency_key",
 )
@@ -9047,37 +9111,7 @@ client.inventory.deprecated_batch_change_inventory(
 <dl>
 <dd>
 
-**idempotency_key:** `str` 
-
-A client-supplied, universally unique identifier (UUID) for the
-request.
-
-See [Idempotency](https://developer.squareup.com/docs/basics/api101/idempotency) in the
-[API Development 101](https://developer.squareup.com/docs/basics/api101/overview) section for more
-information.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**changes:** `typing.Optional[typing.Sequence[InventoryChange]]` 
-
-The set of physical counts and inventory adjustments to be made.
-Changes are applied based on the client-supplied timestamp and may be sent
-out of order.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**ignore_unchanged_counts:** `typing.Optional[bool]` 
-
-Indicates whether the current physical count should be ignored if
-the quantity is unchanged since the last physical count. Default: `true`.
+**request:** `BatchChangeInventoryRequest` 
     
 </dd>
 </dl>
@@ -9097,7 +9131,7 @@ the quantity is unchanged since the last physical count. Default: `true`.
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">deprecated_batch_retrieve_inventory_changes</a>(...)</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">deprecated_batch_retrieve_inventory_changes</a>(...) -> BatchRetrieveInventoryChangesResponse</code></summary>
 <dl>
 <dd>
 
@@ -9126,11 +9160,14 @@ is updated to conform to the standard convention.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.inventory.deprecated_batch_retrieve_inventory_changes()
 
 ```
@@ -9147,81 +9184,7 @@ client.inventory.deprecated_batch_retrieve_inventory_changes()
 <dl>
 <dd>
 
-**catalog_object_ids:** `typing.Optional[typing.Sequence[str]]` 
-
-The filter to return results by `CatalogObject` ID.
-The filter is only applicable when set. The default value is null.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**cursor:** `typing.Optional[str]` 
-
-A pagination cursor returned by a previous call to this endpoint.
-Provide this to retrieve the next set of results for the original query.
-
-See the [Pagination](https://developer.squareup.com/docs/working-with-apis/pagination) guide for more information.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**location_ids:** `typing.Optional[typing.Sequence[str]]` 
-
-The filter to return results by `Location` ID. 
-The filter is only applicable when set. The default value is null.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**states:** `typing.Optional[typing.Sequence[str]]` 
-
-The filter to return `ADJUSTMENT` query results by
-`InventoryState`. This filter is only applied when set.
-The default value is null.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**types:** `typing.Optional[typing.Sequence[str]]` 
-
-The filter to return results by `InventoryChangeType` values other than `TRANSFER`.
-The default value is `[PHYSICAL_COUNT, ADJUSTMENT]`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_after:** `typing.Optional[str]` 
-
-The filter to return results with their `calculated_at` value  
-after the given time as specified in an RFC 3339 timestamp. 
-The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_before:** `typing.Optional[str]` 
-
-The filter to return results with their `created_at` or `calculated_at` value  
-strictly before the given time as specified in an RFC 3339 timestamp. 
-The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
+**request:** `BatchRetrieveInventoryChangesRequest` 
     
 </dd>
 </dl>
@@ -9241,7 +9204,7 @@ The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">deprecated_batch_retrieve_inventory_counts</a>(...)</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">deprecated_batch_retrieve_inventory_counts</a>(...) -> BatchRetrieveInventoryCountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9270,11 +9233,14 @@ is updated to conform to the standard convention.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.inventory.deprecated_batch_retrieve_inventory_counts()
 
 ```
@@ -9291,58 +9257,7 @@ client.inventory.deprecated_batch_retrieve_inventory_counts()
 <dl>
 <dd>
 
-**catalog_object_ids:** `typing.Optional[typing.Sequence[str]]` 
-
-The filter to return results by `CatalogObject` ID.
-The filter is applicable only when set.  The default is null.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**cursor:** `typing.Optional[str]` 
-
-A pagination cursor returned by a previous call to this endpoint.
-Provide this to retrieve the next set of results for the original query.
-
-See the [Pagination](https://developer.squareup.com/docs/working-with-apis/pagination) guide for more information.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**location_ids:** `typing.Optional[typing.Sequence[str]]` 
-
-The filter to return results by `Location` ID. 
-This filter is applicable only when set. The default is null.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**states:** `typing.Optional[typing.Sequence[str]]` 
-
-The filter to return results by `InventoryState`. The filter is only applicable when set.
-Ignored are untracked states of `NONE`, `SOLD`, and `UNLINKED_RETURN`.
-The default is null.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_after:** `typing.Optional[str]` 
-
-The filter to return results with their `calculated_at` value 
-after the given time as specified in an RFC 3339 timestamp. 
-The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
+**request:** `BatchRetrieveInventoryCountsRequest` 
     
 </dd>
 </dl>
@@ -9362,7 +9277,7 @@ The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">batch_change_inventory</a>(...)</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">batch_change_inventory</a>(...) -> BatchChangeInventoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -9394,11 +9309,14 @@ On failure: returns a list of related errors.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.inventory.batch_change_inventory(
     idempotency_key="idempotency_key",
 )
@@ -9417,37 +9335,7 @@ client.inventory.batch_change_inventory(
 <dl>
 <dd>
 
-**idempotency_key:** `str` 
-
-A client-supplied, universally unique identifier (UUID) for the
-request.
-
-See [Idempotency](https://developer.squareup.com/docs/basics/api101/idempotency) in the
-[API Development 101](https://developer.squareup.com/docs/basics/api101/overview) section for more
-information.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**changes:** `typing.Optional[typing.Sequence[InventoryChange]]` 
-
-The set of physical counts and inventory adjustments to be made.
-Changes are applied based on the client-supplied timestamp and may be sent
-out of order.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**ignore_unchanged_counts:** `typing.Optional[bool]` 
-
-Indicates whether the current physical count should be ignored if
-the quantity is unchanged since the last physical count. Default: `true`.
+**request:** `BatchChangeInventoryRequest` 
     
 </dd>
 </dl>
@@ -9467,7 +9355,7 @@ the quantity is unchanged since the last physical count. Default: `true`.
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">batch_retrieve_inventory_changes</a>(...)</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">batch_retrieve_inventory_changes</a>(...) -> BatchRetrieveInventoryChangesResponse</code></summary>
 <dl>
 <dd>
 
@@ -9502,11 +9390,14 @@ that cannot be handled by other, simpler endpoints.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.inventory.batch_retrieve_inventory_changes()
 
 ```
@@ -9523,81 +9414,7 @@ client.inventory.batch_retrieve_inventory_changes()
 <dl>
 <dd>
 
-**catalog_object_ids:** `typing.Optional[typing.Sequence[str]]` 
-
-The filter to return results by `CatalogObject` ID.
-The filter is only applicable when set. The default value is null.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**cursor:** `typing.Optional[str]` 
-
-A pagination cursor returned by a previous call to this endpoint.
-Provide this to retrieve the next set of results for the original query.
-
-See the [Pagination](https://developer.squareup.com/docs/working-with-apis/pagination) guide for more information.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**location_ids:** `typing.Optional[typing.Sequence[str]]` 
-
-The filter to return results by `Location` ID. 
-The filter is only applicable when set. The default value is null.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**states:** `typing.Optional[typing.Sequence[str]]` 
-
-The filter to return `ADJUSTMENT` query results by
-`InventoryState`. This filter is only applied when set.
-The default value is null.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**types:** `typing.Optional[typing.Sequence[str]]` 
-
-The filter to return results by `InventoryChangeType` values other than `TRANSFER`.
-The default value is `[PHYSICAL_COUNT, ADJUSTMENT]`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_after:** `typing.Optional[str]` 
-
-The filter to return results with their `calculated_at` value  
-after the given time as specified in an RFC 3339 timestamp. 
-The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_before:** `typing.Optional[str]` 
-
-The filter to return results with their `created_at` or `calculated_at` value  
-strictly before the given time as specified in an RFC 3339 timestamp. 
-The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
+**request:** `BatchRetrieveInventoryChangesRequest` 
     
 </dd>
 </dl>
@@ -9617,7 +9434,7 @@ The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">batch_retrieve_inventory_counts</a>(...)</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">batch_retrieve_inventory_counts</a>(...) -> BatchRetrieveInventoryCountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9655,11 +9472,14 @@ in response to receiving a Webhook notification.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.inventory.batch_retrieve_inventory_counts()
 
 ```
@@ -9676,58 +9496,7 @@ client.inventory.batch_retrieve_inventory_counts()
 <dl>
 <dd>
 
-**catalog_object_ids:** `typing.Optional[typing.Sequence[str]]` 
-
-The filter to return results by `CatalogObject` ID.
-The filter is applicable only when set.  The default is null.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**cursor:** `typing.Optional[str]` 
-
-A pagination cursor returned by a previous call to this endpoint.
-Provide this to retrieve the next set of results for the original query.
-
-See the [Pagination](https://developer.squareup.com/docs/working-with-apis/pagination) guide for more information.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**location_ids:** `typing.Optional[typing.Sequence[str]]` 
-
-The filter to return results by `Location` ID. 
-This filter is applicable only when set. The default is null.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**states:** `typing.Optional[typing.Sequence[str]]` 
-
-The filter to return results by `InventoryState`. The filter is only applicable when set.
-Ignored are untracked states of `NONE`, `SOLD`, and `UNLINKED_RETURN`.
-The default is null.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_after:** `typing.Optional[str]` 
-
-The filter to return results with their `calculated_at` value 
-after the given time as specified in an RFC 3339 timestamp. 
-The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
+**request:** `BatchRetrieveInventoryCountsRequest` 
     
 </dd>
 </dl>
@@ -9747,7 +9516,7 @@ The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">deprecated_retrieve_inventory_physical_count</a>(...)</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">deprecated_retrieve_inventory_physical_count</a>(...) -> RetrieveInventoryPhysicalCountResponse</code></summary>
 <dl>
 <dd>
 
@@ -9776,11 +9545,14 @@ is updated to conform to the standard convention.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.inventory.deprecated_retrieve_inventory_physical_count(
     physical_count_id="physical_count_id",
 )
@@ -9822,7 +9594,7 @@ ID of the
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">retrieve_inventory_physical_count</a>(...)</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">retrieve_inventory_physical_count</a>(...) -> RetrieveInventoryPhysicalCountResponse</code></summary>
 <dl>
 <dd>
 
@@ -9851,11 +9623,14 @@ object with the provided `physical_count_id`.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.inventory.retrieve_inventory_physical_count(
     physical_count_id="physical_count_id",
 )
@@ -9897,7 +9672,7 @@ ID of the
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">retrieve_inventory_transfer</a>(...)</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">retrieve_inventory_transfer</a>(...) -> RetrieveInventoryTransferResponse</code></summary>
 <dl>
 <dd>
 
@@ -9926,11 +9701,14 @@ with the provided `transfer_id`.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.inventory.retrieve_inventory_transfer(
     transfer_id="transfer_id",
 )
@@ -9969,7 +9747,7 @@ client.inventory.retrieve_inventory_transfer(
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">retrieve_inventory_count</a>(...)</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">retrieve_inventory_count</a>(...) -> RetrieveInventoryCountResponse</code></summary>
 <dl>
 <dd>
 
@@ -10000,11 +9778,14 @@ For more sophisticated queries, use a batch endpoint.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.inventory.retrieve_inventory_count(
     catalog_object_id="catalog_object_id",
 )
@@ -10067,7 +9848,7 @@ See the [Pagination](https://developer.squareup.com/docs/working-with-apis/pagin
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">retrieve_inventory_changes</a>(...)</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">retrieve_inventory_changes</a>(...) -> RetrieveInventoryChangesResponse</code></summary>
 <dl>
 <dd>
 
@@ -10107,11 +9888,14 @@ sophisticated queries, use a batch endpoint.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.inventory.retrieve_inventory_changes(
     catalog_object_id="catalog_object_id",
 )
@@ -10175,7 +9959,7 @@ See the [Pagination](https://developer.squareup.com/docs/working-with-apis/pagin
 </details>
 
 ## Invoices
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">list_invoices</a>(...)</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">list_invoices</a>(...) -> ListInvoicesResponse</code></summary>
 <dl>
 <dd>
 
@@ -10205,11 +9989,14 @@ use in a subsequent request to retrieve the next set of invoices.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.invoices.list_invoices(
     location_id="location_id",
 )
@@ -10272,7 +10059,7 @@ If not provided, the server uses a default limit of 100 invoices.
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">create_invoice</a>(...)</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">create_invoice</a>(...) -> CreateInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -10304,11 +10091,14 @@ You must publish the invoice before Square can process it (send it to the custom
 
 ```python
 from fern import FernApi, Invoice
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.invoices.create_invoice(
     invoice=Invoice(),
 )
@@ -10361,7 +10151,7 @@ For more information, see [Idempotency](https://developer.squareup.com/docs/work
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">search_invoices</a>(...)</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">search_invoices</a>(...) -> SearchInvoicesResponse</code></summary>
 <dl>
 <dd>
 
@@ -10394,16 +10184,21 @@ that you use in a subsequent request to retrieve the next set of invoices.
 <dd>
 
 ```python
-from fern import FernApi, InvoiceFilter, InvoiceQuery
+from fern import FernApi, InvoiceQuery, InvoiceFilter
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.invoices.search_invoices(
     query=InvoiceQuery(
         filter=InvoiceFilter(
-            location_ids=["location_ids"],
+            location_ids=[
+                "location_ids"
+            ],
         ),
     ),
 )
@@ -10466,7 +10261,7 @@ If not provided, the server uses a default limit of 100 invoices.
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">get_invoice</a>(...)</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">get_invoice</a>(...) -> GetInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -10494,11 +10289,14 @@ Retrieves an invoice by invoice ID.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.invoices.get_invoice(
     invoice_id="invoice_id",
 )
@@ -10537,7 +10335,7 @@ client.invoices.get_invoice(
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">update_invoice</a>(...)</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">update_invoice</a>(...) -> UpdateInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -10568,11 +10366,14 @@ must provide the complete `custom_fields` list to update a custom field. Publish
 
 ```python
 from fern import FernApi, Invoice
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.invoices.update_invoice(
     invoice_id="invoice_id",
     invoice=Invoice(),
@@ -10608,7 +10409,7 @@ client.invoices.update_invoice(
 <dl>
 <dd>
 
-**fields_to_clear:** `typing.Optional[typing.Sequence[str]]` 
+**fields_to_clear:** `typing.Optional[typing.List[str]]` 
 
 The list of fields to clear.
 For examples, see [Update an invoice](https://developer.squareup.com/docs/invoices-api/overview#update-an-invoice).
@@ -10645,7 +10446,7 @@ For more information, see [Idempotency](https://developer.squareup.com/docs/work
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">delete_invoice</a>(...)</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">delete_invoice</a>(...) -> DeleteInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -10675,11 +10476,14 @@ invoice (you cannot delete a published invoice, including one that is scheduled 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.invoices.delete_invoice(
     invoice_id="invoice_id",
 )
@@ -10730,7 +10534,7 @@ If you do not know the version, you can call [GetInvoice](https://developer.squa
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">cancel_invoice</a>(...)</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">cancel_invoice</a>(...) -> CancelInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -10761,11 +10565,14 @@ You cannot cancel an invoice in the `DRAFT` state or in a terminal state: `PAID`
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.invoices.cancel_invoice(
     invoice_id="invoice_id",
     version=1,
@@ -10817,7 +10624,7 @@ If you do not know the version, you can call
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">publish_invoice</a>(...)</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">publish_invoice</a>(...) -> PublishInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -10855,11 +10662,14 @@ invoice amount.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.invoices.publish_invoice(
     invoice_id="invoice_id",
     version=1,
@@ -10925,7 +10735,7 @@ For more information, see [Idempotency](https://developer.squareup.com/docs/work
 </details>
 
 ## Labor
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">list_break_types</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">list_break_types</a>(...) -> ListBreakTypesResponse</code></summary>
 <dl>
 <dd>
 
@@ -10953,11 +10763,14 @@ Returns a paginated list of `BreakType` instances for a business.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.list_break_types()
 
 ```
@@ -11016,7 +10829,7 @@ and 200. The default is 200.
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">create_break_type</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">create_break_type</a>(...) -> CreateBreakTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -11056,12 +10869,15 @@ is returned.
 <dd>
 
 ```python
-from fern import BreakType, FernApi
+from fern import FernApi, BreakType
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.create_break_type(
     break_type=BreakType(
         break_name="break_name",
@@ -11113,7 +10929,7 @@ client.labor.create_break_type(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">get_break_type</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">get_break_type</a>(...) -> GetBreakTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -11141,11 +10957,14 @@ Returns a single `BreakType` specified by `id`.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.get_break_type(
     id="id",
 )
@@ -11184,7 +11003,7 @@ client.labor.get_break_type(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">update_break_type</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">update_break_type</a>(...) -> UpdateBreakTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -11211,12 +11030,15 @@ Updates an existing `BreakType`.
 <dd>
 
 ```python
-from fern import BreakType, FernApi
+from fern import FernApi, BreakType
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.update_break_type(
     id="id",
     break_type=BreakType(
@@ -11269,7 +11091,7 @@ client.labor.update_break_type(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">delete_break_type</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">delete_break_type</a>(...) -> DeleteBreakTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -11299,11 +11121,14 @@ A `BreakType` can be deleted even if it is referenced from a `Shift`.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.delete_break_type(
     id="id",
 )
@@ -11342,7 +11167,7 @@ client.labor.delete_break_type(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">list_employee_wages</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">list_employee_wages</a>(...) -> ListEmployeeWagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -11370,11 +11195,14 @@ Returns a paginated list of `EmployeeWage` instances for a business.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.list_employee_wages()
 
 ```
@@ -11430,7 +11258,7 @@ The maximum number of `EmployeeWage` results to return per page. The number can 
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">get_employee_wage</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">get_employee_wage</a>(...) -> GetEmployeeWageResponse</code></summary>
 <dl>
 <dd>
 
@@ -11458,11 +11286,14 @@ Returns a single `EmployeeWage` specified by `id`.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.get_employee_wage(
     id="id",
 )
@@ -11501,7 +11332,7 @@ client.labor.get_employee_wage(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">create_shift</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">create_shift</a>(...) -> CreateShiftResponse</code></summary>
 <dl>
 <dd>
 
@@ -11546,11 +11377,14 @@ the `Shift.end_at`, or both.
 
 ```python
 from fern import FernApi, Shift
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.create_shift(
     shift=Shift(
         start_at="start_at",
@@ -11599,7 +11433,7 @@ client.labor.create_shift(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">search_shifts</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">search_shifts</a>(...) -> SearchShiftsResponse</code></summary>
 <dl>
 <dd>
 
@@ -11640,11 +11474,14 @@ The list can be sorted by:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.search_shifts()
 
 ```
@@ -11697,7 +11534,7 @@ client.labor.search_shifts()
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">get_shift</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">get_shift</a>(...) -> GetShiftResponse</code></summary>
 <dl>
 <dd>
 
@@ -11725,11 +11562,14 @@ Returns a single `Shift` specified by `id`.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.get_shift(
     id="id",
 )
@@ -11768,7 +11608,7 @@ client.labor.get_shift(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">update_shift</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">update_shift</a>(...) -> UpdateShiftResponse</code></summary>
 <dl>
 <dd>
 
@@ -11802,11 +11642,14 @@ set on each `Break`.
 
 ```python
 from fern import FernApi, Shift
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.update_shift(
     id="id",
     shift=Shift(
@@ -11856,7 +11699,7 @@ client.labor.update_shift(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">delete_shift</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">delete_shift</a>(...) -> DeleteShiftResponse</code></summary>
 <dl>
 <dd>
 
@@ -11884,11 +11727,14 @@ Deletes a `Shift`.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.delete_shift(
     id="id",
 )
@@ -11927,7 +11773,7 @@ client.labor.delete_shift(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">list_team_member_wages</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">list_team_member_wages</a>(...) -> ListTeamMemberWagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -11955,11 +11801,14 @@ Returns a paginated list of `TeamMemberWage` instances for a business.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.list_team_member_wages()
 
 ```
@@ -12018,7 +11867,7 @@ The maximum number of `TeamMemberWage` results to return per page. The number ca
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">get_team_member_wage</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">get_team_member_wage</a>(...) -> GetTeamMemberWageResponse</code></summary>
 <dl>
 <dd>
 
@@ -12046,11 +11895,14 @@ Returns a single `TeamMemberWage` specified by `id `.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.get_team_member_wage(
     id="id",
 )
@@ -12089,7 +11941,7 @@ client.labor.get_team_member_wage(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">list_workweek_configs</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">list_workweek_configs</a>(...) -> ListWorkweekConfigsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12117,11 +11969,14 @@ Returns a list of `WorkweekConfig` instances for a business.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.list_workweek_configs()
 
 ```
@@ -12166,7 +12021,7 @@ client.labor.list_workweek_configs()
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">update_workweek_config</a>(...)</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py">update_workweek_config</a>(...) -> UpdateWorkweekConfigResponse</code></summary>
 <dl>
 <dd>
 
@@ -12194,11 +12049,14 @@ Updates a `WorkweekConfig`.
 
 ```python
 from fern import FernApi, WorkweekConfig
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.labor.update_workweek_config(
     id="id",
     workweek_config=WorkweekConfig(
@@ -12250,7 +12108,7 @@ client.labor.update_workweek_config(
 </details>
 
 ## Locations
-<details><summary><code>client.locations.<a href="src/fern/locations/client.py">list_locations</a>()</code></summary>
+<details><summary><code>client.locations.<a href="src/fern/locations/client.py">list_locations</a>() -> ListLocationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12282,11 +12140,14 @@ endpoint correspond to that `location_id` parameter.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.locations.list_locations()
 
 ```
@@ -12315,7 +12176,7 @@ client.locations.list_locations()
 </dl>
 </details>
 
-<details><summary><code>client.locations.<a href="src/fern/locations/client.py">create_location</a>(...)</code></summary>
+<details><summary><code>client.locations.<a href="src/fern/locations/client.py">create_location</a>(...) -> CreateLocationResponse</code></summary>
 <dl>
 <dd>
 
@@ -12343,11 +12204,14 @@ Creates a location.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.locations.create_location()
 
 ```
@@ -12384,7 +12248,7 @@ client.locations.create_location()
 </dl>
 </details>
 
-<details><summary><code>client.locations.<a href="src/fern/locations/client.py">retrieve_location</a>(...)</code></summary>
+<details><summary><code>client.locations.<a href="src/fern/locations/client.py">retrieve_location</a>(...) -> RetrieveLocationResponse</code></summary>
 <dl>
 <dd>
 
@@ -12414,11 +12278,14 @@ main location.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.locations.retrieve_location(
     location_id="location_id",
 )
@@ -12460,7 +12327,7 @@ then the endpoint returns the main location.
 </dl>
 </details>
 
-<details><summary><code>client.locations.<a href="src/fern/locations/client.py">update_location</a>(...)</code></summary>
+<details><summary><code>client.locations.<a href="src/fern/locations/client.py">update_location</a>(...) -> UpdateLocationResponse</code></summary>
 <dl>
 <dd>
 
@@ -12488,11 +12355,14 @@ Updates a location.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.locations.update_location(
     location_id="location_id",
 )
@@ -12540,7 +12410,7 @@ client.locations.update_location(
 </details>
 
 ## Checkout
-<details><summary><code>client.checkout.<a href="src/fern/checkout/client.py">create_checkout</a>(...)</code></summary>
+<details><summary><code>client.checkout.<a href="src/fern/checkout/client.py">create_checkout</a>(...) -> CreateCheckoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -12569,12 +12439,15 @@ payment processing workflow hosted on connect.squareup.com.
 <dd>
 
 ```python
-from fern import CreateOrderRequest, FernApi
+from fern import FernApi, CreateOrderRequest
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.checkout.create_checkout(
     location_id="location_id",
     idempotency_key="idempotency_key",
@@ -12631,7 +12504,7 @@ For more information, see [Idempotency](https://developer.squareup.com/docs/work
 <dl>
 <dd>
 
-**additional_recipients:** `typing.Optional[typing.Sequence[ChargeRequestAdditionalRecipient]]` 
+**additional_recipients:** `typing.Optional[typing.List[ChargeRequestAdditionalRecipient]]` 
 
 The basic primitive of a multi-party transaction. The value is optional.
 The transaction facilitated by you can be split from here.
@@ -12747,7 +12620,7 @@ Default: none; only exists if explicitly set.
 </details>
 
 ## Transactions
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">list_refunds</a>(...)</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">list_refunds</a>(...) -> ListRefundsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12784,11 +12657,14 @@ Max results per [page](https://developer.squareup.com/docs/working-with-apis/pag
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transactions.list_refunds(
     location_id="location_id",
 )
@@ -12881,7 +12757,7 @@ See [Paginating results](https://developer.squareup.com/docs/working-with-apis/p
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">list_transactions</a>(...)</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">list_transactions</a>(...) -> ListTransactionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12914,11 +12790,14 @@ Max results per [page](https://developer.squareup.com/docs/working-with-apis/pag
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transactions.list_transactions(
     location_id="location_id",
 )
@@ -13011,7 +12890,7 @@ See [Paginating results](https://developer.squareup.com/docs/working-with-apis/p
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">charge</a>(...)</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">charge</a>(...) -> ChargeResponse</code></summary>
 <dl>
 <dd>
 
@@ -13058,11 +12937,14 @@ field of each [Tender included](https://developer.squareup.com/reference/square_
 
 ```python
 from fern import FernApi, Money
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transactions.charge(
     location_id="location_id",
     amount_money=Money(),
@@ -13116,7 +12998,7 @@ See [Idempotency keys](https://developer.squareup.com/docs/working-with-apis/ide
 <dl>
 <dd>
 
-**additional_recipients:** `typing.Optional[typing.Sequence[AdditionalRecipient]]` 
+**additional_recipients:** `typing.Optional[typing.List[AdditionalRecipient]]` 
 
 The basic primitive of multi-party transaction. The value is optional.
 The transaction facilitated by you can be split from here.
@@ -13284,7 +13166,7 @@ customer's device info and 3ds challenge result.
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">retrieve_transaction</a>(...)</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">retrieve_transaction</a>(...) -> RetrieveTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -13312,11 +13194,14 @@ Retrieves details for a single transaction.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transactions.retrieve_transaction(
     location_id="location_id",
     transaction_id="transaction_id",
@@ -13364,7 +13249,7 @@ client.transactions.retrieve_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">capture_transaction</a>(...)</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">capture_transaction</a>(...) -> CaptureTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -13397,11 +13282,14 @@ for more information.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transactions.capture_transaction(
     location_id="location_id",
     transaction_id="transaction_id",
@@ -13449,7 +13337,7 @@ client.transactions.capture_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">create_refund</a>(...)</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">create_refund</a>(...) -> CreateRefundResponse</code></summary>
 <dl>
 <dd>
 
@@ -13485,11 +13373,14 @@ in-person (e.g., dipping the card using POS app).
 
 ```python
 from fern import FernApi, Money
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transactions.create_refund(
     location_id="location_id",
     transaction_id="transaction_id",
@@ -13591,7 +13482,7 @@ Default value: `Refund via API`
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">void_transaction</a>(...)</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">void_transaction</a>(...) -> VoidTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -13624,11 +13515,14 @@ for more information.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transactions.void_transaction(
     location_id="location_id",
     transaction_id="transaction_id",
@@ -13677,7 +13571,7 @@ client.transactions.void_transaction(
 </details>
 
 ## Loyalty
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">create_loyalty_account</a>(...)</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">create_loyalty_account</a>(...) -> CreateLoyaltyAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -13705,11 +13599,14 @@ Creates a loyalty account. To create a loyalty account, you must provide the `pr
 
 ```python
 from fern import FernApi, LoyaltyAccount
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.loyalty.create_loyalty_account(
     idempotency_key="idempotency_key",
     loyalty_account=LoyaltyAccount(
@@ -13762,7 +13659,7 @@ Keys can be any valid string, but must be unique for every request.
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">search_loyalty_accounts</a>(...)</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">search_loyalty_accounts</a>(...) -> SearchLoyaltyAccountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13794,11 +13691,14 @@ Search results are sorted by `created_at` in ascending order.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.loyalty.search_loyalty_accounts()
 
 ```
@@ -13858,7 +13758,7 @@ see [Pagination](https://developer.squareup.com/docs/basics/api101/pagination).
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">retrieve_loyalty_account</a>(...)</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">retrieve_loyalty_account</a>(...) -> RetrieveLoyaltyAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -13886,11 +13786,14 @@ Retrieves a loyalty account.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.loyalty.retrieve_loyalty_account(
     account_id="account_id",
 )
@@ -13929,7 +13832,7 @@ client.loyalty.retrieve_loyalty_account(
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">accumulate_loyalty_points</a>(...)</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">accumulate_loyalty_points</a>(...) -> AccumulateLoyaltyPointsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13968,11 +13871,14 @@ For more information, see [Availability of Square Loyalty](https://developer.squ
 
 ```python
 from fern import FernApi, LoyaltyEventAccumulatePoints
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.loyalty.accumulate_loyalty_points(
     account_id="account_id",
     accumulate_points=LoyaltyEventAccumulatePoints(),
@@ -14041,7 +13947,7 @@ Keys can be any valid string but must be unique for every request.
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">adjust_loyalty_points</a>(...)</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">adjust_loyalty_points</a>(...) -> AdjustLoyaltyPointsResponse</code></summary>
 <dl>
 <dd>
 
@@ -14073,11 +13979,14 @@ to add points when a buyer pays for the purchase.
 
 ```python
 from fern import FernApi, LoyaltyEventAdjustPoints
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.loyalty.adjust_loyalty_points(
     account_id="account_id",
     adjust_points=LoyaltyEventAdjustPoints(
@@ -14139,7 +14048,7 @@ Keys can be any valid string, but must be unique for every request.
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">search_loyalty_events</a>(...)</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">search_loyalty_events</a>(...) -> SearchLoyaltyEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -14174,11 +14083,14 @@ Search results are sorted by `created_at` in descending order.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.loyalty.search_loyalty_events()
 
 ```
@@ -14239,7 +14151,7 @@ The default is 30 events.
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">list_loyalty_programs</a>()</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">list_loyalty_programs</a>() -> ListLoyaltyProgramsResponse</code></summary>
 <dl>
 <dd>
 
@@ -14271,11 +14183,14 @@ Replaced with [RetrieveLoyaltyProgram](https://developer.squareup.com/reference/
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.loyalty.list_loyalty_programs()
 
 ```
@@ -14304,7 +14219,7 @@ client.loyalty.list_loyalty_programs()
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">retrieve_loyalty_program</a>(...)</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">retrieve_loyalty_program</a>(...) -> RetrieveLoyaltyProgramResponse</code></summary>
 <dl>
 <dd>
 
@@ -14334,11 +14249,14 @@ Loyalty programs define how buyers can earn points and redeem points for rewards
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.loyalty.retrieve_loyalty_program(
     program_id="program_id",
 )
@@ -14377,7 +14295,7 @@ client.loyalty.retrieve_loyalty_program(
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">calculate_loyalty_points</a>(...)</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">calculate_loyalty_points</a>(...) -> CalculateLoyaltyPointsResponse</code></summary>
 <dl>
 <dd>
 
@@ -14416,11 +14334,14 @@ For more information, see [Availability of Square Loyalty](https://developer.squ
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.loyalty.calculate_loyalty_points(
     program_id="program_id",
 )
@@ -14479,7 +14400,7 @@ Otherwise, specify the `transaction_amount_money`.
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">create_loyalty_reward</a>(...)</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">create_loyalty_reward</a>(...) -> CreateLoyaltyRewardResponse</code></summary>
 <dl>
 <dd>
 
@@ -14514,11 +14435,14 @@ not available for the buyer to redeem another reward.
 
 ```python
 from fern import FernApi, LoyaltyReward
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.loyalty.create_loyalty_reward(
     idempotency_key="idempotency_key",
     reward=LoyaltyReward(
@@ -14572,7 +14496,7 @@ Keys can be any valid string, but must be unique for every request.
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">search_loyalty_rewards</a>(...)</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">search_loyalty_rewards</a>(...) -> SearchLoyaltyRewardsResponse</code></summary>
 <dl>
 <dd>
 
@@ -14607,11 +14531,14 @@ Search results are sorted by `updated_at` in descending order.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.loyalty.search_loyalty_rewards()
 
 ```
@@ -14670,7 +14597,7 @@ see [Pagination](https://developer.squareup.com/docs/basics/api101/pagination).
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">retrieve_loyalty_reward</a>(...)</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">retrieve_loyalty_reward</a>(...) -> RetrieveLoyaltyRewardResponse</code></summary>
 <dl>
 <dd>
 
@@ -14698,11 +14625,14 @@ Retrieves a loyalty reward.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.loyalty.retrieve_loyalty_reward(
     reward_id="reward_id",
 )
@@ -14741,7 +14671,7 @@ client.loyalty.retrieve_loyalty_reward(
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">delete_loyalty_reward</a>(...)</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">delete_loyalty_reward</a>(...) -> DeleteLoyaltyRewardResponse</code></summary>
 <dl>
 <dd>
 
@@ -14777,11 +14707,14 @@ You cannot delete a reward that has reached the terminal state (REDEEMED).
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.loyalty.delete_loyalty_reward(
     reward_id="reward_id",
 )
@@ -14820,7 +14753,7 @@ client.loyalty.delete_loyalty_reward(
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">redeem_loyalty_reward</a>(...)</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">redeem_loyalty_reward</a>(...) -> RedeemLoyaltyRewardResponse</code></summary>
 <dl>
 <dd>
 
@@ -14858,11 +14791,14 @@ to the account.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.loyalty.redeem_loyalty_reward(
     reward_id="reward_id",
     idempotency_key="idempotency_key",
@@ -14923,7 +14859,7 @@ Keys can be any valid string, but must be unique for every request.
 </details>
 
 ## Merchants
-<details><summary><code>client.merchants.<a href="src/fern/merchants/client.py">list_merchants</a>(...)</code></summary>
+<details><summary><code>client.merchants.<a href="src/fern/merchants/client.py">list_merchants</a>(...) -> ListMerchantsResponse</code></summary>
 <dl>
 <dd>
 
@@ -14958,11 +14894,14 @@ endpoint to get the merchant information.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.merchants.list_merchants()
 
 ```
@@ -14999,7 +14938,7 @@ client.merchants.list_merchants()
 </dl>
 </details>
 
-<details><summary><code>client.merchants.<a href="src/fern/merchants/client.py">retrieve_merchant</a>(...)</code></summary>
+<details><summary><code>client.merchants.<a href="src/fern/merchants/client.py">retrieve_merchant</a>(...) -> RetrieveMerchantResponse</code></summary>
 <dl>
 <dd>
 
@@ -15027,11 +14966,14 @@ Retrieve a `Merchant` object for the given `merchant_id`.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.merchants.retrieve_merchant(
     merchant_id="merchant_id",
 )
@@ -15074,7 +15016,7 @@ then retrieve the merchant that is currently accessible to this call.
 </details>
 
 ## Orders
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">create_order</a>(...)</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py">create_order</a>(...) -> CreateOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -15108,11 +15050,14 @@ You can modify open orders using the [UpdateOrder](https://developer.squareup.co
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.orders.create_order()
 
 ```
@@ -15129,24 +15074,7 @@ client.orders.create_order()
 <dl>
 <dd>
 
-**idempotency_key:** `typing.Optional[str]` 
-
-A value you specify that uniquely identifies this
-order among orders you have created.
-
-If you are unsure whether a particular order was created successfully,
-you can try it again with the same idempotency key without
-worrying about creating duplicate orders.
-
-For more information, see [Idempotency](https://developer.squareup.com/docs/basics/api101/idempotency).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**order:** `typing.Optional[Order]` 
+**request:** `CreateOrderRequest` 
     
 </dd>
 </dl>
@@ -15166,7 +15094,7 @@ For more information, see [Idempotency](https://developer.squareup.com/docs/basi
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">batch_retrieve_orders</a>(...)</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py">batch_retrieve_orders</a>(...) -> BatchRetrieveOrdersResponse</code></summary>
 <dl>
 <dd>
 
@@ -15196,13 +15124,18 @@ If a given order ID does not exist, the ID is ignored instead of generating an e
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.orders.batch_retrieve_orders(
-    order_ids=["order_ids"],
+    order_ids=[
+        "order_ids"
+    ],
 )
 
 ```
@@ -15219,7 +15152,7 @@ client.orders.batch_retrieve_orders(
 <dl>
 <dd>
 
-**order_ids:** `typing.Sequence[str]` — The IDs of the orders to retrieve. A maximum of 100 orders can be retrieved per request.
+**order_ids:** `typing.List[str]` — The IDs of the orders to retrieve. A maximum of 100 orders can be retrieved per request.
     
 </dd>
 </dl>
@@ -15250,7 +15183,7 @@ orders within the scope of the current authorization's merchant ID.
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">calculate_order</a>(...)</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py">calculate_order</a>(...) -> CalculateOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -15278,11 +15211,14 @@ Enables applications to preview order pricing without creating an order.
 
 ```python
 from fern import FernApi, Order
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.orders.calculate_order(
     order=Order(
         location_id="location_id",
@@ -15311,7 +15247,7 @@ client.orders.calculate_order(
 <dl>
 <dd>
 
-**proposed_rewards:** `typing.Optional[typing.Sequence[OrderReward]]` 
+**proposed_rewards:** `typing.Optional[typing.List[OrderReward]]` 
 
 Identifies one or more loyalty reward tiers to apply during the order calculation.
 The discounts defined by the reward tiers are added to the order only to preview the
@@ -15337,7 +15273,7 @@ random strings used only to reference the reward tier.
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">search_orders</a>(...)</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py">search_orders</a>(...) -> SearchOrdersResponse</code></summary>
 <dl>
 <dd>
 
@@ -15381,11 +15317,14 @@ not the time it was subsequently transmitted to Square.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.orders.search_orders()
 
 ```
@@ -15427,7 +15366,7 @@ Default: `500`
 <dl>
 <dd>
 
-**location_ids:** `typing.Optional[typing.Sequence[str]]` 
+**location_ids:** `typing.Optional[typing.List[str]]` 
 
 The location IDs for the orders to query. All locations must belong to
 the same merchant.
@@ -15476,7 +15415,7 @@ Default: `false`.
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">retrieve_order</a>(...)</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py">retrieve_order</a>(...) -> RetrieveOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -15504,11 +15443,14 @@ Retrieves an [Order](https://developer.squareup.com/reference/square_2021-08-18/
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.orders.retrieve_order(
     order_id="order_id",
 )
@@ -15547,7 +15489,7 @@ client.orders.retrieve_order(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">update_order</a>(...)</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py">update_order</a>(...) -> UpdateOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -15589,11 +15531,14 @@ To pay for an order, see
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.orders.update_order(
     order_id="order_id",
 )
@@ -15620,7 +15565,7 @@ client.orders.update_order(
 <dl>
 <dd>
 
-**fields_to_clear:** `typing.Optional[typing.Sequence[str]]` 
+**fields_to_clear:** `typing.Optional[typing.List[str]]` 
 
 The [dot notation paths](https://developer.squareup.com/docs/orders-api/manage-orders#on-dot-notation)
 fields to clear. For example, `line_items[uid].note`.
@@ -15669,7 +15614,7 @@ For more information, see [Idempotency](https://developer.squareup.com/docs/basi
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">pay_order</a>(...)</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py">pay_order</a>(...) -> PayOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -15710,11 +15655,14 @@ Using a delayed capture payment with `PayOrder` completes the approved payment.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.orders.pay_order(
     order_id="order_id",
     idempotency_key="idempotency_key",
@@ -15764,7 +15712,7 @@ For more information, see [Idempotency](https://developer.squareup.com/docs/work
 <dl>
 <dd>
 
-**payment_ids:** `typing.Optional[typing.Sequence[str]]` 
+**payment_ids:** `typing.Optional[typing.List[str]]` 
 
 The IDs of the [payments](https://developer.squareup.com/reference/square_2021-08-18/objects/Payment) to collect.
 The payment total must match the order total.
@@ -15788,7 +15736,7 @@ The payment total must match the order total.
 </details>
 
 ## Payments
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">list_payments</a>(...)</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py">list_payments</a>(...) -> ListPaymentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -15821,11 +15769,14 @@ The maximum results per page is 100.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payments.list_payments()
 
 ```
@@ -15953,7 +15904,7 @@ Default: `100`
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">create_payment</a>(...)</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py">create_payment</a>(...) -> CreatePaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -15988,11 +15939,14 @@ The endpoint creates a
 
 ```python
 from fern import FernApi, Money
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payments.create_payment(
     amount_money=Money(),
     idempotency_key="idempotency_key",
@@ -16267,7 +16221,7 @@ For more information, see [SCA Overview](https://developer.squareup.com/docs/sca
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">cancel_payment_by_idempotency_key</a>(...)</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py">cancel_payment_by_idempotency_key</a>(...) -> CancelPaymentByIdempotencyKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -16305,11 +16259,14 @@ returns successfully.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payments.cancel_payment_by_idempotency_key(
     idempotency_key="idempotency_key",
 )
@@ -16348,7 +16305,7 @@ client.payments.cancel_payment_by_idempotency_key(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">get_payment</a>(...)</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py">get_payment</a>(...) -> GetPaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -16376,11 +16333,14 @@ Retrieves details for a specific payment.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payments.get_payment(
     payment_id="payment_id",
 )
@@ -16419,7 +16379,7 @@ client.payments.get_payment(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">update_payment</a>(...)</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py">update_payment</a>(...) -> UpdatePaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -16448,11 +16408,14 @@ You can update the `amount_money` and `tip_money` using this endpoint.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payments.update_payment(
     payment_id="payment_id",
     idempotency_key="idempotency_key",
@@ -16515,7 +16478,7 @@ For more information, see [Idempotency](https://developer.squareup.com/docs/basi
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">cancel_payment</a>(...)</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py">cancel_payment</a>(...) -> CancelPaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -16544,11 +16507,14 @@ the APPROVED `status`.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payments.cancel_payment(
     payment_id="payment_id",
 )
@@ -16587,7 +16553,7 @@ client.payments.cancel_payment(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">complete_payment</a>(...)</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py">complete_payment</a>(...) -> CompletePaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -16618,11 +16584,14 @@ You can use this endpoint to complete a payment with the APPROVED `status`.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payments.complete_payment(
     payment_id="payment_id",
 )
@@ -16662,7 +16631,7 @@ client.payments.complete_payment(
 </details>
 
 ## Refunds
-<details><summary><code>client.refunds.<a href="src/fern/refunds/client.py">list_payment_refunds</a>(...)</code></summary>
+<details><summary><code>client.refunds.<a href="src/fern/refunds/client.py">list_payment_refunds</a>(...) -> ListPaymentRefundsResponse</code></summary>
 <dl>
 <dd>
 
@@ -16695,11 +16664,14 @@ The maximum results per page is 100.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.refunds.list_payment_refunds()
 
 ```
@@ -16831,7 +16803,7 @@ Default: 100
 </dl>
 </details>
 
-<details><summary><code>client.refunds.<a href="src/fern/refunds/client.py">refund_payment</a>(...)</code></summary>
+<details><summary><code>client.refunds.<a href="src/fern/refunds/client.py">refund_payment</a>(...) -> RefundPaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -16862,11 +16834,14 @@ refund of a cash or external payment. For more information, see
 
 ```python
 from fern import FernApi, Money
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.refunds.refund_payment(
     amount_money=Money(),
     idempotency_key="idempotency_key",
@@ -16944,7 +16919,7 @@ For more information, see [Idempotency](https://developer.squareup.com/docs/work
 </dl>
 </details>
 
-<details><summary><code>client.refunds.<a href="src/fern/refunds/client.py">get_payment_refund</a>(...)</code></summary>
+<details><summary><code>client.refunds.<a href="src/fern/refunds/client.py">get_payment_refund</a>(...) -> GetPaymentRefundResponse</code></summary>
 <dl>
 <dd>
 
@@ -16972,11 +16947,14 @@ Retrieves a specific refund using the `refund_id`.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.refunds.get_payment_refund(
     refund_id="refund_id",
 )
@@ -17016,7 +16994,7 @@ client.refunds.get_payment_refund(
 </details>
 
 ## Sites
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">list_sites</a>()</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py">list_sites</a>() -> ListSitesResponse</code></summary>
 <dl>
 <dd>
 
@@ -17047,11 +17025,14 @@ __Note:__ Square Online APIs are publicly available as part of an early access p
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sites.list_sites()
 
 ```
@@ -17081,7 +17062,7 @@ client.sites.list_sites()
 </details>
 
 ## Snippets
-<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py">retrieve_snippet</a>(...)</code></summary>
+<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py">retrieve_snippet</a>(...) -> RetrieveSnippetResponse</code></summary>
 <dl>
 <dd>
 
@@ -17114,11 +17095,14 @@ __Note:__ Square Online APIs are publicly available as part of an early access p
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snippets.retrieve_snippet(
     site_id="site_id",
 )
@@ -17157,7 +17141,7 @@ client.snippets.retrieve_snippet(
 </dl>
 </details>
 
-<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py">upsert_snippet</a>(...)</code></summary>
+<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py">upsert_snippet</a>(...) -> UpsertSnippetResponse</code></summary>
 <dl>
 <dd>
 
@@ -17191,11 +17175,14 @@ __Note:__ Square Online APIs are publicly available as part of an early access p
 
 ```python
 from fern import FernApi, Snippet
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snippets.upsert_snippet(
     site_id="site_id",
     snippet=Snippet(
@@ -17245,7 +17232,7 @@ client.snippets.upsert_snippet(
 </dl>
 </details>
 
-<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py">delete_snippet</a>(...)</code></summary>
+<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py">delete_snippet</a>(...) -> DeleteSnippetResponse</code></summary>
 <dl>
 <dd>
 
@@ -17278,11 +17265,14 @@ __Note:__ Square Online APIs are publicly available as part of an early access p
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snippets.delete_snippet(
     site_id="site_id",
 )
@@ -17322,7 +17312,7 @@ client.snippets.delete_snippet(
 </details>
 
 ## Subscriptions
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">create_subscription</a>(...)</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">create_subscription</a>(...) -> CreateSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -17355,11 +17345,14 @@ the optional `start_date`. Each individual subscription is associated with a par
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.subscriptions.create_subscription(
     customer_id="customer_id",
     location_id="location_id",
@@ -17505,7 +17498,7 @@ a list of time zones, see [List of tz database time zones](https://en.wikipedia.
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">search_subscriptions</a>(...)</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">search_subscriptions</a>(...) -> SearchSubscriptionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -17548,11 +17541,14 @@ For more information, see
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.subscriptions.search_subscriptions()
 
 ```
@@ -17615,7 +17611,7 @@ Default: `200`
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">retrieve_subscription</a>(...)</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">retrieve_subscription</a>(...) -> RetrieveSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -17643,11 +17639,14 @@ Retrieves a subscription.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.subscriptions.retrieve_subscription(
     subscription_id="subscription_id",
 )
@@ -17686,7 +17685,7 @@ client.subscriptions.retrieve_subscription(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">update_subscription</a>(...)</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">update_subscription</a>(...) -> UpdateSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -17715,11 +17714,14 @@ Updates a subscription. You can set, modify, and clear the
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.subscriptions.update_subscription(
     subscription_id="subscription_id",
 )
@@ -17766,7 +17768,7 @@ client.subscriptions.update_subscription(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">cancel_subscription</a>(...)</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">cancel_subscription</a>(...) -> CancelSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -17795,11 +17797,14 @@ After this date, the status changes from ACTIVE to CANCELED.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.subscriptions.cancel_subscription(
     subscription_id="subscription_id",
 )
@@ -17838,7 +17843,7 @@ client.subscriptions.cancel_subscription(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">list_subscription_events</a>(...)</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">list_subscription_events</a>(...) -> ListSubscriptionEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -17867,11 +17872,14 @@ In the current implementation, only `START_SUBSCRIPTION` and `STOP_SUBSCRIPTION`
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.subscriptions.list_subscription_events(
     subscription_id="subscription_id",
 )
@@ -17936,7 +17944,7 @@ Default: `200`
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">resume_subscription</a>(...)</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">resume_subscription</a>(...) -> ResumeSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -17964,11 +17972,14 @@ Resumes a deactivated subscription.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.subscriptions.resume_subscription(
     subscription_id="subscription_id",
 )
@@ -18008,7 +18019,7 @@ client.subscriptions.resume_subscription(
 </details>
 
 ## Team
-<details><summary><code>client.team.<a href="src/fern/team/client.py">create_team_member</a>(...)</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py">create_team_member</a>(...) -> CreateTeamMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -18041,11 +18052,14 @@ Learn about [Troubleshooting the Team API](https://developer.squareup.com/docs/t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.team.create_team_member()
 
 ```
@@ -18062,21 +18076,7 @@ client.team.create_team_member()
 <dl>
 <dd>
 
-**idempotency_key:** `typing.Optional[str]` 
-
-A unique string that identifies this `CreateTeamMember` request.
-Keys can be any valid string, but must be unique for every request.
-For more information, see [Idempotency](https://developer.squareup.com/docs/basics/api101/idempotency).
-
-The minimum length is 1 and the maximum length is 45.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**team_member:** `typing.Optional[TeamMember]` 
+**request:** `CreateTeamMemberRequest` 
     
 </dd>
 </dl>
@@ -18096,7 +18096,7 @@ The minimum length is 1 and the maximum length is 45.
 </dl>
 </details>
 
-<details><summary><code>client.team.<a href="src/fern/team/client.py">bulk_create_team_members</a>(...)</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py">bulk_create_team_members</a>(...) -> BulkCreateTeamMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -18128,14 +18128,19 @@ Learn about [Troubleshooting the Team API](https://developer.squareup.com/docs/t
 <dd>
 
 ```python
-from fern import CreateTeamMemberRequest, FernApi
+from fern import FernApi, CreateTeamMemberRequest
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.team.bulk_create_team_members(
-    team_members={"key": CreateTeamMemberRequest()},
+    team_members={
+        "key": CreateTeamMemberRequest()
+    },
 )
 
 ```
@@ -18172,7 +18177,7 @@ client.team.bulk_create_team_members(
 </dl>
 </details>
 
-<details><summary><code>client.team.<a href="src/fern/team/client.py">bulk_update_team_members</a>(...)</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py">bulk_update_team_members</a>(...) -> BulkUpdateTeamMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -18204,13 +18209,18 @@ Learn about [Troubleshooting the Team API](https://developer.squareup.com/docs/t
 
 ```python
 from fern import FernApi, UpdateTeamMemberRequest
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.team.bulk_update_team_members(
-    team_members={"key": UpdateTeamMemberRequest()},
+    team_members={
+        "key": UpdateTeamMemberRequest()
+    },
 )
 
 ```
@@ -18247,7 +18257,7 @@ client.team.bulk_update_team_members(
 </dl>
 </details>
 
-<details><summary><code>client.team.<a href="src/fern/team/client.py">search_team_members</a>(...)</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py">search_team_members</a>(...) -> SearchTeamMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -18278,11 +18288,14 @@ The list can be filtered by the following:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.team.search_team_members()
 
 ```
@@ -18338,7 +18351,7 @@ The opaque cursor for fetching the next page. For more information, see
 </dl>
 </details>
 
-<details><summary><code>client.team.<a href="src/fern/team/client.py">retrieve_team_member</a>(...)</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py">retrieve_team_member</a>(...) -> RetrieveTeamMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -18367,11 +18380,14 @@ Learn about [Troubleshooting the Team API](https://developer.squareup.com/docs/t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.team.retrieve_team_member(
     team_member_id="team_member_id",
 )
@@ -18410,7 +18426,7 @@ client.team.retrieve_team_member(
 </dl>
 </details>
 
-<details><summary><code>client.team.<a href="src/fern/team/client.py">update_team_member</a>(...)</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py">update_team_member</a>(...) -> UpdateTeamMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -18439,11 +18455,14 @@ Learn about [Troubleshooting the Team API](https://developer.squareup.com/docs/t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.team.update_team_member(
     team_member_id="team_member_id",
 )
@@ -18470,7 +18489,7 @@ client.team.update_team_member(
 <dl>
 <dd>
 
-**team_member:** `typing.Optional[TeamMember]` 
+**request:** `UpdateTeamMemberRequest` 
     
 </dd>
 </dl>
@@ -18490,7 +18509,7 @@ client.team.update_team_member(
 </dl>
 </details>
 
-<details><summary><code>client.team.<a href="src/fern/team/client.py">retrieve_wage_setting</a>(...)</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py">retrieve_wage_setting</a>(...) -> RetrieveWageSettingResponse</code></summary>
 <dl>
 <dd>
 
@@ -18520,11 +18539,14 @@ Learn about [Troubleshooting the Team API](https://developer.squareup.com/docs/t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.team.retrieve_wage_setting(
     team_member_id="team_member_id",
 )
@@ -18563,7 +18585,7 @@ client.team.retrieve_wage_setting(
 </dl>
 </details>
 
-<details><summary><code>client.team.<a href="src/fern/team/client.py">update_wage_setting</a>(...)</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py">update_wage_setting</a>(...) -> UpdateWageSettingResponse</code></summary>
 <dl>
 <dd>
 
@@ -18595,11 +18617,14 @@ Learn about [Troubleshooting the Team API](https://developer.squareup.com/docs/t
 
 ```python
 from fern import FernApi, WageSetting
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.team.update_wage_setting(
     team_member_id="team_member_id",
     wage_setting=WageSetting(),
@@ -18648,7 +18673,7 @@ client.team.update_wage_setting(
 </details>
 
 ## Terminal
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">create_terminal_checkout</a>(...)</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">create_terminal_checkout</a>(...) -> CreateTerminalCheckoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -18676,12 +18701,15 @@ for the requested amount.
 <dd>
 
 ```python
-from fern import DeviceCheckoutOptions, FernApi, Money, TerminalCheckout
+from fern import FernApi, TerminalCheckout, Money, DeviceCheckoutOptions
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.terminal.create_terminal_checkout(
     checkout=TerminalCheckout(
         amount_money=Money(),
@@ -18739,7 +18767,7 @@ See [Idempotency keys](https://developer.squareup.com/docs/basics/api101/idempot
 </dl>
 </details>
 
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">search_terminal_checkouts</a>(...)</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">search_terminal_checkouts</a>(...) -> SearchTerminalCheckoutsResponse</code></summary>
 <dl>
 <dd>
 
@@ -18767,11 +18795,14 @@ Retrieves a filtered list of Terminal checkout requests created by the account m
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.terminal.search_terminal_checkouts()
 
 ```
@@ -18828,7 +18859,7 @@ See [Pagination](https://developer.squareup.com/docs/basics/api101/pagination) f
 </dl>
 </details>
 
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">get_terminal_checkout</a>(...)</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">get_terminal_checkout</a>(...) -> GetTerminalCheckoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -18856,11 +18887,14 @@ Retrieves a Terminal checkout request by `checkout_id`.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.terminal.get_terminal_checkout(
     checkout_id="checkout_id",
 )
@@ -18899,7 +18933,7 @@ client.terminal.get_terminal_checkout(
 </dl>
 </details>
 
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">cancel_terminal_checkout</a>(...)</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">cancel_terminal_checkout</a>(...) -> CancelTerminalCheckoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -18927,11 +18961,14 @@ Cancels a Terminal checkout request if the status of the request permits it.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.terminal.cancel_terminal_checkout(
     checkout_id="checkout_id",
 )
@@ -18970,7 +19007,7 @@ client.terminal.cancel_terminal_checkout(
 </dl>
 </details>
 
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">create_terminal_refund</a>(...)</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">create_terminal_refund</a>(...) -> CreateTerminalRefundResponse</code></summary>
 <dl>
 <dd>
 
@@ -18998,11 +19035,14 @@ Creates a request to refund an Interac payment completed on a Square Terminal.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.terminal.create_terminal_refund(
     idempotency_key="idempotency_key",
 )
@@ -19054,7 +19094,7 @@ See [Idempotency keys](https://developer.squareup.com/docs/basics/api101/idempot
 </dl>
 </details>
 
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">search_terminal_refunds</a>(...)</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">search_terminal_refunds</a>(...) -> SearchTerminalRefundsResponse</code></summary>
 <dl>
 <dd>
 
@@ -19082,11 +19122,14 @@ Retrieves a filtered list of Interac Terminal refund requests created by the sel
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.terminal.search_terminal_refunds()
 
 ```
@@ -19142,7 +19185,7 @@ Provide this cursor to retrieve the next set of results for the original query.
 </dl>
 </details>
 
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">get_terminal_refund</a>(...)</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">get_terminal_refund</a>(...) -> GetTerminalRefundResponse</code></summary>
 <dl>
 <dd>
 
@@ -19170,11 +19213,14 @@ Retrieves an Interac Terminal refund object by ID.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.terminal.get_terminal_refund(
     terminal_refund_id="terminal_refund_id",
 )
@@ -19213,7 +19259,7 @@ client.terminal.get_terminal_refund(
 </dl>
 </details>
 
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">cancel_terminal_refund</a>(...)</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">cancel_terminal_refund</a>(...) -> CancelTerminalRefundResponse</code></summary>
 <dl>
 <dd>
 
@@ -19241,11 +19287,14 @@ Cancels an Interac Terminal refund request by refund request ID if the status of
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    authorization="YOUR_AUTHORIZATION",
-    token="YOUR_TOKEN",
+    token="<token>",
+    authorization="<Authorization>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.terminal.cancel_terminal_refund(
     terminal_refund_id="terminal_refund_id",
 )

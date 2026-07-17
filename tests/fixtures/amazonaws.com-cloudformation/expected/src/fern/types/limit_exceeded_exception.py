@@ -2,4 +2,4 @@
 
 import typing
 
-LimitExceededException = typing.Optional[typing.Any]
+LimitExceededException = typing.Any

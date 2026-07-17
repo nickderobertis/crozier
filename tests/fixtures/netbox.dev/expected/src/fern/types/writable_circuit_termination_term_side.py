@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableCircuitTerminationTermSide(str, enum.Enum):
+class WritableCircuitTerminationTermSide(enum.StrEnum):
     A = "A"
     Z = "Z"
 

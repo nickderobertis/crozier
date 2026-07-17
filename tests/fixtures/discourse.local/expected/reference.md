@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">search</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">search</a>(...) -> SearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -13,8 +13,12 @@
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.search(
     q="api @blake #support tags:api after:2021-06-04 in:unseen in:open\norder:latest_topic",
 )
@@ -88,7 +92,7 @@ curl -i -sS -X GET -G "http://localhost:4200/search.json" \
 </details>
 
 ## Backups
-<details><summary><code>client.backups.<a href="src/fern/backups/client.py">get_backups</a>()</code></summary>
+<details><summary><code>client.backups.<a href="src/fern/backups/client.py">get_backups</a>() -> typing.List[GetBackupsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -102,8 +106,12 @@ curl -i -sS -X GET -G "http://localhost:4200/search.json" \
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.backups.get_backups()
 
 ```
@@ -132,7 +140,7 @@ client.backups.get_backups()
 </dl>
 </details>
 
-<details><summary><code>client.backups.<a href="src/fern/backups/client.py">create_backup</a>(...)</code></summary>
+<details><summary><code>client.backups.<a href="src/fern/backups/client.py">create_backup</a>(...) -> CreateBackupResponse</code></summary>
 <dl>
 <dd>
 
@@ -146,8 +154,12 @@ client.backups.get_backups()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.backups.create_backup(
     with_uploads=True,
 )
@@ -200,8 +212,12 @@ client.backups.create_backup(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.backups.download_backup(
     filename="filename",
     token="token",
@@ -263,8 +279,12 @@ client.backups.download_backup(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.backups.send_download_backup_email(
     filename="filename",
 )
@@ -304,7 +324,7 @@ client.backups.send_download_backup_email(
 </details>
 
 ## Badges
-<details><summary><code>client.badges.<a href="src/fern/badges/client.py">admin_list_badges</a>()</code></summary>
+<details><summary><code>client.badges.<a href="src/fern/badges/client.py">admin_list_badges</a>() -> AdminListBadgesResponse</code></summary>
 <dl>
 <dd>
 
@@ -318,8 +338,12 @@ client.backups.send_download_backup_email(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.badges.admin_list_badges()
 
 ```
@@ -348,7 +372,7 @@ client.badges.admin_list_badges()
 </dl>
 </details>
 
-<details><summary><code>client.badges.<a href="src/fern/badges/client.py">create_badge</a>(...)</code></summary>
+<details><summary><code>client.badges.<a href="src/fern/badges/client.py">create_badge</a>(...) -> CreateBadgeResponse</code></summary>
 <dl>
 <dd>
 
@@ -362,8 +386,12 @@ client.badges.admin_list_badges()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.badges.create_badge(
     badge_type_id=1,
     name="name",
@@ -414,7 +442,7 @@ The ID for the badge type. 1 for Gold, 2 for Silver,
 </dl>
 </details>
 
-<details><summary><code>client.badges.<a href="src/fern/badges/client.py">update_badge</a>(...)</code></summary>
+<details><summary><code>client.badges.<a href="src/fern/badges/client.py">update_badge</a>(...) -> UpdateBadgeResponse</code></summary>
 <dl>
 <dd>
 
@@ -428,8 +456,12 @@ The ID for the badge type. 1 for Gold, 2 for Silver,
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.badges.update_badge(
     id=1,
     badge_type_id=1,
@@ -503,8 +535,12 @@ The ID for the badge type. 1 for Gold, 2 for Silver,
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.badges.delete_badge(
     id=1,
 )
@@ -543,7 +579,7 @@ client.badges.delete_badge(
 </dl>
 </details>
 
-<details><summary><code>client.badges.<a href="src/fern/badges/client.py">list_user_badges</a>(...)</code></summary>
+<details><summary><code>client.badges.<a href="src/fern/badges/client.py">list_user_badges</a>(...) -> ListUserBadgesResponse</code></summary>
 <dl>
 <dd>
 
@@ -557,8 +593,12 @@ client.badges.delete_badge(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.badges.list_user_badges(
     username="username",
 )
@@ -598,7 +638,7 @@ client.badges.list_user_badges(
 </details>
 
 ## Groups
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">create_group</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py">create_group</a>(...) -> CreateGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -611,11 +651,14 @@ client.badges.list_user_badges(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.groups import CreateGroupRequestGroup
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
 
-client = FernApi()
 client.groups.create_group(
     group=CreateGroupRequestGroup(
         name="name",
@@ -656,7 +699,7 @@ client.groups.create_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">delete_group</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py">delete_group</a>(...) -> DeleteGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -670,8 +713,12 @@ client.groups.create_group(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.groups.delete_group(
     id=1,
 )
@@ -710,7 +757,7 @@ client.groups.delete_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">list_groups</a>()</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py">list_groups</a>() -> ListGroupsResponse</code></summary>
 <dl>
 <dd>
 
@@ -724,8 +771,12 @@ client.groups.delete_group(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.groups.list_groups()
 
 ```
@@ -754,7 +805,7 @@ client.groups.list_groups()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_group</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_group</a>(...) -> GetGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -768,8 +819,12 @@ client.groups.list_groups()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.groups.get_group(
     id="name",
 )
@@ -808,7 +863,7 @@ client.groups.get_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">update_group</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py">update_group</a>(...) -> UpdateGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -821,11 +876,14 @@ client.groups.get_group(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.groups import UpdateGroupRequestGroup
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
 
-client = FernApi()
 client.groups.update_group(
     id=1,
     group=UpdateGroupRequestGroup(
@@ -875,7 +933,7 @@ client.groups.update_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">list_group_members</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py">list_group_members</a>(...) -> ListGroupMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -889,8 +947,12 @@ client.groups.update_group(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.groups.list_group_members(
     id="name",
 )
@@ -929,7 +991,7 @@ client.groups.list_group_members(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">add_group_members</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py">add_group_members</a>(...) -> AddGroupMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -943,8 +1005,12 @@ client.groups.list_group_members(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.groups.add_group_members(
     id=1,
 )
@@ -991,7 +1057,7 @@ client.groups.add_group_members(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">remove_group_members</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py">remove_group_members</a>(...) -> RemoveGroupMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1005,8 +1071,12 @@ client.groups.add_group_members(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.groups.remove_group_members(
     id=1,
 )
@@ -1054,7 +1124,7 @@ client.groups.remove_group_members(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">admin_list_users</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">admin_list_users</a>(...) -> typing.List[AdminListUsersResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -1067,11 +1137,14 @@ client.groups.remove_group_members(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.users import AdminListUsersRequestFlag
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
 
-client = FernApi()
 client.users.admin_list_users(
     flag=AdminListUsersRequestFlag.ACTIVE,
 )
@@ -1142,7 +1215,7 @@ client.users.admin_list_users(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">admin_get_user</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">admin_get_user</a>(...) -> AdminGetUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -1156,8 +1229,12 @@ client.users.admin_list_users(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.admin_get_user(
     id=1,
 )
@@ -1196,7 +1273,7 @@ client.users.admin_get_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete_user</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">delete_user</a>(...) -> DeleteUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -1210,8 +1287,12 @@ client.users.admin_get_user(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.delete_user(
     id=1,
 )
@@ -1282,7 +1363,7 @@ client.users.delete_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">anonymize_user</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">anonymize_user</a>(...) -> AnonymizeUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -1296,8 +1377,12 @@ client.users.delete_user(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.anonymize_user(
     id=1,
 )
@@ -1336,7 +1421,7 @@ client.users.anonymize_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">log_out_user</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">log_out_user</a>(...) -> LogOutUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -1350,8 +1435,12 @@ client.users.anonymize_user(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.log_out_user(
     id=1,
 )
@@ -1390,7 +1479,7 @@ client.users.log_out_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">silence_user</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">silence_user</a>(...) -> SilenceUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -1404,8 +1493,12 @@ client.users.log_out_user(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.silence_user(
     id=1,
 )
@@ -1476,7 +1569,7 @@ client.users.silence_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">suspend_user</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">suspend_user</a>(...) -> SuspendUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -1490,8 +1583,12 @@ client.users.silence_user(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.suspend_user(
     id=1,
     reason="reason",
@@ -1564,7 +1661,7 @@ client.users.suspend_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">list_users_public</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">list_users_public</a>(...) -> ListUsersPublicResponse</code></summary>
 <dl>
 <dd>
 
@@ -1577,11 +1674,14 @@ client.users.suspend_user(
 <dd>
 
 ```python
-from fern.users import ListUsersPublicRequestOrder, ListUsersPublicRequestPeriod
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.users import ListUsersPublicRequestPeriod, ListUsersPublicRequestOrder
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.list_users_public(
     period=ListUsersPublicRequestPeriod.DAILY,
     order=ListUsersPublicRequestOrder.LIKES_RECEIVED,
@@ -1645,7 +1745,7 @@ client.users.list_users_public(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">send_password_reset_email</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">send_password_reset_email</a>(...) -> SendPasswordResetEmailResponse</code></summary>
 <dl>
 <dd>
 
@@ -1659,8 +1759,12 @@ client.users.list_users_public(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.send_password_reset_email(
     login="login",
 )
@@ -1699,7 +1803,7 @@ client.users.send_password_reset_email(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user_external_id</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user_external_id</a>(...) -> GetUserExternalIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -1713,8 +1817,12 @@ client.users.send_password_reset_email(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.get_user_external_id(
     external_id="external_id",
     api_key="Api-Key",
@@ -1771,7 +1879,7 @@ client.users.get_user_external_id(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user_identiy_provider_external_id</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user_identiy_provider_external_id</a>(...) -> GetUserIdentiyProviderExternalIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -1785,8 +1893,12 @@ client.users.get_user_external_id(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.get_user_identiy_provider_external_id(
     provider="provider",
     external_id="external_id",
@@ -1855,7 +1967,7 @@ URL: `/auth/{provider}/callback`
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user</a>(...) -> GetUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -1869,8 +1981,12 @@ URL: `/auth/{provider}/callback`
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.get_user(
     username="username",
     api_key="Api-Key",
@@ -1927,7 +2043,7 @@ client.users.get_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_user</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">update_user</a>(...) -> UpdateUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -1941,8 +2057,12 @@ client.users.get_user(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.update_user(
     username="username",
     api_key="Api-Key",
@@ -1995,7 +2115,7 @@ client.users.update_user(
 <dl>
 <dd>
 
-**external_ids:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` 
+**external_ids:** `typing.Optional[typing.Dict[str, typing.Any]]` 
     
 </dd>
 </dl>
@@ -2031,7 +2151,7 @@ client.users.update_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user_emails</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user_emails</a>(...) -> GetUserEmailsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2045,8 +2165,12 @@ client.users.update_user(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.get_user_emails(
     username="username",
 )
@@ -2085,7 +2209,7 @@ client.users.get_user_emails(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_avatar</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">update_avatar</a>(...) -> UpdateAvatarResponse</code></summary>
 <dl>
 <dd>
 
@@ -2098,11 +2222,14 @@ client.users.get_user_emails(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.users import UpdateAvatarRequestType
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
 
-client = FernApi()
 client.users.update_avatar(
     username="username",
     type=UpdateAvatarRequestType.UPLOADED,
@@ -2173,8 +2300,12 @@ client.users.update_avatar(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.update_email(
     username="username",
     email="email",
@@ -2236,8 +2367,12 @@ client.users.update_email(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.update_username(
     username="username",
     new_username="new_username",
@@ -2285,7 +2420,7 @@ client.users.update_username(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">list_user_actions</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">list_user_actions</a>(...) -> ListUserActionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2299,8 +2434,12 @@ client.users.update_username(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.list_user_actions(
     offset=1,
     username="username",
@@ -2357,7 +2496,7 @@ client.users.list_user_actions(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">refresh_gravatar</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">refresh_gravatar</a>(...) -> RefreshGravatarResponse</code></summary>
 <dl>
 <dd>
 
@@ -2371,8 +2510,12 @@ client.users.list_user_actions(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.refresh_gravatar(
     username="username",
 )
@@ -2411,7 +2554,7 @@ client.users.refresh_gravatar(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">create_user</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">create_user</a>(...) -> CreateUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -2425,8 +2568,12 @@ client.users.refresh_gravatar(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.create_user(
     api_key="Api-Key",
     api_username="Api-Username",
@@ -2517,7 +2664,7 @@ or it will be ignored
 <dl>
 <dd>
 
-**external_ids:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` 
+**external_ids:** `typing.Optional[typing.Dict[str, typing.Any]]` 
     
 </dd>
 </dl>
@@ -2559,8 +2706,12 @@ or it will be ignored
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.change_password(
     token="token",
     password="password",
@@ -2618,7 +2769,7 @@ client.users.change_password(
 </details>
 
 ## Categories
-<details><summary><code>client.categories.<a href="src/fern/categories/client.py">get_category</a>(...)</code></summary>
+<details><summary><code>client.categories.<a href="src/fern/categories/client.py">get_category</a>(...) -> GetCategoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -2632,8 +2783,12 @@ client.users.change_password(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.categories.get_category(
     id=1,
 )
@@ -2672,7 +2827,7 @@ client.categories.get_category(
 </dl>
 </details>
 
-<details><summary><code>client.categories.<a href="src/fern/categories/client.py">list_category_topics</a>(...)</code></summary>
+<details><summary><code>client.categories.<a href="src/fern/categories/client.py">list_category_topics</a>(...) -> ListCategoryTopicsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2686,8 +2841,12 @@ client.categories.get_category(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.categories.list_category_topics(
     slug="slug",
     id=1,
@@ -2735,7 +2894,7 @@ client.categories.list_category_topics(
 </dl>
 </details>
 
-<details><summary><code>client.categories.<a href="src/fern/categories/client.py">list_categories</a>(...)</code></summary>
+<details><summary><code>client.categories.<a href="src/fern/categories/client.py">list_categories</a>(...) -> ListCategoriesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2749,8 +2908,12 @@ client.categories.list_category_topics(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.categories.list_categories()
 
 ```
@@ -2787,7 +2950,7 @@ client.categories.list_categories()
 </dl>
 </details>
 
-<details><summary><code>client.categories.<a href="src/fern/categories/client.py">create_category</a>(...)</code></summary>
+<details><summary><code>client.categories.<a href="src/fern/categories/client.py">create_category</a>(...) -> CreateCategoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -2801,8 +2964,12 @@ client.categories.list_categories()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.categories.create_category(
     name="name",
 )
@@ -2845,7 +3012,7 @@ client.categories.create_category(
 <dl>
 <dd>
 
-**form_template_ids:** `typing.Optional[typing.Sequence[typing.Optional[typing.Any]]]` 
+**form_template_ids:** `typing.Optional[typing.List[typing.Any]]` 
     
 </dd>
 </dl>
@@ -2913,7 +3080,7 @@ client.categories.create_category(
 </dl>
 </details>
 
-<details><summary><code>client.categories.<a href="src/fern/categories/client.py">update_category</a>(...)</code></summary>
+<details><summary><code>client.categories.<a href="src/fern/categories/client.py">update_category</a>(...) -> UpdateCategoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -2927,8 +3094,12 @@ client.categories.create_category(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.categories.update_category(
     id=1,
     name="name",
@@ -2980,7 +3151,7 @@ client.categories.update_category(
 <dl>
 <dd>
 
-**form_template_ids:** `typing.Optional[typing.Sequence[typing.Optional[typing.Any]]]` 
+**form_template_ids:** `typing.Optional[typing.List[typing.Any]]` 
     
 </dd>
 </dl>
@@ -3049,7 +3220,7 @@ client.categories.update_category(
 </details>
 
 ## Invites
-<details><summary><code>client.invites.<a href="src/fern/invites/client.py">create_invite</a>(...)</code></summary>
+<details><summary><code>client.invites.<a href="src/fern/invites/client.py">create_invite</a>(...) -> CreateInviteResponse</code></summary>
 <dl>
 <dd>
 
@@ -3063,8 +3234,12 @@ client.categories.update_category(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.invites.create_invite(
     api_key="Api-Key",
     api_username="Api-Username",
@@ -3180,7 +3355,7 @@ setting is used
 </details>
 
 ## Topics
-<details><summary><code>client.topics.<a href="src/fern/topics/client.py">list_latest_topics</a>(...)</code></summary>
+<details><summary><code>client.topics.<a href="src/fern/topics/client.py">list_latest_topics</a>(...) -> ListLatestTopicsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3194,8 +3369,12 @@ setting is used
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.topics.list_latest_topics(
     api_key="Api-Key",
     api_username="Api-Username",
@@ -3262,7 +3441,7 @@ Enum: `default`, `created`, `activity`, `views`, `posts`, `category`,
 </dl>
 </details>
 
-<details><summary><code>client.topics.<a href="src/fern/topics/client.py">update_topic</a>(...)</code></summary>
+<details><summary><code>client.topics.<a href="src/fern/topics/client.py">update_topic</a>(...) -> UpdateTopicResponse</code></summary>
 <dl>
 <dd>
 
@@ -3276,8 +3455,12 @@ Enum: `default`, `created`, `activity`, `views`, `posts`, `category`,
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.topics.update_topic(
     id="id",
     api_key="Api-Key",
@@ -3356,8 +3539,12 @@ client.topics.update_topic(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.topics.get_topic_by_external_id(
     external_id="external_id",
 )
@@ -3396,7 +3583,7 @@ client.topics.get_topic_by_external_id(
 </dl>
 </details>
 
-<details><summary><code>client.topics.<a href="src/fern/topics/client.py">get_topic</a>(...)</code></summary>
+<details><summary><code>client.topics.<a href="src/fern/topics/client.py">get_topic</a>(...) -> GetTopicResponse</code></summary>
 <dl>
 <dd>
 
@@ -3410,8 +3597,12 @@ client.topics.get_topic_by_external_id(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.topics.get_topic(
     id="id",
     api_key="Api-Key",
@@ -3482,8 +3673,12 @@ client.topics.get_topic(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.topics.remove_topic(
     id="id",
     api_key="Api-Key",
@@ -3554,8 +3749,12 @@ client.topics.remove_topic(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.topics.bookmark_topic(
     id="id",
     api_key="Api-Key",
@@ -3612,7 +3811,7 @@ client.topics.bookmark_topic(
 </dl>
 </details>
 
-<details><summary><code>client.topics.<a href="src/fern/topics/client.py">update_topic_timestamp</a>(...)</code></summary>
+<details><summary><code>client.topics.<a href="src/fern/topics/client.py">update_topic_timestamp</a>(...) -> UpdateTopicTimestampResponse</code></summary>
 <dl>
 <dd>
 
@@ -3626,8 +3825,12 @@ client.topics.bookmark_topic(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.topics.update_topic_timestamp(
     id="id",
     api_key="Api-Key",
@@ -3693,7 +3896,7 @@ client.topics.update_topic_timestamp(
 </dl>
 </details>
 
-<details><summary><code>client.topics.<a href="src/fern/topics/client.py">invite_to_topic</a>(...)</code></summary>
+<details><summary><code>client.topics.<a href="src/fern/topics/client.py">invite_to_topic</a>(...) -> InviteToTopicResponse</code></summary>
 <dl>
 <dd>
 
@@ -3707,8 +3910,12 @@ client.topics.update_topic_timestamp(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.topics.invite_to_topic(
     id="id",
     api_key="Api-Key",
@@ -3781,7 +3988,7 @@ client.topics.invite_to_topic(
 </dl>
 </details>
 
-<details><summary><code>client.topics.<a href="src/fern/topics/client.py">set_notification_level</a>(...)</code></summary>
+<details><summary><code>client.topics.<a href="src/fern/topics/client.py">set_notification_level</a>(...) -> SetNotificationLevelResponse</code></summary>
 <dl>
 <dd>
 
@@ -3794,11 +4001,14 @@ client.topics.invite_to_topic(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.topics import SetNotificationLevelRequestNotificationLevel
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
 
-client = FernApi()
 client.topics.set_notification_level(
     id="id",
     api_key="Api-Key",
@@ -3864,7 +4074,7 @@ client.topics.set_notification_level(
 </dl>
 </details>
 
-<details><summary><code>client.topics.<a href="src/fern/topics/client.py">get_specific_posts_from_topic</a>(...)</code></summary>
+<details><summary><code>client.topics.<a href="src/fern/topics/client.py">get_specific_posts_from_topic</a>(...) -> GetSpecificPostsFromTopicResponse</code></summary>
 <dl>
 <dd>
 
@@ -3878,8 +4088,12 @@ client.topics.set_notification_level(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.topics.get_specific_posts_from_topic(
     id="id",
     api_key="Api-Key",
@@ -3936,7 +4150,7 @@ client.topics.get_specific_posts_from_topic(
 </dl>
 </details>
 
-<details><summary><code>client.topics.<a href="src/fern/topics/client.py">update_topic_status</a>(...)</code></summary>
+<details><summary><code>client.topics.<a href="src/fern/topics/client.py">update_topic_status</a>(...) -> UpdateTopicStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -3949,14 +4163,14 @@ client.topics.get_specific_posts_from_topic(
 <dd>
 
 ```python
-from fern.topics import (
-    UpdateTopicStatusRequestEnabled,
-    UpdateTopicStatusRequestStatus,
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.topics import UpdateTopicStatusRequestEnabled, UpdateTopicStatusRequestStatus
+
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
 )
 
-from fern import FernApi
-
-client = FernApi()
 client.topics.update_topic_status(
     id="id",
     api_key="Api-Key",
@@ -4039,7 +4253,7 @@ client.topics.update_topic_status(
 </dl>
 </details>
 
-<details><summary><code>client.topics.<a href="src/fern/topics/client.py">create_topic_timer</a>(...)</code></summary>
+<details><summary><code>client.topics.<a href="src/fern/topics/client.py">create_topic_timer</a>(...) -> CreateTopicTimerResponse</code></summary>
 <dl>
 <dd>
 
@@ -4053,8 +4267,12 @@ client.topics.update_topic_status(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.topics.create_topic_timer(
     id="id",
     api_key="Api-Key",
@@ -4143,7 +4361,7 @@ client.topics.create_topic_timer(
 </dl>
 </details>
 
-<details><summary><code>client.topics.<a href="src/fern/topics/client.py">list_top_topics</a>(...)</code></summary>
+<details><summary><code>client.topics.<a href="src/fern/topics/client.py">list_top_topics</a>(...) -> ListTopTopicsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4157,8 +4375,12 @@ client.topics.create_topic_timer(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.topics.list_top_topics(
     api_key="Api-Key",
     api_username="Api-Username",
@@ -4215,7 +4437,7 @@ client.topics.list_top_topics(
 </details>
 
 ## Notifications
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">get_notifications</a>()</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">get_notifications</a>() -> GetNotificationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4229,8 +4451,12 @@ client.topics.list_top_topics(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.notifications.get_notifications()
 
 ```
@@ -4259,7 +4485,7 @@ client.notifications.get_notifications()
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">mark_notifications_as_read</a>(...)</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">mark_notifications_as_read</a>(...) -> MarkNotificationsAsReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -4273,8 +4499,12 @@ client.notifications.get_notifications()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.notifications.mark_notifications_as_read()
 
 ```
@@ -4315,7 +4545,7 @@ read
 </details>
 
 ## Posts
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">perform_post_action</a>(...)</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py">perform_post_action</a>(...) -> PerformPostActionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4329,8 +4559,12 @@ read
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.posts.perform_post_action(
     api_key="Api-Key",
     api_username="Api-Username",
@@ -4404,7 +4638,7 @@ client.posts.perform_post_action(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">list_posts</a>(...)</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py">list_posts</a>(...) -> ListPostsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4418,8 +4652,12 @@ client.posts.perform_post_action(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.posts.list_posts(
     api_key="Api-Key",
     api_username="Api-Username",
@@ -4475,7 +4713,7 @@ client.posts.list_posts(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">create_topic_post_pm</a>(...)</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py">create_topic_post_pm</a>(...) -> CreateTopicPostPmResponse</code></summary>
 <dl>
 <dd>
 
@@ -4489,8 +4727,12 @@ client.posts.list_posts(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.posts.create_topic_post_pm(
     raw="raw",
 )
@@ -4611,7 +4853,7 @@ a forum topic with that id.
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">get_post</a>(...)</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py">get_post</a>(...) -> GetPostResponse</code></summary>
 <dl>
 <dd>
 
@@ -4625,8 +4867,12 @@ a forum topic with that id.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.posts.get_post(
     id="id",
     api_key="Api-Key",
@@ -4683,7 +4929,7 @@ client.posts.get_post(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">update_post</a>(...)</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py">update_post</a>(...) -> UpdatePostResponse</code></summary>
 <dl>
 <dd>
 
@@ -4697,8 +4943,12 @@ client.posts.get_post(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.posts.update_post(
     id="id",
     api_key="Api-Key",
@@ -4777,8 +5027,12 @@ client.posts.update_post(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.posts.delete_post(
     id=1,
 )
@@ -4831,7 +5085,7 @@ permanently delete.
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">lock_post</a>(...)</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py">lock_post</a>(...) -> LockPostResponse</code></summary>
 <dl>
 <dd>
 
@@ -4845,8 +5099,12 @@ permanently delete.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.posts.lock_post(
     id="id",
     api_key="Api-Key",
@@ -4912,7 +5170,7 @@ client.posts.lock_post(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">post_replies</a>(...)</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py">post_replies</a>(...) -> typing.List[PostRepliesResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -4926,8 +5184,12 @@ client.posts.lock_post(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.posts.post_replies(
     id="id",
 )
@@ -4967,7 +5229,7 @@ client.posts.post_replies(
 </details>
 
 ## Site
-<details><summary><code>client.site.<a href="src/fern/site/client.py">get_site</a>()</code></summary>
+<details><summary><code>client.site.<a href="src/fern/site/client.py">get_site</a>() -> GetSiteResponse</code></summary>
 <dl>
 <dd>
 
@@ -4995,8 +5257,12 @@ Can be used to fetch all categories and subcategories
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.site.get_site()
 
 ```
@@ -5026,7 +5292,7 @@ client.site.get_site()
 </details>
 
 ## Tags
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">get_tag</a>(...)</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py">get_tag</a>(...) -> GetTagResponse</code></summary>
 <dl>
 <dd>
 
@@ -5040,8 +5306,12 @@ client.site.get_site()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.tags.get_tag(
     name="name",
 )
@@ -5080,7 +5350,7 @@ client.tags.get_tag(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">list_tag_groups</a>()</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py">list_tag_groups</a>() -> ListTagGroupsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5094,8 +5364,12 @@ client.tags.get_tag(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.tags.list_tag_groups()
 
 ```
@@ -5124,7 +5398,7 @@ client.tags.list_tag_groups()
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">create_tag_group</a>(...)</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py">create_tag_group</a>(...) -> CreateTagGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -5138,8 +5412,12 @@ client.tags.list_tag_groups()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.tags.create_tag_group(
     name="name",
 )
@@ -5178,7 +5456,7 @@ client.tags.create_tag_group(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">get_tag_group</a>(...)</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py">get_tag_group</a>(...) -> GetTagGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -5192,8 +5470,12 @@ client.tags.create_tag_group(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.tags.get_tag_group(
     id="id",
 )
@@ -5232,7 +5514,7 @@ client.tags.get_tag_group(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">update_tag_group</a>(...)</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py">update_tag_group</a>(...) -> UpdateTagGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -5246,8 +5528,12 @@ client.tags.get_tag_group(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.tags.update_tag_group(
     id="id",
 )
@@ -5294,7 +5580,7 @@ client.tags.update_tag_group(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">list_tags</a>()</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py">list_tags</a>() -> ListTagsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5308,8 +5594,12 @@ client.tags.update_tag_group(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.tags.list_tags()
 
 ```
@@ -5339,7 +5629,7 @@ client.tags.list_tags()
 </details>
 
 ## PrivateMessages
-<details><summary><code>client.private_messages.<a href="src/fern/private_messages/client.py">get_user_sent_private_messages</a>(...)</code></summary>
+<details><summary><code>client.private_messages.<a href="src/fern/private_messages/client.py">get_user_sent_private_messages</a>(...) -> GetUserSentPrivateMessagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5353,8 +5643,12 @@ client.tags.list_tags()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.private_messages.get_user_sent_private_messages(
     username="username",
 )
@@ -5393,7 +5687,7 @@ client.private_messages.get_user_sent_private_messages(
 </dl>
 </details>
 
-<details><summary><code>client.private_messages.<a href="src/fern/private_messages/client.py">list_user_private_messages</a>(...)</code></summary>
+<details><summary><code>client.private_messages.<a href="src/fern/private_messages/client.py">list_user_private_messages</a>(...) -> ListUserPrivateMessagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5407,8 +5701,12 @@ client.private_messages.get_user_sent_private_messages(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.private_messages.list_user_private_messages(
     username="username",
 )
@@ -5448,7 +5746,7 @@ client.private_messages.list_user_private_messages(
 </details>
 
 ## Uploads
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">create_upload</a>(...)</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">create_upload</a>(...) -> CreateUploadResponse</code></summary>
 <dl>
 <dd>
 
@@ -5461,11 +5759,14 @@ client.private_messages.list_user_private_messages(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.uploads import CreateUploadRequestType
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
 
-client = FernApi()
 client.uploads.create_upload(
     type=CreateUploadRequestType.AVATAR,
 )
@@ -5492,7 +5793,7 @@ client.uploads.create_upload(
 <dl>
 <dd>
 
-**file:** `typing.Optional[typing.Optional[typing.Any]]` 
+**file:** `typing.Optional[typing.Any]` 
     
 </dd>
 </dl>
@@ -5528,7 +5829,7 @@ client.uploads.create_upload(
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">abort_multipart</a>(...)</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">abort_multipart</a>(...) -> AbortMultipartResponse</code></summary>
 <dl>
 <dd>
 
@@ -5567,8 +5868,12 @@ be set to true for this endpoint to function.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.uploads.abort_multipart(
     external_upload_identifier="84x83tmxy398t3y._Q_z8CoJYVr69bE6D7f8J6Oo0434QquLFoYdGVerWFx9X5HDEI_TP_95c34n853495x35345394.d.ghQ",
 )
@@ -5610,7 +5915,7 @@ storage provider. This is the multipart upload_id in AWS S3.
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">batch_presign_multipart_parts</a>(...)</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">batch_presign_multipart_parts</a>(...) -> BatchPresignMultipartPartsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5658,10 +5963,18 @@ be set to true for this endpoint to function.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.uploads.batch_presign_multipart_parts(
-    part_numbers=[1, 2, 3],
+    part_numbers=[
+        1,
+        2,
+        3
+    ],
     unique_identifier="66e86218-80d9-4bda-b4d5-2b6def968705",
 )
 
@@ -5679,7 +5992,7 @@ client.uploads.batch_presign_multipart_parts(
 <dl>
 <dd>
 
-**part_numbers:** `typing.Sequence[typing.Optional[typing.Any]]` 
+**part_numbers:** `typing.List[typing.Any]` 
 
 The part numbers to generate the presigned URLs for,
 must be between 1 and 10000.
@@ -5713,7 +6026,7 @@ request.
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">complete_external_upload</a>(...)</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">complete_external_upload</a>(...) -> CompleteExternalUploadResponse</code></summary>
 <dl>
 <dd>
 
@@ -5757,8 +6070,12 @@ be set to true for this endpoint to function.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.uploads.complete_external_upload(
     unique_identifier="66e86218-80d9-4bda-b4d5-2b6def968705",
 )
@@ -5833,7 +6150,7 @@ into the upload area. This will convert PNG files to JPEG.
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">complete_multipart</a>(...)</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">complete_multipart</a>(...) -> CompleteMultipartResponse</code></summary>
 <dl>
 <dd>
 
@@ -5874,12 +6191,16 @@ be set to true for this endpoint to function.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.uploads.complete_multipart(
     parts=[
         {"etag": "0c376dcfcc2606f4335bbc732de93344", "part_number": 1},
-        {"etag": "09ert8cfcc2606f4335bbc732de91122", "part_number": 2},
+        {"etag": "09ert8cfcc2606f4335bbc732de91122", "part_number": 2}
     ],
     unique_identifier="66e86218-80d9-4bda-b4d5-2b6def968705",
 )
@@ -5898,7 +6219,7 @@ client.uploads.complete_multipart(
 <dl>
 <dd>
 
-**parts:** `typing.Sequence[typing.Optional[typing.Any]]` 
+**parts:** `typing.List[typing.Any]` 
 
 All of the part numbers and their corresponding ETags
 that have been uploaded must be provided.
@@ -5932,7 +6253,7 @@ request.
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">create_multipart_upload</a>(...)</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">create_multipart_upload</a>(...) -> CreateMultipartUploadResponse</code></summary>
 <dl>
 <dd>
 
@@ -5969,11 +6290,14 @@ be set to true for this endpoint to function.
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.uploads import CreateMultipartUploadRequestUploadType
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
 
-client = FernApi()
 client.uploads.create_multipart_upload(
     file_name="IMG_2021.jpeg",
     file_size=4096,
@@ -6038,7 +6362,7 @@ client.uploads.create_multipart_upload(
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">generate_presigned_put</a>(...)</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">generate_presigned_put</a>(...) -> GeneratePresignedPutResponse</code></summary>
 <dl>
 <dd>
 
@@ -6084,11 +6408,14 @@ be set to true for this endpoint to function.
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.uploads import GeneratePresignedPutRequestType
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
 
-client = FernApi()
 client.uploads.generate_presigned_put(
     file_name="IMG_2021.jpeg",
     file_size=4096,

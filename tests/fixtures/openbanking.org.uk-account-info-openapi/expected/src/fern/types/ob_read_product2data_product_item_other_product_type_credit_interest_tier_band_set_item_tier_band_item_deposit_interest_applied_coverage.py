@@ -1,13 +1,14 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
 class ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemDepositInterestAppliedCoverage(
-    str, enum.Enum
+    enum.StrEnum
 ):
     """
     Amount on which Interest applied.

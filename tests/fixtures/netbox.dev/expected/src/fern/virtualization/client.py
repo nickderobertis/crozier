@@ -394,7 +394,7 @@ class VirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -416,7 +416,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -473,7 +473,7 @@ class VirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -495,7 +495,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -577,7 +577,7 @@ class VirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -599,7 +599,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -688,7 +688,7 @@ class VirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -713,7 +713,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -803,7 +803,7 @@ class VirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -828,7 +828,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1204,7 +1204,7 @@ class VirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1226,7 +1226,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1283,7 +1283,7 @@ class VirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1305,7 +1305,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1387,7 +1387,7 @@ class VirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1409,7 +1409,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1498,7 +1498,7 @@ class VirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1523,7 +1523,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1613,7 +1613,7 @@ class VirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1638,7 +1638,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2084,7 +2084,7 @@ class VirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -2112,7 +2112,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2187,7 +2187,7 @@ class VirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -2215,7 +2215,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2315,7 +2315,7 @@ class VirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -2343,7 +2343,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2450,7 +2450,7 @@ class VirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -2481,7 +2481,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2589,7 +2589,7 @@ class VirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -2620,7 +2620,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3146,7 +3146,7 @@ class VirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -3181,7 +3181,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3269,7 +3269,7 @@ class VirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -3304,7 +3304,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3417,7 +3417,7 @@ class VirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -3452,7 +3452,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3572,7 +3572,7 @@ class VirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -3610,7 +3610,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3731,7 +3731,7 @@ class VirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -3769,7 +3769,7 @@ class VirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4473,16 +4473,16 @@ class VirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -4508,11 +4508,11 @@ class VirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4526,7 +4526,7 @@ class VirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -4607,16 +4607,16 @@ class VirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -4642,11 +4642,11 @@ class VirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4660,7 +4660,7 @@ class VirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -4766,16 +4766,16 @@ class VirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -4801,11 +4801,11 @@ class VirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4819,7 +4819,7 @@ class VirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -4934,16 +4934,16 @@ class VirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -4972,11 +4972,11 @@ class VirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4990,7 +4990,7 @@ class VirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -5104,16 +5104,16 @@ class VirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -5142,11 +5142,11 @@ class VirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5160,7 +5160,7 @@ class VirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -5615,7 +5615,7 @@ class AsyncVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -5637,7 +5637,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5702,7 +5702,7 @@ class AsyncVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -5724,7 +5724,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5822,7 +5822,7 @@ class AsyncVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -5844,7 +5844,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5951,7 +5951,7 @@ class AsyncVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -5976,7 +5976,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6082,7 +6082,7 @@ class AsyncVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6107,7 +6107,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6499,7 +6499,7 @@ class AsyncVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6521,7 +6521,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6586,7 +6586,7 @@ class AsyncVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6608,7 +6608,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6706,7 +6706,7 @@ class AsyncVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6728,7 +6728,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6835,7 +6835,7 @@ class AsyncVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6860,7 +6860,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6966,7 +6966,7 @@ class AsyncVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6991,7 +6991,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7453,7 +7453,7 @@ class AsyncVirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -7481,7 +7481,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7564,7 +7564,7 @@ class AsyncVirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -7592,7 +7592,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7708,7 +7708,7 @@ class AsyncVirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -7736,7 +7736,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7859,7 +7859,7 @@ class AsyncVirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -7890,7 +7890,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8014,7 +8014,7 @@ class AsyncVirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -8045,7 +8045,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8587,7 +8587,7 @@ class AsyncVirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -8622,7 +8622,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8718,7 +8718,7 @@ class AsyncVirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -8753,7 +8753,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8882,7 +8882,7 @@ class AsyncVirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -8917,7 +8917,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9053,7 +9053,7 @@ class AsyncVirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -9091,7 +9091,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9228,7 +9228,7 @@ class AsyncVirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -9266,7 +9266,7 @@ class AsyncVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9986,16 +9986,16 @@ class AsyncVirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -10021,11 +10021,11 @@ class AsyncVirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10039,7 +10039,7 @@ class AsyncVirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -10128,16 +10128,16 @@ class AsyncVirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -10163,11 +10163,11 @@ class AsyncVirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10181,7 +10181,7 @@ class AsyncVirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -10303,16 +10303,16 @@ class AsyncVirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -10338,11 +10338,11 @@ class AsyncVirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10356,7 +10356,7 @@ class AsyncVirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -10487,16 +10487,16 @@ class AsyncVirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -10525,11 +10525,11 @@ class AsyncVirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10543,7 +10543,7 @@ class AsyncVirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -10675,16 +10675,16 @@ class AsyncVirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -10713,11 +10713,11 @@ class AsyncVirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10731,7 +10731,7 @@ class AsyncVirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 

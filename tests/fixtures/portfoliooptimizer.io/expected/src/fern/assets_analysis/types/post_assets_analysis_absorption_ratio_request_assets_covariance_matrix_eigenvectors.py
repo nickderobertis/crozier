@@ -10,8 +10,13 @@ from ...core.serialization import FieldMetadata
 
 class PostAssetsAnalysisAbsorptionRatioRequestAssetsCovarianceMatrixEigenvectors(UniversalBaseModel):
     eigenvectors_retained: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="eigenvectorsRetained")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="eigenvectorsRetained"),
+        pydantic.Field(
+            alias="eigenvectorsRetained",
+            description="The number of eigenvectors to retain in the numerator of the absorption ratio, which must be lower than the number of assets; defaults to [1/5-th] the number of assets",
+        ),
+    ] = None
     """
     The number of eigenvectors to retain in the numerator of the absorption ratio, which must be lower than the number of assets; defaults to [1/5-th] the number of assets
     """

@@ -11,8 +11,13 @@ from .type_configuration_identifier import TypeConfigurationIdentifier
 
 class BatchDescribeTypeConfigurationsInput(UniversalBaseModel):
     type_configuration_identifiers: typing_extensions.Annotated[
-        typing.List[TypeConfigurationIdentifier], FieldMetadata(alias="TypeConfigurationIdentifiers")
-    ] = pydantic.Field()
+        typing.List[TypeConfigurationIdentifier],
+        FieldMetadata(alias="TypeConfigurationIdentifiers"),
+        pydantic.Field(
+            alias="TypeConfigurationIdentifiers",
+            description="The list of identifiers for the desired extension configurations.",
+        ),
+    ]
     """
     The list of identifiers for the desired extension configurations.
     """

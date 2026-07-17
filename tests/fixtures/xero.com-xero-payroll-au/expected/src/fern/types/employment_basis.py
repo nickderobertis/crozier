@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EmploymentBasis(str, enum.Enum):
+class EmploymentBasis(enum.StrEnum):
     FULLTIME = "FULLTIME"
     PARTTIME = "PARTTIME"
     CASUAL = "CASUAL"

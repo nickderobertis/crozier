@@ -26,4 +26,4 @@ class NotificationFilterUrlListing(UniversalBaseModel):
 
 from .notification_filter_url import NotificationFilterUrl
 
-update_forward_refs(NotificationFilterUrlListing)
+update_forward_refs(NotificationFilterUrlListing, NotificationFilterUrl=NotificationFilterUrl)

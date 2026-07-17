@@ -9,7 +9,14 @@ from ..core.serialization import FieldMetadata
 
 
 class LatencyDescriptor(UniversalBaseModel):
-    max_latency: typing_extensions.Annotated[int, FieldMetadata(alias="maxLatency")] = pydantic.Field()
+    max_latency: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="maxLatency"),
+        pydantic.Field(
+            alias="maxLatency",
+            description="The value of the maximum latency in nano seconds tolerated by the MEC application. See note.",
+        ),
+    ]
     """
     The value of the maximum latency in nano seconds tolerated by the MEC application. See note.
     """

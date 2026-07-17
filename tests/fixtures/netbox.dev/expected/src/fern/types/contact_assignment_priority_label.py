@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ContactAssignmentPriorityLabel(str, enum.Enum):
+class ContactAssignmentPriorityLabel(enum.StrEnum):
     PRIMARY = "Primary"
     SECONDARY = "Secondary"
     TERTIARY = "Tertiary"

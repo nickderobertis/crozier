@@ -6,11 +6,13 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.config_tod import ConfigTod
+from pydantic import ValidationError
 
 
 class RawTodClient:
@@ -19,7 +21,7 @@ class RawTodClient:
 
     def protocol_tod_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> HttpResponse[typing.Dict[str, typing.Any]]:
         """
         Agent's TOD configuration
 
@@ -33,20 +35,20 @@ class RawTodClient:
 
         Returns
         -------
-        HttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]
+        HttpResponse[typing.Dict[str, typing.Any]]
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/tod/get/args",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/tod/get/args",
             method="GET",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.Dict[str, typing.Optional[typing.Any]],
+                    typing.Dict[str, typing.Any],
                     parse_obj_as(
-                        type_=typing.Dict[str, typing.Optional[typing.Any]],
+                        type_=typing.Dict[str, typing.Any],
                         object_=_response.json(),
                     ),
                 )
@@ -55,9 +57,9 @@ class RawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -65,6 +67,10 @@ class RawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_tod_get_config(
@@ -87,7 +93,7 @@ class RawTodClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/tod/get/config",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/tod/get/config",
             method="GET",
             request_options=request_options,
         )
@@ -105,9 +111,9 @@ class RawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -115,6 +121,10 @@ class RawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_tod_get_statistics(
@@ -137,7 +147,7 @@ class RawTodClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/tod/get/statistics",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/tod/get/statistics",
             method="GET",
             request_options=request_options,
         )
@@ -155,9 +165,9 @@ class RawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -165,6 +175,10 @@ class RawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_tod_get_trace(
@@ -187,7 +201,7 @@ class RawTodClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/tod/get/trace",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/tod/get/trace",
             method="GET",
             request_options=request_options,
         )
@@ -205,9 +219,9 @@ class RawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -215,6 +229,10 @@ class RawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_tod_gettime(
@@ -260,7 +278,7 @@ class RawTodClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/tod/gettime/server/{jsonable_encoder(server_addr)}/port/{jsonable_encoder(port_num)}/script/{jsonable_encoder(script_name)}/timeout/{jsonable_encoder(time_sec)}/retries/{jsonable_encoder(num_retries)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/tod/gettime/server/{encode_path_param(server_addr)}/port/{encode_path_param(port_num)}/script/{encode_path_param(script_name)}/timeout/{encode_path_param(time_sec)}/retries/{encode_path_param(num_retries)}",
             method="GET",
             request_options=request_options,
         )
@@ -278,9 +296,9 @@ class RawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -288,6 +306,10 @@ class RawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_tod_set_config(
@@ -316,7 +338,7 @@ class RawTodClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/tod/set/config/{jsonable_encoder(argument)}/{jsonable_encoder(value)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/tod/set/config/{encode_path_param(argument)}/{encode_path_param(value)}",
             method="PUT",
             request_options=request_options,
         )
@@ -334,9 +356,9 @@ class RawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -344,6 +366,10 @@ class RawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_tod_set_trace(
@@ -369,7 +395,7 @@ class RawTodClient:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/tod/set/trace/{jsonable_encoder(enable_or_not)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/tod/set/trace/{encode_path_param(enable_or_not)}",
             method="PUT",
             request_options=request_options,
         )
@@ -387,9 +413,9 @@ class RawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -397,6 +423,10 @@ class RawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_tod_get_stats_hdr(
@@ -434,9 +464,9 @@ class RawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -444,6 +474,10 @@ class RawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -453,7 +487,7 @@ class AsyncRawTodClient:
 
     async def protocol_tod_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> AsyncHttpResponse[typing.Dict[str, typing.Any]]:
         """
         Agent's TOD configuration
 
@@ -467,20 +501,20 @@ class AsyncRawTodClient:
 
         Returns
         -------
-        AsyncHttpResponse[typing.Dict[str, typing.Optional[typing.Any]]]
+        AsyncHttpResponse[typing.Dict[str, typing.Any]]
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/tod/get/args",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/tod/get/args",
             method="GET",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.Dict[str, typing.Optional[typing.Any]],
+                    typing.Dict[str, typing.Any],
                     parse_obj_as(
-                        type_=typing.Dict[str, typing.Optional[typing.Any]],
+                        type_=typing.Dict[str, typing.Any],
                         object_=_response.json(),
                     ),
                 )
@@ -489,9 +523,9 @@ class AsyncRawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -499,6 +533,10 @@ class AsyncRawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_tod_get_config(
@@ -521,7 +559,7 @@ class AsyncRawTodClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/tod/get/config",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/tod/get/config",
             method="GET",
             request_options=request_options,
         )
@@ -539,9 +577,9 @@ class AsyncRawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -549,6 +587,10 @@ class AsyncRawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_tod_get_statistics(
@@ -571,7 +613,7 @@ class AsyncRawTodClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/tod/get/statistics",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/tod/get/statistics",
             method="GET",
             request_options=request_options,
         )
@@ -589,9 +631,9 @@ class AsyncRawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -599,6 +641,10 @@ class AsyncRawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_tod_get_trace(
@@ -621,7 +667,7 @@ class AsyncRawTodClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/tod/get/trace",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/tod/get/trace",
             method="GET",
             request_options=request_options,
         )
@@ -639,9 +685,9 @@ class AsyncRawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -649,6 +695,10 @@ class AsyncRawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_tod_gettime(
@@ -694,7 +744,7 @@ class AsyncRawTodClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/tod/gettime/server/{jsonable_encoder(server_addr)}/port/{jsonable_encoder(port_num)}/script/{jsonable_encoder(script_name)}/timeout/{jsonable_encoder(time_sec)}/retries/{jsonable_encoder(num_retries)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/tod/gettime/server/{encode_path_param(server_addr)}/port/{encode_path_param(port_num)}/script/{encode_path_param(script_name)}/timeout/{encode_path_param(time_sec)}/retries/{encode_path_param(num_retries)}",
             method="GET",
             request_options=request_options,
         )
@@ -712,9 +762,9 @@ class AsyncRawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -722,6 +772,10 @@ class AsyncRawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_tod_set_config(
@@ -750,7 +804,7 @@ class AsyncRawTodClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/tod/set/config/{jsonable_encoder(argument)}/{jsonable_encoder(value)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/tod/set/config/{encode_path_param(argument)}/{encode_path_param(value)}",
             method="PUT",
             request_options=request_options,
         )
@@ -768,9 +822,9 @@ class AsyncRawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -778,6 +832,10 @@ class AsyncRawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_tod_set_trace(
@@ -803,7 +861,7 @@ class AsyncRawTodClient:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/tod/set/trace/{jsonable_encoder(enable_or_not)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/tod/set/trace/{encode_path_param(enable_or_not)}",
             method="PUT",
             request_options=request_options,
         )
@@ -821,9 +879,9 @@ class AsyncRawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -831,6 +889,10 @@ class AsyncRawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_tod_get_stats_hdr(
@@ -868,9 +930,9 @@ class AsyncRawTodClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -878,4 +940,8 @@ class AsyncRawTodClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

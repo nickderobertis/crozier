@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -21,6 +22,7 @@ from ..types.user import User
 from ..types.user_collection import UserCollection
 from ..types.user_collection_item import UserCollectionItem
 from ..types.user_collection_item_roles_item import UserCollectionItemRolesItem
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -110,6 +112,10 @@ class RawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def post_user(
@@ -270,6 +276,10 @@ class RawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_user(
@@ -296,7 +306,7 @@ class RawUserClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"users/{jsonable_encoder(username)}",
+            f"users/{encode_path_param(username)}",
             method="GET",
             request_options=request_options,
         )
@@ -346,6 +356,10 @@ class RawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_user(
@@ -371,7 +385,7 @@ class RawUserClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"users/{jsonable_encoder(username)}",
+            f"users/{encode_path_param(username)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -425,6 +439,10 @@ class RawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def patch_user(
@@ -516,10 +534,12 @@ class RawUserClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"users/{jsonable_encoder(username_)}",
+            f"users/{encode_path_param(username_)}",
             method="PATCH",
             params={
-                "update_mask": update_mask,
+                "update_mask": ",".join(map(str, update_mask))
+                if isinstance(update_mask, (list, tuple, set))
+                else update_mask,
             },
             json={
                 "password": password,
@@ -602,6 +622,10 @@ class RawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -689,6 +713,10 @@ class AsyncRawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def post_user(
@@ -849,6 +877,10 @@ class AsyncRawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_user(
@@ -875,7 +907,7 @@ class AsyncRawUserClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"users/{jsonable_encoder(username)}",
+            f"users/{encode_path_param(username)}",
             method="GET",
             request_options=request_options,
         )
@@ -925,6 +957,10 @@ class AsyncRawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_user(
@@ -950,7 +986,7 @@ class AsyncRawUserClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"users/{jsonable_encoder(username)}",
+            f"users/{encode_path_param(username)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1004,6 +1040,10 @@ class AsyncRawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def patch_user(
@@ -1095,10 +1135,12 @@ class AsyncRawUserClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"users/{jsonable_encoder(username_)}",
+            f"users/{encode_path_param(username_)}",
             method="PATCH",
             params={
-                "update_mask": update_mask,
+                "update_mask": ",".join(map(str, update_mask))
+                if isinstance(update_mask, (list, tuple, set))
+                else update_mask,
             },
             json={
                 "password": password,
@@ -1181,4 +1223,8 @@ class AsyncRawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

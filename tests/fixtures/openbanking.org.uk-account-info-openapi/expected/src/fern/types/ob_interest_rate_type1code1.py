@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObInterestRateType1Code1(str, enum.Enum):
+class ObInterestRateType1Code1(enum.StrEnum):
     """
     Rate type for Fee/Charge (where it is charged in terms of a rate rather than an amount)
     """

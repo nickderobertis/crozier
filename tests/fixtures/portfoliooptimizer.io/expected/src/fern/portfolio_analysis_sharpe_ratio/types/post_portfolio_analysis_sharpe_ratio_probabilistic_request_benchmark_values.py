@@ -12,15 +12,24 @@ from .post_portfolio_analysis_sharpe_ratio_probabilistic_request_benchmark_value
 
 
 class PostPortfolioAnalysisSharpeRatioProbabilisticRequestBenchmarkValues(UniversalBaseModel):
-    benchmark_values: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="benchmarkValues")] = (
-        pydantic.Field()
-    )
+    benchmark_values: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="benchmarkValues"),
+        pydantic.Field(
+            alias="benchmarkValues",
+            description="benchmarkValues[t] is the value of the benchmark at the time t; the benchmarkValues array must have the same length as all the portfolioValues arrays",
+        ),
+    ]
     """
     benchmarkValues[t] is the value of the benchmark at the time t; the benchmarkValues array must have the same length as all the portfolioValues arrays
     """
 
     portfolios: typing.List[PostPortfolioAnalysisSharpeRatioProbabilisticRequestBenchmarkValuesPortfoliosItem]
-    risk_free_rate: typing_extensions.Annotated[float, FieldMetadata(alias="riskFreeRate")] = pydantic.Field()
+    risk_free_rate: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="riskFreeRate"),
+        pydantic.Field(alias="riskFreeRate", description="The risk free rate"),
+    ]
     """
     The risk free rate
     """

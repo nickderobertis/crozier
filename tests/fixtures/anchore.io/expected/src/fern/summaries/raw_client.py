@@ -6,11 +6,13 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.internal_server_error import InternalServerError
 from ..types.anchore_image_tag_summary_list import AnchoreImageTagSummaryList
 from .types.list_imagetags_request_image_status_item import ListImagetagsRequestImageStatusItem
+from pydantic import ValidationError
 
 
 class RawSummariesClient:
@@ -49,7 +51,9 @@ class RawSummariesClient:
             "summaries/imagetags",
             method="GET",
             params={
-                "image_status": image_status,
+                "image_status": ",".join(map(str, image_status))
+                if isinstance(image_status, (list, tuple, set))
+                else image_status,
             },
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -70,9 +74,9 @@ class RawSummariesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -80,6 +84,10 @@ class RawSummariesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -119,7 +127,9 @@ class AsyncRawSummariesClient:
             "summaries/imagetags",
             method="GET",
             params={
-                "image_status": image_status,
+                "image_status": ",".join(map(str, image_status))
+                if isinstance(image_status, (list, tuple, set))
+                else image_status,
             },
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -140,9 +150,9 @@ class AsyncRawSummariesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -150,4 +160,8 @@ class AsyncRawSummariesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

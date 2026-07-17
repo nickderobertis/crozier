@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.api_reference_list import ApiReferenceList
@@ -22,6 +23,7 @@ from .types.get_api_subclasses_index_levels_subclass_level_request_index import 
     GetApiSubclassesIndexLevelsSubclassLevelRequestIndex,
 )
 from .types.get_api_subclasses_index_request_index import GetApiSubclassesIndexRequestIndex
+from pydantic import ValidationError
 
 
 class RawSubclassesClient:
@@ -48,7 +50,7 @@ class RawSubclassesClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/subclasses/{jsonable_encoder(index)}",
+            f"api/subclasses/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -65,6 +67,10 @@ class RawSubclassesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_features_available_for_a_subclass(
@@ -88,7 +94,7 @@ class RawSubclassesClient:
             List of features for the subclass.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/subclasses/{jsonable_encoder(index)}/features",
+            f"api/subclasses/{encode_path_param(index)}/features",
             method="GET",
             request_options=request_options,
         )
@@ -105,6 +111,10 @@ class RawSubclassesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_all_level_resources_for_a_subclass(
@@ -125,7 +135,7 @@ class RawSubclassesClient:
             List of level resource for the subclass.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/subclasses/{jsonable_encoder(index)}/levels",
+            f"api/subclasses/{encode_path_param(index)}/levels",
             method="GET",
             request_options=request_options,
         )
@@ -142,6 +152,10 @@ class RawSubclassesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_level_resources_for_a_subclass_and_level(
@@ -168,7 +182,7 @@ class RawSubclassesClient:
             Level resource for the subclass and level.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/subclasses/{jsonable_encoder(index)}/levels/{jsonable_encoder(subclass_level)}",
+            f"api/subclasses/{encode_path_param(index)}/levels/{encode_path_param(subclass_level)}",
             method="GET",
             request_options=request_options,
         )
@@ -185,6 +199,10 @@ class RawSubclassesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_features_of_the_requested_spell_level_available_to_the_class(
@@ -211,7 +229,7 @@ class RawSubclassesClient:
             List of features for the subclass and level.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/subclasses/{jsonable_encoder(index)}/levels/{jsonable_encoder(subclass_level)}/features",
+            f"api/subclasses/{encode_path_param(index)}/levels/{encode_path_param(subclass_level)}/features",
             method="GET",
             request_options=request_options,
         )
@@ -228,6 +246,10 @@ class RawSubclassesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -255,7 +277,7 @@ class AsyncRawSubclassesClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/subclasses/{jsonable_encoder(index)}",
+            f"api/subclasses/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -272,6 +294,10 @@ class AsyncRawSubclassesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_features_available_for_a_subclass(
@@ -295,7 +321,7 @@ class AsyncRawSubclassesClient:
             List of features for the subclass.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/subclasses/{jsonable_encoder(index)}/features",
+            f"api/subclasses/{encode_path_param(index)}/features",
             method="GET",
             request_options=request_options,
         )
@@ -312,6 +338,10 @@ class AsyncRawSubclassesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_all_level_resources_for_a_subclass(
@@ -332,7 +362,7 @@ class AsyncRawSubclassesClient:
             List of level resource for the subclass.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/subclasses/{jsonable_encoder(index)}/levels",
+            f"api/subclasses/{encode_path_param(index)}/levels",
             method="GET",
             request_options=request_options,
         )
@@ -349,6 +379,10 @@ class AsyncRawSubclassesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_level_resources_for_a_subclass_and_level(
@@ -375,7 +409,7 @@ class AsyncRawSubclassesClient:
             Level resource for the subclass and level.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/subclasses/{jsonable_encoder(index)}/levels/{jsonable_encoder(subclass_level)}",
+            f"api/subclasses/{encode_path_param(index)}/levels/{encode_path_param(subclass_level)}",
             method="GET",
             request_options=request_options,
         )
@@ -392,6 +426,10 @@ class AsyncRawSubclassesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_features_of_the_requested_spell_level_available_to_the_class(
@@ -418,7 +456,7 @@ class AsyncRawSubclassesClient:
             List of features for the subclass and level.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/subclasses/{jsonable_encoder(index)}/levels/{jsonable_encoder(subclass_level)}/features",
+            f"api/subclasses/{encode_path_param(index)}/levels/{encode_path_param(subclass_level)}/features",
             method="GET",
             request_options=request_options,
         )
@@ -435,4 +473,8 @@ class AsyncRawSubclassesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

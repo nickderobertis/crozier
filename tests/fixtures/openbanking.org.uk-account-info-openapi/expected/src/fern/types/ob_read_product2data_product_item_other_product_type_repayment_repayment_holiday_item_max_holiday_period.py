@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObReadProduct2DataProductItemOtherProductTypeRepaymentRepaymentHolidayItemMaxHolidayPeriod(str, enum.Enum):
+class ObReadProduct2DataProductItemOtherProductTypeRepaymentRepaymentHolidayItemMaxHolidayPeriod(enum.StrEnum):
     """
     The unit of period (days, weeks, months etc.) of the repayment holiday
     """

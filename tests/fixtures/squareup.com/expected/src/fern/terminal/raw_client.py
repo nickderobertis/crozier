@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -22,6 +23,7 @@ from ..types.terminal_checkout import TerminalCheckout
 from ..types.terminal_checkout_query import TerminalCheckoutQuery
 from ..types.terminal_refund import TerminalRefund
 from ..types.terminal_refund_query import TerminalRefundQuery
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -88,6 +90,10 @@ class RawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def search_terminal_checkouts(
@@ -150,6 +156,10 @@ class RawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_terminal_checkout(
@@ -172,7 +182,7 @@ class RawTerminalClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/terminals/checkouts/{jsonable_encoder(checkout_id)}",
+            f"v2/terminals/checkouts/{encode_path_param(checkout_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -189,6 +199,10 @@ class RawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cancel_terminal_checkout(
@@ -211,7 +225,7 @@ class RawTerminalClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/terminals/checkouts/{jsonable_encoder(checkout_id)}/cancel",
+            f"v2/terminals/checkouts/{encode_path_param(checkout_id)}/cancel",
             method="POST",
             request_options=request_options,
         )
@@ -228,6 +242,10 @@ class RawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_terminal_refund(
@@ -286,6 +304,10 @@ class RawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def search_terminal_refunds(
@@ -347,6 +369,10 @@ class RawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_terminal_refund(
@@ -369,7 +395,7 @@ class RawTerminalClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/terminals/refunds/{jsonable_encoder(terminal_refund_id)}",
+            f"v2/terminals/refunds/{encode_path_param(terminal_refund_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -386,6 +412,10 @@ class RawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cancel_terminal_refund(
@@ -408,7 +438,7 @@ class RawTerminalClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/terminals/refunds/{jsonable_encoder(terminal_refund_id)}/cancel",
+            f"v2/terminals/refunds/{encode_path_param(terminal_refund_id)}/cancel",
             method="POST",
             request_options=request_options,
         )
@@ -425,6 +455,10 @@ class RawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -489,6 +523,10 @@ class AsyncRawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def search_terminal_checkouts(
@@ -551,6 +589,10 @@ class AsyncRawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_terminal_checkout(
@@ -573,7 +615,7 @@ class AsyncRawTerminalClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/terminals/checkouts/{jsonable_encoder(checkout_id)}",
+            f"v2/terminals/checkouts/{encode_path_param(checkout_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -590,6 +632,10 @@ class AsyncRawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cancel_terminal_checkout(
@@ -612,7 +658,7 @@ class AsyncRawTerminalClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/terminals/checkouts/{jsonable_encoder(checkout_id)}/cancel",
+            f"v2/terminals/checkouts/{encode_path_param(checkout_id)}/cancel",
             method="POST",
             request_options=request_options,
         )
@@ -629,6 +675,10 @@ class AsyncRawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_terminal_refund(
@@ -687,6 +737,10 @@ class AsyncRawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def search_terminal_refunds(
@@ -748,6 +802,10 @@ class AsyncRawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_terminal_refund(
@@ -770,7 +828,7 @@ class AsyncRawTerminalClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/terminals/refunds/{jsonable_encoder(terminal_refund_id)}",
+            f"v2/terminals/refunds/{encode_path_param(terminal_refund_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -787,6 +845,10 @@ class AsyncRawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cancel_terminal_refund(
@@ -809,7 +871,7 @@ class AsyncRawTerminalClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/terminals/refunds/{jsonable_encoder(terminal_refund_id)}/cancel",
+            f"v2/terminals/refunds/{encode_path_param(terminal_refund_id)}/cancel",
             method="POST",
             request_options=request_options,
         )
@@ -826,4 +888,8 @@ class AsyncRawTerminalClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

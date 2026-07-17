@@ -19,9 +19,14 @@ class DestinyCharacterDestinyItemPeerView(UniversalBaseModel):
     The list of dyes that have been applied to this item.
     """
 
-    item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemHash")] = pydantic.Field(
-        default=None
-    )
+    item_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="itemHash"),
+        pydantic.Field(
+            alias="itemHash",
+            description="The hash identifier of the item in question. Use it to look up the DestinyInventoryItemDefinition of the item for static rendering data.",
+        ),
+    ] = None
     """
     The hash identifier of the item in question. Use it to look up the DestinyInventoryItemDefinition of the item for static rendering data.
     """

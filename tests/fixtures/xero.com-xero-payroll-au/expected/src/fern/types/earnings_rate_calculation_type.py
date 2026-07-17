@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EarningsRateCalculationType(str, enum.Enum):
+class EarningsRateCalculationType(enum.StrEnum):
     USEEARNINGSRATE = "USEEARNINGSRATE"
     ENTEREARNINGSRATE = "ENTEREARNINGSRATE"
     ANNUALSALARY = "ANNUALSALARY"

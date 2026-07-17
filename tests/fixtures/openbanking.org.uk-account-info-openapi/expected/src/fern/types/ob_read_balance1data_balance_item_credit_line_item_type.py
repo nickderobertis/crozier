@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObReadBalance1DataBalanceItemCreditLineItemType(str, enum.Enum):
+class ObReadBalance1DataBalanceItemCreditLineItemType(enum.StrEnum):
     """
     Limit type, in a coded form.
     """

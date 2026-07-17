@@ -14,7 +14,9 @@ class DestinyDefinitionsDirectorDestinyActivityGraphDisplayProgressionDefinition
     """
 
     id: typing.Optional[int] = None
-    progression_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="progressionHash")] = None
+    progression_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="progressionHash"), pydantic.Field(alias="progressionHash")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

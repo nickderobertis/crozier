@@ -11,8 +11,10 @@ from .payment_auto_allocate import PaymentAutoAllocate
 
 class PaymentAutoAllocateUserListing(UniversalBaseModel):
     payment_auto_allocate: typing_extensions.Annotated[
-        typing.Optional[PaymentAutoAllocate], FieldMetadata(alias="PaymentAutoAllocate")
-    ] = pydantic.Field(default=None)
+        typing.Optional[PaymentAutoAllocate],
+        FieldMetadata(alias="PaymentAutoAllocate"),
+        pydantic.Field(alias="PaymentAutoAllocate", description=""),
+    ] = None
     """
     
     """

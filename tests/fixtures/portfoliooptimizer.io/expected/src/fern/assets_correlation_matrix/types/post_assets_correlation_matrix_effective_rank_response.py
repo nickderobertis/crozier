@@ -10,8 +10,13 @@ from ...core.serialization import FieldMetadata
 
 class PostAssetsCorrelationMatrixEffectiveRankResponse(UniversalBaseModel):
     assets_correlation_matrix_effective_rank: typing_extensions.Annotated[
-        typing.List[typing.List[float]], FieldMetadata(alias="assetsCorrelationMatrixEffectiveRank")
-    ] = pydantic.Field()
+        typing.List[typing.List[float]],
+        FieldMetadata(alias="assetsCorrelationMatrixEffectiveRank"),
+        pydantic.Field(
+            alias="assetsCorrelationMatrixEffectiveRank",
+            description="The effective rank of the asset correlation matrix",
+        ),
+    ]
     """
     The effective rank of the asset correlation matrix
     """

@@ -24,7 +24,7 @@ class Background(ApiReference):
     flaws: typing.Optional["Choice"] = None
     ideals: typing.Optional["Choice"] = None
     language_options: typing.Optional["Choice"] = None
-    personality_traits: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    personality_traits: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     Choice of personality traits for this background.
     """
@@ -51,5 +51,18 @@ class Background(ApiReference):
 
 
 from .choice import Choice
+from .option import Option
+from .option_choice import OptionChoice
+from .option_items import OptionItems
+from .option_set import OptionSet
+from .option_set_options_array import OptionSetOptionsArray
 
-update_forward_refs(Background)
+update_forward_refs(
+    Background,
+    Choice=Choice,
+    Option=Option,
+    OptionChoice=OptionChoice,
+    OptionItems=OptionItems,
+    OptionSet=OptionSet,
+    OptionSetOptionsArray=OptionSetOptionsArray,
+)

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EcosystemMenuPosition(str, enum.Enum):
+class EcosystemMenuPosition(enum.StrEnum):
     TOP = "TOP"
     LEFT = "LEFT"
     RIGHT = "RIGHT"

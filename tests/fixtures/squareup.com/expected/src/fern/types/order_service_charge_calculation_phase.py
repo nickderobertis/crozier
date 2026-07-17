@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OrderServiceChargeCalculationPhase(str, enum.Enum):
+class OrderServiceChargeCalculationPhase(enum.StrEnum):
     """
     Represents a phase in the process of calculating order totals.
     Service charges are applied after the indicated phase.

@@ -9,9 +9,13 @@ from ..core.serialization import FieldMetadata
 
 
 class RegisterPublisherOutput(UniversalBaseModel):
-    publisher_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="PublisherId")] = (
-        pydantic.Field(default=None)
-    )
+    publisher_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="PublisherId"),
+        pydantic.Field(
+            alias="PublisherId", description="The ID assigned this account by CloudFormation for publishing extensions."
+        ),
+    ] = None
     """
     The ID assigned this account by CloudFormation for publishing extensions.
     """

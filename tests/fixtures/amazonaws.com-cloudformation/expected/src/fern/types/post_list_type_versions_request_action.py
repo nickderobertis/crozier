@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostListTypeVersionsRequestAction(str, enum.Enum):
+class PostListTypeVersionsRequestAction(enum.StrEnum):
     LIST_TYPE_VERSIONS = "ListTypeVersions"
 
     def visit(self, list_type_versions: typing.Callable[[], T_Result]) -> T_Result:

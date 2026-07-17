@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostActivateTypeRequestAction(str, enum.Enum):
+class PostActivateTypeRequestAction(enum.StrEnum):
     ACTIVATE_TYPE = "ActivateType"
 
     def visit(self, activate_type: typing.Callable[[], T_Result]) -> T_Result:

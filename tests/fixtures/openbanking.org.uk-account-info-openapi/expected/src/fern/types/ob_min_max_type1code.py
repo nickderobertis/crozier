@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObMinMaxType1Code(str, enum.Enum):
+class ObMinMaxType1Code(enum.StrEnum):
     """
     Min Max type
     """

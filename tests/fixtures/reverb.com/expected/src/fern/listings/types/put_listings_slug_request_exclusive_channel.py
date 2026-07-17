@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PutListingsSlugRequestExclusiveChannel(str, enum.Enum):
+class PutListingsSlugRequestExclusiveChannel(enum.StrEnum):
     """
     Currently for users of seller sites only, this allows you to have a listing available only to your seller site by setting this to 'seller_site'
     """

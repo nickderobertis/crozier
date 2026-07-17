@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetRegisterPublisherRequestAction(str, enum.Enum):
+class GetRegisterPublisherRequestAction(enum.StrEnum):
     REGISTER_PUBLISHER = "RegisterPublisher"
 
     def visit(self, register_publisher: typing.Callable[[], T_Result]) -> T_Result:

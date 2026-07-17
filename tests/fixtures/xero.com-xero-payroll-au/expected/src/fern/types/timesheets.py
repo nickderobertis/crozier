@@ -11,7 +11,7 @@ from .timesheet import Timesheet
 
 class Timesheets(UniversalBaseModel):
     timesheets: typing_extensions.Annotated[
-        typing.Optional[typing.List[Timesheet]], FieldMetadata(alias="Timesheets")
+        typing.Optional[typing.List[Timesheet]], FieldMetadata(alias="Timesheets"), pydantic.Field(alias="Timesheets")
     ] = None
 
     if IS_PYDANTIC_V2:

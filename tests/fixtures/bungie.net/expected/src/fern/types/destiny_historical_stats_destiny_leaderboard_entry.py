@@ -11,9 +11,11 @@ from .destiny_historical_stats_destiny_player import DestinyHistoricalStatsDesti
 
 
 class DestinyHistoricalStatsDestinyLeaderboardEntry(UniversalBaseModel):
-    character_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="characterId")] = (
-        pydantic.Field(default=None)
-    )
+    character_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="characterId"),
+        pydantic.Field(alias="characterId", description="ID of the player's best character for the reported stat."),
+    ] = None
     """
     ID of the player's best character for the reported stat.
     """

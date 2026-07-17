@@ -13,7 +13,11 @@ class LatencyInjectionFaultConfig(UniversalBaseModel):
     Config for large latency injection fault
     """
 
-    from_: typing_extensions.Annotated[int, FieldMetadata(alias="from")] = pydantic.Field()
+    from_: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="from"),
+        pydantic.Field(alias="from", description="The start range of latency added to the request"),
+    ]
     """
     The start range of latency added to the request
     """

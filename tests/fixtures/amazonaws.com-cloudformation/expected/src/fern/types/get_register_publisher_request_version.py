@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetRegisterPublisherRequestVersion(str, enum.Enum):
+class GetRegisterPublisherRequestVersion(enum.StrEnum):
     TWO_THOUSAND_TEN0515 = "2010-05-15"
 
     def visit(self, two_thousand_ten0515: typing.Callable[[], T_Result]) -> T_Result:

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class NestedFhrpGroupProtocol(str, enum.Enum):
+class NestedFhrpGroupProtocol(enum.StrEnum):
     VRRP2 = "vrrp2"
     VRRP3 = "vrrp3"
     CARP = "carp"

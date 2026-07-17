@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WirelessLanStatusLabel(str, enum.Enum):
+class WirelessLanStatusLabel(enum.StrEnum):
     ACTIVE = "Active"
     RESERVED = "Reserved"
     DISABLED = "Disabled"

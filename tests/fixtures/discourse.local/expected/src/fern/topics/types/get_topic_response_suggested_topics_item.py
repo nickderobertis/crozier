@@ -33,7 +33,7 @@ class GetTopicResponseSuggestedTopicsItem(UniversalBaseModel):
     posts_count: int
     reply_count: int
     slug: str
-    tags: typing.List[typing.Optional[typing.Any]]
+    tags: typing.List[typing.Any]
     tags_descriptions: GetTopicResponseSuggestedTopicsItemTagsDescriptions
     title: str
     unpinned: typing.Optional[str] = None

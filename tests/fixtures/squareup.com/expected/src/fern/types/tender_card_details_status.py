@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TenderCardDetailsStatus(str, enum.Enum):
+class TenderCardDetailsStatus(enum.StrEnum):
     """
     Indicates the card transaction's current status.
     """

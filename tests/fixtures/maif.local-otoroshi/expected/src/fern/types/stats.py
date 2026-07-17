@@ -18,29 +18,55 @@ class Stats(UniversalBaseModel):
     Number of calls on the specified service or globally
     """
 
-    concurrent_handled_requests: typing_extensions.Annotated[int, FieldMetadata(alias="concurrentHandledRequests")] = (
-        pydantic.Field()
-    )
+    concurrent_handled_requests: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="concurrentHandledRequests"),
+        pydantic.Field(alias="concurrentHandledRequests", description="The number of concurrent request currently"),
+    ]
     """
     The number of concurrent request currently
     """
 
-    data_in: typing_extensions.Annotated[int, FieldMetadata(alias="dataIn")] = pydantic.Field()
+    data_in: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="dataIn"),
+        pydantic.Field(
+            alias="dataIn", description="The amount of data sent to the specified service or Otoroshi globally"
+        ),
+    ]
     """
     The amount of data sent to the specified service or Otoroshi globally
     """
 
-    data_in_rate: typing_extensions.Annotated[float, FieldMetadata(alias="dataInRate")] = pydantic.Field()
+    data_in_rate: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="dataInRate"),
+        pydantic.Field(
+            alias="dataInRate", description="The rate of data sent to the specified service or Otoroshi globally"
+        ),
+    ]
     """
     The rate of data sent to the specified service or Otoroshi globally
     """
 
-    data_out: typing_extensions.Annotated[int, FieldMetadata(alias="dataOut")] = pydantic.Field()
+    data_out: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="dataOut"),
+        pydantic.Field(
+            alias="dataOut", description="The amount of data sent from the specified service or Otoroshi globally"
+        ),
+    ]
     """
     The amount of data sent from the specified service or Otoroshi globally
     """
 
-    data_out_rate: typing_extensions.Annotated[float, FieldMetadata(alias="dataOutRate")] = pydantic.Field()
+    data_out_rate: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="dataOutRate"),
+        pydantic.Field(
+            alias="dataOutRate", description="The rate of data sent from the specified service or Otoroshi globally"
+        ),
+    ]
     """
     The rate of data sent from the specified service or Otoroshi globally
     """

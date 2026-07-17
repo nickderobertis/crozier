@@ -9,8 +9,12 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyArtifactsDestinyArtifactTierItem(UniversalBaseModel):
-    is_active: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isActive")] = None
-    item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemHash")] = None
+    is_active: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="isActive"), pydantic.Field(alias="isActive")
+    ] = None
+    item_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="itemHash"), pydantic.Field(alias="itemHash")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

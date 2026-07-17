@@ -21,14 +21,22 @@ class PostAssetsPricesAdjustedRequestAssetsItem(UniversalBaseModel):
     asset_dividends: typing_extensions.Annotated[
         typing.Optional[typing.List[PostAssetsPricesAdjustedRequestAssetsItemAssetDividendsItem]],
         FieldMetadata(alias="assetDividends"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="assetDividends",
+            description="assetDividends[t] contains dividend information for the asset at the date t",
+        ),
+    ] = None
     """
     assetDividends[t] contains dividend information for the asset at the date t
     """
 
     asset_prices: typing_extensions.Annotated[
-        typing.List[PostAssetsPricesAdjustedRequestAssetsItemAssetPricesItem], FieldMetadata(alias="assetPrices")
-    ] = pydantic.Field()
+        typing.List[PostAssetsPricesAdjustedRequestAssetsItemAssetPricesItem],
+        FieldMetadata(alias="assetPrices"),
+        pydantic.Field(
+            alias="assetPrices", description="assetPrices[t] contains price information for the asset at the date t"
+        ),
+    ]
     """
     assetPrices[t] contains price information for the asset at the date t
     """
@@ -36,7 +44,10 @@ class PostAssetsPricesAdjustedRequestAssetsItem(UniversalBaseModel):
     asset_splits: typing_extensions.Annotated[
         typing.Optional[typing.List[PostAssetsPricesAdjustedRequestAssetsItemAssetSplitsItem]],
         FieldMetadata(alias="assetSplits"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="assetSplits", description="assetSplits[t] contains split information for the asset at the date t"
+        ),
+    ] = None
     """
     assetSplits[t] contains split information for the asset at the date t
     """

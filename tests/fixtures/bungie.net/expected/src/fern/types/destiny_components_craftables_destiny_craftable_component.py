@@ -13,8 +13,13 @@ from .destiny_components_craftables_destiny_craftable_socket_component import (
 
 class DestinyComponentsCraftablesDestinyCraftableComponent(UniversalBaseModel):
     failed_requirement_indexes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="failedRequirementIndexes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="failedRequirementIndexes"),
+        pydantic.Field(
+            alias="failedRequirementIndexes",
+            description="If the requirements are not met for crafting this item, these will index into the list of failure strings.",
+        ),
+    ] = None
     """
     If the requirements are not met for crafting this item, these will index into the list of failure strings.
     """
