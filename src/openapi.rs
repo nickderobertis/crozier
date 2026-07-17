@@ -1071,8 +1071,9 @@ fn normalize_request_bodies(doc: &mut OpenApi) {
 }
 
 /// Resolve a response that is a `$ref` into `components.responses` to the
-/// referenced response; an inline response (or an unresolvable pointer) is returned
-/// unchanged. Only `#/components/responses/*` pointers are resolved, one level deep.
+/// referenced response while preserving the pointer as provenance; an inline
+/// response (or an unresolvable pointer) is returned unchanged. Only
+/// `#/components/responses/*` pointers are resolved, one level deep.
 fn resolve_response(response: &Response, defs: &IndexMap<String, Response>) -> Response {
     if let Some(name) = response
         .reference
@@ -1080,7 +1081,9 @@ fn resolve_response(response: &Response, defs: &IndexMap<String, Response>) -> R
         .and_then(|r| r.strip_prefix("#/components/responses/"))
     {
         if let Some(target) = defs.get(name) {
-            return target.clone();
+            let mut resolved = target.clone();
+            resolved.reference.clone_from(&response.reference);
+            return resolved;
         }
     }
     response.clone()
@@ -1692,6 +1695,10 @@ components:
         let ok = &op.responses["200"];
         assert_eq!(ok.description.as_deref(), Some("A list of items"));
         assert!(ok.content.contains_key("application/json"));
+        assert_eq!(
+            ok.reference.as_deref(),
+            Some("#/components/responses/ItemsResponse")
+        );
     }
 
     /// An operation-level parameter overrides a path-level one sharing its name and

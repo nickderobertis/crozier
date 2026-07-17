@@ -3097,6 +3097,17 @@ paths:
             schema: { $ref: "#/components/schemas/CreateWidget" }
       responses:
         '204': { description: Created }
+  /raw:
+    post:
+      operationId: widgets_raw
+      tags: [Widgets]
+      requestBody:
+        required: true
+        content:
+          '*/*':
+            schema: { type: string, format: binary }
+      responses:
+        '204': { description: Accepted }
   /export:
     get:
       operationId: widgets_export
@@ -3132,6 +3143,30 @@ components:
         create.contains("json=request,") && !create.contains("\"content-type\": \"*/*\""),
         "wildcard selection uses the JSON-compatible request path: {create}"
     );
+    let raw_upload = raw
+        .split("def raw(")
+        .nth(1)
+        .expect("inline wildcard request method");
+    assert!(
+        raw_upload.contains("request: bytes") && raw_upload.contains("json=request,"),
+        "inline wildcard binary bodies use Fern's bytes contract: {raw_upload}"
+    );
+    let client = &files["src/acme/widgets/client.py"];
+    let raw_example = client
+        .split("def raw(")
+        .nth(1)
+        .expect("inline wildcard high-level method");
+    assert!(
+        raw_example.contains("request: bytes")
+            && raw_example.contains("request=\"string\"")
+            && !raw_example.contains("request=b\"string\""),
+        "Fern's high-level bytes contract keeps its string example: {raw_example}"
+    );
+    let reference = &files["reference.md"];
+    assert!(
+        reference.contains("**request:** `str`"),
+        "Fern's reference writer retains the OpenAPI string type: {reference}"
+    );
     assert!(
         raw.contains("@contextlib.contextmanager"),
         "referenced binary responses stream: {raw}"
@@ -3143,6 +3178,35 @@ components:
     assert!(
         raw.contains("Exports all widgets.\n\n        Parameters"),
         "{raw}"
+    );
+}
+
+#[test]
+fn referenced_unknown_response_keeps_empty_body_guard() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Proxy, version: 1.0.0 }
+paths:
+  /proxy:
+    get:
+      operationId: proxy_get
+      tags: [Proxy]
+      responses:
+        '200': { $ref: "#/components/responses/Ok" }
+components:
+  responses:
+    Ok:
+      description: Arbitrary JSON
+      content:
+        application/json:
+          schema: {}
+"##,
+    );
+    let raw = &files["src/acme/proxy/raw_client.py"];
+    assert!(raw.contains("HttpResponse[typing.Any]"), "{raw}");
+    assert!(
+        raw.contains("if _response is None or not _response.text.strip():"),
+        "a referenced unknown response keeps Fern's empty-body guard: {raw}"
     );
 }
 

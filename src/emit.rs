@@ -2029,7 +2029,20 @@ fn reference_entry(
     for dp in ordered_keyword_params(&mp.query, &mp.header, &reference_body) {
         let is_body = reference_body.iter().any(|body| body.name == dp.name);
         let annotation = if is_body {
-            dp.annotation.replace("typing.Sequence[", "typing.List[")
+            let annotation = dp.annotation.replace("typing.Sequence[", "typing.List[");
+            if annotation == "bytes"
+                && ep
+                    .request_body
+                    .as_ref()
+                    .is_some_and(RequestBody::is_wildcard_media)
+            {
+                // Fern 5.20's reference writer documents an inline wildcard
+                // binary body as its OpenAPI source type even though both Python
+                // clients correctly accept `bytes` at runtime.
+                "str".to_string()
+            } else {
+                annotation
+            }
         } else {
             dp.annotation.clone()
         };
@@ -2761,7 +2774,13 @@ fn render_type_decl(
             let docstring = (!matches!(alias.target, TypeRef::Union(_)))
                 .then_some(alias.docstring.as_deref())
                 .flatten()
-                .map(|doc| format!("{}\n", render_docstring(doc, 0)))
+                .map(|doc| {
+                    if doc.is_empty() {
+                        "\"\"\"\n\"\"\"\n".to_string()
+                    } else {
+                        format!("{}\n", render_docstring(doc, 0))
+                    }
+                })
                 .unwrap_or_default();
             if !forward.is_empty() {
                 let mut contents = format!(
@@ -3787,9 +3806,14 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             lines.push(format!("                \"content-type\": \"{value}\","));
         }
         for hp in &ep.header_params {
+            let value = if hp.enum_value {
+                format!("{}.value", hp.py_name)
+            } else {
+                format!("str({})", hp.py_name)
+            };
             lines.push(format!(
-                "                \"{}\": str({}) if {} is not None else None,",
-                hp.wire_name, hp.py_name, hp.py_name
+                "                \"{}\": {value} if {} is not None else None,",
+                hp.wire_name, hp.py_name
             ));
         }
         lines.push("            },".to_string());
@@ -8953,6 +8977,7 @@ mod tests {
             required: false,
             docstring: Some("Trace token.".to_string()),
             example: Some("\"trace-1\"".to_string()),
+            enum_value: false,
         }];
         ep.request_body = Some(RequestBody::Single(SingleBody {
             type_ref: TypeRef::Primitive(Prim::Str),
@@ -9118,6 +9143,7 @@ mod tests {
             required: true,
             docstring: Some("Stream mode.".to_string()),
             example: None,
+            enum_value: false,
         });
         ep.request_body = Some(RequestBody::Form(FormBody {
             fields: vec![BodyField {

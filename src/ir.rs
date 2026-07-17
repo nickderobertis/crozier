@@ -824,6 +824,8 @@ pub struct HeaderParam {
     pub docstring: Option<String>,
     /// Example literal resolved from the parameter or its component schema.
     pub example: Option<String>,
+    /// Whether the parameter is a generated Python enum and serializes via `.value`.
+    pub enum_value: bool,
 }
 
 /// A resolved JSON request body. Fern renders a body one of two ways: as a single
@@ -1780,6 +1782,10 @@ fn build_endpoint(
                 required: p.required == Some(true),
                 docstring: declared_doc(p.description.as_deref()),
                 example: parameter_example(doc, p),
+                enum_value: p
+                    .schema
+                    .as_ref()
+                    .is_some_and(|schema| string_enum_values(schema).is_some()),
             }
         })
         .collect();
@@ -2142,7 +2148,8 @@ fn build_endpoint(
         body_response_same_ref: body_response_same_ref(doc, op),
         body_schema_is_success_response: request_and_response_refs_match(op),
         response,
-        response_may_be_empty: has_bodyless_success(op),
+        response_may_be_empty: has_bodyless_success(op)
+            || success_response_entry(op).is_some_and(|response| response.reference.is_some()),
         response_doc: success_response_doc(op),
         errors,
         docstring: operation_doc(op.description.as_deref()),
@@ -2599,13 +2606,17 @@ fn resolve_request_body(
         if target.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
             && target.format.as_deref() == Some("binary")
         {
-            return Some(single_with_override(
+            let mut body = single_with_override(
                 TypeRef::Named(class),
                 rb.required == Some(true),
                 false,
                 false,
                 (media_type == "*/*").then(|| media_type.to_string()),
-            ));
+            );
+            if let RequestBody::Single(single) = &mut body {
+                single.example = Some("\"string\"".to_string());
+            }
+            return Some(body);
         }
         // A `$ref` to a union goes through the convert wrapper (its object
         // variants carry field aliases that must be respected on write).
@@ -2776,7 +2787,7 @@ fn resolve_request_body(
         && schema.format.as_deref() == Some("binary")
     {
         let mut body = single_with_override(
-            TypeRef::Primitive(Prim::Str),
+            TypeRef::Primitive(Prim::Bytes),
             required,
             false,
             false,
@@ -2787,7 +2798,8 @@ fn resolve_request_body(
                 .example
                 .as_ref()
                 .or_else(|| schema_example(schema))
-                .and_then(example_literal);
+                .and_then(example_literal)
+                .or_else(|| Some("\"string\"".to_string()));
         }
         return Some(body);
     }
@@ -6774,7 +6786,7 @@ mod tests {
         .expect("wildcard binary is supported") else {
             panic!("wildcard binary should be a single request argument")
         };
-        assert_eq!(binary.type_ref, TypeRef::Primitive(Prim::Str));
+        assert_eq!(binary.type_ref, TypeRef::Primitive(Prim::Bytes));
         assert!(binary.required);
         assert_eq!(binary.content_type_override.as_deref(), Some("*/*"));
         assert_eq!(binary.example.as_deref(), Some("\"blob.bin\""));

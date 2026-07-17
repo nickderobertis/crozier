@@ -15832,8 +15832,25 @@ fn header_parameter_enums_hoist_to_tag_types() {
     assert!(
         out.join("src/acme/widgets/types/create_widget_request_x_widget_mode.py")
             .is_file()
-            && raw.contains("CreateWidgetRequestXWidgetMode"),
+            && raw.contains("CreateWidgetRequestXWidgetMode")
+            && raw.contains(
+                "\"X-Widget-Mode\": widget_mode.value if widget_mode is not None else None"
+            ),
         "inline header enums should hoist under the endpoint tag: {raw}"
+    );
+}
+
+#[test]
+fn referenced_unknown_response_keeps_empty_body_guard() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Proxy API, version: 1.0.0 }\npaths:\n  /proxy:\n    get:\n      operationId: getProxy\n      tags: [proxy]\n      responses:\n        '200': { $ref: '#/components/responses/Ok' }\ncomponents:\n  responses:\n    Ok:\n      description: Arbitrary JSON\n      content:\n        application/json:\n          schema: {}\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/proxy/raw_client.py"))
+        .expect("proxy raw client is generated");
+    assert!(raw.contains("HttpResponse[typing.Any]"), "{raw}");
+    assert!(
+        raw.contains("if _response is None or not _response.text.strip():"),
+        "a referenced unknown response keeps Fern's empty-body guard: {raw}"
     );
 }
 
@@ -15916,18 +15933,40 @@ fn binary_request_media_types_are_preserved() {
             && raw.contains("json=request,"),
         "binary request media selection should preserve ZIP and wildcard semantics: {raw}"
     );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("request=\"string\"") && !client.contains("request=b\"string\""),
+        "referenced binary request examples use Fern's string literal: {client}"
+    );
 }
 
 #[test]
 fn wildcard_binary_requests_with_path_params_omit_json_content_type() {
     let (_dir, out) = generate_ok(
-        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/test:\n    put:\n      operationId: testWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { type: string } }\n      requestBody:\n        required: true\n        content:\n          '*/*':\n            schema: { $ref: '#/components/schemas/FileContent' }\n      responses:\n        '204': { description: Tested }\ncomponents:\n  schemas:\n    FileContent: { type: string, format: binary }\n",
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/test:\n    put:\n      operationId: testWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { type: string } }\n      requestBody:\n        required: true\n        content:\n          '*/*':\n            schema: { type: string, format: binary }\n      responses:\n        '204': { description: Tested }\n",
     );
     let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
         .expect("widgets raw client is generated");
     assert!(
-        raw.contains("json=request,") && !raw.contains("\"content-type\": \"application/json\""),
+        raw.contains("request: bytes")
+            && raw.contains("json=request,")
+            && !raw.contains("\"content-type\": \"application/json\""),
         "wildcard binary-schema requests should not gain JSON headers from path params: {raw}"
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("request: bytes")
+            && client.contains("request=\"string\"")
+            && !client.contains("request=b\"string\""),
+        "the high-level bytes method should use Fern's string example: {client}"
+    );
+    let reference =
+        std::fs::read_to_string(out.join("reference.md")).expect("reference is generated");
+    assert!(
+        reference.contains("**request:** `str`"),
+        "reference docs should retain Fern's source-schema type: {reference}"
     );
 }
 
