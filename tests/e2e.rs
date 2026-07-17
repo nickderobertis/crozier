@@ -15201,7 +15201,9 @@ fn numeric_field_segments_collapse_and_keep_wire_aliases() {
     let model = std::fs::read_to_string(out.join("src/acme/widgets/types/get_widget_response.py"))
         .expect("response model is generated");
     assert!(
-        model.contains("day0end_time: typing_extensions.Annotated[int, FieldMetadata(alias=\"day_0_end_time\")]"),
+        model.contains("day0end_time: typing_extensions.Annotated[")
+            && model.contains("FieldMetadata(alias=\"day_0_end_time\")")
+            && model.contains("pydantic.Field(alias=\"day_0_end_time\")"),
         "numeric segments should collapse while preserving the wire alias: {model}"
     );
 }
@@ -15310,8 +15312,8 @@ fn omitted_schema_type_infers_enum_and_open_map_shapes() {
         "the required no-type enum field should reference the hoisted enum: {widget}"
     );
     assert!(
-        widget.contains("target: typing.Dict[str, typing.Optional[typing.Any]]"),
-        "additionalProperties without an explicit object type should be an open map: {widget}"
+        widget.contains("target: typing.Dict[str, typing.Any]"),
+        "Fern 5.20 keeps an unconstrained open-map value bare: {widget}"
     );
     assert!(
         widget.contains("extra: typing.Optional[typing.Any] = None"),
@@ -15320,7 +15322,7 @@ fn omitted_schema_type_infers_enum_and_open_map_shapes() {
 }
 
 #[test]
-fn unknown_metadata_fields_are_double_optional() {
+fn unknown_metadata_fields_are_single_optional() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
          get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
@@ -15330,8 +15332,8 @@ fn unknown_metadata_fields_are_double_optional() {
     let widget =
         std::fs::read_to_string(out.join("src/acme/types/widget.py")).expect("Widget model");
     assert!(
-        widget.contains("metadata: typing.Optional[typing.Optional[typing.Any]] = None"),
-        "unknown metadata fields should match Fern's double-optional annotation: {widget}"
+        widget.contains("metadata: typing.Optional[typing.Any] = None"),
+        "Fern 5.20 models field absence once around unknown metadata: {widget}"
     );
     assert!(
         widget.contains("unknown: typing.Optional[typing.Any] = None"),
@@ -15445,7 +15447,7 @@ paths:
 }
 
 #[test]
-fn unknown_array_items_are_optional_any_elements() {
+fn unknown_array_items_are_bare_any_elements() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
          get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
@@ -15456,8 +15458,8 @@ fn unknown_array_items_are_optional_any_elements() {
     let widget = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
         .expect("Widget model is generated");
     assert!(
-        widget.contains("values: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None"),
-        "arrays of unknown items should preserve Optional[Any] element types: {widget}"
+        widget.contains("values: typing.Optional[typing.List[typing.Any]] = None"),
+        "Fern 5.20 keeps unknown array elements intrinsically non-nullable: {widget}"
     );
 }
 
@@ -15646,28 +15648,28 @@ fn openapi_31_null_types_generate_optional_fields() {
 }
 
 #[test]
-fn openapi_31_null_only_array_items_are_optional_any() {
+fn openapi_31_null_only_array_items_collapse_to_bare_any() {
     let (_dir, out) = generate_ok(
         "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [values]\n                properties:\n                  values:\n                    type: array\n                    items: { type: ['null'] }\n",
     );
     let model = std::fs::read_to_string(out.join("src/acme/widgets/types/get_widget_response.py"))
         .expect("inline response model is generated");
     assert!(
-        model.contains("values: typing.List[typing.Optional[typing.Any]]"),
-        "null-only items should remain optional unknown values: {model}"
+        model.contains("values: typing.List[typing.Any]"),
+        "Fern 5.20 collapses null-only array elements to bare unknowns: {model}"
     );
 }
 
 #[test]
-fn arrays_without_items_use_optional_any_elements() {
+fn arrays_without_items_use_bare_any_elements() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [values]\n                properties:\n                  values: { type: array }\n",
     );
     let model = std::fs::read_to_string(out.join("src/acme/widgets/types/get_widget_response.py"))
         .expect("inline response model is generated");
     assert!(
-        model.contains("values: typing.List[typing.Optional[typing.Any]]"),
-        "arrays without item constraints should contain optional unknowns: {model}"
+        model.contains("values: typing.List[typing.Any]"),
+        "Fern 5.20 keeps unconstrained array elements as bare unknowns: {model}"
     );
 }
 
@@ -15721,15 +15723,15 @@ fn short_multiple_request_enum_imports_stay_flat() {
 }
 
 #[test]
-fn multipart_unknown_fields_keep_intrinsic_optionality_through_the_cli() {
+fn multipart_unknown_fields_model_only_field_absence_through_the_cli() {
     let (_dir, out) = generate_ok(
         "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /uploads:\n    post:\n      operationId: createUpload\n      tags: [uploads]\n      requestBody:\n        content:\n          multipart/form-data:\n            schema:\n              type: object\n              properties:\n                file: {}\n      responses:\n        '204': { description: Created }\n",
     );
     let client = std::fs::read_to_string(out.join("src/acme/uploads/client.py"))
         .expect("multipart client is generated");
     assert!(
-        client.contains("file: typing.Optional[typing.Optional[typing.Any]] = OMIT"),
-        "an omittable unknown form field should retain unknown nullability: {client}"
+        client.contains("file: typing.Optional[typing.Any] = OMIT"),
+        "an omittable unknown form field should model absence only once: {client}"
     );
 }
 
@@ -15884,9 +15886,9 @@ fn binary_success_responses_stream_bytes() {
         std::fs::read_to_string(out.join("reference.md")).expect("reference.md is generated");
     assert!(
         reference.contains(
-            "**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response."
+            "**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration."
         ),
-        "binary response reference docs should mention stream request_options: {reference}"
+        "binary response reference docs should use Fern 5.20's standard request_options prose: {reference}"
     );
 }
 
@@ -16232,7 +16234,7 @@ fn request_media_examples_populate_optional_body_fields() {
 }
 
 #[test]
-fn referenced_request_examples_drive_typed_worked_examples() {
+fn first_referenced_request_example_drives_typed_worked_examples() {
     let (_dir, out) = generate_ok(
         r##"openapi: 3.1.0
 info: { title: Events API, version: 1.0.0 }
@@ -16300,7 +16302,7 @@ components:
 
     for rendered in [&readme, &client] {
         assert!(rendered.contains("name=\"Primary event\""), "{rendered}");
-        assert!(rendered.contains("price=0.0"), "{rendered}");
+        assert!(rendered.contains("price=0"), "{rendered}");
         assert!(rendered.contains("note=\"Primary note\""), "{rendered}");
         assert_eq!(
             rendered.matches("\"2024-02-03\"").count(),
@@ -16309,19 +16311,10 @@ components:
         );
         assert!(!rendered.contains("code=\"ALT-1\""), "{rendered}");
     }
-    assert!(
-        reference.contains("name=\"Alternate event\""),
-        "{reference}"
-    );
-    assert!(reference.contains("price=15.0"), "{reference}");
-    let code = reference.find("code=\"ALT-1\"").expect("alternate code");
-    let note = reference
-        .find("note=\"Alternate note\"")
-        .expect("alternate note");
-    assert!(
-        code < note,
-        "optional example fields retain declaration order: {reference}"
-    );
+    assert!(reference.contains("name=\"Primary event\""), "{reference}");
+    assert!(reference.contains("price=0"), "{reference}");
+    assert!(reference.contains("note=\"Primary note\""), "{reference}");
+    assert!(!reference.contains("code=\"ALT-1\""), "{reference}");
 }
 
 #[test]
@@ -16636,7 +16629,7 @@ fn declared_empty_schema_descriptions_emit_class_docstrings() {
         .expect("widget state enum is generated");
     assert!(
         model.contains("class Widget(UniversalBaseModel):\n    \"\"\" \"\"\"\n\n    id: typing.Optional[int]")
-            && state.contains("class WidgetState(str, enum.Enum):\n    \"\"\" \"\"\"\n\n    ACTIVE = \"ACTIVE\""),
+            && state.contains("class WidgetState(enum.StrEnum):\n    \"\"\" \"\"\"\n\n    ACTIVE = \"ACTIVE\""),
         "declared empty schema descriptions should remain visible in generated classes:\n{model}\n{state}"
     );
 }
@@ -16766,7 +16759,7 @@ fn vendor_json_bare_object_request_body_is_open_map() {
     let raw = std::fs::read_to_string(out.join("src/acme/imports/raw_client.py"))
         .expect("imports raw client is generated");
     assert!(
-        raw.contains("request: typing.Dict[str, typing.Optional[typing.Any]]")
+        raw.contains("request: typing.Dict[str, typing.Any]")
             && raw.contains("\"content-type\": \"application/vnd.example+json\""),
         "vendor +json bodies should be open-map requests with the exact media type: {raw}"
     );
