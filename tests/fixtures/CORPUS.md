@@ -144,7 +144,7 @@ for, with no backups to invent.
 | `apideck.com-sms` | compact anyOf corpus | ✅ matched (73) |
 | `eos.local` | four paths, all-inline / zero named schemas | ✅ matched (35) |
 | `codesearch.debian.net` | compact conventional two-schema baseline | **DROPPED** — Fern golden generation failed (do not retry) |
-| `calorieninjas.com` | minimal one-path / zero-schema boundary case | ✅ matched (30) |
+| `calorieninjas.com` | minimal one-path / zero-schema boundary case | ⚠️ Fern 5.20 exact known upstream failure; Crozier subprocess generation covered |
 | `conjur.local` | screened but Fern did not produce a usable result | **DROPPED** — Fern falsely returned success while stderr reported an OpenAPI parse failure and an unresolved response reference (do not retry) |
 | `asana.com` | screened but failed Fern validation | **DROPPED** — Fern check failed with 17 fatal diagnostics (do not retry) |
 | `apideck.com-pos` | screened but failed Fern validation | **DROPPED** — Fern check failed with 4 fatal diagnostics (do not retry) |

@@ -47,7 +47,7 @@ valid_fixture_name "$FIXTURE" || {
 # calls use that tool's identical Docker Hub resolver instead of a second pin.
 FERN_PYTHON_VERSION="${2:-}"
 [ -z "$FERN_PYTHON_VERSION" ] || valid_fern_version "$FERN_PYTHON_VERSION" || {
-  echo "generate-fern-fixture: invalid Fern version '$FERN_PYTHON_VERSION' — use an exact semantic version such as 4.35.0" >&2
+  echo "generate-fern-fixture: invalid Fern version '$FERN_PYTHON_VERSION' — use an exact semantic version such as 5.20.0" >&2
   exit 1
 }
 SPEC_OVERRIDE="${3:-}"

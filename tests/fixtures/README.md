@@ -8,7 +8,8 @@ These fixtures are the golden target crozier is verified against. They are
   `3a471b03d4778f291849adc03bacfcd40340fc26`; `exhaustive/expected/` was generated
   from `exhaustive/openapi.yml` with `fernapi/fern-python-sdk:4.35.0`. Numbered
   real-world corpus sources and refs live in [`CORPUS.md`](CORPUS.md), and their
-  current goldens are maintained by the **Fern goldens** workflow.
+  current goldens are maintained at `fernapi/fern-python-sdk:5.20.0` by the
+  **Fern goldens** workflow.
 - **License / attribution:** [`../../licenses/fern-APACHE-2.0.txt`](../../licenses/fern-APACHE-2.0.txt)
   and [`../../NOTICE`](../../NOTICE) (with the statement of changes required by
   Apache-2.0 §4). Keep them; regeneration must preserve them.
@@ -27,6 +28,9 @@ Each `<api>/` directory holds:
 - `expected/.crozier-fern-golden.json` on workflow-managed goldens — the exact
   Fern generator version and manifest name/ref/URL. It is automation provenance,
   not Fern output, so the comparison excludes it.
+- `known-fern-failure.json` only when an exact generator/version/spec-bound
+  upstream failure prevents a current golden. Its fingerprint is revalidated on
+  every generation retry; it never makes an arbitrary Fern failure non-fatal.
 
 ## Corpus
 

@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "generator": "fernapi/fern-python-sdk",
+  "generator_version": "5.20.0",
+  "corpus_spec_name": "calorieninjas.com",
+  "corpus_spec_ref": "1.0.0",
+  "corpus_spec_url": "https://api.apis.guru/v2/specs/calorieninjas.com/1.0.0/openapi.json",
+  "exit_code": 1,
+  "fingerprint": {
+    "failed_command": "ruff check --fix --no-cache --ignore E741 /fern/output",
+    "diagnostics": [
+      {
+        "path": "src/fern/client.py",
+        "line": 83,
+        "column": 9,
+        "message": "SyntaxError: Expected an identifier",
+        "source": "    def (self, *, query: str, request_options: typing.Optional[RequestOptions] = None) -> None:"
+      },
+      {
+        "path": "src/fern/client.py",
+        "line": 106,
+        "column": 38,
+        "message": "SyntaxError: Expected an identifier",
+        "source": "        _response = self._raw_client.(query=query, request_options=request_options)"
+      },
+      {
+        "path": "src/fern/client.py",
+        "line": 194,
+        "column": 15,
+        "message": "SyntaxError: Expected an identifier",
+        "source": "    async def (self, *, query: str, request_options: typing.Optional[RequestOptions] = None) -> None:"
+      },
+      {
+        "path": "src/fern/client.py",
+        "line": 221,
+        "column": 44,
+        "message": "SyntaxError: Expected an identifier",
+        "source": "        _response = await self._raw_client.(query=query, request_options=request_options)"
+      },
+      {
+        "path": "src/fern/raw_client.py",
+        "line": 17,
+        "column": 9,
+        "message": "SyntaxError: Expected an identifier",
+        "source": "    def (self, *, query: str, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:"
+      },
+      {
+        "path": "src/fern/raw_client.py",
+        "line": 51,
+        "column": 15,
+        "message": "SyntaxError: Expected an identifier",
+        "source": "    async def (self, *, query: str, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[None]:"
+      }
+    ],
+    "ruff_summary": "Found 11 errors (5 fixed, 6 remaining)."
+  }
+}

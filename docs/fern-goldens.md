@@ -59,6 +59,26 @@ runtime/scaffolding metadata and `NOTICE` when the aggregate diff requires it.
 Use the exact resolved version shown in the run evidence on later reruns so a
 newly released Fern version cannot join the same repair cycle.
 
+### Exact known upstream failures
+
+`calorieninjas.com` is the single registered exception at
+`fernapi/fern-python-sdk:5.20.0`. Its source operation has no `operationId`, and
+Fern emits unnamed methods (`def (` and `_raw_client.(`) before Ruff rejects the
+SDK. [`known-fern-failure.json`](../tests/fixtures/calorieninjas.com/known-fern-failure.json)
+binds the exception to the exact generator version, corpus name/ref/URL, exit
+code, six ordered syntax diagnostics and source lines, Ruff summary, and failed
+command.
+
+Generation always retries that fixture, even after an exact reproduction. Only
+the normalized fingerprint is warning-only; a changed exit, diagnostic, source
+line, command, corpus identity, malformed registration, or unexpected Fern
+success is fatal. The prior Fern tree remains untouched in every case. Comparison
+does not call that older tree a 5.20 golden: it validates the registration and
+drives Crozier over the real cached spec as a subprocess, then reports the known
+upstream failure separately from the four zero-valued comparison failure counts.
+Remove the registration through a deliberate fixture refresh when a future Fern
+version generates a complete valid tree.
+
 Red is expected during this loop. Successful fixtures are committed and remain
 usable even when another selection fails generation or Crozier still differs.
 Publication and generation evidence complete before the isolated comparison job
@@ -91,7 +111,7 @@ and Ruff prerequisites as the workflow and do not publish a branch.
 Generate selected fixtures and then run the aggregate comparison:
 
 ```sh
-just fern-goldens --version 4.35.0 --fixture anchore.io
+just fern-goldens --version 5.20.0 --fixture anchore.io
 ```
 
 Repeat `--fixture` for an exact multi-fixture selection. Omit `--version` to use
@@ -101,7 +121,7 @@ corpus goldens.
 Keep generation and comparison separate when diagnosing a phase:
 
 ```sh
-just fern-goldens-generate --version 4.35.0 --fixture anchore.io
+just fern-goldens-generate --version 5.20.0 --fixture anchore.io
 just fern-goldens-compare
 ```
 
