@@ -1263,6 +1263,14 @@ fn root_init_file(
     tc.push_str(&from_import_block(".errors", &error_names, 4));
     tc.push_str(&from_import_block(".", &module_names, 4));
     tc.push_str(&from_import_block(
+        "._default_clients",
+        &[
+            "DefaultAioHttpClient".to_string(),
+            "DefaultAsyncHttpxClient".to_string(),
+        ],
+        4,
+    ));
+    tc.push_str(&from_import_block(
         ".client",
         &[async_name.clone(), client_name.to_string()],
         4,
@@ -1294,6 +1302,14 @@ fn root_init_file(
     for m in &module_names {
         pairs.push((m.clone(), format!(".{m}")));
     }
+    pairs.push((
+        "DefaultAioHttpClient".to_string(),
+        "._default_clients".to_string(),
+    ));
+    pairs.push((
+        "DefaultAsyncHttpxClient".to_string(),
+        "._default_clients".to_string(),
+    ));
     pairs.push((client_name.to_string(), ".client".to_string()));
     pairs.push((async_name, ".client".to_string()));
     if let Some(e) = environment {
@@ -2331,17 +2347,17 @@ fn client_wrapper_file(
     // the e2e byte-match normalizes the `X-Crozier-` prefix back to `X-Fern-` so
     // the comparison against Fern's fixtures is otherwise exact (see docs/matching).
     let get_headers_head = format!(
-        "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n\n    def get_headers(self) -> typing.Dict[str, str]:\n        headers: typing.Dict[str, str] = {{\n            \"X-Crozier-Language\": \"Python\",\n            \"X-Crozier-SDK-Name\": \"{project_name}\",\n            \"X-Crozier-SDK-Version\": \"{DEFAULT_SDK_VERSION}\",\n            **(self.get_custom_headers() or {{}}),\n        }}\n"
+        "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n        self._max_retries = max_retries\n        self._stream_reconnection_enabled = stream_reconnection_enabled\n        self._max_stream_reconnection_attempts = max_stream_reconnection_attempts\n        self._logging = logging\n\n    def get_headers(self) -> typing.Dict[str, str]:\n        import platform\n\n        headers: typing.Dict[str, str] = {{\n            \"X-Crozier-Language\": \"Python\",\n            \"X-Crozier-Runtime\": f\"python/{{platform.python_version()}}\",\n            \"X-Crozier-Platform\": f\"{{platform.system().lower()}}/{{platform.release()}}\",\n            \"X-Crozier-SDK-Name\": \"{project_name}\",\n            \"X-Crozier-SDK-Version\": \"{DEFAULT_SDK_VERSION}\",\n            **(self.get_custom_headers() or {{}}),\n        }}\n"
     );
     let mut c = String::new();
     // Lead with the generated-file header (like every other emitted module): it
     // survives `ruff format` and the e2e comment-strip folds it to the blank lines
     // Fern's own stripped header leaves, so the leading layout matches.
     c.push_str(HEADER);
-    c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
+    c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\nfrom .logging import LogConfig, Logger\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
-    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n    ):\n");
+    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = 2,\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n    ):\n");
     c.push_str(&gh_assign);
     c.push_str(&a.assign);
     c.push_str(&get_headers_head);
@@ -2349,19 +2365,19 @@ fn client_wrapper_file(
     c.push_str(&a.header_block);
     c.push_str("        return headers\n\n");
     c.push_str(&a.token_method);
-    c.push_str("    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:\n        return self._headers\n\n    def get_base_url(self) -> str:\n        return self._base_url\n\n    def get_timeout(self) -> typing.Optional[float]:\n        return self._timeout\n\n\nclass SyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
+    c.push_str("    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:\n        return self._headers\n\n    def get_base_url(self) -> str:\n        return self._base_url\n\n    def get_timeout(self) -> typing.Optional[float]:\n        return self._timeout\n\n    def get_max_retries(self) -> int:\n        return self._max_retries\n\n    def get_stream_reconnection_enabled(self) -> bool:\n        return self._stream_reconnection_enabled if self._stream_reconnection_enabled is not None else True\n\n    def get_max_stream_reconnection_attempts(self) -> typing.Optional[int]:\n        return self._max_stream_reconnection_attempts\n\n\nclass SyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
-    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        httpx_client: httpx.Client,\n    ):\n        super().__init__(");
+    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = 2,\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n        httpx_client: httpx.Client,\n    ):\n        super().__init__(\n            ");
     c.push_str(&gh_super);
     c.push_str(&a.super_arg);
-    c.push_str("headers=headers, base_url=base_url, timeout=timeout)\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
+    c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n        )\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            logging_config=self._logging,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
-    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(");
+    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = 2,\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n        async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(\n            ");
     c.push_str(&gh_super);
     c.push_str(&a.super_arg);
-    c.push_str("headers=headers, base_url=base_url, timeout=timeout)\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n        )\n");
+    c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n        )\n        self._async_token = async_token\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            async_base_headers=self.async_get_headers,\n            logging_config=self._logging,\n        )\n\n    async def async_get_headers(self) -> typing.Dict[str, str]:\n        headers = self.get_headers()\n        if self._async_token is not None:\n            token = await self._async_token()\n            headers[\"Authorization\"] = f\"Bearer {token}\"\n        return headers\n");
     GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/core/client_wrapper.py")),
         contents: c,
@@ -3911,6 +3927,8 @@ fn root_client_file(
     imports.add_plain("httpx");
     imports.add_core("client_wrapper", "AsyncClientWrapper");
     imports.add_core("client_wrapper", "SyncClientWrapper");
+    imports.add_core("logging", "LogConfig");
+    imports.add_core("logging", "Logger");
     if !root_endpoints.is_empty() {
         imports.add_core("request_options", "RequestOptions");
         imports.add_from(".raw_client", &format!("Raw{client_name}"));
@@ -3998,6 +4016,9 @@ fn root_client_file(
         &root_methods,
         &cfg,
     )?);
+    body.push_str(
+        "\n\n\ndef _make_default_async_client(\n    timeout: typing.Optional[float],\n    follow_redirects: typing.Optional[bool],\n) -> httpx.AsyncClient:\n    try:\n        import httpx_aiohttp\n    except ImportError:\n        pass\n    else:\n        if follow_redirects is not None:\n            return httpx_aiohttp.HttpxAiohttpClient(timeout=timeout, follow_redirects=follow_redirects)\n        return httpx_aiohttp.HttpxAiohttpClient(timeout=timeout)\n\n    if follow_redirects is not None:\n        return httpx.AsyncClient(timeout=timeout, follow_redirects=follow_redirects)\n    return httpx.AsyncClient(timeout=timeout)",
+    );
     body.push_str("\n\n\n");
     body.push_str(&root_client_class(
         env,
@@ -4186,6 +4207,7 @@ fn root_client_class(
             }
         })
         .collect();
+    let has_async_token = is_async && matches!(auth, Auth::Bearer { .. });
     let view = RootClientView {
         class_name: class_name.to_string(),
         pkg: pkg.to_string(),
@@ -4217,6 +4239,25 @@ fn root_client_class(
         },
         root_methods: root_methods.to_vec(),
         modules: module_views,
+        is_async,
+        async_token_doc: if has_async_token {
+            "    async_token : typing.Optional[typing.Callable[[], typing.Awaitable[str]]]\n        An async callable that returns a bearer token. Use this when token acquisition involves async I/O (e.g., refreshing tokens via an async HTTP client). When provided, this is used instead of the synchronous token for async requests.\n\n"
+        } else {
+            ""
+        }
+        .to_string(),
+        async_token_ctor: if has_async_token {
+            "        async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,\n"
+        } else {
+            ""
+        }
+        .to_string(),
+        async_token_wrapper: if has_async_token {
+            "            async_token=async_token,\n"
+        } else {
+            ""
+        }
+        .to_string(),
     };
     // The caller controls the separation between the sync/async classes and the
     // file's final newline, so drop the template's trailing newline.
@@ -4275,6 +4316,12 @@ struct RootClientView {
     raw_client_cls: String,
     root_methods: Vec<String>,
     modules: Vec<RootModuleView>,
+    /// Selects the aiohttp-autodetecting default for the async root client.
+    is_async: bool,
+    /// Bearer-only asynchronous token provider fragments, present on the async client.
+    async_token_doc: String,
+    async_token_ctor: String,
+    async_token_wrapper: String,
 }
 
 /// The environment-varying fragments of the root client: the docstring block, the
@@ -6304,6 +6351,10 @@ mod tests {
                 cls: "EndpointsPutClient".to_string(),
                 wrap: false,
             }],
+            is_async: false,
+            async_token_doc: String::new(),
+            async_token_ctor: String::new(),
+            async_token_wrapper: String::new(),
         };
         let out = render_tmpl("root_client.py", &view);
         assert!(out.starts_with("class FernApi:"));

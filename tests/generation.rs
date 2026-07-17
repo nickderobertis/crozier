@@ -816,6 +816,40 @@ fn emits_core_runtime_with_substituted_sdk_name() {
         !cw.contains("@@CROZIER"),
         "placeholder left unsubstituted: {cw}"
     );
+    assert!(cw.contains("\"X-Crozier-Runtime\""), "{cw}");
+    assert!(cw.contains("\"X-Crozier-Platform\""), "{cw}");
+    assert!(
+        cw.contains("base_max_retries=self.get_max_retries()"),
+        "{cw}"
+    );
+    assert!(cw.contains("logging_config=self._logging"), "{cw}");
+    assert!(
+        cw.contains("async_base_headers=self.async_get_headers"),
+        "{cw}"
+    );
+
+    let client_files = render(HEADER_SPEC);
+    let client = &client_files["src/acme/client.py"];
+    assert!(
+        client.contains("max_retries: typing.Optional[int] = None"),
+        "{client}"
+    );
+    assert!(
+        client.contains("stream_reconnection_enabled: typing.Optional[bool] = None"),
+        "{client}"
+    );
+    assert!(
+        client.contains("logging: typing.Optional[typing.Union[LogConfig, Logger]] = None"),
+        "{client}"
+    );
+    assert!(
+        client.contains("def _make_default_async_client("),
+        "{client}"
+    );
+
+    let init = &client_files["src/acme/__init__.py"];
+    assert!(init.contains("DefaultAioHttpClient"), "{init}");
+    assert!(init.contains("DefaultAsyncHttpxClient"), "{init}");
 }
 
 #[test]
@@ -1345,6 +1379,14 @@ fn unauthenticated_operation_makes_the_token_optional() {
     let wrapper = &files["src/acme/core/client_wrapper.py"];
     assert!(wrapper
         .contains("token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,"));
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains(
+            "async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,"
+        ),
+        "{client}"
+    );
+    assert!(client.contains("async_token=async_token,"), "{client}");
 }
 
 /// An integer `enum` becomes a plain `int` alias, and a `$ref` integer-enum
@@ -1567,7 +1609,7 @@ fn cookie_dropped_and_optional_header_promoted_to_client_wrapper() {
     assert!(wrapper.contains("self._tenant = tenant"));
     assert!(wrapper.contains("if self._tenant is not None:"));
     assert!(wrapper.contains("headers[\"X-Tenant\"] = self._tenant"));
-    assert!(wrapper.contains("super().__init__(tenant=tenant, token=token,"));
+    assert!(wrapper.contains("tenant=tenant,\n            token=token,"));
 
     // And threaded through the root client (ctor, example, wrapper call).
     let client = &files["src/acme/client.py"];
