@@ -3304,7 +3304,7 @@ fn raw_docstring(
     if let Some(summary) = &ep.docstring {
         // A multi-line summary carries the 8-space docstring indent on every line.
         for line in summary.split('\n') {
-            lines.push(format!("        {line}"));
+            lines.push(format!("        {}", python_doc_line(line)));
         }
         lines.push(String::new());
     }
@@ -3359,11 +3359,16 @@ fn push_path_param(lines: &mut Vec<String>, name: &str, ty: &str, desc: &Option<
 }
 
 fn push_param_doc(lines: &mut Vec<String>, description: &str) {
-    lines.extend(
-        description
-            .split('\n')
-            .map(|line| format!("            {}", line.replace('\t', "    "))),
-    );
+    lines.extend(description.split('\n').map(|line| {
+        format!(
+            "            {}",
+            python_doc_line(&line.replace('\t', "    "))
+        )
+    }));
+}
+
+fn python_doc_line(line: &str) -> String {
+    line.replace('\\', "\\\\")
 }
 
 /// Push the `Returns` description under the return type: each line of the
@@ -3371,7 +3376,10 @@ fn push_param_doc(lines: &mut Vec<String>, description: &str) {
 /// declares no (non-empty) description — matching Fern.
 fn push_return_doc(lines: &mut Vec<String>, response_doc: Option<&str>) {
     match response_doc {
-        Some(doc) => lines.extend(doc.split('\n').map(|line| format!("            {line}"))),
+        Some(doc) => lines.extend(
+            doc.split('\n')
+                .map(|line| format!("            {}", python_doc_line(line))),
+        ),
         None => lines.push(String::new()),
     }
 }
@@ -3995,7 +4003,7 @@ fn raw_binary_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &s
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
     if let Some(summary) = &ep.docstring {
         for line in summary.split('\n') {
-            lines.push(format!("        {line}"));
+            lines.push(format!("        {}", python_doc_line(line)));
         }
         lines.push(String::new());
     }
@@ -4821,7 +4829,7 @@ fn client_binary_stream_docstring(
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
     if let Some(summary) = &ep.docstring {
         for line in summary.split('\n') {
-            lines.push(format!("        {line}"));
+            lines.push(format!("        {}", python_doc_line(line)));
         }
         lines.push(String::new());
     }
@@ -4889,7 +4897,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
     if let Some(summary) = &ep.docstring {
         for line in summary.split('\n') {
-            lines.push(format!("        {line}"));
+            lines.push(format!("        {}", python_doc_line(line)));
         }
         lines.push(String::new());
     }

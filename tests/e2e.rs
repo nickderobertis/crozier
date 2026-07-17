@@ -15387,6 +15387,34 @@ fn conflicting_error_body_types_downgrade_status_class_to_any() {
 }
 
 #[test]
+fn endpoint_docstrings_preserve_literal_backslashes() {
+    let (_dir, out) = generate_ok(
+        r#"openapi: 3.0.3
+info: { title: Widget API, version: 1.0.0 }
+paths:
+  /widgets:
+    get:
+      operationId: listWidgets
+      tags: [widgets]
+      description: |
+        Read C:\temp before continuing with curl \
+      responses:
+        '204': { description: Done }
+"#,
+    );
+    for file in [
+        "src/acme/widgets/client.py",
+        "src/acme/widgets/raw_client.py",
+    ] {
+        let generated = std::fs::read_to_string(out.join(file)).expect("client is generated");
+        assert!(
+            generated.contains(r"Read C:\\temp before continuing with curl \\"),
+            "Python docstrings must escape literal backslashes in {file}:\n{generated}"
+        );
+    }
+}
+
+#[test]
 fn unknown_array_items_are_optional_any_elements() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
