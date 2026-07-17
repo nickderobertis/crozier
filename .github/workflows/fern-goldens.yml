@@ -1,6 +1,10 @@
 name: Fern goldens
 
 on:
+  schedule:
+    # Monday 05:17 UTC. Scheduled workflows run from the default branch; the
+    # event guard below makes the repository's intended `main` contract explicit.
+    - cron: "17 5 * * 1"
   workflow_dispatch:
     inputs:
       # Blank deliberately starts an upgrade to latest stable; comparison stays red until
@@ -33,20 +37,36 @@ jobs:
     outputs:
       generation: ${{ steps.generation.outcome }}
       publication: ${{ steps.publication.outcome }}
+      generation_summary: ${{ steps.generation_summary.outcome }}
       generation_evidence: ${{ steps.generation_evidence.outcome }}
     steps:
-      - name: Require a branch dispatch
+      - name: Require a supported branch event
         env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
           REF_TYPE: ${{ github.ref_type }}
         run: |
           if [ "$REF_TYPE" != branch ]; then
-            echo "::error::Fern goldens must be dispatched on a branch, not a tag." >&2
+            echo "::error::Fern goldens require a branch ref, not a tag." >&2
             exit 1
           fi
+          case "$EVENT_NAME" in
+            schedule)
+              if [ "$REF" != refs/heads/main ]; then
+                echo "::error::Scheduled Fern goldens must run from refs/heads/main." >&2
+                exit 1
+              fi
+              ;;
+            workflow_dispatch) ;;
+            *)
+              echo "::error::Unsupported Fern goldens event: $EVENT_NAME" >&2
+              exit 1
+              ;;
+          esac
 
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
 
       - uses: extractions/setup-just@v2
@@ -67,8 +87,11 @@ jobs:
         id: generation
         continue-on-error: true
         env:
-          FERN_VERSION: ${{ inputs.fern-version }}
-          FIXTURES: ${{ inputs.fixtures }}
+          # A schedule event has no workflow_dispatch payload. Explicitly
+          # normalize both absent values to blank so generate resolves latest
+          # Fern and selects every existing managed corpus golden.
+          FERN_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.fern-version || '' }}
+          FIXTURES: ${{ github.event_name == 'workflow_dispatch' && inputs.fixtures || '' }}
         run: |
           args=()
           if [ -n "$FERN_VERSION" ]; then
@@ -93,6 +116,31 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           just fern-goldens-publish "$BRANCH"
 
+      - name: Write generation summary
+        id: generation_summary
+        if: always()
+        continue-on-error: true
+        env:
+          GENERATION: ${{ steps.generation.outcome }}
+          PUBLICATION: ${{ steps.publication.outcome }}
+        run: |
+          summary=.local/fern-goldens/generation-summary.txt
+          if [ ! -s "$summary" ]; then
+            echo "::error::Generation summary is missing or empty: $summary" >&2
+            exit 1
+          fi
+          {
+            echo "## Fern golden generation"
+            echo
+            cat "$summary"
+            echo
+            # Markdown backticks must stay literal.
+            # shellcheck disable=SC2016
+            printf -- '- Generation: `%s`\n' "$GENERATION"
+            # shellcheck disable=SC2016
+            printf -- '- Publication: `%s`\n' "$PUBLICATION"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       # Persist generation evidence before the comparison job starts. Artifact v4
       # archives are immutable, so comparison gets a separate later artifact.
       - name: Upload generation evidence
@@ -107,6 +155,7 @@ jobs:
             .local/fern-goldens/generated.txt
             .local/fern-goldens/current.txt
             .local/fern-goldens/generation-failures.txt
+            .local/fern-goldens/known-upstream-failures.txt
             .local/fern-goldens/generation-summary.txt
             .local/fern-goldens/generation-logs/
             .local/fern-goldens/generated-goldens.tar.gz
@@ -121,13 +170,14 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       comparison: ${{ steps.comparison.outcome }}
+      comparison_summary: ${{ steps.comparison_summary.outcome }}
       comparison_evidence: ${{ steps.comparison_evidence.outcome }}
     steps:
       # Resolve the branch again after publication so comparison sees the exact
       # fast-forwarded goldens when publication succeeded.
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
 
       - uses: extractions/setup-just@v2
@@ -139,6 +189,28 @@ jobs:
         id: comparison
         continue-on-error: true
         run: just fern-goldens-compare
+
+      - name: Write comparison summary
+        id: comparison_summary
+        if: always()
+        continue-on-error: true
+        env:
+          COMPARISON: ${{ steps.comparison.outcome }}
+        run: |
+          summary=.local/fern-goldens/comparison-summary.txt
+          if [ ! -s "$summary" ]; then
+            echo "::error::Comparison summary is missing or empty: $summary" >&2
+            exit 1
+          fi
+          {
+            echo "## Fern golden comparison"
+            echo
+            cat "$summary"
+            echo
+            # Markdown backticks must stay literal.
+            # shellcheck disable=SC2016
+            printf -- '- Comparison: `%s`\n' "$COMPARISON"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload comparison evidence
         id: comparison_evidence
@@ -152,6 +224,7 @@ jobs:
             .local/fern-goldens/comparison.log
             .local/fern-goldens/comparison-fetch-failures.txt
             .local/fern-goldens/comparison-processing-failures.txt
+            .local/fern-goldens/comparison-known-upstream-failures.txt
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
@@ -162,6 +235,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
       - uses: extractions/setup-just@v2
 
       # Defer red status until early publication, required evidence phases, and
@@ -170,13 +245,17 @@ jobs:
         env:
           GENERATION: ${{ needs.generate_publish.outputs.generation }}
           PUBLICATION: ${{ needs.generate_publish.outputs.publication }}
+          GENERATION_SUMMARY: ${{ needs.generate_publish.outputs.generation_summary }}
           GENERATION_EVIDENCE: ${{ needs.generate_publish.outputs.generation_evidence }}
           COMPARISON: ${{ needs.compare.outputs.comparison }}
+          COMPARISON_SUMMARY: ${{ needs.compare.outputs.comparison_summary }}
           COMPARISON_EVIDENCE: ${{ needs.compare.outputs.comparison_evidence }}
         run: |
           just fern-goldens-result \
             --generation "$GENERATION" \
             --publication "$PUBLICATION" \
+            --generation-summary "$GENERATION_SUMMARY" \
             --generation-evidence "$GENERATION_EVIDENCE" \
             --comparison "$COMPARISON" \
+            --comparison-summary "$COMPARISON_SUMMARY" \
             --comparison-evidence "$COMPARISON_EVIDENCE"

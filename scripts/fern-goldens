@@ -931,15 +931,19 @@ def publish(root: Path, branch: str) -> int:
 def result(
     generation: str,
     publication: str,
+    generation_summary: str,
     generation_evidence: str,
     comparison: str,
+    comparison_summary: str,
     comparison_evidence: str,
 ) -> int:
     outcomes = {
         "generation": generation,
         "publication": publication,
+        "generation summary": generation_summary,
         "generation evidence": generation_evidence,
         "comparison": comparison,
+        "comparison summary": comparison_summary,
         "comparison evidence": comparison_evidence,
     }
     invalid = {name: value for name, value in outcomes.items() if value not in {"success", "failure"}}
@@ -949,7 +953,7 @@ def result(
     if failures:
         print("fern-goldens: failed phases: " + ", ".join(failures), file=sys.stderr)
         return 1
-    print("fern-goldens: generation, publication, comparison, and evidence succeeded")
+    print("fern-goldens: generation, publication, summaries, comparison, and evidence succeeded")
     return 0
 
 
@@ -989,8 +993,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     result_parser = commands.add_parser("result", help="emit the final deferred workflow status")
     result_parser.add_argument("--generation", required=True)
     result_parser.add_argument("--publication", required=True)
+    result_parser.add_argument("--generation-summary", required=True)
     result_parser.add_argument("--generation-evidence", required=True)
     result_parser.add_argument("--comparison", required=True)
+    result_parser.add_argument("--comparison-summary", required=True)
     result_parser.add_argument("--comparison-evidence", required=True)
     return parser.parse_args(argv)
 
@@ -1012,8 +1018,10 @@ def main(argv: list[str]) -> int:
             return result(
                 args.generation,
                 args.publication,
+                args.generation_summary,
                 args.generation_evidence,
                 args.comparison,
+                args.comparison_summary,
                 args.comparison_evidence,
             )
         generation_status = generate(root, args.version, selectors_from(args))
@@ -1023,7 +1031,9 @@ def main(argv: list[str]) -> int:
             # llmlint: ignore[tool_output_is_signal] Local `run` never publishes or uploads; success is the neutral value for those workflow-only phases.
             "success",
             "success",
+            "success",
             "success" if comparison_status == 0 else "failure",
+            "success",
             "success",
         )
     except (GoldensError, OSError, ValueError) as error:
