@@ -99,7 +99,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_file_storage_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_hris_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_accounting_matches_fern_output
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e calorieninjas_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e calorieninjas_reproduces_the_exact_known_fern_failure_boundary
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e eos_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_sms_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_ecosystem_matches_fern_output
