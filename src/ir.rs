@@ -702,6 +702,8 @@ pub struct Endpoint {
     /// The success response body type, or `None` when the endpoint returns no
     /// content.
     pub response: Option<TypeRef>,
+    /// Whether a successful status may carry no parseable response body.
+    pub response_may_be_empty: bool,
     /// The success response's description, shown in the docstring's `Returns`
     /// section (Fern emits an indented line under the return type).
     pub response_doc: Option<String>,
@@ -1528,7 +1530,7 @@ fn normalize_error_body_types(endpoints: &mut [Endpoint]) {
     for ep in endpoints {
         for err in &mut ep.errors {
             if downgrade.contains(&err.class_name) {
-                err.body_type = TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)));
+                err.body_type = TypeRef::Primitive(Prim::Any);
             }
         }
     }
@@ -2073,6 +2075,7 @@ fn build_endpoint(
         body_response_same_ref: body_response_same_ref(doc, op),
         body_schema_is_success_response: request_and_response_refs_match(op),
         response,
+        response_may_be_empty: has_bodyless_success(op),
         response_doc: success_response_doc(op),
         errors,
         docstring: operation_doc(op.description.as_deref()),
@@ -2362,20 +2365,14 @@ fn error_class_name(status: u16) -> Option<&'static str> {
 /// The exception body type for an error response. A `$ref`/scalar/container body
 /// resolves through [`base_type_ref`] (in response context — `List`/`Dict`, never
 /// `Sequence`); an error with no `application/json` body takes Fern's
-/// `typing.Optional[typing.Any]`.
+/// `typing.Any` in Fern 5.20.
 fn error_body_type(resp: &Response) -> TypeRef {
     match response_schema(resp) {
         // A named `$ref`, scalar, or container keeps its resolved type. An inline
         // object (bunq's `GenericError`, `{Error: ...}`) or an otherwise-untyped body
-        // resolves to bare `Any`, which Fern renders as `Optional[Any]` — the same as
-        // a body-less error.
-        Some(schema) => match base_type_ref(schema) {
-            TypeRef::Primitive(Prim::Any) => {
-                TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
-            }
-            other => other,
-        },
-        None => TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))),
+        // resolves to bare `Any`, the same as a body-less error in Fern 5.20.
+        Some(schema) => base_type_ref(schema),
+        None => TypeRef::Primitive(Prim::Any),
     }
 }
 
@@ -3451,7 +3448,7 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
                 .content
                 .get("application/json")
                 .filter(|media| media.schema.is_none())?;
-            Some(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))))
+            Some(TypeRef::Primitive(Prim::Any))
         })
 }
 
@@ -4513,13 +4510,6 @@ impl Builder<'_> {
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
-        // Fern preserves the unknown schema's intrinsic `Optional[Any]` for a
-        // handful of semantic catch-all fields. Property absence then adds the
-        // outer `Optional`; ordinary unknown fields stay `Any` here so they do
-        // not become double-optional.
-        if matches!(prop, "metadata" | "value") && is_unknown(prop_schema) {
-            return TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)));
-        }
         // AWS-style OpenAPI documents commonly decorate a property reference as
         // `allOf: [$ref, { description }]`. Fern treats that as a use-site copy:
         // scalar/collection aliases resolve to their underlying type, while enums
@@ -5021,6 +5011,7 @@ fn full_type_ref_resolved(schema: &Schema, schemas: &IndexMap<String, Schema>) -
 
 fn optional_type_ref(base: TypeRef) -> TypeRef {
     match base {
+        TypeRef::Primitive(Prim::Any) => base,
         TypeRef::Optional(_) => base,
         TypeRef::Union(mut variants) if !variants.is_empty() => {
             let last = variants.pop().expect("non-empty union checked above");
@@ -6906,7 +6897,7 @@ mod tests {
         };
         assert_eq!(
             builder.field_type_ref("Record", "metadata", &Schema::default()),
-            TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
+            TypeRef::Primitive(Prim::Any)
         );
 
         let nullable_refs = schema(serde_json::json!({
@@ -7216,6 +7207,10 @@ mod tests {
         assert_eq!(
             optional_type_ref(already_optional.clone()),
             already_optional
+        );
+        assert_eq!(
+            optional_type_ref(TypeRef::Primitive(Prim::Any)),
+            TypeRef::Primitive(Prim::Any)
         );
         assert_eq!(
             optional_type_ref(TypeRef::Union(vec![

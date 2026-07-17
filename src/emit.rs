@@ -428,12 +428,7 @@ struct FieldView {
 /// Compute a field's annotation + default, registering imports.
 fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
     let inner = render_type(&field.type_ref, imports);
-    // An unknown schema already contributes its own `Optional[Any]`. A required
-    // unknown field keeps that single wrapper; a non-required unknown field adds
-    // a second wrapper for property absence, matching Fern's distinction.
-    let required_unknown = field.spec_required
-        && matches!(field.type_ref, TypeRef::Optional(ref inner) if matches!(inner.as_ref(), TypeRef::Primitive(Prim::Any)));
-    let typ = if field.optional && !required_unknown {
+    let typ = if field.optional {
         imports.add_plain("typing");
         Doc::group("typing.Optional[", vec![inner], "]")
     } else {
@@ -3272,7 +3267,9 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     lines.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut lines, ep, imports);
     lines.extend(["        )".to_string(), "        try:".to_string()]);
-    if matches!(ep.response, Some(TypeRef::Optional(_))) {
+    if matches!(ep.response, Some(TypeRef::Optional(_)))
+        || ep.response_may_be_empty && matches!(ep.response, Some(TypeRef::Primitive(Prim::Any)))
+    {
         lines.extend([
             "            if _response is None or not _response.text.strip():".to_string(),
             format!("                return {wrapper}(response=_response, data=None)"),
@@ -7408,6 +7405,7 @@ mod tests {
             body_response_same_ref: false,
             body_schema_is_success_response: false,
             response,
+            response_may_be_empty: false,
             response_doc: None,
             errors: Vec::new(),
             docstring: None,

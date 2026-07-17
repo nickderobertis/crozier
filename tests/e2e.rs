@@ -15360,14 +15360,14 @@ fn mixed_error_body_shapes_downgrade_status_class_to_any() {
     let raw = std::fs::read_to_string(out.join("src/acme/gadgets/raw_client.py"))
         .expect("gadgets raw client is generated");
     assert!(
-        raw.contains("type_=typing.Optional[typing.Any]"),
-        "a status class with any bodyless response should parse every branch as Optional[Any]: {raw}"
+        raw.contains("type_=typing.Any"),
+        "a status class with any bodyless response should parse every branch as Any: {raw}"
     );
     let error = std::fs::read_to_string(out.join("src/acme/errors/bad_request_error.py"))
         .expect("BadRequestError is generated");
     assert!(
-        error.contains("body: typing.Optional[typing.Any]"),
-        "the generated error class should also accept Optional[Any]: {error}"
+        error.contains("body: typing.Any"),
+        "the generated error class should also accept Any: {error}"
     );
 }
 
@@ -15381,9 +15381,8 @@ fn conflicting_error_body_types_downgrade_status_class_to_any() {
     let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
         .expect("widgets raw client is generated");
     assert!(
-        error.contains("body: typing.Optional[typing.Any]")
-            && raw.contains("type_=typing.Optional[typing.Any]"),
-        "a shared status with conflicting body schemas should use Optional[Any]:\n{error}\n{raw}"
+        error.contains("body: typing.Any") && raw.contains("type_=typing.Any"),
+        "a shared status with conflicting body schemas should use Any:\n{error}\n{raw}"
     );
 }
 

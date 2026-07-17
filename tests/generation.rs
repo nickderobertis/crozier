@@ -345,16 +345,14 @@ fn nullable_scalar_alias_is_optional() {
 
 #[test]
 fn unknown_schema_maps_to_any_with_field_absence_modeled_separately() {
-    // Fern 5.20 renders an empty alias as bare `Any`. A containing field adds
-    // Optional when the property may be absent; semantic catch-all fields named
-    // `value` retain Fern's intrinsic Optional, with property absence adding the
-    // outer wrapper.
+    // Fern 5.20 renders an empty alias and a required unknown field as bare `Any`.
+    // A containing field adds one Optional only when the property may be absent.
     let files = render(
         "openapi: 3.0.0\ninfo:\n  title: U\ncomponents:\n  schemas:\n    Unknown: {}\n    Holder:\n      type: object\n      required: [value]\n      properties:\n        value: {}\n        other: {}\n    Patch:\n      type: object\n      properties:\n        value: {}\n",
     );
     assert!(files["src/acme/types/unknown.py"].contains("Unknown = typing.Any"));
     assert!(
-        files["src/acme/types/holder.py"].contains("value: typing.Optional[typing.Any]\n"),
+        files["src/acme/types/holder.py"].contains("value: typing.Any\n"),
         "{}",
         files["src/acme/types/holder.py"]
     );
@@ -364,8 +362,7 @@ fn unknown_schema_maps_to_any_with_field_absence_modeled_separately() {
         files["src/acme/types/holder.py"]
     );
     assert!(
-        files["src/acme/types/patch.py"]
-            .contains("value: typing.Optional[typing.Optional[typing.Any]] = None"),
+        files["src/acme/types/patch.py"].contains("value: typing.Optional[typing.Any] = None"),
         "{}",
         files["src/acme/types/patch.py"]
     );
@@ -2677,23 +2674,14 @@ components:
     );
 
     let error = &files["src/acme/errors/bad_request_error.py"];
-    assert!(
-        error.contains("body: typing.Optional[typing.Any]"),
-        "{error}"
-    );
+    assert!(error.contains("body: typing.Any"), "{error}");
     for raw_path in [
         "src/acme/alpha/raw_client.py",
         "src/acme/beta/raw_client.py",
     ] {
         let raw = &files[raw_path];
-        assert!(
-            raw.contains("typing.Optional[typing.Any],"),
-            "{raw_path}:\n{raw}"
-        );
-        assert!(
-            raw.contains("type_=typing.Optional[typing.Any]"),
-            "{raw_path}:\n{raw}"
-        );
+        assert!(raw.contains("typing.Any,"), "{raw_path}:\n{raw}");
+        assert!(raw.contains("type_=typing.Any"), "{raw_path}:\n{raw}");
     }
 }
 
@@ -3908,7 +3896,7 @@ components:
 }
 
 #[test]
-fn unknown_alias_variants_collapse_to_optional_any() {
+fn unknown_alias_variants_collapse_to_any() {
     let files = render(
         r#"openapi: 3.1.0
 info: { title: Unknown Aliases, version: 1.0.0 }
@@ -3920,12 +3908,15 @@ components:
       nullable: true
 "#,
     );
-    for name in ["null_only", "nullable_unknown"] {
+    for (name, alias) in [
+        ("null_only", "NullOnly = typing.Any"),
+        ("nullable_unknown", "NullableUnknown = typing.Any"),
+    ] {
         let path = format!("src/acme/types/{name}.py");
         let module = &files[&path];
         assert!(
-            module.contains("typing.Optional[typing.Any]"),
-            "{name} must use the optional unknown fallback: {module}"
+            module.contains(alias),
+            "{name} must use the Fern 5.20 unknown fallback: {module}"
         );
     }
 }
