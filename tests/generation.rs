@@ -2933,7 +2933,7 @@ paths:
     );
     let raw = &files["src/acme/uploads/raw_client.py"];
     assert!(
-        raw.contains("payload: typing.Optional[typing.Optional[typing.Any]] = OMIT"),
+        raw.contains("payload: typing.Optional[typing.Any] = OMIT"),
         "{raw}"
     );
     assert!(raw.contains("document: core.File"), "{raw}");

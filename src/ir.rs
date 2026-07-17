@@ -3210,8 +3210,8 @@ fn hoist_form_object(
             BodyField {
                 wire_name: prop.clone(),
                 py_name: naming::field_name(prop),
-                type_ref: if is_unknown(prop_schema) {
-                    TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
+                type_ref: if is_unknown(prop_schema) && !prop_schema.malformed {
+                    TypeRef::Primitive(Prim::Any)
                 } else if is_file {
                     base_type_ref(prop_schema)
                 } else {
@@ -5061,7 +5061,10 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         return if reference.starts_with("#/components/schemas/") {
             TypeRef::Named(ref_to_class(reference))
         } else {
-            TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
+            // A non-component pointer that cannot be resolved by the component
+            // type builder is still an unknown value. Fern 5.20 keeps the value
+            // itself as bare `Any`; its containing field models absence.
+            TypeRef::Primitive(Prim::Any)
         };
     }
     if let Some(reference) = single_all_of_ref(schema) {
@@ -7261,7 +7264,7 @@ mod tests {
             base_type_ref(&schema(
                 serde_json::json!({ "$ref": "external.json#/Thing" })
             )),
-            TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
+            TypeRef::Primitive(Prim::Any)
         );
         assert_eq!(
             base_type_ref(&schema(serde_json::json!({
