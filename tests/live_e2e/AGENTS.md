@@ -53,7 +53,8 @@ required leg (`live-e2e`, aggregated into `gate`).
   are the mock failing to honor the spec, provably independent of which SDK calls it
   (Fern's own client hits them identically), so `_driver._mock_side_reason`
   classifies exactly these two cases — an `ApiError` with `status_code >= 500`, and a
-  `pydantic.ValidationError` whose every error is `missing` — as a **skip** carrying
+  direct `pydantic.ValidationError` whose every error is `missing` (or Fern 5.20's
+  exact generated `ParsingError` wrapping that same cause) — as a **skip** carrying
   the reason. Everything else (a 4xx, a wrong-type field, a failed constraint) still
   fails the gate. This can't mask a crozier bug: the byte-diff e2e independently
   proves each model's required/optional shape against Fern. Do **not** widen this to

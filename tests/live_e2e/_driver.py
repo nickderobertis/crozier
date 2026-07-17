@@ -95,18 +95,28 @@ def _mock_side_reason(error):
       building the body, so no spec-shaped response was ever served. A 4xx is *not*
       covered here — that signals a request the relaxer missed, a real failure.
     - **A response missing a schema-required field.** pydantic rejects it with only
-      `missing` errors. The mock emitted a payload that violates the response schema
-      it was mocking (e.g. json-schema-faker dropping a `required` property); a
-      correct SDK rejecting an invalid-per-schema body is not a defect. A validation
-      error with any non-`missing` cause (wrong type, failed constraint) is a real
-      failure and falls through. The byte-diff gate independently proves the model's
+      `missing` errors. Fern 5.20 wraps response-validation errors in its generated
+      `ParsingError`, so unwrap only that exact class's pydantic `cause`; direct
+      pydantic errors from this driver's return-type revalidation remain supported.
+      The mock emitted a payload that violates the response schema it was mocking
+      (e.g. json-schema-faker dropping a `required` property); a correct SDK
+      rejecting an invalid-per-schema body is not a defect. A validation error with
+      any non-`missing` cause (wrong type, failed constraint) is a real failure and
+      falls through. The byte-diff gate independently proves the model's
       required/optional shape matches Fern, so this can never mask a crozier bug.
     """
     status = getattr(error, "status_code", None)
     if isinstance(status, int) and status >= 500:
         return f"prism {status}: mock server failed to generate a response body"
-    if isinstance(error, pydantic.ValidationError):
-        errors = error.errors()
+    validation_error = error if isinstance(error, pydantic.ValidationError) else None
+    if (
+        type(error).__name__ == "ParsingError"
+        and type(error).__module__.endswith(".core.parse_error")
+        and isinstance(getattr(error, "cause", None), pydantic.ValidationError)
+    ):
+        validation_error = error.cause
+    if validation_error is not None:
+        errors = validation_error.errors()
         if errors and all(item.get("type") == "missing" for item in errors):
             fields = ", ".join(
                 ".".join(str(part) for part in item["loc"]) for item in errors

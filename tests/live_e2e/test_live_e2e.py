@@ -85,6 +85,19 @@ def test_partial_corpus_round_trips(recordings):
         )
 
 
+def test_partial_corpus_exercises_the_fern_5_20_parsing_error_classifier(recordings):
+    """The real Bunq/Prism journey covers Fern 5.20's ParsingError wrapper; only
+    missing-required-field validation causes become mock-side skips."""
+    recording = recordings["bunq.com"]
+    reasons = [obs["reason"] for obs in recording.values() if obs.get("skipped")]
+    assert reasons, "Bunq's seeded Prism responses should exercise the skip classifier"
+    assert all(
+        reason.startswith("mock response omitted schema-required field(s):")
+        or reason.startswith("prism 5")
+        for reason in reasons
+    ), reasons
+
+
 def test_response_models_are_deserialized(recordings):
     """Guard against a trivially-passing sweep: a complicated corpus must return real
     pydantic response models, not merely primitives — proof deserialization ran."""
