@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.33](https://github.com/nickderobertis/crozier/compare/v0.0.32...v0.0.33) - 2026-07-17
+
+### Other
+
+- dogfood Redocly Museum Fern fixture ([#110](https://github.com/nickderobertis/crozier/pull/110))
+
 ## [0.0.32](https://github.com/nickderobertis/crozier/compare/v0.0.31...v0.0.32) - 2026-07-16
 
 ### Added
