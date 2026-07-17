@@ -2225,9 +2225,9 @@ components:
         "the recursive variant field is a same-file forward ref:\n{node}"
     );
     assert!(
-        node.contains("update_forward_refs(Node_And)")
+        node.contains("update_forward_refs(Node_And, Node=Node)")
             && !node.contains("update_forward_refs(Node_Leaf)"),
-        "only the recursive wrapper is repaired:\n{node}"
+        "only the recursive wrapper is repaired with the full cycle closure:\n{node}"
     );
     // The referenced schema defers its cross-module import to after the class.
     let and_node = &files["src/acme/types/and_node.py"];
@@ -2240,7 +2240,7 @@ components:
     );
     assert!(
         after_class.contains("from .node import Node")
-            && after_class.contains("update_forward_refs(AndNode)"),
+            && after_class.contains("update_forward_refs(AndNode, Node=Node)"),
         "the cyclic import is deferred and repaired:\n{and_node}"
     );
 }

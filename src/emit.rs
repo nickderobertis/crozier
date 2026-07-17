@@ -114,6 +114,10 @@ struct Imports {
     /// after the class body (a deferred import) so the module loads without the
     /// cycle firing at import time.
     deferred: BTreeSet<String>,
+    /// First-registration order for deferred imports. Fern keeps direct field
+    /// references ahead of the additional namespace used to repair a cycle;
+    /// aliases still use [`Self::deferred`]'s sorted order under `TYPE_CHECKING`.
+    deferred_order: Vec<String>,
 }
 
 impl Imports {
@@ -165,7 +169,10 @@ impl Imports {
         if self.forward.contains(class) {
             if naming::module_name(class) != self.cur_module {
                 let path = self.type_import_path(class);
-                self.deferred.insert(format!("from {path} import {class}"));
+                let line = format!("from {path} import {class}");
+                if self.deferred.insert(line.clone()) {
+                    self.deferred_order.push(line);
+                }
             }
             return;
         }
@@ -595,6 +602,32 @@ fn decl_refs(decl: &TypeDecl) -> Vec<String> {
     out
 }
 
+/// Named types that occur in a declaration's emitted annotations. Unlike the
+/// cycle-detection graph, a discriminated union excludes its source variant
+/// targets: Fern emits wrapper classes, so those source models are not names
+/// `update_forward_refs` must resolve for the union module.
+fn decl_annotation_refs(decl: &TypeDecl) -> Vec<String> {
+    let mut out = Vec::new();
+    match decl {
+        TypeDecl::Object(object) => {
+            out.extend(object.bases.iter().cloned());
+            for field in &object.fields {
+                collect_named_refs(&field.type_ref, &mut out);
+            }
+        }
+        TypeDecl::Alias(alias) => collect_named_refs(&alias.target, &mut out),
+        TypeDecl::DiscriminatedUnion(union) => {
+            for member in &union.members {
+                for field in &member.fields {
+                    collect_named_refs(&field.type_ref, &mut out);
+                }
+            }
+        }
+        TypeDecl::Enum(_) => {}
+    }
+    out
+}
+
 /// For every generated type, the subset of its own references that close a cycle
 /// back to it — the references crozier must emit as string forward references
 /// with a deferred/omitted import so the module graph loads (issue #84).
@@ -672,24 +705,35 @@ fn forward_ref_map(
     map
 }
 
-/// The types that transitively reference a type in a cycle (including the cyclic
-/// types themselves). Fern emits `from __future__ import annotations` +
-/// `update_forward_refs` for exactly these — even when no individual field of the
-/// type is a string forward reference (a `DraftPayment` whose `schedule` field
-/// reaches a cycle it is not part of still needs the trailer). Computed by reverse
-/// reachability from the cyclic types over the reference graph.
-fn types_reaching_cycle(
+/// For each non-alias declaration that reaches a recursive type, collect every
+/// cyclic name in its forward-reference closure. Fern passes that complete set to
+/// `update_forward_refs`, including names reached transitively through aliases.
+/// An object excludes its own class (already the call's first argument), while a
+/// discriminated union retains its alias name because the first argument is a
+/// generated variant wrapper.
+#[derive(Default)]
+struct ForwardRepair {
+    names: std::collections::HashSet<String>,
+    import_order: Vec<String>,
+}
+
+fn forward_repair_map(
     types: &[TypeDecl],
     tag_types: &[crate::ir::TagTypeDecl],
-) -> std::collections::HashSet<String> {
+) -> std::collections::HashMap<String, ForwardRepair> {
     use std::collections::{HashMap, HashSet};
 
     let mut edges: HashMap<String, Vec<String>> = HashMap::new();
+    let mut repair_edges: HashMap<String, Vec<String>> = HashMap::new();
     for decl in types.iter().chain(tag_types.iter().map(|t| &t.decl)) {
         edges
             .entry(decl.name().to_string())
             .or_default()
             .extend(decl_refs(decl));
+        repair_edges
+            .entry(decl.name().to_string())
+            .or_default()
+            .extend(decl_annotation_refs(decl));
     }
     let reaches = |start: &str, target: &str| -> bool {
         let mut stack: Vec<&str> = edges
@@ -710,29 +754,83 @@ fn types_reaching_cycle(
         false
     };
 
-    // A type is cyclic when it can reach itself. Reverse edges, then flood from the
-    // cyclic set: every type that can reach a cyclic one is caught.
-    let cyclic: Vec<&str> = edges
+    let cyclic: HashSet<&str> = edges
         .keys()
         .map(String::as_str)
         .filter(|n| reaches(n, n))
         .collect();
-    let mut reverse: HashMap<&str, Vec<&str>> = HashMap::new();
-    for (from, tos) in &edges {
-        for to in tos {
-            reverse.entry(to.as_str()).or_default().push(from.as_str());
+    let aliases: HashSet<&str> = types
+        .iter()
+        .chain(tag_types.iter().map(|tag| &tag.decl))
+        .filter_map(|decl| matches!(decl, TypeDecl::Alias(_)).then_some(decl.name()))
+        .collect();
+
+    let mut out = HashMap::new();
+    for decl in types.iter().chain(tag_types.iter().map(|tag| &tag.decl)) {
+        if matches!(decl, TypeDecl::Alias(_)) {
+            continue;
         }
-    }
-    let mut out: HashSet<String> = HashSet::new();
-    let mut stack: Vec<&str> = cyclic.clone();
-    for c in &cyclic {
-        out.insert((*c).to_string());
-    }
-    while let Some(node) = stack.pop() {
-        for &pred in reverse.get(node).into_iter().flatten() {
-            if out.insert(pred.to_string()) {
-                stack.push(pred);
+        let mut reach_stack: Vec<&str> = edges
+            .get(decl.name())
+            .into_iter()
+            .flatten()
+            .map(String::as_str)
+            .collect();
+        let mut reach_seen = HashSet::new();
+        let mut reaches_cycle = false;
+        while let Some(node) = reach_stack.pop() {
+            reaches_cycle |= cyclic.contains(node);
+            if reach_seen.insert(node) {
+                reach_stack.extend(edges.get(node).into_iter().flatten().map(String::as_str));
             }
+        }
+
+        let closure_edges = if matches!(decl, TypeDecl::DiscriminatedUnion(_)) {
+            &repair_edges
+        } else {
+            &edges
+        };
+        let mut stack: Vec<&str> = repair_edges
+            .get(decl.name())
+            .into_iter()
+            .flatten()
+            .map(String::as_str)
+            .filter(|name| cyclic.contains(name))
+            .collect();
+        let mut seen = HashSet::new();
+        let mut repair = HashSet::new();
+        while let Some(node) = stack.pop() {
+            if cyclic.contains(node) {
+                repair.insert(node.to_string());
+            }
+            if seen.insert(node) {
+                stack.extend(
+                    closure_edges
+                        .get(node)
+                        .into_iter()
+                        .flatten()
+                        .map(String::as_str),
+                );
+            }
+        }
+        if matches!(decl, TypeDecl::Object(_)) {
+            repair.remove(decl.name());
+        }
+        if reaches_cycle {
+            let mut import_order: Vec<String> = repair.iter().cloned().collect();
+            import_order.sort_by(|left, right| {
+                aliases
+                    .contains(left.as_str())
+                    .cmp(&aliases.contains(right.as_str()))
+                    .then_with(|| natural_cmp(left, right))
+            });
+            out.insert(
+                decl.name().to_string(),
+                ForwardRepair {
+                    names: repair,
+                    import_order,
+                },
+            );
         }
     }
     out
@@ -754,7 +852,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // Recursive types: per type, the references that must render as string forward
     // references (issue #84). Empty for the common acyclic case.
     let forward_map = forward_ref_map(&ir.types, &ir.tag_types);
-    let reaching_cycle = types_reaching_cycle(&ir.types, &ir.tag_types);
+    let repair_map = forward_repair_map(&ir.types, &ir.tag_types);
     let empty_forward = std::collections::HashSet::new();
 
     // version.py
@@ -778,6 +876,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // One file per generated type.
     for decl in &ir.types {
         let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
+        let repair = repair_map.get(decl.name());
         let file = render_type_decl(
             &env,
             decl,
@@ -785,7 +884,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             &tag_map,
             ir.extra_fields,
             forward,
-            reaching_cycle.contains(decl.name()),
+            repair,
         )?;
         files.push(GeneratedFile {
             path: PathBuf::from(format!("src/{pkg}/types/{}.py", decl.module())),
@@ -805,6 +904,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     for (module, decls) in &tag_type_modules {
         for decl in decls {
             let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
+            let repair = repair_map.get(decl.name());
             let location = if module.is_empty() {
                 RefLoc::RootTypes
             } else {
@@ -817,7 +917,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 &tag_map,
                 ir.extra_fields,
                 forward,
-                reaching_cycle.contains(decl.name()),
+                repair,
             )?;
             files.push(GeneratedFile {
                 path: PathBuf::from(format!("src/{pkg}/{module}/types/{}.py", decl.module())),
@@ -2466,6 +2566,14 @@ fn render_class_body(
     )
 }
 
+fn update_forward_refs_call(target: &str, repair: &ForwardRepair) -> String {
+    let mut names: Vec<&str> = repair.names.iter().map(String::as_str).collect();
+    names.sort_by(|left, right| natural_cmp(left, right));
+    let mut arguments = vec![target.to_string()];
+    arguments.extend(names.into_iter().map(|name| format!("{name}={name}")));
+    format!("update_forward_refs({})", arguments.join(", "))
+}
+
 /// Render one type declaration to a file body. `loc` is the file's location
 /// (package-root `types/` or a tag's `types/`), which sets the `core`/type import
 /// depth; `tag_types` maps hoisted type names to their tags for those references.
@@ -2476,16 +2584,20 @@ fn render_type_decl(
     tag_types: &BTreeMap<String, String>,
     extra: ExtraFields,
     forward: &std::collections::HashSet<String>,
-    // Whether this type reaches a cycle and so emits `from __future__` +
-    // `update_forward_refs`, even if `forward` (its own quoted field refs) is empty.
-    needs_forward: bool,
+    repair: Option<&ForwardRepair>,
 ) -> Result<String> {
+    // Reaching a cycle requires `from __future__` + `update_forward_refs`, even
+    // when `forward` (this declaration's own quoted field refs) is empty.
+    let needs_forward = repair.is_some();
+    let empty_repair = ForwardRepair::default();
+    let repair = repair.unwrap_or(&empty_repair);
     match decl {
         TypeDecl::Object(obj) => {
             let mut imports = Imports::at(loc, tag_types);
             // A recursive model's cyclic field references render as string forward
             // references and skip/defer their imports (issue #84).
             imports.forward = forward.clone();
+            imports.forward.extend(repair.names.iter().cloned());
             imports.cur_module = obj.module.clone();
             imports.add_plain("typing");
             imports.add_plain("pydantic");
@@ -2512,6 +2624,9 @@ fn render_type_decl(
                     }
                 })
                 .collect();
+            for name in &repair.import_order {
+                imports.add_type(name);
+            }
             if !forward.is_empty() || needs_forward {
                 // A recursive model: `from __future__ import annotations` lets the
                 // string forward refs resolve lazily, and `update_forward_refs`
@@ -2529,13 +2644,26 @@ fn render_type_decl(
                 // imports (a blank line after them), then the forward-ref repair.
                 file.push_str("\n\n\n");
                 if !imports.deferred.is_empty() {
-                    for line in &imports.deferred {
+                    // Fern's reserved-module path registers direct model refs
+                    // before its repair namespace; ordinary modules sort this
+                    // block. Preserve that distinction (`Class` → `class_`).
+                    let reserved_module = obj
+                        .module
+                        .strip_suffix('_')
+                        .is_some_and(naming::is_reserved);
+                    let deferred: Vec<&String> = if reserved_module {
+                        imports.deferred_order.iter().collect()
+                    } else {
+                        imports.deferred.iter().collect()
+                    };
+                    for line in deferred {
                         file.push_str(line);
                         file.push('\n');
                     }
                     file.push('\n');
                 }
-                file.push_str(&format!("update_forward_refs({})\n", obj.name));
+                file.push_str(&update_forward_refs_call(&obj.name, repair));
+                file.push('\n');
                 return Ok(file);
             }
             let (config_dict_args, extra_kind) = extra_config(extra);
@@ -2597,7 +2725,7 @@ fn render_type_decl(
         }
         TypeDecl::Enum(e) => render_enum(env, e, &loc),
         TypeDecl::DiscriminatedUnion(union) => {
-            render_discriminated_union(env, union, extra, loc, tag_types, forward)
+            render_discriminated_union(env, union, extra, loc, tag_types, forward, repair)
         }
     }
 }
@@ -2675,18 +2803,23 @@ fn render_discriminated_union(
     loc: RefLoc,
     tag_types: &BTreeMap<String, String>,
     forward: &std::collections::HashSet<String>,
+    repair: &ForwardRepair,
 ) -> Result<String> {
     let mut imports = Imports::at(loc, tag_types);
     // A recursive variant references the union by string forward reference
     // (issue #84); a same-module ref (the common case — the union alias lives in
     // this file) needs no import.
     imports.forward = forward.clone();
+    imports.forward.extend(repair.names.iter().cloned());
     imports.cur_module = union.module.clone();
     imports.add_plain("typing");
     imports.add_plain("pydantic");
     imports.add_plain("typing_extensions");
     imports.add_core("pydantic_utilities", "IS_PYDANTIC_V2");
     imports.add_core("pydantic_utilities", "UniversalBaseModel");
+    for name in &repair.import_order {
+        imports.add_type(name);
+    }
 
     let mut classes: Vec<String> = Vec::new();
     for member in &union.members {
@@ -2744,7 +2877,8 @@ fn render_discriminated_union(
                 .iter()
                 .any(|f| type_uses_forward(&f.type_ref, forward))
             {
-                trailer.push_str(&format!("\nupdate_forward_refs({})", member.class_name));
+                trailer.push('\n');
+                trailer.push_str(&update_forward_refs_call(&member.class_name, repair));
             }
         }
     }
@@ -8850,7 +8984,7 @@ mod tests {
             &Default::default(),
             crate::settings::ExtraFields::Allow,
             &std::collections::HashSet::from(["Node".to_string()]),
-            false,
+            None,
         )
         .expect("recursive alias renders");
         assert!(rendered.contains("from __future__ import annotations"));
