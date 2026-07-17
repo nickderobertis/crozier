@@ -323,6 +323,7 @@ fn render_type(t: &TypeRef, imports: &mut Imports) -> Doc {
     match t {
         TypeRef::Primitive(p) => match p {
             Prim::Str => Doc::atom("str"),
+            Prim::Bytes => Doc::atom("bytes"),
             Prim::Int | Prim::Long => Doc::atom("int"),
             Prim::Float => Doc::atom("float"),
             Prim::Bool => Doc::atom("bool"),
@@ -439,16 +440,32 @@ fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
         inner
     };
 
-    // Fern carries the wire alias in `FieldMetadata` inside the `Annotated`, not
-    // in `pydantic.Field`.
+    // Fern 5.20 carries the wire alias in both its serialization metadata and a
+    // pydantic field marker. The former drives crozier's write-side converter;
+    // the latter makes direct pydantic construction/deserialization honor it.
     let annotation = if field.needs_alias() {
+        imports.add_plain("pydantic");
         imports.add_plain("typing_extensions");
         imports.add_core("serialization", "FieldMetadata");
+        let pydantic_field = field.docstring.as_ref().map_or_else(
+            || Doc::atom(format!("pydantic.Field(alias=\"{}\")", field.wire_name)),
+            |description| {
+                Doc::group(
+                    "pydantic.Field(",
+                    vec![
+                        Doc::atom(format!("alias=\"{}\"", field.wire_name)),
+                        Doc::atom(format!("description=\"{}\"", escape_py_str(description))),
+                    ],
+                    ")",
+                )
+            },
+        );
         Doc::group(
             "typing_extensions.Annotated[",
             vec![
                 typ,
                 Doc::atom(format!("FieldMetadata(alias=\"{}\")", field.wire_name)),
+                pydantic_field,
             ],
             "]",
         )
@@ -468,6 +485,16 @@ fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
 /// `pydantic.Field` (with `default=None` when optional); an undocumented
 /// optional field defaults to `None`; a required undocumented field has none.
 fn field_default(field: &Field, imports: &mut Imports) -> String {
+    // An aliased field already carries its pydantic.Field in Annotated. Adding a
+    // second Field as the default changes pydantic's metadata merge semantics and
+    // diverges from Fern 5.20; optional aliases use the ordinary None default.
+    if field.needs_alias() {
+        return if field.optional {
+            " = None".to_string()
+        } else {
+            String::new()
+        };
+    }
     if field.docstring.is_some() {
         imports.add_plain("pydantic");
         if field.optional {
@@ -2511,6 +2538,11 @@ fn render_type_decl(
             imports.cur_module = alias.module.clone();
             let target = render_type(&alias.target, &mut imports);
             let assignment = format!("{} = {}", alias.name, target.flat());
+            let docstring = alias
+                .docstring
+                .as_deref()
+                .map(|doc| format!("{}\n", render_docstring(doc, 0)))
+                .unwrap_or_default();
             if !forward.is_empty() {
                 let mut contents = format!(
                     "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n",
@@ -2522,7 +2554,7 @@ fn render_type_decl(
                         contents.push_str(&format!("    {line}\n"));
                     }
                 }
-                contents.push_str(&format!("{assignment}\n"));
+                contents.push_str(&format!("{assignment}\n{docstring}"));
                 return Ok(contents);
             }
             render(
@@ -2533,26 +2565,36 @@ fn render_type_decl(
                     header => HEADER,
                     imports => imports.render(),
                     assignment => assignment,
+                    docstring => docstring,
                 },
             )
         }
-        TypeDecl::Enum(e) => render_enum(env, e),
+        TypeDecl::Enum(e) => render_enum(env, e, &loc),
         TypeDecl::DiscriminatedUnion(union) => {
             render_discriminated_union(env, union, extra, loc, tag_types, forward)
         }
     }
 }
 
-/// Render a string enum to its module: a `class {Name}(str, enum.Enum)` with a
+/// Render a string enum to its module: a `class {Name}(enum.StrEnum)` with a
 /// `SCREAMING_SNAKE = "value"` member per value and a `visit` dispatch method
-/// (Fern's `enum_type: python_enums` shape). The `visit` signature is emitted on
-/// one line; the `ruff` post-pass wraps it past the line-length limit.
-fn render_enum(env: &Environment<'static>, e: &crate::ir::EnumType) -> Result<String> {
-    let mut body = String::from(
-        "import enum\nimport typing\n\nT_Result = typing.TypeVar(\"T_Result\")\n\n\nclass ",
+/// (Fern's `enum_type: python_enums` shape). Fern's compatibility enum is under
+/// the package-root `core`, so tag-hoisted types need one more relative dot.
+fn render_enum(
+    env: &Environment<'static>,
+    e: &crate::ir::EnumType,
+    loc: &RefLoc,
+) -> Result<String> {
+    let core_parent = match loc {
+        RefLoc::TagTypes(_) => "...core",
+        RefLoc::RootTypes => "..core",
+        RefLoc::Client(_) | RefLoc::Errors | RefLoc::PackageRoot => ".core",
+    };
+    let mut body = format!(
+        "import typing\n\nfrom {core_parent} import enum\n\nT_Result = typing.TypeVar(\"T_Result\")\n\n\nclass "
     );
     body.push_str(&e.name);
-    body.push_str("(str, enum.Enum):\n");
+    body.push_str("(enum.StrEnum):\n");
     if let Some(doc) = &e.docstring {
         // Fern renders the schema description as a class docstring, then a blank
         // line before the first member.
@@ -2724,6 +2766,7 @@ fn raw_type_str(t: &TypeRef, imports: &mut Imports) -> String {
 fn raw_type_str_ctx(t: &TypeRef, imports: &mut Imports, seq: bool) -> String {
     match t {
         TypeRef::Primitive(Prim::Str) => "str".to_string(),
+        TypeRef::Primitive(Prim::Bytes) => "bytes".to_string(),
         TypeRef::Primitive(Prim::Int | Prim::Long) => "int".to_string(),
         TypeRef::Primitive(Prim::Float) => "float".to_string(),
         TypeRef::Primitive(Prim::Bool) => "bool".to_string(),
@@ -5070,9 +5113,8 @@ impl<'a> ExampleCtx<'a> {
                 .any(|variant| self.example_matches_type(variant, value)),
             TypeRef::List(_) | TypeRef::Set(_) => value.is_array(),
             TypeRef::Dict(_, _) => value.is_object(),
-            TypeRef::Primitive(Prim::Str | Prim::Datetime | Prim::Date) | TypeRef::Literal(_) => {
-                value.is_string()
-            }
+            TypeRef::Primitive(Prim::Str | Prim::Bytes | Prim::Datetime | Prim::Date)
+            | TypeRef::Literal(_) => value.is_string(),
             TypeRef::Primitive(Prim::Int | Prim::Long) => value.as_i64().is_some(),
             TypeRef::Primitive(Prim::Float) => value.is_number(),
             TypeRef::Primitive(Prim::Bool) => value.is_boolean(),
@@ -5142,6 +5184,7 @@ impl<'a> ExampleCtx<'a> {
                 };
                 Example::Atom(format!("\"{s}\""))
             }
+            TypeRef::Primitive(Prim::Bytes) => Example::Atom("b\"string\"".to_string()),
             TypeRef::Primitive(Prim::Int) => Example::Atom("1".to_string()),
             TypeRef::Primitive(Prim::Long) => Example::Atom("1000000".to_string()),
             TypeRef::Primitive(Prim::Float) => Example::Atom("1.1".to_string()),
@@ -5373,7 +5416,7 @@ fn example_scalar(t: &TypeRef) -> bool {
         TypeRef::Primitive(p) => {
             matches!(
                 p,
-                Prim::Str | Prim::Int | Prim::Long | Prim::Float | Prim::Bool
+                Prim::Str | Prim::Bytes | Prim::Int | Prim::Long | Prim::Float | Prim::Bool
             )
         }
         _ => false,
@@ -8236,8 +8279,11 @@ mod tests {
                 }],
                 docstring: Some("State enum.".to_string()),
             },
+            &RefLoc::RootTypes,
         )
         .expect("documented enum renders");
+        assert!(enum_output.contains("from ..core import enum"));
+        assert!(enum_output.contains("class State(enum.StrEnum):"));
         assert!(enum_output.contains("State enum."));
         assert!(enum_output.contains("READY = \"ready\\\"now\""));
         assert!(enum_output.contains("Ready member."));

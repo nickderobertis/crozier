@@ -149,10 +149,10 @@ fn object_fields_render_with_fern_conventions() {
     // Described field: pydantic.Field(default=None) + docstring line.
     assert!(widget.contains("described: typing.Optional[str] = pydantic.Field(default=None)"));
     assert!(widget.contains("A described optional field."));
-    // Reserved name is munged and aliased; the wire alias lives only in
-    // FieldMetadata (not pydantic.Field).
+    // Reserved name is munged and aliased; Fern 5.20 carries the wire alias in
+    // both its serialization metadata and pydantic's field metadata.
     assert!(widget.contains(
-        "list_: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias=\"list\")] = None"
+        "list_: typing_extensions.Annotated[\n        typing.Optional[typing.List[str]], FieldMetadata(alias=\"list\"), pydantic.Field(alias=\"list\")\n    ] = None"
     ), "aliased list field: {widget}");
     // Primitive mappings.
     assert!(widget.contains("when: typing.Optional[dt.datetime] = None"));
@@ -196,12 +196,13 @@ fn union_alias_and_scalar_alias_render() {
 
 #[test]
 fn string_enum_renders_as_enum_class() {
-    // crozier renders an OpenAPI string enum as a real `enum.Enum` class (Fern's
+    // crozier renders an OpenAPI string enum as Fern's compatibility `StrEnum`
     // `enum_type: python_enums` shape), with SCREAMING_SNAKE members over the wire
     // values and a `visit` dispatch method — not an open `Literal` union.
     let files = render(RICH_SPEC);
     let color = &files["src/acme/types/color.py"];
-    assert!(color.contains("class Color(str, enum.Enum):"), "{color}");
+    assert!(color.contains("from ..core import enum"), "{color}");
+    assert!(color.contains("class Color(enum.StrEnum):"), "{color}");
     assert!(color.contains("    RED = \"red\"\n"), "{color}");
     assert!(color.contains("    GREEN = \"green\"\n"), "{color}");
     assert!(
@@ -318,7 +319,7 @@ fn additional_properties_true_maps_to_open_dict() {
     );
     // Fern types an open map (`additionalProperties: true`) as a dict to unknown.
     assert!(files["src/acme/types/bag.py"]
-        .contains("data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None"));
+        .contains("data: typing.Optional[typing.Dict[str, typing.Any]] = None"));
 }
 
 #[test]
@@ -343,15 +344,17 @@ fn nullable_scalar_alias_is_optional() {
 }
 
 #[test]
-fn unknown_schema_maps_to_optional_any() {
-    // An empty schema is an unknown type: an `Optional[Any]` alias, and an
-    // always-optional `Optional[Any]` field even when listed as required.
+fn unknown_schema_maps_to_any_with_field_absence_modeled_separately() {
+    // Fern 5.20 renders an empty alias as bare `Any`. A containing field adds
+    // Optional when the property may be absent; semantic catch-all fields named
+    // `value` retain Fern's intrinsic Optional, with property absence adding the
+    // outer wrapper.
     let files = render(
         "openapi: 3.0.0\ninfo:\n  title: U\ncomponents:\n  schemas:\n    Unknown: {}\n    Holder:\n      type: object\n      required: [value]\n      properties:\n        value: {}\n        other: {}\n    Patch:\n      type: object\n      properties:\n        value: {}\n",
     );
-    assert!(files["src/acme/types/unknown.py"].contains("Unknown = typing.Optional[typing.Any]"));
+    assert!(files["src/acme/types/unknown.py"].contains("Unknown = typing.Any"));
     assert!(
-        files["src/acme/types/holder.py"].contains("value: typing.Optional[typing.Any] = None"),
+        files["src/acme/types/holder.py"].contains("value: typing.Optional[typing.Any]\n"),
         "{}",
         files["src/acme/types/holder.py"]
     );
@@ -395,7 +398,7 @@ fn wide_string_enum_wraps_like_ruff() {
         members.concat()
     );
     let big = render(&spec)["src/acme/types/big.py"].clone();
-    assert!(big.contains("class Big(str, enum.Enum):"), "{big}");
+    assert!(big.contains("class Big(enum.StrEnum):"), "{big}");
     assert!(
         big.contains("    VALUE_NUMBER_00_WITH_PADDING = \"VALUE_NUMBER_00_WITH_PADDING\"\n"),
         "{big}"
@@ -865,10 +868,7 @@ components:
     assert!(zero.contains("class PetZero(Dog):"), "{zero}");
     assert!(zero.contains("    kind: PetZeroKind\n"), "{zero}");
     let kind = &files["src/acme/types/pet_zero_kind.py"];
-    assert!(
-        kind.contains("class PetZeroKind(str, enum.Enum):"),
-        "{kind}"
-    );
+    assert!(kind.contains("class PetZeroKind(enum.StrEnum):"), "{kind}");
     assert!(kind.contains("    DOG = \"dog\"\n"), "{kind}");
     // Variant 1: no base, so it extends UniversalBaseModel; its field is optional.
     let one = &files["src/acme/types/pet_meow.py"];
@@ -897,8 +897,7 @@ fn named_explicit_empty_properties_is_model_while_omitted_is_dict_alias() {
         "{closed}"
     );
     assert!(closed.contains("extra=\"allow\""), "{closed}");
-    assert!(files["src/acme/types/open.py"]
-        .contains("Open = typing.Dict[str, typing.Optional[typing.Any]]"));
+    assert!(files["src/acme/types/open.py"].contains("Open = typing.Dict[str, typing.Any]"));
 }
 
 #[test]
@@ -1432,8 +1431,7 @@ fn read_only_field_is_optional_and_open_map_is_dict() {
     // `id` is readOnly → optional despite being required; `name` stays required.
     assert!(rec.contains("id: typing.Optional[str] = None"));
     assert!(rec.contains("name: str\n"));
-    assert!(rec
-        .contains("extra: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None"));
+    assert!(rec.contains("extra: typing.Optional[typing.Dict[str, typing.Any]] = None"));
 }
 
 /// A schema used only as an inlined (`$ref`-object) request body is not emitted as
@@ -2255,10 +2253,9 @@ paths:
         ("null_node", "nullNode"),
     ] {
         assert!(
-            resp.contains(&format!(
-                "{field}: typing_extensions.Annotated[\n        \
-                 typing.Optional[typing.Optional[typing.Any]], FieldMetadata(alias=\"{wire_name}\")\n    ] = None"
-            )),
+            resp.contains(&format!("{field}: typing_extensions.Annotated["))
+                && resp.contains(&format!("FieldMetadata(alias=\"{wire_name}\")"))
+                && resp.contains(&format!("pydantic.Field(alias=\"{wire_name}\")")),
             "the malformed scalar property {field} must degrade independently:\n{resp}"
         );
     }
@@ -2755,7 +2752,7 @@ paths:
 "#,
     );
     let response = &files["src/acme/shapes/types/shapes_get_response.py"];
-    assert!(response.contains("day0end_time: typing_extensions.Annotated[int, FieldMetadata(alias=\"day_0_end_time\")]"), "{response}");
+    assert!(response.contains("day0end_time: typing_extensions.Annotated[\n        int, FieldMetadata(alias=\"day_0_end_time\"), pydantic.Field(alias=\"day_0_end_time\")\n    ]"), "{response}");
     assert!(
         response.contains("metadata: ShapesGetResponseMetadata"),
         "{response}"
@@ -2804,9 +2801,7 @@ paths:
         "{model}"
     );
     assert_eq!(
-        model
-            .matches("typing.List[typing.Optional[typing.Any]]")
-            .count(),
+        model.matches("typing.List[typing.Any]").count(),
         2,
         "null-only and missing item schemas both use the unknown fallback: {model}"
     );
@@ -3018,7 +3013,7 @@ components:
     );
     let imports = &files["src/acme/imports/raw_client.py"];
     assert!(
-        imports.contains("request: typing.Dict[str, typing.Optional[typing.Any]]"),
+        imports.contains("request: typing.Dict[str, typing.Any]"),
         "{imports}"
     );
     assert!(
@@ -4107,8 +4102,7 @@ paths:
     );
     let raw = &files["src/acme/jobs/raw_client.py"];
     let client = &files["src/acme/jobs/client.py"];
-    assert!(files["src/acme/types/schema_document.py"]
-        .contains("typing.Dict[str, typing.Optional[typing.Any]]"));
+    assert!(files["src/acme/types/schema_document.py"].contains("typing.Dict[str, typing.Any]"));
     assert!(
         client.contains("configuration={\"user\": \"charles\"}"),
         "{client}"
@@ -4469,7 +4463,7 @@ paths:
     );
     let wild_method = raw.split("def wild(").nth(1).expect("wild raw method");
     assert!(
-        wild_method.contains("request: typing.Dict[str, typing.Optional[typing.Any]]"),
+        wild_method.contains("request: typing.Dict[str, typing.Any]"),
         "{wild_method}"
     );
     assert!(wild_method.contains("json=request"), "{wild_method}");
@@ -4801,7 +4795,7 @@ paths:
     let closed = &raw[closed_start..open_start];
     assert!(!closed.contains("request:"), "{closed}");
     assert!(
-        raw[open_start..].contains("request: typing.Dict[str, typing.Optional[typing.Any]]"),
+        raw[open_start..].contains("request: typing.Dict[str, typing.Any]"),
         "{raw}"
     );
 }

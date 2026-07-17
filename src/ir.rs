@@ -1189,6 +1189,8 @@ pub enum TypeRef {
 pub enum Prim {
     /// `str`.
     Str,
+    /// `bytes` from an OpenAPI `string` with `format: binary`.
+    Bytes,
     /// `int`.
     Int,
     /// `int` from `format: int64`. Renders as `int` like [`Prim::Int`]; kept
@@ -4122,7 +4124,7 @@ impl Builder<'_> {
         }
 
         // A bare `type: object` with no properties, `allOf`, or `additionalProperties`
-        // is a free-form object: Fern aliases it to `Dict[str, Optional[Any]]` (bunq's
+        // is a free-form object: Fern 5.20 aliases it to `Dict[str, Any]` (bunq's
         // `AttachmentPublic`, `Whitelist`, …), not an empty model class.
         if is_bare_object(schema)
             && !schema.properties.declared()
@@ -4135,7 +4137,7 @@ impl Builder<'_> {
                 module,
                 TypeRef::Dict(
                     Box::new(TypeRef::Primitive(Prim::Str)),
-                    Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))),
+                    Box::new(TypeRef::Primitive(Prim::Any)),
                 ),
                 docstring,
             );
@@ -4654,13 +4656,11 @@ impl Builder<'_> {
                                 }
                             }
                             // A bare `type: object` union member is an open map to
-                            // Fern (`Dict[str, Optional[Any]]`), not `Any`.
+                            // Fern (`Dict[str, Any]`), not an unstructured `Any`.
                             let ty = if is_bare_object(m) {
                                 TypeRef::Dict(
                                     Box::new(TypeRef::Primitive(Prim::Str)),
-                                    Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(
-                                        Prim::Any,
-                                    )))),
+                                    Box::new(TypeRef::Primitive(Prim::Any)),
                                 )
                             } else {
                                 base_type_ref(m)
@@ -4859,7 +4859,7 @@ fn is_inline_object(schema: &Schema) -> bool {
 }
 
 /// A bare `type: object` with no declared structure (no properties, `allOf`, or
-/// `additionalProperties`) — an open map Fern types as `Dict[str, Optional[Any]]`.
+/// `additionalProperties`) — an open map Fern 5.20 types as `Dict[str, Any]`.
 fn is_bare_object(schema: &Schema) -> bool {
     schema.reference.is_none()
         && schema.properties.is_empty()
@@ -4934,7 +4934,9 @@ fn ordinal_word(n: usize) -> &'static str {
 }
 
 /// Map a schema to its full type expression, wrapping in `Optional` when the
-/// schema is nullable or an unknown (untyped) schema. Used for aliases, where
+/// schema is explicitly nullable. Fern 5.20 represents an untyped value as bare
+/// `Any`; property absence is modeled separately by the containing field. Used
+/// for aliases, where
 /// optionality lives in the type itself rather than a separate field flag.
 fn full_type_ref(schema: &Schema) -> TypeRef {
     let base = base_type_ref(schema);
@@ -5018,24 +5020,25 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
     if is_bare_object(schema) {
         return TypeRef::Dict(
             Box::new(TypeRef::Primitive(Prim::Str)),
-            Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))),
+            Box::new(TypeRef::Primitive(Prim::Any)),
         );
     }
     if is_map(schema) {
         return match &schema.additional_properties {
             Some(AdditionalProperties::Schema(value)) => {
                 let mut val = base_type_ref(value);
-                // Fern makes a nullable map's value type optional too.
-                if schema.nullable == Some(true) || is_unknown(value) {
+                // Fern makes a nullable map's value type optional too. An
+                // ordinary unknown value itself is `Any` under Fern 5.20.
+                if schema.nullable == Some(true) {
                     val = TypeRef::Optional(Box::new(val));
                 }
                 TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(val))
             }
-            // `additionalProperties: true` is an open map to unknown values, which
-            // Fern types as `Dict[str, Optional[Any]]`.
+            // `additionalProperties: true` is an open map to unknown values,
+            // which Fern 5.20 types as `Dict[str, Any]`.
             Some(AdditionalProperties::Bool(true)) => TypeRef::Dict(
                 Box::new(TypeRef::Primitive(Prim::Str)),
-                Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))),
+                Box::new(TypeRef::Primitive(Prim::Any)),
             ),
             _ => TypeRef::Primitive(Prim::Any),
         };
@@ -5044,6 +5047,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         Some("string") => match schema.format.as_deref() {
             Some("date-time") => TypeRef::Primitive(Prim::Datetime),
             Some("date") => TypeRef::Primitive(Prim::Date),
+            Some("binary") => TypeRef::Primitive(Prim::Bytes),
             // Fern's OpenAPI importer maps other string formats (uuid, byte, ...)
             // to plain `str`.
             _ => TypeRef::Primitive(Prim::Str),
@@ -5052,16 +5056,16 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         Some("number") => TypeRef::Primitive(Prim::Float),
         Some("boolean") => TypeRef::Primitive(Prim::Bool),
         Some("array") => {
-            let item = schema.items.as_ref().map_or(
-                TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))),
-                |i| {
+            let item = schema
+                .items
+                .as_ref()
+                .map_or(TypeRef::Primitive(Prim::Any), |i| {
                     if is_unknown(i) {
-                        TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
+                        TypeRef::Primitive(Prim::Any)
                     } else {
                         array_item_type_ref(i)
                     }
-                },
-            );
+                });
             if array_uses_set(schema) {
                 TypeRef::Set(Box::new(item))
             } else {
@@ -5131,11 +5135,11 @@ fn property_description(schema: &Schema) -> Option<&str> {
         .or_else(|| described_all_of_ref(schema).and_then(|(_, description)| description))
 }
 
-/// Is a schema optional? A schema is optional when it is explicitly `nullable`
-/// or when it is an unknown (untyped) schema, which Fern always renders as
-/// `Optional[Any]`.
+/// Is a schema optional? Fern 5.20 reserves `Optional` for explicit nullability;
+/// an unknown (untyped) schema is bare `Any` and a containing field separately
+/// models whether the property may be absent.
 fn is_optional(schema: &Schema) -> bool {
-    is_explicitly_nullable(schema) || is_unknown(schema)
+    is_explicitly_nullable(schema)
 }
 
 fn is_explicitly_nullable(schema: &Schema) -> bool {
@@ -5147,7 +5151,7 @@ fn is_explicitly_nullable(schema: &Schema) -> bool {
 }
 
 /// A schema that carries nothing to determine a type — Fern treats it as an
-/// unknown value (`Optional[Any]`).
+/// unknown value (`Any`).
 fn is_unknown(schema: &Schema) -> bool {
     schema.reference.is_none()
         && schema.ty.as_ref().is_none_or(|ty| ty.primary().is_none())
@@ -5597,7 +5601,7 @@ mod tests {
                 if matches!(
                     &**value,
                     TypeRef::Dict(_, inner)
-                        if matches!(&**inner, TypeRef::Optional(any) if matches!(&**any, TypeRef::Primitive(Prim::Any)))
+                        if matches!(&**inner, TypeRef::Primitive(Prim::Any))
                 )
         ));
     }
@@ -5609,7 +5613,7 @@ mod tests {
         assert!(matches!(
             base_type_ref(&schema),
             TypeRef::Dict(_, ref value)
-                if matches!(&**value, TypeRef::Optional(any) if matches!(&**any, TypeRef::Primitive(Prim::Any)))
+                if matches!(&**value, TypeRef::Primitive(Prim::Any))
         ));
     }
 
@@ -7206,9 +7210,7 @@ mod tests {
         );
         assert_eq!(
             base_type_ref(&schema(serde_json::json!({ "type": "array" }))),
-            TypeRef::List(Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(
-                Prim::Any
-            )))))
+            TypeRef::List(Box::new(TypeRef::Primitive(Prim::Any)))
         );
         assert_eq!(
             base_type_ref(&schema(serde_json::json!({
@@ -7216,7 +7218,7 @@ mod tests {
             }))),
             TypeRef::Dict(
                 Box::new(TypeRef::Primitive(Prim::Str)),
-                Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))))
+                Box::new(TypeRef::Primitive(Prim::Any))
             )
         );
 
