@@ -3603,7 +3603,19 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             let mut data = String::new();
             let mut files = String::new();
             for f in &form.fields {
-                let entry = format!("                \"{}\": {},\n", f.wire_name, f.py_name);
+                let value = if f.form_json {
+                    imports.add_plain("json");
+                    imports.add_core("jsonable_encoder", "jsonable_encoder");
+                    let encoded = format!("json.dumps(jsonable_encoder({}))", f.py_name);
+                    if f.optional {
+                        format!("{encoded} if {} is not OMIT else OMIT", f.py_name)
+                    } else {
+                        encoded
+                    }
+                } else {
+                    f.py_name.clone()
+                };
+                let entry = format!("                \"{}\": {value},\n", f.wire_name);
                 if f.is_file {
                     files.push_str(&entry);
                 } else {
@@ -7285,6 +7297,7 @@ mod tests {
             docstring: None,
             convert: true,
             is_file: false,
+            form_json: false,
             collision_prefix: None,
             example: None,
             media_example: false,
@@ -7361,6 +7374,7 @@ mod tests {
             docstring: None,
             convert: false,
             is_file: false,
+            form_json: false,
             collision_prefix: None,
             example: None,
             media_example: false,
@@ -7864,6 +7878,7 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
@@ -7881,6 +7896,7 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
@@ -7898,6 +7914,7 @@ mod tests {
                 docstring: None,
                 convert: true,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
@@ -7944,6 +7961,7 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
@@ -7960,6 +7978,7 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
@@ -8778,6 +8797,7 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: Some("\"2024-01-15T09:30:00Z\"".to_string()),
                 media_example: false,
@@ -8794,6 +8814,7 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: Some(r#"{"source":"test"}"#.to_string()),
                 media_example: true,
@@ -8912,6 +8933,7 @@ mod tests {
                 docstring: Some("Filter expression.".to_string()),
                 convert: false,
                 is_file: false,
+                form_json: false,
                 collision_prefix: None,
                 example: Some("\"open\"".to_string()),
                 media_example: false,

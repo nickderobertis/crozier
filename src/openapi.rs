@@ -383,9 +383,13 @@ pub struct Parameter {
     #[serde(default)]
     pub required: Option<bool>,
     /// Whether an array parameter is exploded into repeated values. Fern treats
-    /// explicit `false` as a comma-separated transport value.
+    /// explicit `false` on a `form` query array as a comma-separated value.
     #[serde(default)]
     pub explode: Option<bool>,
+    /// OpenAPI parameter serialization style (`form`, `spaceDelimited`, …).
+    /// Query parameters default to `form` when omitted.
+    #[serde(default)]
+    pub style: Option<String>,
     /// Human-readable description, surfaced in the method docstring.
     #[serde(default)]
     pub description: Option<String>,

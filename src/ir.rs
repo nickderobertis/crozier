@@ -929,6 +929,10 @@ pub struct BodyField {
     /// Whether this is a file upload field (`format: binary` in a form body),
     /// which renders as `core.File` and serializes into `files={...}`.
     pub is_file: bool,
+    /// Whether a non-file form value is JSON-encoded before entering `data`.
+    /// Fern does this for arrays, objects, unions, and unknown values, while
+    /// leaving scalar form values unchanged.
+    pub form_json: bool,
     /// Prefix Fern applies when this field's argument name collides with another
     /// method parameter (e.g. query `tags` plus DAG body `tags` -> `dag_tags`).
     pub collision_prefix: Option<String>,
@@ -1672,13 +1676,23 @@ fn build_endpoint(
                     Some("string" | "integer" | "number" | "boolean")
                 )
             });
+            let comma_separated = p.explode == Some(false)
+                && p.style.as_deref().is_none_or(|style| style == "form")
+                && p.schema.as_ref().is_some_and(|schema| {
+                    let schema = schema
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| resolve_ref(doc, reference))
+                        .unwrap_or(schema);
+                    schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
+                });
             QueryParam {
                 wire_name: p.name.clone(),
                 py_name: naming::field_name(&p.name),
                 type_ref,
                 required: p.required == Some(true),
                 convert,
-                comma_separated: p.explode == Some(false),
+                comma_separated,
                 example,
                 example_is_scalar,
                 docstring: declared_doc(p.description.as_deref()),
@@ -2862,6 +2876,7 @@ fn hoist_inline_object(
             schema_body_example: false,
             docstring: clean_doc(prop_schema.description.as_deref()),
             is_file: false,
+            form_json: false,
             collision_prefix: Some(naming::field_name(ctx)),
             reference_order,
         });
@@ -3207,6 +3222,20 @@ fn hoist_form_object(
             let spec_required = required.contains(&prop.as_str());
             let is_file = prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
                 && prop_schema.format.as_deref() == Some("binary");
+            let resolved = prop_schema
+                .reference
+                .as_deref()
+                .and_then(|reference| hoister.schemas?.get(reference.rsplit('/').next()?))
+                .unwrap_or(prop_schema);
+            let form_json = !is_file
+                && (is_unknown(resolved)
+                    || matches!(
+                        resolved.ty.as_ref().and_then(|ty| ty.primary()),
+                        Some("array" | "object")
+                    )
+                    || resolved.one_of.is_some()
+                    || resolved.any_of.is_some()
+                    || resolved.all_of.is_some());
             BodyField {
                 wire_name: prop.clone(),
                 py_name: naming::field_name(prop),
@@ -3223,6 +3252,7 @@ fn hoist_form_object(
                 docstring: clean_doc(prop_schema.description.as_deref()),
                 convert: false,
                 is_file,
+                form_json,
                 collision_prefix: None,
                 example: schema_example_literal(prop_schema),
                 media_example: false,
@@ -3324,6 +3354,7 @@ fn append_request_fields(
         docstring: f.docstring.clone(),
         convert: type_needs_convert(&f.type_ref, types),
         is_file: false,
+        form_json: false,
         collision_prefix: Some(naming::field_name(request_class)),
         example: f.example.clone(),
         media_example: false,

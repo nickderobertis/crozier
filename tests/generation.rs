@@ -2912,6 +2912,8 @@ paths:
               type: object
               properties:
                 payload: {}
+                labels: { type: array, items: { type: string } }
+                note: { type: string }
       responses:
         '204': { description: Created }
   /file:
@@ -2935,6 +2937,18 @@ paths:
     assert!(
         raw.contains("payload: typing.Optional[typing.Any] = OMIT"),
         "{raw}"
+    );
+    assert!(
+        raw.contains(
+            r#""payload": json.dumps(jsonable_encoder(payload)) if payload is not OMIT else OMIT"#
+        ) && raw.contains(
+            r#""labels": json.dumps(jsonable_encoder(labels)) if labels is not OMIT else OMIT"#
+        ),
+        "unknown and collection form values must be JSON encoded: {raw}"
+    );
+    assert!(
+        raw.contains(r#""note": note"#),
+        "scalar form values stay unencoded: {raw}"
     );
     assert!(raw.contains("document: core.File"), "{raw}");
     assert!(
@@ -4006,7 +4020,12 @@ paths:
         - name: labels
           in: query
           style: spaceDelimited
+          explode: false
           schema: { type: array, items: { type: string } }
+        - name: term
+          in: query
+          explode: false
+          schema: { type: string }
         - name: X-Limit
           in: header
           required: true
@@ -4025,6 +4044,11 @@ paths:
     );
     assert!(raw.contains("\"filters\": filters"), "{raw}");
     assert!(raw.contains("\"labels\": labels"), "{raw}");
+    assert!(raw.contains("\"term\": term"), "{raw}");
+    assert!(
+        !raw.contains("join(map(str, labels))") && !raw.contains("join(map(str, term))"),
+        "only form-style arrays use comma serialization: {raw}"
+    );
     assert!(client.contains("ids=\"ids\""), "{client}");
     assert!(client.contains("page=1"), "{client}");
     assert!(client.contains("ratio=2.0"), "{client}");
