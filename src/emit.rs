@@ -2830,7 +2830,7 @@ fn raw_type_str_ctx(t: &TypeRef, imports: &mut Imports, seq: bool) -> String {
 }
 
 /// The request's URL argument: the document path with its leading slash stripped,
-/// rendered as an f-string interpolating `jsonable_encoder(param)` for each path
+/// rendered as an f-string interpolating `encode_path_param(param)` for each path
 /// placeholder, or a plain string literal when there are none.
 fn url_arg(ep: &Endpoint) -> String {
     let stripped = ep.path.strip_prefix('/').unwrap_or(&ep.path);
@@ -2839,7 +2839,7 @@ fn url_arg(ep: &Endpoint) -> String {
         for pp in &ep.path_params {
             rendered = rendered.replace(
                 &format!("{{{}}}", pp.wire_name),
-                &format!("{{jsonable_encoder({})}}", pp.py_name),
+                &format!("{{encode_path_param({})}}", pp.py_name),
             );
         }
         format!("f\"{rendered}\"")
@@ -3223,8 +3223,10 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     imports.add_from("json.decoder", "JSONDecodeError");
     imports.add_core("api_error", "ApiError");
     if !ep.path_params.is_empty() {
-        imports.add_core("jsonable_encoder", "jsonable_encoder");
+        imports.add_core("jsonable_encoder", "encode_path_param");
     }
+    imports.add_core("parse_error", "ParsingError");
+    imports.add_from("pydantic", "ValidationError");
 
     let await_ = if is_async { "await " } else { "" };
     let wrapper = if is_async {
@@ -3297,8 +3299,12 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         "            _response_json = _response.json()".to_string(),
         "        except JSONDecodeError:".to_string(),
         "            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)".to_string(),
-        "        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)".to_string(),
     ]);
+    lines.extend([
+        "        except ValidationError as e:".to_string(),
+        "            raise ParsingError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e)".to_string(),
+    ]);
+    lines.push("        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)".to_string());
     lines.join("\n")
 }
 
@@ -3570,7 +3576,12 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     imports.add_from("logging", "warning");
     imports.add_core("api_error", "ApiError");
     imports.add_core("http_sse._api", "EventSource");
+    imports.add_core("parse_error", "ParsingError");
     imports.add_core("pydantic_utilities", "parse_obj_as");
+    imports.add_from("pydantic", "ValidationError");
+    if !ep.path_params.is_empty() {
+        imports.add_core("jsonable_encoder", "encode_path_param");
+    }
 
     let (wrapper, iter_t, aiter, decorator, async_kw, async_with, for_kw, iter_sse, read) =
         if is_async {
@@ -3655,6 +3666,10 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
                     )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+                    )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield {yield_expr}",
@@ -3709,8 +3724,10 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
     if !ep.errors.is_empty() {
         imports.add_core("pydantic_utilities", "parse_obj_as");
     }
+    imports.add_core("parse_error", "ParsingError");
+    imports.add_from("pydantic", "ValidationError");
     if !ep.path_params.is_empty() {
-        imports.add_core("jsonable_encoder", "jsonable_encoder");
+        imports.add_core("jsonable_encoder", "encode_path_param");
     }
 
     let (wrapper, iter_t, data_iter, decorator, async_kw, async_with, read, iter_bytes, yield_expr) =
@@ -3771,6 +3788,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
     } else {
         format!("\n{error_branches}")
     };
+    let validation_error = "\n                except ValidationError as e:\n                    raise ParsingError(\n                        status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e\n                    )";
     let body = format!(
         "\
 {call}
@@ -3785,7 +3803,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
                 except JSONDecodeError:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
-                    )
+                    ){validation_error}
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield {yield_expr}",
@@ -7139,7 +7157,7 @@ mod tests {
             }],
             Some(TypeRef::Primitive(Prim::Str)),
         );
-        assert_eq!(url_arg(&interp), "f\"things/{jsonable_encoder(id)}\"");
+        assert_eq!(url_arg(&interp), "f\"things/{encode_path_param(id)}\"");
     }
 
     #[test]

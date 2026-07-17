@@ -612,11 +612,11 @@ fn emits_raw_client_only_for_supported_modules() {
     assert!(raw.contains("class RawThingsClient:"), "{raw}");
     assert!(raw.contains("class AsyncRawThingsClient:"), "{raw}");
     assert!(raw.contains("from ..types.thing import Thing"), "{raw}");
-    assert!(raw.contains("from ..core.jsonable_encoder import jsonable_encoder"));
+    assert!(raw.contains("from ..core.jsonable_encoder import encode_path_param"));
     // `things_getById`: a single-segment group, so the method name is the
     // lowercased suffix; the path param drives an f-string URL and `HttpResponse[Thing]`.
     assert!(raw.contains("def getbyid("), "{raw}");
-    assert!(raw.contains("f\"things/{jsonable_encoder(id)}\""), "{raw}");
+    assert!(raw.contains("f\"things/{encode_path_param(id)}\""), "{raw}");
     assert!(raw.contains("-> HttpResponse[Thing]:"), "{raw}");
     assert!(raw.contains("async def getbyid("), "{raw}");
     // `things_count`: no params, a scalar `int` response, and its description
