@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.34](https://github.com/nickderobertis/crozier/compare/v0.0.33...v0.0.34) - 2026-07-18
+
+### Other
+
+- register HTTP Toolkit corpus fixture; Add ONE new real-world Open… ([#113](https://github.com/nickderobertis/crozier/pull/113))
+
 ## [0.0.33](https://github.com/nickderobertis/crozier/compare/v0.0.32...v0.0.33) - 2026-07-17
 
 ### Other
