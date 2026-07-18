@@ -10,7 +10,7 @@ The @@ORG@@ Python library provides convenient access to the @@ORG@@ APIs from P
 - [Installation](#installation)
 - [Reference](#reference)
 - [Usage](#usage)
-- [Environments](#environments)
+@@ENVIRONMENTS_TOC@@
 - [Async Client](#async-client)
 - [Exception Handling](#exception-handling)
 - [Advanced](#advanced)
@@ -38,18 +38,7 @@ Instantiate and use the client with the following:
 @@USAGE@@
 ```
 
-## Environments
-
-This SDK allows you to configure different environments for API requests.
-
-```python
-from @@PKG@@ import @@CLIENT@@
-from @@PKG@@.environment import @@CLIENT@@Environment
-
-client = @@CLIENT@@(
-    environment=@@ENV_DEFAULT@@,
-)
-```
+@@ENVIRONMENTS@@
 
 ## Async Client
 
