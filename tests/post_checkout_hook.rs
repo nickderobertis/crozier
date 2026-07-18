@@ -70,8 +70,6 @@ fn post_checkout_is_a_no_op_without_sccache() {
     init_repo(repo.path());
     let empty_path = repo.path().join("empty-bin");
     fs::create_dir(&empty_path).expect("empty bin");
-    std::os::unix::fs::symlink("/usr/bin/bash", empty_path.join("bash"))
-        .expect("bash should be available to the hook");
     let hook = Path::new(env!("CARGO_MANIFEST_DIR")).join(".githooks/post-checkout");
     let status = Command::new(&hook)
         .args(["HEAD", "HEAD", "1"])
