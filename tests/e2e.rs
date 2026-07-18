@@ -10837,6 +10837,7 @@ const CORPORA: &[&Corpus] = &[
     &SQUAREUP_COM,
     &AMAZONAWS_COM_CLOUDFORMATION,
     &REDOCLY_COM_MUSEUM,
+    &HTTP_TOOLKIT,
 ];
 
 #[test]
@@ -13459,6 +13460,78 @@ const REDOCLY_COM_MUSEUM: Corpus = Corpus {
     ],
 };
 
+/// `http-toolkit`: HTTP Toolkit's OpenAPI 3.0 service API, spanning 26 operations,
+/// wildcard paths, five HTTP methods, basic and bearer auth, UUIDs, and binary
+/// responses. Fully matched against its workflow-generated Fern golden.
+const HTTP_TOOLKIT: Corpus = Corpus {
+    api: "http-toolkit",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "CONTRIBUTING.md",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/_default_clients.py",
+        "src/fern/authenticated_routes/__init__.py",
+        "src/fern/authenticated_routes/client.py",
+        "src/fern/authenticated_routes/raw_client.py",
+        "src/fern/base_routes/__init__.py",
+        "src/fern/base_routes/client.py",
+        "src/fern/base_routes/raw_client.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/enum.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/logging.py",
+        "src/fern/core/parse_error.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/forbidden_error.py",
+        "src/fern/errors/unauthorized_error.py",
+        "src/fern/inspect_routes/__init__.py",
+        "src/fern/inspect_routes/client.py",
+        "src/fern/inspect_routes/raw_client.py",
+        "src/fern/py.typed",
+        "src/fern/types/__init__.py",
+        "src/fern/types/ok.py",
+        "src/fern/types/request_info.py",
+        "src/fern/types/system_info.py",
+        "src/fern/utility_routes/__init__.py",
+        "src/fern/utility_routes/client.py",
+        "src/fern/utility_routes/raw_client.py",
+        "src/fern/version.py",
+        "src/fern/wildcard_inspection_routes/__init__.py",
+        "src/fern/wildcard_inspection_routes/client.py",
+        "src/fern/wildcard_inspection_routes/raw_client.py",
+        "tests/conftest.py",
+        "tests/test_aiohttp_autodetect.py",
+    ],
+};
+
 #[test]
 fn squareup_com_matches_fern_output() {
     if corpus_spec(SQUAREUP_COM.api).is_none() {
@@ -13493,6 +13566,18 @@ fn redocly_com_museum_matches_fern_output() {
         return;
     }
     assert_corpus_matches(&REDOCLY_COM_MUSEUM);
+}
+
+#[test]
+fn http_toolkit_matches_fern_output() {
+    if corpus_spec(HTTP_TOOLKIT.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the HTTP Toolkit corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&HTTP_TOOLKIT);
 }
 
 #[test]
@@ -13583,6 +13668,7 @@ fn report_matched_candidates() {
         &SQUAREUP_COM,
         &AMAZONAWS_COM_CLOUDFORMATION,
         &REDOCLY_COM_MUSEUM,
+        &HTTP_TOOLKIT,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);

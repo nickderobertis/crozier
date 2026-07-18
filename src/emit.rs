@@ -1824,6 +1824,22 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     };
 
     let contents = include_str!("../assets/scaffolding/README.md.tmpl")
+        .replace(
+            "@@ENVIRONMENTS_TOC@@\n",
+            if ir.environment.is_some() {
+                "- [Environments](#environments)\n"
+            } else {
+                ""
+            },
+        )
+        .replace(
+            "@@ENVIRONMENTS@@\n\n",
+            if ir.environment.is_some() {
+                "## Environments\n\nThis SDK allows you to configure different environments for API requests.\n\n```python\nfrom @@PKG@@ import @@CLIENT@@\nfrom @@PKG@@.environment import @@CLIENT@@Environment\n\nclient = @@CLIENT@@(\n    environment=@@ENV_DEFAULT@@,\n)\n```\n\n"
+            } else {
+                ""
+            },
+        )
         .replace("@@ORG@@", &org)
         .replace("@@PROJECT@@", &ir.project_name)
         .replace("@@PKG@@", pkg)
