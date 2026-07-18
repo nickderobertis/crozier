@@ -1,6 +1,6 @@
 # Canonical real-world OpenAPI corpus (issue #77)
 
-This manifest tracks 69 real-world OpenAPI specs with redistribution-compatible
+This manifest tracks 73 real-world OpenAPI specs with redistribution-compatible
 license metadata. `decision` is `link-ok` when the permissively licensed source
 is fetched at generation time rather than vendored. Add or change one numbered
 row per feature branch and maintain its golden through the manually dispatched
@@ -78,6 +78,10 @@ row per feature branch and maintain its golden through the manually dispatched
 | 67 | `worldcoin-signup-sequencer` | github-raw | https://raw.githubusercontent.com/worldcoin/signup-sequencer/f2870f1412517bfc2377838ff20cb0ee03ddaf72/schemas/openapi-v3.yaml | `f2870f1412517bfc2377838ff20cb0ee03ddaf72` | MIT | link-ok | OpenAPI 3.1; two tuple-array schemas using `prefixItems`; reusable request bodies; bearer authentication |
 | 68 | `electric-sql` | github-raw | https://raw.githubusercontent.com/electric-sql/electric/be716ccdb225e7b60919c3f46ea92ad5332ff31a/website/electric-api.yaml | `be716ccdb225e7b60919c3f46ea92ad5332ff31a` | Apache-2.0 | link-ok | OpenAPI 3.1; `patternProperties`; polymorphic query parameters; streaming responses |
 | 69 | `tamoss` | github-raw | https://raw.githubusercontent.com/livewyer-ops/tamoss/ccbef170204082f3ae3842c2ffee476f5008e1fb/src/openapi-contract.yaml | `ccbef170204082f3ae3842c2ffee476f5008e1fb` | Apache-2.0 | link-ok | OpenAPI 3.1; `if`/`then`/`else`; eight `const` schemas; two top-level webhooks |
+| 70 | `appng-rest-api` | github-raw | https://raw.githubusercontent.com/appNG/appng/8d9ff98f7d3ddd3e74340bcfb322c12df2ed189b/appng-rest-api/src/main/resources/org/appng/api/rest/appng-openapi.yaml | `8d9ff98f7d3ddd3e74340bcfb322c12df2ed189b` | Apache-2.0 | link-ok | Three matrix-style path parameters with explicit `explode: true`; cookie parameter |
+| 71 | `lakefs` | github-raw | https://raw.githubusercontent.com/treeverse/lakeFS/6c3fba2a947b728bbd2eaa198966959d8ef61e58/clients/java/api/openapi.yaml | `6c3fba2a947b728bbd2eaa198966959d8ef61e58` | Apache-2.0 | link-ok | Three cookie parameters; extensive form/simple parameters with explicit `explode` |
+| 72 | `modern-treasury` | github-raw | https://raw.githubusercontent.com/Modern-Treasury/modern-treasury-openapi/8c02891b98b8c32c0d62aec7359f9afa9673b1bc/openapi/mt_openapi_spec_v1.yaml | `8c02891b98b8c32c0d62aec7359f9afa9673b1bc` | MIT | link-ok | Two form array query parameters with explicit `explode: true` and `allowReserved: true`; deepObject parameters |
+| 73 | `mailgun` | github-raw | https://raw.githubusercontent.com/mailgun/mailgun-mcp-server/78d610f7265bf7cc6d86f72953a36f382fb93c9e/src/openapi.yaml | `78d610f7265bf7cc6d86f72953a36f382fb93c9e` | Apache-2.0 | link-ok | Multipart `encoding` objects with five per-property `application/json` content types; form encoding with explicit explode |
 
 ## Batch 2 — byte-matched (issue #77)
 

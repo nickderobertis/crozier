@@ -13591,6 +13591,58 @@ const TAMOSS: Corpus = Corpus {
     matched: &[],
 };
 
+/// `appng-rest-api`: appNG's REST API exercises matrix path serialization with
+/// explicit explode behavior and a cookie parameter. Fern accepts the raw pinned spec.
+const APPNG_REST_API: Corpus = Corpus {
+    api: "appng-rest-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `lakefs`: lakeFS's API exercises cookie parameters and extensive explicit
+/// form/simple parameter serialization. Fern accepts the raw pinned spec.
+const LAKEFS: Corpus = Corpus {
+    api: "lakefs",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `modern-treasury`: Modern Treasury's API exercises form arrays combining
+/// explicit explode behavior with `allowReserved`. Fern accepts the raw pinned spec.
+const MODERN_TREASURY: Corpus = Corpus {
+    api: "modern-treasury",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `mailgun`: Mailgun's API exercises multipart per-property content types and
+/// form encoding with explicit explode behavior. Fern accepts the raw pinned spec.
+const MAILGUN: Corpus = Corpus {
+    api: "mailgun",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
 #[test]
 fn squareup_com_matches_fern_output() {
     if corpus_spec(SQUAREUP_COM.api).is_none() {
@@ -13669,6 +13721,26 @@ fn electric_sql_matches_fern_output() {
 #[test]
 fn tamoss_matches_fern_output() {
     assert_link_ok_corpus_matches(&TAMOSS);
+}
+
+#[test]
+fn appng_rest_api_matches_fern_output() {
+    assert_link_ok_corpus_matches(&APPNG_REST_API);
+}
+
+#[test]
+fn lakefs_matches_fern_output() {
+    assert_link_ok_corpus_matches(&LAKEFS);
+}
+
+#[test]
+fn modern_treasury_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MODERN_TREASURY);
+}
+
+#[test]
+fn mailgun_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MAILGUN);
 }
 
 #[test]
