@@ -10838,6 +10838,10 @@ const CORPORA: &[&Corpus] = &[
     &AMAZONAWS_COM_CLOUDFORMATION,
     &REDOCLY_COM_MUSEUM,
     &HTTP_TOOLKIT,
+    &FRANKFURTER,
+    &WORLDCOIN_SIGNUP_SEQUENCER,
+    &ELECTRIC_SQL,
+    &TAMOSS,
 ];
 
 #[test]
@@ -13532,6 +13536,61 @@ const HTTP_TOOLKIT: Corpus = Corpus {
     ],
 };
 
+/// `frankfurter`: a real OpenAPI 3.1.2 currency API exercising nullable schemas
+/// expressed with JSON Schema type arrays. Fern accepts the raw pinned spec;
+/// byte matching begins after the workflow generates its golden.
+const FRANKFURTER: Corpus = Corpus {
+    api: "frankfurter",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `worldcoin-signup-sequencer`: Worldcoin's OpenAPI 3.1 API, including tuple
+/// arrays represented with `prefixItems`. Fern accepts the raw pinned spec; the
+/// golden is workflow-owned.
+const WORLDCOIN_SIGNUP_SEQUENCER: Corpus = Corpus {
+    api: "worldcoin-signup-sequencer",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `electric-sql`: Electric's OpenAPI 3.1 HTTP API, exercising JSON Schema
+/// `patternProperties`. Fern accepts the raw pinned spec; the golden is workflow-owned.
+const ELECTRIC_SQL: Corpus = Corpus {
+    api: "electric-sql",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `tamoss`: TAMOSS's OpenAPI 3.1 contract, covering conditional schemas,
+/// `const`, and top-level webhooks. Fern accepts the raw pinned spec; the golden
+/// is workflow-owned.
+const TAMOSS: Corpus = Corpus {
+    api: "tamoss",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
 #[test]
 fn squareup_com_matches_fern_output() {
     if corpus_spec(SQUAREUP_COM.api).is_none() {
@@ -13578,6 +13637,38 @@ fn http_toolkit_matches_fern_output() {
         return;
     }
     assert_corpus_matches(&HTTP_TOOLKIT);
+}
+
+fn assert_link_ok_corpus_matches(corpus: &Corpus) {
+    if corpus_spec(corpus.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the {} corpus spec is not fetched; run scripts/fetch-corpus.sh first",
+            corpus.api
+        );
+        return;
+    }
+    assert_corpus_matches(corpus);
+}
+
+#[test]
+fn frankfurter_matches_fern_output() {
+    assert_link_ok_corpus_matches(&FRANKFURTER);
+}
+
+#[test]
+fn worldcoin_signup_sequencer_matches_fern_output() {
+    assert_link_ok_corpus_matches(&WORLDCOIN_SIGNUP_SEQUENCER);
+}
+
+#[test]
+fn electric_sql_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ELECTRIC_SQL);
+}
+
+#[test]
+fn tamoss_matches_fern_output() {
+    assert_link_ok_corpus_matches(&TAMOSS);
 }
 
 #[test]
