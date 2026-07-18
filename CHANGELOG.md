@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.35](https://github.com/nickderobertis/crozier/compare/v0.0.34...v0.0.35) - 2026-07-18
+
+### Other
+
+- *(dev)* warm new worktrees via post-checkout sccache ([#115](https://github.com/nickderobertis/crozier/pull/115))
+
 ## [0.0.34](https://github.com/nickderobertis/crozier/compare/v0.0.33...v0.0.34) - 2026-07-18
 
 ### Other
