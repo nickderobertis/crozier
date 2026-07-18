@@ -24,6 +24,13 @@ fn git(root: &Path, args: &[&str]) {
     assert!(status.success(), "git {args:?} should succeed");
 }
 
+fn executable_on_path(name: &str) -> std::path::PathBuf {
+    std::env::split_paths(&std::env::var_os("PATH").expect("PATH should be set"))
+        .map(|dir| dir.join(name))
+        .find(|candidate| candidate.is_file())
+        .unwrap_or_else(|| panic!("{name} should be available on PATH"))
+}
+
 #[test]
 fn post_checkout_configures_a_shared_sccache_without_sharing_targets() {
     let repo = TempDir::new().expect("temp repo");
@@ -87,13 +94,7 @@ fn post_checkout_removes_its_stale_wrapper_when_sccache_is_absent() {
     init_repo(repo.path());
     let empty_path = repo.path().join("empty-bin");
     fs::create_dir(&empty_path).expect("empty bin");
-    std::os::unix::fs::symlink("/usr/bin/bash", empty_path.join("bash"))
-        .expect("bash should be available to the hook");
-    std::os::unix::fs::symlink("/usr/bin/git", empty_path.join("git"))
-        .expect("git should be available to the hook");
-    std::os::unix::fs::symlink("/usr/bin/grep", empty_path.join("grep"))
-        .expect("grep should be available to the hook");
-    std::os::unix::fs::symlink("/usr/bin/rm", empty_path.join("rm"))
+    std::os::unix::fs::symlink(executable_on_path("rm"), empty_path.join("rm"))
         .expect("rm should be available to the hook");
     let cargo_dir = repo.path().join(".cargo");
     fs::create_dir(&cargo_dir).expect("cargo dir");
