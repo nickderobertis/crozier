@@ -128,8 +128,8 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e tamoss_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e appng_rest_api_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e lakefs_matches_fern_output
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e modern_treasury_matches_fern_output
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e mailgun_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e sourcify_signatures_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e pdfbroker_matches_fern_output
 
 # Format the codebase in place.
 format:

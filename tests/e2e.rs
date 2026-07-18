@@ -13617,10 +13617,10 @@ const LAKEFS: Corpus = Corpus {
     matched: &[],
 };
 
-/// `modern-treasury`: Modern Treasury's API exercises form arrays combining
-/// explicit explode behavior with `allowReserved`. Fern accepts the raw pinned spec.
-const MODERN_TREASURY: Corpus = Corpus {
-    api: "modern-treasury",
+/// `sourcify-signatures`: Sourcify's signature API exercises `allowReserved`
+/// across four query parameters. Fern accepts the raw pinned spec.
+const SOURCIFY_SIGNATURES: Corpus = Corpus {
+    api: "sourcify-signatures",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13630,10 +13630,10 @@ const MODERN_TREASURY: Corpus = Corpus {
     matched: &[],
 };
 
-/// `mailgun`: Mailgun's API exercises multipart per-property content types and
-/// form encoding with explicit explode behavior. Fern accepts the raw pinned spec.
-const MAILGUN: Corpus = Corpus {
-    api: "mailgun",
+/// `pdfbroker`: PdfBroker's API exercises multipart per-property JSON and
+/// octet-stream content types. Fern accepts the raw pinned spec.
+const PDFBROKER: Corpus = Corpus {
+    api: "pdfbroker",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13734,13 +13734,13 @@ fn lakefs_matches_fern_output() {
 }
 
 #[test]
-fn modern_treasury_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MODERN_TREASURY);
+fn sourcify_signatures_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SOURCIFY_SIGNATURES);
 }
 
 #[test]
-fn mailgun_matches_fern_output() {
-    assert_link_ok_corpus_matches(&MAILGUN);
+fn pdfbroker_matches_fern_output() {
+    assert_link_ok_corpus_matches(&PDFBROKER);
 }
 
 #[test]
