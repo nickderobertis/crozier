@@ -15,7 +15,9 @@ bootstrap:
     cargo fetch --locked
     @./scripts/install-dev-tools.sh
     @./scripts/install-ruff.sh
-    @git config core.hooksPath .githooks && echo "enabled .githooks (visual-regression pre-push guard)"
+    @git config core.hooksPath .githooks
+    @./.githooks/post-checkout HEAD HEAD 1
+    @echo "enabled .githooks (shared sccache + visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
 check: fmt-check lint test test-e2e test-fern-goldens supply-chain doc
