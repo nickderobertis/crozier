@@ -13591,10 +13591,10 @@ const TAMOSS: Corpus = Corpus {
     matched: &[],
 };
 
-/// `appng-rest-api`: appNG's REST API exercises matrix path serialization with
-/// explicit explode behavior and a cookie parameter. Fern accepts the raw pinned spec.
-const APPNG_REST_API: Corpus = Corpus {
-    api: "appng-rest-api",
+/// `light-rest-4j-serialization`: light-rest-4j's OpenAPI contract exercises
+/// matrix, label, and explicit form serialization plus cookies. Fern accepts it.
+const LIGHT_REST_4J_SERIALIZATION: Corpus = Corpus {
+    api: "light-rest-4j-serialization",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13604,10 +13604,10 @@ const APPNG_REST_API: Corpus = Corpus {
     matched: &[],
 };
 
-/// `lakefs`: lakeFS's API exercises cookie parameters and extensive explicit
-/// form/simple parameter serialization. Fern accepts the raw pinned spec.
-const LAKEFS: Corpus = Corpus {
-    api: "lakefs",
+/// `apideck-file-storage-v10`: Apideck's v10 file-storage API carries JSON in
+/// a parameter-level `content` object. Fern accepts the raw pinned spec.
+const APIDECK_FILE_STORAGE_V10: Corpus = Corpus {
+    api: "apideck-file-storage-v10",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13630,10 +13630,10 @@ const SOURCIFY_SIGNATURES: Corpus = Corpus {
     matched: &[],
 };
 
-/// `pdfbroker`: PdfBroker's API exercises multipart per-property JSON and
-/// octet-stream content types. Fern accepts the raw pinned spec.
-const PDFBROKER: Corpus = Corpus {
-    api: "pdfbroker",
+/// `swift-content-types`: Apple's content-types service example exercises a
+/// multipart property with both a content type and custom part header.
+const SWIFT_CONTENT_TYPES: Corpus = Corpus {
+    api: "swift-content-types",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13724,13 +13724,13 @@ fn tamoss_matches_fern_output() {
 }
 
 #[test]
-fn appng_rest_api_matches_fern_output() {
-    assert_link_ok_corpus_matches(&APPNG_REST_API);
+fn light_rest_4j_serialization_matches_fern_output() {
+    assert_link_ok_corpus_matches(&LIGHT_REST_4J_SERIALIZATION);
 }
 
 #[test]
-fn lakefs_matches_fern_output() {
-    assert_link_ok_corpus_matches(&LAKEFS);
+fn apideck_file_storage_v10_matches_fern_output() {
+    assert_link_ok_corpus_matches(&APIDECK_FILE_STORAGE_V10);
 }
 
 #[test]
@@ -13739,8 +13739,8 @@ fn sourcify_signatures_matches_fern_output() {
 }
 
 #[test]
-fn pdfbroker_matches_fern_output() {
-    assert_link_ok_corpus_matches(&PDFBROKER);
+fn swift_content_types_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SWIFT_CONTENT_TYPES);
 }
 
 #[test]

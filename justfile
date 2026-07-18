@@ -126,10 +126,10 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e worldcoin_signup_sequencer_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e electric_sql_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e tamoss_matches_fern_output
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e appng_rest_api_matches_fern_output
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e lakefs_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e light_rest_4j_serialization_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_file_storage_v10_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e sourcify_signatures_matches_fern_output
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e pdfbroker_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e swift_content_types_matches_fern_output
 
 # Format the codebase in place.
 format:
