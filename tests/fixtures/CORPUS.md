@@ -1,6 +1,6 @@
 # Canonical real-world OpenAPI corpus (issue #77)
 
-This manifest tracks 64 real-world OpenAPI specs with redistribution-compatible
+This manifest tracks 65 real-world OpenAPI specs with redistribution-compatible
 license metadata. `decision` is `link-ok` when the permissively licensed source
 is fetched at generation time rather than vendored. Add or change one numbered
 row per feature branch and maintain its golden through the manually dispatched
@@ -73,6 +73,7 @@ row per feature branch and maintain its golden through the manually dispatched
 | 62 | `portfoliooptimizer.io` | api-guru | https://api.apis.guru/v2/specs/portfoliooptimizer.io/1.0.9/openapi.json | `1.0.9` | Apache 2.0 | link-ok | 83 operations and 15 oneOf across an all-inline zero-component-schema surface |
 | 63 | `reverb.com` | api-guru | https://api.apis.guru/v2/specs/reverb.com/3.0/openapi.json | `3.0` | Apache 2.0 | link-ok | 163 operations, 126 paths, zero component schemas, 21 inline request bodies |
 | 64 | `redocly.com-museum` | github-raw | https://raw.githubusercontent.com/Redocly/museum-openapi-example/2770b2b2e59832d245c7b0eb0badf6568d7efb53/openapi.yaml | `2770b2b2e59832d245c7b0eb0badf6568d7efb53` | MIT | link-ok | OpenAPI 3.1; 8 operations/5 paths; allOf; UUID/date/email/binary; image/png and problem+json |
+| 65 | `http-toolkit` | github-raw | https://raw.githubusercontent.com/benc-uk/http-toolkit/56534e825a225b0d4133c3a0613526094ff03663/cmd/swagger-ui/openapi.json | `56534e825a225b0d4133c3a0613526094ff03663` | MIT | link-ok | OpenAPI 3.0; 26 operations/16 paths; wildcard paths; GET/POST/PUT/PATCH/DELETE; basic and bearer auth; UUID and binary responses |
 
 ## Batch 2 — byte-matched (issue #77)
 

@@ -10837,6 +10837,7 @@ const CORPORA: &[&Corpus] = &[
     &SQUAREUP_COM,
     &AMAZONAWS_COM_CLOUDFORMATION,
     &REDOCLY_COM_MUSEUM,
+    &HTTP_TOOLKIT,
 ];
 
 #[test]
@@ -13459,6 +13460,20 @@ const REDOCLY_COM_MUSEUM: Corpus = Corpus {
     ],
 };
 
+/// `http-toolkit`: HTTP Toolkit's OpenAPI 3.0 service API, spanning 26 operations,
+/// wildcard paths, five HTTP methods, basic and bearer auth, UUIDs, and binary
+/// responses. Awaiting its workflow-generated Fern golden.
+const HTTP_TOOLKIT: Corpus = Corpus {
+    api: "http-toolkit",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
 #[test]
 fn squareup_com_matches_fern_output() {
     if corpus_spec(SQUAREUP_COM.api).is_none() {
@@ -13493,6 +13508,18 @@ fn redocly_com_museum_matches_fern_output() {
         return;
     }
     assert_corpus_matches(&REDOCLY_COM_MUSEUM);
+}
+
+#[test]
+fn http_toolkit_matches_fern_output() {
+    if corpus_spec(HTTP_TOOLKIT.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the HTTP Toolkit corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&HTTP_TOOLKIT);
 }
 
 #[test]
@@ -13583,6 +13610,7 @@ fn report_matched_candidates() {
         &SQUAREUP_COM,
         &AMAZONAWS_COM_CLOUDFORMATION,
         &REDOCLY_COM_MUSEUM,
+        &HTTP_TOOLKIT,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);

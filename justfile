@@ -119,6 +119,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e netbox_dev_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e squareup_com_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e redocly_com_museum_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e http_toolkit_matches_fern_output
 
 # Format the codebase in place.
 format:
