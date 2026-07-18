@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "http-toolkit",
+  "corpus_spec_ref": "56534e825a225b0d4133c3a0613526094ff03663",
+  "corpus_spec_url": "https://raw.githubusercontent.com/benc-uk/http-toolkit/56534e825a225b0d4133c3a0613526094ff03663/cmd/swagger-ui/openapi.json"
+}
