@@ -8,12 +8,16 @@
 # which `just bootstrap` calls alongside this.
 set -euo pipefail
 
-tools=(cargo-nextest cargo-llvm-cov cargo-deny cargo-machete)
+tools=(cargo-nextest cargo-llvm-cov cargo-deny cargo-machete sccache)
 
 missing=()
 for t in "${tools[@]}"; do
-  sub="${t#cargo-}"
-  cargo "$sub" --version >/dev/null 2>&1 || missing+=("$t")
+  if [ "$t" = "sccache" ]; then
+    command -v sccache >/dev/null 2>&1 || missing+=("$t")
+  else
+    sub="${t#cargo-}"
+    cargo "$sub" --version >/dev/null 2>&1 || missing+=("$t")
+  fi
 done
 
 if [ "${#missing[@]}" -eq 0 ]; then
