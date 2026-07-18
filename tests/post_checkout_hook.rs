@@ -84,6 +84,41 @@ fn post_checkout_is_a_no_op_without_sccache() {
 }
 
 #[test]
+fn post_checkout_preserves_developer_owned_cargo_config() {
+    let repo = TempDir::new().expect("temp repo");
+    init_repo(repo.path());
+    let bin = repo.path().join("bin");
+    fs::create_dir(&bin).expect("fake bin");
+    let fake_sccache = bin.join("sccache");
+    fs::write(&fake_sccache, "#!/bin/sh\nexit 0\n").expect("fake sccache");
+    use std::os::unix::fs::PermissionsExt;
+    fs::set_permissions(&fake_sccache, fs::Permissions::from_mode(0o755)).expect("executable fake");
+    let cargo_dir = repo.path().join(".cargo");
+    fs::create_dir(&cargo_dir).expect("cargo dir");
+    let config = cargo_dir.join("config.toml");
+    let developer_config = "[build]\ntarget-dir = \"custom-target\"\n";
+    fs::write(&config, developer_config).expect("developer config");
+
+    let hook = Path::new(env!("CARGO_MANIFEST_DIR")).join(".githooks/post-checkout");
+    let path = format!(
+        "{}:{}",
+        bin.display(),
+        std::env::var("PATH").unwrap_or_default()
+    );
+    let status = Command::new(&hook)
+        .args(["HEAD", "HEAD", "1"])
+        .current_dir(repo.path())
+        .env("PATH", path)
+        .status()
+        .expect("hook should run");
+    assert!(status.success());
+    assert_eq!(
+        fs::read_to_string(config).expect("developer config should remain"),
+        developer_config
+    );
+}
+
+#[test]
 fn git_worktree_add_runs_the_hook_with_the_repo_local_default_cache() {
     let repo = TempDir::new().expect("temp repo");
     init_repo(repo.path());
