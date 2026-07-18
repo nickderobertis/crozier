@@ -72,12 +72,6 @@ fn post_checkout_is_a_no_op_without_sccache() {
     fs::create_dir(&empty_path).expect("empty bin");
     std::os::unix::fs::symlink("/usr/bin/bash", empty_path.join("bash"))
         .expect("bash should be available to the hook");
-    std::os::unix::fs::symlink("/usr/bin/git", empty_path.join("git"))
-        .expect("git should be available to the hook");
-    std::os::unix::fs::symlink("/usr/bin/grep", empty_path.join("grep"))
-        .expect("grep should be available to the hook");
-    std::os::unix::fs::symlink("/usr/bin/rm", empty_path.join("rm"))
-        .expect("rm should be available to the hook");
     let hook = Path::new(env!("CARGO_MANIFEST_DIR")).join(".githooks/post-checkout");
     let status = Command::new(&hook)
         .args(["HEAD", "HEAD", "1"])
