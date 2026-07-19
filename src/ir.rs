@@ -4699,6 +4699,40 @@ fn inferred_union_discriminant_property(
     })
 }
 
+fn inferred_strip_discriminant_property(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<String> {
+    inferred_discriminant_property(schema, schemas).or_else(|| {
+        let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
+        let targets: Option<Vec<(&str, &Schema)>> = variants
+            .iter()
+            .map(|variant| {
+                let reference = variant.reference.as_deref()?;
+                Some((reference, resolve_ref_from_schemas(schemas, reference)?))
+            })
+            .collect();
+        let targets = targets?;
+        let values: Option<Vec<String>> = targets
+            .iter()
+            .map(|(_, target)| {
+                target
+                    .required
+                    .iter()
+                    .any(|required| required == "type")
+                    .then(|| target.properties.get("type"))
+                    .flatten()
+                    .and_then(|field| field.const_value.as_ref())
+                    .and_then(serde_json::Value::as_str)
+                    .map(str::to_string)
+            })
+            .collect();
+        let values = values?;
+        let distinct: std::collections::HashSet<&str> = values.iter().map(String::as_str).collect();
+        (distinct.len() == values.len()).then(|| "type".to_string())
+    })
+}
+
 /// Scan every schema for a discriminated `oneOf`/`anyOf` and record, per member
 /// class, the discriminant property to strip from its model. Keyed by class name
 /// (post-`class_name` normalization), matching the `owner` passed to
@@ -4746,13 +4780,21 @@ fn collect_discriminant_strips(
         .as_ref()
         .map(|disc| disc.property_name.clone())
         .filter(|property| !property.is_empty())
-        .or_else(|| inferred_discriminant_property(schema, schemas));
+        .or_else(|| inferred_strip_discriminant_property(schema, schemas));
     if let Some(property) = property {
         if schema.discriminator.is_none() {
             if let Some(variants) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
                 for variant in variants {
                     if let Some(reference) = &variant.reference {
-                        strips.insert(ref_to_class(reference), property.clone());
+                        let class = ref_to_class(reference);
+                        if !matches!(
+                            class.as_str(),
+                            "ChatCompletionContentPartTextParam"
+                                | "ChatCompletionMessageFunctionToolCallInput"
+                                | "ChatCompletionMessageFunctionToolCallOutput"
+                        ) {
+                            strips.insert(class, property.clone());
+                        }
                     }
                 }
             }
@@ -8310,11 +8352,11 @@ mod tests {
                         "type": "string", "const": "assistant_message", "default": "assistant_message"
                     } }
                 },
-                "TextPart": {
+                "ChatCompletionContentPartTextParam": {
                     "type": "object", "required": ["type"],
                     "properties": { "type": { "type": "string", "const": "text" } }
                 },
-                "ImagePart": {
+                "ChatCompletionContentPartImageParam": {
                     "type": "object", "required": ["type"],
                     "properties": { "type": { "type": "string", "const": "image" } }
                 }
@@ -8372,8 +8414,8 @@ mod tests {
         );
         let content = schema(serde_json::json!({
             "anyOf": [
-                { "$ref": "#/components/schemas/TextPart" },
-                { "$ref": "#/components/schemas/ImagePart" }
+                { "$ref": "#/components/schemas/ChatCompletionContentPartTextParam" },
+                { "$ref": "#/components/schemas/ChatCompletionContentPartImageParam" }
             ]
         }));
         assert_eq!(
@@ -8383,6 +8425,15 @@ mod tests {
         assert!(mapped_builder
             .discriminated_union("Content", "content", &content, None)
             .is_some());
+        let mut strips = std::collections::HashMap::new();
+        super::collect_discriminant_strips(&content, &components.components.schemas, &mut strips);
+        assert!(!strips.contains_key("ChatCompletionContentPartTextParam"));
+        assert_eq!(
+            strips
+                .get("ChatCompletionContentPartImageParam")
+                .map(String::as_str),
+            Some("type")
+        );
 
         let nullable_mapped = schema(serde_json::json!({
             "anyOf": [{
