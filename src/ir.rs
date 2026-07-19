@@ -3091,12 +3091,6 @@ impl InlineHoister<'_> {
         schema: &Schema,
         docstring: Option<String>,
     ) -> Option<TypeRef> {
-        // Explicitly discriminated component unions are already built as root
-        // declarations. Inline request shapes only need this path when Fern
-        // infers a discriminator from singleton-enum fields on their variants.
-        if schema.discriminator.is_some() {
-            return None;
-        }
         let schemas = self.schemas?;
         let mut builder = Builder {
             types: Vec::new(),
@@ -3106,9 +3100,6 @@ impl InlineHoister<'_> {
         };
         let union =
             builder.discriminated_union(name, &naming::module_name(name), schema, docstring)?;
-        if union.discriminant_property != "field" {
-            return None;
-        }
         self.out.extend(builder.types);
         self.out.push(TypeDecl::DiscriminatedUnion(union));
         Some(TypeRef::Named(name.to_string()))
@@ -3337,6 +3328,21 @@ impl InlineHoister<'_> {
         if prop_schema.reference.is_none() {
             if let Some(members) = prop_schema.one_of.as_ref().or(prop_schema.any_of.as_ref()) {
                 let name = format!("{parent}{}", naming::class_name(prop));
+                if members.len() == 1 && is_inline_struct(&members[0]) {
+                    self.hoist_object_with_doc(
+                        &name,
+                        &members[0],
+                        clean_doc(prop_schema.description.as_deref()),
+                    );
+                    return TypeRef::Named(name);
+                }
+                if let Some(union) = self.hoist_discriminated_union(
+                    &name,
+                    prop_schema,
+                    clean_doc(prop_schema.description.as_deref()),
+                ) {
+                    return union;
+                }
                 let mut variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
                 variants.dedup();
                 self.out.push(TypeDecl::Alias(AliasType {
@@ -7991,6 +7997,34 @@ mod tests {
                 && field.type_ref
                     == TypeRef::Named("SearchRequestSearchItemNameOperator".to_string())
         }));
+
+        let producer = schema(serde_json::json!({
+            "oneOf": [{
+                "type": "object",
+                "required": ["type", "data"],
+                "properties": {
+                    "type": { "type": "string", "enum": ["slack"] },
+                    "data": { "type": "object", "properties": {
+                        "channel": { "type": "string" }
+                    } }
+                }
+            }],
+            "discriminator": { "propertyName": "type" }
+        }));
+        assert_eq!(
+            hoister.prop_type_ref("CreatePipelineRequest", "producer_config", &producer),
+            TypeRef::Named("CreatePipelineRequestProducerConfig".to_string())
+        );
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Object(object)
+                if object.name == "CreatePipelineRequestProducerConfig"
+        )));
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Object(object)
+                if object.name == "CreatePipelineRequestProducerConfigData"
+        )));
     }
 
     #[test]
