@@ -3711,7 +3711,12 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         None => {}
         Some(RequestBody::Single(s)) if s.convert => {
             imports.add_core("serialization", "convert_and_respect_annotation_metadata");
-            let annotation = raw_type_str_ctx(&s.type_ref, imports, true);
+            let annotation_type = if s.required {
+                s.type_ref.clone()
+            } else {
+                TypeRef::Optional(Box::new(s.type_ref.clone()))
+            };
+            let annotation = raw_type_str_ctx(&annotation_type, imports, true);
             let call = Doc::group(
                 "            json=convert_and_respect_annotation_metadata(",
                 vec![
@@ -7878,6 +7883,27 @@ mod tests {
         }));
 
         assert!(complex_body(&ep, &[], &[]));
+    }
+
+    #[test]
+    fn optional_single_body_conversion_keeps_optional_annotation() {
+        let mut ep = endpoint("/approval", Vec::new(), None);
+        ep.request_body = Some(RequestBody::Single(SingleBody {
+            type_ref: TypeRef::Named("ModifyApprovalRequest".to_string()),
+            required: false,
+            convert: true,
+            content_type: true,
+            content_type_override: None,
+            example: None,
+        }));
+        let mut lines = Vec::new();
+        let mut imports = Imports::default();
+        super::append_request_call_args(&mut lines, &ep, &mut imports);
+        let rendered = lines.join("\n");
+        assert!(
+            rendered.contains("annotation=typing.Optional[ModifyApprovalRequest]"),
+            "{rendered}"
+        );
     }
 
     #[test]
