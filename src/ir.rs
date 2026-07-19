@@ -4797,7 +4797,23 @@ fn append_member_fields(
         }
         let spec_required = required.contains(&prop.as_str());
         let type_ref = if let Some(member) = simple_nullable_member(prop_schema) {
-            base_type_ref(member)
+            let union_array_item = member
+                .items
+                .as_deref()
+                .filter(|items| items.one_of.is_some() || items.any_of.is_some());
+            if union_array_item.is_some() {
+                enum_owner.map_or_else(
+                    || base_type_ref(member),
+                    |owner| {
+                        TypeRef::List(Box::new(TypeRef::Named(format!(
+                            "{owner}{}Item",
+                            naming::class_name(prop)
+                        ))))
+                    },
+                )
+            } else {
+                base_type_ref(member)
+            }
         } else if prop_schema.one_of.is_some() || prop_schema.any_of.is_some() {
             enum_owner.map_or_else(
                 || base_type_ref(prop_schema),
@@ -6543,6 +6559,13 @@ mod tests {
                         "effort": {"anyOf": [
                             {"type": "string", "enum": ["low", "high"]},
                             {"type": "null"}
+                        ]},
+                        "approvals": {"anyOf": [
+                            {"type": "array", "items": {"oneOf": [
+                                {"$ref": "#/components/schemas/Bird"},
+                                {"$ref": "#/components/schemas/Fish"}
+                            ]}},
+                            {"type": "null"}
                         ]}
                     }
                 },
@@ -6598,7 +6621,7 @@ mod tests {
         assert_eq!(cat[1].example.as_deref(), Some("9"));
 
         let dog = member_fields(&schemas["Dog"], "kind", &schemas, Some("Dog"));
-        assert_eq!(dog.len(), 3);
+        assert_eq!(dog.len(), 4);
         assert_eq!(dog[0].wire_name, "name");
         assert!(dog[0].optional);
         assert!(dog[0].nullable);
@@ -6607,6 +6630,10 @@ mod tests {
             TypeRef::List(Box::new(TypeRef::Named("Bird".to_string())))
         );
         assert_eq!(dog[2].type_ref, TypeRef::Named("DogEffort".to_string()));
+        assert_eq!(
+            dog[3].type_ref,
+            TypeRef::List(Box::new(TypeRef::Named("DogApprovalsItem".to_string())))
+        );
     }
 
     #[test]

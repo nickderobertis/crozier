@@ -15475,6 +15475,8 @@ const LETTA: Corpus = Corpus {
         "src/fern/types/update_reasoning_message.py",
         "src/fern/types/update_system_message.py",
         "src/fern/types/update_user_message.py",
+        "src/fern/types/letta_message_union.py",
+        "src/fern/types/letta_streaming_response.py",
     ],
 };
 
