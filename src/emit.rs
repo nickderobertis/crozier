@@ -3741,9 +3741,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 let value_name = body_field_value_name(f);
                 if f.convert {
                     imports.add_core("serialization", "convert_and_respect_annotation_metadata");
-                    let annotation_type = if f.optional
-                        && (f.nullable || !matches!(f.type_ref, TypeRef::List(_) | TypeRef::Set(_)))
-                    {
+                    let annotation_type = if f.nullable {
                         TypeRef::Optional(Box::new(f.type_ref.clone()))
                     } else {
                         f.type_ref.clone()
