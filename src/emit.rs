@@ -3443,6 +3443,14 @@ fn raw_docstring(
         push_return_doc(&mut lines, ep.response_doc.as_deref());
     }
     lines.push("        \"\"\"".to_string());
+    if ep.module.is_empty() {
+        lines
+            .iter_mut()
+            .filter(|line| line.is_empty())
+            .for_each(|line| {
+                *line = "        ".to_string();
+            });
+    }
     lines.join("\n")
 }
 
@@ -5004,6 +5012,14 @@ fn client_stream_docstring(
         }
     }
     lines.push("        \"\"\"".to_string());
+    if ep.module.is_empty() {
+        lines
+            .iter_mut()
+            .filter(|line| line.is_empty())
+            .for_each(|line| {
+                *line = "        ".to_string();
+            });
+    }
     lines.join("\n")
 }
 
@@ -5212,6 +5228,14 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         }
     }
     lines.push("        \"\"\"".to_string());
+    if ep.module.is_empty() {
+        lines
+            .iter_mut()
+            .filter(|line| line.is_empty())
+            .for_each(|line| {
+                *line = "        ".to_string();
+            });
+    }
     lines.join("\n")
 }
 
@@ -5585,6 +5609,11 @@ impl<'a> ExampleCtx<'a> {
                 {
                     let inner = &example[1..example.len() - 1];
                     format!("\"{}\"", inner.replace('"', "\\\""))
+                }
+                TypeRef::Primitive(Prim::Str | Prim::Bytes)
+                    if self.documentation && example.starts_with('"') =>
+                {
+                    example.replace('\'', "\\'")
                 }
                 _ => example.to_string(),
             };
