@@ -1284,6 +1284,23 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     for (key, schema) in &doc.components.schemas {
         builder.add_named(&naming::class_name(key), schema);
     }
+    for (event, item) in &doc.webhooks {
+        for (method, operation) in item.operations() {
+            let Some(schema) = operation
+                .request_body
+                .as_ref()
+                .and_then(|body| body.content.get("application/json"))
+                .and_then(|media| media.schema.as_ref())
+            else {
+                continue;
+            };
+            if schema.reference.is_some() {
+                continue;
+            }
+            let name = naming::class_name(&format!("{method}_{}_payload", event.replace('/', "_")));
+            builder.add_named(&name, schema);
+        }
+    }
     if let Some(oauth_scope) = oauth_scope_enum(doc) {
         builder.types.push(TypeDecl::Enum(oauth_scope));
     }
@@ -5511,7 +5528,13 @@ fn is_unknown(schema: &Schema) -> bool {
 /// omit `type: string` on an enum whose values are all strings; Fern still treats
 /// that as a string enum.
 fn string_enum_values(schema: &Schema) -> Option<Vec<String>> {
-    let values = schema.enum_values.as_ref()?;
+    let const_values;
+    let values = if let Some(values) = schema.enum_values.as_ref() {
+        values
+    } else {
+        const_values = vec![schema.const_value.clone()?];
+        &const_values
+    };
     if !is_string_type(schema) {
         let omitted_type = schema.ty.is_none();
         let all_strings = values.iter().all(serde_json::Value::is_string);
