@@ -1681,13 +1681,11 @@ fn build_endpoint(
             example: parameter_example(doc, p),
         })
         .collect();
-    if !doc.openapi.starts_with("3.1") {
-        path_params.sort_by(|a, b| {
-            path_param_position(path, &a.wire_name)
-                .cmp(&path_param_position(path, &b.wire_name))
-                .then_with(|| a.wire_name.cmp(&b.wire_name))
-        });
-    }
+    path_params.sort_by(|a, b| {
+        path_param_position(path, &a.wire_name)
+            .cmp(&path_param_position(path, &b.wire_name))
+            .then_with(|| a.wire_name.cmp(&b.wire_name))
+    });
 
     let query_params: Vec<QueryParam> = op
         .parameters
