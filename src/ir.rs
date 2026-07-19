@@ -3355,6 +3355,10 @@ impl InlineHoister<'_> {
             }
         }
         if prop_schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
+            let item_context = format!("{parent}{}", naming::class_name(prop));
+            if let Some(array) = self.hoist_array_item_enum(&item_context, prop_schema) {
+                return array;
+            }
             if let Some(item_schema) = prop_schema.items.as_deref() {
                 if item_schema.reference.is_none() && is_inline_struct(item_schema) {
                     let item_name = format!("{parent}{}Item", naming::class_name(prop));
@@ -5216,6 +5220,22 @@ impl Builder<'_> {
                         }
                         if non_null[0].ty.as_ref().and_then(TypeField::primary) == Some("array") {
                             if let Some(items) = non_null[0].items.as_deref() {
+                                let resolved_items = items
+                                    .reference
+                                    .as_deref()
+                                    .and_then(|reference| {
+                                        resolve_ref_from_schemas(self.schemas, reference)
+                                    })
+                                    .unwrap_or(items);
+                                if let Some(values) = string_enum_values(resolved_items) {
+                                    let item_name = format!("{name}Item");
+                                    self.types.push(TypeDecl::Enum(build_enum(
+                                        &item_name,
+                                        values,
+                                        clean_doc(items.description.as_deref()),
+                                    )));
+                                    return TypeRef::List(Box::new(TypeRef::Named(item_name)));
+                                }
                                 if let Some(item_members) =
                                     items.one_of.as_ref().or(items.any_of.as_ref())
                                 {
@@ -7561,7 +7581,13 @@ mod tests {
 
     #[test]
     fn field_type_ref_hoists_array_and_nested_property_unions() {
-        let schemas = indexmap::IndexMap::new();
+        let mut schemas = indexmap::IndexMap::new();
+        schemas.insert(
+            "MessageType".to_string(),
+            schema(serde_json::json!({
+                "type": "string", "enum": ["user", "assistant"]
+            })),
+        );
         let mut builder = Builder {
             types: Vec::new(),
             schemas: &schemas,
@@ -7640,6 +7666,40 @@ mod tests {
                 if union.name == "AgentStateToolRulesItem"
                     && union.discriminant_property == "type"
         )));
+
+        let nullable_enum_array = schema(serde_json::json!({
+            "anyOf": [{
+                "type": "array",
+                "items": { "type": "string", "enum": ["user", "assistant"] }
+            }, { "type": "null" }]
+        }));
+        assert_eq!(
+            builder.field_type_ref("Message", "include_types", &nullable_enum_array),
+            TypeRef::List(Box::new(TypeRef::Named(
+                "MessageIncludeTypesItem".to_string()
+            )))
+        );
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Enum(value) if value.name == "MessageIncludeTypesItem"
+        )));
+
+        let nullable_referenced_enum_array = schema(serde_json::json!({
+            "anyOf": [{
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/MessageType" }
+            }, { "type": "null" }]
+        }));
+        assert_eq!(
+            builder.field_type_ref(
+                "ScheduledMessage",
+                "include_return_message_types",
+                &nullable_referenced_enum_array,
+            ),
+            TypeRef::List(Box::new(TypeRef::Named(
+                "ScheduledMessageIncludeReturnMessageTypesItem".to_string()
+            )))
+        );
 
         let manager = schema(serde_json::json!({
             "oneOf": [
@@ -8024,6 +8084,21 @@ mod tests {
             decl,
             TypeDecl::Object(object)
                 if object.name == "CreatePipelineRequestProducerConfigData"
+        )));
+
+        let include_types = schema(serde_json::json!({
+            "type": "array",
+            "items": { "type": "string", "enum": ["user", "assistant"] }
+        }));
+        assert_eq!(
+            hoister.prop_type_ref("ScheduledMessage", "include_types", &include_types),
+            TypeRef::List(Box::new(TypeRef::Named(
+                "ScheduledMessageIncludeTypesItem".to_string()
+            )))
+        );
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Enum(value) if value.name == "ScheduledMessageIncludeTypesItem"
         )));
     }
 
