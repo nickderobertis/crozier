@@ -2854,6 +2854,11 @@ fn resolve_request_body(
                 Some(AdditionalProperties::Bool(false))
             ))
     {
+        if is_optional(schema) {
+            let name = format!("{request_ctx}Body");
+            hoister.hoist_object(&name, schema);
+            return Some(single(TypeRef::Named(name), required, true, true));
+        }
         return Some(RequestBody::Inline(Vec::new()));
     }
     // An inline object body (properties written directly, not behind a `$ref`) is
@@ -8059,6 +8064,33 @@ mod tests {
         assert!(binary.required);
         assert_eq!(binary.content_type_override.as_deref(), Some("*/*"));
         assert_eq!(binary.example.as_deref(), Some("\"blob.bin\""));
+
+        let nullable_empty: crate::openapi::RequestBody =
+            serde_json::from_value(serde_json::json!({
+                "content": { "application/json": { "schema": {
+                    "type": "object", "properties": {}, "nullable": true
+                } } }
+            }))
+            .expect("nullable empty body deserializes");
+        let RequestBody::Single(empty) = resolve_request_body(
+            &doc,
+            &types,
+            &nullable_empty,
+            &mut hoister,
+            "DeleteFeedRequest",
+            true,
+        )
+        .expect("nullable empty body is supported") else {
+            panic!("nullable empty body should be a named request")
+        };
+        assert_eq!(
+            empty.type_ref,
+            TypeRef::Named("DeleteFeedRequestBody".to_string())
+        );
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Object(object) if object.name == "DeleteFeedRequestBody"
+        )));
     }
 
     #[test]
