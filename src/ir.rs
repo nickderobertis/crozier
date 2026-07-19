@@ -4837,7 +4837,7 @@ impl Builder<'_> {
                         );
                         return TypeRef::List(Box::new(TypeRef::Named(name)));
                     }
-                    if items.reference.is_none() && !items.properties.is_empty() {
+                    if items.reference.is_none() && is_inline_struct(items) {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
                         let module = naming::module_name(&name);
                         self.add_object(
@@ -4984,7 +4984,7 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
             .iter()
             .all(|sibling| sibling.properties.contains_key(*candidate))
     });
-    let unique_required = variant.required.iter().find(|candidate| {
+    let unique_required = variant.required.iter().rev().find(|candidate| {
         siblings
             .iter()
             .filter(|sibling| sibling.properties.contains_key(*candidate))

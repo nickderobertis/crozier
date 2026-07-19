@@ -7017,15 +7017,19 @@ fn preserve_fenced_docstring_blank_indent(source: &mut String) {
             break;
         };
         let end = start + 1 + relative_end;
-        if lines[start + 1..end]
+        let has_fence = lines[start + 1..end]
             .iter()
-            .any(|line| line == "        Parameters")
-        {
+            .any(|line| line.trim_start().starts_with("```"));
+        let has_parameters = lines[start + 1..end]
+            .iter()
+            .any(|line| line == "        Parameters");
+        if has_fence || has_parameters {
             for index in start + 1..end {
                 if lines[index].trim().is_empty() {
-                    let indent = if lines
-                        .get(index + 1)
-                        .is_some_and(|next| next.starts_with("            "))
+                    let indent = if !has_fence
+                        && lines
+                            .get(index + 1)
+                            .is_some_and(|next| next.starts_with("            "))
                     {
                         12
                     } else {
