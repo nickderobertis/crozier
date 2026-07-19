@@ -2458,7 +2458,9 @@ fn error_body_type(resp: &Response, class: &str) -> TypeRef {
         {
             TypeRef::List(Box::new(TypeRef::Named(format!("{class}BodyItem"))))
         }
-        Some(schema) if is_inline_struct(schema) => TypeRef::Named(format!("{class}Body")),
+        Some(schema) if is_inline_struct(schema) && schema_example(schema).is_some() => {
+            TypeRef::Named(format!("{class}Body"))
+        }
         // A named `$ref`, scalar, or container keeps its resolved type. An inline
         // object (bunq's `GenericError`, `{Error: ...}`) or an otherwise-untyped body
         // resolves to bare `Any`, the same as a body-less error in Fern 5.20.
