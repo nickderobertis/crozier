@@ -5626,6 +5626,15 @@ impl<'a> ExampleCtx<'a> {
         }
         if let TypeRef::Union(variants) = t {
             let value: serde_json::Value = serde_json::from_str(example).ok()?;
+            if value
+                .as_object()
+                .is_some_and(|object| object.len() == 1 && object.contains_key("$ref"))
+            {
+                return variants
+                    .iter()
+                    .find(|variant| matches!(variant, TypeRef::List(_) | TypeRef::Set(_)))
+                    .map(|variant| self.value(variant, Slot::Plain));
+            }
             for variant in variants {
                 if self.example_matches_type(variant, &value) {
                     return self.value_from_example(variant, example);
