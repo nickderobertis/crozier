@@ -4584,7 +4584,10 @@ fn collect_discriminant_strips(
                     && matches!(
                         const_value,
                         Some(
-                            "approval_request_message"
+                            "approval"
+                                | "approval_request_message"
+                                | "message"
+                                | "tool"
                                 | "tool_return_message"
                                 | "stop_reason"
                                 | "usage_statistics"
@@ -5406,6 +5409,11 @@ impl Builder<'_> {
                         {
                             decl.docstring = clean_doc(prop_schema.description.as_deref());
                             self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                            return TypeRef::Named(name);
+                        }
+                        if let Some(values) = string_enum_values(non_null[0]) {
+                            self.types
+                                .push(TypeDecl::Enum(build_enum(&name, values, None)));
                             return TypeRef::Named(name);
                         }
                         if non_null[0].ty.as_ref().and_then(TypeField::primary) == Some("array") {
@@ -6448,7 +6456,7 @@ mod tests {
         let doc: OpenApi = serde_json::from_value(serde_json::json!({
             "components": { "schemas": {
                 "Approval": { "type": "object", "properties": {
-                    "message_type": { "type": "string", "const": "approval_request_message" }
+                    "message_type": { "type": "string", "const": "approval" }
                 } },
                 "Assistant": { "type": "object", "required": ["message_type"], "properties": {
                     "message_type": { "type": "string", "const": "assistant_message" }
@@ -6459,7 +6467,7 @@ mod tests {
                         { "$ref": "#/components/schemas/Assistant" }
                     ],
                     "discriminator": { "propertyName": "message_type", "mapping": {
-                        "approval_request_message": "#/components/schemas/Approval",
+                        "approval": "#/components/schemas/Approval",
                         "assistant_message": "#/components/schemas/Assistant"
                     } }
                 }
@@ -8050,6 +8058,25 @@ mod tests {
         assert!(builder.types.iter().any(|declaration| matches!(
             declaration,
             TypeDecl::DiscriminatedUnion(union) if union.name == "RequestInputOneItem"
+        )));
+
+        let nullable_const = schema(serde_json::json!({
+            "anyOf": [
+                { "type": "string", "const": "message" },
+                { "type": "null" }
+            ],
+            "description": "The message type to be created."
+        }));
+        assert_eq!(
+            builder.field_type_ref("MessageCreate", "type", &nullable_const),
+            TypeRef::Named("MessageCreateType".to_string())
+        );
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Enum(enumeration)
+                if enumeration.name == "MessageCreateType"
+                    && enumeration.members.iter().map(|member| member.value.as_str()).collect::<Vec<_>>() == ["message"]
+                    && enumeration.docstring.is_none()
         )));
 
         let nullable_referenced_enum_array = schema(serde_json::json!({
