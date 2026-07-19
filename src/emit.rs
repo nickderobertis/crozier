@@ -5572,6 +5572,11 @@ impl<'a> ExampleCtx<'a> {
                     let inner = &example[1..example.len() - 1];
                     format!("\"{}\"", inner.replace('"', "\\\""))
                 }
+                TypeRef::Primitive(Prim::Str | Prim::Bytes)
+                    if self.documentation || self.reference =>
+                {
+                    example.replace('\'', "\\'")
+                }
                 _ => example.to_string(),
             };
             return Some(Example::Atom(literal));
@@ -7020,12 +7025,12 @@ fn preserve_fenced_docstring_blank_indent(source: &mut String) {
         let has_fence = lines[start + 1..end]
             .iter()
             .any(|line| line.trim_start().starts_with("```"));
-        let has_parameters = lines[start + 1..end]
+        let has_markdown_list = lines[start + 1..end]
             .iter()
-            .any(|line| line == "        Parameters");
-        if has_fence || has_parameters {
-            for index in start + 1..end {
-                if lines[index].trim().is_empty() {
+            .any(|line| line.trim_start().starts_with("- "));
+        for index in start + 1..end {
+            if lines[index].trim().is_empty() {
+                if has_fence || has_markdown_list {
                     let indent = if !has_fence
                         && lines
                             .get(index + 1)
@@ -7036,6 +7041,8 @@ fn preserve_fenced_docstring_blank_indent(source: &mut String) {
                         8
                     };
                     lines[index] = " ".repeat(indent);
+                } else {
+                    lines[index].clear();
                 }
             }
         }

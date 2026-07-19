@@ -5028,11 +5028,12 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
             .all(|sibling| sibling.properties.contains_key(*candidate))
     });
     let unique_required = variant.properties.keys().rev().find(|candidate| {
-        siblings
-            .iter()
-            .filter(|sibling| sibling.properties.contains_key(*candidate))
-            .count()
-            == 1
+        variant.required.contains(*candidate)
+            && siblings
+                .iter()
+                .filter(|sibling| sibling.properties.contains_key(*candidate))
+                .count()
+                == 1
     });
     let unique = unique_required.cloned().or_else(|| {
         variant
