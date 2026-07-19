@@ -5487,6 +5487,9 @@ impl Builder<'_> {
                     let mut variants: Vec<TypeRef> = members
                         .iter()
                         .enumerate()
+                        .filter(|(_, member)| {
+                            member.ty.as_ref().and_then(TypeField::primary) != Some("null")
+                        })
                         .map(|(index, m)| {
                             if is_inline_object(m) {
                                 return self.variant_ref(&name, index, m, members);
@@ -8005,6 +8008,25 @@ mod tests {
             builder.field_type_ref("Export", "spec", &nullable_object_ref),
             TypeRef::Named("AgentFile".to_string())
         );
+        let nullable_complex = schema(serde_json::json!({
+            "anyOf": [
+                { "type": "string" },
+                { "type": "array", "items": { "type": "integer" } },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            builder.field_type_ref("Request", "input", &nullable_complex),
+            TypeRef::Named("RequestInput".to_string())
+        );
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Alias(alias)
+                if alias.name == "RequestInput"
+                    && matches!(&alias.target, TypeRef::Union(variants)
+                        if variants.len() == 2
+                            && !variants.iter().any(|variant| matches!(variant, TypeRef::Primitive(Prim::Any))))
+        )));
 
         let nullable_referenced_enum_array = schema(serde_json::json!({
             "anyOf": [{
