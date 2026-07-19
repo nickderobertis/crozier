@@ -60,6 +60,14 @@ info:
   title: Referenced examples
   version: 1.0.0
 paths:
+  /parents/{parent}/children/{child}:
+    parameters:
+      - { in: path, name: child, required: true, schema: { type: string } }
+      - { in: path, name: parent, required: true, schema: { type: string } }
+    get:
+      operationId: children.get
+      responses:
+        '204': { description: found }
   /contexts:
     post:
       operationId: contexts.create
