@@ -3045,8 +3045,9 @@ fn resolve_request_body(
             content_type_override,
         ));
     }
-    // An inline array body: a single `request` argument. A container of objects
-    // serializes through the convert wrapper; either way, no content-type header.
+    // An inline array body: a single `request` argument. Fern adds the JSON
+    // content type for arrays whose item is a component reference, but not for
+    // scalar or inline-object item schemas.
     if schema.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
         let items = schema.items.as_ref()?;
         // An array of *inline* objects hoists its element into `{request_ctx}Item`
@@ -3065,7 +3066,7 @@ fn resolve_request_body(
             TypeRef::List(Box::new(item)),
             required,
             convert,
-            false,
+            items.reference.is_some(),
         ));
     }
     if is_bare_object(schema) {
@@ -3077,10 +3078,15 @@ fn resolve_request_body(
             content_type_override,
         ));
     }
-    // An unknown (empty `{}`) body — Fern renders it as an optional `typing.Any`
-    // argument with a plain `json=request` and no content-type header.
+    // An unknown (empty `{}`) body keeps the request wrapper's requiredness and
+    // renders as `typing.Any`, with a plain `json=request` and no content-type.
     if is_unknown(schema) {
-        return Some(single(TypeRef::Primitive(Prim::Any), false, false, false));
+        return Some(single(
+            TypeRef::Primitive(Prim::Any),
+            required,
+            false,
+            false,
+        ));
     }
     if media_type == "*/*"
         && schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
@@ -9117,6 +9123,25 @@ mod tests {
         let resolved =
             super::resolve_request_body(&doc, &[], &body, &mut hoister, "DeleteRequest", false);
         assert!(matches!(resolved, Some(RequestBody::Single(body)) if !body.required));
+
+        let unknown: crate::openapi::RequestBody = serde_json::from_value(serde_json::json!({
+            "content": { "application/json": { "schema": {} } }
+        }))
+        .expect("unknown request body deserializes");
+        let resolved =
+            super::resolve_request_body(&doc, &[], &unknown, &mut hoister, "DeleteRequest", false);
+        assert!(matches!(resolved, Some(RequestBody::Single(body)) if body.required));
+
+        let array: crate::openapi::RequestBody = serde_json::from_value(serde_json::json!({
+            "required": true,
+            "content": { "application/json": { "schema": {
+                "type": "array", "items": { "$ref": "#/components/schemas/Block" }
+            } } }
+        }))
+        .expect("array request body deserializes");
+        let resolved =
+            super::resolve_request_body(&doc, &[], &array, &mut hoister, "BatchRequest", false);
+        assert!(matches!(resolved, Some(RequestBody::Single(body)) if body.content_type));
     }
 
     #[test]
