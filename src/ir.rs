@@ -5786,16 +5786,177 @@ fn example_literal(value: &serde_json::Value) -> Option<String> {
 mod tests {
     use super::{
         array_item_type_ref, auth_model, base_type_ref, build_endpoint, build_enum,
-        described_all_of_ref, endpoint_module, environment_model, extensible_enum,
-        full_type_ref_resolved, global_headers, int_prim, method_from_grouped_id,
-        module_from_grouped_id, module_identifier, oauth_scope_enum, optional_type_ref,
-        parameter_example, path_group, property_description, query_parameter_example, ref_to_class,
-        request_and_response_refs_match, request_schema_use_count, resolve_request_body,
-        resolve_schema_pointer, response_schema, scalar_body, success_response_entry,
-        synthesized_method_name, title_from_tag, variant_class_name, Auth, Builder, InlineHoister,
-        Prim, RequestBody, TypeDecl, TypeRef,
+        described_all_of_ref, discriminant_strips, endpoint_module, environment_model,
+        extensible_enum, full_type_ref_resolved, global_headers, hoist_fields, int_prim,
+        member_fields, method_from_grouped_id, module_from_grouped_id, module_identifier,
+        oauth_scope_enum, optional_type_ref, parameter_example, path_group, property_description,
+        query_parameter_example, ref_to_class, request_and_response_refs_match,
+        request_schema_use_count, resolve_request_body, resolve_schema_pointer, response_schema,
+        scalar_body, success_response_entry, synthesized_method_name, title_from_tag,
+        variant_class_name, Auth, Builder, Field, InlineHoister, ObjectType, Prim, RequestBody,
+        TypeDecl, TypeRef,
     };
     use crate::openapi::{OpenApi, Operation, Parameter, Response, Schema, TypeField};
+
+    fn object_field(name: &str, required: bool, type_ref: TypeRef) -> Field {
+        Field {
+            wire_name: name.to_string(),
+            py_name: name.to_string(),
+            type_ref,
+            optional: !required,
+            nullable: false,
+            spec_required: required,
+            docstring: None,
+            example: None,
+        }
+    }
+
+    #[test]
+    fn hoisted_request_fields_include_recursive_bases_in_fern_orders() {
+        let primitive = TypeRef::Primitive(Prim::Str);
+        let types = vec![
+            TypeDecl::Object(ObjectType {
+                name: "GrandBase".to_string(),
+                module: "grand_base".to_string(),
+                bases: Vec::new(),
+                fields: vec![
+                    object_field("grand_optional", false, primitive.clone()),
+                    object_field("grand_required", true, primitive.clone()),
+                ],
+                example_fields: std::collections::HashSet::new(),
+                docstring: None,
+            }),
+            TypeDecl::Object(ObjectType {
+                name: "Base".to_string(),
+                module: "base".to_string(),
+                bases: vec!["GrandBase".to_string()],
+                fields: vec![
+                    object_field("base_optional", false, primitive.clone()),
+                    object_field("base_required", true, primitive.clone()),
+                ],
+                example_fields: std::collections::HashSet::new(),
+                docstring: None,
+            }),
+            TypeDecl::Object(ObjectType {
+                name: "Child".to_string(),
+                module: "child".to_string(),
+                bases: vec!["Base".to_string()],
+                fields: vec![object_field("child", true, primitive)],
+                example_fields: std::collections::HashSet::new(),
+                docstring: None,
+            }),
+        ];
+
+        let fields = hoist_fields("Child", &types).expect("child object is present");
+        assert_eq!(
+            fields
+                .iter()
+                .map(|field| (field.wire_name.as_str(), field.reference_order))
+                .collect::<Vec<_>>(),
+            [
+                ("child", 4),
+                ("base_optional", 1),
+                ("base_required", 0),
+                ("grand_optional", 3),
+                ("grand_required", 2),
+            ]
+        );
+        assert!(fields
+            .iter()
+            .all(|field| { field.collision_prefix.as_deref() == Some("child") && !field.convert }));
+        assert!(hoist_fields("Missing", &types).is_none());
+    }
+
+    #[test]
+    fn discriminated_member_helpers_walk_nested_schemas_and_allof_bases() {
+        let schemas: indexmap::IndexMap<String, Schema> =
+            serde_json::from_value(serde_json::json!({
+                "Base": {
+                    "type": "object",
+                    "required": ["baseValue"],
+                    "properties": {
+                        "kind": {"type": "string"},
+                        "baseValue": {"type": "string", "enum": ["one", "two"]}
+                    }
+                },
+                "Cat": {
+                    "allOf": [
+                        {"$ref": "#/components/schemas/Base"},
+                        {
+                            "type": "object",
+                            "required": ["kind", "lives"],
+                            "properties": {
+                                "kind": {"type": "string", "enum": ["cat"]},
+                                "lives": {"type": "integer", "example": 9}
+                            }
+                        }
+                    ]
+                },
+                "Dog": {
+                    "type": "object",
+                    "required": ["kind"],
+                    "properties": {
+                        "kind": {"type": "string", "enum": ["dog"]},
+                        "name": {"type": ["string", "null"], "readOnly": true}
+                    }
+                },
+                "Bird": {
+                    "required": ["type"],
+                    "properties": {"type": {"type": "string", "example": "bird"}}
+                },
+                "Fish": {
+                    "required": ["type"],
+                    "properties": {"type": {"type": "string", "example": "fish"}}
+                },
+                "Inferred": {
+                    "oneOf": [
+                        {"$ref": "#/components/schemas/Bird"},
+                        {"$ref": "#/components/schemas/Fish"}
+                    ]
+                },
+                "Envelope": {
+                    "type": "object",
+                    "properties": {
+                        "payload": {
+                            "oneOf": [
+                                {"$ref": "#/components/schemas/Cat"},
+                                {"$ref": "#/components/schemas/Dog"}
+                            ],
+                            "discriminator": {
+                                "propertyName": "kind",
+                                "mapping": {
+                                    "cat": "#/components/schemas/Cat",
+                                    "dog": "#/components/schemas/Dog"
+                                }
+                            }
+                        }
+                    }
+                }
+            }))
+            .expect("schemas deserialize");
+
+        let strips = discriminant_strips(&schemas);
+        assert_eq!(strips.get("Cat").map(String::as_str), Some("kind"));
+        assert_eq!(strips.get("Dog").map(String::as_str), Some("kind"));
+        assert_eq!(strips.get("Bird").map(String::as_str), Some("type"));
+        assert_eq!(strips.get("Fish").map(String::as_str), Some("type"));
+
+        let cat = member_fields(&schemas["Cat"], "kind", &schemas);
+        assert_eq!(
+            cat.iter()
+                .map(|field| field.wire_name.as_str())
+                .collect::<Vec<_>>(),
+            ["baseValue", "lives"]
+        );
+        assert!(matches!(cat[0].type_ref, TypeRef::Named(ref name) if name == "BaseBaseValue"));
+        assert_eq!(cat[1].example.as_deref(), Some("9"));
+
+        let dog = member_fields(&schemas["Dog"], "kind", &schemas);
+        assert_eq!(dog.len(), 1);
+        assert_eq!(dog[0].wire_name, "name");
+        assert!(dog[0].optional);
+        assert!(dog[0].nullable);
+    }
 
     #[test]
     fn integer_formats_select_distinct_ir_primitives() {
@@ -6707,6 +6868,41 @@ mod tests {
             ),
             "PetResourceList"
         );
+
+        let asset_base = schema(serde_json::json!({
+            "properties": {"assets": {"type": "array"}}
+        }));
+        let asset_detail = schema(serde_json::json!({
+            "properties": {
+                "assets": {"type": "array"},
+                "assets_detail": {"type": "string"}
+            }
+        }));
+        let asset_tail = schema(serde_json::json!({
+            "properties": {
+                "assets": {"type": "array"},
+                "assets_summary": {"type": "string"}
+            }
+        }));
+        let asset_siblings = [asset_base, asset_detail, asset_tail.clone()];
+        assert_eq!(
+            variant_class_name("Portfolio", 2, &asset_tail, &asset_siblings),
+            "PortfolioAssets"
+        );
+
+        let portfolio_a = schema(serde_json::json!({
+            "properties": {"portfolios": {"type": "array"}}
+        }));
+        let portfolio_b = portfolio_a.clone();
+        assert_eq!(
+            variant_class_name(
+                "Result",
+                1,
+                &portfolio_b,
+                &[portfolio_a, portfolio_b.clone()]
+            ),
+            "ResultOne"
+        );
     }
 
     #[test]
@@ -6744,6 +6940,58 @@ mod tests {
             TypeRef::Primitive(Prim::Long)
         );
         assert_eq!(builder.types.len(), emitted);
+    }
+
+    #[test]
+    fn map_with_union_values_emits_a_value_union_and_named_dict_alias() {
+        let schemas = indexmap::IndexMap::new();
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas: &schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        let map = schema(serde_json::json!({
+            "type": "object",
+            "description": "Values by key.",
+            "additionalProperties": {
+                "description": "A scalar or structured value.",
+                "oneOf": [
+                    {"type": "string"},
+                    {
+                        "type": "object",
+                        "properties": {"count": {"type": "integer"}}
+                    },
+                    {"type": "string"}
+                ]
+            }
+        }));
+
+        builder.add_named("Values", &map);
+        assert_eq!(builder.types.len(), 3);
+        assert!(matches!(
+            &builder.types[0],
+            TypeDecl::Object(object) if object.name == "ValuesValueCount"
+        ));
+        assert!(matches!(
+            &builder.types[1],
+            TypeDecl::Alias(alias)
+                if alias.name == "ValuesValue"
+                    && alias.docstring.as_deref() == Some("A scalar or structured value.")
+                    && matches!(&alias.target, TypeRef::Union(members) if members.len() == 3)
+        ));
+        assert!(matches!(
+            &builder.types[2],
+            TypeDecl::Alias(alias)
+                if alias.name == "Values"
+                    && alias.docstring.as_deref() == Some("Values by key.")
+                    && matches!(
+                        &alias.target,
+                        TypeRef::Dict(key, value)
+                            if matches!(&**key, TypeRef::Primitive(Prim::Str))
+                                && matches!(&**value, TypeRef::Named(name) if name == "ValuesValue")
+                    )
+        ));
     }
 
     #[test]

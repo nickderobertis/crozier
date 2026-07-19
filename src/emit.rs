@@ -8843,6 +8843,17 @@ mod tests {
         });
         let types = vec![
             payload,
+            TypeDecl::Object(ObjectType {
+                name: "Event".to_string(),
+                module: "event".to_string(),
+                bases: Vec::new(),
+                fields: vec![
+                    model_field("id", TypeRef::Primitive(Prim::Int), true),
+                    model_field("when", TypeRef::Primitive(Prim::Datetime), true),
+                ],
+                example_fields: Default::default(),
+                docstring: None,
+            }),
             TypeDecl::Alias(AliasType {
                 name: "PayloadAlias".to_string(),
                 module: "payload_alias".to_string(),
@@ -8990,6 +9001,64 @@ mod tests {
         assert!(ctx
             .value_from_example(&TypeRef::Named("Shape".to_string()), "{}")
             .is_none());
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::Named("Event".to_string()),
+                r#"{"when":"2000-01-23T04:56:07Z"}"#,
+            )
+            .expect("sentinel temporal example uses generated placeholders")
+            .flat(),
+            "Event(id=1, when=datetime.datetime.fromisoformat(\"2024-01-15 09:30:00+00:00\"))"
+        );
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::Union(vec![
+                    TypeRef::Primitive(Prim::Str),
+                    TypeRef::List(Box::new(TypeRef::Primitive(Prim::Int))),
+                ]),
+                r##"{"$ref":"#/components/schemas/Items"}"##,
+            )
+            .expect("reference-shaped union examples select their collection")
+            .flat(),
+            "[1]"
+        );
+
+        ctx.reference = true;
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Primitive(Prim::Any)),
+                ),
+                r#"{"enabled":true,"count":2}"#,
+            )
+            .expect("reference dictionaries retain keyed layout")
+            .render(0),
+            "{\n    \"enabled\": True,\n    \"count\": 2\n}"
+        );
+        assert_eq!(
+            ctx.value_from_example(&TypeRef::Primitive(Prim::Str), "'quoted'")
+                .expect("reference strings normalize quote style")
+                .flat(),
+            "\"quoted\""
+        );
+        ctx.reference = false;
+        ctx.documentation = true;
+        assert_eq!(
+            ctx.value_from_example(&TypeRef::Primitive(Prim::Str), r#""can't""#)
+                .expect("documentation strings escape apostrophes")
+                .flat(),
+            r#""can\'t""#
+        );
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::List(Box::new(TypeRef::Primitive(Prim::Date))),
+                r#"["2024-02-03","2024-02-03"]"#,
+            )
+            .expect("documentation temporal lists remove duplicate values")
+            .flat(),
+            "[datetime.date.fromisoformat(\"2024-02-03\")]"
+        );
 
         let payload_type = TypeRef::Named("Payload".to_string());
         assert!(ctx.example_matches_type(&payload_type, &serde_json::json!({ "id": 1 })));
@@ -9258,6 +9327,25 @@ mod tests {
         assert!(rendered.contains("request=\"payload\""), "{rendered}");
         assert!(rendered.contains("tenant=\"YOUR_TENANT\""), "{rendered}");
         assert!(rendered.contains("token=\"YOUR_TOKEN\""), "{rendered}");
+
+        let mut reference_ctx = example_ctx(&[], &[], &auth);
+        reference_ctx.global_headers = &global_headers;
+        let reference = build_documentation_example(
+            &ep,
+            false,
+            "widgets",
+            "acme",
+            "AcmeApi",
+            &mut reference_ctx,
+            None,
+            true,
+        )
+        .expect("wildcard request has a reference example")
+        .join("\n");
+        assert!(reference.contains("tags=["), "{reference}");
+        assert!(reference.contains("\"tags\""), "{reference}");
+        assert!(reference.contains("trace=\"trace-1\""), "{reference}");
+        assert!(reference.contains("request=\"payload\""), "{reference}");
 
         ep.request_body = Some(RequestBody::Inline(vec![
             BodyField {
