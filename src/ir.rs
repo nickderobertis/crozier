@@ -1700,6 +1700,11 @@ fn build_endpoint(
                 .map_or(TypeRef::Primitive(Prim::Any), |s| {
                     hoister.hoist_param_enum(&request_ctx, &p.name, s)
                 });
+            let type_ref = if p.schema.is_none() && !p.content.is_empty() {
+                TypeRef::Primitive(Prim::Str)
+            } else {
+                type_ref
+            };
             let convert = hoister.needs_convert(&type_ref);
             // A parameter-level `example` wins; otherwise the schema's own.
             let without_declared_example = parameter_example_value(doc, p).is_none();
@@ -3158,6 +3163,20 @@ impl InlineHoister<'_> {
             let nested = format!("{parent}{}", naming::class_name(prop));
             self.hoist_object(&nested, prop_schema);
             return TypeRef::Named(nested);
+        }
+        if prop_schema.reference.is_none() {
+            if let Some(members) = prop_schema.one_of.as_ref().or(prop_schema.any_of.as_ref()) {
+                let name = format!("{parent}{}", naming::class_name(prop));
+                let mut variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
+                variants.dedup();
+                self.out.push(TypeDecl::Alias(AliasType {
+                    name: name.clone(),
+                    module: naming::module_name(&name),
+                    target: TypeRef::Union(variants),
+                    docstring: clean_doc(prop_schema.description.as_deref()),
+                }));
+                return TypeRef::Named(name);
+            }
         }
         if prop_schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
             if let Some(item_schema) = prop_schema.items.as_deref() {

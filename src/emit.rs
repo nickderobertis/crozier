@@ -1982,26 +1982,30 @@ fn reference_entry(
         documentation: false,
         reference: false,
     };
-    let example = build_documentation_example(
-        ep,
-        false,
-        module,
-        pkg,
-        &ir.client_name,
-        &mut ctx,
-        ir.environment.as_ref(),
-        true,
-    )
-    .map_or_else(
-        || {
-            if has_args {
-                format!("{}(...)", client_call_prefix(ep))
-            } else {
-                format!("{}()", client_call_prefix(ep))
-            }
-        },
-        |lines| lines.join("\n"),
-    );
+    let example = (!ep.binary_response || !module.is_empty())
+        .then(|| {
+            build_documentation_example(
+                ep,
+                false,
+                module,
+                pkg,
+                &ir.client_name,
+                &mut ctx,
+                ir.environment.as_ref(),
+                true,
+            )
+        })
+        .flatten()
+        .map_or_else(
+            || {
+                if has_args {
+                    format!("{}(...)", client_call_prefix(ep))
+                } else {
+                    format!("{}()", client_call_prefix(ep))
+                }
+            },
+            |lines| lines.join("\n"),
+        );
 
     // The parameter rows, in signature order, then `request_options`.
     let mut params: Vec<ParamRow> = Vec::new();
@@ -2108,6 +2112,7 @@ fn reference_entry(
         example,
         example_gap: if !endpoint_has_worked_example(ep)
             || matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
+            || ep.binary_response && module.is_empty()
         {
             ""
         } else {
@@ -5056,15 +5061,20 @@ fn client_binary_stream_docstring(
         documentation: false,
         reference: false,
     };
-    if let Some(ex_lines) = build_example(
-        ep,
-        is_async,
-        cx.module,
-        cx.pkg,
-        cx.client_name,
-        &mut ctx,
-        cx.empty_namespace,
-    ) {
+    if let Some(ex_lines) = (!cx.module.is_empty())
+        .then(|| {
+            build_example(
+                ep,
+                is_async,
+                cx.module,
+                cx.pkg,
+                cx.client_name,
+                &mut ctx,
+                cx.empty_namespace,
+            )
+        })
+        .flatten()
+    {
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
