@@ -15291,6 +15291,14 @@ const LETTA: Corpus = Corpus {
         "src/fern/types/completion_usage.py",
         "src/fern/types/letta_schemas_mcp_update_stdio_mcp_server.py",
         "src/fern/types/usage_statistics.py",
+        "src/fern/types/chat_completion_message.py",
+        "src/fern/types/child_tool_rule.py",
+        "src/fern/types/choice_logprobs.py",
+        "src/fern/types/letta_batch_request.py",
+        "src/fern/types/letta_request.py",
+        "src/fern/types/letta_request_config.py",
+        "src/fern/types/letta_request_messages_item.py",
+        "src/fern/types/letta_streaming_request.py",
     ],
 };
 

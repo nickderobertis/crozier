@@ -1346,7 +1346,22 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     // (plain-object `$ref`) request body — its fields live on the request method
     // instead. Drop such a type unless it is referenced elsewhere (a response, a
     // field, a parameter, a non-inlined body, ...).
-    let referenced = referenced_type_names(&builder.types, &endpoints);
+    let mut referenced = referenced_type_names(&builder.types, &endpoints);
+    for tag_type in &tag_types {
+        match &tag_type.decl {
+            TypeDecl::Object(object) => object
+                .fields
+                .iter()
+                .for_each(|field| collect_named(&field.type_ref, &mut referenced)),
+            TypeDecl::Alias(alias) => collect_named(&alias.target, &mut referenced),
+            TypeDecl::DiscriminatedUnion(union) => union
+                .members
+                .iter()
+                .flat_map(|member| &member.fields)
+                .for_each(|field| collect_named(&field.type_ref, &mut referenced)),
+            TypeDecl::Enum(_) => {}
+        }
+    }
     let inline_sources = inline_body_source_names(doc);
     let dropped_sources: std::collections::HashSet<String> =
         inline_sources
@@ -5395,6 +5410,11 @@ impl Builder<'_> {
                         }
                         if non_null[0].ty.as_ref().and_then(TypeField::primary) == Some("array") {
                             if let Some(items) = non_null[0].items.as_deref() {
+                                if let Some(reference) = items.reference.as_deref() {
+                                    return TypeRef::List(Box::new(TypeRef::Named(ref_to_class(
+                                        reference,
+                                    ))));
+                                }
                                 let resolved_items = items
                                     .reference
                                     .as_deref()
@@ -7998,9 +8018,7 @@ mod tests {
                 "include_return_message_types",
                 &nullable_referenced_enum_array,
             ),
-            TypeRef::List(Box::new(TypeRef::Named(
-                "ScheduledMessageIncludeReturnMessageTypesItem".to_string()
-            )))
+            TypeRef::List(Box::new(TypeRef::Named("MessageType".to_string())))
         );
 
         let manager = schema(serde_json::json!({
