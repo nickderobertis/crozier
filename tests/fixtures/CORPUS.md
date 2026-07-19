@@ -253,6 +253,7 @@ goldens have not been generated locally.
 | `assemblyai-autosdk` | **REJECTED** — source license is revenue-limited rather than Apache-2.0/MIT/BSD/CC0 |
 | `sumup` | **DROPPED** — its `readOnly` and `writeOnly` fields occur in separate models, so it does not prove same-model interplay |
 | `titiler-openeo` | **DROPPED** — its ranged responses do not include literal `2XX` or `default`; `smart-edge-af` consolidates `not`, `default`, and nested composition |
-| `keycloak-admin` | **DROPPED** — its standalone `2XX` coverage forced a fourth registration; `smart-edge-af` supplies ranged/default coverage in the three-spec set |
+| `apigee-registry` | **DROPPED** — its read/write-only coverage overlapped `sigstore-rekor`, which also consolidates literal `2XX`/`default` and implicit-discriminator coverage |
+| `keycloak-admin` | **DROPPED** — its standalone `2XX` coverage forced a fourth registration; `sigstore-rekor` supplies literal `2XX` plus `default` coverage in the three-spec set |
 | `mardi-gras` | **REJECTED** — Fern-clean and MIT, but it has no `allOf` and therefore could not consolidate the nested composition requirement |
 | `paypal-checkout` | **DROPPED** — the only revision with `not` fails Fern on five invalid carrier enum names; Fern-clean older revisions lack `not` |
