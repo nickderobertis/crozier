@@ -51,6 +51,144 @@ fn render_package(spec: &str, package: &str) -> HashMap<String, String> {
     .collect()
 }
 
+#[test]
+fn referenced_examples_cover_multipart_aliases_and_digit_leading_fields() {
+    let files = render(
+        r##"
+openapi: 3.0.0
+info:
+  title: Referenced examples
+  version: 1.0.0
+paths:
+  /contexts:
+    post:
+      operationId: contexts.create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContextRequest'
+          multipart/related:
+            encoding:
+              binaryData:
+                contentType: application/octet-stream
+            schema:
+              $ref: '#/components/schemas/ContextMultipart'
+      responses:
+        '200':
+          description: created
+          content:
+            application/json:
+              schema:
+                type: string
+  /upload:
+    post:
+      operationId: uploads.create
+      requestBody:
+        required: true
+        content:
+          multipart/related:
+            encoding:
+              jsonData:
+                contentType: application/json
+              binaryData:
+                contentType: application/octet-stream
+            schema:
+              $ref: '#/components/schemas/ContextMultipart'
+      responses:
+        '204':
+          description: uploaded
+  /wild:
+    post:
+      operationId: wild.send
+      parameters:
+        - in: query
+          name: tags
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+        - in: header
+          name: X-Trace
+          required: true
+          example: trace-1
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          '*/*':
+            schema:
+              type: string
+      responses:
+        '204':
+          description: sent
+webhooks:
+  context.changed:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id:
+                  type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '204':
+          description: accepted
+components:
+  schemas:
+    BearerContainer:
+      type: string
+    BaseContext:
+      type: object
+      properties:
+        inherited:
+          type: string
+    ContextRequest:
+      example:
+        bearerSetup: [null, null]
+        5gCauseValue: 0
+      allOf:
+        - $ref: '#/components/schemas/BaseContext'
+        - type: object
+          properties:
+            bearerSetup:
+              type: array
+              items:
+                $ref: '#/components/schemas/BearerContainer'
+            5gCauseValue:
+              type: integer
+    ContextMultipart:
+      type: object
+      properties:
+        jsonData:
+          $ref: '#/components/schemas/ContextRequest'
+        binaryData:
+          type: string
+          format: binary
+"##,
+    );
+
+    let client = &files["src/acme/contexts/client.py"];
+    assert!(client.contains("f_5g_cause_value=0"), "{client}");
+    assert!(
+        client.contains("bearer_setup=[\"bearerSetup\", \"bearerSetup\"]"),
+        "{client}"
+    );
+    let reference = &files["reference.md"];
+    assert!(reference.contains("f_value=0"), "{reference}");
+}
+
 fn python_files_below(dir: &std::path::Path, out: &mut Vec<PathBuf>) {
     for entry in std::fs::read_dir(dir).unwrap() {
         let path = entry.unwrap().path();

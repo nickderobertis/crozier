@@ -7232,13 +7232,14 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 #[cfg(test)]
 mod tests {
     use super::{
-        abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts, build_example,
-        client_method, complex_body, container_element_object, environment, escape_py_str,
-        example_from_json, field_decl, is_complex_type, natural_cmp, object_body_complex,
-        raw_method, raw_type_str, readme_endpoint, readme_endpoint_eligible,
-        reference_param_annotation, render, render_class_body, render_enum, render_type_decl,
-        resolves_to_container, url_arg, ClientCtx, Example, ExampleCtx, FieldView, Imports,
-        ParamRow, RefLoc, ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
+        abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts,
+        build_documentation_example, build_example, client_method, complex_body,
+        container_element_object, environment, escape_py_str, example_from_json, field_decl,
+        generate, is_complex_type, natural_cmp, object_body_complex, raw_method, raw_type_str,
+        readme_endpoint, readme_endpoint_eligible, reference_param_annotation, render,
+        render_class_body, render_enum, render_type_decl, resolves_to_container, url_arg,
+        ClientCtx, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView,
+        RenderedField, RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -9310,6 +9311,168 @@ mod tests {
             "{rendered}"
         );
         assert!(rendered.contains("await client.widgets.op("), "{rendered}");
+    }
+
+    #[test]
+    fn referenced_request_examples_preserve_fern_importer_names() {
+        let alias = TypeDecl::Alias(AliasType {
+            name: "EpsBearerContainer".to_string(),
+            module: "eps_bearer_container".to_string(),
+            target: TypeRef::Primitive(Prim::Str),
+            docstring: None,
+        });
+        let mut ep = endpoint("/contexts", Vec::new(), Some(TypeRef::Primitive(Prim::Str)));
+        ep.http_method = "POST";
+        ep.request_body_required = true;
+        ep.request_body_has_multipart_related = true;
+        ep.reference_body_example = Some(serde_json::json!({
+            "epsBearerSetup": [null, null],
+            "5gMmCauseValue": 0,
+        }));
+        ep.request_body = Some(RequestBody::Inline(vec![
+            BodyField {
+                wire_name: "epsBearerSetup".to_string(),
+                py_name: "eps_bearer_setup".to_string(),
+                type_ref: TypeRef::List(Box::new(TypeRef::Named("EpsBearerContainer".to_string()))),
+                optional: true,
+                nullable: false,
+                spec_required: false,
+                docstring: None,
+                convert: true,
+                is_file: false,
+                form_json: false,
+                form_content_type: None,
+                collision_prefix: None,
+                example: Some("[null,null]".to_string()),
+                media_example: true,
+                schema_body_example: true,
+                reference_order: 0,
+            },
+            BodyField {
+                wire_name: "5gMmCauseValue".to_string(),
+                py_name: "_5g_mm_cause_value".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Int),
+                optional: true,
+                nullable: false,
+                spec_required: false,
+                docstring: None,
+                convert: false,
+                is_file: false,
+                form_json: false,
+                form_content_type: None,
+                collision_prefix: None,
+                example: Some("0".to_string()),
+                media_example: true,
+                schema_body_example: true,
+                reference_order: 1,
+            },
+        ]));
+
+        let auth = Auth::None;
+        let types = [alias];
+        let mut ctx = example_ctx(&types, &[], &auth);
+        let executable = build_example(&ep, false, "contexts", "fern", "FernApi", &mut ctx, false)
+            .expect("referenced request has an executable example")
+            .join("\n");
+        assert!(executable.contains("eps_bearer_setup=[\"epsBearerSetup\", \"epsBearerSetup\"]"));
+        assert!(executable.contains("f_5g_mm_cause_value=0"));
+
+        let mut ctx = example_ctx(&types, &[], &auth);
+        let reference = build_documentation_example(
+            &ep, false, "contexts", "fern", "FernApi", &mut ctx, None, true,
+        )
+        .expect("referenced request has a reference example")
+        .join("\n");
+        assert!(reference.contains("f_value=0"), "{reference}");
+        assert!(reference.contains("\"epsBearerSetup\""), "{reference}");
+
+        ep.request_body_required = false;
+        ep.request_body_has_multipart_related = false;
+        let mut ctx = example_ctx(&types, &[], &auth);
+        let optional = build_example(&ep, false, "contexts", "fern", "FernApi", &mut ctx, false)
+            .expect("optional request has an example")
+            .join("\n");
+        assert!(optional.contains("_5g_mm_cause_value=0"), "{optional}");
+
+        ep.request_body = Some(RequestBody::Form(FormBody {
+            multipart: true,
+            fields: vec![BodyField {
+                wire_name: "binaryDataN1SmMessage".to_string(),
+                py_name: "binary_data_n1sm_message".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Bytes),
+                optional: true,
+                nullable: false,
+                spec_required: false,
+                docstring: None,
+                convert: false,
+                is_file: true,
+                form_json: false,
+                form_content_type: Some("application/vnd.3gpp.5gnas".to_string()),
+                collision_prefix: None,
+                example: None,
+                media_example: false,
+                schema_body_example: false,
+                reference_order: 0,
+            }],
+        }));
+        ep.body_schema_ref = true;
+        assert!(readme_endpoint_eligible(&ep));
+        let mut ctx = example_ctx(&types, &[], &auth);
+        let form = build_documentation_example(
+            &ep, false, "contexts", "fern", "FernApi", &mut ctx, None, false,
+        )
+        .expect("multipart related request has a README example")
+        .join("\n");
+        assert!(
+            form.contains("binary_data_n1sm_message=\"example_binaryDataN1SmMessage\""),
+            "{form}"
+        );
+    }
+
+    #[test]
+    fn generation_covers_root_and_explicit_empty_endpoint_namespaces() {
+        let mut root = endpoint("/root", Vec::new(), Some(TypeRef::Primitive(Prim::Str)));
+        root.module.clear();
+        root.docstring = Some("Root operation.".to_string());
+        root.response_doc = Some("Root response.".to_string());
+        root.query_params.push(QueryParam {
+            wire_name: "filter".to_string(),
+            py_name: "filter".to_string(),
+            type_ref: TypeRef::Primitive(Prim::Str),
+            required: false,
+            convert: false,
+            comma_separated: false,
+            example: Some("\"active\"".to_string()),
+            example_is_scalar: true,
+            docstring: Some("Optional filter.".to_string()),
+        });
+        let mut explicit_empty =
+            endpoint("/empty", Vec::new(), Some(TypeRef::Primitive(Prim::Str)));
+        explicit_empty.module = "_".to_string();
+        explicit_empty.method_name = "empty".to_string();
+
+        let mut ir = ir_with(vec![root, explicit_empty]);
+        ir.empty_endpoint_namespace = true;
+        ir.endpoint_modules = vec!["_".to_string()];
+        ir.empty_namespace_types = vec!["EmptyResult".to_string()];
+        ir.tag_types = vec![TagTypeDecl {
+            module: "_".to_string(),
+            decl: TypeDecl::Alias(AliasType {
+                name: "EmptyResult".to_string(),
+                module: "empty_result".to_string(),
+                target: TypeRef::Primitive(Prim::Str),
+                docstring: None,
+            }),
+        }];
+        let files = generate(&ir).expect("root and explicit empty namespaces generate");
+        assert!(files
+            .iter()
+            .any(|file| file.path.ends_with("src/fern/client.py")));
+        assert!(files
+            .iter()
+            .any(|file| file.path.ends_with("src/fern/raw_client.py")));
+        assert!(files.iter().any(|file| file.path.ends_with("README.md")));
+        assert!(files.iter().any(|file| file.path.ends_with("reference.md")));
     }
 
     #[test]
