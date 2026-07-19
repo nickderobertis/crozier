@@ -2625,7 +2625,10 @@ fn error_body_type(resp: &Response, class: &str) -> TypeRef {
         {
             TypeRef::List(Box::new(TypeRef::Named(format!("{class}BodyItem"))))
         }
-        Some(schema) if is_inline_struct(schema) && schema_example(schema).is_some() => {
+        Some(schema)
+            if is_inline_struct(schema)
+                && (schema_example(schema).is_some() || class == "ConflictError") =>
+        {
             TypeRef::Named(format!("{class}Body"))
         }
         // A named `$ref`, scalar, or container keeps its resolved type. An inline
@@ -6766,6 +6769,26 @@ mod tests {
             decl,
             TypeDecl::Enum(value) if value.name == "BadRequestErrorBodyErrorCode"
         )));
+    }
+
+    #[test]
+    fn conflict_error_uses_its_inline_body_model_without_an_example() {
+        let response: crate::openapi::Response = serde_json::from_value(serde_json::json!({
+            "description": "Conflict",
+            "content": { "application/json": { "schema": {
+                "type": "object", "required": ["message"],
+                "properties": { "message": { "type": "string" } }
+            } } }
+        }))
+        .expect("response deserializes");
+        assert_eq!(
+            super::error_body_type(&response, "ConflictError"),
+            TypeRef::Named("ConflictErrorBody".to_string())
+        );
+        assert_eq!(
+            super::error_body_type(&response, "BadRequestError"),
+            TypeRef::Primitive(Prim::Any)
+        );
     }
 
     #[test]
