@@ -3284,6 +3284,18 @@ impl InlineHoister<'_> {
             .one_of
             .as_ref()
             .or(item_schema.any_of.as_ref())?;
+        if self
+            .hoist_discriminated_union(
+                item_name,
+                item_schema,
+                clean_doc(item_schema.description.as_deref()),
+            )
+            .is_some()
+        {
+            return Some(TypeRef::List(Box::new(TypeRef::Named(
+                item_name.to_string(),
+            ))));
+        }
         let target = TypeRef::Union(
             variants
                 .iter()
@@ -8979,6 +8991,34 @@ mod tests {
             )),
             "{tag_types:?}"
         );
+
+        let array = schema(serde_json::json!({
+            "type": "array", "items": {
+                "oneOf": [
+                    { "$ref": "#/components/schemas/UserMessage" },
+                    { "$ref": "#/components/schemas/AssistantMessage" }
+                ],
+                "discriminator": { "propertyName": "message_type", "mapping": {
+                    "user_message": "#/components/schemas/UserMessage",
+                    "assistant_message": "#/components/schemas/AssistantMessage"
+                } }
+            }
+        }));
+        let mut hoister = InlineHoister {
+            root_types: &[],
+            schemas: Some(&doc.components.schemas),
+            out: Vec::new(),
+        };
+        assert_eq!(
+            hoister.hoist_response_array_item_union("MessagesResponseItem", &array),
+            Some(TypeRef::List(Box::new(TypeRef::Named(
+                "MessagesResponseItem".to_string()
+            ))))
+        );
+        assert!(hoister.out.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::DiscriminatedUnion(union) if union.name == "MessagesResponseItem"
+        )));
     }
 
     #[test]
