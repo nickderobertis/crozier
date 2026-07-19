@@ -5178,6 +5178,19 @@ impl Builder<'_> {
             // does for the alias — kept local to the hoist so inline unions elsewhere
             // are unchanged.
             if let Some(members) = prop_schema.any_of.as_ref().or(prop_schema.one_of.as_ref()) {
+                if prop_schema.discriminator.is_some() {
+                    let name = format!("{owner}{}", naming::class_name(prop));
+                    let module = naming::module_name(&name);
+                    if let Some(decl) = self.discriminated_union(
+                        &name,
+                        &module,
+                        prop_schema,
+                        operation_doc(prop_schema.description.as_deref()),
+                    ) {
+                        self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                        return TypeRef::Named(name);
+                    }
+                }
                 if prop_schema.discriminator.is_none() {
                     let non_null: Vec<&Schema> = members
                         .iter()
@@ -7620,6 +7633,30 @@ mod tests {
             TypeDecl::DiscriminatedUnion(union)
                 if union.name == "AgentStateToolRulesItem"
                     && union.discriminant_property == "type"
+        )));
+
+        let manager = schema(serde_json::json!({
+            "oneOf": [
+                { "type": "object", "required": ["manager_type"], "properties": {
+                    "manager_type": { "type": "string", "enum": ["round_robin"] }
+                } },
+                { "type": "object", "required": ["manager_type"], "properties": {
+                    "manager_type": { "type": "string", "enum": ["supervisor"] }
+                } }
+            ],
+            "discriminator": { "propertyName": "manager_type" },
+            "description": ""
+        }));
+        assert_eq!(
+            builder.field_type_ref("GroupCreate", "manager_config", &manager),
+            TypeRef::Named("GroupCreateManagerConfig".to_string())
+        );
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::DiscriminatedUnion(union)
+                if union.name == "GroupCreateManagerConfig"
+                    && union.discriminant_property == "manager_type"
+                    && union.docstring.as_deref() == Some("")
         )));
 
         let nullable_datetime = schema(serde_json::json!({

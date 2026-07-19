@@ -15161,6 +15161,12 @@ const LETTA: Corpus = Corpus {
         "src/fern/types/letta_user_message_content_union.py",
         "src/fern/types/message_approvals_item.py",
         "src/fern/types/message_content_item.py",
+        "src/fern/groups/types/group_create_manager_config.py",
+        "src/fern/internal_templates/types/internal_template_group_create_manager_config.py",
+        "src/fern/types/group_schema.py",
+        "src/fern/types/group_schema_manager_config.py",
+        "src/fern/types/image_content.py",
+        "src/fern/types/image_content_source.py",
     ],
 };
 
