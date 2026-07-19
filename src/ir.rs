@@ -2934,26 +2934,35 @@ fn resolve_request_body(
         } else {
             request_ctx.to_string()
         };
-        let variants = schema
-            .one_of
-            .as_ref()
-            .or(schema.any_of.as_ref())
-            .expect("union branch checked above");
-        let target = TypeRef::Union(
-            variants
-                .iter()
-                .enumerate()
-                .map(|(index, variant)| {
-                    hoister.hoist_union_variant(&request_body_name, index, variant, variants)
-                })
-                .collect(),
-        );
-        hoister.out.push(TypeDecl::Alias(AliasType {
-            name: request_body_name.clone(),
-            module: naming::module_name(&request_body_name),
-            target,
-            docstring: clean_doc(schema.description.as_deref()),
-        }));
+        if hoister
+            .hoist_discriminated_union(
+                &request_body_name,
+                schema,
+                clean_doc(schema.description.as_deref()),
+            )
+            .is_none()
+        {
+            let variants = schema
+                .one_of
+                .as_ref()
+                .or(schema.any_of.as_ref())
+                .expect("union branch checked above");
+            let target = TypeRef::Union(
+                variants
+                    .iter()
+                    .enumerate()
+                    .map(|(index, variant)| {
+                        hoister.hoist_union_variant(&request_body_name, index, variant, variants)
+                    })
+                    .collect(),
+            );
+            hoister.out.push(TypeDecl::Alias(AliasType {
+                name: request_body_name.clone(),
+                module: naming::module_name(&request_body_name),
+                target,
+                docstring: clean_doc(schema.description.as_deref()),
+            }));
+        }
         let mut body = single_with_override(
             TypeRef::Named(request_body_name),
             required,
@@ -8681,6 +8690,55 @@ mod tests {
         assert!(hoister.out.iter().any(|decl| matches!(
             decl,
             TypeDecl::Enum(value) if value.name == "ListRunsRequestDurationOperator"
+        )));
+    }
+
+    #[test]
+    fn request_body_hoists_inferred_discriminated_component_union() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "components": { "schemas": {
+                "UserUpdate": {
+                    "type": "object", "properties": {
+                        "message_type": { "type": "string", "const": "user_message" },
+                        "content": { "type": "string" }
+                    }
+                },
+                "AssistantUpdate": {
+                    "type": "object", "properties": {
+                        "message_type": { "type": "string", "const": "assistant_message" },
+                        "content": { "type": "string" }
+                    }
+                }
+            } }
+        }))
+        .expect("components deserialize");
+        let body: crate::openapi::RequestBody = serde_json::from_value(serde_json::json!({
+            "required": true,
+            "content": { "application/json": { "schema": { "anyOf": [
+                { "$ref": "#/components/schemas/UserUpdate" },
+                { "$ref": "#/components/schemas/AssistantUpdate" }
+            ] } } }
+        }))
+        .expect("request body deserializes");
+        let mut hoister = InlineHoister {
+            root_types: &[],
+            schemas: Some(&doc.components.schemas),
+            out: Vec::new(),
+        };
+        let resolved = super::resolve_request_body(
+            &doc,
+            &[],
+            &body,
+            &mut hoister,
+            "ModifyMessageRequest",
+            false,
+        );
+        assert!(matches!(resolved, Some(RequestBody::Single(_))));
+        assert!(hoister.out.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::DiscriminatedUnion(union)
+                if union.name == "ModifyMessageRequest"
+                    && union.discriminant_property == "message_type"
         )));
     }
 

@@ -15481,6 +15481,12 @@ const LETTA: Corpus = Corpus {
         "src/fern/types/chat_completion_assistant_message_param_tool_calls_item.py",
         "src/fern/types/chat_completion_message_tool_calls_item.py",
         "src/fern/types/chat_completion_user_message_param_content_one_item.py",
+        "src/fern/agents/types/modify_message_request_body.py",
+        "src/fern/groups/types/modify_group_message_request_body.py",
+        "src/fern/templates/__init__.py",
+        "src/fern/templates/types/__init__.py",
+        "src/fern/templates/types/templates_create_template_no_project_request.py",
+        "src/fern/templates/types/templates_create_template_request_body.py",
     ],
 };
 
