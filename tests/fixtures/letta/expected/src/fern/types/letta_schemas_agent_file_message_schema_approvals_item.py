@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .approval_return import ApprovalReturn
+from .letta_schemas_message_tool_return_input import LettaSchemasMessageToolReturnInput
+
+LettaSchemasAgentFileMessageSchemaApprovalsItem = typing.Union[ApprovalReturn, LettaSchemasMessageToolReturnInput]

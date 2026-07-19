@@ -1,0 +1,37 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class ToolCallContent(UniversalBaseModel):
+    id: str = pydantic.Field()
+    """
+    A unique identifier for this specific tool call instance.
+    """
+
+    name: str = pydantic.Field()
+    """
+    The name of the tool being called.
+    """
+
+    input: typing.Dict[str, typing.Any] = pydantic.Field()
+    """
+    The parameters being passed to the tool, structured as a dictionary of parameter names to values.
+    """
+
+    signature: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Stores a unique identifier for any reasoning associated with this tool call.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

@@ -1,0 +1,42 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .source_stats import SourceStats
+
+
+class OrganizationSourcesStats(UniversalBaseModel):
+    """
+    Complete metadata response for organization sources
+    """
+
+    total_sources: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    Total number of sources
+    """
+
+    total_files: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    Total number of files across all sources
+    """
+
+    total_size: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    Total size of all files in bytes
+    """
+
+    sources: typing.Optional[typing.List[SourceStats]] = pydantic.Field(default=None)
+    """
+    List of source metadata
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

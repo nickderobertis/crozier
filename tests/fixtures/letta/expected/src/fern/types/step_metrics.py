@@ -1,0 +1,77 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class StepMetrics(UniversalBaseModel):
+    id: str = pydantic.Field()
+    """
+    The id of the step this metric belongs to (matches steps.id).
+    """
+
+    provider_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The unique identifier of the provider.
+    """
+
+    run_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The unique identifier of the run.
+    """
+
+    agent_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The unique identifier of the agent.
+    """
+
+    step_start_ns: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    The timestamp of the start of the step in nanoseconds.
+    """
+
+    llm_request_start_ns: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    The timestamp of the start of the llm request in nanoseconds.
+    """
+
+    llm_request_ns: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    Time spent on LLM requests in nanoseconds.
+    """
+
+    tool_execution_ns: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    Time spent on tool execution in nanoseconds.
+    """
+
+    step_ns: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    Total time for the step in nanoseconds.
+    """
+
+    base_template_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The base template ID that the step belongs to (cloud only).
+    """
+
+    template_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The template ID that the step belongs to (cloud only).
+    """
+
+    project_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The project that the step belongs to (cloud only).
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

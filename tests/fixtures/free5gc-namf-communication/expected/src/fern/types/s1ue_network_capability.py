@@ -1,0 +1,3 @@
+
+
+S1UeNetworkCapability = str

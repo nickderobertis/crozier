@@ -1,0 +1,44 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+
+
+class ToolAnnotations(UniversalBaseModel):
+    """
+    Additional properties describing a Tool to clients.
+
+    NOTE: all properties in ToolAnnotations are **hints**.
+    They are not guaranteed to provide a faithful description of
+    tool behavior (including descriptive properties like `title`).
+
+    Clients should never make tool use decisions based on ToolAnnotations
+    received from untrusted servers.
+    """
+
+    title: typing.Optional[str] = None
+    read_only_hint: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="readOnlyHint"), pydantic.Field(alias="readOnlyHint")
+    ] = None
+    destructive_hint: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="destructiveHint"), pydantic.Field(alias="destructiveHint")
+    ] = None
+    idempotent_hint: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="idempotentHint"), pydantic.Field(alias="idempotentHint")
+    ] = None
+    open_world_hint: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="openWorldHint"), pydantic.Field(alias="openWorldHint")
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

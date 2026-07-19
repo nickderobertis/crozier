@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "letta",
+  "corpus_spec_ref": "e3fb00f97009cafe527cde93983cda0dfdd7e574",
+  "corpus_spec_url": "https://raw.githubusercontent.com/letta-ai/letta/e3fb00f97009cafe527cde93983cda0dfdd7e574/fern/openapi.json"
+}

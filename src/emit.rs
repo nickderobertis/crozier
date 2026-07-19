@@ -325,6 +325,18 @@ fn natural_cmp(left: &str, right: &str) -> Ordering {
     left_bytes.len().cmp(&right_bytes.len())
 }
 
+fn example_import_cmp(left: &str, right: &str) -> Ordering {
+    let left_prefix = left.split_once('_').map(|(prefix, _)| prefix);
+    let right_prefix = right.split_once('_').map(|(prefix, _)| prefix);
+    if left_prefix.is_some_and(|prefix| right.starts_with(prefix)) {
+        return Ordering::Less;
+    }
+    if right_prefix.is_some_and(|prefix| left.starts_with(prefix)) {
+        return Ordering::Greater;
+    }
+    left.cmp(right)
+}
+
 /// Render a resolved type to a [`Doc`] expression, registering needed imports.
 /// The `Doc` renders flat; `ruff format` handles any line wrapping downstream.
 fn render_type(t: &TypeRef, imports: &mut Imports) -> Doc {
@@ -2049,8 +2061,13 @@ fn reference_entry(
     }
     for dp in ordered_keyword_params(&mp.query, &mp.header, &reference_body) {
         let is_body = reference_body.iter().any(|body| body.name == dp.name);
-        let annotation = if is_body {
-            let annotation = dp.annotation.replace("typing.Sequence[", "typing.List[");
+        let query_is_list = ep
+            .query_params
+            .iter()
+            .find(|query| query.py_name == dp.name)
+            .is_some_and(|query| !query.allow_multiple);
+        let annotation = if is_body || query_is_list {
+            let annotation = reference_list_annotation(&dp.annotation);
             if annotation == "bytes"
                 && ep
                     .request_body
@@ -2153,6 +2170,10 @@ fn reference_entry(
         minijinja::Value::from_serialize(&view),
     )?;
     Ok(rendered.trim_end_matches('\n').to_string())
+}
+
+fn reference_list_annotation(annotation: &str) -> String {
+    annotation.replace("typing.Sequence[", "typing.List[")
 }
 
 fn reference_param_annotation(annotation: &str) -> String {
@@ -2944,7 +2965,9 @@ fn render_discriminated_union(
     imports.cur_module = union.module.clone();
     imports.add_plain("typing");
     imports.add_plain("pydantic");
-    imports.add_plain("typing_extensions");
+    if union.members.len() > 1 {
+        imports.add_plain("typing_extensions");
+    }
     imports.add_core("pydantic_utilities", "IS_PYDANTIC_V2");
     imports.add_core("pydantic_utilities", "UniversalBaseModel");
     for name in &repair.import_order {
@@ -2989,11 +3012,15 @@ fn render_discriminated_union(
     // `typing_extensions.Annotated[Union[...], pydantic.Field(discriminator="…")]`
     // (issue #50 part 2) so pydantic can dispatch on the tag — a plain
     // `Union[...]` cannot. `ruff` wraps the line if it exceeds the width.
-    let union_expr = Doc::group("typing.Union[", variants, "]").flat();
-    let alias = format!(
-        "{} = typing_extensions.Annotated[{union_expr}, pydantic.Field(discriminator=\"{}\")]",
-        union.name, union.discriminant_property
-    );
+    let alias = if let [member] = union.members.as_slice() {
+        format!("{} = {}", union.name, member.class_name)
+    } else {
+        let union_expr = Doc::group("typing.Union[", variants, "]").flat();
+        format!(
+            "{} = typing_extensions.Annotated[{union_expr}, pydantic.Field(discriminator=\"{}\")]",
+            union.name, union.discriminant_property
+        )
+    };
 
     // A recursive variant is repaired at load time: import `update_forward_refs`
     // and, right after the alias, call it on each wrapper that carries a forward
@@ -3203,15 +3230,23 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
             // An array query parameter allows multiple values: Fern types it
             // `Optional[Union[T, Sequence[T]]]` and always defaults it to `None`.
             if let TypeRef::List(inner) = &qp.type_ref {
-                let item = raw_type_str(inner, imports);
-                return DocParam {
-                    name: qp.py_name.clone(),
-                    annotation: format!(
-                        "typing.Optional[typing.Union[{item}, typing.Sequence[{item}]]]"
-                    ),
-                    default: Some("None".to_string()),
-                    description: qp.docstring.clone(),
-                };
+                if qp.allow_multiple {
+                    let item = raw_type_str(inner, imports);
+                    return DocParam {
+                        name: qp.py_name.clone(),
+                        annotation: format!(
+                            "typing.Optional[typing.Union[{item}, typing.Sequence[{item}]]]"
+                        ),
+                        default: Some("None".to_string()),
+                        description: qp.docstring.clone(),
+                    };
+                }
+                return optional_arg(
+                    format!("typing.Sequence[{}]", raw_type_str(inner, imports)),
+                    qp.required,
+                    qp.docstring.clone(),
+                    qp.py_name.clone(),
+                );
             }
             optional_arg(
                 raw_type_str(&qp.type_ref, imports),
@@ -3694,7 +3729,12 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         None => {}
         Some(RequestBody::Single(s)) if s.convert => {
             imports.add_core("serialization", "convert_and_respect_annotation_metadata");
-            let annotation = raw_type_str_ctx(&s.type_ref, imports, true);
+            let annotation_type = if s.required {
+                s.type_ref.clone()
+            } else {
+                TypeRef::Optional(Box::new(s.type_ref.clone()))
+            };
+            let annotation = raw_type_str_ctx(&annotation_type, imports, true);
             let call = Doc::group(
                 "            json=convert_and_respect_annotation_metadata(",
                 vec![
@@ -3713,7 +3753,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 let value_name = body_field_value_name(f);
                 if f.convert {
                     imports.add_core("serialization", "convert_and_respect_annotation_metadata");
-                    let annotation_type = if f.nullable && !f.spec_required {
+                    let annotation_type = if f.nullable {
                         TypeRef::Optional(Box::new(f.type_ref.clone()))
                     } else {
                         f.type_ref.clone()
@@ -3892,7 +3932,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         }
         _ => None,
     };
-    if content_type.is_some() || !ep.header_params.is_empty() {
+    if content_type.is_some() || !ep.header_params.is_empty() || !ep.constant_headers.is_empty() {
         lines.push("            headers={".to_string());
         if let Some(value) = content_type {
             lines.push(format!("                \"content-type\": \"{value}\","));
@@ -3907,6 +3947,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 "                \"{}\": {value} if {} is not None else None,",
                 hp.wire_name, hp.py_name
             ));
+        }
+        for (name, value) in &ep.constant_headers {
+            lines.push(format!("                \"{name}\": {value:?},"));
         }
         lines.push("            },".to_string());
     }
@@ -5385,7 +5428,7 @@ impl Example {
                 out
             }
             Example::List(items) => {
-                if !self.forces_multiline() {
+                if !self.forces_multiline() && column + self.flat().len() <= 80 {
                     return self.flat();
                 }
                 let pad = " ".repeat(indent);
@@ -5813,7 +5856,11 @@ impl<'a> ExampleCtx<'a> {
     /// Record a referenced constructor: a tag-scoped type is tracked with its tag
     /// module (imported separately), a package-root type in the main import set.
     fn record_ref(&mut self, name: &str) {
-        if let Some(tt) = self.tag_decls.iter().find(|tt| tt.decl.name() == name) {
+        if let Some(tt) = self.tag_decls.iter().find(|tt| {
+            tt.decl.name() == name
+                || matches!(&tt.decl, TypeDecl::DiscriminatedUnion(union)
+                    if union.members.iter().any(|member| member.class_name == name))
+        }) {
             let entry = (tt.module.clone(), name.to_string());
             if self.referenced_tag.insert(entry.clone()) {
                 self.referenced_tag_doc_order.push(entry);
@@ -6058,7 +6105,7 @@ impl<'a> ExampleCtx<'a> {
                     // The discriminant field carries a default (`= "circle"`), so
                     // Fern's example omits it and sets only the required fields.
                     let mut args = Vec::new();
-                    for f in m.fields.iter().filter(|f| f.spec_required) {
+                    for f in m.fields.iter().filter(|f| f.spec_required && !f.optional) {
                         let ty = f.type_ref.clone();
                         args.push((
                             Some(f.py_name.clone()),
@@ -6457,7 +6504,14 @@ fn build_example_inner(
                     .and_then(|example| ctx.value_from_example(&s.type_ref, example))
                     .unwrap_or_else(|| ctx.value(&s.type_ref, Slot::Plain))
             };
-            args.push((Some("request".to_string()), v));
+            if s.required
+                || body_example.is_some()
+                || s.example.is_some()
+                || !is_any_type(&s.type_ref)
+                || !ep.openapi_31
+            {
+                args.push((Some("request".to_string()), v));
+            }
         }
         Some(RequestBody::Inline(fields)) => {
             // Fern's worked example shows a required field unless it is *nullable*
@@ -6710,7 +6764,7 @@ fn build_example_inner(
     let mut tag_import_lines: Vec<String> = Vec::new();
     {
         let mut by_module: Vec<(&str, Vec<&str>)> = Vec::new();
-        let tag_refs: Vec<(&String, &String)> = if documentation {
+        let mut tag_refs: Vec<(&String, &String)> = if documentation {
             ctx.referenced_tag_doc_order
                 .iter()
                 .map(|(module, name)| (module, name))
@@ -6721,6 +6775,13 @@ fn build_example_inner(
                 .map(|(module, name)| (module, name))
                 .collect()
         };
+        if !documentation {
+            tag_refs.sort_by(|(left_module, left_name), (right_module, right_name)| {
+                left_module
+                    .cmp(right_module)
+                    .then_with(|| example_import_cmp(left_name, right_name))
+            });
+        }
         for (module, name) in tag_refs {
             if let Some((_, names)) = by_module.iter_mut().find(|(group, _)| *group == module) {
                 names.push(name);
@@ -7234,12 +7295,12 @@ mod tests {
     use super::{
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts,
         build_documentation_example, build_example, client_method, complex_body,
-        container_element_object, environment, escape_py_str, example_from_json, field_decl,
-        generate, is_complex_type, natural_cmp, object_body_complex, raw_method, raw_type_str,
-        readme_endpoint, readme_endpoint_eligible, reference_param_annotation, render,
-        render_class_body, render_enum, render_type_decl, resolves_to_container, url_arg,
-        ClientCtx, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView,
-        RenderedField, RootClientView, RootModuleView, Slot,
+        container_element_object, environment, escape_py_str, example_from_json,
+        example_import_cmp, field_decl, generate, is_complex_type, natural_cmp,
+        object_body_complex, raw_method, raw_type_str, readme_endpoint, readme_endpoint_eligible,
+        reference_param_annotation, render, render_class_body, render_enum, render_type_decl,
+        resolves_to_container, url_arg, ClientCtx, Example, ExampleCtx, FieldView, Imports,
+        ParamRow, RefLoc, ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -7521,6 +7582,23 @@ mod tests {
         assert_eq!(natural_cmp("alpha2", "beta1"), Less);
         assert_eq!(natural_cmp("item", "item0"), Less);
         assert_eq!(natural_cmp("same007tail", "same007tail"), Equal);
+    }
+
+    #[test]
+    fn example_imports_put_union_wrappers_before_their_generated_children() {
+        use std::cmp::Ordering::{Greater, Less};
+
+        let wrapper = "MetadataSendTelemetryRequestEventsItem_SessionStart";
+        let child = "MetadataSendTelemetryRequestEventsItemSessionStartData";
+        assert_eq!(example_import_cmp(wrapper, child), Less);
+        assert_eq!(example_import_cmp(child, wrapper), Greater);
+        assert_eq!(
+            example_import_cmp(
+                "ScheduledMessagesScheduleAgentMessageRequestMessagesItemRole",
+                "ScheduledMessagesScheduleAgentMessageRequestMessagesItemContentZeroItem_Text"
+            ),
+            Greater
+        );
     }
 
     #[test]
@@ -7860,6 +7938,83 @@ mod tests {
     }
 
     #[test]
+    fn optional_single_body_conversion_keeps_optional_annotation() {
+        let mut ep = endpoint("/approval", Vec::new(), None);
+        ep.request_body = Some(RequestBody::Single(SingleBody {
+            type_ref: TypeRef::Named("ModifyApprovalRequest".to_string()),
+            required: false,
+            convert: true,
+            content_type: true,
+            content_type_override: None,
+            example: None,
+        }));
+        let mut lines = Vec::new();
+        let mut imports = Imports::default();
+        super::append_request_call_args(&mut lines, &ep, &mut imports);
+        let rendered = lines.join("\n");
+        assert!(
+            rendered.contains("annotation=typing.Optional[ModifyApprovalRequest]"),
+            "{rendered}"
+        );
+
+        ep.request_body = Some(RequestBody::Inline(vec![BodyField {
+            wire_name: "search".to_string(),
+            py_name: "search".to_string(),
+            type_ref: TypeRef::List(Box::new(TypeRef::Named("SearchItem".to_string()))),
+            optional: true,
+            nullable: false,
+            spec_required: false,
+            docstring: None,
+            convert: true,
+            is_file: false,
+            form_json: false,
+            form_content_type: None,
+            collision_prefix: None,
+            example: None,
+            media_example: false,
+            schema_body_example: false,
+            reference_order: 0,
+        }]));
+        let mut lines = Vec::new();
+        super::append_request_call_args(&mut lines, &ep, &mut imports);
+        let rendered = lines.join("\n");
+        assert!(
+            rendered.contains("annotation=typing.Sequence[SearchItem]"),
+            "{rendered}"
+        );
+        assert!(!rendered.contains("annotation=typing.Optional[typing.Sequence"));
+    }
+
+    #[test]
+    fn optional_unknown_body_is_omitted_from_worked_example() {
+        let mut ep = endpoint("/projects/{id}", Vec::new(), None);
+        ep.openapi_31 = true;
+        ep.request_body = Some(RequestBody::Single(SingleBody {
+            type_ref: TypeRef::Primitive(Prim::Any),
+            required: false,
+            convert: false,
+            content_type: true,
+            content_type_override: None,
+            example: None,
+        }));
+        let auth = Auth::None;
+        let mut ctx = example_ctx(&[], &[], &auth);
+        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx, false)
+            .expect("endpoint has an example")
+            .join("\n");
+        assert!(!rendered.contains("request="), "{rendered}");
+        ep.openapi_31 = false;
+        let mut ctx = example_ctx(&[], &[], &auth);
+        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx, false)
+            .expect("legacy endpoint has an example")
+            .join("\n");
+        assert!(
+            rendered.contains("request={\"key\": \"value\"}"),
+            "{rendered}"
+        );
+    }
+
+    #[test]
     fn auth_fragments_cover_every_scheme() {
         // api-key required: public `api_key`, unconditional header, no token helper.
         let w = auth_wrapper_parts(&Auth::ApiKey {
@@ -7991,6 +8146,7 @@ mod tests {
             path_params: params,
             query_params: Vec::new(),
             header_params: Vec::new(),
+            constant_headers: Vec::new(),
             request_body: None,
             request_body_required: false,
             request_body_has_multipart_related: false,
@@ -8170,6 +8326,10 @@ mod tests {
 
     #[test]
     fn reference_normalizes_annotations_without_wrapping_long_names() {
+        assert_eq!(
+            super::reference_list_annotation("typing.Optional[typing.Sequence[str]]"),
+            "typing.Optional[typing.List[str]]"
+        );
         let long =
             "typing.Optional[typing.Sequence[PostMyNegotiationsIdCounterRequestOfferItemsItem]]";
         assert_eq!(reference_param_annotation(long), long);
@@ -8370,13 +8530,14 @@ mod tests {
                 nullable: false,
                 reference_order: 1,
             },
-            // A convert field → convert-wrapped json entry keyed by the wire name.
+            // An optional convert field keeps `Optional` in both its signature and
+            // serialization annotation.
             BodyField {
                 wire_name: "NestedObject".to_string(),
                 py_name: "nested_object".to_string(),
                 type_ref: TypeRef::Named("Nested".to_string()),
-                optional: false,
-                spec_required: true,
+                optional: true,
+                spec_required: false,
                 docstring: None,
                 convert: true,
                 is_file: false,
@@ -8398,7 +8559,10 @@ mod tests {
             out.contains("list_: typing.Optional[typing.Sequence[str]] = OMIT"),
             "{out}"
         );
-        assert!(out.contains("nested_object: Nested"), "{out}");
+        assert!(
+            out.contains("nested_object: typing.Optional[Nested] = OMIT"),
+            "{out}"
+        );
         // The json dict maps wire names to args, convert-wrapping the object field.
         assert!(out.contains("json={"), "{out}");
         assert!(out.contains("\"string\": string,"), "{out}");
@@ -8407,11 +8571,27 @@ mod tests {
             out.contains("\"NestedObject\": convert_and_respect_annotation_metadata("),
             "{out}"
         );
+        assert!(out.contains("annotation=Nested"), "{out}");
         // An inlined object body always carries the content-type header.
         assert!(
             out.contains("\"content-type\": \"application/json\","),
             "{out}"
         );
+    }
+
+    #[test]
+    fn raw_method_sends_constant_headers_without_public_parameters() {
+        let mut ep = endpoint(
+            "/embeddings/size",
+            vec![],
+            Some(TypeRef::Primitive(Prim::Float)),
+        );
+        ep.constant_headers = vec![("storage-unit".to_string(), "GB".to_string())];
+
+        let out = raw_method(&ep, false, &mut Imports::default());
+
+        assert!(!out.contains("storage_unit:"), "{out}");
+        assert!(out.contains("\"storage-unit\": \"GB\","), "{out}");
     }
 
     #[test]
@@ -8570,6 +8750,7 @@ mod tests {
             ),
             "{out}"
         );
+
         assert!(out.contains("content=request,"), "{out}");
         assert!(
             out.contains("\"content-type\": \"application/octet-stream\","),
@@ -8595,6 +8776,7 @@ mod tests {
             required: true,
             convert: false,
             comma_separated: true,
+            allow_multiple: true,
             example: None,
             example_is_scalar: false,
             docstring: None,
@@ -8611,6 +8793,18 @@ mod tests {
             ),
             "{out}"
         );
+        ep.query_params[0].required = false;
+        ep.query_params[0].comma_separated = false;
+        ep.query_params[0].allow_multiple = false;
+        let out = raw_method(&ep, false, &mut Imports::default());
+        assert!(
+            out.contains("tag: typing.Optional[typing.Sequence[str]] = None"),
+            "{out}"
+        );
+        assert!(
+            !out.contains("typing.Union[str, typing.Sequence[str]]"),
+            "{out}"
+        );
     }
 
     #[test]
@@ -8625,6 +8819,7 @@ mod tests {
             required: false,
             convert: false,
             comma_separated: false,
+            allow_multiple: false,
             example: None,
             example_is_scalar: false,
             docstring: None,
@@ -8692,6 +8887,37 @@ mod tests {
     }
 
     #[test]
+    fn examples_import_tag_scoped_discriminated_union_members_from_the_tag() {
+        let tag_decls = vec![TagTypeDecl {
+            module: "agents".to_string(),
+            decl: TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+                name: "ModifyMessageRequestBody".to_string(),
+                module: "modify_message_request_body".to_string(),
+                discriminant_property: "message_type".to_string(),
+                members: vec![UnionMember {
+                    class_name: "ModifyMessageRequestBody_SystemMessage".to_string(),
+                    discriminant: "system_message".to_string(),
+                    fields: Vec::new(),
+                    docstring: None,
+                }],
+                variant_targets: Vec::new(),
+                docstring: None,
+            }),
+        }];
+        let auth = Auth::None;
+        let mut ctx = example_ctx(&[], &tag_decls, &auth);
+        ctx.record_ref("ModifyMessageRequestBody_SystemMessage");
+        assert_eq!(
+            ctx.referenced_tag_doc_order,
+            [(
+                "agents".to_string(),
+                "ModifyMessageRequestBody_SystemMessage".to_string()
+            )]
+        );
+        assert!(ctx.referenced.is_empty());
+    }
+
+    #[test]
     fn example_layout_handles_nested_calls_explicit_lists_and_dicts() {
         let call = Example::Call(
             "Widget".to_string(),
@@ -8717,6 +8943,10 @@ mod tests {
         let long = Example::ExplicitList(vec![Example::Atom(format!("\"{}\"", "x".repeat(90)))]);
         assert!(long.render(0).starts_with("[\n    \"xxx"));
         assert!(long.render(0).ends_with(",\n]"));
+        let long_inferred = Example::List(vec![Example::Atom(
+            "VeryLongGeneratedEnumName::MEMBER".repeat(3),
+        )]);
+        assert!(long_inferred.render_at(8, 20).starts_with("[\n"));
 
         let dict = Example::Dict(vec![(
             "widget".to_string(),
@@ -8734,6 +8964,20 @@ mod tests {
             Example::ExplicitList(vec![Example::Atom("1".to_string())]).render(0),
             "[1]"
         );
+        assert_eq!(
+            Example::ReferenceList(vec![
+                Example::List(Vec::new()),
+                Example::List(Vec::new()),
+                Example::List(Vec::new()),
+            ])
+            .render(0),
+            "[\n    [],\n    [],\n    []\n]"
+        );
+        assert!(
+            Example::ReferenceDict(vec![("key".to_string(), Example::Atom("1".to_string()))])
+                .forces_multiline()
+        );
+        assert!(Example::ReferenceList(vec![Example::Atom("1".to_string())]).forces_multiline());
     }
 
     #[test]
@@ -9181,6 +9425,9 @@ mod tests {
             members: Vec::new(),
             docstring: None,
         });
+        let mut nullable_required = model_field("server_url", TypeRef::Primitive(Prim::Str), true);
+        nullable_required.optional = true;
+        nullable_required.nullable = true;
         let union = TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
             name: "Shape".to_string(),
             module: "shape".to_string(),
@@ -9188,7 +9435,10 @@ mod tests {
             members: vec![UnionMember {
                 class_name: "Shape_Circle".to_string(),
                 discriminant: "circle".to_string(),
-                fields: vec![model_field("radius", TypeRef::Primitive(Prim::Float), true)],
+                fields: vec![
+                    model_field("radius", TypeRef::Primitive(Prim::Float), true),
+                    nullable_required,
+                ],
                 docstring: None,
             }],
             variant_targets: Vec::new(),
@@ -9274,6 +9524,7 @@ mod tests {
                 required: true,
                 convert: false,
                 comma_separated: false,
+                allow_multiple: false,
                 example: None,
                 example_is_scalar: false,
                 docstring: Some("Tags to include.".to_string()),
@@ -9285,6 +9536,7 @@ mod tests {
                 required: false,
                 convert: false,
                 comma_separated: false,
+                allow_multiple: false,
                 example: Some("3".to_string()),
                 example_is_scalar: true,
                 docstring: Some("Maximum results.".to_string()),
@@ -9532,6 +9784,7 @@ mod tests {
             required: false,
             convert: false,
             comma_separated: false,
+            allow_multiple: false,
             example: Some("\"active\"".to_string()),
             example_is_scalar: true,
             docstring: Some("Optional filter.".to_string()),
@@ -9576,6 +9829,7 @@ mod tests {
                 required: false,
                 convert: false,
                 comma_separated: false,
+                allow_multiple: false,
                 example: Some("\"active\"".to_string()),
                 example_is_scalar: true,
                 docstring: None,
@@ -9587,6 +9841,7 @@ mod tests {
                 required: false,
                 convert: false,
                 comma_separated: false,
+                allow_multiple: false,
                 example: Some("\"name\"".to_string()),
                 example_is_scalar: true,
                 docstring: None,
@@ -9598,6 +9853,7 @@ mod tests {
                 required: false,
                 convert: false,
                 comma_separated: false,
+                allow_multiple: false,
                 example: Some("1".to_string()),
                 example_is_scalar: true,
                 docstring: None,
@@ -9636,6 +9892,7 @@ mod tests {
             required: true,
             convert: false,
             comma_separated: false,
+            allow_multiple: false,
             example: None,
             example_is_scalar: true,
             docstring: Some("Starting cursor.".to_string()),
@@ -9742,6 +9999,32 @@ mod tests {
         assert!(rendered.contains("if typing.TYPE_CHECKING:"));
         assert!(rendered.contains("from .node import Node"));
         assert!(rendered.contains("NodeList = typing.List[\"Node\"]"));
+
+        let singleton = TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+            name: "Content".to_string(),
+            module: "content".to_string(),
+            discriminant_property: "type".to_string(),
+            members: vec![UnionMember {
+                class_name: "Content_Text".to_string(),
+                discriminant: "text".to_string(),
+                fields: vec![model_field("text", TypeRef::Primitive(Prim::Str), true)],
+                docstring: None,
+            }],
+            variant_targets: Vec::new(),
+            docstring: None,
+        });
+        let rendered = render_type_decl(
+            &environment(),
+            &singleton,
+            RefLoc::RootTypes,
+            &Default::default(),
+            crate::settings::ExtraFields::Allow,
+            &Default::default(),
+            None,
+        )
+        .expect("singleton union renders");
+        assert!(rendered.contains("Content = Content_Text"), "{rendered}");
+        assert!(!rendered.contains("typing_extensions"), "{rendered}");
 
         let enum_output = render_enum(
             &environment(),

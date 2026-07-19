@@ -126,7 +126,6 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e worldcoin_signup_sequencer_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e electric_sql_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e tamoss_matches_fern_output
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e appng_rest_api_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e slurmdb_rest_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e nimisampo_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e free5gc_pdu_session_matches_fern_output

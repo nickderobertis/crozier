@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "free5gc-namf-communication",
+  "corpus_spec_ref": "7f775ecab0cbe3074b38e528581641cff5520c2f",
+  "corpus_spec_url": "https://raw.githubusercontent.com/shynuu/free5gc-cli/7f775ecab0cbe3074b38e528581641cff5520c2f/lib/openapi/Namf_Communication/api/openapi.yaml"
+}

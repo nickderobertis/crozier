@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .scheduled_messages_retrieve_scheduled_message_response_message_messages_item_content_zero_item import (
+    ScheduledMessagesRetrieveScheduledMessageResponseMessageMessagesItemContentZeroItem,
+)
+
+ScheduledMessagesRetrieveScheduledMessageResponseMessageMessagesItemContent = typing.Union[
+    typing.List[ScheduledMessagesRetrieveScheduledMessageResponseMessageMessagesItemContentZeroItem], str
+]
