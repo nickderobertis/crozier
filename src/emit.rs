@@ -3721,7 +3721,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 let value_name = body_field_value_name(f);
                 if f.convert {
                     imports.add_core("serialization", "convert_and_respect_annotation_metadata");
-                    let annotation_type = if f.nullable && !f.spec_required {
+                    let annotation_type = if f.optional {
                         TypeRef::Optional(Box::new(f.type_ref.clone()))
                     } else {
                         f.type_ref.clone()
@@ -8378,13 +8378,14 @@ mod tests {
                 nullable: false,
                 reference_order: 1,
             },
-            // A convert field → convert-wrapped json entry keyed by the wire name.
+            // An optional convert field keeps `Optional` in both its signature and
+            // serialization annotation.
             BodyField {
                 wire_name: "NestedObject".to_string(),
                 py_name: "nested_object".to_string(),
                 type_ref: TypeRef::Named("Nested".to_string()),
-                optional: false,
-                spec_required: true,
+                optional: true,
+                spec_required: false,
                 docstring: None,
                 convert: true,
                 is_file: false,
@@ -8406,7 +8407,10 @@ mod tests {
             out.contains("list_: typing.Optional[typing.Sequence[str]] = OMIT"),
             "{out}"
         );
-        assert!(out.contains("nested_object: Nested"), "{out}");
+        assert!(
+            out.contains("nested_object: typing.Optional[Nested] = OMIT"),
+            "{out}"
+        );
         // The json dict maps wire names to args, convert-wrapping the object field.
         assert!(out.contains("json={"), "{out}");
         assert!(out.contains("\"string\": string,"), "{out}");
@@ -8415,6 +8419,7 @@ mod tests {
             out.contains("\"NestedObject\": convert_and_respect_annotation_metadata("),
             "{out}"
         );
+        assert!(out.contains("annotation=typing.Optional[Nested]"), "{out}");
         // An inlined object body always carries the content-type header.
         assert!(
             out.contains("\"content-type\": \"application/json\","),
