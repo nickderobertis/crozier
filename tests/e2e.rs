@@ -14151,6 +14151,7 @@ const FREE5GC_PDU_SESSION: Corpus = Corpus {
         "pyproject.toml",
         "requirements.txt",
         "src/fern/_default_clients.py",
+        "src/fern/__init__.py",
         "src/fern/client.py",
         "src/fern/core/__init__.py",
         "src/fern/core/api_error.py",
@@ -14187,13 +14188,18 @@ const FREE5GC_PDU_SESSION: Corpus = Corpus {
         "src/fern/errors/too_many_requests_error.py",
         "src/fern/errors/unsupported_media_type_error.py",
         "src/fern/individual_pdu_session_h_smf/__init__.py",
+        "src/fern/individual_pdu_session_h_smf/raw_client.py",
         "src/fern/individual_sm_context/__init__.py",
+        "src/fern/individual_sm_context/raw_client.py",
         "src/fern/pdu_sessions_collection/__init__.py",
         "src/fern/pdu_sessions_collection/raw_client.py",
         "src/fern/py.typed",
         "src/fern/sm_contexts_collection/__init__.py",
+        "src/fern/sm_contexts_collection/client.py",
+        "src/fern/sm_contexts_collection/raw_client.py",
         "src/fern/types/access_type.py",
         "src/fern/types/additional_qos_flow_info.py",
+        "src/fern/types/__init__.py",
         "src/fern/types/ambr.py",
         "src/fern/types/amf_id.py",
         "src/fern/types/amf_name.py",
@@ -14220,12 +14226,18 @@ const FREE5GC_PDU_SESSION: Corpus = Corpus {
         "src/fern/types/eutra_cell_id.py",
         "src/fern/types/eutra_location.py",
         "src/fern/types/g_nb_id.py",
+        "src/fern/types/five_g_mm_cause.py",
+        "src/fern/types/five_qi.py",
+        "src/fern/types/five_qi_priority_level.py",
         "src/fern/types/gbr_qos_flow_information.py",
+        "src/fern/types/global_ran_node_id.py",
         "src/fern/types/gpsi.py",
         "src/fern/types/guami.py",
         "src/fern/types/ho_state.py",
         "src/fern/types/hsmf_update_data.py",
         "src/fern/types/hsmf_update_error.py",
+        "src/fern/types/ipv6addr.py",
+        "src/fern/types/ipv6prefix.py",
         "src/fern/types/hsmf_updated_data.py",
         "src/fern/types/int64.py",
         "src/fern/types/invalid_param.py",
@@ -15665,10 +15677,10 @@ fn digit_leading_schema_name_generates_valid_python() {
          components:\n  schemas:\n    5GmmCause:\n      type: object\n      properties:\n        \
          code: { type: integer }\n",
     );
-    let model = std::fs::read_to_string(out.join("src/acme/types/_5_gmm_cause.py"))
+    let model = std::fs::read_to_string(out.join("src/acme/types/five_gmm_cause.py"))
         .expect("digit-leading schema model is generated");
     assert!(
-        model.contains("class _5GmmCause(UniversalBaseModel):"),
+        model.contains("class FiveGmmCause(UniversalBaseModel):"),
         "digit-leading schema should become a legal Python class: {model}"
     );
     assert_valid_python(&out);

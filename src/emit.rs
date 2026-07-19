@@ -3715,6 +3715,44 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             let mut data = String::new();
             let mut files = String::new();
             for f in &form.fields {
+                if let Some(content_type) = &f.form_content_type {
+                    if f.form_json {
+                        imports.add_plain("json");
+                        imports.add_core("jsonable_encoder", "jsonable_encoder");
+                        let tuple = format!(
+                            "(None, json.dumps(jsonable_encoder({})), \"{content_type}\")",
+                            f.py_name
+                        );
+                        if f.optional {
+                            files.push_str(&format!(
+                                "                **(\n                    {{\"{}\": {tuple}}}\n                    if {} is not OMIT\n                    else {{}}\n                ),\n",
+                                f.wire_name, f.py_name
+                            ));
+                        } else {
+                            files.push_str(&format!(
+                                "                \"{}\": {tuple},\n",
+                                f.wire_name
+                            ));
+                        }
+                    } else {
+                        let value = format!(
+                            "core.with_content_type(file={}, default_content_type=\"{content_type}\")",
+                            f.py_name
+                        );
+                        if f.optional {
+                            files.push_str(&format!(
+                                "                **(\n                    {{\n                        \"{}\": {value}\n                    }}\n                    if {} is not None\n                    else {{}}\n                ),\n",
+                                f.wire_name, f.py_name
+                            ));
+                        } else {
+                            files.push_str(&format!(
+                                "                \"{}\": {value},\n",
+                                f.wire_name
+                            ));
+                        }
+                    }
+                    continue;
+                }
                 let value = if f.form_json {
                     imports.add_plain("json");
                     imports.add_core("jsonable_encoder", "jsonable_encoder");
@@ -5878,21 +5916,13 @@ impl<'a> ExampleCtx<'a> {
                 let fields = self.object_fields(obj);
                 let args = fields
                     .into_iter()
-                    .filter(|(_, _, _, required, _)| *required)
+                    .filter(|(_, _, _, required, example)| *required || example.is_some())
                     .map(|(py, wire, ty, _, example)| {
                         let v = match example {
                             Some(example) if example_scalar(&ty) => Example::Atom(example),
-                            Some(example) if example.starts_with(['{', '[']) => {
-                                if self.reference {
-                                    self.value_from_example(&ty, &example)
-                                        .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire)))
-                                } else {
-                                    serde_json::from_str(&example).map_or_else(
-                                        |_| self.value(&ty, Slot::Named(&wire)),
-                                        example_from_json,
-                                    )
-                                }
-                            }
+                            Some(example) if example.starts_with(['{', '[']) => self
+                                .value_from_example(&ty, &example)
+                                .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire))),
                             None => self.value(&ty, Slot::Named(&wire)),
                             Some(_) => self.value(&ty, Slot::Named(&wire)),
                         };
@@ -7547,6 +7577,7 @@ mod tests {
             convert: true,
             is_file: false,
             form_json: false,
+            form_content_type: None,
             collision_prefix: None,
             example: None,
             media_example: false,
@@ -7624,6 +7655,7 @@ mod tests {
             convert: false,
             is_file: false,
             form_json: false,
+            form_content_type: None,
             collision_prefix: None,
             example: None,
             media_example: false,
@@ -8130,6 +8162,7 @@ mod tests {
                 convert: false,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
@@ -8148,6 +8181,7 @@ mod tests {
                 convert: false,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
@@ -8166,6 +8200,7 @@ mod tests {
                 convert: true,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
@@ -8213,6 +8248,7 @@ mod tests {
                 convert: false,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
@@ -8230,6 +8266,7 @@ mod tests {
                 convert: false,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
@@ -9050,6 +9087,7 @@ mod tests {
                 convert: false,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: Some("\"2024-01-15T09:30:00Z\"".to_string()),
                 media_example: false,
@@ -9067,6 +9105,7 @@ mod tests {
                 convert: false,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: Some(r#"{"source":"test"}"#.to_string()),
                 media_example: true,
@@ -9187,6 +9226,7 @@ mod tests {
                 convert: false,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: Some("\"open\"".to_string()),
                 media_example: false,

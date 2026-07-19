@@ -492,6 +492,17 @@ pub struct MediaType {
     /// Named examples for the media payload, in declaration order.
     #[serde(default)]
     pub examples: IndexMap<String, ParameterExample>,
+    /// Per-part multipart serialization metadata.
+    #[serde(default)]
+    pub encoding: IndexMap<String, Encoding>,
+}
+
+/// Serialization metadata for one multipart property.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct Encoding {
+    /// Explicit MIME type for the part.
+    #[serde(rename = "contentType", default)]
+    pub content_type: Option<String>,
 }
 
 /// The `info` block.

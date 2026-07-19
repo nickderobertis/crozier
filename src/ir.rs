@@ -573,6 +573,7 @@ fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> 
                 .content
                 .get("application/json")
                 .or_else(|| rb.content.get("multipart/form-data"))
+                .or_else(|| rb.content.get("multipart/related"))
                 .or_else(|| rb.content.get("application/x-www-form-urlencoded"))
                 .and_then(|mt| mt.schema.as_ref())
             else {
@@ -967,6 +968,8 @@ pub struct BodyField {
     /// Fern does this for arrays, objects, unions, and unknown values, while
     /// leaving scalar form values unchanged.
     pub form_json: bool,
+    /// Explicit MIME type for a multipart part.
+    pub form_content_type: Option<String>,
     /// Prefix Fern applies when this field's argument name collides with another
     /// method parameter (e.g. query `tags` plus DAG body `tags` -> `dag_tags`).
     pub collision_prefix: Option<String>,
@@ -2558,6 +2561,22 @@ fn resolve_request_body(
             content_type: "application/octet-stream".to_string(),
         });
     }
+    // Fern prefers a JSON representation when one is available alongside
+    // `multipart/related`; otherwise the related parts are emitted as multipart.
+    if selected_json_request_media(rb).is_none() {
+        if let Some(media) = rb.content.get("multipart/related") {
+            let schema = media.schema.as_ref()?;
+            let obj = schema
+                .reference
+                .as_deref()
+                .and_then(|r| resolve_ref(doc, r))
+                .unwrap_or(schema);
+            return Some(RequestBody::Form(FormBody {
+                fields: hoist_form_object(obj, &media.encoding, hoister, request_ctx),
+                multipart: true,
+            }));
+        }
+    }
     // A form body: `multipart/form-data` (file uploads via `files=`) or
     // `application/x-www-form-urlencoded` (all fields via `data=`).
     for (media_type, multipart) in [
@@ -2572,7 +2591,7 @@ fn resolve_request_body(
                 .and_then(|r| resolve_ref(doc, r))
                 .unwrap_or(schema);
             return Some(RequestBody::Form(FormBody {
-                fields: hoist_form_object(obj, hoister, request_ctx),
+                fields: hoist_form_object(obj, &media.encoding, hoister, request_ctx),
                 multipart,
             }));
         }
@@ -2910,6 +2929,7 @@ fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
     !rb.content.contains_key("application/json")
         && !rb.content.contains_key("application/octet-stream")
         && !rb.content.contains_key("multipart/form-data")
+        && !rb.content.contains_key("multipart/related")
         && !rb.content.contains_key("application/x-www-form-urlencoded")
         && !rb
             .content
@@ -2934,7 +2954,7 @@ fn hoist_inline_object(
         let type_ref = hoister.prop_type_ref(ctx, prop, prop_schema);
         fields.push(BodyField {
             wire_name: prop.clone(),
-            py_name: naming::field_name(prop),
+            py_name: naming::request_field_name(prop),
             convert: hoister.needs_convert(&type_ref),
             type_ref,
             optional,
@@ -2946,6 +2966,7 @@ fn hoist_inline_object(
             docstring: clean_doc(prop_schema.description.as_deref()),
             is_file: false,
             form_json: false,
+            form_content_type: None,
             collision_prefix: Some(naming::field_name(ctx)),
             reference_order,
         });
@@ -3293,6 +3314,7 @@ impl InlineHoister<'_> {
 /// wrapper (they serialize into `data=`/`files=`, not `json=`).
 fn hoist_form_object(
     schema: &Schema,
+    encoding: &IndexMap<String, crate::openapi::Encoding>,
     hoister: &mut InlineHoister,
     request_ctx: &str,
 ) -> Vec<BodyField> {
@@ -3321,7 +3343,7 @@ fn hoist_form_object(
                     || resolved.all_of.is_some());
             BodyField {
                 wire_name: prop.clone(),
-                py_name: naming::field_name(prop),
+                py_name: naming::request_field_name(prop),
                 type_ref: if is_unknown(prop_schema) && !prop_schema.malformed {
                     TypeRef::Primitive(Prim::Any)
                 } else if is_file {
@@ -3336,6 +3358,9 @@ fn hoist_form_object(
                 convert: false,
                 is_file,
                 form_json,
+                form_content_type: encoding
+                    .get(prop)
+                    .and_then(|part| part.content_type.clone()),
                 collision_prefix: None,
                 example: schema_example_literal(prop_schema),
                 media_example: false,
@@ -3429,7 +3454,7 @@ fn append_request_fields(
     }
     out.extend(obj.fields.iter().map(|f| BodyField {
         wire_name: f.wire_name.clone(),
-        py_name: naming::field_name(&f.wire_name),
+        py_name: naming::request_field_name(&f.wire_name),
         type_ref: f.type_ref.clone(),
         optional: f.optional,
         nullable: f.nullable || type_ref_allows_none(&f.type_ref, types),
@@ -3438,6 +3463,7 @@ fn append_request_fields(
         convert: type_needs_convert(&f.type_ref, types),
         is_file: false,
         form_json: false,
+        form_content_type: None,
         collision_prefix: Some(naming::field_name(request_class)),
         example: f.example.clone(),
         media_example: false,
@@ -4273,21 +4299,19 @@ impl Builder<'_> {
             return;
         }
 
-        // A `oneOf`/`anyOf` with an inline-object variant: hoist each such
-        // variant to `{Name}{Ordinal}` and alias to the union of variant types.
-        if schema.properties.is_empty() && !is_map(schema) {
+        // An undiscriminated `oneOf`/`anyOf` is the schema's shape even when the
+        // importer also retained sibling `properties`. Hoist inline object members
+        // and collapse structurally identical alternatives.
+        if !is_map(schema) {
             if let Some(variants) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
-                if variants.iter().any(is_inline_object) {
-                    let target = TypeRef::Union(
-                        variants
-                            .iter()
-                            .enumerate()
-                            .map(|(i, v)| self.variant_ref(name, i, v, variants))
-                            .collect(),
-                    );
-                    self.push_alias(name, module, target, docstring);
-                    return;
-                }
+                let mut members: Vec<TypeRef> = variants
+                    .iter()
+                    .enumerate()
+                    .map(|(i, v)| self.variant_ref(name, i, v, variants))
+                    .collect();
+                members.dedup();
+                self.push_alias(name, module, TypeRef::Union(members), docstring);
+                return;
             }
         }
 
@@ -4322,6 +4346,21 @@ impl Builder<'_> {
                     Box::new(TypeRef::Primitive(Prim::Str)),
                     Box::new(TypeRef::Primitive(Prim::Any)),
                 ),
+                docstring,
+            );
+            return;
+        }
+
+        if schema
+            .ty
+            .as_ref()
+            .and_then(|ty| ty.primary())
+            .is_some_and(|ty| ty != "object" && ty != "array")
+        {
+            self.push_alias(
+                name,
+                module,
+                full_type_ref_resolved(schema, self.schemas),
                 docstring,
             );
             return;
@@ -4437,6 +4476,13 @@ impl Builder<'_> {
             }
         }
         self.collect_fields(name, schema, &required, &mut fields);
+        if let Some(example) = schema_example(schema).and_then(serde_json::Value::as_object) {
+            for field in &mut fields {
+                if let Some(value) = example.get(&field.wire_name) {
+                    field.example = example_literal(value);
+                }
+            }
+        }
         if flatten_bases {
             for member in schema.all_of.iter().flatten() {
                 let Some(base) = member

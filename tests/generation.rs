@@ -2963,6 +2963,48 @@ paths:
 }
 
 #[test]
+fn multipart_related_uses_declared_part_content_types_when_json_is_absent() {
+    let files = render(
+        r#"openapi: 3.1.0
+info: { title: Related Upload, version: 1.0.0 }
+paths:
+  /upload:
+    post:
+      operationId: uploads_create
+      tags: [Uploads]
+      requestBody:
+        content:
+          multipart/related:
+            encoding:
+              metadata: { contentType: application/json }
+              document: { contentType: application/pdf }
+            schema:
+              type: object
+              properties:
+                metadata: { $ref: '#/components/schemas/Metadata' }
+                document: { type: string, format: binary }
+      responses: { '204': { description: Created } }
+components:
+  schemas:
+    Metadata: { type: object, properties: { name: { type: string } } }
+"#,
+    );
+    let raw = &files["src/acme/uploads/raw_client.py"];
+    assert!(
+        raw.contains("json.dumps(jsonable_encoder(metadata))"),
+        "{raw}"
+    );
+    assert!(raw.contains("\"application/json\""), "{raw}");
+    assert!(
+        raw.contains(
+            "core.with_content_type(file=document, default_content_type=\"application/pdf\")"
+        ),
+        "{raw}"
+    );
+    assert!(raw.contains("force_multipart=True"), "{raw}");
+}
+
+#[test]
 fn untagged_tag_named_and_ignored_body_operations_choose_the_right_surface() {
     let files = render(
         r#"openapi: 3.0.3
