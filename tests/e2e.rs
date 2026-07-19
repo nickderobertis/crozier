@@ -15408,6 +15408,16 @@ const LETTA: Corpus = Corpus {
         "src/fern/runs/client.py",
         "src/fern/runs/raw_client.py",
         "src/fern/tools/client.py",
+        "src/fern/internal_templates/client.py",
+        "src/fern/types/create_ssemcp_server.py",
+        "src/fern/types/create_stdio_mcp_server.py",
+        "src/fern/types/create_streamable_httpmcp_server.py",
+        "src/fern/types/letta_schemas_agent_file_agent_schema.py",
+        "src/fern/types/letta_schemas_mcp_update_ssemcp_server.py",
+        "src/fern/types/letta_schemas_mcp_update_streamable_httpmcp_server.py",
+        "src/fern/types/sse_server_config.py",
+        "src/fern/types/stdio_server_config.py",
+        "src/fern/types/streamable_http_server_config.py",
     ],
 };
 

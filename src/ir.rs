@@ -3474,6 +3474,9 @@ impl InlineHoister<'_> {
                     if let Some(reference) = member.reference.as_deref() {
                         return TypeRef::Named(ref_to_class(reference));
                     }
+                    if is_map(member) {
+                        return nullable_map_value_type_ref(member);
+                    }
                     if is_inline_struct(member) {
                         self.hoist_object_with_doc(
                             &name,
@@ -3620,6 +3623,9 @@ impl InlineHoister<'_> {
                     }
                     if let Some(reference) = non_null[0].reference.as_deref() {
                         return TypeRef::Named(ref_to_class(reference));
+                    }
+                    if is_map(non_null[0]) {
+                        return nullable_map_value_type_ref(non_null[0]);
                     }
                     return self.schemas.map_or_else(
                         || base_type_ref(non_null[0]),
@@ -5528,6 +5534,9 @@ impl Builder<'_> {
                         if let Some(reference) = member.reference.as_deref() {
                             return TypeRef::Named(ref_to_class(reference));
                         }
+                        if is_map(member) {
+                            return nullable_map_value_type_ref(member);
+                        }
                         if matches!(
                             member.ty.as_ref().and_then(TypeField::primary),
                             Some("array" | "object")
@@ -5908,6 +5917,15 @@ fn optional_type_ref(base: TypeRef) -> TypeRef {
             TypeRef::Union(variants)
         }
         other => TypeRef::Optional(Box::new(other)),
+    }
+}
+
+fn nullable_map_value_type_ref(schema: &Schema) -> TypeRef {
+    match (&schema.additional_properties, base_type_ref(schema)) {
+        (Some(AdditionalProperties::Schema(_)), TypeRef::Dict(key, value)) => {
+            TypeRef::Dict(key, Box::new(optional_type_ref(*value)))
+        }
+        (_, type_ref) => type_ref,
     }
 }
 
@@ -7728,6 +7746,19 @@ mod tests {
             TypeRef::Dict(
                 Box::new(TypeRef::Primitive(Prim::Str)),
                 Box::new(TypeRef::Primitive(Prim::Any)),
+            )
+        );
+        let nullable_string_map = schema(serde_json::json!({
+            "anyOf": [
+                { "type": "object", "additionalProperties": { "type": "string" } },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            builder.field_type_ref("AgentState", "secrets", &nullable_string_map),
+            TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Str)))),
             )
         );
         assert!(builder.types.iter().any(|declaration| matches!(
