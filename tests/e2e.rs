@@ -13643,6 +13643,45 @@ const FREE5GC_PDU_SESSION: Corpus = Corpus {
     matched: &[],
 };
 
+/// `sumup`: SumUp's production API combines problem+json errors with shared
+/// models carrying both request-only and response-only fields.
+const SUMUP: Corpus = Corpus {
+    api: "sumup",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `ory-kratos`: Ory's identity API exercises discriminated oneOf unions and
+/// complex schema-valued maps. Fern accepts the raw pinned spec.
+const ORY_KRATOS: Corpus = Corpus {
+    api: "ory-kratos",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `commercetools-checkout`: the production Checkout API stresses deeply
+/// nested allOf composition, discriminated unions, and schema-valued maps.
+const COMMERCETOOLS_CHECKOUT: Corpus = Corpus {
+    api: "commercetools-checkout",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
 #[test]
 fn squareup_com_matches_fern_output() {
     if corpus_spec(SQUAREUP_COM.api).is_none() {
@@ -13741,6 +13780,21 @@ fn nimisampo_matches_fern_output() {
 #[test]
 fn free5gc_pdu_session_matches_fern_output() {
     assert_link_ok_corpus_matches(&FREE5GC_PDU_SESSION);
+}
+
+#[test]
+fn sumup_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SUMUP);
+}
+
+#[test]
+fn ory_kratos_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ORY_KRATOS);
+}
+
+#[test]
+fn commercetools_checkout_matches_fern_output() {
+    assert_link_ok_corpus_matches(&COMMERCETOOLS_CHECKOUT);
 }
 
 #[test]

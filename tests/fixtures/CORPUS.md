@@ -1,6 +1,6 @@
 # Canonical real-world OpenAPI corpus (issue #77)
 
-This manifest tracks 73 real-world OpenAPI specs with redistribution-compatible
+This manifest tracks 76 real-world OpenAPI specs with redistribution-compatible
 license metadata. `decision` is `link-ok` when the permissively licensed source
 is fetched at generation time rather than vendored. Add or change one numbered
 row per feature branch and maintain its golden through the manually dispatched
@@ -82,6 +82,9 @@ row per feature branch and maintain its golden through the manually dispatched
 | 71 | `slurmdb-rest` | github-raw | https://raw.githubusercontent.com/ubccr/slurmdbrest/f9c5e77cc3a1a11c7645dab31c6752cd08577721/api/openapi.yaml | `f9c5e77cc3a1a11c7645dab31c6752cd08577721` | Apache-2.0 | link-ok | SlurmDB REST API with a label path parameter (`explode: false`) and 33 form parameters with explicit `explode` |
 | 72 | `nimisampo` | github-raw | https://raw.githubusercontent.com/SemanticComputing/nimisampo.fi/34b8d22fff53a3dd531e89277fdb2f98d69dd1d0/src/server/openapi.yaml | `34b8d22fff53a3dd531e89277fdb2f98d69dd1d0` | MIT | link-ok | Deployed NameSampo API with a query parameter carrying `content: { application/json: ... }` and three `allowReserved` parameters |
 | 73 | `free5gc-pdu-session` | github-raw | https://raw.githubusercontent.com/free5gc/openapi/8d0ee35bc671dd9995240c0ff73d4c75075a204a/Nsmf_PDUSession/api/openapi.yaml | `8d0ee35bc671dd9995240c0ff73d4c75075a204a` | Apache-2.0 | link-ok | free5GC PDU Session API with multipart `encoding` properties combining `contentType` and per-part `headers` |
+| 74 | `sumup` | github-raw | https://raw.githubusercontent.com/sumup/sumup-openapi/81d721bb4c34fa666604f50c9cbc8cc2323e25a1/openapi.yaml | `81d721bb4c34fa666604f50c9cbc8cc2323e25a1` | Apache-2.0 | link-ok | SumUp API with 48 `application/problem+json` responses, 14 `readOnly` and 6 `writeOnly` fields on shared models, and `allOf`/`oneOf` composition |
+| 75 | `ory-kratos` | github-raw | https://raw.githubusercontent.com/ory/sdk/566140fd6b28b3f484ea4d1fc15fc8202f4c4350/clients/kratos/go/api/openapi.yaml | `566140fd6b28b3f484ea4d1fc15fc8202f4c4350` | Apache-2.0 | link-ok | Ory Kratos identity API with seven mapped discriminators over `oneOf` unions and schema-valued `additionalProperties` maps |
+| 76 | `commercetools-checkout` | github-raw | https://raw.githubusercontent.com/commercetools/commercetools-api-reference/3da8f4b822245fffefa8a9fcae78b2d9d8eea73d/oas/checkout/openapi.yaml | `3da8f4b822245fffefa8a9fcae78b2d9d8eea73d` | MIT | link-ok | commercetools Checkout API with 141 nested `allOf` compositions, seven discriminator-mapped unions, and complex schema-valued maps |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -217,3 +220,28 @@ now byte-matched byte-for-byte.
 
 The status tables are the durable results of that generation pass; use the
 standard workflow for any future source change or Fern upgrade.
+
+## Batch 6 — composition and media selected (issue #77)
+
+Three new permissively licensed, immutable specs passed native Fern CLI 5.75.4
+screening and are registered with empty match manifests. Their workflow-owned
+goldens have not been generated locally.
+
+| name | selected for | status |
+|---|---|---|
+| `sumup` | 48 problem+json responses; shared request/response models with `readOnly` and `writeOnly`; `allOf`/`oneOf` | Fern check passed — golden generation pending |
+| `ory-kratos` | seven discriminated `oneOf` unions and schema-valued maps in a production identity API | Fern check passed — golden generation pending |
+| `commercetools-checkout` | 141 nested `allOf` compositions, seven discriminated unions, and complex maps | Fern check passed — golden generation pending |
+
+### Screened failures
+
+| name | status |
+|---|---|
+| `opencode` | **DROPPED** — Fern check failed with 22 response/request example and missing-discriminant errors (do not retry this ref) |
+| `clerk-backend-api` | **DROPPED** — Fern check failed with a duplicate `InvitationObject` and normalized `frontendApi` parameter collision (do not retry this ref or the screened older versions) |
+| `temporal-api` | **DROPPED** — Fern check failed with 36 normalized path/query parameter collisions (do not retry this ref) |
+| `openfeature-protocol` | **DROPPED** — Fern check failed with nine invalid object-extension errors (do not retry this ref) |
+| `cloudevents-subscriptions` | **DROPPED** — Fern check failed with 12 invalid object-extension errors (do not retry this ref) |
+| `dapr` | **DROPPED** — Fern reported false success after an OpenAPI parse failure on unresolved `ApiKeyAuth` (do not retry this ref) |
+| `apache-superset` | **DROPPED** — Fern check failed with six response-example and unreferenced path-parameter errors (do not retry this ref) |
+| `xregistry-endpoint` | **DROPPED** — Fern check failed because ten services require auth while the spec defines none (do not retry this ref) |

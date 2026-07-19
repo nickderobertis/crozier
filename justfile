@@ -130,6 +130,9 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e slurmdb_rest_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e nimisampo_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e free5gc_pdu_session_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e sumup_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e ory_kratos_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e commercetools_checkout_matches_fern_output
 
 # Format the codebase in place.
 format:
