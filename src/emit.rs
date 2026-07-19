@@ -6485,7 +6485,13 @@ fn build_example_inner(
                     .and_then(|example| ctx.value_from_example(&s.type_ref, example))
                     .unwrap_or_else(|| ctx.value(&s.type_ref, Slot::Plain))
             };
-            args.push((Some("request".to_string()), v));
+            if s.required
+                || body_example.is_some()
+                || s.example.is_some()
+                || !is_any_type(&s.type_ref)
+            {
+                args.push((Some("request".to_string()), v));
+            }
         }
         Some(RequestBody::Inline(fields)) => {
             // Fern's worked example shows a required field unless it is *nullable*
@@ -7933,6 +7939,25 @@ mod tests {
             "{rendered}"
         );
         assert!(!rendered.contains("annotation=typing.Optional[typing.Sequence"));
+    }
+
+    #[test]
+    fn optional_unknown_body_is_omitted_from_worked_example() {
+        let mut ep = endpoint("/projects/{id}", Vec::new(), None);
+        ep.request_body = Some(RequestBody::Single(SingleBody {
+            type_ref: TypeRef::Primitive(Prim::Any),
+            required: false,
+            convert: false,
+            content_type: true,
+            content_type_override: None,
+            example: None,
+        }));
+        let auth = Auth::None;
+        let mut ctx = example_ctx(&[], &[], &auth);
+        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx, false)
+            .expect("endpoint has an example")
+            .join("\n");
+        assert!(!rendered.contains("request="), "{rendered}");
     }
 
     #[test]
