@@ -2049,8 +2049,13 @@ fn reference_entry(
     }
     for dp in ordered_keyword_params(&mp.query, &mp.header, &reference_body) {
         let is_body = reference_body.iter().any(|body| body.name == dp.name);
-        let annotation = if is_body {
-            let annotation = dp.annotation.replace("typing.Sequence[", "typing.List[");
+        let query_is_list = ep
+            .query_params
+            .iter()
+            .find(|query| query.py_name == dp.name)
+            .is_some_and(|query| !query.allow_multiple);
+        let annotation = if is_body || query_is_list {
+            let annotation = reference_list_annotation(&dp.annotation);
             if annotation == "bytes"
                 && ep
                     .request_body
@@ -2153,6 +2158,10 @@ fn reference_entry(
         minijinja::Value::from_serialize(&view),
     )?;
     Ok(rendered.trim_end_matches('\n').to_string())
+}
+
+fn reference_list_annotation(annotation: &str) -> String {
+    annotation.replace("typing.Sequence[", "typing.List[")
 }
 
 fn reference_param_annotation(annotation: &str) -> String {
@@ -8178,6 +8187,10 @@ mod tests {
 
     #[test]
     fn reference_normalizes_annotations_without_wrapping_long_names() {
+        assert_eq!(
+            super::reference_list_annotation("typing.Optional[typing.Sequence[str]]"),
+            "typing.Optional[typing.List[str]]"
+        );
         let long =
             "typing.Optional[typing.Sequence[PostMyNegotiationsIdCounterRequestOfferItemsItem]]";
         assert_eq!(reference_param_annotation(long), long);
