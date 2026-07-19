@@ -2892,6 +2892,20 @@ fn resolve_request_body(
         }
         return None;
     }
+    if let Some(member) = simple_nullable_member(schema) {
+        let type_ref = member.reference.as_deref().map_or_else(
+            || base_type_ref(member),
+            |reference| TypeRef::Named(ref_to_class(reference)),
+        );
+        let convert = hoister.needs_convert(&type_ref);
+        return Some(single_with_override(
+            type_ref,
+            rb.required == Some(true),
+            convert,
+            true,
+            content_type_override,
+        ));
+    }
     // An inline top-level union is named from the operation and emitted in the
     // tag's `types/` package. The request accepts that alias as one argument and
     // serializes its selected model variant through the annotation converter.
@@ -8451,6 +8465,45 @@ mod tests {
         );
         assert_eq!(module_identifier("list"), "list_");
         assert_eq!(module_identifier("records"), "records");
+    }
+
+    #[test]
+    fn nullable_referenced_request_body_reuses_the_component() {
+        let document: OpenApi = serde_json::from_value(serde_json::json!({
+            "components": { "schemas": { "CompactionRequest": {
+                "type": "object", "properties": { "mode": { "type": "string" } }
+            } } }
+        }))
+        .expect("document deserializes");
+        let request: crate::openapi::RequestBody = serde_json::from_value(serde_json::json!({
+            "content": { "application/json": { "schema": { "anyOf": [
+                { "$ref": "#/components/schemas/CompactionRequest" },
+                { "type": "null" }
+            ] } } }
+        }))
+        .expect("request body deserializes");
+        let mut hoister = InlineHoister {
+            root_types: &[],
+            schemas: Some(&document.components.schemas),
+            out: Vec::new(),
+        };
+        let RequestBody::Single(body) = resolve_request_body(
+            &document,
+            &[],
+            &request,
+            &mut hoister,
+            "SummarizeMessagesRequest",
+            true,
+        )
+        .expect("nullable referenced body resolves") else {
+            panic!("nullable referenced body should remain a single argument")
+        };
+        assert_eq!(
+            body.type_ref,
+            TypeRef::Named("CompactionRequest".to_string())
+        );
+        assert!(!body.required);
+        assert!(hoister.out.is_empty());
     }
 
     #[test]
