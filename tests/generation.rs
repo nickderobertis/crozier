@@ -187,6 +187,24 @@ components:
     );
     let reference = &files["reference.md"];
     assert!(reference.contains("f_value=0"), "{reference}");
+
+    let root_stream = render(
+        r#"
+openapi: 3.1.0
+info: { title: Root stream, version: 1.0.0 }
+paths:
+  /events:
+    get:
+      operationId: stream
+      responses:
+        '200':
+          description: events
+          content:
+            text/event-stream:
+              schema: { type: string }
+"#,
+    );
+    assert!(root_stream["src/acme/client.py"].contains("def stream"));
 }
 
 fn python_files_below(dir: &std::path::Path, out: &mut Vec<PathBuf>) {
