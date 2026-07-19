@@ -1,0 +1,3 @@
+
+
+DurationSec = int

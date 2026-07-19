@@ -1,0 +1,3 @@
+
+
+AverWindow = int

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "electric-sql",
+  "corpus_spec_ref": "be716ccdb225e7b60919c3f46ea92ad5332ff31a",
+  "corpus_spec_url": "https://raw.githubusercontent.com/electric-sql/electric/be716ccdb225e7b60919c3f46ea92ad5332ff31a/website/electric-api.yaml"
+}

@@ -126,6 +126,7 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
             .as_deref()
             .filter(|description| {
                 !description.eq_ignore_ascii_case("production server")
+                    && !description.to_ascii_lowercase().starts_with("local ")
                     && !description.eq_ignore_ascii_case(&doc.info.title)
             })
             .map(env_member_name)
@@ -572,6 +573,7 @@ fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> 
                 .content
                 .get("application/json")
                 .or_else(|| rb.content.get("multipart/form-data"))
+                .or_else(|| rb.content.get("multipart/related"))
                 .or_else(|| rb.content.get("application/x-www-form-urlencoded"))
                 .and_then(|mt| mt.schema.as_ref())
             else {
@@ -640,6 +642,8 @@ fn all_operations_authenticated(doc: &OpenApi) -> bool {
 /// One API operation, resolved into the shape the raw client needs.
 #[derive(Debug)]
 pub struct Endpoint {
+    /// Whether the source document uses OpenAPI 3.1 semantics.
+    pub openapi_31: bool,
     /// The client module (directory) this operation belongs to.
     pub module: String,
     /// The generated Python method name.
@@ -656,6 +660,10 @@ pub struct Endpoint {
     pub header_params: Vec<HeaderParam>,
     /// The JSON request body, when the operation has one crozier can emit.
     pub request_body: Option<RequestBody>,
+    /// Whether OpenAPI marks the operation's request body as required.
+    pub request_body_required: bool,
+    /// Whether the operation also offers a `multipart/related` request encoding.
+    pub request_body_has_multipart_related: bool,
     /// The component type named by the request schema for reference docs. Fern
     /// documents that model as one `request` parameter when the type remains
     /// public, even though executable methods flatten object fields.
@@ -757,6 +765,9 @@ pub struct Endpoint {
     /// Whether the success response is a binary download (`format: binary`).
     /// Fern emits these as context-managed byte streams instead of buffering.
     pub binary_response: bool,
+    /// Whether the success schema itself declares `format: binary` (as opposed
+    /// to merely using an `image/*` media type with a plain string schema).
+    pub binary_schema_response: bool,
     /// Whether a binary download uses wildcard (`*/*`) media. Fern omits all
     /// method arguments from these generated worked examples.
     pub wildcard_binary_response: bool,
@@ -966,6 +977,8 @@ pub struct BodyField {
     /// Fern does this for arrays, objects, unions, and unknown values, while
     /// leaving scalar form values unchanged.
     pub form_json: bool,
+    /// Explicit MIME type for a multipart part.
+    pub form_content_type: Option<String>,
     /// Prefix Fern applies when this field's argument name collides with another
     /// method parameter (e.g. query `tags` plus DAG body `tags` -> `dag_tags`).
     pub collision_prefix: Option<String>,
@@ -1096,6 +1109,8 @@ pub struct ObjectType {
     pub bases: Vec<String>,
     /// Fields, in document order.
     pub fields: Vec<Field>,
+    /// Wire names explicitly present in this object's schema-level example.
+    pub example_fields: std::collections::HashSet<String>,
     /// Optional class docstring.
     pub docstring: Option<String>,
 }
@@ -1274,6 +1289,23 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     };
     for (key, schema) in &doc.components.schemas {
         builder.add_named(&naming::class_name(key), schema);
+    }
+    for (event, item) in &doc.webhooks {
+        for (method, operation) in item.operations() {
+            let Some(schema) = operation
+                .request_body
+                .as_ref()
+                .and_then(|body| body.content.get("application/json"))
+                .and_then(|media| media.schema.as_ref())
+            else {
+                continue;
+            };
+            if schema.reference.is_some() {
+                continue;
+            }
+            let name = naming::class_name(&format!("{method}_{}_payload", event.replace('/', "_")));
+            builder.add_named(&name, schema);
+        }
     }
     if let Some(oauth_scope) = oauth_scope_enum(doc) {
         builder.types.push(TypeDecl::Enum(oauth_scope));
@@ -1677,7 +1709,7 @@ fn build_endpoint(
             example: parameter_example(doc, p),
         })
         .collect();
-    if !doc.openapi.starts_with("3.1") {
+    if !doc.openapi.starts_with("3.1") || op.path_level_parameters {
         path_params.sort_by(|a, b| {
             path_param_position(path, &a.wire_name)
                 .cmp(&path_param_position(path, &b.wire_name))
@@ -1699,6 +1731,11 @@ fn build_endpoint(
                 .map_or(TypeRef::Primitive(Prim::Any), |s| {
                     hoister.hoist_param_enum(&request_ctx, &p.name, s)
                 });
+            let type_ref = if p.schema.is_none() && !p.content.is_empty() {
+                TypeRef::Primitive(Prim::Str)
+            } else {
+                type_ref
+            };
             let convert = hoister.needs_convert(&type_ref);
             // A parameter-level `example` wins; otherwise the schema's own.
             let without_declared_example = parameter_example_value(doc, p).is_none();
@@ -1924,6 +1961,9 @@ fn build_endpoint(
             if parameter_names.contains(field.py_name.as_str()) {
                 if let Some(prefix) = &field.collision_prefix {
                     field.py_name = format!("{prefix}_{}", field.py_name);
+                    if doc.openapi.starts_with("3.1") {
+                        field.collision_prefix = None;
+                    }
                 }
             } else {
                 field.collision_prefix = None;
@@ -1939,6 +1979,7 @@ fn build_endpoint(
         body_ok && !has_unsupported_params && !op.responses.is_empty() && response_supported(op);
 
     Endpoint {
+        openapi_31: doc.openapi.starts_with("3.1"),
         module,
         method_name: method,
         http_method,
@@ -1947,6 +1988,15 @@ fn build_endpoint(
         query_params,
         header_params,
         request_body,
+        request_body_required: op
+            .request_body
+            .as_ref()
+            .and_then(|body| body.required)
+            .unwrap_or(false),
+        request_body_has_multipart_related: op
+            .request_body
+            .as_ref()
+            .is_some_and(|body| body.content.contains_key("multipart/related")),
         reference_body_type: op
             .request_body
             .as_ref()
@@ -2149,7 +2199,9 @@ fn build_endpoint(
         body_schema_is_success_response: request_and_response_refs_match(op),
         response,
         response_may_be_empty: has_bodyless_success(op)
-            || success_response_entry(op).is_some_and(|response| response.reference.is_some()),
+            || success_response_entry(op).is_some_and(|response| response.reference.is_some())
+            || doc.openapi.starts_with("3.1")
+                && success_response_schema(op).is_some_and(is_unknown),
         response_doc: success_response_doc(op),
         errors,
         docstring: operation_doc(op.description.as_deref()),
@@ -2161,6 +2213,7 @@ fn build_endpoint(
         text_response: has_text_response(op),
         markdown_response: has_markdown_response(op),
         binary_response: is_binary_response(doc, op),
+        binary_schema_response: has_binary_schema_response(doc, op),
         wildcard_binary_response: has_wildcard_binary_response(doc, op),
         emittable,
     }
@@ -2355,6 +2408,23 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
     })
 }
 
+fn has_binary_schema_response(doc: &OpenApi, op: &Operation) -> bool {
+    op.responses.iter().any(|(code, resp)| {
+        code.starts_with('2')
+            && resp.content.values().any(|media| {
+                media.schema.as_ref().is_some_and(|schema| {
+                    let schema = schema
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| resolve_ref(doc, reference))
+                        .unwrap_or(schema);
+                    schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
+                        && schema.format.as_deref() == Some("binary")
+                })
+            })
+    })
+}
+
 fn has_wildcard_binary_response(_doc: &OpenApi, op: &Operation) -> bool {
     success_response_entry(op)
         .and_then(|response| response.content.get("*/*"))
@@ -2440,8 +2510,20 @@ fn error_class_name(status: u16) -> Option<&'static str> {
 /// resolves through [`base_type_ref`] (in response context — `List`/`Dict`, never
 /// `Sequence`); an error with no `application/json` body takes Fern's
 /// `typing.Any` in Fern 5.20.
-fn error_body_type(resp: &Response) -> TypeRef {
+fn error_body_type(resp: &Response, class: &str) -> TypeRef {
     match response_schema(resp) {
+        Some(schema)
+            if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
+                && schema
+                    .items
+                    .as_deref()
+                    .is_some_and(|item| item.reference.is_none() && is_inline_struct(item)) =>
+        {
+            TypeRef::List(Box::new(TypeRef::Named(format!("{class}BodyItem"))))
+        }
+        Some(schema) if is_inline_struct(schema) && schema_example(schema).is_some() => {
+            TypeRef::Named(format!("{class}Body"))
+        }
         // A named `$ref`, scalar, or container keeps its resolved type. An inline
         // object (bunq's `GenericError`, `{Error: ...}`) or an otherwise-untyped body
         // resolves to bare `Any`, the same as a body-less error in Fern 5.20.
@@ -2481,6 +2563,15 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                     if seen.insert(name.clone()) {
                         builder.add_named(&name, schema);
                     }
+                } else if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
+                    if let Some(item) = schema.items.as_deref() {
+                        if item.reference.is_none() && is_inline_struct(item) {
+                            let name = format!("{class}BodyItem");
+                            if seen.insert(name.clone()) {
+                                builder.add_named(&name, item);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -2506,9 +2597,10 @@ fn resolve_errors(op: &Operation) -> Vec<ErrorResponse> {
         out.push(ErrorResponse {
             status_code: status,
             class_name: class.to_string(),
-            body_type: error_body_type(resp),
+            body_type: error_body_type(resp, class),
         });
     }
+    out.sort_by_key(|error| error.status_code);
     out
 }
 
@@ -2551,6 +2643,22 @@ fn resolve_request_body(
             content_type: "application/octet-stream".to_string(),
         });
     }
+    // Fern prefers a JSON representation when one is available alongside
+    // `multipart/related`; otherwise the related parts are emitted as multipart.
+    if selected_json_request_media(rb).is_none() {
+        if let Some(media) = rb.content.get("multipart/related") {
+            let schema = media.schema.as_ref()?;
+            let obj = schema
+                .reference
+                .as_deref()
+                .and_then(|r| resolve_ref(doc, r))
+                .unwrap_or(schema);
+            return Some(RequestBody::Form(FormBody {
+                fields: hoist_form_object(obj, &media.encoding, hoister, request_ctx),
+                multipart: true,
+            }));
+        }
+    }
     // A form body: `multipart/form-data` (file uploads via `files=`) or
     // `application/x-www-form-urlencoded` (all fields via `data=`).
     for (media_type, multipart) in [
@@ -2565,7 +2673,7 @@ fn resolve_request_body(
                 .and_then(|r| resolve_ref(doc, r))
                 .unwrap_or(schema);
             return Some(RequestBody::Form(FormBody {
-                fields: hoist_form_object(obj, hoister, request_ctx),
+                fields: hoist_form_object(obj, &media.encoding, hoister, request_ctx),
                 multipart,
             }));
         }
@@ -2804,13 +2912,17 @@ fn resolve_request_body(
         return Some(body);
     }
     scalar_body(schema).map(|(type_ref, content_type)| {
-        single_with_override(
+        let mut body = single_with_override(
             type_ref,
             required,
             false,
             content_type,
             content_type_override,
-        )
+        );
+        if let RequestBody::Single(single) = &mut body {
+            single.example = media_example(doc, media).and_then(example_literal);
+        }
+        body
     })
 }
 
@@ -2903,6 +3015,7 @@ fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
     !rb.content.contains_key("application/json")
         && !rb.content.contains_key("application/octet-stream")
         && !rb.content.contains_key("multipart/form-data")
+        && !rb.content.contains_key("multipart/related")
         && !rb.content.contains_key("application/x-www-form-urlencoded")
         && !rb
             .content
@@ -2927,7 +3040,7 @@ fn hoist_inline_object(
         let type_ref = hoister.prop_type_ref(ctx, prop, prop_schema);
         fields.push(BodyField {
             wire_name: prop.clone(),
-            py_name: naming::field_name(prop),
+            py_name: naming::request_field_name(prop),
             convert: hoister.needs_convert(&type_ref),
             type_ref,
             optional,
@@ -2939,6 +3052,7 @@ fn hoist_inline_object(
             docstring: clean_doc(prop_schema.description.as_deref()),
             is_file: false,
             form_json: false,
+            form_content_type: None,
             collision_prefix: Some(naming::field_name(ctx)),
             reference_order,
         });
@@ -3029,7 +3143,14 @@ impl InlineHoister<'_> {
         let required: Vec<&str> = schema
             .required
             .iter()
-            .chain(schema.all_of.iter().flatten().flat_map(|m| &m.required))
+            .chain(
+                schema
+                    .all_of
+                    .iter()
+                    .flatten()
+                    .filter(|member| !member.properties.is_empty())
+                    .flat_map(|member| &member.required),
+            )
             .map(String::as_str)
             .collect();
         let bases = schema
@@ -3050,6 +3171,10 @@ impl InlineHoister<'_> {
             module: naming::module_name(name),
             bases,
             fields,
+            example_fields: schema_example(schema)
+                .and_then(serde_json::Value::as_object)
+                .map(|example| example.keys().cloned().collect())
+                .unwrap_or_default(),
             docstring,
         }));
     }
@@ -3065,6 +3190,16 @@ impl InlineHoister<'_> {
     ) -> TypeRef {
         if let Some(reference) = &variant.reference {
             return TypeRef::Named(ref_to_class(reference));
+        }
+        if variant.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
+            if let Some(item) = variant.items.as_deref() {
+                if item.reference.is_none() && is_inline_struct(item) {
+                    let variant_name = variant_class_name(parent, index, variant, siblings);
+                    let item_name = format!("{variant_name}Item");
+                    self.hoist_object(&item_name, item);
+                    return TypeRef::List(Box::new(TypeRef::Named(item_name)));
+                }
+            }
         }
         if is_inline_object(variant)
             || is_bare_object(variant)
@@ -3107,7 +3242,13 @@ impl InlineHoister<'_> {
                     || (is_optional(prop_schema) && prop_schema.read_only == Some(true)),
                 spec_required,
                 docstring: declared_doc(property_description(prop_schema)),
-                example: schema_example_literal(prop_schema),
+                example: schema_example_literal(prop_schema).or_else(|| {
+                    let reference = prop_schema.reference.as_deref().or_else(|| {
+                        described_all_of_ref(prop_schema).map(|(reference, _)| reference)
+                    })?;
+                    let target = resolve_ref_from_schemas(self.schemas?, reference)?;
+                    schema_example_literal(target)
+                }),
             });
         }
     }
@@ -3156,6 +3297,20 @@ impl InlineHoister<'_> {
             let nested = format!("{parent}{}", naming::class_name(prop));
             self.hoist_object(&nested, prop_schema);
             return TypeRef::Named(nested);
+        }
+        if prop_schema.reference.is_none() {
+            if let Some(members) = prop_schema.one_of.as_ref().or(prop_schema.any_of.as_ref()) {
+                let name = format!("{parent}{}", naming::class_name(prop));
+                let mut variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
+                variants.dedup();
+                self.out.push(TypeDecl::Alias(AliasType {
+                    name: name.clone(),
+                    module: naming::module_name(&name),
+                    target: TypeRef::Union(variants),
+                    docstring: clean_doc(prop_schema.description.as_deref()),
+                }));
+                return TypeRef::Named(name);
+            }
         }
         if prop_schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
             if let Some(item_schema) = prop_schema.items.as_deref() {
@@ -3272,6 +3427,7 @@ impl InlineHoister<'_> {
 /// wrapper (they serialize into `data=`/`files=`, not `json=`).
 fn hoist_form_object(
     schema: &Schema,
+    encoding: &IndexMap<String, crate::openapi::Encoding>,
     hoister: &mut InlineHoister,
     request_ctx: &str,
 ) -> Vec<BodyField> {
@@ -3300,7 +3456,7 @@ fn hoist_form_object(
                     || resolved.all_of.is_some());
             BodyField {
                 wire_name: prop.clone(),
-                py_name: naming::field_name(prop),
+                py_name: naming::request_field_name(prop),
                 type_ref: if is_unknown(prop_schema) && !prop_schema.malformed {
                     TypeRef::Primitive(Prim::Any)
                 } else if is_file {
@@ -3315,6 +3471,9 @@ fn hoist_form_object(
                 convert: false,
                 is_file,
                 form_json,
+                form_content_type: encoding
+                    .get(prop)
+                    .and_then(|part| part.content_type.clone()),
                 collision_prefix: None,
                 example: schema_example_literal(prop_schema),
                 media_example: false,
@@ -3384,7 +3543,7 @@ fn append_reference_field_names(
             TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
             _ => None,
         }) {
-            append_reference_field_names(base_obj, types, seen, out);
+            append_reference_base_field_names(base_obj, types, seen, out);
         }
     }
     out.extend(
@@ -3394,6 +3553,32 @@ fn append_reference_field_names(
             .chain(obj.fields.iter().filter(|field| !field.spec_required))
             .map(|field| field.wire_name.clone()),
     );
+}
+
+fn append_reference_base_field_names(
+    obj: &ObjectType,
+    types: &[TypeDecl],
+    seen: &mut std::collections::HashSet<String>,
+    out: &mut Vec<String>,
+) {
+    if !seen.insert(obj.name.clone()) {
+        return;
+    }
+    out.extend(
+        obj.fields
+            .iter()
+            .filter(|field| field.spec_required)
+            .chain(obj.fields.iter().filter(|field| !field.spec_required))
+            .map(|field| field.wire_name.clone()),
+    );
+    for base in &obj.bases {
+        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
+            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
+            _ => None,
+        }) {
+            append_reference_base_field_names(base_obj, types, seen, out);
+        }
+    }
 }
 
 fn append_request_fields(
@@ -3408,7 +3593,7 @@ fn append_request_fields(
     }
     out.extend(obj.fields.iter().map(|f| BodyField {
         wire_name: f.wire_name.clone(),
-        py_name: naming::field_name(&f.wire_name),
+        py_name: naming::request_field_name(&f.wire_name),
         type_ref: f.type_ref.clone(),
         optional: f.optional,
         nullable: f.nullable || type_ref_allows_none(&f.type_ref, types),
@@ -3417,6 +3602,7 @@ fn append_request_fields(
         convert: type_needs_convert(&f.type_ref, types),
         is_file: false,
         form_json: false,
+        form_content_type: None,
         collision_prefix: Some(naming::field_name(request_class)),
         example: f.example.clone(),
         media_example: false,
@@ -3564,13 +3750,16 @@ fn has_markdown_response(op: &Operation) -> bool {
 }
 
 fn has_bodyless_success(op: &Operation) -> bool {
-    op.responses.iter().any(|(code, response)| {
+    let bodyless = op.responses.iter().filter(|(code, response)| {
         code.starts_with('2')
             && !response
                 .content
                 .values()
                 .any(|media| media.schema.is_some())
-    })
+    });
+    let codes: Vec<&str> = bodyless.map(|(code, _)| code.as_str()).collect();
+    !(codes.is_empty()
+        || success_response_schema(op).is_some() && codes.iter().all(|code| *code == "201"))
 }
 
 /// The success (2xx) response's JSON body schema, if any. Fern treats a wildcard
@@ -4252,27 +4441,60 @@ impl Builder<'_> {
             return;
         }
 
-        // A `oneOf`/`anyOf` with an inline-object variant: hoist each such
-        // variant to `{Name}{Ordinal}` and alias to the union of variant types.
-        if schema.properties.is_empty() && !is_map(schema) {
+        // An undiscriminated `oneOf`/`anyOf` is the schema's shape even when the
+        // importer also retained sibling `properties`. Hoist inline object members
+        // and collapse structurally identical alternatives.
+        if !is_map(schema) {
             if let Some(variants) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
-                if variants.iter().any(is_inline_object) {
-                    let target = TypeRef::Union(
-                        variants
-                            .iter()
-                            .enumerate()
-                            .map(|(i, v)| self.variant_ref(name, i, v, variants))
-                            .collect(),
-                    );
-                    self.push_alias(name, module, target, docstring);
-                    return;
-                }
+                let mut members: Vec<TypeRef> = variants
+                    .iter()
+                    .enumerate()
+                    .map(|(i, v)| self.variant_ref(name, i, v, variants))
+                    .collect();
+                members.dedup();
+                let target = TypeRef::Union(members);
+                let target = if schema_accepts_none(schema, self.schemas) {
+                    optional_type_ref(target)
+                } else {
+                    target
+                };
+                self.push_alias(name, module, target, docstring);
+                return;
             }
         }
 
         // An object with `additionalProperties` but no declared properties is a
         // map, which Fern emits as a `Dict[..]` alias rather than an empty model.
         if is_map(schema) {
+            if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
+                if let Some(variants) = value.one_of.as_ref().or(value.any_of.as_ref()) {
+                    let value_name = format!("{name}Value");
+                    let mut members: Vec<TypeRef> = variants
+                        .iter()
+                        .enumerate()
+                        .map(|(index, variant)| {
+                            self.variant_ref(&value_name, index, variant, variants)
+                        })
+                        .collect();
+                    members.dedup();
+                    self.push_alias(
+                        &value_name,
+                        naming::module_name(&value_name),
+                        TypeRef::Union(members),
+                        clean_doc(value.description.as_deref()),
+                    );
+                    self.push_alias(
+                        name,
+                        module,
+                        TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(TypeRef::Named(value_name)),
+                        ),
+                        docstring,
+                    );
+                    return;
+                }
+            }
             self.push_alias(name, module, full_type_ref(schema), docstring);
             return;
         }
@@ -4301,6 +4523,21 @@ impl Builder<'_> {
                     Box::new(TypeRef::Primitive(Prim::Str)),
                     Box::new(TypeRef::Primitive(Prim::Any)),
                 ),
+                docstring,
+            );
+            return;
+        }
+
+        if schema
+            .ty
+            .as_ref()
+            .and_then(|ty| ty.primary())
+            .is_some_and(|ty| ty != "object" && ty != "array")
+        {
+            self.push_alias(
+                name,
+                module,
+                full_type_ref_resolved(schema, self.schemas),
                 docstring,
             );
             return;
@@ -4377,7 +4614,14 @@ impl Builder<'_> {
         let required: Vec<&str> = schema
             .required
             .iter()
-            .chain(schema.all_of.iter().flatten().flat_map(|m| &m.required))
+            .chain(
+                schema
+                    .all_of
+                    .iter()
+                    .flatten()
+                    .filter(|member| !member.properties.is_empty())
+                    .flat_map(|member| &member.required),
+            )
             .map(String::as_str)
             .collect();
         let declared_fields: std::collections::HashSet<&str> = schema
@@ -4416,6 +4660,13 @@ impl Builder<'_> {
             }
         }
         self.collect_fields(name, schema, &required, &mut fields);
+        if let Some(example) = schema_example(schema).and_then(serde_json::Value::as_object) {
+            for field in &mut fields {
+                if let Some(value) = example.get(&field.wire_name) {
+                    field.example = example_literal(value);
+                }
+            }
+        }
         if flatten_bases {
             for member in schema.all_of.iter().flatten() {
                 let Some(base) = member
@@ -4449,6 +4700,10 @@ impl Builder<'_> {
             module,
             bases,
             fields,
+            example_fields: schema_example(schema)
+                .and_then(serde_json::Value::as_object)
+                .map(|example| example.keys().cloned().collect())
+                .unwrap_or_default(),
             docstring,
         }));
         self.building_types.remove(name);
@@ -4743,7 +4998,7 @@ impl Builder<'_> {
                         );
                         return TypeRef::List(Box::new(TypeRef::Named(name)));
                     }
-                    if items.reference.is_none() && !items.properties.is_empty() {
+                    if items.reference.is_none() && is_inline_struct(items) {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
                         let module = naming::module_name(&name);
                         self.add_object(
@@ -4904,6 +5159,8 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
                 .keys()
                 .find(|candidate| {
                     candidate.as_str() != "resource_list"
+                        && candidate.as_str() != "metadata"
+                        && candidate.as_str() != "url"
                         && siblings
                             .iter()
                             .filter(|sibling| sibling.properties.contains_key(*candidate))
@@ -5327,7 +5584,13 @@ fn is_unknown(schema: &Schema) -> bool {
 /// omit `type: string` on an enum whose values are all strings; Fern still treats
 /// that as a string enum.
 fn string_enum_values(schema: &Schema) -> Option<Vec<String>> {
-    let values = schema.enum_values.as_ref()?;
+    let const_values;
+    let values = if let Some(values) = schema.enum_values.as_ref() {
+        values
+    } else {
+        const_values = vec![schema.const_value.clone()?];
+        &const_values
+    };
     if !is_string_type(schema) {
         let omitted_type = schema.ty.is_none();
         let all_strings = values.iter().all(serde_json::Value::is_string);
@@ -5523,16 +5786,177 @@ fn example_literal(value: &serde_json::Value) -> Option<String> {
 mod tests {
     use super::{
         array_item_type_ref, auth_model, base_type_ref, build_endpoint, build_enum,
-        described_all_of_ref, endpoint_module, environment_model, extensible_enum,
-        full_type_ref_resolved, global_headers, int_prim, method_from_grouped_id,
-        module_from_grouped_id, module_identifier, oauth_scope_enum, optional_type_ref,
-        parameter_example, path_group, property_description, query_parameter_example, ref_to_class,
-        request_and_response_refs_match, request_schema_use_count, resolve_request_body,
-        resolve_schema_pointer, response_schema, scalar_body, success_response_entry,
-        synthesized_method_name, title_from_tag, variant_class_name, Auth, Builder, InlineHoister,
-        Prim, RequestBody, TypeDecl, TypeRef,
+        described_all_of_ref, discriminant_strips, endpoint_module, environment_model,
+        extensible_enum, full_type_ref_resolved, global_headers, hoist_fields, int_prim,
+        member_fields, method_from_grouped_id, module_from_grouped_id, module_identifier,
+        oauth_scope_enum, optional_type_ref, parameter_example, path_group, property_description,
+        query_parameter_example, ref_to_class, request_and_response_refs_match,
+        request_schema_use_count, resolve_request_body, resolve_schema_pointer, response_schema,
+        scalar_body, success_response_entry, synthesized_method_name, title_from_tag,
+        variant_class_name, Auth, Builder, Field, InlineHoister, ObjectType, Prim, RequestBody,
+        TypeDecl, TypeRef,
     };
     use crate::openapi::{OpenApi, Operation, Parameter, Response, Schema, TypeField};
+
+    fn object_field(name: &str, required: bool, type_ref: TypeRef) -> Field {
+        Field {
+            wire_name: name.to_string(),
+            py_name: name.to_string(),
+            type_ref,
+            optional: !required,
+            nullable: false,
+            spec_required: required,
+            docstring: None,
+            example: None,
+        }
+    }
+
+    #[test]
+    fn hoisted_request_fields_include_recursive_bases_in_fern_orders() {
+        let primitive = TypeRef::Primitive(Prim::Str);
+        let types = vec![
+            TypeDecl::Object(ObjectType {
+                name: "GrandBase".to_string(),
+                module: "grand_base".to_string(),
+                bases: Vec::new(),
+                fields: vec![
+                    object_field("grand_optional", false, primitive.clone()),
+                    object_field("grand_required", true, primitive.clone()),
+                ],
+                example_fields: std::collections::HashSet::new(),
+                docstring: None,
+            }),
+            TypeDecl::Object(ObjectType {
+                name: "Base".to_string(),
+                module: "base".to_string(),
+                bases: vec!["GrandBase".to_string()],
+                fields: vec![
+                    object_field("base_optional", false, primitive.clone()),
+                    object_field("base_required", true, primitive.clone()),
+                ],
+                example_fields: std::collections::HashSet::new(),
+                docstring: None,
+            }),
+            TypeDecl::Object(ObjectType {
+                name: "Child".to_string(),
+                module: "child".to_string(),
+                bases: vec!["Base".to_string()],
+                fields: vec![object_field("child", true, primitive)],
+                example_fields: std::collections::HashSet::new(),
+                docstring: None,
+            }),
+        ];
+
+        let fields = hoist_fields("Child", &types).expect("child object is present");
+        assert_eq!(
+            fields
+                .iter()
+                .map(|field| (field.wire_name.as_str(), field.reference_order))
+                .collect::<Vec<_>>(),
+            [
+                ("child", 4),
+                ("base_optional", 1),
+                ("base_required", 0),
+                ("grand_optional", 3),
+                ("grand_required", 2),
+            ]
+        );
+        assert!(fields
+            .iter()
+            .all(|field| { field.collision_prefix.as_deref() == Some("child") && !field.convert }));
+        assert!(hoist_fields("Missing", &types).is_none());
+    }
+
+    #[test]
+    fn discriminated_member_helpers_walk_nested_schemas_and_allof_bases() {
+        let schemas: indexmap::IndexMap<String, Schema> =
+            serde_json::from_value(serde_json::json!({
+                "Base": {
+                    "type": "object",
+                    "required": ["baseValue"],
+                    "properties": {
+                        "kind": {"type": "string"},
+                        "baseValue": {"type": "string", "enum": ["one", "two"]}
+                    }
+                },
+                "Cat": {
+                    "allOf": [
+                        {"$ref": "#/components/schemas/Base"},
+                        {
+                            "type": "object",
+                            "required": ["kind", "lives"],
+                            "properties": {
+                                "kind": {"type": "string", "enum": ["cat"]},
+                                "lives": {"type": "integer", "example": 9}
+                            }
+                        }
+                    ]
+                },
+                "Dog": {
+                    "type": "object",
+                    "required": ["kind"],
+                    "properties": {
+                        "kind": {"type": "string", "enum": ["dog"]},
+                        "name": {"type": ["string", "null"], "readOnly": true}
+                    }
+                },
+                "Bird": {
+                    "required": ["type"],
+                    "properties": {"type": {"type": "string", "example": "bird"}}
+                },
+                "Fish": {
+                    "required": ["type"],
+                    "properties": {"type": {"type": "string", "example": "fish"}}
+                },
+                "Inferred": {
+                    "oneOf": [
+                        {"$ref": "#/components/schemas/Bird"},
+                        {"$ref": "#/components/schemas/Fish"}
+                    ]
+                },
+                "Envelope": {
+                    "type": "object",
+                    "properties": {
+                        "payload": {
+                            "oneOf": [
+                                {"$ref": "#/components/schemas/Cat"},
+                                {"$ref": "#/components/schemas/Dog"}
+                            ],
+                            "discriminator": {
+                                "propertyName": "kind",
+                                "mapping": {
+                                    "cat": "#/components/schemas/Cat",
+                                    "dog": "#/components/schemas/Dog"
+                                }
+                            }
+                        }
+                    }
+                }
+            }))
+            .expect("schemas deserialize");
+
+        let strips = discriminant_strips(&schemas);
+        assert_eq!(strips.get("Cat").map(String::as_str), Some("kind"));
+        assert_eq!(strips.get("Dog").map(String::as_str), Some("kind"));
+        assert_eq!(strips.get("Bird").map(String::as_str), Some("type"));
+        assert_eq!(strips.get("Fish").map(String::as_str), Some("type"));
+
+        let cat = member_fields(&schemas["Cat"], "kind", &schemas);
+        assert_eq!(
+            cat.iter()
+                .map(|field| field.wire_name.as_str())
+                .collect::<Vec<_>>(),
+            ["baseValue", "lives"]
+        );
+        assert!(matches!(cat[0].type_ref, TypeRef::Named(ref name) if name == "BaseBaseValue"));
+        assert_eq!(cat[1].example.as_deref(), Some("9"));
+
+        let dog = member_fields(&schemas["Dog"], "kind", &schemas);
+        assert_eq!(dog.len(), 1);
+        assert_eq!(dog[0].wire_name, "name");
+        assert!(dog[0].optional);
+        assert!(dog[0].nullable);
+    }
 
     #[test]
     fn integer_formats_select_distinct_ir_primitives() {
@@ -6444,6 +6868,41 @@ mod tests {
             ),
             "PetResourceList"
         );
+
+        let asset_base = schema(serde_json::json!({
+            "properties": {"assets": {"type": "array"}}
+        }));
+        let asset_detail = schema(serde_json::json!({
+            "properties": {
+                "assets": {"type": "array"},
+                "assets_detail": {"type": "string"}
+            }
+        }));
+        let asset_tail = schema(serde_json::json!({
+            "properties": {
+                "assets": {"type": "array"},
+                "assets_summary": {"type": "string"}
+            }
+        }));
+        let asset_siblings = [asset_base, asset_detail, asset_tail.clone()];
+        assert_eq!(
+            variant_class_name("Portfolio", 2, &asset_tail, &asset_siblings),
+            "PortfolioAssets"
+        );
+
+        let portfolio_a = schema(serde_json::json!({
+            "properties": {"portfolios": {"type": "array"}}
+        }));
+        let portfolio_b = portfolio_a.clone();
+        assert_eq!(
+            variant_class_name(
+                "Result",
+                1,
+                &portfolio_b,
+                &[portfolio_a, portfolio_b.clone()]
+            ),
+            "ResultOne"
+        );
     }
 
     #[test]
@@ -6481,6 +6940,58 @@ mod tests {
             TypeRef::Primitive(Prim::Long)
         );
         assert_eq!(builder.types.len(), emitted);
+    }
+
+    #[test]
+    fn map_with_union_values_emits_a_value_union_and_named_dict_alias() {
+        let schemas = indexmap::IndexMap::new();
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas: &schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        let map = schema(serde_json::json!({
+            "type": "object",
+            "description": "Values by key.",
+            "additionalProperties": {
+                "description": "A scalar or structured value.",
+                "oneOf": [
+                    {"type": "string"},
+                    {
+                        "type": "object",
+                        "properties": {"count": {"type": "integer"}}
+                    },
+                    {"type": "string"}
+                ]
+            }
+        }));
+
+        builder.add_named("Values", &map);
+        assert_eq!(builder.types.len(), 3);
+        assert!(matches!(
+            &builder.types[0],
+            TypeDecl::Object(object) if object.name == "ValuesValueCount"
+        ));
+        assert!(matches!(
+            &builder.types[1],
+            TypeDecl::Alias(alias)
+                if alias.name == "ValuesValue"
+                    && alias.docstring.as_deref() == Some("A scalar or structured value.")
+                    && matches!(&alias.target, TypeRef::Union(members) if members.len() == 3)
+        ));
+        assert!(matches!(
+            &builder.types[2],
+            TypeDecl::Alias(alias)
+                if alias.name == "Values"
+                    && alias.docstring.as_deref() == Some("Values by key.")
+                    && matches!(
+                        &alias.target,
+                        TypeRef::Dict(key, value)
+                            if matches!(&**key, TypeRef::Primitive(Prim::Str))
+                                && matches!(&**value, TypeRef::Named(name) if name == "ValuesValue")
+                    )
+        ));
     }
 
     #[test]
@@ -6882,6 +7393,21 @@ mod tests {
                 &[],
             ),
             TypeRef::Primitive(Prim::Bool)
+        );
+        let array_variant = schema(serde_json::json!({
+            "type": "array",
+            "items": { "type": "object", "properties": { "id": { "type": "string" } } }
+        }));
+        assert_eq!(
+            hoister.hoist_union_variant(
+                "GetShapeResponse",
+                0,
+                &array_variant,
+                std::slice::from_ref(&array_variant),
+            ),
+            TypeRef::List(Box::new(TypeRef::Named(
+                "GetShapeResponseZeroItem".to_string()
+            )))
         );
     }
 

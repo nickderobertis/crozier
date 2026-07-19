@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "frankfurter",
+  "corpus_spec_ref": "e8b3311fe0f3d86b18d5c08b22dca707fb010d1c",
+  "corpus_spec_url": "https://raw.githubusercontent.com/lineofflight/frankfurter/e8b3311fe0f3d86b18d5c08b22dca707fb010d1c/lib/public/v2/openapi.json"
+}
