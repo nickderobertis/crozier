@@ -2016,7 +2016,7 @@ fn build_endpoint(
             .and_then(|(_, media)| media.schema.as_ref())
             .filter(|schema| schema.reference.is_none())
             .and_then(|schema| declared_doc(schema.description.as_deref())),
-        body_codegen_named: op.codegen_request_body_name.is_some(),
+        body_codegen_named: uses_codegen_request_body_name(op),
         body_description_empty: op.request_body.as_ref().is_some_and(|body| {
             body.description
                 .as_deref()
@@ -2388,6 +2388,10 @@ fn request_and_response_refs_match(op: &Operation) -> bool {
         .and_then(|schema| schema.reference.as_deref());
     let response_ref = success_response_schema(op).and_then(|schema| schema.reference.as_deref());
     request_ref.is_some() && request_ref == response_ref
+}
+
+fn uses_codegen_request_body_name(op: &Operation) -> bool {
+    op.codegen_request_body_name.is_some() && !op.responses.contains_key("2XX")
 }
 
 fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
@@ -3782,7 +3786,10 @@ fn success_response_entry(op: &Operation) -> Option<&Response> {
         .or_else(|| {
             op.responses
                 .iter()
-                .find(|(code, _)| code.starts_with('2'))
+                .find(|(code, _)| {
+                    code.parse::<u16>()
+                        .is_ok_and(|status| (200..300).contains(&status))
+                })
                 .map(|(_, response)| response)
         })
         .or_else(|| {
@@ -4476,12 +4483,24 @@ impl Builder<'_> {
         if !is_map(schema) {
             if let Some(variants) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
                 if variants.len() == 1 && is_inline_object(&variants[0]) {
-                    self.add_object(
-                        name,
-                        module,
-                        &variants[0],
-                        clean_doc(variants[0].description.as_deref()).or(docstring),
-                    );
+                    if variants[0].required.is_empty() {
+                        for (prop, prop_schema) in &variants[0].properties {
+                            self.field_type_ref(name, prop, prop_schema);
+                        }
+                        self.push_alias(
+                            name,
+                            module,
+                            TypeRef::Union(vec![TypeRef::Primitive(Prim::Any)]),
+                            docstring,
+                        );
+                    } else {
+                        self.add_object(
+                            name,
+                            module,
+                            &variants[0],
+                            clean_doc(variants[0].description.as_deref()).or(docstring),
+                        );
+                    }
                     return;
                 }
                 let mut members: Vec<TypeRef> = variants
@@ -4505,6 +4524,25 @@ impl Builder<'_> {
         // map, which Fern emits as a `Dict[..]` alias rather than an empty model.
         if is_map(schema) {
             if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
+                if is_inline_struct(value) {
+                    let value_name = format!("{name}Value");
+                    self.add_object(
+                        &value_name,
+                        naming::module_name(&value_name),
+                        value,
+                        clean_doc(value.description.as_deref()),
+                    );
+                    self.push_alias(
+                        name,
+                        module,
+                        TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(TypeRef::Named(value_name)),
+                        ),
+                        docstring,
+                    );
+                    return;
+                }
                 if let Some(variants) = value.one_of.as_ref().or(value.any_of.as_ref()) {
                     let value_name = format!("{name}Value");
                     let mut members: Vec<TypeRef> = variants
@@ -4963,7 +5001,11 @@ impl Builder<'_> {
             // `{Owner}{Prop}` (Fern: `Meta.cursors` → `MetaCursors`), rather than
             // degrading to `typing.Any`. A bare `type: object` map (no properties
             // declaration) is left to `base_type_ref`.
-            if is_inline_struct(prop_schema) && single_all_of_ref(prop_schema).is_none() {
+            if is_inline_struct(prop_schema)
+                && single_all_of_ref(prop_schema).is_none()
+                && prop_schema.one_of.is_none()
+                && prop_schema.any_of.is_none()
+            {
                 let name = format!("{owner}{}", naming::class_name(prop));
                 let module = naming::module_name(&name);
                 self.add_object(
@@ -5096,6 +5138,9 @@ impl Builder<'_> {
                         return base_type_ref(member);
                     }
                     let name = format!("{owner}{}", naming::class_name(prop));
+                    for (nested_prop, nested_schema) in &prop_schema.properties {
+                        self.field_type_ref(&name, nested_prop, nested_schema);
+                    }
                     let mut variants: Vec<TypeRef> = members
                         .iter()
                         .enumerate()
@@ -5249,7 +5294,7 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
         unique
     };
     let fallback = shared_first.and_then(|shared| {
-        if shared == "portfolios" {
+        if matches!(shared.as_str(), "content" | "portfolios") {
             return None;
         }
         if shared == "assets" {
@@ -6709,6 +6754,17 @@ mod tests {
                 .and_then(|response| response.description.as_deref()),
             Some("complete")
         );
+        let ranged_only = operation(serde_json::json!({
+            "responses": {
+                "2XX": { "description": "ranged" },
+                "default": { "description": "fallback" }
+            }
+        }));
+        assert_eq!(
+            success_response_entry(&ranged_only)
+                .and_then(|response| response.description.as_deref()),
+            Some("fallback")
+        );
 
         for media_type in ["application/json", "*/*"] {
             let mixed = operation(serde_json::json!({
@@ -6778,6 +6834,19 @@ mod tests {
 
     #[test]
     fn request_reference_helpers_cover_absent_mismatched_and_reused_schemas() {
+        let codegen_named = operation(serde_json::json!({
+            "x-codegen-request-body-name": "query",
+            "responses": {"200": {}}
+        }));
+        assert!(super::uses_codegen_request_body_name(&codegen_named));
+        let ranged_codegen_named = operation(serde_json::json!({
+            "x-codegen-request-body-name": "query",
+            "responses": {"2XX": {}, "default": {}}
+        }));
+        assert!(!super::uses_codegen_request_body_name(
+            &ranged_codegen_named
+        ));
+
         let reference = "#/components/schemas/Input";
         let doc: OpenApi = serde_json::from_value(serde_json::json!({
             "paths": {
@@ -6988,6 +7057,25 @@ mod tests {
             ),
             "ResultOne"
         );
+
+        let content_a = schema(serde_json::json!({
+            "properties": {
+                "content": {"type": "string"},
+                "public_key": {"type": "string"}
+            }
+        }));
+        let content_b = schema(serde_json::json!({
+            "properties": {"content": {"type": "string"}}
+        }));
+        assert_eq!(
+            variant_class_name(
+                "Attestation",
+                1,
+                &content_b,
+                &[content_a, content_b.clone()]
+            ),
+            "AttestationOne"
+        );
     }
 
     #[test]
@@ -7039,6 +7127,35 @@ mod tests {
         assert!(builder.types.iter().any(
             |declaration| matches!(declaration, TypeDecl::Alias(alias) if alias.name == "RecordSize")
         ));
+
+        let conditional_object = schema(serde_json::json!({
+            "type": "object",
+            "properties": {
+                "left": {
+                    "type": "object",
+                    "properties": {"value": {"type": "string"}}
+                },
+                "right": {"type": "string"}
+            },
+            "oneOf": [
+                {"required": ["left"]},
+                {"required": ["right"]}
+            ]
+        }));
+        assert_eq!(
+            builder.field_type_ref("Record", "conditional", &conditional_object),
+            TypeRef::Named("RecordConditional".to_string())
+        );
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Alias(alias)
+                if alias.name == "RecordConditional"
+                    && alias.target == TypeRef::Union(vec![TypeRef::Primitive(Prim::Any)])
+        )));
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Object(object) if object.name == "RecordConditionalLeft"
+        )));
     }
 
     #[test]
@@ -7091,6 +7208,27 @@ mod tests {
                                 && matches!(&**value, TypeRef::Named(name) if name == "ValuesValue")
                     )
         ));
+
+        let object_map = schema(serde_json::json!({
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {"id": {"type": "string"}},
+                "required": ["id"]
+            }
+        }));
+        builder.add_named("Records", &object_map);
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Object(object) if object.name == "RecordsValue"
+        )));
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Alias(alias)
+                if alias.name == "Records"
+                    && matches!(&alias.target, TypeRef::Dict(_, value)
+                        if matches!(&**value, TypeRef::Named(name) if name == "RecordsValue"))
+        )));
     }
 
     #[test]
@@ -7137,6 +7275,27 @@ mod tests {
                     && object.docstring.as_deref() == Some("A wrapped record.")
                     && object.fields.len() == 1
                     && object.fields[0].wire_name == "value"
+        )));
+
+        let optional_only = schema(serde_json::json!({
+            "oneOf": [{
+                "type": "object",
+                "properties": {"value": {
+                    "type": "object",
+                    "properties": {"id": {"type": "string"}}
+                }}
+            }]
+        }));
+        builder.add_named("OptionalOnly", &optional_only);
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Alias(alias)
+                if alias.name == "OptionalOnly"
+                    && alias.target == TypeRef::Union(vec![TypeRef::Primitive(Prim::Any)])
+        )));
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Object(object) if object.name == "OptionalOnlyValue"
         )));
     }
 
