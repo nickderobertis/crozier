@@ -2354,7 +2354,7 @@ fn body_response_same_ref(doc: &OpenApi, op: &Operation) -> bool {
             })
         })
     });
-    if !oauth2 && effective_security.is_some_and(|reqs| reqs.iter().any(|r| !r.is_empty())) {
+    if !oauth2 && effective_security.is_some_and(|reqs| reqs.iter().all(|r| !r.is_empty())) {
         return false;
     }
     request_and_response_refs_match(op)
@@ -3778,14 +3778,19 @@ fn success_response_schema(op: &Operation) -> Option<&Schema> {
 
 fn success_response_entry(op: &Operation) -> Option<&Response> {
     op.responses
-        .iter()
-        .find(|(code, _)| code.starts_with('2'))
+        .get("200")
+        .or_else(|| {
+            op.responses
+                .iter()
+                .find(|(code, _)| code.starts_with('2'))
+                .map(|(_, response)| response)
+        })
         .or_else(|| {
             op.responses
                 .iter()
                 .find(|(code, _)| code.as_str() == "default")
+                .map(|(_, response)| response)
         })
-        .map(|(_, response)| response)
 }
 
 fn response_schema(response: &Response) -> Option<&Schema> {
@@ -4363,6 +4368,7 @@ fn member_fields(
     schema: &Schema,
     discriminant: &str,
     schemas: &IndexMap<String, Schema>,
+    owner: Option<&str>,
 ) -> Vec<Field> {
     let required: Vec<&str> = schema
         .required
@@ -4390,7 +4396,7 @@ fn member_fields(
             append_member_fields(member, discriminant, &required, None, &mut fields);
         }
     }
-    append_member_fields(schema, discriminant, &required, None, &mut fields);
+    append_member_fields(schema, discriminant, &required, owner, &mut fields);
     fields
 }
 
@@ -4407,7 +4413,14 @@ fn append_member_fields(
             continue;
         }
         let spec_required = required.contains(&prop.as_str());
-        let type_ref = if string_enum_values(prop_schema).is_some() {
+        let type_ref = if prop_schema.one_of.is_some() || prop_schema.any_of.is_some() {
+            enum_owner
+                .filter(|_| simple_nullable_primitive_member(prop_schema).is_none())
+                .map_or_else(
+                    || base_type_ref(prop_schema),
+                    |owner| TypeRef::Named(format!("{owner}{}", naming::class_name(prop))),
+                )
+        } else if string_enum_values(prop_schema).is_some() {
             enum_owner.map_or_else(
                 || base_type_ref(prop_schema),
                 |owner| TypeRef::Named(format!("{owner}{}", naming::class_name(prop))),
@@ -4428,6 +4441,22 @@ fn append_member_fields(
     }
 }
 
+fn simple_nullable_primitive_member(schema: &Schema) -> Option<&Schema> {
+    let members = schema.any_of.as_ref().or(schema.one_of.as_ref())?;
+    let non_null: Vec<&Schema> = members
+        .iter()
+        .filter(|member| member.ty.as_ref().and_then(TypeField::primary) != Some("null"))
+        .collect();
+    (non_null.len() == 1
+        && non_null.len() != members.len()
+        && matches!(
+            non_null[0].ty.as_ref().and_then(TypeField::primary),
+            Some("string" | "integer" | "number" | "boolean")
+        )
+        && non_null[0].enum_values.is_none())
+    .then_some(non_null[0])
+}
+
 impl Builder<'_> {
     /// Classify one named schema and push it (plus any hoisted types).
     fn add_named(&mut self, name: &str, schema: &Schema) {
@@ -4446,6 +4475,15 @@ impl Builder<'_> {
         // and collapse structurally identical alternatives.
         if !is_map(schema) {
             if let Some(variants) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
+                if variants.len() == 1 && is_inline_object(&variants[0]) {
+                    self.add_object(
+                        name,
+                        module,
+                        &variants[0],
+                        clean_doc(variants[0].description.as_deref()).or(docstring),
+                    );
+                    return;
+                }
                 let mut members: Vec<TypeRef> = variants
                     .iter()
                     .enumerate()
@@ -4806,8 +4844,8 @@ impl Builder<'_> {
                     .get(&property_name)
                     .and_then(discriminant_value)?;
                 let variant_name = format!("{name}{}", naming::class_name(&value));
-                if let Some(target_name) = target_name {
-                    variant_targets.push(target_name);
+                if let Some(target_name) = &target_name {
+                    variant_targets.push(target_name.clone());
                 } else {
                     let mut standalone = variant.clone();
                     standalone.properties.shift_remove(&property_name);
@@ -4821,7 +4859,12 @@ impl Builder<'_> {
                 members.push(UnionMember {
                     class_name: format!("{name}_{}", naming::class_name(&value)),
                     discriminant: value,
-                    fields: member_fields(target, &property_name, self.schemas),
+                    fields: member_fields(
+                        target,
+                        &property_name,
+                        self.schemas,
+                        target_name.as_deref(),
+                    ),
                     docstring: variant
                         .reference
                         .is_none()
@@ -4849,7 +4892,12 @@ impl Builder<'_> {
                 // coincide only when the mapping key equals the schema name.
                 class_name: format!("{name}_{}", naming::class_name(value)),
                 discriminant: value.clone(),
-                fields: member_fields(target, &property_name, self.schemas),
+                fields: member_fields(
+                    target,
+                    &property_name,
+                    self.schemas,
+                    Some(&naming::class_name(target_key)),
+                ),
                 docstring: docstring.clone(),
             });
             variant_targets.push(naming::class_name(target_key));
@@ -5033,15 +5081,19 @@ impl Builder<'_> {
                             member.ty.as_ref().and_then(TypeField::primary) != Some("null")
                         })
                         .collect();
-                    if non_null.len() == 1
-                        && non_null.len() != members.len()
-                        && matches!(
-                            non_null[0].ty.as_ref().and_then(TypeField::primary),
-                            Some("string" | "integer" | "number" | "boolean")
-                        )
-                        && non_null[0].enum_values.is_none()
-                    {
-                        return base_type_ref(non_null[0]);
+                    if non_null.len() == 1 && non_null.len() != members.len() {
+                        let name = format!("{owner}{}", naming::class_name(prop));
+                        let module = naming::module_name(&name);
+                        if let Some(mut decl) =
+                            self.discriminated_union(&name, &module, non_null[0], None)
+                        {
+                            decl.docstring = clean_doc(prop_schema.description.as_deref());
+                            self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                            return TypeRef::Named(name);
+                        }
+                    }
+                    if let Some(member) = simple_nullable_primitive_member(prop_schema) {
+                        return base_type_ref(member);
                     }
                     let name = format!("{owner}{}", naming::class_name(prop));
                     let mut variants: Vec<TypeRef> = members
@@ -5957,7 +6009,7 @@ mod tests {
         assert_eq!(strips.get("Bird").map(String::as_str), Some("type"));
         assert_eq!(strips.get("Fish").map(String::as_str), Some("type"));
 
-        let cat = member_fields(&schemas["Cat"], "kind", &schemas);
+        let cat = member_fields(&schemas["Cat"], "kind", &schemas, Some("Cat"));
         assert_eq!(
             cat.iter()
                 .map(|field| field.wire_name.as_str())
@@ -5967,7 +6019,7 @@ mod tests {
         assert!(matches!(cat[0].type_ref, TypeRef::Named(ref name) if name == "BaseBaseValue"));
         assert_eq!(cat[1].example.as_deref(), Some("9"));
 
-        let dog = member_fields(&schemas["Dog"], "kind", &schemas);
+        let dog = member_fields(&schemas["Dog"], "kind", &schemas, Some("Dog"));
         assert_eq!(dog.len(), 1);
         assert_eq!(dog[0].wire_name, "name");
         assert!(dog[0].optional);
@@ -6646,6 +6698,18 @@ mod tests {
         assert!(!super::has_bodyless_success(&text));
         assert_eq!(success_response_entry(&text).unwrap().content.len(), 1);
 
+        let out_of_order = operation(serde_json::json!({
+            "responses": {
+                "202": { "description": "accepted" },
+                "200": { "description": "complete" }
+            }
+        }));
+        assert_eq!(
+            success_response_entry(&out_of_order)
+                .and_then(|response| response.description.as_deref()),
+            Some("complete")
+        );
+
         for media_type in ["application/json", "*/*"] {
             let mixed = operation(serde_json::json!({
                 "responses": {
@@ -6755,6 +6819,11 @@ mod tests {
             } } } }
         }));
         assert!(request_and_response_refs_match(&matching));
+        let optional_auth_doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "security": [{}, {"unresolvedOauth": ["scope"]}]
+        }))
+        .expect("optional security deserializes");
+        assert!(super::body_response_same_ref(&optional_auth_doc, &matching));
         let mismatched = operation(serde_json::json!({
             "requestBody": { "content": { "application/json": {
                 "schema": { "$ref": reference }
@@ -7051,6 +7120,24 @@ mod tests {
                 if alias.name == "Results"
                     && alias.target == TypeRef::List(Box::new(TypeRef::Named("ResultsItem".to_string())))
         )));
+
+        let single_object = schema(serde_json::json!({
+            "description": "A wrapped record.",
+            "oneOf": [{
+                "type": "object",
+                "properties": { "value": { "type": "string" } },
+                "required": ["value"]
+            }]
+        }));
+        builder.add_named("Wrapped", &single_object);
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Object(object)
+                if object.name == "Wrapped"
+                    && object.docstring.as_deref() == Some("A wrapped record.")
+                    && object.fields.len() == 1
+                    && object.fields[0].wire_name == "value"
+        )));
     }
 
     #[test]
@@ -7122,6 +7209,34 @@ mod tests {
         let mut targets = union.variant_targets;
         targets.sort();
         assert_eq!(targets, ["Cat", "Dog"]);
+
+        let nullable_mapped = schema(serde_json::json!({
+            "anyOf": [{
+                "oneOf": [
+                    { "$ref": "#/components/schemas/Cat" },
+                    { "$ref": "#/components/schemas/Dog" }
+                ],
+                "discriminator": {
+                    "propertyName": "kind",
+                    "mapping": {
+                        "feline": "#/components/schemas/Cat",
+                        "canine": "#/components/schemas/Dog"
+                    }
+                }
+            }, { "type": "null" }],
+            "description": "An optional pet."
+        }));
+        assert_eq!(
+            mapped_builder.field_type_ref("Owner", "pet", &nullable_mapped),
+            TypeRef::Named("OwnerPet".to_string())
+        );
+        assert!(mapped_builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::DiscriminatedUnion(union)
+                if union.name == "OwnerPet"
+                    && union.discriminant_property == "kind"
+                    && union.docstring.as_deref() == Some("An optional pet.")
+        )));
 
         let missing_target = schema(serde_json::json!({
             "oneOf": [{ "$ref": "#/components/schemas/Missing" }],
