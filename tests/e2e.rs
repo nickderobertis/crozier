@@ -13656,10 +13656,10 @@ const SUMUP: Corpus = Corpus {
     matched: &[],
 };
 
-/// `ory-kratos`: Ory's identity API exercises discriminated oneOf unions and
-/// complex schema-valued maps. Fern accepts the raw pinned spec.
-const ORY_KRATOS: Corpus = Corpus {
-    api: "ory-kratos",
+/// `letta`: Letta's agent API combines SSE responses, implicit discriminators,
+/// deeply nested unions, and a map whose values are a union.
+const LETTA: Corpus = Corpus {
+    api: "letta",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13669,10 +13669,23 @@ const ORY_KRATOS: Corpus = Corpus {
     matched: &[],
 };
 
-/// `commercetools-checkout`: the production Checkout API stresses deeply
-/// nested allOf composition, discriminated unions, and schema-valued maps.
-const COMMERCETOOLS_CHECKOUT: Corpus = Corpus {
-    api: "commercetools-checkout",
+/// `titiler-openeo`: the deployed TiTiler API exercises JSON Schema `not`,
+/// mixed composition, and ranged error responses.
+const TITILER_OPENEO: Corpus = Corpus {
+    api: "titiler-openeo",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `keycloak-admin`: Keycloak's Admin API uses literal `2XX` response ranges
+/// across its operation surface.
+const KEYCLOAK_ADMIN: Corpus = Corpus {
+    api: "keycloak-admin",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13788,13 +13801,18 @@ fn sumup_matches_fern_output() {
 }
 
 #[test]
-fn ory_kratos_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ORY_KRATOS);
+fn letta_matches_fern_output() {
+    assert_link_ok_corpus_matches(&LETTA);
 }
 
 #[test]
-fn commercetools_checkout_matches_fern_output() {
-    assert_link_ok_corpus_matches(&COMMERCETOOLS_CHECKOUT);
+fn titiler_openeo_matches_fern_output() {
+    assert_link_ok_corpus_matches(&TITILER_OPENEO);
+}
+
+#[test]
+fn keycloak_admin_matches_fern_output() {
+    assert_link_ok_corpus_matches(&KEYCLOAK_ADMIN);
 }
 
 #[test]

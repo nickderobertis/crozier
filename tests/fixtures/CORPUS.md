@@ -1,6 +1,6 @@
 # Canonical real-world OpenAPI corpus (issue #77)
 
-This manifest tracks 76 real-world OpenAPI specs with redistribution-compatible
+This manifest tracks 77 real-world OpenAPI specs with redistribution-compatible
 license metadata. `decision` is `link-ok` when the permissively licensed source
 is fetched at generation time rather than vendored. Add or change one numbered
 row per feature branch and maintain its golden through the manually dispatched
@@ -83,8 +83,9 @@ row per feature branch and maintain its golden through the manually dispatched
 | 72 | `nimisampo` | github-raw | https://raw.githubusercontent.com/SemanticComputing/nimisampo.fi/34b8d22fff53a3dd531e89277fdb2f98d69dd1d0/src/server/openapi.yaml | `34b8d22fff53a3dd531e89277fdb2f98d69dd1d0` | MIT | link-ok | Deployed NameSampo API with a query parameter carrying `content: { application/json: ... }` and three `allowReserved` parameters |
 | 73 | `free5gc-pdu-session` | github-raw | https://raw.githubusercontent.com/free5gc/openapi/8d0ee35bc671dd9995240c0ff73d4c75075a204a/Nsmf_PDUSession/api/openapi.yaml | `8d0ee35bc671dd9995240c0ff73d4c75075a204a` | Apache-2.0 | link-ok | free5GC PDU Session API with multipart `encoding` properties combining `contentType` and per-part `headers` |
 | 74 | `sumup` | github-raw | https://raw.githubusercontent.com/sumup/sumup-openapi/81d721bb4c34fa666604f50c9cbc8cc2323e25a1/openapi.yaml | `81d721bb4c34fa666604f50c9cbc8cc2323e25a1` | Apache-2.0 | link-ok | SumUp API with 48 `application/problem+json` responses, 14 `readOnly` and 6 `writeOnly` fields on shared models, and `allOf`/`oneOf` composition |
-| 75 | `ory-kratos` | github-raw | https://raw.githubusercontent.com/ory/sdk/566140fd6b28b3f484ea4d1fc15fc8202f4c4350/clients/kratos/go/api/openapi.yaml | `566140fd6b28b3f484ea4d1fc15fc8202f4c4350` | Apache-2.0 | link-ok | Ory Kratos identity API with seven mapped discriminators over `oneOf` unions and schema-valued `additionalProperties` maps |
-| 76 | `commercetools-checkout` | github-raw | https://raw.githubusercontent.com/commercetools/commercetools-api-reference/3da8f4b822245fffefa8a9fcae78b2d9d8eea73d/oas/checkout/openapi.yaml | `3da8f4b822245fffefa8a9fcae78b2d9d8eea73d` | MIT | link-ok | commercetools Checkout API with 141 nested `allOf` compositions, seven discriminator-mapped unions, and complex schema-valued maps |
+| 75 | `letta` | github-raw | https://raw.githubusercontent.com/letta-ai/letta/e3fb00f97009cafe527cde93983cda0dfdd7e574/fern/openapi.json | `e3fb00f97009cafe527cde93983cda0dfdd7e574` | Apache-2.0 | link-ok | Letta API with 10 `text/event-stream` responses, 12 discriminators without mappings, 1 map-of-union schema, and 1,416 `anyOf` plus 87 `oneOf` compositions |
+| 76 | `titiler-openeo` | github-raw | https://raw.githubusercontent.com/sentinel-hub/titiler-openeo/c7453abdd3a2dc97f90ed8ab8b640f66a4a3e53f/titiler/openeo/openapi.yaml | `c7453abdd3a2dc97f90ed8ab8b640f66a4a3e53f` | MIT | link-ok | TiTiler openEO API with three JSON Schema `not` constraints, 42 `allOf`, 11 `oneOf`, 7 `anyOf`, and 77 ranged `4XX`/`5XX` responses |
+| 77 | `keycloak-admin` | api-guru | https://api.apis.guru/v2/specs/keycloak.local/1/openapi.json | `1` | Apache-2.0 | link-ok | Keycloak Admin REST API with 281 literal ranged `2XX` success responses |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -223,15 +224,16 @@ standard workflow for any future source change or Fern upgrade.
 
 ## Batch 6 — composition and media selected (issue #77)
 
-Three new permissively licensed, immutable specs passed native Fern CLI 5.75.4
+Four new permissively licensed, immutable specs passed native Fern CLI 5.75.4
 screening and are registered with empty match manifests. Their workflow-owned
 goldens have not been generated locally.
 
 | name | selected for | status |
 |---|---|---|
 | `sumup` | 48 problem+json responses; shared request/response models with `readOnly` and `writeOnly`; `allOf`/`oneOf` | Fern check passed — golden generation pending |
-| `ory-kratos` | seven discriminated `oneOf` unions and schema-valued maps in a production identity API | Fern check passed — golden generation pending |
-| `commercetools-checkout` | 141 nested `allOf` compositions, seven discriminated unions, and complex maps | Fern check passed — golden generation pending |
+| `letta` | SSE; implicit discriminators; map of unions; deep `anyOf`/`oneOf` | Fern check passed — golden generation pending |
+| `titiler-openeo` | JSON Schema `not`; nested `allOf`/`oneOf`/`anyOf`; ranged error responses | Fern check passed — golden generation pending |
+| `keycloak-admin` | 281 literal ranged `2XX` success responses | Fern check passed — golden generation pending |
 
 ### Screened failures
 
@@ -245,3 +247,9 @@ goldens have not been generated locally.
 | `dapr` | **DROPPED** — Fern reported false success after an OpenAPI parse failure on unresolved `ApiKeyAuth` (do not retry this ref) |
 | `apache-superset` | **DROPPED** — Fern check failed with six response-example and unreferenced path-parameter errors (do not retry this ref) |
 | `xregistry-endpoint` | **DROPPED** — Fern check failed because ten services require auth while the spec defines none (do not retry this ref) |
+| `letta` at `b76b5aeb932873dd5f0642a2ef5d81060f991dd6` | **DROPPED** — Fern check failed on an optional union query parameter; the older registered ref passes (do not retry this ref) |
+| `coinbase-cdp` | **DROPPED** — Fern check failed with nine schema and example validation errors (do not retry this ref) |
+| `pnp-agents-finder` / `pnp-qna` | **DROPPED** — Fern check rejected their invalid `allOf` object extensions (do not retry these refs) |
+| `ably-connector` | **DROPPED** — Fern check rejected three invalid integer defaults (do not retry this ref) |
+| `azure-aro-hcp` | **DROPPED** — Fern check failed with three discriminant and example errors (do not retry this ref) |
+| `assemblyai-autosdk` | **REJECTED** — source license is revenue-limited rather than Apache-2.0/MIT/BSD/CC0 |
