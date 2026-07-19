@@ -2594,7 +2594,7 @@ fn error_body_type(resp: &Response, class: &str) -> TypeRef {
 /// error class itself keeps its `Any` body (see [`error_body_type`]); this type lives
 /// in the package-root `types/`, reachable only through the aggregators.
 fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
-    let mut seen = std::collections::HashSet::new();
+    let mut bodies: IndexMap<String, Schema> = IndexMap::new();
     for (_, item) in &doc.paths {
         for (_, op) in item.operations() {
             for (code, resp) in &op.responses {
@@ -2616,21 +2616,39 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                 };
                 if is_inline_struct(schema) {
                     let name = format!("{class}Body");
-                    if seen.insert(name.clone()) {
-                        builder.add_named(&name, schema);
+                    if let Some(existing) = bodies.get_mut(&name) {
+                        for (property, property_schema) in &schema.properties {
+                            if string_enum_values(property_schema).is_some()
+                                || !existing.properties.contains_key(property)
+                            {
+                                existing
+                                    .properties
+                                    .insert(property.clone(), property_schema.clone());
+                            }
+                        }
+                        for required in &schema.required {
+                            if !existing.required.contains(required) {
+                                existing.required.push(required.clone());
+                            }
+                        }
+                    } else {
+                        bodies.insert(name, schema.clone());
                     }
                 } else if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
                     if let Some(item) = schema.items.as_deref() {
                         if item.reference.is_none() && is_inline_struct(item) {
                             let name = format!("{class}BodyItem");
-                            if seen.insert(name.clone()) {
-                                builder.add_named(&name, item);
+                            if !bodies.contains_key(&name) {
+                                bodies.insert(name, item.clone());
                             }
                         }
                     }
                 }
             }
         }
+    }
+    for (name, schema) in bodies {
+        builder.add_named(&name, &schema);
     }
 }
 
@@ -6403,6 +6421,44 @@ mod tests {
             strips.get("Assistant").map(String::as_str),
             Some("message_type")
         );
+    }
+
+    #[test]
+    fn error_body_hoisting_prefers_the_richest_shape_for_a_status() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "paths": {
+                "/first": { "get": { "responses": { "400": {
+                    "content": { "application/json": { "schema": {
+                        "type": "object", "properties": { "message": { "type": "string" } }
+                    } } }
+                } } } },
+                "/second": { "get": { "responses": { "400": {
+                    "content": { "application/json": { "schema": {
+                        "type": "object", "properties": {
+                            "message": { "type": "string" },
+                            "errorCode": { "type": "string", "enum": ["invalid"] }
+                        }
+                    } } }
+                } } } }
+            }
+        }))
+        .expect("error responses deserialize");
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas: &doc.components.schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        super::hoist_error_body_types(&doc, &mut builder);
+        assert!(builder.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Object(object)
+                if object.name == "BadRequestErrorBody" && object.fields.len() == 2
+        )));
+        assert!(builder.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Enum(value) if value.name == "BadRequestErrorBodyErrorCode"
+        )));
     }
 
     #[test]
