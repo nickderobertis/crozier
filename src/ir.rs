@@ -5027,7 +5027,7 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
             .iter()
             .all(|sibling| sibling.properties.contains_key(*candidate))
     });
-    let unique_required = variant.required.iter().rev().find(|candidate| {
+    let unique_required = variant.properties.keys().rev().find(|candidate| {
         siblings
             .iter()
             .filter(|sibling| sibling.properties.contains_key(*candidate))
