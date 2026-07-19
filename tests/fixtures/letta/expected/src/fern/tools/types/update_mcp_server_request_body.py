@@ -1,0 +1,11 @@
+
+
+import typing
+
+from ...types.letta_schemas_mcp_update_ssemcp_server import LettaSchemasMcpUpdateSsemcpServer
+from ...types.letta_schemas_mcp_update_stdio_mcp_server import LettaSchemasMcpUpdateStdioMcpServer
+from ...types.letta_schemas_mcp_update_streamable_httpmcp_server import LettaSchemasMcpUpdateStreamableHttpmcpServer
+
+UpdateMcpServerRequestBody = typing.Union[
+    LettaSchemasMcpUpdateStdioMcpServer, LettaSchemasMcpUpdateSsemcpServer, LettaSchemasMcpUpdateStreamableHttpmcpServer
+]

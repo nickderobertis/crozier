@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "sigstore-rekor",
+  "corpus_spec_ref": "c6bd8db7b1629104dfe241ad26a838f69199b169",
+  "corpus_spec_url": "https://raw.githubusercontent.com/trailofbits/sigstore-apis/c6bd8db7b1629104dfe241ad26a838f69199b169/openapi/rekor.openapi.json"
+}
