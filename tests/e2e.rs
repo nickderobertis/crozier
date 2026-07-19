@@ -13591,10 +13591,10 @@ const TAMOSS: Corpus = Corpus {
     matched: &[],
 };
 
-/// `light-rest-4j-serialization`: light-rest-4j's OpenAPI contract exercises
-/// matrix, label, and explicit form serialization plus cookies. Fern accepts it.
-const LIGHT_REST_4J_SERIALIZATION: Corpus = Corpus {
-    api: "light-rest-4j-serialization",
+/// `appng-rest-api`: appNG's deployed REST API exercises matrix serialization
+/// and cookie parameters. Fern accepts the raw pinned spec.
+const APPNG_REST_API: Corpus = Corpus {
+    api: "appng-rest-api",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13604,10 +13604,10 @@ const LIGHT_REST_4J_SERIALIZATION: Corpus = Corpus {
     matched: &[],
 };
 
-/// `apideck-file-storage-v10`: Apideck's v10 file-storage API carries JSON in
-/// a parameter-level `content` object. Fern accepts the raw pinned spec.
-const APIDECK_FILE_STORAGE_V10: Corpus = Corpus {
-    api: "apideck-file-storage-v10",
+/// `slurmdb-rest`: UB CCR's SlurmDB REST API exercises label and explicit form
+/// serialization. Fern accepts the raw pinned spec.
+const SLURMDB_REST: Corpus = Corpus {
+    api: "slurmdb-rest",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13617,10 +13617,10 @@ const APIDECK_FILE_STORAGE_V10: Corpus = Corpus {
     matched: &[],
 };
 
-/// `sourcify-signatures`: Sourcify's signature API exercises `allowReserved`
-/// across four query parameters. Fern accepts the raw pinned spec.
-const SOURCIFY_SIGNATURES: Corpus = Corpus {
-    api: "sourcify-signatures",
+/// `nimisampo`: the deployed NameSampo API carries JSON in a parameter-level
+/// `content` object and exercises `allowReserved`. Fern accepts the raw spec.
+const NIMISAMPO: Corpus = Corpus {
+    api: "nimisampo",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13630,10 +13630,10 @@ const SOURCIFY_SIGNATURES: Corpus = Corpus {
     matched: &[],
 };
 
-/// `swift-content-types`: Apple's content-types service example exercises a
-/// multipart property with both a content type and custom part header.
-const SWIFT_CONTENT_TYPES: Corpus = Corpus {
-    api: "swift-content-types",
+/// `free5gc-pdu-session`: free5GC's PDU Session API exercises multipart
+/// properties with both a content type and per-part headers.
+const FREE5GC_PDU_SESSION: Corpus = Corpus {
+    api: "free5gc-pdu-session",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13724,23 +13724,23 @@ fn tamoss_matches_fern_output() {
 }
 
 #[test]
-fn light_rest_4j_serialization_matches_fern_output() {
-    assert_link_ok_corpus_matches(&LIGHT_REST_4J_SERIALIZATION);
+fn appng_rest_api_matches_fern_output() {
+    assert_link_ok_corpus_matches(&APPNG_REST_API);
 }
 
 #[test]
-fn apideck_file_storage_v10_matches_fern_output() {
-    assert_link_ok_corpus_matches(&APIDECK_FILE_STORAGE_V10);
+fn slurmdb_rest_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SLURMDB_REST);
 }
 
 #[test]
-fn sourcify_signatures_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SOURCIFY_SIGNATURES);
+fn nimisampo_matches_fern_output() {
+    assert_link_ok_corpus_matches(&NIMISAMPO);
 }
 
 #[test]
-fn swift_content_types_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SWIFT_CONTENT_TYPES);
+fn free5gc_pdu_session_matches_fern_output() {
+    assert_link_ok_corpus_matches(&FREE5GC_PDU_SESSION);
 }
 
 #[test]
