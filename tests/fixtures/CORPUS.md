@@ -1,6 +1,6 @@
 # Canonical real-world OpenAPI corpus (issue #77)
 
-This manifest tracks 73 real-world OpenAPI specs with redistribution-compatible
+This manifest tracks 76 real-world OpenAPI specs with redistribution-compatible
 license metadata. `decision` is `link-ok` when the permissively licensed source
 is fetched at generation time rather than vendored. Add or change one numbered
 row per feature branch and maintain its golden through the manually dispatched
@@ -82,6 +82,9 @@ row per feature branch and maintain its golden through the manually dispatched
 | 71 | `slurmdb-rest` | github-raw | https://raw.githubusercontent.com/ubccr/slurmdbrest/f9c5e77cc3a1a11c7645dab31c6752cd08577721/api/openapi.yaml | `f9c5e77cc3a1a11c7645dab31c6752cd08577721` | Apache-2.0 | link-ok | SlurmDB REST API with a label path parameter (`explode: false`) and 33 form parameters with explicit `explode` |
 | 72 | `nimisampo` | github-raw | https://raw.githubusercontent.com/SemanticComputing/nimisampo.fi/34b8d22fff53a3dd531e89277fdb2f98d69dd1d0/src/server/openapi.yaml | `34b8d22fff53a3dd531e89277fdb2f98d69dd1d0` | MIT | link-ok | Deployed NameSampo API with a query parameter carrying `content: { application/json: ... }` and three `allowReserved` parameters |
 | 73 | `free5gc-pdu-session` | github-raw | https://raw.githubusercontent.com/free5gc/openapi/8d0ee35bc671dd9995240c0ff73d4c75075a204a/Nsmf_PDUSession/api/openapi.yaml | `8d0ee35bc671dd9995240c0ff73d4c75075a204a` | Apache-2.0 | link-ok | free5GC PDU Session API with multipart `encoding` properties combining `contentType` and per-part `headers` |
+| 74 | `sigstore-rekor` | github-raw | https://raw.githubusercontent.com/trailofbits/sigstore-apis/c6bd8db7b1629104dfe241ad26a838f69199b169/openapi/rekor.openapi.json | `c6bd8db7b1629104dfe241ad26a838f69199b169` | Apache-2.0 | link-ok | Sigstore Rekor API with eight literal `2XX` plus `default` response pairs, 12 discriminators without mappings, and seven nested objects combining `readOnly` and `writeOnly` properties |
+| 75 | `letta` | github-raw | https://raw.githubusercontent.com/letta-ai/letta/e3fb00f97009cafe527cde93983cda0dfdd7e574/fern/openapi.json | `e3fb00f97009cafe527cde93983cda0dfdd7e574` | Apache-2.0 | link-ok | Letta API with 10 `text/event-stream` responses, 12 discriminators without mappings, 1 map-of-union schema, and 1,416 `anyOf` plus 87 `oneOf` compositions |
+| 76 | `free5gc-namf-communication` | github-raw | https://raw.githubusercontent.com/shynuu/free5gc-cli/7f775ecab0cbe3074b38e528581641cff5520c2f/lib/openapi/Namf_Communication/api/openapi.yaml | `7f775ecab0cbe3074b38e528581641cff5520c2f` | Apache-2.0 | link-ok | free5GC AMF Communication API with `ServiceAreaRestriction/allOf/0/oneOf/0/not` and 142 `application/problem+json` response media entries |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -217,3 +220,42 @@ now byte-matched byte-for-byte.
 
 The status tables are the durable results of that generation pass; use the
 standard workflow for any future source change or Fern upgrade.
+
+## Batch 6 — composition and media selected (issue #77)
+
+Three new permissively licensed, immutable specs passed native Fern CLI 5.75.4
+screening and are registered with empty match manifests. Their workflow-owned
+goldens have not been generated locally.
+
+| name | selected for | status |
+|---|---|---|
+| `sigstore-rekor` | literal ranged `2XX` plus `default`; implicit discriminators; nested objects mixing `readOnly` and `writeOnly` | Fern check passed — golden generation pending |
+| `letta` | SSE; implicit discriminators; map of unions; deep `anyOf`/`oneOf` | Fern check passed — golden generation pending |
+| `free5gc-namf-communication` | structurally nested `allOf` → `oneOf` → `not`; 142 problem+json responses | Fern check passed — golden generation pending |
+
+### Screened failures
+
+| name | status |
+|---|---|
+| `opencode` | **DROPPED** — Fern check failed with 22 response/request example and missing-discriminant errors (do not retry this ref) |
+| `clerk-backend-api` | **DROPPED** — Fern check failed with a duplicate `InvitationObject` and normalized `frontendApi` parameter collision (do not retry this ref or the screened older versions) |
+| `temporal-api` | **DROPPED** — Fern check failed with 36 normalized path/query parameter collisions (do not retry this ref) |
+| `openfeature-protocol` | **DROPPED** — Fern check failed with nine invalid object-extension errors (do not retry this ref) |
+| `cloudevents-subscriptions` | **DROPPED** — Fern check failed with 12 invalid object-extension errors (do not retry this ref) |
+| `dapr` | **DROPPED** — Fern reported false success after an OpenAPI parse failure on unresolved `ApiKeyAuth` (do not retry this ref) |
+| `apache-superset` | **DROPPED** — Fern check failed with six response-example and unreferenced path-parameter errors (do not retry this ref) |
+| `xregistry-endpoint` | **DROPPED** — Fern check failed because ten services require auth while the spec defines none (do not retry this ref) |
+| `letta` at `b76b5aeb932873dd5f0642a2ef5d81060f991dd6` | **DROPPED** — Fern check failed on an optional union query parameter; the older registered ref passes (do not retry this ref) |
+| `coinbase-cdp` | **DROPPED** — Fern check failed with nine schema and example validation errors (do not retry this ref) |
+| `pnp-agents-finder` / `pnp-qna` | **DROPPED** — Fern check rejected their invalid `allOf` object extensions (do not retry these refs) |
+| `ably-connector` | **DROPPED** — Fern check rejected three invalid integer defaults (do not retry this ref) |
+| `azure-aro-hcp` | **DROPPED** — Fern check failed with three discriminant and example errors (do not retry this ref) |
+| `assemblyai-autosdk` | **REJECTED** — source license is revenue-limited rather than Apache-2.0/MIT/BSD/CC0 |
+| `sumup` | **DROPPED** — its `readOnly` and `writeOnly` fields occur in separate models, so it does not prove same-model interplay |
+| `titiler-openeo` | **DROPPED** — its ranged responses do not include literal `2XX` or `default`; `smart-edge-af` consolidates `not`, `default`, and nested composition |
+| `apigee-registry` | **DROPPED** — its read/write-only coverage overlapped `sigstore-rekor`, which also consolidates literal `2XX`/`default` and implicit-discriminator coverage |
+| `keycloak-admin` | **DROPPED** — its standalone `2XX` coverage forced a fourth registration; `sigstore-rekor` supplies literal `2XX` plus `default` coverage in the three-spec set |
+| `smart-edge-af` | **DROPPED** — `TrafficInfluSub` has sibling `allOf` and `anyOf`, not one composition structurally nested inside the other |
+| `jaewook-epcis` | **REJECTED** — Fern check reports 35 endpoint-example errors because `headers` examples are strings rather than maps |
+| `mardi-gras` | **REJECTED** — Fern-clean and MIT, but it has no `allOf` and therefore could not consolidate the nested composition requirement |
+| `paypal-checkout` | **DROPPED** — the only revision with `not` fails Fern on five invalid carrier enum names; Fern-clean older revisions lack `not` |

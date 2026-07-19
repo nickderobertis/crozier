@@ -14432,6 +14432,45 @@ const FREE5GC_PDU_SESSION: Corpus = Corpus {
     ],
 };
 
+/// `sigstore-rekor`: Rekor combines ranged/default responses, implicit
+/// discriminators, and nested models with request- and response-only fields.
+const SIGSTORE_REKOR: Corpus = Corpus {
+    api: "sigstore-rekor",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `letta`: Letta's agent API combines SSE responses, implicit discriminators,
+/// deeply nested unions, and a map whose values are a union.
+const LETTA: Corpus = Corpus {
+    api: "letta",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `free5gc-namf-communication`: the AMF Communication API nests `oneOf` and
+/// `not` inside `allOf` and uses problem+json across its error responses.
+const FREE5GC_NAMF_COMMUNICATION: Corpus = Corpus {
+    api: "free5gc-namf-communication",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
 #[test]
 fn squareup_com_matches_fern_output() {
     if corpus_spec(SQUAREUP_COM.api).is_none() {
@@ -14530,6 +14569,21 @@ fn nimisampo_matches_fern_output() {
 #[test]
 fn free5gc_pdu_session_matches_fern_output() {
     assert_link_ok_corpus_matches(&FREE5GC_PDU_SESSION);
+}
+
+#[test]
+fn sigstore_rekor_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SIGSTORE_REKOR);
+}
+
+#[test]
+fn letta_matches_fern_output() {
+    assert_link_ok_corpus_matches(&LETTA);
+}
+
+#[test]
+fn free5gc_namf_communication_matches_fern_output() {
+    assert_link_ok_corpus_matches(&FREE5GC_NAMF_COMMUNICATION);
 }
 
 #[test]
