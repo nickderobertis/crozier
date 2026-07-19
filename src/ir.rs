@@ -5499,6 +5499,19 @@ impl Builder<'_> {
                                     items.any_of.as_ref().or(items.one_of.as_ref())
                                 }) {
                                     let item_name = format!("{name}{}Item", ordinal_word(index));
+                                    if let Some(decl) = self.discriminated_union(
+                                        &item_name,
+                                        &naming::module_name(&item_name),
+                                        m.items.as_deref().expect("item members came from items"),
+                                        clean_doc(
+                                            m.items
+                                                .as_deref()
+                                                .and_then(|items| items.description.as_deref()),
+                                        ),
+                                    ) {
+                                        self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                                        return TypeRef::List(Box::new(TypeRef::Named(item_name)));
+                                    }
                                     let item_variants = item_members
                                         .iter()
                                         .enumerate()
@@ -8011,7 +8024,14 @@ mod tests {
         let nullable_complex = schema(serde_json::json!({
             "anyOf": [
                 { "type": "string" },
-                { "type": "array", "items": { "type": "integer" } },
+                { "type": "array", "items": { "oneOf": [
+                    { "type": "object", "required": ["type"], "properties": {
+                        "type": { "type": "string", "enum": ["text"] }
+                    } },
+                    { "type": "object", "required": ["type"], "properties": {
+                        "type": { "type": "string", "enum": ["image"] }
+                    } }
+                ], "discriminator": { "propertyName": "type" } } },
                 { "type": "null" }
             ]
         }));
@@ -8026,6 +8046,10 @@ mod tests {
                     && matches!(&alias.target, TypeRef::Union(variants)
                         if variants.len() == 2
                             && !variants.iter().any(|variant| matches!(variant, TypeRef::Primitive(Prim::Any))))
+        )));
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::DiscriminatedUnion(union) if union.name == "RequestInputOneItem"
         )));
 
         let nullable_referenced_enum_array = schema(serde_json::json!({
