@@ -1438,7 +1438,7 @@ fn assert_corpus_matches(c: &Corpus) {
             // match" — the normalized bytes the comparison actually decides on, so a
             // regression is diagnosable straight from the test output (no second
             // generate-and-diff pass). `just fixtures-diff` prints the same thing on
-            // demand for a file not (yet) in `matched`.
+            // demand for any divergent file.
             let (actual, expected) = normalized_pair(&rel, &generated, &expected);
             let diff = unified_diff(&expected, &actual).unwrap_or_default();
             panic!(
@@ -1466,7 +1466,7 @@ fn assert_corpus_matches(c: &Corpus) {
 
 /// Generate a corpus's SDK into a fresh tempdir with that corpus's naming, and
 /// return the dir (the caller keeps it alive). Fails the test if crozier errors —
-/// shared by the gate and the candidate reporter so both drive the binary
+/// shared by the gate and the gap reporter so both drive the binary
 /// identically.
 fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
     let out = tempfile::tempdir().expect("tempdir");
@@ -1525,7 +1525,7 @@ fn try_generate_corpus(c: &Corpus) -> Result<tempfile::TempDir, String> {
 
 /// Whether crozier's `generated` output for `rel` equals the committed fixture
 /// under the gate's normalization — the single definition of "matches", used by
-/// both `assert_corpus_matches` and the candidate reporter so they never drift.
+/// both `assert_corpus_matches` and the gap reporter so they never drift.
 ///
 /// Python files are compared with comments stripped (the same normalization that
 /// produced the fixtures); non-Python scaffolding (pyproject.toml, requirements.txt,
@@ -1721,9 +1721,8 @@ fn apideck_crm_matches_fern_output() {
 /// `bunq.com`: a large real-world `link-ok` corpus API (issue #77) — 421 endpoints
 /// across 118 sub-clients (~10× apideck), the pipeline's at-scale stress target. Its
 /// OpenAPI spec is fetched, not vendored (`corpus_spec`); its full Fern golden is
-/// committed. crozier reproduces the files in [`BUNQ.unmatched`] byte-for-byte; the
-/// structural remainder (types Fern splits that crozier lays out differently) is the
-/// documented gap to full byte-match — see docs/matching.md.
+/// committed and crozier reproduces the entire golden byte-for-byte. Its empty
+/// `unmatched` list makes any future divergence fail by default.
 const BUNQ: Corpus = Corpus {
     api: "bunq.com",
     package_name: "fern",
@@ -1732,7 +1731,6 @@ const BUNQ: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    // Grown by `just fixtures-candidates`; see docs/matching.md for the open gap.
     unmatched: &[],
 };
 
@@ -2356,9 +2354,8 @@ fn bunq_matches_fern_output() {
     // `link-ok` like apideck: the spec is fetched (not vendored), so this **skips**
     // when it is absent — including the offline `check` gate — and **fails** when
     // `CROZIER_REQUIRE_CORPUS` is set (the CI corpus leg fetches first, then sets
-    // it), so the enforced leg can never silently no-op. Unlike apideck, bunq is not
-    // yet fully matched, so this byte-compares only `BUNQ.unmatched` (via
-    // `assert_corpus_matches`) rather than walking the whole golden tree.
+    // it), so the enforced leg can never silently no-op. Bunq is fully matched, so
+    // its empty opt-out list makes the entire golden tree mandatory.
     if corpus_spec(BUNQ.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
@@ -2377,8 +2374,8 @@ fn bungie_matches_fern_output() {
     // **skips** when it is absent — including the offline `check` gate — and
     // **fails** when `CROZIER_REQUIRE_CORPUS` is set (the CI corpus leg fetches
     // first, then sets it), so the enforced leg can never silently no-op.
-    // `BUNGIE_UNMATCHED` covers the full committed golden, so this enforces the
-    // schema-heavy corpus as a byte-match gate once the spec has been fetched.
+    // Bungie's empty opt-out list enforces the full schema-heavy golden once the
+    // spec has been fetched.
     if corpus_spec(BUNGIE.api).is_none() {
         assert!(
             std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
@@ -2394,11 +2391,8 @@ fn bungie_matches_fern_output() {
 // The five batch corpora below share the bunq/bungie test shape: `link-ok` (spec
 // fetched, not vendored) so each **skips** offline — including the `check` gate — and
 // **fails** when `CROZIER_REQUIRE_CORPUS` is set without a fetched spec, so an
-// enforced leg can never silently no-op. Each `matched` list is empty until its Fern
-// golden is generated and the byte-match pass grows it, so today they assert only
-// that crozier consumes the fetched spec and writes a tree without panicking. The
-// three with a named generator gap on their const (anchore, apache, apicurio) reach
-// that bar once the byte-match pass closes the gap; discourse and appwrite already do.
+// enforced leg can never silently no-op. Each measured `unmatched` list contains
+// only residual divergences and shrinks as those generator gaps close.
 
 #[test]
 fn anchore_matches_fern_output() {
