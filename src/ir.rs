@@ -3446,6 +3446,35 @@ impl InlineHoister<'_> {
         if prop_schema.reference.is_none() {
             if let Some(members) = prop_schema.one_of.as_ref().or(prop_schema.any_of.as_ref()) {
                 let name = format!("{parent}{}", naming::class_name(prop));
+                let non_null: Vec<&Schema> = members
+                    .iter()
+                    .filter(|member| {
+                        member.ty.as_ref().and_then(TypeField::primary) != Some("null")
+                    })
+                    .collect();
+                if non_null.len() == 1 && non_null.len() != members.len() {
+                    let member = non_null[0];
+                    if let Some(values) = string_enum_values(member) {
+                        self.out
+                            .push(TypeDecl::Enum(build_enum(&name, values, None)));
+                        return TypeRef::Named(name);
+                    }
+                    if let Some(reference) = member.reference.as_deref() {
+                        return TypeRef::Named(ref_to_class(reference));
+                    }
+                    if is_inline_struct(member) {
+                        self.hoist_object_with_doc(
+                            &name,
+                            member,
+                            clean_doc(prop_schema.description.as_deref()),
+                        );
+                        return TypeRef::Named(name);
+                    }
+                    return self.schemas.map_or_else(
+                        || base_type_ref(member),
+                        |schemas| full_type_ref_resolved(member, schemas),
+                    );
+                }
                 if members.len() == 1 && is_inline_struct(&members[0]) {
                     self.hoist_object_with_doc(
                         &name,
@@ -3577,6 +3606,13 @@ impl InlineHoister<'_> {
                             .push(TypeDecl::Enum(build_enum(&name, values, None)));
                         return TypeRef::Named(name);
                     }
+                    if let Some(reference) = non_null[0].reference.as_deref() {
+                        return TypeRef::Named(ref_to_class(reference));
+                    }
+                    return self.schemas.map_or_else(
+                        || base_type_ref(non_null[0]),
+                        |schemas| full_type_ref_resolved(non_null[0], schemas),
+                    );
                 }
                 let mut variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
                 variants.dedup();
@@ -8212,6 +8248,77 @@ mod tests {
             ))))
         );
         assert_eq!(hoister.out.len(), 2);
+
+        let nullable_string = schema(serde_json::json!({
+            "anyOf": [{ "type": "string" }, { "type": "null" }]
+        }));
+        assert_eq!(
+            hoister.prop_type_ref("CreateAgentRequest", "name", &nullable_string),
+            TypeRef::Primitive(Prim::Str)
+        );
+        let nullable_array = schema(serde_json::json!({
+            "anyOf": [
+                { "type": "array", "items": { "type": "string" } },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            hoister.prop_type_ref("CreateAgentRequest", "tags", &nullable_array),
+            TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str)))
+        );
+        let nullable_map = schema(serde_json::json!({
+            "anyOf": [
+                { "type": "object", "additionalProperties": true },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            hoister.prop_type_ref("CreateAgentRequest", "metadata", &nullable_map),
+            TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Primitive(Prim::Any)),
+            )
+        );
+        let nullable_reference = schema(serde_json::json!({
+            "anyOf": [
+                { "$ref": "#/components/schemas/StopReasonType" },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            hoister.prop_type_ref(
+                "CreateAgentRequest",
+                "last_stop_reason",
+                &nullable_reference,
+            ),
+            TypeRef::Named("StopReasonType".to_string())
+        );
+        let nullable_enum = schema(serde_json::json!({
+            "anyOf": [
+                { "type": "string", "enum": ["low", "high"] },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            hoister.prop_type_ref("CreateAgentRequest", "effort", &nullable_enum),
+            TypeRef::Named("CreateAgentRequestEffort".to_string())
+        );
+        assert!(hoister.out.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Enum(enumeration) if enumeration.name == "CreateAgentRequestEffort"
+        )));
+        assert_eq!(
+            hoister.hoist_param_enum("ListAgentsRequest", "name", &nullable_string),
+            TypeRef::Primitive(Prim::Str)
+        );
+        assert_eq!(
+            hoister.hoist_param_enum("ListAgentsRequest", "tags", &nullable_array),
+            TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str)))
+        );
+        assert_eq!(
+            hoister.hoist_param_enum("ListAgentsRequest", "last_stop_reason", &nullable_reference,),
+            TypeRef::Named("StopReasonType".to_string())
+        );
 
         let offset = schema(serde_json::json!({
             "oneOf": [{ "type": "string" }, { "type": "number" }]
