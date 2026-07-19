@@ -1,0 +1,13 @@
+
+
+Timestamp = str
+"""
+A signed nanosecond resolution timestamp represented as "{sign?}{seconds}:{nanoseconds}". The intended
+interpretation of the value is assumed to be defined elsewhere.
+
+E.g.
+* "1:40000000" is the timestamp of the 27th video frame for 25 Hz video with origin at "0:0".
+* "1694429247:40000000" is the TAI timestamp for a video frame at 2023-09-11T10:46:50.04Z UTC.
+
+Details of the format can be found in the [Timestamps in TAMS](https://github.com/bbc/tams/blob/main/docs/appnotes/0008-timestamps-in-TAMS.md) application note.
+"""

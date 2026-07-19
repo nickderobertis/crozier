@@ -1,0 +1,3 @@
+
+
+PacketLossRate = int

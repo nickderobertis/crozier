@@ -1658,7 +1658,10 @@ fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
 fn readme_endpoint_eligible(ep: &Endpoint) -> bool {
     endpoint_has_worked_example(ep)
         && !matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
-        && !matches!(&ep.request_body, Some(RequestBody::Form(form)) if ep.body_schema_ref && form.fields.iter().any(|field| field.is_file))
+        && !matches!(&ep.request_body, Some(RequestBody::Form(form))
+            if ep.body_schema_ref
+                && form.fields.iter().any(|field| field.is_file)
+                && !form.fields.iter().any(|field| field.form_content_type.is_some()))
 }
 
 fn select_readme_endpoint<'a>(
@@ -1744,13 +1747,11 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // for a bodyless endpoint with required path/query/header arguments, or an
     // endpoint with a complex (object/container/union) body, else empty parens; the
     // error/raw-response calls are ruff-wrapped at the snippet width 88.
-    let has_required_non_body_params = !first.path_params.is_empty()
+    let has_non_body_params = !first.path_params.is_empty()
         || first.request_body.is_none()
-            && (first.query_params.iter().any(|param| param.required)
-                || first.query_params.iter().any(|param| param.convert)
-                || first.header_params.iter().any(|param| param.required));
+            && (!first.query_params.is_empty() || !first.header_params.is_empty());
     let complex = first.method_name != "_"
-        && (has_required_non_body_params
+        && (has_non_body_params
             || (ir.openapi_31
                 && first.body_schema_implicit_object
                 && matches!(
@@ -1984,26 +1985,30 @@ fn reference_entry(
         documentation: false,
         reference: false,
     };
-    let example = build_documentation_example(
-        ep,
-        false,
-        module,
-        pkg,
-        &ir.client_name,
-        &mut ctx,
-        ir.environment.as_ref(),
-        true,
-    )
-    .map_or_else(
-        || {
-            if has_args {
-                format!("{}(...)", client_call_prefix(ep))
-            } else {
-                format!("{}()", client_call_prefix(ep))
-            }
-        },
-        |lines| lines.join("\n"),
-    );
+    let example = (!ep.binary_schema_response || !module.is_empty())
+        .then(|| {
+            build_documentation_example(
+                ep,
+                false,
+                module,
+                pkg,
+                &ir.client_name,
+                &mut ctx,
+                ir.environment.as_ref(),
+                true,
+            )
+        })
+        .flatten()
+        .map_or_else(
+            || {
+                if has_args {
+                    format!("{}(...)", client_call_prefix(ep))
+                } else {
+                    format!("{}()", client_call_prefix(ep))
+                }
+            },
+            |lines| lines.join("\n"),
+        );
 
     // The parameter rows, in signature order, then `request_options`.
     let mut params: Vec<ParamRow> = Vec::new();
@@ -2076,8 +2081,31 @@ fn reference_entry(
         } else {
             dp.description.as_deref()
         };
+        let reference_name = if is_body {
+            ep.request_body
+                .as_ref()
+                .and_then(|body| match body {
+                    RequestBody::Inline(fields) => fields
+                        .iter()
+                        .find(|field| field.py_name == dp.name)
+                        .filter(|field| {
+                            field
+                                .wire_name
+                                .starts_with(|character: char| character.is_ascii_digit())
+                        }),
+                    _ => None,
+                })
+                .map(|field| {
+                    naming::model_field_name(&field.wire_name)
+                        .trim_start_matches("f_")
+                        .to_string()
+                })
+                .unwrap_or_else(|| dp.name.trim_end_matches('_').to_string())
+        } else {
+            dp.name.trim_end_matches('_').to_string()
+        };
         params.push(ParamRow {
-            name: dp.name.trim_end_matches('_').to_string(),
+            name: reference_name,
             annot: reference_param_annotation(&annotation),
             suffix: reference_param_suffix(description),
         });
@@ -2110,6 +2138,7 @@ fn reference_entry(
         example,
         example_gap: if !endpoint_has_worked_example(ep)
             || matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
+            || ep.binary_schema_response && module.is_empty()
         {
             ""
         } else {
@@ -3440,6 +3469,14 @@ fn raw_docstring(
         push_return_doc(&mut lines, ep.response_doc.as_deref());
     }
     lines.push("        \"\"\"".to_string());
+    if ep.module.is_empty() && ep.openapi_31 {
+        lines
+            .iter_mut()
+            .filter(|line| line.is_empty())
+            .for_each(|line| {
+                *line = "        ".to_string();
+            });
+    }
     lines.join("\n")
 }
 
@@ -3712,6 +3749,44 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             let mut data = String::new();
             let mut files = String::new();
             for f in &form.fields {
+                if let Some(content_type) = &f.form_content_type {
+                    if f.form_json {
+                        imports.add_plain("json");
+                        imports.add_core("jsonable_encoder", "jsonable_encoder");
+                        let tuple = format!(
+                            "(None, json.dumps(jsonable_encoder({})), \"{content_type}\")",
+                            f.py_name
+                        );
+                        if f.optional {
+                            files.push_str(&format!(
+                                "                **(\n                    {{\"{}\": {tuple}}}\n                    if {} is not OMIT\n                    else {{}}\n                ),\n",
+                                f.wire_name, f.py_name
+                            ));
+                        } else {
+                            files.push_str(&format!(
+                                "                \"{}\": {tuple},\n",
+                                f.wire_name
+                            ));
+                        }
+                    } else {
+                        let value = format!(
+                            "core.with_content_type(file={}, default_content_type=\"{content_type}\")",
+                            f.py_name
+                        );
+                        if f.optional {
+                            files.push_str(&format!(
+                                "                **(\n                    {{\n                        \"{}\": {value}\n                    }}\n                    if {} is not None\n                    else {{}}\n                ),\n",
+                                f.wire_name, f.py_name
+                            ));
+                        } else {
+                            files.push_str(&format!(
+                                "                \"{}\": {value},\n",
+                                f.wire_name
+                            ));
+                        }
+                    }
+                    continue;
+                }
                 let value = if f.form_json {
                     imports.add_plain("json");
                     imports.add_core("jsonable_encoder", "jsonable_encoder");
@@ -3778,9 +3853,10 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         // (`CREATE_SessionServer`) keeps it.
         Some(body)
             if !body.is_wildcard_media()
-                && (ep.reference_body_example.is_some()
-                    && !ep.body_schema_is_success_response
-                    && matches!(body, RequestBody::Inline(_))
+                && (ep.body_media_has_example && ep.body_schema_dropped && ep.body_schema_ref
+                    || ep.reference_body_example.is_some()
+                        && !ep.body_schema_is_success_response
+                        && matches!(body, RequestBody::Inline(_))
                     || !ep.header_params.is_empty()
                     || !ep.path_params.is_empty()
                     || (body.content_type_header()
@@ -4962,6 +5038,14 @@ fn client_stream_docstring(
         }
     }
     lines.push("        \"\"\"".to_string());
+    if ep.module.is_empty() && ep.openapi_31 {
+        lines
+            .iter_mut()
+            .filter(|line| line.is_empty())
+            .for_each(|line| {
+                *line = "        ".to_string();
+            });
+    }
     lines.join("\n")
 }
 
@@ -5058,15 +5142,20 @@ fn client_binary_stream_docstring(
         documentation: false,
         reference: false,
     };
-    if let Some(ex_lines) = build_example(
-        ep,
-        is_async,
-        cx.module,
-        cx.pkg,
-        cx.client_name,
-        &mut ctx,
-        cx.empty_namespace,
-    ) {
+    if let Some(ex_lines) = (!cx.module.is_empty() || !ep.binary_schema_response)
+        .then(|| {
+            build_example(
+                ep,
+                is_async,
+                cx.module,
+                cx.pkg,
+                cx.client_name,
+                &mut ctx,
+                cx.empty_namespace,
+            )
+        })
+        .flatten()
+    {
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
@@ -5113,7 +5202,14 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     lines.push(String::new());
     lines.push("        Returns".to_string());
     lines.push("        -------".to_string());
-    lines.push(format!("        {}", mp.inner));
+    lines.push(format!(
+        "        {}",
+        if ep.http_method == "HEAD" && ep.response.is_some() {
+            "typing.Dict[str, str]"
+        } else {
+            &mp.inner
+        }
+    ));
     // A concrete response carries its description (indented, blank when the spec
     // gives none) under the return type.
     if ep.response.is_some() {
@@ -5158,6 +5254,14 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         }
     }
     lines.push("        \"\"\"".to_string());
+    if ep.module.is_empty() && ep.openapi_31 {
+        lines
+            .iter_mut()
+            .filter(|line| line.is_empty())
+            .for_each(|line| {
+                *line = "        ".to_string();
+            });
+    }
     lines.join("\n")
 }
 
@@ -5326,22 +5430,29 @@ impl Example {
                 }
                 let pad = " ".repeat(indent);
                 let inner_pad = " ".repeat(indent + 4);
+                let matrix = items.len() >= 3
+                    && items
+                        .iter()
+                        .all(|item| matches!(item, Example::List(_) | Example::ExplicitList(_)));
                 let body = items
                     .iter()
                     .enumerate()
                     .map(|(index, item)| {
                         let comma = if index + 1 == items.len() { "" } else { "," };
-                        format!(
-                            "{inner_pad}{}{comma}",
+                        let rendered = if matrix {
+                            item.flat()
+                        } else {
                             item.render_at(indent + 4, indent + 4)
-                        )
+                        };
+                        format!("{inner_pad}{rendered}{comma}")
                     })
                     .collect::<Vec<_>>()
                     .join("\n");
                 format!("[\n{body}\n{pad}]")
             }
             Example::Dict(pairs) => {
-                if !self.forces_multiline() {
+                let wraps_for_length = !self.forces_multiline() && column + self.flat().len() > 80;
+                if !self.forces_multiline() && !wraps_for_length {
                     return self.flat();
                 }
                 let pad = " ".repeat(indent);
@@ -5350,8 +5461,9 @@ impl Example {
                     .iter()
                     .map(|(k, v)| {
                         format!(
-                            "{inner_pad}\"{k}\": {}",
-                            v.render_at(indent + 4, indent + k.len() + 8)
+                            "{inner_pad}\"{k}\": {}{}",
+                            v.render_at(indent + 4, indent + k.len() + 8),
+                            if wraps_for_length { "," } else { "" }
                         )
                     })
                     .collect::<Vec<_>>()
@@ -5524,13 +5636,23 @@ impl<'a> ExampleCtx<'a> {
                     let inner = &example[1..example.len() - 1];
                     format!("\"{}\"", inner.replace('"', "\\\""))
                 }
+                TypeRef::Primitive(Prim::Str | Prim::Bytes)
+                    if self.documentation && example.starts_with('"') =>
+                {
+                    example.replace('\'', "\\'")
+                }
                 _ => example.to_string(),
             };
             return Some(Example::Atom(literal));
         }
         if example.starts_with('{') && self.resolves_to_any(t) {
             let value = serde_json::from_str(example).ok()?;
-            return Some(example_from_json(value));
+            let rendered = example_from_json(value);
+            return Some(if self.reference {
+                Example::Atom(rendered.flat())
+            } else {
+                rendered
+            });
         }
         if let TypeRef::List(inner) | TypeRef::Set(inner) = t {
             let values: Vec<serde_json::Value> = serde_json::from_str(example).ok()?;
@@ -5559,12 +5681,53 @@ impl<'a> ExampleCtx<'a> {
         }
         if let TypeRef::Union(variants) = t {
             let value: serde_json::Value = serde_json::from_str(example).ok()?;
+            if value
+                .as_object()
+                .is_some_and(|object| object.len() == 1 && object.contains_key("$ref"))
+            {
+                return variants
+                    .iter()
+                    .find(|variant| matches!(variant, TypeRef::List(_) | TypeRef::Set(_)))
+                    .map(|variant| self.value(variant, Slot::Plain));
+            }
             for variant in variants {
                 if self.example_matches_type(variant, &value) {
                     return self.value_from_example(variant, example);
                 }
             }
             return None;
+        }
+        if let TypeRef::Named(name) = t {
+            if let Some(TypeDecl::Object(object)) = self.find(name) {
+                let fields = self.object_fields(object);
+                let values = serde_json::from_str::<serde_json::Value>(example).ok()?;
+                let values = values.as_object()?;
+                self.record_ref(name);
+                let args = fields
+                    .into_iter()
+                    .filter(|(_, wire_name, _, required, _, _)| {
+                        *required || values.contains_key(wire_name)
+                    })
+                    .map(|(py_name, wire_name, type_ref, _, _, _)| {
+                        let rendered = match values.get(&wire_name) {
+                            Some(serde_json::Value::String(value))
+                                if self.example_is_temporal(&type_ref)
+                                    && value.starts_with("2000-01-23T04:56:07") =>
+                            {
+                                self.value(&type_ref, Slot::Named(&wire_name))
+                            }
+                            Some(value) => {
+                                let literal = value.to_string();
+                                self.value_from_example(&type_ref, &literal)
+                                    .unwrap_or_else(|| example_from_json(value.clone()))
+                            }
+                            _ => self.value(&type_ref, Slot::Named(&wire_name)),
+                        };
+                        (Some(py_name), rendered)
+                    })
+                    .collect();
+                return Some(Example::Call(name.clone(), args));
+            }
         }
         if self.example_is_composite(t) && (example.starts_with('[') || example.starts_with('{')) {
             let value = serde_json::from_str(example).ok()?;
@@ -5585,24 +5748,7 @@ impl<'a> ExampleCtx<'a> {
             return None;
         };
         match self.find(name)? {
-            TypeDecl::Object(object) => {
-                let fields = self.object_fields(object);
-                let values = serde_json::from_str::<serde_json::Value>(example).ok()?;
-                let values = values.as_object()?;
-                self.record_ref(name);
-                let args = fields
-                    .into_iter()
-                    .filter_map(|(py_name, wire_name, type_ref, _, _)| {
-                        let value = values.get(&wire_name)?;
-                        let literal = value.to_string();
-                        let rendered = self
-                            .value_from_example(&type_ref, &literal)
-                            .unwrap_or_else(|| example_from_json(value.clone()));
-                        Some((Some(py_name), rendered))
-                    })
-                    .collect();
-                Some(Example::Call(name.clone(), args))
-            }
+            TypeDecl::Object(_) => None,
             TypeDecl::Alias(alias) => {
                 let target = alias.target.clone();
                 self.value_from_example(&target, example)
@@ -5629,12 +5775,12 @@ impl<'a> ExampleCtx<'a> {
                     let fields = self.object_fields(object);
                     fields
                         .iter()
-                        .filter(|(_, _, _, required, _)| *required)
-                        .all(|(_, wire_name, _, _, _)| values.contains_key(wire_name))
+                        .filter(|(_, _, _, required, _, _)| *required)
+                        .all(|(_, wire_name, _, _, _, _)| values.contains_key(wire_name))
                         && values.keys().all(|key| {
                             fields
                                 .iter()
-                                .any(|(_, wire_name, _, _, _)| wire_name == key)
+                                .any(|(_, wire_name, _, _, _, _)| wire_name == key)
                         })
                 }),
                 Some(TypeDecl::Alias(alias)) => self.example_matches_type(&alias.target, value),
@@ -5704,6 +5850,18 @@ impl<'a> ExampleCtx<'a> {
             TypeRef::Optional(inner) => self.resolves_to_any(inner),
             TypeRef::Named(n) => match self.find(n) {
                 Some(TypeDecl::Alias(a)) => self.resolves_to_any(&a.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
+    fn resolves_to_string(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Primitive(Prim::Str) => true,
+            TypeRef::Optional(inner) => self.resolves_to_string(inner),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.resolves_to_string(&alias.target),
                 _ => false,
             },
             _ => false,
@@ -5864,21 +6022,15 @@ impl<'a> ExampleCtx<'a> {
                 let fields = self.object_fields(obj);
                 let args = fields
                     .into_iter()
-                    .filter(|(_, _, _, required, _)| *required)
-                    .map(|(py, wire, ty, _, example)| {
+                    .filter(|(_, _, _, required, _, parent_example)| *required || *parent_example)
+                    .map(|(py, wire, ty, _, example, _)| {
                         let v = match example {
-                            Some(example) if example_scalar(&ty) => Example::Atom(example),
-                            Some(example) if example.starts_with(['{', '[']) => {
-                                if self.reference {
-                                    self.value_from_example(&ty, &example)
-                                        .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire)))
-                                } else {
-                                    serde_json::from_str(&example).map_or_else(
-                                        |_| self.value(&ty, Slot::Named(&wire)),
-                                        example_from_json,
-                                    )
-                                }
-                            }
+                            Some(example) if self.example_is_scalar(&ty) => self
+                                .value_from_example(&ty, &example)
+                                .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire))),
+                            Some(example) if example.starts_with(['{', '[']) => self
+                                .value_from_example(&ty, &example)
+                                .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire))),
                             None => self.value(&ty, Slot::Named(&wire)),
                             Some(_) => self.value(&ty, Slot::Named(&wire)),
                         };
@@ -5939,7 +6091,7 @@ impl<'a> ExampleCtx<'a> {
     fn object_fields(
         &self,
         obj: &ObjectType,
-    ) -> Vec<(String, String, TypeRef, bool, Option<String>)> {
+    ) -> Vec<(String, String, TypeRef, bool, Option<String>, bool)> {
         let mut out = Vec::new();
         for base in &obj.bases {
             if let Some(TypeDecl::Object(b)) = self.find(base) {
@@ -5953,6 +6105,7 @@ impl<'a> ExampleCtx<'a> {
                 f.type_ref.clone(),
                 f.spec_required,
                 f.example.clone(),
+                obj.example_fields.contains(&f.wire_name),
             ));
         }
         out
@@ -6351,8 +6504,23 @@ fn build_example_inner(
                     );
                 }
             }
+            if ep.body_all_of {
+                if documentation {
+                    example_fields
+                        .sort_by_key(|field| (!field.spec_required, field.reference_order));
+                } else {
+                    example_fields.sort_by_key(|field| {
+                        (
+                            !field.spec_required,
+                            field.wire_name == "status",
+                            field.wire_name == "id",
+                            field.reference_order,
+                        )
+                    });
+                }
+            }
             for f in example_fields {
-                let v = f
+                let supplied_example = f
                     .example
                     .as_deref()
                     .filter(|_| reference_fields.is_none())
@@ -6361,9 +6529,30 @@ fn build_example_inner(
                         reference_fields
                             .and_then(|values| values.get(&f.wire_name))
                             .map(serde_json::Value::to_string)
-                    })
+                    });
+                let supplied_example = supplied_example.map(|example| {
+                        if matches!(&f.type_ref, TypeRef::List(inner) | TypeRef::Set(inner) if ctx.resolves_to_string(inner))
+                            && example.starts_with('[')
+                            && example.contains("null")
+                        {
+                            if let Ok(mut values) = serde_json::from_str::<Vec<serde_json::Value>>(&example) {
+                                values.iter_mut().filter(|value| value.is_null()).for_each(|value| {
+                                    *value = serde_json::Value::String(f.wire_name.clone());
+                                });
+                                return serde_json::to_string(&values).unwrap_or(example);
+                            }
+                        }
+                        example
+                    });
+                let v = supplied_example
                     .as_deref()
                     .and_then(|example| {
+                        if f.schema_body_example
+                            && ctx.example_is_temporal(&f.type_ref)
+                            && example.starts_with("\"2000-01-23T04:56:07")
+                        {
+                            return None;
+                        }
                         if reference_fields.is_some()
                             || ep.body_schema_is_beta && !ep.body_schema_example_wrapped
                             || f.media_example
@@ -6379,19 +6568,46 @@ fn build_example_inner(
                         }
                     })
                     .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)));
-                args.push((Some(f.py_name.clone()), v));
+                let example_name = if (reference
+                    || ep.request_body_required
+                    || ep.request_body_has_multipart_related)
+                    && f.example.is_some()
+                    && f.wire_name
+                        .starts_with(|character: char| character.is_ascii_digit())
+                {
+                    if reference {
+                        format!(
+                            "f_{}",
+                            naming::model_field_name(&f.wire_name)
+                                .rsplit('_')
+                                .next()
+                                .unwrap_or(&f.py_name)
+                        )
+                    } else {
+                        naming::model_field_name(&f.wire_name)
+                    }
+                } else {
+                    f.py_name.clone()
+                };
+                args.push((Some(example_name), v));
             }
         }
         // A form body: required non-file fields only (a file cannot be shown as a
         // literal, so Fern omits it from the example).
         Some(RequestBody::Form(form)) => {
-            for f in form
+            let related = form
                 .fields
                 .iter()
-                .filter(|f| f.spec_required && (documentation || !f.is_file))
-            {
+                .any(|field| field.form_content_type.is_some());
+            for f in form.fields.iter().filter(|f| {
+                if documentation && related {
+                    f.is_file
+                } else {
+                    f.spec_required && (documentation || !f.is_file)
+                }
+            }) {
                 let v = if documentation && f.is_file {
-                    Example::Atom(format!("\"example_{}\"", f.py_name))
+                    Example::Atom(format!("\"example_{}\"", f.wire_name))
                 } else {
                     f.example
                         .as_deref()
@@ -7016,13 +7232,14 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 #[cfg(test)]
 mod tests {
     use super::{
-        abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts, build_example,
-        client_method, complex_body, container_element_object, environment, escape_py_str,
-        example_from_json, field_decl, is_complex_type, natural_cmp, object_body_complex,
-        raw_method, raw_type_str, readme_endpoint, readme_endpoint_eligible,
-        reference_param_annotation, render, render_class_body, render_enum, render_type_decl,
-        resolves_to_container, url_arg, ClientCtx, Example, ExampleCtx, FieldView, Imports,
-        ParamRow, RefLoc, ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
+        abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts,
+        build_documentation_example, build_example, client_method, complex_body,
+        container_element_object, environment, escape_py_str, example_from_json, field_decl,
+        generate, is_complex_type, natural_cmp, object_body_complex, raw_method, raw_type_str,
+        readme_endpoint, readme_endpoint_eligible, reference_param_annotation, render,
+        render_class_body, render_enum, render_type_decl, resolves_to_container, url_arg,
+        ClientCtx, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView,
+        RenderedField, RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -7316,6 +7533,7 @@ mod tests {
                 model_field("first", TypeRef::Primitive(Prim::Str), true),
                 model_field("second", TypeRef::Primitive(Prim::Int), true),
             ],
+            example_fields: Default::default(),
             docstring: None,
         });
         let optional_object = TypeDecl::Object(ObjectType {
@@ -7323,6 +7541,7 @@ mod tests {
             module: "optional_object".to_string(),
             bases: Vec::new(),
             fields: vec![model_field("maybe", TypeRef::Primitive(Prim::Str), false)],
+            example_fields: Default::default(),
             docstring: None,
         });
         let list_alias = TypeDecl::Alias(AliasType {
@@ -7392,6 +7611,7 @@ mod tests {
                         model_field("one", TypeRef::Primitive(Prim::Str), true),
                         model_field("two", TypeRef::Primitive(Prim::Str), true),
                     ],
+                    example_fields: Default::default(),
                     docstring: None,
                 }),
             },
@@ -7533,6 +7753,7 @@ mod tests {
             convert: true,
             is_file: false,
             form_json: false,
+            form_content_type: None,
             collision_prefix: None,
             example: None,
             media_example: false,
@@ -7573,6 +7794,7 @@ mod tests {
                 TypeRef::Primitive(Prim::Str),
                 false,
             )],
+            example_fields: Default::default(),
             docstring: None,
         });
         let batch = TypeDecl::Alias(AliasType {
@@ -7610,6 +7832,7 @@ mod tests {
             convert: false,
             is_file: false,
             form_json: false,
+            form_content_type: None,
             collision_prefix: None,
             example: None,
             media_example: false,
@@ -7760,6 +7983,7 @@ mod tests {
 
     fn endpoint(path: &str, params: Vec<PathParam>, response: Option<TypeRef>) -> Endpoint {
         Endpoint {
+            openapi_31: false,
             module: "m".to_string(),
             method_name: "op".to_string(),
             http_method: "GET",
@@ -7768,6 +7992,8 @@ mod tests {
             query_params: Vec::new(),
             header_params: Vec::new(),
             request_body: None,
+            request_body_required: false,
+            request_body_has_multipart_related: false,
             reference_body_type: None,
             request_body_doc: None,
             request_body_schema_doc: None,
@@ -7804,6 +8030,7 @@ mod tests {
             text_response: false,
             markdown_response: false,
             binary_response: false,
+            binary_schema_response: false,
             wildcard_binary_response: false,
             emittable: true,
         }
@@ -8116,6 +8343,7 @@ mod tests {
                 convert: false,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
@@ -8134,6 +8362,7 @@ mod tests {
                 convert: false,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
@@ -8152,6 +8381,7 @@ mod tests {
                 convert: true,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
@@ -8199,6 +8429,7 @@ mod tests {
                 convert: false,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
@@ -8216,6 +8447,7 @@ mod tests {
                 convert: false,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: None,
                 media_example: false,
@@ -8606,10 +8838,22 @@ mod tests {
                 model_field("id", TypeRef::Primitive(Prim::Int), true),
                 model_field("label", TypeRef::Primitive(Prim::Str), false),
             ],
+            example_fields: Default::default(),
             docstring: None,
         });
         let types = vec![
             payload,
+            TypeDecl::Object(ObjectType {
+                name: "Event".to_string(),
+                module: "event".to_string(),
+                bases: Vec::new(),
+                fields: vec![
+                    model_field("id", TypeRef::Primitive(Prim::Int), true),
+                    model_field("when", TypeRef::Primitive(Prim::Datetime), true),
+                ],
+                example_fields: Default::default(),
+                docstring: None,
+            }),
             TypeDecl::Alias(AliasType {
                 name: "PayloadAlias".to_string(),
                 module: "payload_alias".to_string(),
@@ -8757,6 +9001,64 @@ mod tests {
         assert!(ctx
             .value_from_example(&TypeRef::Named("Shape".to_string()), "{}")
             .is_none());
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::Named("Event".to_string()),
+                r#"{"when":"2000-01-23T04:56:07Z"}"#,
+            )
+            .expect("sentinel temporal example uses generated placeholders")
+            .flat(),
+            "Event(id=1, when=datetime.datetime.fromisoformat(\"2024-01-15 09:30:00+00:00\"))"
+        );
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::Union(vec![
+                    TypeRef::Primitive(Prim::Str),
+                    TypeRef::List(Box::new(TypeRef::Primitive(Prim::Int))),
+                ]),
+                r##"{"$ref":"#/components/schemas/Items"}"##,
+            )
+            .expect("reference-shaped union examples select their collection")
+            .flat(),
+            "[1]"
+        );
+
+        ctx.reference = true;
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Primitive(Prim::Any)),
+                ),
+                r#"{"enabled":true,"count":2}"#,
+            )
+            .expect("reference dictionaries retain keyed layout")
+            .render(0),
+            "{\n    \"enabled\": True,\n    \"count\": 2\n}"
+        );
+        assert_eq!(
+            ctx.value_from_example(&TypeRef::Primitive(Prim::Str), "'quoted'")
+                .expect("reference strings normalize quote style")
+                .flat(),
+            "\"quoted\""
+        );
+        ctx.reference = false;
+        ctx.documentation = true;
+        assert_eq!(
+            ctx.value_from_example(&TypeRef::Primitive(Prim::Str), r#""can't""#)
+                .expect("documentation strings escape apostrophes")
+                .flat(),
+            r#""can\'t""#
+        );
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::List(Box::new(TypeRef::Primitive(Prim::Date))),
+                r#"["2024-02-03","2024-02-03"]"#,
+            )
+            .expect("documentation temporal lists remove duplicate values")
+            .flat(),
+            "[datetime.date.fromisoformat(\"2024-02-03\")]"
+        );
 
         let payload_type = TypeRef::Named("Payload".to_string());
         assert!(ctx.example_matches_type(&payload_type, &serde_json::json!({ "id": 1 })));
@@ -8852,6 +9154,7 @@ mod tests {
             module: "base".to_string(),
             bases: Vec::new(),
             fields: vec![base_id],
+            example_fields: Default::default(),
             docstring: None,
         });
         let mut metadata = model_field("metadata", TypeRef::Primitive(Prim::Any), true);
@@ -8869,6 +9172,7 @@ mod tests {
             module: "child".to_string(),
             bases: vec!["Base".to_string()],
             fields: vec![metadata, invalid, recursive, children],
+            example_fields: Default::default(),
             docstring: None,
         });
         let empty_enum = TypeDecl::Enum(EnumType {
@@ -9024,6 +9328,25 @@ mod tests {
         assert!(rendered.contains("tenant=\"YOUR_TENANT\""), "{rendered}");
         assert!(rendered.contains("token=\"YOUR_TOKEN\""), "{rendered}");
 
+        let mut reference_ctx = example_ctx(&[], &[], &auth);
+        reference_ctx.global_headers = &global_headers;
+        let reference = build_documentation_example(
+            &ep,
+            false,
+            "widgets",
+            "acme",
+            "AcmeApi",
+            &mut reference_ctx,
+            None,
+            true,
+        )
+        .expect("wildcard request has a reference example")
+        .join("\n");
+        assert!(reference.contains("tags=["), "{reference}");
+        assert!(reference.contains("\"tags\""), "{reference}");
+        assert!(reference.contains("trace=\"trace-1\""), "{reference}");
+        assert!(reference.contains("request=\"payload\""), "{reference}");
+
         ep.request_body = Some(RequestBody::Inline(vec![
             BodyField {
                 wire_name: "when".to_string(),
@@ -9036,6 +9359,7 @@ mod tests {
                 convert: false,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: Some("\"2024-01-15T09:30:00Z\"".to_string()),
                 media_example: false,
@@ -9053,6 +9377,7 @@ mod tests {
                 convert: false,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: Some(r#"{"source":"test"}"#.to_string()),
                 media_example: true,
@@ -9075,6 +9400,169 @@ mod tests {
             "{rendered}"
         );
         assert!(rendered.contains("await client.widgets.op("), "{rendered}");
+    }
+
+    #[test]
+    fn referenced_request_examples_preserve_fern_importer_names() {
+        let alias = TypeDecl::Alias(AliasType {
+            name: "EpsBearerContainer".to_string(),
+            module: "eps_bearer_container".to_string(),
+            target: TypeRef::Primitive(Prim::Str),
+            docstring: None,
+        });
+        let mut ep = endpoint("/contexts", Vec::new(), Some(TypeRef::Primitive(Prim::Str)));
+        ep.http_method = "POST";
+        ep.request_body_required = true;
+        ep.request_body_has_multipart_related = true;
+        ep.reference_body_example = Some(serde_json::json!({
+            "epsBearerSetup": [null, null],
+            "5gMmCauseValue": 0,
+        }));
+        ep.request_body = Some(RequestBody::Inline(vec![
+            BodyField {
+                wire_name: "epsBearerSetup".to_string(),
+                py_name: "eps_bearer_setup".to_string(),
+                type_ref: TypeRef::List(Box::new(TypeRef::Named("EpsBearerContainer".to_string()))),
+                optional: true,
+                nullable: false,
+                spec_required: false,
+                docstring: None,
+                convert: true,
+                is_file: false,
+                form_json: false,
+                form_content_type: None,
+                collision_prefix: None,
+                example: Some("[null,null]".to_string()),
+                media_example: true,
+                schema_body_example: true,
+                reference_order: 0,
+            },
+            BodyField {
+                wire_name: "5gMmCauseValue".to_string(),
+                py_name: "_5g_mm_cause_value".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Int),
+                optional: true,
+                nullable: false,
+                spec_required: false,
+                docstring: None,
+                convert: false,
+                is_file: false,
+                form_json: false,
+                form_content_type: None,
+                collision_prefix: None,
+                example: Some("0".to_string()),
+                media_example: true,
+                schema_body_example: true,
+                reference_order: 1,
+            },
+        ]));
+
+        let auth = Auth::None;
+        let types = [alias];
+        let mut ctx = example_ctx(&types, &[], &auth);
+        let executable = build_example(&ep, false, "contexts", "fern", "FernApi", &mut ctx, false)
+            .expect("referenced request has an executable example")
+            .join("\n");
+        assert!(executable.contains("eps_bearer_setup=[\"epsBearerSetup\", \"epsBearerSetup\"]"));
+        assert!(executable.contains("f_5g_mm_cause_value=0"));
+
+        let mut ctx = example_ctx(&types, &[], &auth);
+        let reference = build_documentation_example(
+            &ep, false, "contexts", "fern", "FernApi", &mut ctx, None, true,
+        )
+        .expect("referenced request has a reference example")
+        .join("\n");
+        assert!(reference.contains("f_value=0"), "{reference}");
+        assert!(reference.contains("\"epsBearerSetup\""), "{reference}");
+
+        ep.request_body_required = false;
+        ep.request_body_has_multipart_related = false;
+        let mut ctx = example_ctx(&types, &[], &auth);
+        let optional = build_example(&ep, false, "contexts", "fern", "FernApi", &mut ctx, false)
+            .expect("optional request has an example")
+            .join("\n");
+        assert!(optional.contains("_5g_mm_cause_value=0"), "{optional}");
+
+        ep.request_body = Some(RequestBody::Form(FormBody {
+            multipart: true,
+            fields: vec![BodyField {
+                wire_name: "binaryDataN1SmMessage".to_string(),
+                py_name: "binary_data_n1sm_message".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Bytes),
+                optional: true,
+                nullable: false,
+                spec_required: false,
+                docstring: None,
+                convert: false,
+                is_file: true,
+                form_json: false,
+                form_content_type: Some("application/vnd.3gpp.5gnas".to_string()),
+                collision_prefix: None,
+                example: None,
+                media_example: false,
+                schema_body_example: false,
+                reference_order: 0,
+            }],
+        }));
+        ep.body_schema_ref = true;
+        assert!(readme_endpoint_eligible(&ep));
+        let mut ctx = example_ctx(&types, &[], &auth);
+        let form = build_documentation_example(
+            &ep, false, "contexts", "fern", "FernApi", &mut ctx, None, false,
+        )
+        .expect("multipart related request has a README example")
+        .join("\n");
+        assert!(
+            form.contains("binary_data_n1sm_message=\"example_binaryDataN1SmMessage\""),
+            "{form}"
+        );
+    }
+
+    #[test]
+    fn generation_covers_root_and_explicit_empty_endpoint_namespaces() {
+        let mut root = endpoint("/root", Vec::new(), Some(TypeRef::Primitive(Prim::Str)));
+        root.openapi_31 = true;
+        root.module.clear();
+        root.docstring = Some("Root operation.".to_string());
+        root.response_doc = Some("Root response.".to_string());
+        root.query_params.push(QueryParam {
+            wire_name: "filter".to_string(),
+            py_name: "filter".to_string(),
+            type_ref: TypeRef::Primitive(Prim::Str),
+            required: false,
+            convert: false,
+            comma_separated: false,
+            example: Some("\"active\"".to_string()),
+            example_is_scalar: true,
+            docstring: Some("Optional filter.".to_string()),
+        });
+        let mut explicit_empty =
+            endpoint("/empty", Vec::new(), Some(TypeRef::Primitive(Prim::Str)));
+        explicit_empty.module = "_".to_string();
+        explicit_empty.method_name = "empty".to_string();
+
+        let mut ir = ir_with(vec![root, explicit_empty]);
+        ir.empty_endpoint_namespace = true;
+        ir.endpoint_modules = vec!["_".to_string()];
+        ir.empty_namespace_types = vec!["EmptyResult".to_string()];
+        ir.tag_types = vec![TagTypeDecl {
+            module: "_".to_string(),
+            decl: TypeDecl::Alias(AliasType {
+                name: "EmptyResult".to_string(),
+                module: "empty_result".to_string(),
+                target: TypeRef::Primitive(Prim::Str),
+                docstring: None,
+            }),
+        }];
+        let files = generate(&ir).expect("root and explicit empty namespaces generate");
+        assert!(files
+            .iter()
+            .any(|file| file.path.ends_with("src/fern/client.py")));
+        assert!(files
+            .iter()
+            .any(|file| file.path.ends_with("src/fern/raw_client.py")));
+        assert!(files.iter().any(|file| file.path.ends_with("README.md")));
+        assert!(files.iter().any(|file| file.path.ends_with("reference.md")));
     }
 
     #[test]
@@ -9173,6 +9661,7 @@ mod tests {
                 convert: false,
                 is_file: false,
                 form_json: false,
+                form_content_type: None,
                 collision_prefix: None,
                 example: Some("\"open\"".to_string()),
                 media_example: false,

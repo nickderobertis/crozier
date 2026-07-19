@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "tamoss",
+  "corpus_spec_ref": "ccbef170204082f3ae3842c2ffee476f5008e1fb",
+  "corpus_spec_url": "https://raw.githubusercontent.com/livewyer-ops/tamoss/ccbef170204082f3ae3842c2ffee476f5008e1fb/src/openapi-contract.yaml"
+}

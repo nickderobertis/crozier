@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "worldcoin-signup-sequencer",
+  "corpus_spec_ref": "f2870f1412517bfc2377838ff20cb0ee03ddaf72",
+  "corpus_spec_url": "https://raw.githubusercontent.com/worldcoin/signup-sequencer/f2870f1412517bfc2377838ff20cb0ee03ddaf72/schemas/openapi-v3.yaml"
+}

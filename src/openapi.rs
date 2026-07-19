@@ -49,6 +49,9 @@ pub struct OpenApi {
     /// API operations, keyed by URL path, in document order.
     #[serde(default, deserialize_with = "deserialize_paths")]
     pub paths: IndexMap<String, PathItem>,
+    /// OpenAPI 3.1 webhook operations, keyed by event name in document order.
+    #[serde(default)]
+    pub webhooks: IndexMap<String, PathItem>,
     /// Document-wide default security requirement; an operation without its own
     /// `security` inherits this.
     #[serde(default)]
@@ -281,6 +284,9 @@ impl PathItem {
 /// A single API operation.
 #[derive(Debug, Deserialize)]
 pub struct Operation {
+    /// Whether path-item parameters were merged into this operation.
+    #[serde(skip)]
+    pub path_level_parameters: bool,
     /// The operation identifier, `{group}_{camelMethodName}`. `None` distinguishes
     /// an omitted identifier from an explicitly empty one, which Fern names `_`.
     #[serde(rename = "operationId", default)]
@@ -492,6 +498,17 @@ pub struct MediaType {
     /// Named examples for the media payload, in declaration order.
     #[serde(default)]
     pub examples: IndexMap<String, ParameterExample>,
+    /// Per-part multipart serialization metadata.
+    #[serde(default)]
+    pub encoding: IndexMap<String, Encoding>,
+}
+
+/// Serialization metadata for one multipart property.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct Encoding {
+    /// Explicit MIME type for the part.
+    #[serde(rename = "contentType", default)]
+    pub content_type: Option<String>,
 }
 
 /// The `info` block.
@@ -575,6 +592,9 @@ pub struct Schema {
     /// Enum values (strings for the cases crozier generates).
     #[serde(rename = "enum", default)]
     pub enum_values: Option<Vec<serde_json::Value>>,
+    /// JSON Schema `const`, treated as a single-value enum by Fern's importer.
+    #[serde(rename = "const", default)]
+    pub const_value: Option<serde_json::Value>,
     /// `oneOf` variants.
     #[serde(rename = "oneOf", default, deserialize_with = "de_composition")]
     pub one_of: Option<Vec<Schema>>,
@@ -1156,6 +1176,7 @@ fn normalize_parameters(doc: &mut OpenApi) {
             .collect();
         for slot in item.operation_slots() {
             let Some(op) = slot else { continue };
+            op.path_level_parameters = !shared.is_empty();
             let mut merged = shared.clone();
             for own in &op.parameters {
                 let own = resolve_parameter(own, &defs);

@@ -112,7 +112,18 @@ pub fn to_pascal_case(input: &str) -> String {
 /// The class name for a named schema.
 #[must_use]
 pub fn class_name(schema_key: &str) -> String {
-    sanitize_identifier(&to_pascal_case(schema_key))
+    let pascal = to_pascal_case(schema_key);
+    let expanded = pascal
+        .chars()
+        .next()
+        .and_then(|digit| digit.to_digit(10))
+        .map_or(pascal.clone(), |digit| {
+            let word = [
+                "Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+            ][digit as usize];
+            format!("{word}{}", &pascal[1..])
+        });
+    sanitize_identifier(&expanded)
 }
 
 /// The module (file stem) name for a generated type.
@@ -149,6 +160,18 @@ pub fn field_name(wire_name: &str) -> String {
         format!("{snake}_")
     } else {
         snake
+    }
+}
+
+/// Python argument name for an inlined request-body property. Fern prefixes a
+/// digit-leading body argument with `_` (distinct from model fields' `f_`).
+#[must_use]
+pub fn request_field_name(wire_name: &str) -> String {
+    let snake = collapse_digit_boundaries(&to_snake_case(&fold_non_identifier(wire_name)));
+    if snake.starts_with(|c: char| c.is_ascii_digit()) {
+        format!("_{snake}")
+    } else {
+        field_name(wire_name)
     }
 }
 
@@ -630,7 +653,7 @@ mod tests {
 
     #[test]
     fn digit_leading_schema_names_get_legal_class_names() {
-        assert_eq!(class_name("5GmmCause"), "_5GmmCause");
+        assert_eq!(class_name("5GmmCause"), "FiveGmmCause");
         assert_eq!(class_name("Widget"), "Widget");
     }
 
@@ -670,6 +693,11 @@ mod tests {
         assert_eq!(field_name("2-factor"), "f_2factor");
         // Non-digit-leading names are untouched.
         assert_eq!(field_name("v2"), "v2");
+    }
+
+    #[test]
+    fn digit_leading_request_fields_get_underscore_prefix() {
+        assert_eq!(request_field_name("5gMmCauseValue"), "_5g_mm_cause_value");
     }
 
     #[test]

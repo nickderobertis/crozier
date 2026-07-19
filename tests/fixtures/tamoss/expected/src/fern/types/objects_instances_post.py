@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .objects_instances_post_label import ObjectsInstancesPostLabel
+from .objects_instances_post_storage_id import ObjectsInstancesPostStorageId
+
+ObjectsInstancesPost = typing.Union[ObjectsInstancesPostStorageId, ObjectsInstancesPostLabel]
