@@ -6536,12 +6536,11 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
         // A single intentional leading space in legacy specs is preserved by
         // Fern, while ordinary multi-space indentation is trimmed. Tabs in prose
         // are expanded to four spaces by its importer.
-        let text = if text.starts_with("    ") && text.contains("\n\n    Attributes:") {
-            text
-        } else if text.starts_with(' ')
-            && text
-                .get(1..)
-                .is_some_and(|rest| rest.chars().next().is_some_and(|ch| !ch.is_whitespace()))
+        let text = if text.starts_with("    ") && text.contains("\n\n    Attributes:")
+            || text.starts_with(' ')
+                && text
+                    .get(1..)
+                    .is_some_and(|rest| rest.chars().next().is_some_and(|ch| !ch.is_whitespace()))
         {
             text
         } else {
@@ -6559,12 +6558,11 @@ fn operation_doc(desc: Option<&str>) -> Option<String> {
     if trimmed.trim_start().is_empty() {
         Some(String::new())
     } else {
-        let trimmed = if trimmed.starts_with("    ") && trimmed.contains("\n\n    Attributes:") {
-            trimmed
-        } else if trimmed.starts_with(' ')
-            && trimmed
-                .get(1..)
-                .is_some_and(|rest| rest.chars().next().is_some_and(|ch| !ch.is_whitespace()))
+        let trimmed = if trimmed.starts_with("    ") && trimmed.contains("\n\n    Attributes:")
+            || trimmed.starts_with(' ')
+                && trimmed
+                    .get(1..)
+                    .is_some_and(|rest| rest.chars().next().is_some_and(|ch| !ch.is_whitespace()))
         {
             trimmed
         } else {
