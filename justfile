@@ -194,42 +194,44 @@ fern-goldens-result *args:
 test-fern-goldens:
     python3 tests/fern_goldens_test.py
 
-# Coverage-growth aid: for each corpus, report which committed fixture files
-# crozier ALREADY reproduces byte-for-byte but are missing from its `matched` list
-# in tests/e2e.rs, printed as ready-to-paste array entries. Not part of `check`.
-# Run after a generator change to grow the manifest. See tests/fixtures/AGENTS.md.
+# Census aid: report the exact expected files crozier still does not reproduce.
+# The output is the ready-to-paste `unmatched` task list. Not part of `check`.
 # The grep is a drift gate: `cargo test <name>` exits 0 even when the exact-name
-# filter matches nothing, so if `report_matched_candidates` is renamed/removed in
+# filter matches nothing, so if `report_fixture_gaps` is renamed/removed in
 # tests/e2e.rs this recipe would silently no-op — asserting the report's summary
 # line turns that into a hard failure instead.
-fixtures-candidates corpus="":
+fixtures-gaps corpus="":
     #!/usr/bin/env bash
     set -uo pipefail
-    out=$(mktemp "${TMPDIR:-/tmp}/crozier-fixtures-candidates.XXXXXX")
+    out=$(mktemp "${TMPDIR:-/tmp}/crozier-fixtures-gaps.XXXXXX")
     trap 'rm -f "$out"' EXIT
     status=0
-    CROZIER_CANDIDATES_CORPUS="{{corpus}}" \
-      cargo test --locked --test e2e -- --ignored --nocapture report_matched_candidates \
+    CROZIER_GAPS_CORPUS="{{corpus}}" \
+      cargo test --locked --test e2e -- --ignored --nocapture report_fixture_gaps \
       >"$out" 2>&1 || status=$?
-    if [ "$status" -eq 0 ] && grep -q 'candidate file(s) across all corpora' "$out"; then
+    if [ "$status" -eq 0 ] && grep -q 'file(s) still unmatched across all corpora' "$out"; then
       # Quiet on success: print only the report the user asked for, not cargo's
       # build/test scaffolding — from the first corpus header through the summary.
-      awk '/^=== /{p=1} p; /candidate file\(s\) across all corpora/{p=0}' "$out"
+      awk '/^=== /{p=1} p; /file\(s\) still unmatched across all corpora/{p=0}' "$out"
     else
       # Drift (test renamed → 0 tests run) or a failed self-check: surface it all.
       cat "$out" >&2
-      echo "fixtures-candidates: no report from report_matched_candidates — renamed/removed in tests/e2e.rs, or its self-check failed" >&2
+      echo "fixtures-gaps: no report from report_fixture_gaps — renamed/removed in tests/e2e.rs, or its self-check failed" >&2
       exit 1
     fi
 
-# Mismatch-investigation aid (inverse of `fixtures-candidates`): print the
+# Backward-compatible alias for the former reporter name.
+fixtures-candidates corpus="":
+    just fixtures-gaps "{{corpus}}"
+
+# Mismatch-investigation aid: print the
 # normalized unified diff of every committed fixture file crozier does NOT
 # reproduce byte-for-byte — exactly the bytes the gate compares (`-` = Fern
 # golden, `+` = crozier; comments, SDK headers, and __init__ import order already
 # normalized out), so what you see is what to fix. Optional args narrow scope:
 # `just fixtures-diff <corpus> <file-substring>`. Not part of `check`. Run it to
 # see WHY a file doesn't match; see tests/fixtures/AGENTS.md. Same drift guard as
-# `fixtures-candidates`: assert the report's summary line so a renamed
+# `fixtures-gaps`: assert the report's summary line so a renamed
 # `report_fixture_diffs` fails loudly instead of silently no-op'ing.
 fixtures-diff corpus="" file="":
     #!/usr/bin/env bash

@@ -97,8 +97,8 @@ Use the `just` recipes; do not hand-roll equivalents.
   [`docs/fern-goldens.md`](docs/fern-goldens.md).
 - `just test-fern-goldens` — exercise the golden automation's process,
   filesystem, publication, and workflow boundaries. Part of `just check`.
-- `just fixtures-candidates` / `just fixtures-diff` — the fixture-match loop:
-  `candidates` reports files crozier now matches (to add to `matched`); `diff`
+- `just fixtures-gaps` / `just fixtures-diff` — the fixture-match loop: `gaps`
+  reports the measured residual `unmatched` task lists; `diff`
   prints the normalized diff of files it doesn't (to fix the generator). Neither
   gates. See [`tests/fixtures/AGENTS.md`](tests/fixtures/AGENTS.md).
 - `just lint-llm` / `just lint-llm-diff` — LLM-judge tier (llmlint), separate from
@@ -201,7 +201,7 @@ The suite is the only QA loop. E2E runs the real binary and byte-compares its
 the filesystem it writes. Done means complete, not minimal: cover malformed-spec
 failure and missing-file recovery, not just the happy path. Coverage is a floor
 (95%), not the target. The e2e fixture manifest ([`docs/matching.md`]) is the
-source of truth for which files are matched; it grows as generation lands.
+source of truth for residual divergences; it shrinks as generation lands.
 
 ## Keeping the allowlist current
 

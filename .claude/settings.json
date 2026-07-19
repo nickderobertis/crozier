@@ -29,7 +29,7 @@
       "Bash(just format)",
       "Bash(just upgrade)",
       "Bash(just fixtures-refresh)",
-      "Bash(just fixtures-candidates)",
+      "Bash(just fixtures-gaps)",
       "Bash(just fixtures-diff:*)",
       "Bash(just fern-goldens:*)",
       "Bash(just fern-goldens-generate:*)",

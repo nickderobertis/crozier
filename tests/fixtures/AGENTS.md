@@ -1,7 +1,7 @@
 # tests/fixtures/AGENTS.md
 
 Folder-scoped notes for the golden fixture corpus. Layout, provenance, and the
-matched manifest live in [`README.md`](README.md) and
+gap manifest lives in [`README.md`](README.md) and
 [`../../docs/matching.md`](../../docs/matching.md); the maintenance lifecycle is
 [`../../docs/fern-goldens.md`](../../docs/fern-goldens.md). This file is the
 judgment a script can't encode. See the root [`AGENTS.md`](../../AGENTS.md) for
@@ -10,8 +10,8 @@ the rest.
 ## Adding a fixture
 
 Add one numbered [`CORPUS.md`](CORPUS.md) row and source URL per feature branch,
-then wire a `Corpus { api, package_name, project_name, matched: &[] }` into
-`tests/e2e.rs`. Start `matched` **empty**. Push the branch and manually dispatch
+then wire a `Corpus { api, package_name, project_name, unmatched: &[] }` into
+`tests/e2e.rs`. Push the branch and manually dispatch
 the **Fern goldens** workflow on that branch for the fixture; red comparison is
 expected until Crozier is repaired. A Monday 05:17 UTC run from `main` leaves
 both inputs blank to check the latest Fern against every managed golden. Do Fern
@@ -62,12 +62,13 @@ these is built from a spec with Fern overrides applied, not the raw document.
 Accepted and matched corpus status lives in [`CORPUS.md`](CORPUS.md); do not
 duplicate its batch ledger here.
 
-## Growing `matched` — don't diff by hand
+## Shrinking `unmatched` — don't diff by hand
 
-After a generator change, `just fixtures-candidates` reports every `expected/`
-file crozier now reproduces byte-for-byte that isn't yet listed, as ready-to-paste
-array entries. Paste them into that corpus's `matched`; the gate then locks them
-in. This is the loop — not a manual tree diff.
+`just fixtures-gaps` generates every available corpus and reports the exact
+remaining divergent files as ready-to-paste `unmatched` arrays. Every expected
+file outside that opt-out list is gated, including files newly emitted by Fern.
+The reporter also rejects stale entries that now match. `fixtures-candidates` is
+retained as an alias.
 
 ## Why a file *doesn't* match — `just fixtures-diff`
 
@@ -78,15 +79,14 @@ comments, SDK-identity headers, and `__init__.py` import order are already
 normalized out — so a raw `diff tempdir fixture` won't mislead you with
 differences the gate ignores. Narrow to one file with the substring arg while
 iterating on the generator. The gate's own failure message prints the same diff
-inline, so a regression in a `matched` file is diagnosable straight from
+inline, so a regression outside `unmatched` is diagnosable straight from
 `just test-e2e` without a second pass.
 
 ## Non-negotiable
 
-- **A file joins `matched` only after crozier byte-matches it.** Never edit a
-  committed fixture to match crozier — the fixture is Fern's golden output; fix
-  the generator instead. `just fixtures-candidates` reports *matches*, never
-  rewrites fixtures.
+- **`unmatched` contains only measured divergences.** Never edit a committed
+  fixture to match crozier — the fixture is Fern's golden output; fix the
+  generator instead. `just fixtures-gaps` reports gaps and never rewrites fixtures.
 - **Keep attribution.** The corpus is Fern's output (Apache-2.0); `../../NOTICE`
   and `../../licenses/fern-APACHE-2.0.txt` must survive any regeneration (the
   refresh scripts preserve them).
