@@ -2643,6 +2643,7 @@ fn error_body_type(resp: &Response, class: &str) -> TypeRef {
 /// in the package-root `types/`, reachable only through the aggregators.
 fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
     let mut bodies: IndexMap<String, Schema> = IndexMap::new();
+    let mut superseded_enums: IndexMap<String, Schema> = IndexMap::new();
     for (_, item) in &doc.paths {
         for (_, op) in item.operations() {
             for (code, resp) in &op.responses {
@@ -2666,13 +2667,19 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                     let name = format!("{class}Body");
                     if let Some(existing) = bodies.get_mut(&name) {
                         for (property, property_schema) in &schema.properties {
-                            if string_enum_values(property_schema).is_some()
-                                || !existing.properties.contains_key(property)
-                            {
-                                existing
-                                    .properties
-                                    .insert(property.clone(), property_schema.clone());
+                            if let Some(previous) = existing.properties.get(property) {
+                                if string_enum_values(previous).is_some()
+                                    && string_enum_values(property_schema).is_none()
+                                {
+                                    superseded_enums.insert(
+                                        format!("{name}{}", naming::class_name(property)),
+                                        previous.clone(),
+                                    );
+                                }
                             }
+                            existing
+                                .properties
+                                .insert(property.clone(), property_schema.clone());
                         }
                         for required in &schema.required {
                             if !existing.required.contains(required) {
@@ -2694,6 +2701,9 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                 }
             }
         }
+    }
+    for (name, schema) in superseded_enums {
+        builder.add_named(&name, &schema);
     }
     for (name, schema) in bodies {
         builder.add_named(&name, &schema);
@@ -6650,6 +6660,14 @@ mod tests {
                             "errorCode": { "type": "string", "enum": ["invalid"] }
                         }
                     } } }
+                } } } },
+                "/third": { "get": { "responses": { "400": {
+                    "content": { "application/json": { "schema": {
+                        "type": "object", "properties": {
+                            "message": { "type": "string" },
+                            "errorCode": { "type": "string" }
+                        }
+                    } } }
                 } } } }
             }
         }))
@@ -6664,7 +6682,9 @@ mod tests {
         assert!(builder.types.iter().any(|decl| matches!(
             decl,
             TypeDecl::Object(object)
-                if object.name == "BadRequestErrorBody" && object.fields.len() == 2
+                if object.name == "BadRequestErrorBody"
+                    && object.fields.len() == 2
+                    && object.fields[1].type_ref == TypeRef::Primitive(Prim::Str)
         )));
         assert!(builder.types.iter().any(|decl| matches!(
             decl,
