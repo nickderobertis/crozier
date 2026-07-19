@@ -2835,7 +2835,7 @@ fn resolve_request_body(
     // explicitly opts out. Wildcard request schemas remain required even when the
     // OpenAPI wrapper says otherwise: the importer models the wildcard payload
     // itself as the endpoint input.
-    let required = media_type == "*/*" || rb.required != Some(false);
+    let required = (media_type == "*/*" || rb.required != Some(false)) && !is_optional(schema);
     let content_type_override = (media_type != "application/json").then(|| media_type.to_string());
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
@@ -8788,6 +8788,26 @@ mod tests {
         );
         assert!(!fields[0].form_json);
         assert!(fields[1].form_json);
+    }
+
+    #[test]
+    fn nullable_request_schema_makes_the_body_optional() {
+        let doc: OpenApi =
+            serde_json::from_value(serde_json::json!({})).expect("empty document deserializes");
+        let body: crate::openapi::RequestBody = serde_json::from_value(serde_json::json!({
+            "content": { "application/json": { "schema": {
+                "type": "object", "properties": {}, "nullable": true
+            } } }
+        }))
+        .expect("request body deserializes");
+        let mut hoister = InlineHoister {
+            root_types: &[],
+            schemas: Some(&doc.components.schemas),
+            out: Vec::new(),
+        };
+        let resolved =
+            super::resolve_request_body(&doc, &[], &body, &mut hoister, "DeleteRequest", false);
+        assert!(matches!(resolved, Some(RequestBody::Single(body)) if !body.required));
     }
 
     #[test]
