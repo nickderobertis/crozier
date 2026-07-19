@@ -1882,6 +1882,36 @@ fn build_endpoint(
             hoister.hoist_object(&name, schema);
             Some(TypeRef::Named(name))
         }
+        Some(schema) if schema.reference.is_none() && is_map(schema) => {
+            if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
+                if let Some(variants) = value.one_of.as_ref().or(value.any_of.as_ref()) {
+                    let name = format!("{pascal_ctx}ResponseValue");
+                    let target = TypeRef::Union(
+                        variants
+                            .iter()
+                            .enumerate()
+                            .map(|(index, variant)| {
+                                hoister.hoist_union_variant(&name, index, variant, variants)
+                            })
+                            .collect(),
+                    );
+                    hoister.out.push(TypeDecl::Alias(AliasType {
+                        name: name.clone(),
+                        module: naming::module_name(&name),
+                        target,
+                        docstring: clean_doc(value.description.as_deref()),
+                    }));
+                    Some(TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Named(name)),
+                    ))
+                } else {
+                    success_response(op)
+                }
+            } else {
+                success_response(op)
+            }
+        }
         Some(schema) if schema.reference.is_none() => hoister
             .hoist_array_item_enum(&format!("{pascal_ctx}Response"), schema)
             .or_else(|| {
@@ -6916,6 +6946,39 @@ mod tests {
                 .collect::<Vec<_>>(),
             ["Response", "ErrorCode"]
         );
+
+        let map_op: crate::openapi::Operation = serde_json::from_value(serde_json::json!({
+            "operationId": "list_mcp_servers",
+            "tags": ["Tools"],
+            "responses": { "200": { "content": { "application/json": { "schema": {
+                "type": "object",
+                "additionalProperties": { "oneOf": [
+                    { "type": "string" }, { "type": "integer" }
+                ] }
+            } } } } }
+        }))
+        .expect("map response operation deserializes");
+        let mut map_types = Vec::new();
+        let map_endpoint = build_endpoint(
+            &doc,
+            &[],
+            "/mcp-servers",
+            "GET",
+            &map_op,
+            &mut map_types,
+            &global_headers,
+        );
+        assert_eq!(
+            map_endpoint.response,
+            Some(TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Named("ListMcpServersResponseValue".to_string()))
+            ))
+        );
+        assert!(map_types.iter().any(|tag| matches!(
+            &tag.decl,
+            TypeDecl::Alias(alias) if alias.name == "ListMcpServersResponseValue"
+        )));
     }
 
     #[test]
