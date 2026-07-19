@@ -1709,7 +1709,7 @@ fn build_endpoint(
             example: parameter_example(doc, p),
         })
         .collect();
-    if !doc.openapi.starts_with("3.1") {
+    if !doc.openapi.starts_with("3.1") || op.path_level_parameters {
         path_params.sort_by(|a, b| {
             path_param_position(path, &a.wire_name)
                 .cmp(&path_param_position(path, &b.wire_name))
