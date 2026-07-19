@@ -5066,38 +5066,30 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
             .iter()
             .all(|sibling| sibling.properties.contains_key(*candidate))
     });
-    let unique_required = variant.properties.keys().rev().find(|candidate| {
-        variant.required.contains(*candidate)
-            && siblings
-                .iter()
-                .filter(|sibling| sibling.properties.contains_key(*candidate))
-                .count()
-                == 1
-    });
-    let unique = unique_required.cloned().or_else(|| {
-        variant
-            .properties
-            .values()
-            .find_map(|property| {
-                string_enum_values(property)
-                    .filter(|values| values.len() == 1)
-                    .and_then(|values| values.into_iter().next())
-            })
-            .or_else(|| {
-                variant
-                    .properties
-                    .keys()
-                    .find(|candidate| {
-                        candidate.as_str() != "resource_list"
-                            && siblings
-                                .iter()
-                                .filter(|sibling| sibling.properties.contains_key(*candidate))
-                                .count()
-                                == 1
-                    })
-                    .cloned()
-            })
-    });
+    let unique = variant
+        .properties
+        .values()
+        .find_map(|property| {
+            string_enum_values(property)
+                .filter(|values| values.len() == 1)
+                .and_then(|values| values.into_iter().next())
+        })
+        .or_else(|| {
+            variant
+                .properties
+                .keys()
+                .find(|candidate| {
+                    candidate.as_str() != "resource_list"
+                        && candidate.as_str() != "metadata"
+                        && candidate.as_str() != "url"
+                        && siblings
+                            .iter()
+                            .filter(|sibling| sibling.properties.contains_key(*candidate))
+                            .count()
+                            == 1
+                })
+                .cloned()
+        });
     let unique = if siblings.len() > 2
         && index + 1 == siblings.len()
         && shared_first.map(String::as_str) == Some("assets")
