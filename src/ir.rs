@@ -126,6 +126,7 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
             .as_deref()
             .filter(|description| {
                 !description.eq_ignore_ascii_case("production server")
+                    && !description.to_ascii_lowercase().starts_with("local ")
                     && !description.eq_ignore_ascii_case(&doc.info.title)
             })
             .map(env_member_name)
