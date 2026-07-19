@@ -125,9 +125,18 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
             .description
             .as_deref()
             .filter(|description| {
+                let title_stem = doc
+                    .info
+                    .title
+                    .strip_suffix(" API")
+                    .unwrap_or(&doc.info.title);
                 !description.eq_ignore_ascii_case("production server")
                     && !description.to_ascii_lowercase().starts_with("local ")
                     && !description.eq_ignore_ascii_case(&doc.info.title)
+                    && (title_stem.is_empty()
+                        || !description
+                            .to_ascii_lowercase()
+                            .starts_with(&title_stem.to_ascii_lowercase()))
             })
             .map(env_member_name)
             .filter(|n| !n.is_empty())
@@ -6704,6 +6713,17 @@ mod tests {
         let env = environment_model(&doc, "FernApi").expect("server yields environment");
         assert_eq!(env.member.0, "DEFAULT");
         assert_eq!(env.default_ref(), "FernApiEnvironment.DEFAULT");
+
+        let cloud: OpenApi = serde_json::from_value(serde_json::json!({
+            "info": { "title": "Letta API" },
+            "servers": [{
+                "description": "Letta Cloud",
+                "url": "https://app.letta.com"
+            }]
+        }))
+        .expect("cloud document deserializes");
+        let env = environment_model(&cloud, "FernApi").expect("server yields environment");
+        assert_eq!(env.member.0, "DEFAULT");
     }
 
     #[test]
