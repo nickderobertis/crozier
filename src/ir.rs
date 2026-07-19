@@ -1930,10 +1930,29 @@ fn build_endpoint(
         || request_body.is_some()
         || op.request_body.as_ref().is_some_and(request_body_ignored);
 
+    let global_parameter_unions: std::collections::HashSet<String> = op
+        .parameters
+        .iter()
+        .filter_map(|parameter| {
+            let schema = parameter.schema.as_ref()?;
+            let members = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
+            let non_null: Vec<&Schema> = members
+                .iter()
+                .filter(|member| member.ty.as_ref().and_then(TypeField::primary) != Some("null"))
+                .collect();
+            (non_null.len() != 1 || string_enum_values(non_null[0]).is_none())
+                .then(|| format!("{request_ctx}{}", naming::class_name(&parameter.name)))
+        })
+        .collect();
     // Register the hoisted inline types under this tag's `types/` package.
     for decl in hoister.out {
+        let decl_module = if global_parameter_unions.contains(decl.name()) {
+            String::new()
+        } else {
+            module.clone()
+        };
         tag_types.push(TagTypeDecl {
-            module: module.clone(),
+            module: decl_module,
             decl,
         });
     }
@@ -3468,6 +3487,31 @@ impl InlineHoister<'_> {
                     values,
                     clean_doc(schema.description.as_deref()),
                 )));
+                return TypeRef::Named(name);
+            }
+            if let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
+                let name = format!("{request_ctx}{}", naming::class_name(param));
+                let non_null: Vec<&Schema> = members
+                    .iter()
+                    .filter(|member| {
+                        member.ty.as_ref().and_then(TypeField::primary) != Some("null")
+                    })
+                    .collect();
+                if non_null.len() == 1 {
+                    if let Some(values) = string_enum_values(non_null[0]) {
+                        self.out
+                            .push(TypeDecl::Enum(build_enum(&name, values, None)));
+                        return TypeRef::Named(name);
+                    }
+                }
+                let mut variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
+                variants.dedup();
+                self.out.push(TypeDecl::Alias(AliasType {
+                    name: name.clone(),
+                    module: naming::module_name(&name),
+                    target: TypeRef::Union(variants),
+                    docstring: clean_doc(schema.description.as_deref()),
+                }));
                 return TypeRef::Named(name);
             }
             if let Some(array) = self.hoist_array_item_enum(
@@ -7831,6 +7875,32 @@ mod tests {
             ))))
         );
         assert_eq!(hoister.out.len(), 2);
+
+        let offset = schema(serde_json::json!({
+            "oneOf": [{ "type": "string" }, { "type": "number" }]
+        }));
+        assert_eq!(
+            hoister.hoist_param_enum("ListFeedsRequest", "offset", &offset),
+            TypeRef::Named("ListFeedsRequestOffset".to_string())
+        );
+        let operator = schema(serde_json::json!({
+            "anyOf": [
+                { "type": "string", "enum": ["gt", "lt"] },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            hoister.hoist_param_enum("ListRunsRequest", "duration_operator", &operator),
+            TypeRef::Named("ListRunsRequestDurationOperator".to_string())
+        );
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Alias(alias) if alias.name == "ListFeedsRequestOffset"
+        )));
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Enum(value) if value.name == "ListRunsRequestDurationOperator"
+        )));
     }
 
     #[test]

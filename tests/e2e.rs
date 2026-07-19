@@ -15257,6 +15257,17 @@ const LETTA: Corpus = Corpus {
         "src/fern/scheduled_messages/types/scheduled_messages_list_scheduled_messages_response_scheduled_messages_item_message_messages_item_content_zero_item.py",
         "src/fern/scheduled_messages/types/scheduled_messages_retrieve_scheduled_message_response_message_messages_item_content_zero_item.py",
         "src/fern/scheduled_messages/types/scheduled_messages_schedule_agent_message_request_messages_item_content_zero_item.py",
+        "src/fern/internal_runs/__init__.py",
+        "src/fern/internal_runs/types/__init__.py",
+        "src/fern/internal_runs/types/list_internal_runs_request_duration_operator.py",
+        "src/fern/pipelines/client.py",
+        "src/fern/steps/types/list_steps_request_feedback.py",
+        "src/fern/types/feeds_list_feeds_request_offset.py",
+        "src/fern/types/feeds_list_subscriptions_request_offset.py",
+        "src/fern/types/pipelines_list_pipelines_request_offset.py",
+        "src/fern/types/projects_list_projects_request_offset.py",
+        "src/fern/types/templates_list_template_versions_request_offset.py",
+        "src/fern/types/templates_list_templates_request_offset.py",
     ],
 };
 
