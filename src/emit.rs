@@ -1658,7 +1658,10 @@ fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
 fn readme_endpoint_eligible(ep: &Endpoint) -> bool {
     endpoint_has_worked_example(ep)
         && !matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
-        && !matches!(&ep.request_body, Some(RequestBody::Form(form)) if ep.body_schema_ref && form.fields.iter().any(|field| field.is_file))
+        && !matches!(&ep.request_body, Some(RequestBody::Form(form))
+            if ep.body_schema_ref
+                && form.fields.iter().any(|field| field.is_file)
+                && !form.fields.iter().any(|field| field.form_content_type.is_some()))
 }
 
 fn select_readme_endpoint<'a>(
@@ -2078,8 +2081,31 @@ fn reference_entry(
         } else {
             dp.description.as_deref()
         };
+        let reference_name = if is_body {
+            ep.request_body
+                .as_ref()
+                .and_then(|body| match body {
+                    RequestBody::Inline(fields) => fields
+                        .iter()
+                        .find(|field| field.py_name == dp.name)
+                        .filter(|field| {
+                            field
+                                .wire_name
+                                .starts_with(|character: char| character.is_ascii_digit())
+                        }),
+                    _ => None,
+                })
+                .map(|field| {
+                    naming::model_field_name(&field.wire_name)
+                        .trim_start_matches("f_")
+                        .to_string()
+                })
+                .unwrap_or_else(|| dp.name.trim_end_matches('_').to_string())
+        } else {
+            dp.name.trim_end_matches('_').to_string()
+        };
         params.push(ParamRow {
-            name: dp.name.trim_end_matches('_').to_string(),
+            name: reference_name,
             annot: reference_param_annotation(&annotation),
             suffix: reference_param_suffix(description),
         });
@@ -5830,6 +5856,18 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    fn resolves_to_string(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Primitive(Prim::Str) => true,
+            TypeRef::Optional(inner) => self.resolves_to_string(inner),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.resolves_to_string(&alias.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
     /// Synthesize an example value for a type in a given slot.
     fn value(&mut self, t: &TypeRef, slot: Slot) -> Example {
         match t {
@@ -6482,7 +6520,7 @@ fn build_example_inner(
                 }
             }
             for f in example_fields {
-                let v = f
+                let supplied_example = f
                     .example
                     .as_deref()
                     .filter(|_| reference_fields.is_none())
@@ -6491,7 +6529,22 @@ fn build_example_inner(
                         reference_fields
                             .and_then(|values| values.get(&f.wire_name))
                             .map(serde_json::Value::to_string)
-                    })
+                    });
+                let supplied_example = supplied_example.map(|example| {
+                        if matches!(&f.type_ref, TypeRef::List(inner) | TypeRef::Set(inner) if ctx.resolves_to_string(inner))
+                            && example.starts_with('[')
+                            && example.contains("null")
+                        {
+                            if let Ok(mut values) = serde_json::from_str::<Vec<serde_json::Value>>(&example) {
+                                values.iter_mut().filter(|value| value.is_null()).for_each(|value| {
+                                    *value = serde_json::Value::String(f.wire_name.clone());
+                                });
+                                return serde_json::to_string(&values).unwrap_or(example);
+                            }
+                        }
+                        example
+                    });
+                let v = supplied_example
                     .as_deref()
                     .and_then(|example| {
                         if f.schema_body_example
@@ -6515,19 +6568,46 @@ fn build_example_inner(
                         }
                     })
                     .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)));
-                args.push((Some(f.py_name.clone()), v));
+                let example_name = if (reference
+                    || ep.request_body_required
+                    || ep.request_body_has_multipart_related)
+                    && f.example.is_some()
+                    && f.wire_name
+                        .starts_with(|character: char| character.is_ascii_digit())
+                {
+                    if reference {
+                        format!(
+                            "f_{}",
+                            naming::model_field_name(&f.wire_name)
+                                .rsplit('_')
+                                .next()
+                                .unwrap_or(&f.py_name)
+                        )
+                    } else {
+                        naming::model_field_name(&f.wire_name)
+                    }
+                } else {
+                    f.py_name.clone()
+                };
+                args.push((Some(example_name), v));
             }
         }
         // A form body: required non-file fields only (a file cannot be shown as a
         // literal, so Fern omits it from the example).
         Some(RequestBody::Form(form)) => {
-            for f in form
+            let related = form
                 .fields
                 .iter()
-                .filter(|f| f.spec_required && (documentation || !f.is_file))
-            {
+                .any(|field| field.form_content_type.is_some());
+            for f in form.fields.iter().filter(|f| {
+                if documentation && related {
+                    f.is_file
+                } else {
+                    f.spec_required && (documentation || !f.is_file)
+                }
+            }) {
                 let v = if documentation && f.is_file {
-                    Example::Atom(format!("\"example_{}\"", f.py_name))
+                    Example::Atom(format!("\"example_{}\"", f.wire_name))
                 } else {
                     f.example
                         .as_deref()
@@ -7910,6 +7990,8 @@ mod tests {
             query_params: Vec::new(),
             header_params: Vec::new(),
             request_body: None,
+            request_body_required: false,
+            request_body_has_multipart_related: false,
             reference_body_type: None,
             request_body_doc: None,
             request_body_schema_doc: None,

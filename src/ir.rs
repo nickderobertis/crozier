@@ -658,6 +658,10 @@ pub struct Endpoint {
     pub header_params: Vec<HeaderParam>,
     /// The JSON request body, when the operation has one crozier can emit.
     pub request_body: Option<RequestBody>,
+    /// Whether OpenAPI marks the operation's request body as required.
+    pub request_body_required: bool,
+    /// Whether the operation also offers a `multipart/related` request encoding.
+    pub request_body_has_multipart_related: bool,
     /// The component type named by the request schema for reference docs. Fern
     /// documents that model as one `request` parameter when the type remains
     /// public, even though executable methods flatten object fields.
@@ -1979,6 +1983,15 @@ fn build_endpoint(
         query_params,
         header_params,
         request_body,
+        request_body_required: op
+            .request_body
+            .as_ref()
+            .and_then(|body| body.required)
+            .unwrap_or(false),
+        request_body_has_multipart_related: op
+            .request_body
+            .as_ref()
+            .is_some_and(|body| body.content.contains_key("multipart/related")),
         reference_body_type: op
             .request_body
             .as_ref()
