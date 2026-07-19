@@ -5027,6 +5027,22 @@ impl Builder<'_> {
             // are unchanged.
             if let Some(members) = prop_schema.any_of.as_ref().or(prop_schema.one_of.as_ref()) {
                 if prop_schema.discriminator.is_none() {
+                    let non_null: Vec<&Schema> = members
+                        .iter()
+                        .filter(|member| {
+                            member.ty.as_ref().and_then(TypeField::primary) != Some("null")
+                        })
+                        .collect();
+                    if non_null.len() == 1
+                        && non_null.len() != members.len()
+                        && matches!(
+                            non_null[0].ty.as_ref().and_then(TypeField::primary),
+                            Some("string" | "integer" | "number" | "boolean")
+                        )
+                        && non_null[0].enum_values.is_none()
+                    {
+                        return base_type_ref(non_null[0]);
+                    }
                     let name = format!("{owner}{}", naming::class_name(prop));
                     let mut variants: Vec<TypeRef> = members
                         .iter()
@@ -6940,6 +6956,20 @@ mod tests {
             TypeRef::Primitive(Prim::Long)
         );
         assert_eq!(builder.types.len(), emitted);
+
+        let nullable_enum = schema(serde_json::json!({
+            "anyOf": [
+                { "type": "string", "enum": ["small", "large"] },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            builder.field_type_ref("Record", "size", &nullable_enum),
+            TypeRef::Named("RecordSize".to_string())
+        );
+        assert!(builder.types.iter().any(
+            |declaration| matches!(declaration, TypeDecl::Alias(alias) if alias.name == "RecordSize")
+        ));
     }
 
     #[test]
@@ -7158,6 +7188,19 @@ mod tests {
                         if variants.iter().any(|variant| matches!(variant, TypeRef::Dict(..)))
                             && variants.iter().any(|variant| matches!(variant, TypeRef::Optional(_))))
         )));
+
+        let nullable_datetime = schema(serde_json::json!({
+            "anyOf": [
+                { "type": "string", "format": "date-time" },
+                { "type": "null" }
+            ]
+        }));
+        let emitted = builder.types.len();
+        assert_eq!(
+            builder.field_type_ref("Record", "created_at", &nullable_datetime),
+            TypeRef::Primitive(Prim::Datetime)
+        );
+        assert_eq!(builder.types.len(), emitted);
     }
 
     #[test]
