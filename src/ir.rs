@@ -3091,7 +3091,7 @@ fn resolve_request_body(
             TypeRef::List(Box::new(item)),
             required,
             convert,
-            items.reference.is_some(),
+            doc.openapi.starts_with("3.1") && items.reference.is_some(),
         ));
     }
     if is_bare_object(schema) {
@@ -3108,7 +3108,9 @@ fn resolve_request_body(
     if is_unknown(schema) {
         return Some(single(
             TypeRef::Primitive(Prim::Any),
-            required,
+            doc.openapi.starts_with("3.1")
+                && schema.nullable != Some(true)
+                && (media_type == "*/*" || rb.required != Some(false)),
             false,
             false,
         ));
@@ -4022,25 +4024,25 @@ fn append_request_fields(
 /// union alias, whose members carry field aliases that must be respected on write.
 fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
     match t {
-        TypeRef::Named(name) => types.iter().any(|d| match d {
-            TypeDecl::Object(o) => o.name == *name,
-            // An alias converts only when its target reaches an object model.
-            // Primitive-only unions (for example `Union[str, float]` query
-            // parameters) serialize directly and need no annotation converter.
-            TypeDecl::Alias(a) => {
-                a.name == *name
-                    && match &a.target {
-                        TypeRef::Union(variants) => !variants.iter().all(|variant| {
-                            matches!(variant, TypeRef::Primitive(_) | TypeRef::Literal(_))
-                        }),
-                        target => type_needs_convert(target, types),
-                    }
-            }
-            // A discriminated union's wrapper models carry field aliases too.
-            TypeDecl::DiscriminatedUnion(u) => u.name == *name,
-            // An enum is a plain `str` value — no field aliases to respect.
-            TypeDecl::Enum(_) => false,
-        }),
+        TypeRef::Named(name) => {
+            types.iter().any(|d| match d {
+                TypeDecl::Object(o) => o.name == *name,
+                // An alias converts only when its target reaches an object model.
+                // Primitive-only unions (for example `Union[str, float]` query
+                // parameters) serialize directly and need no annotation converter.
+                TypeDecl::Alias(a) => a.name == *name && match &a.target {
+                    TypeRef::Union(variants) => !variants.iter().all(|variant| {
+                        matches!(variant, TypeRef::Primitive(primitive) if *primitive != Prim::Any)
+                            || matches!(variant, TypeRef::Literal(_))
+                    }),
+                    target => type_needs_convert(target, types),
+                },
+                // A discriminated union's wrapper models carry field aliases too.
+                TypeDecl::DiscriminatedUnion(u) => u.name == *name,
+                // An enum is a plain `str` value — no field aliases to respect.
+                TypeDecl::Enum(_) => false,
+            })
+        }
         TypeRef::Optional(inner) | TypeRef::List(inner) | TypeRef::Set(inner) => {
             type_needs_convert(inner, types)
         }
@@ -4998,9 +5000,7 @@ fn append_member_fields(
                 },
             )
         } else if is_map(prop_schema) && prop_schema.nullable == Some(true) {
-            let mut non_nullable = prop_schema.clone();
-            non_nullable.nullable = None;
-            base_type_ref(&non_nullable)
+            legacy_nullable_map_type_ref(prop_schema)
         } else if prop_schema.one_of.is_some() || prop_schema.any_of.is_some() {
             enum_owner.map_or_else(
                 || base_type_ref(prop_schema),
@@ -5545,9 +5545,7 @@ impl Builder<'_> {
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
         if is_map(prop_schema) && prop_schema.nullable == Some(true) {
-            let mut non_nullable = prop_schema.clone();
-            non_nullable.nullable = None;
-            return base_type_ref(&non_nullable);
+            return legacy_nullable_map_type_ref(prop_schema);
         }
         // AWS-style OpenAPI documents commonly decorate a property reference as
         // `allOf: [$ref, { description }]`. Fern treats that as a use-site copy:
@@ -6218,6 +6216,21 @@ fn nullable_map_value_type_ref(schema: &Schema) -> TypeRef {
     }
 }
 
+fn legacy_nullable_map_type_ref(schema: &Schema) -> TypeRef {
+    let unknown_value = matches!(
+        &schema.additional_properties,
+        Some(AdditionalProperties::Schema(value))
+            if base_type_ref(value) == TypeRef::Primitive(Prim::Any)
+    );
+    if unknown_value {
+        let mut non_nullable = schema.clone();
+        non_nullable.nullable = None;
+        base_type_ref(&non_nullable)
+    } else {
+        base_type_ref(schema)
+    }
+}
+
 fn schema_accepts_none(schema: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
     is_optional(schema) || referenced_schema_accepts_none(schema, schemas)
 }
@@ -6643,8 +6656,8 @@ mod tests {
         query_parameter_example, ref_to_class, request_and_response_refs_match,
         request_schema_use_count, resolve_request_body, resolve_schema_pointer, response_schema,
         scalar_body, success_response_entry, synthesized_method_name, title_from_tag,
-        variant_class_name, Auth, Builder, Field, InlineHoister, ObjectType, Prim, RequestBody,
-        TypeDecl, TypeRef,
+        variant_class_name, AliasType, Auth, Builder, Field, InlineHoister, ObjectType, Prim,
+        RequestBody, TypeDecl, TypeRef,
     };
     use crate::openapi::{OpenApi, Operation, Parameter, Response, Schema, TypeField};
 
@@ -8714,6 +8727,17 @@ mod tests {
                 Box::new(TypeRef::Primitive(Prim::Any))
             )
         );
+        let typed_nullable_map = schema(serde_json::json!({
+            "type": "object", "nullable": true,
+            "additionalProperties": { "type": "string" }
+        }));
+        assert_eq!(
+            builder.field_type_ref("Node", "labels", &typed_nullable_map),
+            TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Str))))
+            )
+        );
         let nullable_object_ref = schema(serde_json::json!({
             "anyOf": [
                 { "$ref": "#/components/schemas/AgentFile" },
@@ -8983,6 +9007,16 @@ mod tests {
             &TypeRef::Named("FeedsListFeedsRequestOffset".to_string()),
             &hoister.out
         ));
+        let unknown_union = TypeDecl::Alias(AliasType {
+            name: "UnknownUnion".to_string(),
+            module: "unknown_union".to_string(),
+            target: TypeRef::Union(vec![TypeRef::Primitive(Prim::Any)]),
+            docstring: None,
+        });
+        assert!(super::type_needs_convert(
+            &TypeRef::Named("UnknownUnion".to_string()),
+            &[unknown_union]
+        ));
         assert!(hoister.out.iter().any(|decl| matches!(
             decl,
             TypeDecl::Enum(value) if value.name == "ListRunsRequestDurationOperator"
@@ -9176,8 +9210,8 @@ mod tests {
 
     #[test]
     fn nullable_request_schema_makes_the_body_optional() {
-        let doc: OpenApi =
-            serde_json::from_value(serde_json::json!({})).expect("empty document deserializes");
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({ "openapi": "3.1.0" }))
+            .expect("3.1 document deserializes");
         let body: crate::openapi::RequestBody = serde_json::from_value(serde_json::json!({
             "content": { "application/json": { "schema": {
                 "type": "object", "properties": {}, "nullable": true
@@ -9192,6 +9226,20 @@ mod tests {
         let resolved =
             super::resolve_request_body(&doc, &[], &body, &mut hoister, "DeleteRequest", false);
         assert!(matches!(resolved, Some(RequestBody::Single(body)) if !body.required));
+        let nullable_unknown: crate::openapi::RequestBody =
+            serde_json::from_value(serde_json::json!({
+                "content": { "application/json": { "schema": { "nullable": true } } }
+            }))
+            .expect("nullable unknown body deserializes");
+        let resolved = super::resolve_request_body(
+            &doc,
+            &[],
+            &nullable_unknown,
+            &mut hoister,
+            "DeleteRequest",
+            false,
+        );
+        assert!(matches!(resolved, Some(RequestBody::Single(body)) if !body.required));
 
         let unknown: crate::openapi::RequestBody = serde_json::from_value(serde_json::json!({
             "content": { "application/json": { "schema": {} } }
@@ -9199,7 +9247,21 @@ mod tests {
         .expect("unknown request body deserializes");
         let resolved =
             super::resolve_request_body(&doc, &[], &unknown, &mut hoister, "DeleteRequest", false);
-        assert!(matches!(resolved, Some(RequestBody::Single(body)) if body.required));
+        assert!(
+            matches!(resolved, Some(RequestBody::Single(ref body)) if body.required),
+            "{resolved:?}"
+        );
+        let legacy_doc: OpenApi = serde_json::from_value(serde_json::json!({ "openapi": "3.0.1" }))
+            .expect("3.0 document deserializes");
+        let resolved = super::resolve_request_body(
+            &legacy_doc,
+            &[],
+            &unknown,
+            &mut hoister,
+            "DeleteRequest",
+            false,
+        );
+        assert!(matches!(resolved, Some(RequestBody::Single(body)) if !body.required));
 
         let array: crate::openapi::RequestBody = serde_json::from_value(serde_json::json!({
             "required": true,

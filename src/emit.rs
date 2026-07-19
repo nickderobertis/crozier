@@ -6508,6 +6508,7 @@ fn build_example_inner(
                 || body_example.is_some()
                 || s.example.is_some()
                 || !is_any_type(&s.type_ref)
+                || !ep.openapi_31
             {
                 args.push((Some("request".to_string()), v));
             }
@@ -7987,6 +7988,7 @@ mod tests {
     #[test]
     fn optional_unknown_body_is_omitted_from_worked_example() {
         let mut ep = endpoint("/projects/{id}", Vec::new(), None);
+        ep.openapi_31 = true;
         ep.request_body = Some(RequestBody::Single(SingleBody {
             type_ref: TypeRef::Primitive(Prim::Any),
             required: false,
@@ -8001,6 +8003,15 @@ mod tests {
             .expect("endpoint has an example")
             .join("\n");
         assert!(!rendered.contains("request="), "{rendered}");
+        ep.openapi_31 = false;
+        let mut ctx = example_ctx(&[], &[], &auth);
+        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx, false)
+            .expect("legacy endpoint has an example")
+            .join("\n");
+        assert!(
+            rendered.contains("request={\"key\": \"value\"}"),
+            "{rendered}"
+        );
     }
 
     #[test]
