@@ -4352,7 +4352,13 @@ impl Builder<'_> {
                     .map(|(i, v)| self.variant_ref(name, i, v, variants))
                     .collect();
                 members.dedup();
-                self.push_alias(name, module, TypeRef::Union(members), docstring);
+                let target = TypeRef::Union(members);
+                let target = if schema_accepts_none(schema, self.schemas) {
+                    optional_type_ref(target)
+                } else {
+                    target
+                };
+                self.push_alias(name, module, target, docstring);
                 return;
             }
         }
