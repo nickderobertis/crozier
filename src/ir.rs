@@ -3898,7 +3898,14 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
                 naming::prose_identifier,
             )
     } else if id.contains('.') {
-        method_from_dotted_id(id)
+        let group = id.split_once('.').map_or(id, |(group, _)| group);
+        if group.starts_with(|c: char| c.is_ascii_lowercase())
+            && group.chars().any(|c| c.is_ascii_uppercase())
+        {
+            naming::sanitize_identifier(&naming::to_snake_case(id))
+        } else {
+            method_from_dotted_id(id)
+        }
     } else if id.contains('_') {
         if first_tag(op).is_none() {
             naming::sanitize_identifier(&naming::to_snake_case(id))
@@ -4212,7 +4219,11 @@ fn snake_module(tag: &str) -> String {
 /// (`GroupV2.GetGroup` -> `groupv2`). Punctuation still becomes a word boundary.
 fn compact_module(tag: &str) -> String {
     let name = if tag.chars().all(|c| c.is_ascii_alphanumeric()) {
-        naming::sanitize_identifier(&tag.to_ascii_lowercase())
+        if tag.starts_with(|c: char| c.is_ascii_lowercase()) {
+            naming::sanitize_identifier(&naming::to_snake_case(tag))
+        } else {
+            naming::sanitize_identifier(&tag.to_ascii_lowercase())
+        }
     } else {
         naming::sanitize_identifier(&naming::to_snake_case(tag))
     };
@@ -6535,6 +6546,19 @@ mod tests {
         assert_eq!(
             endpoint_method_name(&o, "GET", "/App/ApiUsage/{applicationId}/"),
             "getapplicationapiusage"
+        );
+
+        let o = op(
+            "clientSideAccessTokens.createClientSideAccessToken",
+            "clientSideAccessTokens",
+        );
+        assert_eq!(
+            endpoint_module(&o, "/v1/client-side-access-tokens"),
+            "client_side_access_tokens"
+        );
+        assert_eq!(
+            endpoint_method_name(&o, "POST", "/v1/client-side-access-tokens"),
+            "client_side_access_tokens_create_client_side_access_token"
         );
 
         let o = op("CommunityContent.GetCommunityContent", "CommunityContent");
