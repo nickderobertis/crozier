@@ -1,0 +1,71 @@
+
+
+
+
+import typing
+from importlib import import_module
+
+if typing.TYPE_CHECKING:
+    from .compressed_semaphore_proof import CompressedSemaphoreProof
+    from .error import Error
+    from .field_element import FieldElement
+    from .g1 import G1
+    from .g2 import G2
+    from .identity import Identity
+    from .inclusion_proof import InclusionProof
+    from .inclusion_proof_proof_item import InclusionProofProofItem
+    from .inclusion_proof_proof_item_left import InclusionProofProofItemLeft
+    from .inclusion_proof_proof_item_right import InclusionProofProofItemRight
+    from .semaphore_proof import SemaphoreProof
+    from .semaphore_proof_verification_result import SemaphoreProofVerificationResult
+_dynamic_imports: typing.Dict[str, str] = {
+    "CompressedSemaphoreProof": ".compressed_semaphore_proof",
+    "Error": ".error",
+    "FieldElement": ".field_element",
+    "G1": ".g1",
+    "G2": ".g2",
+    "Identity": ".identity",
+    "InclusionProof": ".inclusion_proof",
+    "InclusionProofProofItem": ".inclusion_proof_proof_item",
+    "InclusionProofProofItemLeft": ".inclusion_proof_proof_item_left",
+    "InclusionProofProofItemRight": ".inclusion_proof_proof_item_right",
+    "SemaphoreProof": ".semaphore_proof",
+    "SemaphoreProofVerificationResult": ".semaphore_proof_verification_result",
+}
+
+
+def __getattr__(attr_name: str) -> typing.Any:
+    module_name = _dynamic_imports.get(attr_name)
+    if module_name is None:
+        raise AttributeError(f"No {attr_name} found in _dynamic_imports for module name -> {__name__}")
+    try:
+        module = import_module(module_name, __package__)
+        if module_name == f".{attr_name}":
+            return module
+        else:
+            return getattr(module, attr_name)
+    except ImportError as e:
+        raise ImportError(f"Failed to import {attr_name} from {module_name}: {e}") from e
+    except AttributeError as e:
+        raise AttributeError(f"Failed to get {attr_name} from {module_name}: {e}") from e
+
+
+def __dir__():
+    lazy_attrs = list(_dynamic_imports.keys())
+    return sorted(lazy_attrs)
+
+
+__all__ = [
+    "CompressedSemaphoreProof",
+    "Error",
+    "FieldElement",
+    "G1",
+    "G2",
+    "Identity",
+    "InclusionProof",
+    "InclusionProofProofItem",
+    "InclusionProofProofItemLeft",
+    "InclusionProofProofItemRight",
+    "SemaphoreProof",
+    "SemaphoreProofVerificationResult",
+]

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "free5gc-pdu-session",
+  "corpus_spec_ref": "8d0ee35bc671dd9995240c0ff73d4c75075a204a",
+  "corpus_spec_url": "https://raw.githubusercontent.com/free5gc/openapi/8d0ee35bc671dd9995240c0ff73d4c75075a204a/Nsmf_PDUSession/api/openapi.yaml"
+}

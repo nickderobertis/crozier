@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "nimisampo",
+  "corpus_spec_ref": "34b8d22fff53a3dd531e89277fdb2f98d69dd1d0",
+  "corpus_spec_url": "https://raw.githubusercontent.com/SemanticComputing/nimisampo.fi/34b8d22fff53a3dd531e89277fdb2f98d69dd1d0/src/server/openapi.yaml"
+}

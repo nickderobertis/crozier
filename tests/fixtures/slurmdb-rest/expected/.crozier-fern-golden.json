@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "slurmdb-rest",
+  "corpus_spec_ref": "f9c5e77cc3a1a11c7645dab31c6752cd08577721",
+  "corpus_spec_url": "https://raw.githubusercontent.com/ubccr/slurmdbrest/f9c5e77cc3a1a11c7645dab31c6752cd08577721/api/openapi.yaml"
+}
