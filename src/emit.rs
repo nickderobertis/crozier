@@ -2953,7 +2953,9 @@ fn render_discriminated_union(
     imports.cur_module = union.module.clone();
     imports.add_plain("typing");
     imports.add_plain("pydantic");
-    imports.add_plain("typing_extensions");
+    if union.members.len() > 1 {
+        imports.add_plain("typing_extensions");
+    }
     imports.add_core("pydantic_utilities", "IS_PYDANTIC_V2");
     imports.add_core("pydantic_utilities", "UniversalBaseModel");
     for name in &repair.import_order {
@@ -2998,11 +3000,15 @@ fn render_discriminated_union(
     // `typing_extensions.Annotated[Union[...], pydantic.Field(discriminator="…")]`
     // (issue #50 part 2) so pydantic can dispatch on the tag — a plain
     // `Union[...]` cannot. `ruff` wraps the line if it exceeds the width.
-    let union_expr = Doc::group("typing.Union[", variants, "]").flat();
-    let alias = format!(
-        "{} = typing_extensions.Annotated[{union_expr}, pydantic.Field(discriminator=\"{}\")]",
-        union.name, union.discriminant_property
-    );
+    let alias = if let [member] = union.members.as_slice() {
+        format!("{} = {}", union.name, member.class_name)
+    } else {
+        let union_expr = Doc::group("typing.Union[", variants, "]").flat();
+        format!(
+            "{} = typing_extensions.Annotated[{union_expr}, pydantic.Field(discriminator=\"{}\")]",
+            union.name, union.discriminant_property
+        )
+    };
 
     // A recursive variant is repaired at load time: import `update_forward_refs`
     // and, right after the alias, call it on each wrapper that carries a forward
@@ -9911,6 +9917,32 @@ mod tests {
         assert!(rendered.contains("if typing.TYPE_CHECKING:"));
         assert!(rendered.contains("from .node import Node"));
         assert!(rendered.contains("NodeList = typing.List[\"Node\"]"));
+
+        let singleton = TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+            name: "Content".to_string(),
+            module: "content".to_string(),
+            discriminant_property: "type".to_string(),
+            members: vec![UnionMember {
+                class_name: "Content_Text".to_string(),
+                discriminant: "text".to_string(),
+                fields: vec![model_field("text", TypeRef::Primitive(Prim::Str), true)],
+                docstring: None,
+            }],
+            variant_targets: Vec::new(),
+            docstring: None,
+        });
+        let rendered = render_type_decl(
+            &environment(),
+            &singleton,
+            RefLoc::RootTypes,
+            &Default::default(),
+            crate::settings::ExtraFields::Allow,
+            &Default::default(),
+            None,
+        )
+        .expect("singleton union renders");
+        assert!(rendered.contains("Content = Content_Text"), "{rendered}");
+        assert!(!rendered.contains("typing_extensions"), "{rendered}");
 
         let enum_output = render_enum(
             &environment(),
