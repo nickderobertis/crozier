@@ -2449,8 +2449,18 @@ fn error_class_name(status: u16) -> Option<&'static str> {
 /// resolves through [`base_type_ref`] (in response context — `List`/`Dict`, never
 /// `Sequence`); an error with no `application/json` body takes Fern's
 /// `typing.Any` in Fern 5.20.
-fn error_body_type(resp: &Response) -> TypeRef {
+fn error_body_type(resp: &Response, class: &str) -> TypeRef {
     match response_schema(resp) {
+        Some(schema)
+            if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
+                && schema
+                    .items
+                    .as_deref()
+                    .is_some_and(|item| item.reference.is_none() && is_inline_struct(item)) =>
+        {
+            TypeRef::List(Box::new(TypeRef::Named(format!("{class}BodyItem"))))
+        }
+        Some(schema) if is_inline_struct(schema) => TypeRef::Named(format!("{class}Body")),
         // A named `$ref`, scalar, or container keeps its resolved type. An inline
         // object (bunq's `GenericError`, `{Error: ...}`) or an otherwise-untyped body
         // resolves to bare `Any`, the same as a body-less error in Fern 5.20.
@@ -2490,6 +2500,15 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                     if seen.insert(name.clone()) {
                         builder.add_named(&name, schema);
                     }
+                } else if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
+                    if let Some(item) = schema.items.as_deref() {
+                        if item.reference.is_none() && is_inline_struct(item) {
+                            let name = format!("{class}BodyItem");
+                            if seen.insert(name.clone()) {
+                                builder.add_named(&name, item);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -2515,7 +2534,7 @@ fn resolve_errors(op: &Operation) -> Vec<ErrorResponse> {
         out.push(ErrorResponse {
             status_code: status,
             class_name: class.to_string(),
-            body_type: error_body_type(resp),
+            body_type: error_body_type(resp, class),
         });
     }
     out.sort_by_key(|error| error.status_code);

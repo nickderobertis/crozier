@@ -3887,11 +3887,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
 }
 
 fn body_field_value_name(field: &BodyField) -> &str {
-    field
-        .collision_prefix
-        .as_ref()
-        .and_then(|prefix| field.py_name.strip_prefix(&format!("{prefix}_")))
-        .unwrap_or(&field.py_name)
+    &field.py_name
 }
 
 /// The chunk type Fern yields from an OpenAPI-sourced SSE stream. Fern's OpenAPI
@@ -7023,11 +7019,19 @@ fn preserve_fenced_docstring_blank_indent(source: &mut String) {
         let end = start + 1 + relative_end;
         if lines[start + 1..end]
             .iter()
-            .any(|line| line.trim_start().starts_with("```"))
+            .any(|line| line == "        Parameters")
         {
-            for line in &mut lines[start + 1..end] {
-                if line.is_empty() {
-                    *line = "        ".to_string();
+            for index in start + 1..end {
+                if lines[index].trim().is_empty() {
+                    let indent = if lines
+                        .get(index + 1)
+                        .is_some_and(|next| next.starts_with("            "))
+                    {
+                        12
+                    } else {
+                        8
+                    };
+                    lines[index] = " ".repeat(indent);
                 }
             }
         }
