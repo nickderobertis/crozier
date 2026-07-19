@@ -5830,7 +5830,11 @@ impl<'a> ExampleCtx<'a> {
     /// Record a referenced constructor: a tag-scoped type is tracked with its tag
     /// module (imported separately), a package-root type in the main import set.
     fn record_ref(&mut self, name: &str) {
-        if let Some(tt) = self.tag_decls.iter().find(|tt| tt.decl.name() == name) {
+        if let Some(tt) = self.tag_decls.iter().find(|tt| {
+            tt.decl.name() == name
+                || matches!(&tt.decl, TypeDecl::DiscriminatedUnion(union)
+                    if union.members.iter().any(|member| member.class_name == name))
+        }) {
             let entry = (tt.module.clone(), name.to_string());
             if self.referenced_tag.insert(entry.clone()) {
                 self.referenced_tag_doc_order.push(entry);
@@ -8730,6 +8734,37 @@ mod tests {
             docstring: None,
             example: None,
         }
+    }
+
+    #[test]
+    fn examples_import_tag_scoped_discriminated_union_members_from_the_tag() {
+        let tag_decls = vec![TagTypeDecl {
+            module: "agents".to_string(),
+            decl: TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+                name: "ModifyMessageRequestBody".to_string(),
+                module: "modify_message_request_body".to_string(),
+                discriminant_property: "message_type".to_string(),
+                members: vec![UnionMember {
+                    class_name: "ModifyMessageRequestBody_SystemMessage".to_string(),
+                    discriminant: "system_message".to_string(),
+                    fields: Vec::new(),
+                    docstring: None,
+                }],
+                variant_targets: Vec::new(),
+                docstring: None,
+            }),
+        }];
+        let auth = Auth::None;
+        let mut ctx = example_ctx(&[], &tag_decls, &auth);
+        ctx.record_ref("ModifyMessageRequestBody_SystemMessage");
+        assert_eq!(
+            ctx.referenced_tag_doc_order,
+            [(
+                "agents".to_string(),
+                "ModifyMessageRequestBody_SystemMessage".to_string()
+            )]
+        );
+        assert!(ctx.referenced.is_empty());
     }
 
     #[test]
