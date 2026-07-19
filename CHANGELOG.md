@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.36](https://github.com/nickderobertis/crozier/compare/v0.0.35...v0.0.36) - 2026-07-19
+
+### Fixed
+
+- legalize digit-leading schema names; add parameter serialization c… ([#119](https://github.com/nickderobertis/crozier/pull/119))
+
 ## [0.0.35](https://github.com/nickderobertis/crozier/compare/v0.0.34...v0.0.35) - 2026-07-18
 
 ### Other
