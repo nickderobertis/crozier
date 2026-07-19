@@ -13669,10 +13669,10 @@ const LETTA: Corpus = Corpus {
     matched: &[],
 };
 
-/// `smart-edge-af`: the deployed Application Function API combines `not`,
-/// default responses, problem+json, and response-referenced mixed composition.
-const SMART_EDGE_AF: Corpus = Corpus {
-    api: "smart-edge-af",
+/// `free5gc-namf-communication`: the AMF Communication API nests `oneOf` and
+/// `not` inside `allOf` and uses problem+json across its error responses.
+const FREE5GC_NAMF_COMMUNICATION: Corpus = Corpus {
+    api: "free5gc-namf-communication",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13793,8 +13793,8 @@ fn letta_matches_fern_output() {
 }
 
 #[test]
-fn smart_edge_af_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SMART_EDGE_AF);
+fn free5gc_namf_communication_matches_fern_output() {
+    assert_link_ok_corpus_matches(&FREE5GC_NAMF_COMMUNICATION);
 }
 
 #[test]
