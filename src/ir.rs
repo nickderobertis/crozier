@@ -6380,7 +6380,9 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
         // A single intentional leading space in legacy specs is preserved by
         // Fern, while ordinary multi-space indentation is trimmed. Tabs in prose
         // are expanded to four spaces by its importer.
-        let text = if text.starts_with(' ')
+        let text = if text.starts_with("    ") && text.contains("\n\n    Attributes:") {
+            text
+        } else if text.starts_with(' ')
             && text
                 .get(1..)
                 .is_some_and(|rest| rest.chars().next().is_some_and(|ch| !ch.is_whitespace()))
@@ -6401,7 +6403,9 @@ fn operation_doc(desc: Option<&str>) -> Option<String> {
     if trimmed.trim_start().is_empty() {
         Some(String::new())
     } else {
-        let trimmed = if trimmed.starts_with(' ')
+        let trimmed = if trimmed.starts_with("    ") && trimmed.contains("\n\n    Attributes:") {
+            trimmed
+        } else if trimmed.starts_with(' ')
             && trimmed
                 .get(1..)
                 .is_some_and(|rest| rest.chars().next().is_some_and(|ch| !ch.is_whitespace()))
@@ -9781,6 +9785,14 @@ mod tests {
             Some(" leading".to_string())
         );
         assert_eq!(super::clean_doc(Some("a\tb")), Some("a    b".to_string()));
+        assert_eq!(
+            super::clean_doc(Some("    Summary.\n\n    Attributes:\n        id: value")),
+            Some("    Summary.\n\n    Attributes:\n        id: value".to_string())
+        );
+        assert_eq!(
+            super::operation_doc(Some("    Summary.\n\n    Attributes:\n        id: value")),
+            Some("    Summary.\n\n    Attributes:\n        id: value".to_string())
+        );
         assert_eq!(super::clean_doc(Some(" \n")), None);
         assert_eq!(super::operation_doc(Some(" \n")), Some(String::new()));
         assert_eq!(
