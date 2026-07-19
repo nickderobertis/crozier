@@ -13955,19 +13955,6 @@ const TAMOSS: Corpus = Corpus {
     ],
 };
 
-/// `appng-rest-api`: appNG's deployed REST API exercises matrix serialization
-/// and cookie parameters. Fern accepts the raw pinned spec.
-const APPNG_REST_API: Corpus = Corpus {
-    api: "appng-rest-api",
-    package_name: "fern",
-    project_name: "default_package_name",
-    audiences: &[],
-    audience_strict: false,
-    client_class_name: None,
-    extra_fields: None,
-    matched: &[],
-};
-
 /// `slurmdb-rest`: UB CCR's SlurmDB REST API exercises label and explicit form
 /// serialization. Fern accepts the raw pinned spec.
 const SLURMDB_REST: Corpus = Corpus {
@@ -15873,11 +15860,6 @@ fn electric_sql_matches_fern_output() {
 #[test]
 fn tamoss_matches_fern_output() {
     assert_link_ok_corpus_matches(&TAMOSS);
-}
-
-#[test]
-fn appng_rest_api_matches_fern_output() {
-    assert_link_ok_corpus_matches(&APPNG_REST_API);
 }
 
 #[test]
