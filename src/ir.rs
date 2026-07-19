@@ -759,6 +759,9 @@ pub struct Endpoint {
     /// Whether the success response is a binary download (`format: binary`).
     /// Fern emits these as context-managed byte streams instead of buffering.
     pub binary_response: bool,
+    /// Whether the success schema itself declares `format: binary` (as opposed
+    /// to merely using an `image/*` media type with a plain string schema).
+    pub binary_schema_response: bool,
     /// Whether a binary download uses wildcard (`*/*`) media. Fern omits all
     /// method arguments from these generated worked examples.
     pub wildcard_binary_response: bool,
@@ -2170,6 +2173,7 @@ fn build_endpoint(
         text_response: has_text_response(op),
         markdown_response: has_markdown_response(op),
         binary_response: is_binary_response(doc, op),
+        binary_schema_response: has_binary_schema_response(doc, op),
         wildcard_binary_response: has_wildcard_binary_response(doc, op),
         emittable,
     }
@@ -2360,6 +2364,23 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
                         schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
                             && schema.format.as_deref() == Some("binary")
                     })
+            })
+    })
+}
+
+fn has_binary_schema_response(doc: &OpenApi, op: &Operation) -> bool {
+    op.responses.iter().any(|(code, resp)| {
+        code.starts_with('2')
+            && resp.content.values().any(|media| {
+                media.schema.as_ref().is_some_and(|schema| {
+                    let schema = schema
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| resolve_ref(doc, reference))
+                        .unwrap_or(schema);
+                    schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
+                        && schema.format.as_deref() == Some("binary")
+                })
             })
     })
 }

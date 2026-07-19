@@ -1982,7 +1982,7 @@ fn reference_entry(
         documentation: false,
         reference: false,
     };
-    let example = (!ep.binary_response || !module.is_empty())
+    let example = (!ep.binary_schema_response || !module.is_empty())
         .then(|| {
             build_documentation_example(
                 ep,
@@ -2112,7 +2112,7 @@ fn reference_entry(
         example,
         example_gap: if !endpoint_has_worked_example(ep)
             || matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
-            || ep.binary_response && module.is_empty()
+            || ep.binary_schema_response && module.is_empty()
         {
             ""
         } else {
@@ -5099,7 +5099,7 @@ fn client_binary_stream_docstring(
         documentation: false,
         reference: false,
     };
-    if let Some(ex_lines) = (!cx.module.is_empty())
+    if let Some(ex_lines) = (!cx.module.is_empty() || !ep.binary_schema_response)
         .then(|| {
             build_example(
                 ep,
@@ -7855,6 +7855,7 @@ mod tests {
             text_response: false,
             markdown_response: false,
             binary_response: false,
+            binary_schema_response: false,
             wildcard_binary_response: false,
             emittable: true,
         }
