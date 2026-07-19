@@ -1766,11 +1766,22 @@ fn build_endpoint(
             example: parameter_example(doc, p),
         })
         .collect();
-    path_params.sort_by(|a, b| {
-        path_param_position(path, &a.wire_name)
-            .cmp(&path_param_position(path, &b.wire_name))
-            .then_with(|| a.wire_name.cmp(&b.wire_name))
-    });
+    if !doc.openapi.starts_with("3.1")
+        || op.path_level_parameters
+        || op.parameters.iter().any(|parameter| {
+            parameter.location == Some(ParameterLocation::Path)
+                && parameter
+                    .schema
+                    .as_ref()
+                    .is_some_and(|schema| schema.title.is_some())
+        })
+    {
+        path_params.sort_by(|a, b| {
+            path_param_position(path, &a.wire_name)
+                .cmp(&path_param_position(path, &b.wire_name))
+                .then_with(|| a.wire_name.cmp(&b.wire_name))
+        });
+    }
 
     let query_params: Vec<QueryParam> = op
         .parameters
@@ -7703,8 +7714,8 @@ mod tests {
         let o: crate::openapi::Operation = serde_json::from_value(serde_json::json!({
             "operationId": "widgets_get",
             "parameters": [
-                { "name": "second", "in": "path", "required": true, "schema": { "type": "integer" } },
-                { "name": "first", "in": "path", "required": true, "schema": { "type": "integer" } }
+                { "name": "second", "in": "path", "required": true, "schema": { "type": "integer", "title": "Second" } },
+                { "name": "first", "in": "path", "required": true, "schema": { "type": "integer", "title": "First" } }
             ],
             "responses": { "200": { "description": "OK" } }
         }))
