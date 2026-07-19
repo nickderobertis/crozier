@@ -3220,6 +3220,31 @@ impl InlineHoister<'_> {
         }
         if variant.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
             if let Some(item) = variant.items.as_deref() {
+                if let Some(members) = item.one_of.as_ref().or(item.any_of.as_ref()) {
+                    let variant_name = variant_class_name(parent, index, variant, siblings);
+                    let item_name = format!("{variant_name}Item");
+                    if let Some(item) = self.hoist_discriminated_union(
+                        &item_name,
+                        item,
+                        clean_doc(item.description.as_deref()),
+                    ) {
+                        return TypeRef::List(Box::new(item));
+                    }
+                    let variants = members
+                        .iter()
+                        .enumerate()
+                        .map(|(member_index, member)| {
+                            self.hoist_union_variant(&item_name, member_index, member, members)
+                        })
+                        .collect();
+                    self.out.push(TypeDecl::Alias(AliasType {
+                        name: item_name.clone(),
+                        module: naming::module_name(&item_name),
+                        target: TypeRef::Union(variants),
+                        docstring: clean_doc(item.description.as_deref()),
+                    }));
+                    return TypeRef::List(Box::new(TypeRef::Named(item_name)));
+                }
                 if item.reference.is_none() && is_inline_struct(item) {
                     let variant_name = variant_class_name(parent, index, variant, siblings);
                     let item_name = format!("{variant_name}Item");
@@ -3343,7 +3368,11 @@ impl InlineHoister<'_> {
                 ) {
                     return union;
                 }
-                let mut variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
+                let mut variants: Vec<TypeRef> = members
+                    .iter()
+                    .enumerate()
+                    .map(|(index, member)| self.hoist_union_variant(&name, index, member, members))
+                    .collect();
                 variants.dedup();
                 self.out.push(TypeDecl::Alias(AliasType {
                     name: name.clone(),
@@ -3380,6 +3409,15 @@ impl InlineHoister<'_> {
                         item_schema.one_of.as_ref().or(item_schema.any_of.as_ref())
                     {
                         let item_name = format!("{parent}{}Item", naming::class_name(prop));
+                        if members.len() == 1 && is_inline_struct(&members[0]) {
+                            self.hoist_object(&item_name, &members[0]);
+                            let item = Box::new(TypeRef::Named(item_name));
+                            return if array_uses_set(prop_schema) {
+                                TypeRef::Set(item)
+                            } else {
+                                TypeRef::List(item)
+                            };
+                        }
                         if let Some(item) = self.hoist_discriminated_union(
                             &item_name,
                             item_schema,
@@ -4497,6 +4535,11 @@ fn append_member_fields(
                 || base_type_ref(prop_schema),
                 |owner| TypeRef::Named(format!("{owner}{}", naming::class_name(prop))),
             )
+        } else if is_inline_struct(prop_schema) {
+            enum_owner.map_or_else(
+                || base_type_ref(prop_schema),
+                |owner| TypeRef::Named(format!("{owner}{}", naming::class_name(prop))),
+            )
         } else {
             base_type_ref(prop_schema)
         };
@@ -5136,6 +5179,15 @@ impl Builder<'_> {
                     if let Some(members) = items.one_of.as_ref().or(items.any_of.as_ref()) {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
                         let module = naming::module_name(&name);
+                        if members.len() == 1 && is_inline_struct(&members[0]) {
+                            self.add_object(
+                                &name,
+                                module,
+                                &members[0],
+                                clean_doc(items.description.as_deref()),
+                            );
+                            return TypeRef::List(Box::new(TypeRef::Named(name)));
+                        }
                         if let Some(decl) = self.discriminated_union(
                             &name,
                             &module,
@@ -8099,6 +8151,73 @@ mod tests {
         assert!(hoister.out.iter().any(|decl| matches!(
             decl,
             TypeDecl::Enum(value) if value.name == "ScheduledMessageIncludeTypesItem"
+        )));
+
+        let policies = schema(serde_json::json!({
+            "type": "array",
+            "items": { "oneOf": [{
+                "type": "object",
+                "required": ["type", "access"],
+                "properties": {
+                    "type": { "type": "string", "enum": ["agent"] },
+                    "access": { "type": "array", "items": {
+                        "type": "string", "enum": ["read", "write"]
+                    } }
+                }
+            }], "discriminator": { "propertyName": "type" } }
+        }));
+        assert_eq!(
+            hoister.prop_type_ref("CreateTokenRequest", "policy", &policies),
+            TypeRef::List(Box::new(TypeRef::Named(
+                "CreateTokenRequestPolicyItem".to_string()
+            )))
+        );
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Object(object) if object.name == "CreateTokenRequestPolicyItem"
+        )));
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Enum(value)
+                if value.name == "CreateTokenRequestPolicyItemAccessItem"
+        )));
+
+        let content = schema(serde_json::json!({
+            "type": "array",
+            "items": { "oneOf": [
+                { "type": "object", "required": ["type", "text"], "properties": {
+                    "type": { "type": "string", "enum": ["text"] },
+                    "text": { "type": "string" }
+                } },
+                { "type": "object", "required": ["type", "source"], "properties": {
+                    "type": { "type": "string", "enum": ["image"] },
+                    "source": { "type": "object", "properties": {
+                        "url": { "type": "string" }
+                    } }
+                } }
+            ] }
+        }));
+        assert_eq!(
+            hoister.hoist_union_variant(
+                "MessageContent",
+                0,
+                &content,
+                std::slice::from_ref(&content)
+            ),
+            TypeRef::List(Box::new(TypeRef::Named(
+                "MessageContentZeroItem".to_string()
+            )))
+        );
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::DiscriminatedUnion(union)
+                if union.name == "MessageContentZeroItem"
+                    && union.discriminant_property == "type"
+                    && union.members.iter().any(|member| member.fields.iter().any(|field|
+                        field.wire_name == "source"
+                            && field.type_ref == TypeRef::Named(
+                                "MessageContentZeroItemImageSource".to_string()
+                            )))
         )));
     }
 
