@@ -4614,11 +4614,12 @@ fn inferred_discriminant_property(
                 let singleton_enum =
                     string_enum_values(field).is_some_and(|values| values.len() == 1);
                 if references_components {
-                    if property != "type"
+                    if !matches!(property.as_str(), "type" | "role")
                         || !variant.required.contains(property)
-                        || schema_example(field)
-                            .and_then(serde_json::Value::as_str)
-                            .is_none()
+                        || (property == "type"
+                            && schema_example(field)
+                                .and_then(serde_json::Value::as_str)
+                                .is_none())
                     {
                         return None;
                     }
@@ -8102,7 +8103,15 @@ mod tests {
         let components: OpenApi = serde_json::from_value(serde_json::json!({
             "components": { "schemas": {
                 "Cat": { "type": "object", "properties": { "lives": { "type": "integer" } } },
-                "Dog": { "type": "object", "properties": { "bark": { "type": "boolean" } } }
+                "Dog": { "type": "object", "properties": { "bark": { "type": "boolean" } } },
+                "UserMessage": {
+                    "type": "object", "required": ["role"],
+                    "properties": { "role": { "type": "string", "const": "user" } }
+                },
+                "AssistantMessage": {
+                    "type": "object", "required": ["role"],
+                    "properties": { "role": { "type": "string", "const": "assistant" } }
+                }
             } }
         }))
         .expect("components deserialize");
@@ -8132,6 +8141,18 @@ mod tests {
         let mut targets = union.variant_targets;
         targets.sort();
         assert_eq!(targets, ["Cat", "Dog"]);
+
+        let message = schema(serde_json::json!({
+            "anyOf": [
+                { "$ref": "#/components/schemas/UserMessage" },
+                { "$ref": "#/components/schemas/AssistantMessage" }
+            ]
+        }));
+        assert_eq!(
+            super::inferred_discriminant_property(&message, &components.components.schemas)
+                .as_deref(),
+            Some("role")
+        );
 
         let nullable_mapped = schema(serde_json::json!({
             "anyOf": [{
