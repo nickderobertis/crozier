@@ -3094,6 +3094,16 @@ impl InlineHoister<'_> {
         if let Some(reference) = &variant.reference {
             return TypeRef::Named(ref_to_class(reference));
         }
+        if variant.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
+            if let Some(item) = variant.items.as_deref() {
+                if item.reference.is_none() && is_inline_struct(item) {
+                    let variant_name = variant_class_name(parent, index, variant, siblings);
+                    let item_name = format!("{variant_name}Item");
+                    self.hoist_object(&item_name, item);
+                    return TypeRef::List(Box::new(TypeRef::Named(item_name)));
+                }
+            }
+        }
         if is_inline_object(variant)
             || is_bare_object(variant)
                 && schema_example(variant).is_some_and(|example| {
@@ -4957,28 +4967,37 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
             .iter()
             .all(|sibling| sibling.properties.contains_key(*candidate))
     });
-    let unique = variant
-        .properties
-        .values()
-        .find_map(|property| {
-            string_enum_values(property)
-                .filter(|values| values.len() == 1)
-                .and_then(|values| values.into_iter().next())
-        })
-        .or_else(|| {
-            variant
-                .properties
-                .keys()
-                .find(|candidate| {
-                    candidate.as_str() != "resource_list"
-                        && siblings
-                            .iter()
-                            .filter(|sibling| sibling.properties.contains_key(*candidate))
-                            .count()
-                            == 1
-                })
-                .cloned()
-        });
+    let unique_required = variant.required.iter().find(|candidate| {
+        siblings
+            .iter()
+            .filter(|sibling| sibling.properties.contains_key(*candidate))
+            .count()
+            == 1
+    });
+    let unique = unique_required.cloned().or_else(|| {
+        variant
+            .properties
+            .values()
+            .find_map(|property| {
+                string_enum_values(property)
+                    .filter(|values| values.len() == 1)
+                    .and_then(|values| values.into_iter().next())
+            })
+            .or_else(|| {
+                variant
+                    .properties
+                    .keys()
+                    .find(|candidate| {
+                        candidate.as_str() != "resource_list"
+                            && siblings
+                                .iter()
+                                .filter(|sibling| sibling.properties.contains_key(*candidate))
+                                .count()
+                                == 1
+                    })
+                    .cloned()
+            })
+    });
     let unique = if siblings.len() > 2
         && index + 1 == siblings.len()
         && shared_first.map(String::as_str) == Some("assets")
@@ -6949,6 +6968,21 @@ mod tests {
                 &[],
             ),
             TypeRef::Primitive(Prim::Bool)
+        );
+        let array_variant = schema(serde_json::json!({
+            "type": "array",
+            "items": { "type": "object", "properties": { "id": { "type": "string" } } }
+        }));
+        assert_eq!(
+            hoister.hoist_union_variant(
+                "GetShapeResponse",
+                0,
+                &array_variant,
+                std::slice::from_ref(&array_variant),
+            ),
+            TypeRef::List(Box::new(TypeRef::Named(
+                "GetShapeResponseZeroItem".to_string()
+            )))
         );
     }
 
