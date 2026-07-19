@@ -1883,6 +1883,14 @@ fn build_endpoint(
     // inline object body is hoisted into a `{Ctx}Response` model, where `Ctx` is
     // the operation's PascalCase context (computed above, from the operationId).
     let response = match success_response_schema(op) {
+        Some(schema) if simple_nullable_member(schema).is_some() => {
+            let member = simple_nullable_member(schema).expect("guard checked nullable member");
+            let base = member.reference.as_deref().map_or_else(
+                || base_type_ref(member),
+                |reference| TypeRef::Named(ref_to_class(reference)),
+            );
+            Some(optional_type_ref(base))
+        }
         Some(schema)
             if schema.reference.is_none()
                 && (schema.one_of.is_some() || schema.any_of.is_some()) =>
@@ -7193,6 +7201,44 @@ mod tests {
             obj.fields[0].type_ref,
             TypeRef::Named(ref name) if name == "WrappedThing"
         ));
+    }
+
+    #[test]
+    fn nullable_referenced_success_response_reuses_the_component() {
+        let operation: crate::openapi::Operation = serde_json::from_value(serde_json::json!({
+            "operationId": "attachTool",
+            "tags": ["Agents"],
+            "responses": { "200": { "description": "OK", "content": {
+                "application/json": { "schema": { "anyOf": [
+                    { "$ref": "#/components/schemas/AgentState" },
+                    { "type": "null" }
+                ] } }
+            } } }
+        }))
+        .expect("operation deserializes");
+        let document: OpenApi = serde_json::from_value(serde_json::json!({
+            "components": { "schemas": { "AgentState": {
+                "type": "object", "properties": { "id": { "type": "string" } }
+            } } }
+        }))
+        .expect("document deserializes");
+        let mut tag_types = Vec::new();
+        let endpoint = build_endpoint(
+            &document,
+            &[],
+            "/agents/{agent_id}/tools/{tool_id}",
+            "PATCH",
+            &operation,
+            &mut tag_types,
+            &std::collections::HashSet::new(),
+        );
+        assert_eq!(
+            endpoint.response,
+            Some(TypeRef::Optional(Box::new(TypeRef::Named(
+                "AgentState".to_string()
+            ))))
+        );
+        assert!(tag_types.is_empty());
     }
 
     #[test]
