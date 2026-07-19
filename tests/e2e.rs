@@ -10845,6 +10845,9 @@ const CORPORA: &[&Corpus] = &[
     &SLURMDB_REST,
     &NIMISAMPO,
     &FREE5GC_PDU_SESSION,
+    &SIGSTORE_REKOR,
+    &LETTA,
+    &FREE5GC_NAMF_COMMUNICATION,
 ];
 
 #[test]
@@ -14682,6 +14685,9 @@ fn report_matched_candidates() {
         &SLURMDB_REST,
         &NIMISAMPO,
         &FREE5GC_PDU_SESSION,
+        &SIGSTORE_REKOR,
+        &LETTA,
+        &FREE5GC_NAMF_COMMUNICATION,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
