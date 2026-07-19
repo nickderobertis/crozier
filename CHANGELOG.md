@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.37](https://github.com/nickderobertis/crozier/compare/v0.0.36...v0.0.37) - 2026-07-19
+
+### Other
+
+- *(fixtures)* byte-match 7 batch-4 corpora to Fern goldens (full parity) ([#121](https://github.com/nickderobertis/crozier/pull/121))
+
 ## [0.0.36](https://github.com/nickderobertis/crozier/compare/v0.0.35...v0.0.36) - 2026-07-19
 
 ### Fixed
