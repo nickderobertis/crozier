@@ -4475,13 +4475,13 @@ fn append_member_fields(
             continue;
         }
         let spec_required = required.contains(&prop.as_str());
-        let type_ref = if prop_schema.one_of.is_some() || prop_schema.any_of.is_some() {
-            enum_owner
-                .filter(|_| simple_nullable_primitive_member(prop_schema).is_none())
-                .map_or_else(
-                    || base_type_ref(prop_schema),
-                    |owner| TypeRef::Named(format!("{owner}{}", naming::class_name(prop))),
-                )
+        let type_ref = if let Some(member) = simple_nullable_member(prop_schema) {
+            base_type_ref(member)
+        } else if prop_schema.one_of.is_some() || prop_schema.any_of.is_some() {
+            enum_owner.map_or_else(
+                || base_type_ref(prop_schema),
+                |owner| TypeRef::Named(format!("{owner}{}", naming::class_name(prop))),
+            )
         } else if string_enum_values(prop_schema).is_some() {
             enum_owner.map_or_else(
                 || base_type_ref(prop_schema),
@@ -4504,6 +4504,15 @@ fn append_member_fields(
 }
 
 fn simple_nullable_primitive_member(schema: &Schema) -> Option<&Schema> {
+    let member = simple_nullable_member(schema)?;
+    (matches!(
+        member.ty.as_ref().and_then(TypeField::primary),
+        Some("string" | "integer" | "number" | "boolean")
+    ) && member.enum_values.is_none())
+    .then_some(member)
+}
+
+fn simple_nullable_member(schema: &Schema) -> Option<&Schema> {
     let members = schema.any_of.as_ref().or(schema.one_of.as_ref())?;
     let non_null: Vec<&Schema> = members
         .iter()
@@ -4511,10 +4520,8 @@ fn simple_nullable_primitive_member(schema: &Schema) -> Option<&Schema> {
         .collect();
     (non_null.len() == 1
         && non_null.len() != members.len()
-        && matches!(
-            non_null[0].ty.as_ref().and_then(TypeField::primary),
-            Some("string" | "integer" | "number" | "boolean")
-        )
+        && non_null[0].one_of.is_none()
+        && non_null[0].any_of.is_none()
         && non_null[0].enum_values.is_none())
     .then_some(non_null[0])
 }
@@ -5187,6 +5194,44 @@ impl Builder<'_> {
                             decl.docstring = clean_doc(prop_schema.description.as_deref());
                             self.types.push(TypeDecl::DiscriminatedUnion(decl));
                             return TypeRef::Named(name);
+                        }
+                        if non_null[0].ty.as_ref().and_then(TypeField::primary) == Some("array") {
+                            if let Some(items) = non_null[0].items.as_deref() {
+                                if let Some(item_members) =
+                                    items.one_of.as_ref().or(items.any_of.as_ref())
+                                {
+                                    let item_name = format!("{name}Item");
+                                    let item_module = naming::module_name(&item_name);
+                                    if let Some(decl) = self.discriminated_union(
+                                        &item_name,
+                                        &item_module,
+                                        items,
+                                        clean_doc(items.description.as_deref()),
+                                    ) {
+                                        self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                                    } else {
+                                        let variants = item_members
+                                            .iter()
+                                            .enumerate()
+                                            .map(|(index, variant)| {
+                                                self.variant_ref(
+                                                    &item_name,
+                                                    index,
+                                                    variant,
+                                                    item_members,
+                                                )
+                                            })
+                                            .collect();
+                                        self.push_alias(
+                                            &item_name,
+                                            item_module,
+                                            TypeRef::Union(variants),
+                                            clean_doc(items.description.as_deref()),
+                                        );
+                                    }
+                                    return TypeRef::List(Box::new(TypeRef::Named(item_name)));
+                                }
+                            }
                         }
                     }
                     if let Some(member) = simple_nullable_primitive_member(prop_schema) {
@@ -6065,7 +6110,15 @@ mod tests {
                     "required": ["kind"],
                     "properties": {
                         "kind": {"type": "string", "enum": ["dog"]},
-                        "name": {"type": ["string", "null"], "readOnly": true}
+                        "name": {"type": ["string", "null"], "readOnly": true},
+                        "nodes": {"anyOf": [
+                            {"type": "array", "items": {"$ref": "#/components/schemas/Bird"}},
+                            {"type": "null"}
+                        ]},
+                        "effort": {"anyOf": [
+                            {"type": "string", "enum": ["low", "high"]},
+                            {"type": "null"}
+                        ]}
                     }
                 },
                 "Bird": {
@@ -6120,10 +6173,15 @@ mod tests {
         assert_eq!(cat[1].example.as_deref(), Some("9"));
 
         let dog = member_fields(&schemas["Dog"], "kind", &schemas, Some("Dog"));
-        assert_eq!(dog.len(), 1);
+        assert_eq!(dog.len(), 3);
         assert_eq!(dog[0].wire_name, "name");
         assert!(dog[0].optional);
         assert!(dog[0].nullable);
+        assert_eq!(
+            dog[1].type_ref,
+            TypeRef::List(Box::new(TypeRef::Named("Bird".to_string())))
+        );
+        assert_eq!(dog[2].type_ref, TypeRef::Named("DogEffort".to_string()));
     }
 
     #[test]
@@ -7534,6 +7592,34 @@ mod tests {
                     && matches!(&alias.target, TypeRef::Union(variants)
                         if variants.iter().any(|variant| matches!(variant, TypeRef::Dict(..)))
                             && variants.iter().any(|variant| matches!(variant, TypeRef::Optional(_))))
+        )));
+
+        let nullable_array_union = schema(serde_json::json!({
+            "anyOf": [{
+                "type": "array",
+                "items": {
+                    "oneOf": [
+                        { "type": "object", "required": ["type"], "properties": {
+                            "type": { "type": "string", "enum": ["first"] }
+                        } },
+                        { "type": "object", "required": ["type"], "properties": {
+                            "type": { "type": "string", "enum": ["second"] }
+                        } }
+                    ]
+                }
+            }, { "type": "null" }]
+        }));
+        assert_eq!(
+            builder.field_type_ref("AgentState", "tool_rules", &nullable_array_union),
+            TypeRef::List(Box::new(TypeRef::Named(
+                "AgentStateToolRulesItem".to_string()
+            )))
+        );
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::DiscriminatedUnion(union)
+                if union.name == "AgentStateToolRulesItem"
+                    && union.discriminant_property == "type"
         )));
 
         let nullable_datetime = schema(serde_json::json!({
