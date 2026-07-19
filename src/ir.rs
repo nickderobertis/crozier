@@ -4642,6 +4642,35 @@ fn inferred_discriminant_property(
     })
 }
 
+fn inferred_union_discriminant_property(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<String> {
+    inferred_discriminant_property(schema, schemas).or_else(|| {
+        let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
+        let values: Option<Vec<String>> = variants
+            .iter()
+            .map(|variant| {
+                let variant = variant
+                    .reference
+                    .as_deref()
+                    .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                    .unwrap_or(variant);
+                variant
+                    .required
+                    .iter()
+                    .any(|required| required == "type")
+                    .then(|| variant.properties.get("type"))
+                    .flatten()
+                    .and_then(discriminant_value)
+            })
+            .collect();
+        let values = values?;
+        let distinct: std::collections::HashSet<&str> = values.iter().map(String::as_str).collect();
+        (distinct.len() == values.len()).then(|| "type".to_string())
+    })
+}
+
 /// Scan every schema for a discriminated `oneOf`/`anyOf` and record, per member
 /// class, the discriminant property to strip from its model. Keyed by class name
 /// (post-`class_name` normalization), matching the `owner` passed to
@@ -5263,7 +5292,7 @@ impl Builder<'_> {
             .map(|disc| disc.property_name.as_str())
             .filter(|property| !property.is_empty())
             .map(str::to_string)
-            .or_else(|| inferred_discriminant_property(schema, self.schemas))?;
+            .or_else(|| inferred_union_discriminant_property(schema, self.schemas))?;
         let mapping = schema
             .discriminator
             .as_ref()
@@ -8159,6 +8188,14 @@ mod tests {
                     "properties": { "message_type": {
                         "type": "string", "const": "assistant_message", "default": "assistant_message"
                     } }
+                },
+                "TextPart": {
+                    "type": "object", "required": ["type"],
+                    "properties": { "type": { "type": "string", "const": "text" } }
+                },
+                "ImagePart": {
+                    "type": "object", "required": ["type"],
+                    "properties": { "type": { "type": "string", "const": "image" } }
                 }
             } }
         }))
@@ -8212,6 +8249,19 @@ mod tests {
                 .as_deref(),
             Some("message_type")
         );
+        let content = schema(serde_json::json!({
+            "anyOf": [
+                { "$ref": "#/components/schemas/TextPart" },
+                { "$ref": "#/components/schemas/ImagePart" }
+            ]
+        }));
+        assert_eq!(
+            super::inferred_discriminant_property(&content, &components.components.schemas),
+            None
+        );
+        assert!(mapped_builder
+            .discriminated_union("Content", "content", &content, None)
+            .is_some());
 
         let nullable_mapped = schema(serde_json::json!({
             "anyOf": [{
