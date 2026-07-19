@@ -15548,6 +15548,7 @@ const LETTA: Corpus = Corpus {
         "src/fern/templates/types/templates_create_template_no_project_request_agent_file.py",
         "src/fern/templates/types/templates_create_template_request_body_agent.py",
         "src/fern/templates/types/templates_create_template_request_body_agent_file.py",
+        "src/fern/metadata/client.py",
     ],
 };
 

@@ -325,6 +325,18 @@ fn natural_cmp(left: &str, right: &str) -> Ordering {
     left_bytes.len().cmp(&right_bytes.len())
 }
 
+fn example_import_cmp(left: &str, right: &str) -> Ordering {
+    let left_prefix = left.split_once('_').map(|(prefix, _)| prefix);
+    let right_prefix = right.split_once('_').map(|(prefix, _)| prefix);
+    if left_prefix.is_some_and(|prefix| right.starts_with(prefix)) {
+        return Ordering::Less;
+    }
+    if right_prefix.is_some_and(|prefix| left.starts_with(prefix)) {
+        return Ordering::Greater;
+    }
+    left.cmp(right)
+}
+
 /// Render a resolved type to a [`Doc`] expression, registering needed imports.
 /// The `Doc` renders flat; `ruff format` handles any line wrapping downstream.
 fn render_type(t: &TypeRef, imports: &mut Imports) -> Doc {
@@ -6751,7 +6763,7 @@ fn build_example_inner(
     let mut tag_import_lines: Vec<String> = Vec::new();
     {
         let mut by_module: Vec<(&str, Vec<&str>)> = Vec::new();
-        let tag_refs: Vec<(&String, &String)> = if documentation {
+        let mut tag_refs: Vec<(&String, &String)> = if documentation {
             ctx.referenced_tag_doc_order
                 .iter()
                 .map(|(module, name)| (module, name))
@@ -6762,6 +6774,13 @@ fn build_example_inner(
                 .map(|(module, name)| (module, name))
                 .collect()
         };
+        if !documentation {
+            tag_refs.sort_by(|(left_module, left_name), (right_module, right_name)| {
+                left_module
+                    .cmp(right_module)
+                    .then_with(|| example_import_cmp(left_name, right_name))
+            });
+        }
         for (module, name) in tag_refs {
             if let Some((_, names)) = by_module.iter_mut().find(|(group, _)| *group == module) {
                 names.push(name);
@@ -7275,12 +7294,12 @@ mod tests {
     use super::{
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts,
         build_documentation_example, build_example, client_method, complex_body,
-        container_element_object, environment, escape_py_str, example_from_json, field_decl,
-        generate, is_complex_type, natural_cmp, object_body_complex, raw_method, raw_type_str,
-        readme_endpoint, readme_endpoint_eligible, reference_param_annotation, render,
-        render_class_body, render_enum, render_type_decl, resolves_to_container, url_arg,
-        ClientCtx, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView,
-        RenderedField, RootClientView, RootModuleView, Slot,
+        container_element_object, environment, escape_py_str, example_from_json,
+        example_import_cmp, field_decl, generate, is_complex_type, natural_cmp,
+        object_body_complex, raw_method, raw_type_str, readme_endpoint, readme_endpoint_eligible,
+        reference_param_annotation, render, render_class_body, render_enum, render_type_decl,
+        resolves_to_container, url_arg, ClientCtx, Example, ExampleCtx, FieldView, Imports,
+        ParamRow, RefLoc, ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -7562,6 +7581,23 @@ mod tests {
         assert_eq!(natural_cmp("alpha2", "beta1"), Less);
         assert_eq!(natural_cmp("item", "item0"), Less);
         assert_eq!(natural_cmp("same007tail", "same007tail"), Equal);
+    }
+
+    #[test]
+    fn example_imports_put_union_wrappers_before_their_generated_children() {
+        use std::cmp::Ordering::{Greater, Less};
+
+        let wrapper = "MetadataSendTelemetryRequestEventsItem_SessionStart";
+        let child = "MetadataSendTelemetryRequestEventsItemSessionStartData";
+        assert_eq!(example_import_cmp(wrapper, child), Less);
+        assert_eq!(example_import_cmp(child, wrapper), Greater);
+        assert_eq!(
+            example_import_cmp(
+                "ScheduledMessagesScheduleAgentMessageRequestMessagesItemRole",
+                "ScheduledMessagesScheduleAgentMessageRequestMessagesItemContentZeroItem_Text"
+            ),
+            Greater
+        );
     }
 
     #[test]
