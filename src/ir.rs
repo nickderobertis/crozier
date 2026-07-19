@@ -5482,7 +5482,7 @@ impl Builder<'_> {
                         &variant_name,
                         naming::module_name(&variant_name),
                         &standalone,
-                        None,
+                        clean_doc(variant.description.as_deref()),
                     );
                 }
                 members.push(UnionMember {
@@ -8413,7 +8413,7 @@ mod tests {
         };
         let inferred = schema(serde_json::json!({
             "oneOf": [
-                { "type": "object", "properties": {
+                { "type": "object", "description": "A whiskered cat.", "properties": {
                     "kind": { "type": "string", "enum": ["cat"] },
                     "whiskers": { "type": "integer" }
                 } },
@@ -8436,7 +8436,15 @@ mod tests {
             ["cat", "dog"]
         );
         assert!(union.variant_targets.is_empty());
+        assert_eq!(union.members[0].docstring.as_deref(), Some("A pet."));
+        assert_eq!(union.members[1].docstring.as_deref(), Some("A pet."));
         assert_eq!(inferred_builder.types.len(), 2);
+        assert!(inferred_builder.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Object(object)
+                if object.name == "PetCat"
+                    && object.docstring.as_deref() == Some("A whiskered cat.")
+        )));
 
         let components: OpenApi = serde_json::from_value(serde_json::json!({
             "components": { "schemas": {

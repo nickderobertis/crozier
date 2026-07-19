@@ -15544,6 +15544,10 @@ const LETTA: Corpus = Corpus {
         "src/fern/embeddings/client.py",
         "src/fern/embeddings/raw_client.py",
         "src/fern/client_side_access_tokens/client.py",
+        "src/fern/templates/types/templates_create_template_no_project_request_agent.py",
+        "src/fern/templates/types/templates_create_template_no_project_request_agent_file.py",
+        "src/fern/templates/types/templates_create_template_request_body_agent.py",
+        "src/fern/templates/types/templates_create_template_request_body_agent_file.py",
     ],
 };
 
