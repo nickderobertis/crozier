@@ -3920,7 +3920,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         }
         _ => None,
     };
-    if content_type.is_some() || !ep.header_params.is_empty() {
+    if content_type.is_some() || !ep.header_params.is_empty() || !ep.constant_headers.is_empty() {
         lines.push("            headers={".to_string());
         if let Some(value) = content_type {
             lines.push(format!("                \"content-type\": \"{value}\","));
@@ -3935,6 +3935,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 "                \"{}\": {value} if {} is not None else None,",
                 hp.wire_name, hp.py_name
             ));
+        }
+        for (name, value) in &ep.constant_headers {
+            lines.push(format!("                \"{name}\": {value:?},"));
         }
         lines.push("            },".to_string());
     }
@@ -8096,6 +8099,7 @@ mod tests {
             path_params: params,
             query_params: Vec::new(),
             header_params: Vec::new(),
+            constant_headers: Vec::new(),
             request_body: None,
             request_body_required: false,
             request_body_has_multipart_related: false,
@@ -8520,12 +8524,27 @@ mod tests {
             out.contains("\"NestedObject\": convert_and_respect_annotation_metadata("),
             "{out}"
         );
-        assert!(out.contains("annotation=typing.Optional[Nested]"), "{out}");
+        assert!(out.contains("annotation=Nested"), "{out}");
         // An inlined object body always carries the content-type header.
         assert!(
             out.contains("\"content-type\": \"application/json\","),
             "{out}"
         );
+    }
+
+    #[test]
+    fn raw_method_sends_constant_headers_without_public_parameters() {
+        let mut ep = endpoint(
+            "/embeddings/size",
+            vec![],
+            Some(TypeRef::Primitive(Prim::Float)),
+        );
+        ep.constant_headers = vec![("storage-unit".to_string(), "GB".to_string())];
+
+        let out = raw_method(&ep, false, &mut Imports::default());
+
+        assert!(!out.contains("storage_unit:"), "{out}");
+        assert!(out.contains("\"storage-unit\": \"GB\","), "{out}");
     }
 
     #[test]

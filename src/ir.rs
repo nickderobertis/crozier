@@ -686,6 +686,9 @@ pub struct Endpoint {
     pub query_params: Vec<QueryParam>,
     /// Header parameters, in declaration order.
     pub header_params: Vec<HeaderParam>,
+    /// Optional string headers with schema defaults, sent on every request but
+    /// omitted from the public method signature.
+    pub constant_headers: Vec<(String, String)>,
     /// The JSON request body, when the operation has one crozier can emit.
     pub request_body: Option<RequestBody>,
     /// Whether OpenAPI marks the operation's request body as required.
@@ -1850,6 +1853,26 @@ fn build_endpoint(
         })
         .collect();
 
+    let constant_headers: Vec<(String, String)> = op
+        .parameters
+        .iter()
+        .filter(|p| {
+            p.location == Some(ParameterLocation::Header)
+                && p.required != Some(true)
+                && !global_headers.contains(p.name.as_str())
+                && !is_transport_managed_header(&p.name)
+                && !is_auth_managed_header(doc, &p.name)
+        })
+        .filter_map(|p| {
+            p.schema
+                .as_ref()?
+                .default
+                .as_ref()?
+                .as_str()
+                .map(|value| (p.name.clone(), value.to_owned()))
+        })
+        .collect();
+
     let mut header_params: Vec<HeaderParam> = op
         .parameters
         .iter()
@@ -1862,6 +1885,7 @@ fn build_endpoint(
                 && !global_headers.contains(p.name.as_str())
                 && !is_transport_managed_header(&p.name)
                 && !is_auth_managed_header(doc, &p.name)
+                && !constant_headers.iter().any(|(name, _)| name == &p.name)
         })
         .map(|p| {
             let type_ref = if p.schema.is_none() && !p.content.is_empty() {
@@ -2113,6 +2137,7 @@ fn build_endpoint(
         path_params,
         query_params,
         header_params,
+        constant_headers,
         request_body,
         request_body_required: op
             .request_body
@@ -7153,6 +7178,42 @@ mod tests {
         assert_eq!(headers[0].py_name, "authorization");
         assert_eq!(headers[0].wire_name, "Authorization");
         assert!(headers[0].required);
+    }
+
+    #[test]
+    fn optional_string_header_defaults_become_constant_headers() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.1.0",
+            "info": { "title": "Example", "version": "1" },
+            "paths": { "/size": { "get": {
+                "operationId": "embeddings.get_size",
+                "parameters": [{
+                    "name": "storage-unit", "in": "header", "required": false,
+                    "schema": { "anyOf": [{ "type": "string" }, { "type": "null" }], "default": "GB" }
+                }],
+                "responses": { "200": { "description": "ok", "content": {
+                    "application/json": { "schema": { "type": "number" } }
+                } } }
+            } } }
+        }))
+        .expect("document deserializes");
+        let operation = doc.paths["/size"].get.as_ref().expect("GET operation");
+        let mut tag_types = Vec::new();
+        let endpoint = build_endpoint(
+            &doc,
+            &[],
+            "/size",
+            "GET",
+            operation,
+            &mut tag_types,
+            &std::collections::HashSet::new(),
+        );
+
+        assert!(endpoint.header_params.is_empty());
+        assert_eq!(
+            endpoint.constant_headers,
+            vec![("storage-unit".to_string(), "GB".to_string())]
+        );
     }
 
     #[test]
