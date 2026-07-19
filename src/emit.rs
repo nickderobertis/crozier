@@ -5416,7 +5416,7 @@ impl Example {
                 out
             }
             Example::List(items) => {
-                if !self.forces_multiline() {
+                if !self.forces_multiline() && column + self.flat().len() <= 80 {
                     return self.flat();
                 }
                 let pad = " ".repeat(indent);
@@ -8896,6 +8896,10 @@ mod tests {
         let long = Example::ExplicitList(vec![Example::Atom(format!("\"{}\"", "x".repeat(90)))]);
         assert!(long.render(0).starts_with("[\n    \"xxx"));
         assert!(long.render(0).ends_with(",\n]"));
+        let long_inferred = Example::List(vec![Example::Atom(
+            "VeryLongGeneratedEnumName::MEMBER".repeat(3),
+        )]);
+        assert!(long_inferred.render_at(8, 20).starts_with("[\n"));
 
         let dict = Example::Dict(vec![(
             "widget".to_string(),
