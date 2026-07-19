@@ -3074,7 +3074,14 @@ impl InlineHoister<'_> {
         let required: Vec<&str> = schema
             .required
             .iter()
-            .chain(schema.all_of.iter().flatten().flat_map(|m| &m.required))
+            .chain(
+                schema
+                    .all_of
+                    .iter()
+                    .flatten()
+                    .filter(|member| !member.properties.is_empty())
+                    .flat_map(|member| &member.required),
+            )
             .map(String::as_str)
             .collect();
         let bases = schema
@@ -4345,6 +4352,35 @@ impl Builder<'_> {
         // An object with `additionalProperties` but no declared properties is a
         // map, which Fern emits as a `Dict[..]` alias rather than an empty model.
         if is_map(schema) {
+            if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
+                if let Some(variants) = value.one_of.as_ref().or(value.any_of.as_ref()) {
+                    let value_name = format!("{name}Value");
+                    let mut members: Vec<TypeRef> = variants
+                        .iter()
+                        .enumerate()
+                        .map(|(index, variant)| {
+                            self.variant_ref(&value_name, index, variant, variants)
+                        })
+                        .collect();
+                    members.dedup();
+                    self.push_alias(
+                        &value_name,
+                        naming::module_name(&value_name),
+                        TypeRef::Union(members),
+                        clean_doc(value.description.as_deref()),
+                    );
+                    self.push_alias(
+                        name,
+                        module,
+                        TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(TypeRef::Named(value_name)),
+                        ),
+                        docstring,
+                    );
+                    return;
+                }
+            }
             self.push_alias(name, module, full_type_ref(schema), docstring);
             return;
         }
@@ -4464,7 +4500,14 @@ impl Builder<'_> {
         let required: Vec<&str> = schema
             .required
             .iter()
-            .chain(schema.all_of.iter().flatten().flat_map(|m| &m.required))
+            .chain(
+                schema
+                    .all_of
+                    .iter()
+                    .flatten()
+                    .filter(|member| !member.properties.is_empty())
+                    .flat_map(|member| &member.required),
+            )
             .map(String::as_str)
             .collect();
         let declared_fields: std::collections::HashSet<&str> = schema
