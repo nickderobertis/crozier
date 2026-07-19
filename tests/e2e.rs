@@ -15377,6 +15377,15 @@ const LETTA: Corpus = Corpus {
         "src/fern/types/tool_json_schema.py",
         "src/fern/types/tool_return_message.py",
         "src/fern/types/top_logprob.py",
+        "src/fern/identities/__init__.py",
+        "src/fern/identities/types/__init__.py",
+        "src/fern/types/agent_state.py",
+        "src/fern/types/batch_job.py",
+        "src/fern/types/job.py",
+        "src/fern/types/llm_config.py",
+        "src/fern/types/model.py",
+        "src/fern/types/run.py",
+        "src/fern/types/step.py",
     ],
 };
 

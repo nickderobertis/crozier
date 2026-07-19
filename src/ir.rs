@@ -5478,11 +5478,7 @@ impl Builder<'_> {
                     }
                     if let Some(member) = simple_nullable_member(prop_schema) {
                         if let Some(reference) = member.reference.as_deref() {
-                            if resolve_ref_from_schemas(self.schemas, reference)
-                                .is_none_or(|target| string_enum_values(target).is_none())
-                            {
-                                return TypeRef::Named(ref_to_class(reference));
-                            }
+                            return TypeRef::Named(ref_to_class(reference));
                         }
                         if matches!(
                             member.ty.as_ref().and_then(TypeField::primary),
@@ -8126,6 +8122,16 @@ mod tests {
                 &nullable_referenced_enum_array,
             ),
             TypeRef::List(Box::new(TypeRef::Named("MessageType".to_string())))
+        );
+        let nullable_referenced_enum = schema(serde_json::json!({
+            "anyOf": [
+                { "$ref": "#/components/schemas/MessageType" },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            builder.field_type_ref("AgentState", "last_stop_reason", &nullable_referenced_enum),
+            TypeRef::Named("MessageType".to_string())
         );
 
         let manager = schema(serde_json::json!({
