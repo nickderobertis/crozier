@@ -5484,6 +5484,12 @@ impl Builder<'_> {
                                 return TypeRef::Named(ref_to_class(reference));
                             }
                         }
+                        if matches!(
+                            member.ty.as_ref().and_then(TypeField::primary),
+                            Some("array" | "object")
+                        ) {
+                            return full_type_ref(member);
+                        }
                     }
                     if let Some(member) = simple_nullable_primitive_member(prop_schema) {
                         return base_type_ref(member);
@@ -7624,9 +7630,12 @@ mod tests {
             builder.field_type_ref("Record", "size", &nullable_enum),
             TypeRef::Named("RecordSize".to_string())
         );
-        assert!(builder.types.iter().any(
-            |declaration| matches!(declaration, TypeDecl::Alias(alias) if alias.name == "RecordSize")
-        ));
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Enum(enumeration)
+                if enumeration.name == "RecordSize"
+                    && enumeration.members.iter().map(|member| member.value.as_str()).collect::<Vec<_>>() == ["small", "large"]
+        )));
 
         let conditional_object = schema(serde_json::json!({
             "type": "object",
@@ -7652,6 +7661,31 @@ mod tests {
                 if alias.name == "RecordConditional"
                     && alias.target == TypeRef::Union(vec![TypeRef::Primitive(Prim::Any)])
         )));
+
+        let nullable_string_array = schema(serde_json::json!({
+            "anyOf": [
+                { "type": "array", "items": { "type": "string" } },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            builder.field_type_ref("AgentState", "message_ids", &nullable_string_array),
+            TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str)))
+        );
+
+        let nullable_unknown_map = schema(serde_json::json!({
+            "anyOf": [
+                { "type": "object", "additionalProperties": true },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            builder.field_type_ref("AgentState", "metadata", &nullable_unknown_map),
+            TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Primitive(Prim::Any)),
+            )
+        );
         assert!(builder.types.iter().any(|declaration| matches!(
             declaration,
             TypeDecl::Object(object) if object.name == "RecordConditionalLeft"
