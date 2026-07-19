@@ -5324,15 +5324,21 @@ impl Example {
                 }
                 let pad = " ".repeat(indent);
                 let inner_pad = " ".repeat(indent + 4);
+                let matrix = items.len() >= 3
+                    && items
+                        .iter()
+                        .all(|item| matches!(item, Example::List(_) | Example::ExplicitList(_)));
                 let body = items
                     .iter()
                     .enumerate()
                     .map(|(index, item)| {
                         let comma = if index + 1 == items.len() { "" } else { "," };
-                        format!(
-                            "{inner_pad}{}{comma}",
+                        let rendered = if matrix {
+                            item.flat()
+                        } else {
                             item.render_at(indent + 4, indent + 4)
-                        )
+                        };
+                        format!("{inner_pad}{rendered}{comma}")
                     })
                     .collect::<Vec<_>>()
                     .join("\n");
