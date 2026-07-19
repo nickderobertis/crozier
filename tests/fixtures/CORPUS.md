@@ -225,7 +225,7 @@ standard workflow for any future source change or Fern upgrade.
 ## Batch 6 — composition and media selected (issue #77)
 
 Three new permissively licensed, immutable specs passed native Fern CLI 5.75.4
-screening and are registered with empty match manifests. Their workflow-owned
+screening and are registered in the match-all-by-default harness. Their workflow-owned
 goldens have not been generated locally.
 
 | name | selected for | status |

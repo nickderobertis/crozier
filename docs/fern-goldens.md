@@ -30,7 +30,7 @@ Work on one corpus row at a time:
    row with its unique spec name, credential-free HTTPS source URL, and pinned
    source ref. A direct spec URL must end in `.json`, `.yaml`, or `.yml`.
 2. For a new fixture, register the same name as a `Corpus` in `tests/e2e.rs` with
-   `matched: &[]`. Keep `matched` empty until Crozier reproduces files exactly.
+   `unmatched: &[]`, then seed its measured residual list with `just fixtures-gaps`.
 3. Commit and push the branch, then manually run **Fern goldens** and select that
    branch. The optional workflow inputs are:
 
@@ -63,8 +63,8 @@ Work on one corpus row at a time:
    reports differing paths, Crozier generation failures, processing failures,
    and fetch failures without fail-fast. Run `just fixtures-diff <fixture>`
    locally when a full unified diff is needed.
-6. Repair Crozier on the same feature branch. Use `just fixtures-candidates` to
-   add only newly byte-matched paths to each `matched` list; never edit Fern's
+6. Repair Crozier on the same feature branch. Use `just fixtures-gaps` to
+   refresh each measured `unmatched` list with `just fixtures-gaps`; never edit Fern's
    output to make Crozier pass. Commit and push the repair, then dispatch the
    workflow again with the same inputs. Repeat until the aggregate comparison is
    green and the final run reports no generated changes and no publication.

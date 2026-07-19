@@ -57,7 +57,6 @@ known failures, provenance, and the final green/no-change rerun.
   entries in `tests/e2e.rs` also provide compile/smoke coverage independently of
   how many golden paths are matched.
 
-Each `Corpus` in `tests/e2e.rs` carries the `matched` list that is the source of
-truth for which files are byte-matched today. To add a fixture or grow that list,
-see [`AGENTS.md`](AGENTS.md); `just fixtures-candidates` reports which committed
-files Crozier already reproduces so growing the manifest is copy-paste.
+Each `Corpus` in `tests/e2e.rs` carries the residual `unmatched` task list. Every
+other file in the full golden tree is gated, including newly emitted files. See
+[`AGENTS.md`](AGENTS.md); `just fixtures-gaps` measures the remaining divergences.

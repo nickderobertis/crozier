@@ -39,17 +39,16 @@ the committed fixtures (`crozier::strip_python_comments`, exposed as
 `tests/fixtures/<api>/expected/**`. Comment stripping is the *only* normalization
 — everything else must match exactly.
 
-## The matched manifest (source of truth)
+## The unmatched manifest (source of truth)
 
-Each `Corpus` in `tests/e2e.rs` carries a `matched` list — the files byte-matched
-today for that spec. It grows as generation lands; a file is only added once it
-matches exactly. After a generator change, `just fixtures-candidates` reports
-which committed fixture files crozier now reproduces byte-for-byte but that aren't
-yet listed — as ready-to-paste array entries — so growing the manifest is
-copy-paste, not a manual tree diff. Its inverse, `just fixtures-diff`, prints the
-normalized diff of the files crozier *doesn't* yet match (the same bytes the gate
-compares, so comments and SDK headers don't muddy it) — the "why doesn't this
-match" half of the loop. See [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md).
+Each `Corpus` in `tests/e2e.rs` carries an `unmatched` list containing only its
+measured residual divergences. The gate walks the full Fern `expected/` tree and
+requires every other file to match, so newly emitted files are covered
+automatically. It also requires every listed gap to remain divergent, preventing
+closed work from lingering. `just fixtures-gaps` regenerates the exact residual
+task lists and prints the corpus-wide census; `fixtures-candidates` remains an
+alias. `just fixtures-diff` prints normalized diffs for investigation. See
+[`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md).
 
 Currently matched for `query-parameters-openapi`:
 
@@ -247,8 +246,7 @@ live-e2e leg (`just test-corpus-match`). Reaching it exercised, on a messy
 real-world document, the `$ref` parameter/response resolution, Fern-matching method
 naming, ubiquitous-header promotion, inline-schema hoisting, and worked-example
 value synthesis (spec `example`s, shown only for a plain-scalar required-and-not-
-nullable field, with an enum rendered as its member); `APIDECK_CRM_GAPS` is now
-empty.
+nullable field, with an enum rendered as its member); its `unmatched` list is empty.
 
 ### The `bunq.com` real-world corpus (issue #77): the at-scale target, fully matched
 
@@ -257,8 +255,8 @@ magnitude larger than apideck — **421 endpoints, 617 component schemas, 118 ta
 committed as a **956-file** Fern golden. Fern generates it cleanly (`fern check`
 passes) and crozier's SDK round-trips live against it (`bunq.com` in
 `conftest.FIXTURES`; see the mock-side-skip note below). It is now **fully
-byte-matched**: `bunq_matches_fern_output` locks in all 956 files via
-**`BUNQ_MATCHED`** (the paste-ready output of `just fixtures-candidates`). Its guard
+byte-matched**: `bunq_matches_fern_output` walks and locks in all 956 files; its
+`unmatched` list is empty. Its guard
 mirrors apideck's — skip when the fetched spec is absent, enforce under
 `CROZIER_REQUIRE_CORPUS` in `just test-corpus-match`.
 
@@ -328,7 +326,7 @@ counterpart to endpoint-heavy bunq: **869 component schemas across only 13 tags*
 committed as a **1082-file** Fern golden. Fern generates it cleanly (`fern check`
 passes) and crozier consumes it without error, so it is a valid byte-match target.
 It is now **fully byte-matched**: `bungie_matches_fern_output` locks in all 1082
-files via **`BUNGIE_MATCHED`** (the paste-ready output of `just fixtures-candidates`).
+files by walking the entire golden; its `unmatched` list is empty.
 Its guard mirrors apideck's and bunq's — skip when the fetched spec is absent, enforce
 under `CROZIER_REQUIRE_CORPUS` in `just test-corpus-match`.
 
@@ -359,9 +357,9 @@ together as a batch of deliberately harder, feature-diverse targets. All five pa
 `fern check` (the prerequisite — Fern must accept the raw spec, and the largest raw
 public specs do not: `github.com`, `box.com`, and `atlassian.com-jira` each fail its
 gate, and `conjur.local` hits a ref-resolution error, so all four are out). Each
-`Corpus` is registered in `tests/e2e.rs` with an **empty `matched`** list and the
-usual `link-ok` guard, so the offline `check` gate skips them; the byte-match pass
-grows each list (`just fixtures-candidates`) as the generator is brought to a match.
+`Corpus` is registered in `tests/e2e.rs` with a measured `unmatched` list and the
+usual `link-ok` guard, so the offline `check` gate skips unfetched specs; the
+byte-match pass shrinks each list as the generator is brought to a match.
 Their Fern goldens are generated and published to the same feature branch by the
 **Fern goldens** workflow.
 
@@ -485,10 +483,10 @@ the document. Each has a hand-authored feature-coverage target with the full Fer
 
 ### Adding a gap target's golden tree
 
-Add the target as one numbered `CORPUS.md` row and an empty-`matched` `Corpus`,
+Add the target as one numbered `CORPUS.md` row and an `unmatched: &[]` `Corpus`,
 then dispatch **Fern goldens** for its source URL. The first red comparison is the
-generator work to land next; add a file to `matched` only after Crozier reproduces
-it exactly. See the complete [`Fern golden lifecycle`](fern-goldens.md). This is
+generator work to land next; run `just fixtures-gaps` to seed its measured gaps.
+See the complete [`Fern golden lifecycle`](fern-goldens.md). This is
 the maintained successor to the manual Docker process used for former gap targets
 such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
 `writeonly-fields`.
