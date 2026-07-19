@@ -2178,7 +2178,9 @@ fn build_endpoint(
         body_schema_is_success_response: request_and_response_refs_match(op),
         response,
         response_may_be_empty: has_bodyless_success(op)
-            || success_response_entry(op).is_some_and(|response| response.reference.is_some()),
+            || success_response_entry(op).is_some_and(|response| response.reference.is_some())
+            || doc.openapi.starts_with("3.1")
+                && success_response_schema(op).is_some_and(is_unknown),
         response_doc: success_response_doc(op),
         errors,
         docstring: operation_doc(op.description.as_deref()),
