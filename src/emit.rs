@@ -5159,7 +5159,14 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     lines.push(String::new());
     lines.push("        Returns".to_string());
     lines.push("        -------".to_string());
-    lines.push(format!("        {}", mp.inner));
+    lines.push(format!(
+        "        {}",
+        if ep.http_method == "HEAD" && ep.response.is_some() {
+            "typing.Dict[str, str]"
+        } else {
+            &mp.inner
+        }
+    ));
     // A concrete response carries its description (indented, blank when the spec
     // gives none) under the return type.
     if ep.response.is_some() {
@@ -5618,6 +5625,12 @@ impl<'a> ExampleCtx<'a> {
         }
         if let TypeRef::Union(variants) = t {
             let value: serde_json::Value = serde_json::from_str(example).ok()?;
+            if value
+                .as_object()
+                .is_some_and(|object| object.len() == 1 && object.contains_key("$ref"))
+            {
+                return None;
+            }
             for variant in variants {
                 if self.example_matches_type(variant, &value) {
                     return self.value_from_example(variant, example);

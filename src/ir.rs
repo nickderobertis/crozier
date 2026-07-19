@@ -2889,13 +2889,17 @@ fn resolve_request_body(
         return Some(body);
     }
     scalar_body(schema).map(|(type_ref, content_type)| {
-        single_with_override(
+        let mut body = single_with_override(
             type_ref,
             required,
             false,
             content_type,
             content_type_override,
-        )
+        );
+        if let RequestBody::Single(single) = &mut body {
+            single.example = media_example(doc, media).and_then(example_literal);
+        }
+        body
     })
 }
 
@@ -3697,13 +3701,16 @@ fn has_markdown_response(op: &Operation) -> bool {
 }
 
 fn has_bodyless_success(op: &Operation) -> bool {
-    op.responses.iter().any(|(code, response)| {
+    let bodyless = op.responses.iter().filter(|(code, response)| {
         code.starts_with('2')
             && !response
                 .content
                 .values()
                 .any(|media| media.schema.is_some())
-    })
+    });
+    let codes: Vec<&str> = bodyless.map(|(code, _)| code.as_str()).collect();
+    !codes.is_empty()
+        && !(success_response_schema(op).is_some() && codes.iter().all(|code| *code == "201"))
 }
 
 /// The success (2xx) response's JSON body schema, if any. Fern treats a wildcard
