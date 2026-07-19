@@ -15499,6 +15499,10 @@ const LETTA: Corpus = Corpus {
         "src/fern/feeds/client.py",
         "src/fern/scheduled_messages/client.py",
         "src/fern/scheduled_messages/raw_client.py",
+        "src/fern/feeds/raw_client.py",
+        "src/fern/pipelines/raw_client.py",
+        "src/fern/projects/raw_client.py",
+        "src/fern/templates/raw_client.py",
     ],
 };
 

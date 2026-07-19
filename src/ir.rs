@@ -3952,13 +3952,17 @@ fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
     match t {
         TypeRef::Named(name) => types.iter().any(|d| match d {
             TypeDecl::Object(o) => o.name == *name,
-            // A union alias always converts; any other alias converts when its target
-            // does — e.g. `Error = List[ErrorItem]` converts because `ErrorItem`
-            // carries field aliases (bunq's `Sequence[Error]` body field).
+            // An alias converts only when its target reaches an object model.
+            // Primitive-only unions (for example `Union[str, float]` query
+            // parameters) serialize directly and need no annotation converter.
             TypeDecl::Alias(a) => {
                 a.name == *name
-                    && (matches!(a.target, TypeRef::Union(_))
-                        || type_needs_convert(&a.target, types))
+                    && match &a.target {
+                        TypeRef::Union(variants) => !variants.iter().all(|variant| {
+                            matches!(variant, TypeRef::Primitive(_) | TypeRef::Literal(_))
+                        }),
+                        target => type_needs_convert(target, types),
+                    }
             }
             // A discriminated union's wrapper models carry field aliases too.
             TypeDecl::DiscriminatedUnion(u) => u.name == *name,
@@ -3969,6 +3973,9 @@ fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
             type_needs_convert(inner, types)
         }
         TypeRef::Dict(_, value) => type_needs_convert(value, types),
+        TypeRef::Union(variants) => variants
+            .iter()
+            .any(|variant| type_needs_convert(variant, types)),
         _ => false,
     }
 }
@@ -8694,8 +8701,8 @@ mod tests {
             "oneOf": [{ "type": "string" }, { "type": "number" }]
         }));
         assert_eq!(
-            hoister.hoist_param_enum("ListFeedsRequest", "offset", &offset),
-            TypeRef::Named("ListFeedsRequestOffset".to_string())
+            hoister.hoist_param_enum("FeedsListFeedsRequest", "offset", &offset),
+            TypeRef::Named("FeedsListFeedsRequestOffset".to_string())
         );
         let operator = schema(serde_json::json!({
             "anyOf": [
@@ -8709,8 +8716,12 @@ mod tests {
         );
         assert!(hoister.out.iter().any(|decl| matches!(
             decl,
-            TypeDecl::Alias(alias) if alias.name == "ListFeedsRequestOffset"
+            TypeDecl::Alias(alias) if alias.name == "FeedsListFeedsRequestOffset"
         )));
+        assert!(!super::type_needs_convert(
+            &TypeRef::Named("FeedsListFeedsRequestOffset".to_string()),
+            &hoister.out
+        ));
         assert!(hoister.out.iter().any(|decl| matches!(
             decl,
             TypeDecl::Enum(value) if value.name == "ListRunsRequestDurationOperator"
