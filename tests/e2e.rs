@@ -15454,6 +15454,11 @@ const LETTA: Corpus = Corpus {
         "src/fern/types/passage.py",
         "src/fern/types/supervisor_manager_update.py",
         "src/fern/types/tool_env_var_schema.py",
+        "src/fern/types/letta_schemas_message_tool_return_input.py",
+        "src/fern/types/letta_schemas_message_tool_return_output.py",
+        "src/fern/types/letta_serialize_schemas_pydantic_agent_schema_agent_schema.py",
+        "src/fern/types/letta_serialize_schemas_pydantic_agent_schema_tool_schema.py",
+        "src/fern/types/tool_execution_result.py",
     ],
 };
 

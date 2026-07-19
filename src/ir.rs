@@ -3503,6 +3503,9 @@ impl InlineHoister<'_> {
                     if let Some(reference) = member.reference.as_deref() {
                         return TypeRef::Named(ref_to_class(reference));
                     }
+                    if is_unknown(member) {
+                        return TypeRef::Primitive(Prim::Any);
+                    }
                     if is_map(member) {
                         return nullable_map_value_type_ref(member);
                     }
@@ -3652,6 +3655,9 @@ impl InlineHoister<'_> {
                     }
                     if let Some(reference) = non_null[0].reference.as_deref() {
                         return TypeRef::Named(ref_to_class(reference));
+                    }
+                    if is_unknown(non_null[0]) {
+                        return TypeRef::Primitive(Prim::Any);
                     }
                     if is_map(non_null[0]) {
                         return nullable_map_value_type_ref(non_null[0]);
@@ -5585,6 +5591,9 @@ impl Builder<'_> {
                     if let Some(member) = simple_nullable_member(prop_schema) {
                         if let Some(reference) = member.reference.as_deref() {
                             return TypeRef::Named(ref_to_class(reference));
+                        }
+                        if is_unknown(member) {
+                            return TypeRef::Primitive(Prim::Any);
                         }
                         if is_map(member) {
                             return nullable_map_value_type_ref(member);
@@ -8313,6 +8322,14 @@ mod tests {
                     && enumeration.members.iter().map(|member| member.value.as_str()).collect::<Vec<_>>() == ["message"]
                     && enumeration.docstring.is_none()
         )));
+
+        let nullable_unknown = schema(serde_json::json!({
+            "anyOf": [{}, { "type": "null" }]
+        }));
+        assert_eq!(
+            builder.field_type_ref("ToolExecutionResult", "func_return", &nullable_unknown),
+            TypeRef::Primitive(Prim::Any)
+        );
 
         let nullable_referenced_enum_array = schema(serde_json::json!({
             "anyOf": [{
