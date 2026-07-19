@@ -642,6 +642,8 @@ fn all_operations_authenticated(doc: &OpenApi) -> bool {
 /// One API operation, resolved into the shape the raw client needs.
 #[derive(Debug)]
 pub struct Endpoint {
+    /// Whether the source document uses OpenAPI 3.1 semantics.
+    pub openapi_31: bool,
     /// The client module (directory) this operation belongs to.
     pub module: String,
     /// The generated Python method name.
@@ -1707,11 +1709,13 @@ fn build_endpoint(
             example: parameter_example(doc, p),
         })
         .collect();
-    path_params.sort_by(|a, b| {
-        path_param_position(path, &a.wire_name)
-            .cmp(&path_param_position(path, &b.wire_name))
-            .then_with(|| a.wire_name.cmp(&b.wire_name))
-    });
+    if !doc.openapi.starts_with("3.1") {
+        path_params.sort_by(|a, b| {
+            path_param_position(path, &a.wire_name)
+                .cmp(&path_param_position(path, &b.wire_name))
+                .then_with(|| a.wire_name.cmp(&b.wire_name))
+        });
+    }
 
     let query_params: Vec<QueryParam> = op
         .parameters
@@ -1975,6 +1979,7 @@ fn build_endpoint(
         body_ok && !has_unsupported_params && !op.responses.is_empty() && response_supported(op);
 
     Endpoint {
+        openapi_31: doc.openapi.starts_with("3.1"),
         module,
         method_name: method,
         http_method,

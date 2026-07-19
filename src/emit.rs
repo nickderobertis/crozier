@@ -3469,7 +3469,7 @@ fn raw_docstring(
         push_return_doc(&mut lines, ep.response_doc.as_deref());
     }
     lines.push("        \"\"\"".to_string());
-    if ep.module.is_empty() {
+    if ep.module.is_empty() && ep.openapi_31 {
         lines
             .iter_mut()
             .filter(|line| line.is_empty())
@@ -5038,7 +5038,7 @@ fn client_stream_docstring(
         }
     }
     lines.push("        \"\"\"".to_string());
-    if ep.module.is_empty() {
+    if ep.module.is_empty() && ep.openapi_31 {
         lines
             .iter_mut()
             .filter(|line| line.is_empty())
@@ -5254,7 +5254,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         }
     }
     lines.push("        \"\"\"".to_string());
-    if ep.module.is_empty() {
+    if ep.module.is_empty() && ep.openapi_31 {
         lines
             .iter_mut()
             .filter(|line| line.is_empty())
@@ -7983,6 +7983,7 @@ mod tests {
 
     fn endpoint(path: &str, params: Vec<PathParam>, response: Option<TypeRef>) -> Endpoint {
         Endpoint {
+            openapi_31: false,
             module: "m".to_string(),
             method_name: "op".to_string(),
             http_method: "GET",
@@ -9432,6 +9433,7 @@ mod tests {
     #[test]
     fn generation_covers_root_and_explicit_empty_endpoint_namespaces() {
         let mut root = endpoint("/root", Vec::new(), Some(TypeRef::Primitive(Prim::Str)));
+        root.openapi_31 = true;
         root.module.clear();
         root.docstring = Some("Root operation.".to_string());
         root.response_doc = Some("Root response.".to_string());
