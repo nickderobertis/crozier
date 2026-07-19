@@ -4857,11 +4857,12 @@ fn append_member_fields(
             if is_map(member) {
                 nullable_map_value_type_ref(member)
             } else {
-                let union_array_item = member
-                    .items
-                    .as_deref()
-                    .filter(|items| items.one_of.is_some() || items.any_of.is_some());
-                if union_array_item.is_some() {
+                let named_array_item = member.items.as_deref().filter(|items| {
+                    items.one_of.is_some()
+                        || items.any_of.is_some()
+                        || (items.reference.is_none() && is_inline_struct(items))
+                });
+                if named_array_item.is_some() {
                     enum_owner.map_or_else(
                         || base_type_ref(member),
                         |owner| {
@@ -4875,6 +4876,25 @@ fn append_member_fields(
                     base_type_ref(member)
                 }
             }
+        } else if prop_schema.ty.as_ref().and_then(TypeField::primary) == Some("array")
+            && prop_schema
+                .items
+                .as_deref()
+                .is_some_and(|items| items.reference.is_none() && is_inline_struct(items))
+        {
+            enum_owner.map_or_else(
+                || base_type_ref(prop_schema),
+                |owner| {
+                    TypeRef::List(Box::new(TypeRef::Named(format!(
+                        "{owner}{}Item",
+                        naming::class_name(prop)
+                    ))))
+                },
+            )
+        } else if is_map(prop_schema) && prop_schema.nullable == Some(true) {
+            let mut non_nullable = prop_schema.clone();
+            non_nullable.nullable = None;
+            base_type_ref(&non_nullable)
         } else if prop_schema.one_of.is_some() || prop_schema.any_of.is_some() {
             enum_owner.map_or_else(
                 || base_type_ref(prop_schema),
@@ -5418,6 +5438,11 @@ impl Builder<'_> {
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        if is_map(prop_schema) && prop_schema.nullable == Some(true) {
+            let mut non_nullable = prop_schema.clone();
+            non_nullable.nullable = None;
+            return base_type_ref(&non_nullable);
+        }
         // AWS-style OpenAPI documents commonly decorate a property reference as
         // `allOf: [$ref, { description }]`. Fern treats that as a use-site copy:
         // scalar/collection aliases resolve to their underlying type, while enums
@@ -6635,7 +6660,21 @@ mod tests {
                         "env": {"anyOf": [
                             {"type": "object", "additionalProperties": {"type": "string"}},
                             {"type": "null"}
-                        ]}
+                        ]},
+                        "child_nodes": {"anyOf": [
+                            {"type": "array", "items": {
+                                "type": "object", "properties": {"name": {"type": "string"}}
+                            }},
+                            {"type": "null"}
+                        ]},
+                        "direct_nodes": {
+                            "type": "array", "nullable": true, "items": {
+                                "type": "object", "properties": {"name": {"type": "string"}}
+                            }
+                        },
+                        "args": {
+                            "type": "object", "nullable": true, "additionalProperties": {}
+                        }
                     }
                 },
                 "Bird": {
@@ -6690,7 +6729,7 @@ mod tests {
         assert_eq!(cat[1].example.as_deref(), Some("9"));
 
         let dog = member_fields(&schemas["Dog"], "kind", &schemas, Some("Dog"));
-        assert_eq!(dog.len(), 5);
+        assert_eq!(dog.len(), 8);
         assert_eq!(dog[0].wire_name, "name");
         assert!(dog[0].optional);
         assert!(dog[0].nullable);
@@ -6708,6 +6747,21 @@ mod tests {
             TypeRef::Dict(
                 Box::new(TypeRef::Primitive(Prim::Str)),
                 Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Str))))
+            )
+        );
+        assert_eq!(
+            dog[5].type_ref,
+            TypeRef::List(Box::new(TypeRef::Named("DogChildNodesItem".to_string())))
+        );
+        assert_eq!(
+            dog[6].type_ref,
+            TypeRef::List(Box::new(TypeRef::Named("DogDirectNodesItem".to_string())))
+        );
+        assert_eq!(
+            dog[7].type_ref,
+            TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Primitive(Prim::Any))
             )
         );
     }
@@ -8480,6 +8534,17 @@ mod tests {
             declaration,
             TypeDecl::Enum(value) if value.name == "MessageIncludeTypesItem"
         )));
+
+        let legacy_nullable_map = schema(serde_json::json!({
+            "type": "object", "nullable": true, "additionalProperties": {}
+        }));
+        assert_eq!(
+            builder.field_type_ref("Node", "args", &legacy_nullable_map),
+            TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Primitive(Prim::Any))
+            )
+        );
         let nullable_object_ref = schema(serde_json::json!({
             "anyOf": [
                 { "$ref": "#/components/schemas/AgentFile" },

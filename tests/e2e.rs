@@ -15516,6 +15516,9 @@ const LETTA: Corpus = Corpus {
         "src/fern/mcp_servers/types/mcp_retrieve_mcp_server_response.py",
         "src/fern/mcp_servers/types/mcp_update_mcp_server_response.py",
         "src/fern/mcp_servers/types/update_mcp_server_request_config.py",
+        "src/fern/templates/types/templates_get_template_snapshot_response_agents_item_tool_rules_item.py",
+        "src/fern/templates/types/templates_get_template_snapshot_response_agents_item_tool_rules_item_constrain_child_tools_child_arg_nodes_item.py",
+        "src/fern/templates/types/templates_get_template_snapshot_response_agents_item_tool_rules_item_run_first.py",
     ],
 };
 
