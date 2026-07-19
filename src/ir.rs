@@ -1287,7 +1287,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     let mut builder = Builder {
         types: Vec::new(),
         schemas: &doc.components.schemas,
-        strip_discriminant: discriminant_strips(&doc.components.schemas),
+        strip_discriminant: document_discriminant_strips(doc),
         building_types: Default::default(),
     };
     for (key, schema) in &doc.components.schemas {
@@ -4623,6 +4623,29 @@ fn discriminant_strips(
     strips
 }
 
+fn document_discriminant_strips(doc: &OpenApi) -> std::collections::HashMap<String, String> {
+    let mut strips = discriminant_strips(&doc.components.schemas);
+    for item in doc.paths.values().chain(doc.webhooks.values()) {
+        for (_, operation) in item.operations() {
+            if let Some(request) = operation.request_body.as_ref() {
+                for media in request.content.values() {
+                    if let Some(schema) = media.schema.as_ref() {
+                        collect_discriminant_strips(schema, &doc.components.schemas, &mut strips);
+                    }
+                }
+            }
+            for response in operation.responses.values() {
+                for media in response.content.values() {
+                    if let Some(schema) = media.schema.as_ref() {
+                        collect_discriminant_strips(schema, &doc.components.schemas, &mut strips);
+                    }
+                }
+            }
+        }
+    }
+    strips
+}
+
 fn collect_discriminant_strips(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
@@ -6354,9 +6377,9 @@ fn example_literal(value: &serde_json::Value) -> Option<String> {
 mod tests {
     use super::{
         array_item_type_ref, auth_model, base_type_ref, build_endpoint, build_enum,
-        described_all_of_ref, discriminant_strips, endpoint_module, environment_model,
-        extensible_enum, full_type_ref_resolved, global_headers, hoist_fields, int_prim,
-        member_fields, method_from_grouped_id, module_from_grouped_id, module_identifier,
+        described_all_of_ref, discriminant_strips, document_discriminant_strips, endpoint_module,
+        environment_model, extensible_enum, full_type_ref_resolved, global_headers, hoist_fields,
+        int_prim, member_fields, method_from_grouped_id, module_from_grouped_id, module_identifier,
         oauth_scope_enum, optional_type_ref, parameter_example, path_group, property_description,
         query_parameter_example, ref_to_class, request_and_response_refs_match,
         request_schema_use_count, resolve_request_body, resolve_schema_pointer, response_schema,
@@ -6549,6 +6572,9 @@ mod tests {
                 "Assistant": { "type": "object", "required": ["message_type"], "properties": {
                     "message_type": { "type": "string", "const": "assistant_message" }
                 } },
+                "Result": { "type": "object", "required": ["message_type"], "properties": {
+                    "message_type": { "type": "string", "const": "result_message" }
+                } },
                 "Messages": {
                     "oneOf": [
                         { "$ref": "#/components/schemas/Approval" },
@@ -6559,13 +6585,24 @@ mod tests {
                         "assistant_message": "#/components/schemas/Assistant"
                     } }
                 }
-            } }
+            } },
+            "paths": { "/results": { "get": { "responses": { "200": {
+                "content": { "application/json": { "schema": { "oneOf": [
+                    { "$ref": "#/components/schemas/Result" }
+                ], "discriminator": { "propertyName": "message_type", "mapping": {
+                    "result_message": "#/components/schemas/Result"
+                } } } } }
+            } } } } }
         }))
         .expect("message schemas deserialize");
-        let strips = discriminant_strips(&doc.components.schemas);
+        let strips = document_discriminant_strips(&doc);
         assert!(!strips.contains_key("Approval"));
         assert_eq!(
             strips.get("Assistant").map(String::as_str),
+            Some("message_type")
+        );
+        assert_eq!(
+            strips.get("Result").map(String::as_str),
             Some("message_type")
         );
     }

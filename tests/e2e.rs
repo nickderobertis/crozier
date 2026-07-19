@@ -15436,6 +15436,10 @@ const LETTA: Corpus = Corpus {
         "src/fern/conversations/__init__.py",
         "src/fern/conversations/client.py",
         "src/fern/conversations/types/__init__.py",
+        "src/fern/types/assistant_message_list_result.py",
+        "src/fern/types/reasoning_message_list_result.py",
+        "src/fern/types/system_message_list_result.py",
+        "src/fern/types/user_message_list_result.py",
     ],
 };
 
