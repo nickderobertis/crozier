@@ -9506,6 +9506,30 @@ mod tests {
         );
         assert!(result.fields.iter().all(|field| field.spec_required));
 
+        let union_response = schema(serde_json::json!({
+            "type": "array",
+            "items": {
+                "description": "A scalar result.",
+                "oneOf": [{ "type": "string" }, { "type": "integer" }]
+            }
+        }));
+        assert_eq!(
+            hoister.hoist_response_array_item_union("ScalarResultItem", &union_response),
+            Some(TypeRef::List(Box::new(TypeRef::Named(
+                "ScalarResultItem".to_string()
+            ))))
+        );
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Alias(alias)
+                if alias.name == "ScalarResultItem"
+                    && alias.docstring.as_deref() == Some("A scalar result.")
+                    && alias.target == TypeRef::Union(vec![
+                        TypeRef::Primitive(Prim::Str),
+                        TypeRef::Primitive(Prim::Int)
+                    ])
+        )));
+
         let referenced = schema(serde_json::json!({ "$ref": "#/components/schemas/Base" }));
         assert_eq!(
             hoister.hoist_union_variant("Choice", 0, &referenced, &[]),
@@ -9548,6 +9572,28 @@ mod tests {
                 "GetShapeResponseZeroItem".to_string()
             )))
         );
+        let nested_union_array = schema(serde_json::json!({
+            "type": "array",
+            "items": {
+                "description": "A nested scalar.",
+                "oneOf": [{ "type": "string" }, { "type": "boolean" }]
+            }
+        }));
+        assert_eq!(
+            hoister.hoist_union_variant(
+                "Choice",
+                0,
+                &nested_union_array,
+                std::slice::from_ref(&nested_union_array),
+            ),
+            TypeRef::List(Box::new(TypeRef::Named("ChoiceZeroItem".to_string())))
+        );
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Alias(alias)
+                if alias.name == "ChoiceZeroItem"
+                    && alias.docstring.as_deref() == Some("A nested scalar.")
+        )));
     }
 
     #[test]

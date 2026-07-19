@@ -8964,6 +8964,20 @@ mod tests {
             Example::ExplicitList(vec![Example::Atom("1".to_string())]).render(0),
             "[1]"
         );
+        assert_eq!(
+            Example::ReferenceList(vec![
+                Example::List(Vec::new()),
+                Example::List(Vec::new()),
+                Example::List(Vec::new()),
+            ])
+            .render(0),
+            "[\n    [],\n    [],\n    []\n]"
+        );
+        assert!(
+            Example::ReferenceDict(vec![("key".to_string(), Example::Atom("1".to_string()))])
+                .forces_multiline()
+        );
+        assert!(Example::ReferenceList(vec![Example::Atom("1".to_string())]).forces_multiline());
     }
 
     #[test]
