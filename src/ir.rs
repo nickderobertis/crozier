@@ -3753,8 +3753,8 @@ fn has_bodyless_success(op: &Operation) -> bool {
                 .any(|media| media.schema.is_some())
     });
     let codes: Vec<&str> = bodyless.map(|(code, _)| code.as_str()).collect();
-    !codes.is_empty()
-        && !(success_response_schema(op).is_some() && codes.iter().all(|code| *code == "201"))
+    !(codes.is_empty()
+        || success_response_schema(op).is_some() && codes.iter().all(|code| *code == "201"))
 }
 
 /// The success (2xx) response's JSON body schema, if any. Fern treats a wildcard
