@@ -1,6 +1,6 @@
 # Canonical real-world OpenAPI corpus (issue #77)
 
-This manifest tracks 77 real-world OpenAPI specs with redistribution-compatible
+This manifest tracks 76 real-world OpenAPI specs with redistribution-compatible
 license metadata. `decision` is `link-ok` when the permissively licensed source
 is fetched at generation time rather than vendored. Add or change one numbered
 row per feature branch and maintain its golden through the manually dispatched
@@ -82,10 +82,9 @@ row per feature branch and maintain its golden through the manually dispatched
 | 71 | `slurmdb-rest` | github-raw | https://raw.githubusercontent.com/ubccr/slurmdbrest/f9c5e77cc3a1a11c7645dab31c6752cd08577721/api/openapi.yaml | `f9c5e77cc3a1a11c7645dab31c6752cd08577721` | Apache-2.0 | link-ok | SlurmDB REST API with a label path parameter (`explode: false`) and 33 form parameters with explicit `explode` |
 | 72 | `nimisampo` | github-raw | https://raw.githubusercontent.com/SemanticComputing/nimisampo.fi/34b8d22fff53a3dd531e89277fdb2f98d69dd1d0/src/server/openapi.yaml | `34b8d22fff53a3dd531e89277fdb2f98d69dd1d0` | MIT | link-ok | Deployed NameSampo API with a query parameter carrying `content: { application/json: ... }` and three `allowReserved` parameters |
 | 73 | `free5gc-pdu-session` | github-raw | https://raw.githubusercontent.com/free5gc/openapi/8d0ee35bc671dd9995240c0ff73d4c75075a204a/Nsmf_PDUSession/api/openapi.yaml | `8d0ee35bc671dd9995240c0ff73d4c75075a204a` | Apache-2.0 | link-ok | free5GC PDU Session API with multipart `encoding` properties combining `contentType` and per-part `headers` |
-| 74 | `sumup` | github-raw | https://raw.githubusercontent.com/sumup/sumup-openapi/81d721bb4c34fa666604f50c9cbc8cc2323e25a1/openapi.yaml | `81d721bb4c34fa666604f50c9cbc8cc2323e25a1` | Apache-2.0 | link-ok | SumUp API with 48 `application/problem+json` responses, 14 `readOnly` and 6 `writeOnly` fields on shared models, and `allOf`/`oneOf` composition |
+| 74 | `apigee-registry` | github-raw | https://raw.githubusercontent.com/apigee/registry/9a68b6d65c4047497d7782cd49c65fa655efdad9/openapi.yaml | `9a68b6d65c4047497d7782cd49c65fa655efdad9` | Apache-2.0 | link-ok | Apigee Registry API whose `ApiSpec` and `Artifact` models each combine response-only metadata with write-only `contents` |
 | 75 | `letta` | github-raw | https://raw.githubusercontent.com/letta-ai/letta/e3fb00f97009cafe527cde93983cda0dfdd7e574/fern/openapi.json | `e3fb00f97009cafe527cde93983cda0dfdd7e574` | Apache-2.0 | link-ok | Letta API with 10 `text/event-stream` responses, 12 discriminators without mappings, 1 map-of-union schema, and 1,416 `anyOf` plus 87 `oneOf` compositions |
-| 76 | `titiler-openeo` | github-raw | https://raw.githubusercontent.com/sentinel-hub/titiler-openeo/c7453abdd3a2dc97f90ed8ab8b640f66a4a3e53f/titiler/openeo/openapi.yaml | `c7453abdd3a2dc97f90ed8ab8b640f66a4a3e53f` | MIT | link-ok | TiTiler openEO API with three JSON Schema `not` constraints, 42 `allOf`, 11 `oneOf`, 7 `anyOf`, and 77 ranged `4XX`/`5XX` responses |
-| 77 | `keycloak-admin` | api-guru | https://api.apis.guru/v2/specs/keycloak.local/1/openapi.json | `1` | Apache-2.0 | link-ok | Keycloak Admin REST API with 281 literal ranged `2XX` success responses |
+| 76 | `smart-edge-af` | github-raw | https://raw.githubusercontent.com/smart-edge-open/specs/b8cbd91c31862079d691f3570cb5b72bbfcf170a/schema/af/af.openapi.json | `b8cbd91c31862079d691f3570cb5b72bbfcf170a` | Apache-2.0 | link-ok | Application Function API with `TrafficInfluSub` mixing `allOf`/`anyOf`, one `not`, six default responses, and seven `application/problem+json` response definitions |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -224,16 +223,15 @@ standard workflow for any future source change or Fern upgrade.
 
 ## Batch 6 — composition and media selected (issue #77)
 
-Four new permissively licensed, immutable specs passed native Fern CLI 5.75.4
+Three new permissively licensed, immutable specs passed native Fern CLI 5.75.4
 screening and are registered with empty match manifests. Their workflow-owned
 goldens have not been generated locally.
 
 | name | selected for | status |
 |---|---|---|
-| `sumup` | 48 problem+json responses; shared request/response models with `readOnly` and `writeOnly`; `allOf`/`oneOf` | Fern check passed — golden generation pending |
+| `apigee-registry` | `ApiSpec` and `Artifact` each mix `readOnly` and `writeOnly` properties | Fern check passed — golden generation pending |
 | `letta` | SSE; implicit discriminators; map of unions; deep `anyOf`/`oneOf` | Fern check passed — golden generation pending |
-| `titiler-openeo` | JSON Schema `not`; nested `allOf`/`oneOf`/`anyOf`; ranged error responses | Fern check passed — golden generation pending |
-| `keycloak-admin` | 281 literal ranged `2XX` success responses | Fern check passed — golden generation pending |
+| `smart-edge-af` | JSON Schema `not`; response-referenced `allOf`/`anyOf`; six default responses; problem+json | Fern check passed — golden generation pending |
 
 ### Screened failures
 
@@ -253,3 +251,8 @@ goldens have not been generated locally.
 | `ably-connector` | **DROPPED** — Fern check rejected three invalid integer defaults (do not retry this ref) |
 | `azure-aro-hcp` | **DROPPED** — Fern check failed with three discriminant and example errors (do not retry this ref) |
 | `assemblyai-autosdk` | **REJECTED** — source license is revenue-limited rather than Apache-2.0/MIT/BSD/CC0 |
+| `sumup` | **DROPPED** — its `readOnly` and `writeOnly` fields occur in separate models, so it does not prove same-model interplay |
+| `titiler-openeo` | **DROPPED** — its ranged responses do not include literal `2XX` or `default`; `smart-edge-af` consolidates `not`, `default`, and nested composition |
+| `keycloak-admin` | **DROPPED** — its standalone `2XX` coverage forced a fourth registration; `smart-edge-af` supplies ranged/default coverage in the three-spec set |
+| `mardi-gras` | **REJECTED** — Fern-clean and MIT, but it has no `allOf` and therefore could not consolidate the nested composition requirement |
+| `paypal-checkout` | **DROPPED** — the only revision with `not` fails Fern on five invalid carrier enum names; Fern-clean older revisions lack `not` |

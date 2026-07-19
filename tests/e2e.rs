@@ -13643,10 +13643,10 @@ const FREE5GC_PDU_SESSION: Corpus = Corpus {
     matched: &[],
 };
 
-/// `sumup`: SumUp's production API combines problem+json errors with shared
-/// models carrying both request-only and response-only fields.
-const SUMUP: Corpus = Corpus {
-    api: "sumup",
+/// `apigee-registry`: Apigee's registry models combine request-only contents
+/// with response-only metadata on the same component schemas.
+const APIGEE_REGISTRY: Corpus = Corpus {
+    api: "apigee-registry",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13669,23 +13669,10 @@ const LETTA: Corpus = Corpus {
     matched: &[],
 };
 
-/// `titiler-openeo`: the deployed TiTiler API exercises JSON Schema `not`,
-/// mixed composition, and ranged error responses.
-const TITILER_OPENEO: Corpus = Corpus {
-    api: "titiler-openeo",
-    package_name: "fern",
-    project_name: "default_package_name",
-    audiences: &[],
-    audience_strict: false,
-    client_class_name: None,
-    extra_fields: None,
-    matched: &[],
-};
-
-/// `keycloak-admin`: Keycloak's Admin API uses literal `2XX` response ranges
-/// across its operation surface.
-const KEYCLOAK_ADMIN: Corpus = Corpus {
-    api: "keycloak-admin",
+/// `smart-edge-af`: the deployed Application Function API combines `not`,
+/// default responses, problem+json, and response-referenced mixed composition.
+const SMART_EDGE_AF: Corpus = Corpus {
+    api: "smart-edge-af",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13796,8 +13783,8 @@ fn free5gc_pdu_session_matches_fern_output() {
 }
 
 #[test]
-fn sumup_matches_fern_output() {
-    assert_link_ok_corpus_matches(&SUMUP);
+fn apigee_registry_matches_fern_output() {
+    assert_link_ok_corpus_matches(&APIGEE_REGISTRY);
 }
 
 #[test]
@@ -13806,13 +13793,8 @@ fn letta_matches_fern_output() {
 }
 
 #[test]
-fn titiler_openeo_matches_fern_output() {
-    assert_link_ok_corpus_matches(&TITILER_OPENEO);
-}
-
-#[test]
-fn keycloak_admin_matches_fern_output() {
-    assert_link_ok_corpus_matches(&KEYCLOAK_ADMIN);
+fn smart_edge_af_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SMART_EDGE_AF);
 }
 
 #[test]

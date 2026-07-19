@@ -130,10 +130,9 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e slurmdb_rest_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e nimisampo_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e free5gc_pdu_session_matches_fern_output
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e sumup_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apigee_registry_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e letta_matches_fern_output
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e titiler_openeo_matches_fern_output
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e keycloak_admin_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e smart_edge_af_matches_fern_output
 
 # Format the codebase in place.
 format:
