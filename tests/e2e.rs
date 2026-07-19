@@ -141,6 +141,7 @@ const EXHAUSTIVE: Corpus = Corpus {
         "src/fern/reqwithheaders/client.py",
         // The type aggregator remains stable; the package root changed with 5.20.
         "src/fern/types/__init__.py",
+        "src/fern/chat/types/chat_completion_request_messages_item.py",
     ],
 };
 

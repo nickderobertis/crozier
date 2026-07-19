@@ -4952,10 +4952,10 @@ fn append_member_fields(
                 }
             }
         } else if prop_schema.ty.as_ref().and_then(TypeField::primary) == Some("array")
-            && prop_schema
-                .items
-                .as_deref()
-                .is_some_and(|items| items.reference.is_none() && is_inline_struct(items))
+            && prop_schema.items.as_deref().is_some_and(|items| {
+                items.reference.is_none()
+                    && (is_inline_struct(items) || items.one_of.is_some() || items.any_of.is_some())
+            })
         {
             enum_owner.map_or_else(
                 || base_type_ref(prop_schema),
@@ -6747,6 +6747,12 @@ mod tests {
                                 "type": "object", "properties": {"name": {"type": "string"}}
                             }
                         },
+                        "direct_tools": {
+                            "type": "array", "items": {"oneOf": [
+                                {"$ref": "#/components/schemas/Bird"},
+                                {"$ref": "#/components/schemas/Fish"}
+                            ]}
+                        },
                         "args": {
                             "type": "object", "nullable": true, "additionalProperties": {}
                         }
@@ -6804,7 +6810,7 @@ mod tests {
         assert_eq!(cat[1].example.as_deref(), Some("9"));
 
         let dog = member_fields(&schemas["Dog"], "kind", &schemas, Some("Dog"));
-        assert_eq!(dog.len(), 8);
+        assert_eq!(dog.len(), 9);
         assert_eq!(dog[0].wire_name, "name");
         assert!(dog[0].optional);
         assert!(dog[0].nullable);
@@ -6834,6 +6840,10 @@ mod tests {
         );
         assert_eq!(
             dog[7].type_ref,
+            TypeRef::List(Box::new(TypeRef::Named("DogDirectToolsItem".to_string())))
+        );
+        assert_eq!(
+            dog[8].type_ref,
             TypeRef::Dict(
                 Box::new(TypeRef::Primitive(Prim::Str)),
                 Box::new(TypeRef::Primitive(Prim::Any))
