@@ -6164,6 +6164,15 @@ fn is_explicitly_nullable(schema: &Schema) -> bool {
             schema.ty.as_ref(),
             Some(TypeField::Multiple(types)) if types.iter().any(|ty| ty == "null")
         )
+        || schema
+            .one_of
+            .as_ref()
+            .or(schema.any_of.as_ref())
+            .is_some_and(|members| {
+                members
+                    .iter()
+                    .any(|member| member.ty.as_ref().and_then(TypeField::primary) == Some("null"))
+            })
 }
 
 /// A schema that carries nothing to determine a type — Fern treats it as an
@@ -8360,6 +8369,7 @@ mod tests {
                 { "type": "null" }
             ]
         }));
+        assert!(super::is_optional(&nullable_datetime));
         let emitted = builder.types.len();
         assert_eq!(
             builder.field_type_ref("Record", "created_at", &nullable_datetime),

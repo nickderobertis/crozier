@@ -15443,6 +15443,17 @@ const LETTA: Corpus = Corpus {
         "README.md",
         "src/fern/client.py",
         "src/fern/environment.py",
+        "src/fern/groups/types/group_update_manager_config.py",
+        "src/fern/types/conditional_tool_rule_schema.py",
+        "src/fern/types/context_window_overview.py",
+        "src/fern/types/core_memory_block_schema.py",
+        "src/fern/types/letta_schemas_mcp_server_update_ssemcp_server.py",
+        "src/fern/types/letta_schemas_mcp_server_update_stdio_mcp_server.py",
+        "src/fern/types/letta_schemas_mcp_server_update_streamable_httpmcp_server.py",
+        "src/fern/types/letta_serialize_schemas_pydantic_agent_schema_message_schema.py",
+        "src/fern/types/passage.py",
+        "src/fern/types/supervisor_manager_update.py",
+        "src/fern/types/tool_env_var_schema.py",
     ],
 };
 
