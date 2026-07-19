@@ -2354,7 +2354,10 @@ fn body_response_same_ref(doc: &OpenApi, op: &Operation) -> bool {
             })
         })
     });
-    if !oauth2 && effective_security.is_some_and(|reqs| reqs.iter().all(|r| !r.is_empty())) {
+    if !oauth2
+        && effective_security
+            .is_some_and(|reqs| !reqs.is_empty() && reqs.iter().all(|r| !r.is_empty()))
+    {
         return false;
     }
     request_and_response_refs_match(op)
@@ -3082,6 +3085,35 @@ struct InlineHoister<'a> {
 }
 
 impl InlineHoister<'_> {
+    fn hoist_discriminated_union(
+        &mut self,
+        name: &str,
+        schema: &Schema,
+        docstring: Option<String>,
+    ) -> Option<TypeRef> {
+        // Explicitly discriminated component unions are already built as root
+        // declarations. Inline request shapes only need this path when Fern
+        // infers a discriminator from singleton-enum fields on their variants.
+        if schema.discriminator.is_some() {
+            return None;
+        }
+        let schemas = self.schemas?;
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        let union =
+            builder.discriminated_union(name, &naming::module_name(name), schema, docstring)?;
+        if union.discriminant_property != "field" {
+            return None;
+        }
+        self.out.extend(builder.types);
+        self.out.push(TypeDecl::DiscriminatedUnion(union));
+        Some(TypeRef::Named(name.to_string()))
+    }
+
     /// Hoist an inline union used as a top-level response array item. Fern coins
     /// `{Operation}ResponseItem` and exposes the response as a list of that alias.
     fn hoist_response_array_item_union(
@@ -3338,6 +3370,18 @@ impl InlineHoister<'_> {
                         item_schema.one_of.as_ref().or(item_schema.any_of.as_ref())
                     {
                         let item_name = format!("{parent}{}Item", naming::class_name(prop));
+                        if let Some(item) = self.hoist_discriminated_union(
+                            &item_name,
+                            item_schema,
+                            clean_doc(item_schema.description.as_deref()),
+                        ) {
+                            let item = Box::new(item);
+                            return if array_uses_set(prop_schema) {
+                                TypeRef::Set(item)
+                            } else {
+                                TypeRef::List(item)
+                            };
+                        }
                         let mut variants: Vec<TypeRef> =
                             members.iter().map(base_type_ref).collect();
                         variants.dedup();
@@ -4901,7 +4945,7 @@ impl Builder<'_> {
                         target,
                         &property_name,
                         self.schemas,
-                        target_name.as_deref(),
+                        target_name.as_deref().or(Some(variant_name.as_str())),
                     ),
                     docstring: variant
                         .reference
@@ -6893,6 +6937,11 @@ mod tests {
         }))
         .expect("optional security deserializes");
         assert!(super::body_response_same_ref(&optional_auth_doc, &matching));
+        let no_auth_doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "security": []
+        }))
+        .expect("empty security deserializes");
+        assert!(super::body_response_same_ref(&no_auth_doc, &matching));
         let mismatched = operation(serde_json::json!({
             "requestBody": { "content": { "application/json": {
                 "schema": { "$ref": reference }
@@ -7726,6 +7775,75 @@ mod tests {
                 "GetShapeResponseZeroItem".to_string()
             )))
         );
+    }
+
+    #[test]
+    fn inline_hoister_infers_discriminated_request_array_items() {
+        let schemas = indexmap::IndexMap::new();
+        let mut hoister = InlineHoister {
+            root_types: &[],
+            schemas: Some(&schemas),
+            out: Vec::new(),
+        };
+        let searches = schema(serde_json::json!({
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "required": ["field", "operator", "value"],
+                        "properties": {
+                            "field": { "type": "string", "enum": ["name"] },
+                            "operator": { "type": "string", "enum": ["eq", "contains"] },
+                            "value": { "type": "string" }
+                        }
+                    },
+                    {
+                        "type": "object",
+                        "required": ["field", "operator", "value"],
+                        "properties": {
+                            "field": { "type": "string", "enum": ["version"] },
+                            "operator": { "type": "string", "enum": ["eq"] },
+                            "value": { "type": "integer" }
+                        }
+                    }
+                ]
+            }
+        }));
+
+        assert_eq!(
+            hoister.prop_type_ref("SearchRequest", "search", &searches),
+            TypeRef::List(Box::new(TypeRef::Named(
+                "SearchRequestSearchItem".to_string()
+            )))
+        );
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::DiscriminatedUnion(union)
+                if union.name == "SearchRequestSearchItem"
+                    && union.discriminant_property == "field"
+                    && union.members.len() == 2
+        )));
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Enum(value) if value.name == "SearchRequestSearchItemNameOperator"
+        )));
+        let name = hoister
+            .out
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::DiscriminatedUnion(union) => union
+                    .members
+                    .iter()
+                    .find(|member| member.discriminant == "name"),
+                _ => None,
+            })
+            .expect("name union member");
+        assert!(name.fields.iter().any(|field| {
+            field.wire_name == "operator"
+                && field.type_ref
+                    == TypeRef::Named("SearchRequestSearchItemNameOperator".to_string())
+        }));
     }
 
     #[test]
