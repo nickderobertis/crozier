@@ -3768,6 +3768,7 @@ fn hoist_form_object(
                 .and_then(|reference| hoister.schemas?.get(reference.rsplit('/').next()?))
                 .unwrap_or(prop_schema);
             let form_json = !is_file
+                && simple_nullable_primitive_member(resolved).is_none()
                 && (is_unknown(resolved)
                     || matches!(
                         resolved.ty.as_ref().and_then(|ty| ty.primary()),
@@ -8740,6 +8741,30 @@ mod tests {
                 if union.name == "ModifyMessageRequest"
                     && union.discriminant_property == "message_type"
         )));
+    }
+
+    #[test]
+    fn multipart_nullable_scalars_are_sent_without_json_encoding() {
+        let form = schema(serde_json::json!({
+            "type": "object",
+            "properties": {
+                "name": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+                "metadata": { "type": "object", "additionalProperties": true }
+            }
+        }));
+        let mut hoister = InlineHoister {
+            root_types: &[],
+            schemas: None,
+            out: Vec::new(),
+        };
+        let fields = super::hoist_form_object(
+            &form,
+            &indexmap::IndexMap::new(),
+            &mut hoister,
+            "UploadRequest",
+        );
+        assert!(!fields[0].form_json);
+        assert!(fields[1].form_json);
     }
 
     #[test]
