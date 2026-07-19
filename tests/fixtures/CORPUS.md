@@ -1,6 +1,6 @@
 # Canonical real-world OpenAPI corpus (issue #77)
 
-This manifest tracks 69 real-world OpenAPI specs with redistribution-compatible
+This manifest tracks 73 real-world OpenAPI specs with redistribution-compatible
 license metadata. `decision` is `link-ok` when the permissively licensed source
 is fetched at generation time rather than vendored. Add or change one numbered
 row per feature branch and maintain its golden through the manually dispatched
@@ -78,6 +78,10 @@ row per feature branch and maintain its golden through the manually dispatched
 | 67 | `worldcoin-signup-sequencer` | github-raw | https://raw.githubusercontent.com/worldcoin/signup-sequencer/f2870f1412517bfc2377838ff20cb0ee03ddaf72/schemas/openapi-v3.yaml | `f2870f1412517bfc2377838ff20cb0ee03ddaf72` | MIT | link-ok | OpenAPI 3.1; two tuple-array schemas using `prefixItems`; reusable request bodies; bearer authentication |
 | 68 | `electric-sql` | github-raw | https://raw.githubusercontent.com/electric-sql/electric/be716ccdb225e7b60919c3f46ea92ad5332ff31a/website/electric-api.yaml | `be716ccdb225e7b60919c3f46ea92ad5332ff31a` | Apache-2.0 | link-ok | OpenAPI 3.1; `patternProperties`; polymorphic query parameters; streaming responses |
 | 69 | `tamoss` | github-raw | https://raw.githubusercontent.com/livewyer-ops/tamoss/ccbef170204082f3ae3842c2ffee476f5008e1fb/src/openapi-contract.yaml | `ccbef170204082f3ae3842c2ffee476f5008e1fb` | Apache-2.0 | link-ok | OpenAPI 3.1; `if`/`then`/`else`; eight `const` schemas; two top-level webhooks |
+| 70 | `appng-rest-api` | github-raw | https://raw.githubusercontent.com/appNG/appng/8d9ff98f7d3ddd3e74340bcfb322c12df2ed189b/appng-rest-api/src/main/resources/org/appng/api/rest/appng-openapi.yaml | `8d9ff98f7d3ddd3e74340bcfb322c12df2ed189b` | Apache-2.0 | link-ok | Deployed appNG REST API with three matrix path parameters (`explode: true`) and a cookie parameter |
+| 71 | `slurmdb-rest` | github-raw | https://raw.githubusercontent.com/ubccr/slurmdbrest/f9c5e77cc3a1a11c7645dab31c6752cd08577721/api/openapi.yaml | `f9c5e77cc3a1a11c7645dab31c6752cd08577721` | Apache-2.0 | link-ok | SlurmDB REST API with a label path parameter (`explode: false`) and 33 form parameters with explicit `explode` |
+| 72 | `nimisampo` | github-raw | https://raw.githubusercontent.com/SemanticComputing/nimisampo.fi/34b8d22fff53a3dd531e89277fdb2f98d69dd1d0/src/server/openapi.yaml | `34b8d22fff53a3dd531e89277fdb2f98d69dd1d0` | MIT | link-ok | Deployed NameSampo API with a query parameter carrying `content: { application/json: ... }` and three `allowReserved` parameters |
+| 73 | `free5gc-pdu-session` | github-raw | https://raw.githubusercontent.com/free5gc/openapi/8d0ee35bc671dd9995240c0ff73d4c75075a204a/Nsmf_PDUSession/api/openapi.yaml | `8d0ee35bc671dd9995240c0ff73d4c75075a204a` | Apache-2.0 | link-ok | free5GC PDU Session API with multipart `encoding` properties combining `contentType` and per-part `headers` |
 
 ## Batch 2 — byte-matched (issue #77)
 

@@ -112,14 +112,16 @@ pub fn to_pascal_case(input: &str) -> String {
 /// The class name for a named schema.
 #[must_use]
 pub fn class_name(schema_key: &str) -> String {
-    to_pascal_case(schema_key)
+    sanitize_identifier(&to_pascal_case(schema_key))
 }
 
 /// The module (file stem) name for a generated type.
 #[must_use]
 pub fn module_name(class_name: &str) -> String {
     let name = to_snake_case(class_name);
-    if is_reserved(&name) {
+    if name.starts_with(|c: char| c.is_ascii_digit()) {
+        format!("_{name}")
+    } else if is_reserved(&name) {
         format!("{name}_")
     } else {
         name
@@ -623,6 +625,13 @@ mod tests {
     fn module_name_snakes_class() {
         assert_eq!(module_name("NestedUser"), "nested_user");
         assert_eq!(module_name("Class"), "class_");
+        assert_eq!(module_name("_5GmmCause"), "_5_gmm_cause");
+    }
+
+    #[test]
+    fn digit_leading_schema_names_get_legal_class_names() {
+        assert_eq!(class_name("5GmmCause"), "_5GmmCause");
+        assert_eq!(class_name("Widget"), "Widget");
     }
 
     #[test]

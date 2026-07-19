@@ -13591,6 +13591,58 @@ const TAMOSS: Corpus = Corpus {
     matched: &[],
 };
 
+/// `appng-rest-api`: appNG's deployed REST API exercises matrix serialization
+/// and cookie parameters. Fern accepts the raw pinned spec.
+const APPNG_REST_API: Corpus = Corpus {
+    api: "appng-rest-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `slurmdb-rest`: UB CCR's SlurmDB REST API exercises label and explicit form
+/// serialization. Fern accepts the raw pinned spec.
+const SLURMDB_REST: Corpus = Corpus {
+    api: "slurmdb-rest",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `nimisampo`: the deployed NameSampo API carries JSON in a parameter-level
+/// `content` object and exercises `allowReserved`. Fern accepts the raw spec.
+const NIMISAMPO: Corpus = Corpus {
+    api: "nimisampo",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `free5gc-pdu-session`: free5GC's PDU Session API exercises multipart
+/// properties with both a content type and per-part headers.
+const FREE5GC_PDU_SESSION: Corpus = Corpus {
+    api: "free5gc-pdu-session",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
 #[test]
 fn squareup_com_matches_fern_output() {
     if corpus_spec(SQUAREUP_COM.api).is_none() {
@@ -13669,6 +13721,26 @@ fn electric_sql_matches_fern_output() {
 #[test]
 fn tamoss_matches_fern_output() {
     assert_link_ok_corpus_matches(&TAMOSS);
+}
+
+#[test]
+fn appng_rest_api_matches_fern_output() {
+    assert_link_ok_corpus_matches(&APPNG_REST_API);
+}
+
+#[test]
+fn slurmdb_rest_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SLURMDB_REST);
+}
+
+#[test]
+fn nimisampo_matches_fern_output() {
+    assert_link_ok_corpus_matches(&NIMISAMPO);
+}
+
+#[test]
+fn free5gc_pdu_session_matches_fern_output() {
+    assert_link_ok_corpus_matches(&FREE5GC_PDU_SESSION);
 }
 
 #[test]
@@ -14871,6 +14943,24 @@ fn digit_leading_property_gets_f_prefix_and_alias() {
         thing.contains("FieldMetadata(alias=\"2fa_enabled\")"),
         "the wire name should be preserved as a FieldMetadata alias: {thing}"
     );
+}
+
+#[test]
+fn digit_leading_schema_name_generates_valid_python() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: 5G API, version: 1.0.0 }\npaths:\n  /cause:\n    \
+         get:\n      operationId: getCause\n      responses:\n        '200': { description: OK, \
+         content: { application/json: { schema: { $ref: '#/components/schemas/5GmmCause' } } } }\n\
+         components:\n  schemas:\n    5GmmCause:\n      type: object\n      properties:\n        \
+         code: { type: integer }\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/types/_5_gmm_cause.py"))
+        .expect("digit-leading schema model is generated");
+    assert!(
+        model.contains("class _5GmmCause(UniversalBaseModel):"),
+        "digit-leading schema should become a legal Python class: {model}"
+    );
+    assert_valid_python(&out);
 }
 
 #[test]
