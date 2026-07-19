@@ -14946,6 +14946,24 @@ fn digit_leading_property_gets_f_prefix_and_alias() {
 }
 
 #[test]
+fn digit_leading_schema_name_generates_valid_python() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: 5G API, version: 1.0.0 }\npaths:\n  /cause:\n    \
+         get:\n      operationId: getCause\n      responses:\n        '200': { description: OK, \
+         content: { application/json: { schema: { $ref: '#/components/schemas/5GmmCause' } } } }\n\
+         components:\n  schemas:\n    5GmmCause:\n      type: object\n      properties:\n        \
+         code: { type: integer }\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/types/_5_gmm_cause.py"))
+        .expect("digit-leading schema model is generated");
+    assert!(
+        model.contains("class _5GmmCause(UniversalBaseModel):"),
+        "digit-leading schema should become a legal Python class: {model}"
+    );
+    assert_valid_python(&out);
+}
+
+#[test]
 fn numeric_field_segments_collapse_and_keep_wire_aliases() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [day_0_end_time]\n                properties:\n                  day_0_end_time: { type: integer }\n",
