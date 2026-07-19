@@ -13643,10 +13643,10 @@ const FREE5GC_PDU_SESSION: Corpus = Corpus {
     matched: &[],
 };
 
-/// `apigee-registry`: Apigee's registry models combine request-only contents
-/// with response-only metadata on the same component schemas.
-const APIGEE_REGISTRY: Corpus = Corpus {
-    api: "apigee-registry",
+/// `sigstore-rekor`: Rekor combines ranged/default responses, implicit
+/// discriminators, and nested models with request- and response-only fields.
+const SIGSTORE_REKOR: Corpus = Corpus {
+    api: "sigstore-rekor",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13783,8 +13783,8 @@ fn free5gc_pdu_session_matches_fern_output() {
 }
 
 #[test]
-fn apigee_registry_matches_fern_output() {
-    assert_link_ok_corpus_matches(&APIGEE_REGISTRY);
+fn sigstore_rekor_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SIGSTORE_REKOR);
 }
 
 #[test]
