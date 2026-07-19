@@ -3735,7 +3735,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 let value_name = body_field_value_name(f);
                 if f.convert {
                     imports.add_core("serialization", "convert_and_respect_annotation_metadata");
-                    let annotation_type = if f.optional {
+                    let annotation_type = if f.optional
+                        && (f.nullable || !matches!(f.type_ref, TypeRef::List(_) | TypeRef::Set(_)))
+                    {
                         TypeRef::Optional(Box::new(f.type_ref.clone()))
                     } else {
                         f.type_ref.clone()
@@ -7904,6 +7906,33 @@ mod tests {
             rendered.contains("annotation=typing.Optional[ModifyApprovalRequest]"),
             "{rendered}"
         );
+
+        ep.request_body = Some(RequestBody::Inline(vec![BodyField {
+            wire_name: "search".to_string(),
+            py_name: "search".to_string(),
+            type_ref: TypeRef::List(Box::new(TypeRef::Named("SearchItem".to_string()))),
+            optional: true,
+            nullable: false,
+            spec_required: false,
+            docstring: None,
+            convert: true,
+            is_file: false,
+            form_json: false,
+            form_content_type: None,
+            collision_prefix: None,
+            example: None,
+            media_example: false,
+            schema_body_example: false,
+            reference_order: 0,
+        }]));
+        let mut lines = Vec::new();
+        super::append_request_call_args(&mut lines, &ep, &mut imports);
+        let rendered = lines.join("\n");
+        assert!(
+            rendered.contains("annotation=typing.Sequence[SearchItem]"),
+            "{rendered}"
+        );
+        assert!(!rendered.contains("annotation=typing.Optional[typing.Sequence"));
     }
 
     #[test]

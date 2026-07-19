@@ -15490,6 +15490,8 @@ const LETTA: Corpus = Corpus {
         "src/fern/agents/client.py",
         "src/fern/chat/client.py",
         "src/fern/groups/client.py",
+        "src/fern/agents/raw_client.py",
+        "src/fern/conversations/raw_client.py",
     ],
 };
 
