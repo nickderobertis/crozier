@@ -4614,19 +4614,26 @@ fn inferred_discriminant_property(
                 let singleton_enum =
                     string_enum_values(field).is_some_and(|values| values.len() == 1);
                 if references_components {
-                    if !matches!(property.as_str(), "type" | "role")
-                        || !variant.required.contains(property)
-                        || (property == "type"
-                            && schema_example(field)
-                                .and_then(serde_json::Value::as_str)
-                                .is_none())
-                    {
+                    let supported = match property.as_str() {
+                        "type" => {
+                            variant.required.contains(property)
+                                && schema_example(field)
+                                    .and_then(serde_json::Value::as_str)
+                                    .is_some()
+                        }
+                        "role" => variant.required.contains(property),
+                        "message_type" | "mcp_server_type" => true,
+                        _ => false,
+                    };
+                    if !supported {
                         return None;
                     }
                 } else if !singleton_enum {
                     return None;
                 }
-                discriminant_value(field)
+                let value = discriminant_value(field)?;
+                (property != "message_type" || !preserve_const_discriminant(&value))
+                    .then_some(value)
             })
             .collect();
         let values = values?;
@@ -4703,19 +4710,8 @@ fn collect_discriminant_strips(
                     .and_then(|target| target.properties.get(&property))
                     .and_then(|field| field.const_value.as_ref())
                     .and_then(serde_json::Value::as_str);
-                let preserve_const = const_discriminant
-                    && matches!(
-                        const_value,
-                        Some(
-                            "approval"
-                                | "approval_request_message"
-                                | "message"
-                                | "tool"
-                                | "tool_return_message"
-                                | "stop_reason"
-                                | "usage_statistics"
-                        )
-                    );
+                let preserve_const =
+                    const_discriminant && const_value.is_some_and(preserve_const_discriminant);
                 if !preserve_const {
                     strips.insert(ref_to_class(reference), property.clone());
                 }
@@ -4733,6 +4729,19 @@ fn collect_discriminant_strips(
     {
         collect_discriminant_strips(child, schemas, strips);
     }
+}
+
+fn preserve_const_discriminant(value: &str) -> bool {
+    matches!(
+        value,
+        "approval"
+            | "approval_request_message"
+            | "message"
+            | "tool"
+            | "tool_return_message"
+            | "stop_reason"
+            | "usage_statistics"
+    )
 }
 
 /// Collect a discriminated-union member's fields (the referenced model's
@@ -8111,6 +8120,18 @@ mod tests {
                 "AssistantMessage": {
                     "type": "object", "required": ["role"],
                     "properties": { "role": { "type": "string", "const": "assistant" } }
+                },
+                "UpdateUserMessage": {
+                    "type": "object",
+                    "properties": { "message_type": {
+                        "type": "string", "const": "user_message", "default": "user_message"
+                    } }
+                },
+                "UpdateAssistantMessage": {
+                    "type": "object",
+                    "properties": { "message_type": {
+                        "type": "string", "const": "assistant_message", "default": "assistant_message"
+                    } }
                 }
             } }
         }))
@@ -8152,6 +8173,17 @@ mod tests {
             super::inferred_discriminant_property(&message, &components.components.schemas)
                 .as_deref(),
             Some("role")
+        );
+        let updates = schema(serde_json::json!({
+            "anyOf": [
+                { "$ref": "#/components/schemas/UpdateUserMessage" },
+                { "$ref": "#/components/schemas/UpdateAssistantMessage" }
+            ]
+        }));
+        assert_eq!(
+            super::inferred_discriminant_property(&updates, &components.components.schemas)
+                .as_deref(),
+            Some("message_type")
         );
 
         let nullable_mapped = schema(serde_json::json!({
