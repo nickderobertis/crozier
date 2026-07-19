@@ -15399,6 +15399,15 @@ const LETTA: Corpus = Corpus {
         "src/fern/sources/client.py",
         "src/fern/tag/client.py",
         "src/fern/tag/raw_client.py",
+        "src/fern/internal_blocks/client.py",
+        "src/fern/internal_blocks/raw_client.py",
+        "src/fern/internal_runs/client.py",
+        "src/fern/internal_runs/raw_client.py",
+        "src/fern/models/client.py",
+        "src/fern/models/raw_client.py",
+        "src/fern/runs/client.py",
+        "src/fern/runs/raw_client.py",
+        "src/fern/tools/client.py",
     ],
 };
 

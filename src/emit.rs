@@ -3203,15 +3203,23 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
             // An array query parameter allows multiple values: Fern types it
             // `Optional[Union[T, Sequence[T]]]` and always defaults it to `None`.
             if let TypeRef::List(inner) = &qp.type_ref {
-                let item = raw_type_str(inner, imports);
-                return DocParam {
-                    name: qp.py_name.clone(),
-                    annotation: format!(
-                        "typing.Optional[typing.Union[{item}, typing.Sequence[{item}]]]"
-                    ),
-                    default: Some("None".to_string()),
-                    description: qp.docstring.clone(),
-                };
+                if qp.allow_multiple {
+                    let item = raw_type_str(inner, imports);
+                    return DocParam {
+                        name: qp.py_name.clone(),
+                        annotation: format!(
+                            "typing.Optional[typing.Union[{item}, typing.Sequence[{item}]]]"
+                        ),
+                        default: Some("None".to_string()),
+                        description: qp.docstring.clone(),
+                    };
+                }
+                return optional_arg(
+                    format!("typing.Sequence[{}]", raw_type_str(inner, imports)),
+                    qp.required,
+                    qp.docstring.clone(),
+                    qp.py_name.clone(),
+                );
             }
             optional_arg(
                 raw_type_str(&qp.type_ref, imports),
@@ -8570,6 +8578,7 @@ mod tests {
             ),
             "{out}"
         );
+
         assert!(out.contains("content=request,"), "{out}");
         assert!(
             out.contains("\"content-type\": \"application/octet-stream\","),
@@ -8595,6 +8604,7 @@ mod tests {
             required: true,
             convert: false,
             comma_separated: true,
+            allow_multiple: true,
             example: None,
             example_is_scalar: false,
             docstring: None,
@@ -8611,6 +8621,18 @@ mod tests {
             ),
             "{out}"
         );
+        ep.query_params[0].required = false;
+        ep.query_params[0].comma_separated = false;
+        ep.query_params[0].allow_multiple = false;
+        let out = raw_method(&ep, false, &mut Imports::default());
+        assert!(
+            out.contains("tag: typing.Optional[typing.Sequence[str]] = None"),
+            "{out}"
+        );
+        assert!(
+            !out.contains("typing.Union[str, typing.Sequence[str]]"),
+            "{out}"
+        );
     }
 
     #[test]
@@ -8625,6 +8647,7 @@ mod tests {
             required: false,
             convert: false,
             comma_separated: false,
+            allow_multiple: false,
             example: None,
             example_is_scalar: false,
             docstring: None,
@@ -9274,6 +9297,7 @@ mod tests {
                 required: true,
                 convert: false,
                 comma_separated: false,
+                allow_multiple: false,
                 example: None,
                 example_is_scalar: false,
                 docstring: Some("Tags to include.".to_string()),
@@ -9285,6 +9309,7 @@ mod tests {
                 required: false,
                 convert: false,
                 comma_separated: false,
+                allow_multiple: false,
                 example: Some("3".to_string()),
                 example_is_scalar: true,
                 docstring: Some("Maximum results.".to_string()),
@@ -9532,6 +9557,7 @@ mod tests {
             required: false,
             convert: false,
             comma_separated: false,
+            allow_multiple: false,
             example: Some("\"active\"".to_string()),
             example_is_scalar: true,
             docstring: Some("Optional filter.".to_string()),
@@ -9576,6 +9602,7 @@ mod tests {
                 required: false,
                 convert: false,
                 comma_separated: false,
+                allow_multiple: false,
                 example: Some("\"active\"".to_string()),
                 example_is_scalar: true,
                 docstring: None,
@@ -9587,6 +9614,7 @@ mod tests {
                 required: false,
                 convert: false,
                 comma_separated: false,
+                allow_multiple: false,
                 example: Some("\"name\"".to_string()),
                 example_is_scalar: true,
                 docstring: None,
@@ -9598,6 +9626,7 @@ mod tests {
                 required: false,
                 convert: false,
                 comma_separated: false,
+                allow_multiple: false,
                 example: Some("1".to_string()),
                 example_is_scalar: true,
                 docstring: None,
@@ -9636,6 +9665,7 @@ mod tests {
             required: true,
             convert: false,
             comma_separated: false,
+            allow_multiple: false,
             example: None,
             example_is_scalar: true,
             docstring: Some("Starting cursor.".to_string()),

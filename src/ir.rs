@@ -809,6 +809,9 @@ pub struct QueryParam {
     pub convert: bool,
     /// Whether an array value is serialized as one comma-separated query value.
     pub comma_separated: bool,
+    /// Whether Fern accepts a scalar item as shorthand for an array parameter.
+    /// Direct array schemas do; nullable unions containing an array do not.
+    pub allow_multiple: bool,
     /// The parameter's `example` as a Python literal; when set, the parameter is
     /// shown in a worked snippet even if optional (`example_literal`).
     pub example: Option<String>,
@@ -1796,6 +1799,14 @@ fn build_endpoint(
                         .unwrap_or(schema);
                     schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
                 });
+            let allow_multiple = p.schema.as_ref().is_some_and(|schema| {
+                let schema = schema
+                    .reference
+                    .as_deref()
+                    .and_then(|reference| resolve_ref(doc, reference))
+                    .unwrap_or(schema);
+                schema.ty.as_ref().and_then(TypeField::primary) == Some("array")
+            });
             QueryParam {
                 wire_name: p.name.clone(),
                 py_name: naming::field_name(&p.name),
@@ -1803,6 +1814,7 @@ fn build_endpoint(
                 required: p.required == Some(true),
                 convert,
                 comma_separated,
+                allow_multiple,
                 example,
                 example_is_scalar,
                 docstring: declared_doc(p.description.as_deref()),
