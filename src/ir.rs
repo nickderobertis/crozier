@@ -630,6 +630,25 @@ fn request_schema_use_count(doc: &OpenApi, reference: &str) -> usize {
         .count()
 }
 
+fn form_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
+    doc.paths
+        .values()
+        .flat_map(crate::openapi::PathItem::operations)
+        .filter_map(|(_, operation)| operation.request_body.as_ref())
+        .flat_map(|body| {
+            [
+                "multipart/form-data",
+                "multipart/related",
+                "application/x-www-form-urlencoded",
+            ]
+            .into_iter()
+            .filter_map(|media_type| body.content.get(media_type))
+        })
+        .filter_map(|media| media.schema.as_ref()?.reference.as_deref())
+        .map(ref_to_class)
+        .collect()
+}
+
 /// Whether every operation carries a non-empty security requirement (its own, or
 /// the document default). An SDK with any unauthenticated operation makes the
 /// credential optional. Returns `false` for a spec with no operations.
@@ -1375,17 +1394,19 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         }
     }
     let inline_sources = inline_body_source_names(doc);
-    let dropped_sources: std::collections::HashSet<String> =
-        inline_sources
-            .iter()
-            .filter(|name| {
-                !referenced.contains(*name)
-                    && !doc.components.schemas.keys().any(|key| {
-                        key.starts_with("Body_") && naming::class_name(key) == name.as_str()
-                    })
-            })
-            .cloned()
-            .collect();
+    let form_sources = form_body_source_names(doc);
+    let dropped_sources: std::collections::HashSet<String> = inline_sources
+        .iter()
+        .filter(|name| {
+            !referenced.contains(*name)
+                && !doc.components.schemas.keys().any(|key| {
+                    key.starts_with("Body_")
+                        && naming::class_name(key) == name.as_str()
+                        && !form_sources.contains(name.as_str())
+                })
+        })
+        .cloned()
+        .collect();
     for endpoint in &mut endpoints {
         let body_schema = doc
             .paths
@@ -9043,6 +9064,29 @@ mod tests {
         );
         assert!(!fields[0].form_json);
         assert!(fields[1].form_json);
+    }
+
+    #[test]
+    fn form_body_sources_are_identified_for_type_pruning() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "paths": {
+                "/upload": { "post": { "requestBody": { "content": {
+                    "multipart/form-data": { "schema": {
+                        "$ref": "#/components/schemas/Body_upload"
+                    } }
+                } } } },
+                "/json": { "post": { "requestBody": { "content": {
+                    "application/json": { "schema": {
+                        "$ref": "#/components/schemas/Body_json"
+                    } }
+                } } } }
+            }
+        }))
+        .expect("document deserializes");
+        assert_eq!(
+            super::form_body_source_names(&doc),
+            std::collections::HashSet::from(["BodyUpload".to_string()])
+        );
     }
 
     #[test]
