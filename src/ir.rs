@@ -2509,6 +2509,7 @@ fn resolve_errors(op: &Operation) -> Vec<ErrorResponse> {
             body_type: error_body_type(resp),
         });
     }
+    out.sort_by_key(|error| error.status_code);
     out
 }
 

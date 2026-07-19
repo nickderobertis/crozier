@@ -1744,13 +1744,11 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // for a bodyless endpoint with required path/query/header arguments, or an
     // endpoint with a complex (object/container/union) body, else empty parens; the
     // error/raw-response calls are ruff-wrapped at the snippet width 88.
-    let has_required_non_body_params = !first.path_params.is_empty()
+    let has_non_body_params = !first.path_params.is_empty()
         || first.request_body.is_none()
-            && (first.query_params.iter().any(|param| param.required)
-                || first.query_params.iter().any(|param| param.convert)
-                || first.header_params.iter().any(|param| param.required));
+            && (!first.query_params.is_empty() || !first.header_params.is_empty());
     let complex = first.method_name != "_"
-        && (has_required_non_body_params
+        && (has_non_body_params
             || (ir.openapi_31
                 && first.body_schema_implicit_object
                 && matches!(
