@@ -5644,7 +5644,7 @@ impl<'a> ExampleCtx<'a> {
                 self.record_ref(name);
                 let args = fields
                     .into_iter()
-                    .filter_map(|(py_name, wire_name, type_ref, _, _)| {
+                    .filter_map(|(py_name, wire_name, type_ref, _, _, _)| {
                         let value = values.get(&wire_name)?;
                         let literal = value.to_string();
                         let rendered = self
@@ -5681,12 +5681,12 @@ impl<'a> ExampleCtx<'a> {
                     let fields = self.object_fields(object);
                     fields
                         .iter()
-                        .filter(|(_, _, _, required, _)| *required)
-                        .all(|(_, wire_name, _, _, _)| values.contains_key(wire_name))
+                        .filter(|(_, _, _, required, _, _)| *required)
+                        .all(|(_, wire_name, _, _, _, _)| values.contains_key(wire_name))
                         && values.keys().all(|key| {
                             fields
                                 .iter()
-                                .any(|(_, wire_name, _, _, _)| wire_name == key)
+                                .any(|(_, wire_name, _, _, _, _)| wire_name == key)
                         })
                 }),
                 Some(TypeDecl::Alias(alias)) => self.example_matches_type(&alias.target, value),
@@ -5916,8 +5916,8 @@ impl<'a> ExampleCtx<'a> {
                 let fields = self.object_fields(obj);
                 let args = fields
                     .into_iter()
-                    .filter(|(_, _, _, required, example)| *required || example.is_some())
-                    .map(|(py, wire, ty, _, example)| {
+                    .filter(|(_, _, _, required, _, parent_example)| *required || *parent_example)
+                    .map(|(py, wire, ty, _, example, _)| {
                         let v = match example {
                             Some(example) if example_scalar(&ty) => Example::Atom(example),
                             Some(example) if example.starts_with(['{', '[']) => self
@@ -5983,7 +5983,7 @@ impl<'a> ExampleCtx<'a> {
     fn object_fields(
         &self,
         obj: &ObjectType,
-    ) -> Vec<(String, String, TypeRef, bool, Option<String>)> {
+    ) -> Vec<(String, String, TypeRef, bool, Option<String>, bool)> {
         let mut out = Vec::new();
         for base in &obj.bases {
             if let Some(TypeDecl::Object(b)) = self.find(base) {
@@ -5997,6 +5997,7 @@ impl<'a> ExampleCtx<'a> {
                 f.type_ref.clone(),
                 f.spec_required,
                 f.example.clone(),
+                obj.example_fields.contains(&f.wire_name),
             ));
         }
         out
@@ -7360,6 +7361,7 @@ mod tests {
                 model_field("first", TypeRef::Primitive(Prim::Str), true),
                 model_field("second", TypeRef::Primitive(Prim::Int), true),
             ],
+            example_fields: Default::default(),
             docstring: None,
         });
         let optional_object = TypeDecl::Object(ObjectType {
@@ -7367,6 +7369,7 @@ mod tests {
             module: "optional_object".to_string(),
             bases: Vec::new(),
             fields: vec![model_field("maybe", TypeRef::Primitive(Prim::Str), false)],
+            example_fields: Default::default(),
             docstring: None,
         });
         let list_alias = TypeDecl::Alias(AliasType {
@@ -7436,6 +7439,7 @@ mod tests {
                         model_field("one", TypeRef::Primitive(Prim::Str), true),
                         model_field("two", TypeRef::Primitive(Prim::Str), true),
                     ],
+                    example_fields: Default::default(),
                     docstring: None,
                 }),
             },
@@ -7618,6 +7622,7 @@ mod tests {
                 TypeRef::Primitive(Prim::Str),
                 false,
             )],
+            example_fields: Default::default(),
             docstring: None,
         });
         let batch = TypeDecl::Alias(AliasType {
@@ -8657,6 +8662,7 @@ mod tests {
                 model_field("id", TypeRef::Primitive(Prim::Int), true),
                 model_field("label", TypeRef::Primitive(Prim::Str), false),
             ],
+            example_fields: Default::default(),
             docstring: None,
         });
         let types = vec![
@@ -8903,6 +8909,7 @@ mod tests {
             module: "base".to_string(),
             bases: Vec::new(),
             fields: vec![base_id],
+            example_fields: Default::default(),
             docstring: None,
         });
         let mut metadata = model_field("metadata", TypeRef::Primitive(Prim::Any), true);
@@ -8920,6 +8927,7 @@ mod tests {
             module: "child".to_string(),
             bases: vec!["Base".to_string()],
             fields: vec![metadata, invalid, recursive, children],
+            example_fields: Default::default(),
             docstring: None,
         });
         let empty_enum = TypeDecl::Enum(EnumType {

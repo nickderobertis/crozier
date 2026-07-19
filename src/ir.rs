@@ -1100,6 +1100,8 @@ pub struct ObjectType {
     pub bases: Vec<String>,
     /// Fields, in document order.
     pub fields: Vec<Field>,
+    /// Wire names explicitly present in this object's schema-level example.
+    pub example_fields: std::collections::HashSet<String>,
     /// Optional class docstring.
     pub docstring: Option<String>,
 }
@@ -3104,6 +3106,10 @@ impl InlineHoister<'_> {
             module: naming::module_name(name),
             bases,
             fields,
+            example_fields: schema_example(schema)
+                .and_then(serde_json::Value::as_object)
+                .map(|example| example.keys().cloned().collect())
+                .unwrap_or_default(),
             docstring,
         }));
     }
@@ -4588,6 +4594,10 @@ impl Builder<'_> {
             module,
             bases,
             fields,
+            example_fields: schema_example(schema)
+                .and_then(serde_json::Value::as_object)
+                .map(|example| example.keys().cloned().collect())
+                .unwrap_or_default(),
             docstring,
         }));
         self.building_types.remove(name);
