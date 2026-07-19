@@ -15285,6 +15285,12 @@ const LETTA: Corpus = Corpus {
         "src/fern/types/bad_request_error_body.py",
         "src/fern/types/bad_request_error_body_error_code.py",
         "src/fern/types/not_found_error_body_error_code.py",
+        "src/fern/types/body_export_agent.py",
+        "src/fern/types/chat_completion.py",
+        "src/fern/types/compaction_request.py",
+        "src/fern/types/completion_usage.py",
+        "src/fern/types/letta_schemas_mcp_update_stdio_mcp_server.py",
+        "src/fern/types/usage_statistics.py",
     ],
 };
 

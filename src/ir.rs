@@ -1348,11 +1348,17 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     // field, a parameter, a non-inlined body, ...).
     let referenced = referenced_type_names(&builder.types, &endpoints);
     let inline_sources = inline_body_source_names(doc);
-    let dropped_sources: std::collections::HashSet<String> = inline_sources
-        .iter()
-        .filter(|name| !referenced.contains(*name))
-        .cloned()
-        .collect();
+    let dropped_sources: std::collections::HashSet<String> =
+        inline_sources
+            .iter()
+            .filter(|name| {
+                !referenced.contains(*name)
+                    && !doc.components.schemas.keys().any(|key| {
+                        key.starts_with("Body_") && naming::class_name(key) == name.as_str()
+                    })
+            })
+            .cloned()
+            .collect();
     for endpoint in &mut endpoints {
         let body_schema = doc
             .paths
@@ -5442,6 +5448,15 @@ impl Builder<'_> {
                             }
                         }
                     }
+                    if let Some(member) = simple_nullable_member(prop_schema) {
+                        if let Some(reference) = member.reference.as_deref() {
+                            if resolve_ref_from_schemas(self.schemas, reference)
+                                .is_none_or(|target| string_enum_values(target).is_none())
+                            {
+                                return TypeRef::Named(ref_to_class(reference));
+                            }
+                        }
+                    }
                     if let Some(member) = simple_nullable_primitive_member(prop_schema) {
                         return base_type_ref(member);
                     }
@@ -7859,6 +7874,12 @@ mod tests {
                 "type": "string", "enum": ["user", "assistant"]
             })),
         );
+        schemas.insert(
+            "AgentFile".to_string(),
+            schema(serde_json::json!({
+                "type": "object", "properties": { "id": { "type": "string" } }
+            })),
+        );
         let mut builder = Builder {
             types: Vec::new(),
             schemas: &schemas,
@@ -7954,6 +7975,16 @@ mod tests {
             declaration,
             TypeDecl::Enum(value) if value.name == "MessageIncludeTypesItem"
         )));
+        let nullable_object_ref = schema(serde_json::json!({
+            "anyOf": [
+                { "$ref": "#/components/schemas/AgentFile" },
+                { "type": "null" }
+            ]
+        }));
+        assert_eq!(
+            builder.field_type_ref("Export", "spec", &nullable_object_ref),
+            TypeRef::Named("AgentFile".to_string())
+        );
 
         let nullable_referenced_enum_array = schema(serde_json::json!({
             "anyOf": [{
