@@ -3198,7 +3198,13 @@ impl InlineHoister<'_> {
                     || (is_optional(prop_schema) && prop_schema.read_only == Some(true)),
                 spec_required,
                 docstring: declared_doc(property_description(prop_schema)),
-                example: schema_example_literal(prop_schema),
+                example: schema_example_literal(prop_schema).or_else(|| {
+                    let reference = prop_schema.reference.as_deref().or_else(|| {
+                        described_all_of_ref(prop_schema).map(|(reference, _)| reference)
+                    })?;
+                    let target = resolve_ref_from_schemas(self.schemas?, reference)?;
+                    schema_example_literal(target)
+                }),
             });
         }
     }

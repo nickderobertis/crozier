@@ -14219,6 +14219,7 @@ const FREE5GC_PDU_SESSION: Corpus = Corpus {
         "src/fern/individual_sm_context/__init__.py",
         "src/fern/individual_sm_context/raw_client.py",
         "src/fern/pdu_sessions_collection/__init__.py",
+        "src/fern/pdu_sessions_collection/client.py",
         "src/fern/pdu_sessions_collection/raw_client.py",
         "src/fern/py.typed",
         "src/fern/sm_contexts_collection/__init__.py",

@@ -5393,7 +5393,8 @@ impl Example {
                 format!("[\n{body}\n{pad}]")
             }
             Example::Dict(pairs) => {
-                if !self.forces_multiline() {
+                let wraps_for_length = !self.forces_multiline() && column + self.flat().len() > 80;
+                if !self.forces_multiline() && !wraps_for_length {
                     return self.flat();
                 }
                 let pad = " ".repeat(indent);
@@ -5402,8 +5403,9 @@ impl Example {
                     .iter()
                     .map(|(k, v)| {
                         format!(
-                            "{inner_pad}\"{k}\": {}",
-                            v.render_at(indent + 4, indent + k.len() + 8)
+                            "{inner_pad}\"{k}\": {}{}",
+                            v.render_at(indent + 4, indent + k.len() + 8),
+                            if wraps_for_length { "," } else { "" }
                         )
                     })
                     .collect::<Vec<_>>()
@@ -5582,7 +5584,12 @@ impl<'a> ExampleCtx<'a> {
         }
         if example.starts_with('{') && self.resolves_to_any(t) {
             let value = serde_json::from_str(example).ok()?;
-            return Some(example_from_json(value));
+            let rendered = example_from_json(value);
+            return Some(if self.reference {
+                Example::Atom(rendered.flat())
+            } else {
+                rendered
+            });
         }
         if let TypeRef::List(inner) | TypeRef::Set(inner) = t {
             let values: Vec<serde_json::Value> = serde_json::from_str(example).ok()?;
@@ -5618,6 +5625,38 @@ impl<'a> ExampleCtx<'a> {
             }
             return None;
         }
+        if let TypeRef::Named(name) = t {
+            if let Some(TypeDecl::Object(object)) = self.find(name) {
+                let fields = self.object_fields(object);
+                let values = serde_json::from_str::<serde_json::Value>(example).ok()?;
+                let values = values.as_object()?;
+                self.record_ref(name);
+                let args = fields
+                    .into_iter()
+                    .filter(|(_, wire_name, _, required, _, _)| {
+                        *required || values.contains_key(wire_name)
+                    })
+                    .map(|(py_name, wire_name, type_ref, _, _, _)| {
+                        let rendered = match values.get(&wire_name) {
+                            Some(serde_json::Value::String(value))
+                                if self.example_is_temporal(&type_ref)
+                                    && value.starts_with("2000-01-23T04:56:07") =>
+                            {
+                                self.value(&type_ref, Slot::Named(&wire_name))
+                            }
+                            Some(value) => {
+                                let literal = value.to_string();
+                                self.value_from_example(&type_ref, &literal)
+                                    .unwrap_or_else(|| example_from_json(value.clone()))
+                            }
+                            _ => self.value(&type_ref, Slot::Named(&wire_name)),
+                        };
+                        (Some(py_name), rendered)
+                    })
+                    .collect();
+                return Some(Example::Call(name.clone(), args));
+            }
+        }
         if self.example_is_composite(t) && (example.starts_with('[') || example.starts_with('{')) {
             let value = serde_json::from_str(example).ok()?;
             if self.reference && matches!(t, TypeRef::Dict(_, _)) {
@@ -5637,24 +5676,7 @@ impl<'a> ExampleCtx<'a> {
             return None;
         };
         match self.find(name)? {
-            TypeDecl::Object(object) => {
-                let fields = self.object_fields(object);
-                let values = serde_json::from_str::<serde_json::Value>(example).ok()?;
-                let values = values.as_object()?;
-                self.record_ref(name);
-                let args = fields
-                    .into_iter()
-                    .filter_map(|(py_name, wire_name, type_ref, _, _, _)| {
-                        let value = values.get(&wire_name)?;
-                        let literal = value.to_string();
-                        let rendered = self
-                            .value_from_example(&type_ref, &literal)
-                            .unwrap_or_else(|| example_from_json(value.clone()));
-                        Some((Some(py_name), rendered))
-                    })
-                    .collect();
-                Some(Example::Call(name.clone(), args))
-            }
+            TypeDecl::Object(_) => None,
             TypeDecl::Alias(alias) => {
                 let target = alias.target.clone();
                 self.value_from_example(&target, example)
@@ -5919,7 +5941,9 @@ impl<'a> ExampleCtx<'a> {
                     .filter(|(_, _, _, required, _, parent_example)| *required || *parent_example)
                     .map(|(py, wire, ty, _, example, _)| {
                         let v = match example {
-                            Some(example) if example_scalar(&ty) => Example::Atom(example),
+                            Some(example) if self.example_is_scalar(&ty) => self
+                                .value_from_example(&ty, &example)
+                                .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire))),
                             Some(example) if example.starts_with(['{', '[']) => self
                                 .value_from_example(&ty, &example)
                                 .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire))),
@@ -6409,6 +6433,12 @@ fn build_example_inner(
                     })
                     .as_deref()
                     .and_then(|example| {
+                        if f.schema_body_example
+                            && ctx.example_is_temporal(&f.type_ref)
+                            && example.starts_with("\"2000-01-23T04:56:07")
+                        {
+                            return None;
+                        }
                         if reference_fields.is_some()
                             || ep.body_schema_is_beta && !ep.body_schema_example_wrapped
                             || f.media_example
