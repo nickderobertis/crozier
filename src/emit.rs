@@ -3819,9 +3819,10 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         // (`CREATE_SessionServer`) keeps it.
         Some(body)
             if !body.is_wildcard_media()
-                && (ep.reference_body_example.is_some()
-                    && !ep.body_schema_is_success_response
-                    && matches!(body, RequestBody::Inline(_))
+                && (ep.body_media_has_example && ep.body_schema_dropped && ep.body_schema_ref
+                    || ep.reference_body_example.is_some()
+                        && !ep.body_schema_is_success_response
+                        && matches!(body, RequestBody::Inline(_))
                     || !ep.header_params.is_empty()
                     || !ep.path_params.is_empty()
                     || (body.content_type_header()
