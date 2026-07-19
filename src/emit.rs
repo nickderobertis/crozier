@@ -6086,7 +6086,7 @@ impl<'a> ExampleCtx<'a> {
                     // The discriminant field carries a default (`= "circle"`), so
                     // Fern's example omits it and sets only the required fields.
                     let mut args = Vec::new();
-                    for f in m.fields.iter().filter(|f| f.spec_required) {
+                    for f in m.fields.iter().filter(|f| f.spec_required && !f.optional) {
                         let ty = f.type_ref.clone();
                         args.push((
                             Some(f.py_name.clone()),
@@ -9337,6 +9337,9 @@ mod tests {
             members: Vec::new(),
             docstring: None,
         });
+        let mut nullable_required = model_field("server_url", TypeRef::Primitive(Prim::Str), true);
+        nullable_required.optional = true;
+        nullable_required.nullable = true;
         let union = TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
             name: "Shape".to_string(),
             module: "shape".to_string(),
@@ -9344,7 +9347,10 @@ mod tests {
             members: vec![UnionMember {
                 class_name: "Shape_Circle".to_string(),
                 discriminant: "circle".to_string(),
-                fields: vec![model_field("radius", TypeRef::Primitive(Prim::Float), true)],
+                fields: vec![
+                    model_field("radius", TypeRef::Primitive(Prim::Float), true),
+                    nullable_required,
+                ],
                 docstring: None,
             }],
             variant_targets: Vec::new(),

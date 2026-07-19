@@ -15495,6 +15495,7 @@ const LETTA: Corpus = Corpus {
         "src/fern/errors/conflict_error.py",
         "src/fern/projects/client.py",
         "src/fern/templates/client.py",
+        "src/fern/mcp_servers/client.py",
     ],
 };
 
