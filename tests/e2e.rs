@@ -15268,6 +15268,12 @@ const LETTA: Corpus = Corpus {
         "src/fern/types/projects_list_projects_request_offset.py",
         "src/fern/types/templates_list_template_versions_request_offset.py",
         "src/fern/types/templates_list_templates_request_offset.py",
+        "src/fern/types/approval_request_message.py",
+        "src/fern/types/approval_request_message_message_type.py",
+        "src/fern/types/letta_stop_reason.py",
+        "src/fern/types/letta_stop_reason_message_type.py",
+        "src/fern/types/letta_usage_statistics_message_type.py",
+        "src/fern/types/tool_return_message_message_type.py",
     ],
 };
 

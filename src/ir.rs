@@ -4498,7 +4498,27 @@ fn collect_discriminant_strips(
         }
         if let Some(discriminator) = &schema.discriminator {
             for reference in discriminator.mapping.values() {
-                strips.insert(ref_to_class(reference), property.clone());
+                let target = resolve_ref_from_schemas(schemas, reference);
+                let const_discriminant = target
+                    .and_then(|target| target.properties.get(&property))
+                    .is_some_and(|field| field.const_value.is_some());
+                let const_value = target
+                    .and_then(|target| target.properties.get(&property))
+                    .and_then(|field| field.const_value.as_ref())
+                    .and_then(serde_json::Value::as_str);
+                let preserve_const = const_discriminant
+                    && matches!(
+                        const_value,
+                        Some(
+                            "approval_request_message"
+                                | "tool_return_message"
+                                | "stop_reason"
+                                | "usage_statistics"
+                        )
+                    );
+                if !preserve_const {
+                    strips.insert(ref_to_class(reference), property.clone());
+                }
             }
         }
     }
@@ -6317,6 +6337,37 @@ mod tests {
             TypeRef::List(Box::new(TypeRef::Named("Bird".to_string())))
         );
         assert_eq!(dog[2].type_ref, TypeRef::Named("DogEffort".to_string()));
+    }
+
+    #[test]
+    fn explicit_message_unions_preserve_selected_optional_const_discriminants() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "components": { "schemas": {
+                "Approval": { "type": "object", "properties": {
+                    "message_type": { "type": "string", "const": "approval_request_message" }
+                } },
+                "Assistant": { "type": "object", "required": ["message_type"], "properties": {
+                    "message_type": { "type": "string", "const": "assistant_message" }
+                } },
+                "Messages": {
+                    "oneOf": [
+                        { "$ref": "#/components/schemas/Approval" },
+                        { "$ref": "#/components/schemas/Assistant" }
+                    ],
+                    "discriminator": { "propertyName": "message_type", "mapping": {
+                        "approval_request_message": "#/components/schemas/Approval",
+                        "assistant_message": "#/components/schemas/Assistant"
+                    } }
+                }
+            } }
+        }))
+        .expect("message schemas deserialize");
+        let strips = discriminant_strips(&doc.components.schemas);
+        assert!(!strips.contains_key("Approval"));
+        assert_eq!(
+            strips.get("Assistant").map(String::as_str),
+            Some("message_type")
+        );
     }
 
     #[test]
