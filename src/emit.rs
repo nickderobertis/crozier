@@ -6437,6 +6437,21 @@ fn build_example_inner(
                     );
                 }
             }
+            if ep.body_all_of {
+                if documentation {
+                    example_fields
+                        .sort_by_key(|field| (!field.spec_required, field.reference_order));
+                } else {
+                    example_fields.sort_by_key(|field| {
+                        (
+                            !field.spec_required,
+                            field.wire_name == "status",
+                            field.wire_name == "id",
+                            field.reference_order,
+                        )
+                    });
+                }
+            }
             for f in example_fields {
                 let v = f
                     .example

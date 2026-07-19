@@ -3525,7 +3525,7 @@ fn append_reference_field_names(
             TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
             _ => None,
         }) {
-            append_reference_field_names(base_obj, types, seen, out);
+            append_reference_base_field_names(base_obj, types, seen, out);
         }
     }
     out.extend(
@@ -3535,6 +3535,32 @@ fn append_reference_field_names(
             .chain(obj.fields.iter().filter(|field| !field.spec_required))
             .map(|field| field.wire_name.clone()),
     );
+}
+
+fn append_reference_base_field_names(
+    obj: &ObjectType,
+    types: &[TypeDecl],
+    seen: &mut std::collections::HashSet<String>,
+    out: &mut Vec<String>,
+) {
+    if !seen.insert(obj.name.clone()) {
+        return;
+    }
+    out.extend(
+        obj.fields
+            .iter()
+            .filter(|field| field.spec_required)
+            .chain(obj.fields.iter().filter(|field| !field.spec_required))
+            .map(|field| field.wire_name.clone()),
+    );
+    for base in &obj.bases {
+        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
+            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
+            _ => None,
+        }) {
+            append_reference_base_field_names(base_obj, types, seen, out);
+        }
+    }
 }
 
 fn append_request_fields(
