@@ -15423,6 +15423,10 @@ const LETTA: Corpus = Corpus {
         "src/fern/telemetry/__init__.py",
         "src/fern/telemetry/client.py",
         "src/fern/telemetry/raw_client.py",
+        "src/fern/blocks/client.py",
+        "src/fern/blocks/raw_client.py",
+        "src/fern/internal_agents/client.py",
+        "src/fern/internal_agents/raw_client.py",
     ],
 };
 

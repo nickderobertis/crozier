@@ -1733,13 +1733,11 @@ fn build_endpoint(
             example: parameter_example(doc, p),
         })
         .collect();
-    if !doc.openapi.starts_with("3.1") || op.path_level_parameters {
-        path_params.sort_by(|a, b| {
-            path_param_position(path, &a.wire_name)
-                .cmp(&path_param_position(path, &b.wire_name))
-                .then_with(|| a.wire_name.cmp(&b.wire_name))
-        });
-    }
+    path_params.sort_by(|a, b| {
+        path_param_position(path, &a.wire_name)
+            .cmp(&path_param_position(path, &b.wire_name))
+            .then_with(|| a.wire_name.cmp(&b.wire_name))
+    });
 
     let query_params: Vec<QueryParam> = op
         .parameters
@@ -7252,8 +7250,10 @@ mod tests {
             "responses": { "200": { "description": "OK" } }
         }))
         .expect("operation deserializes");
-        let doc: crate::openapi::OpenApi =
-            serde_json::from_value(serde_json::json!({})).expect("empty document defaults");
+        let doc: crate::openapi::OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.1.0"
+        }))
+        .expect("3.1 document deserializes");
         let mut tag_types = Vec::new();
         let global_headers = std::collections::HashSet::new();
         let ep = build_endpoint(
