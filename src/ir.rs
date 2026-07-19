@@ -1903,27 +1903,35 @@ fn build_endpoint(
                 && (schema.one_of.is_some() || schema.any_of.is_some()) =>
         {
             let name = format!("{pascal_ctx}Response");
-            let variants = schema
-                .one_of
-                .as_ref()
-                .or(schema.any_of.as_ref())
-                .expect("union branch checked above");
-            let target = TypeRef::Union(
-                variants
-                    .iter()
-                    .enumerate()
-                    .map(|(index, variant)| {
-                        hoister.hoist_union_variant(&name, index, variant, variants)
-                    })
-                    .collect(),
-            );
-            hoister.out.push(TypeDecl::Alias(AliasType {
-                name: name.clone(),
-                module: naming::module_name(&name),
-                target,
-                docstring: clean_doc(schema.description.as_deref()),
-            }));
-            Some(TypeRef::Named(name))
+            if let Some(response) = hoister.hoist_discriminated_union(
+                &name,
+                schema,
+                clean_doc(schema.description.as_deref()),
+            ) {
+                Some(response)
+            } else {
+                let variants = schema
+                    .one_of
+                    .as_ref()
+                    .or(schema.any_of.as_ref())
+                    .expect("union branch checked above");
+                let target = TypeRef::Union(
+                    variants
+                        .iter()
+                        .enumerate()
+                        .map(|(index, variant)| {
+                            hoister.hoist_union_variant(&name, index, variant, variants)
+                        })
+                        .collect(),
+                );
+                hoister.out.push(TypeDecl::Alias(AliasType {
+                    name: name.clone(),
+                    module: naming::module_name(&name),
+                    target,
+                    docstring: clean_doc(schema.description.as_deref()),
+                }));
+                Some(TypeRef::Named(name))
+            }
         }
         Some(schema) if is_inline_struct(schema) => {
             let name = format!("{pascal_ctx}Response");
@@ -8738,13 +8746,13 @@ mod tests {
             "components": { "schemas": {
                 "UserUpdate": {
                     "type": "object", "properties": {
-                        "message_type": { "type": "string", "const": "user_message" },
+                        "message_type": { "type": "string", "const": "user_message", "default": "user_message" },
                         "content": { "type": "string" }
                     }
                 },
                 "AssistantUpdate": {
                     "type": "object", "properties": {
-                        "message_type": { "type": "string", "const": "assistant_message" },
+                        "message_type": { "type": "string", "const": "assistant_message", "default": "assistant_message" },
                         "content": { "type": "string" }
                     }
                 }
@@ -8779,6 +8787,67 @@ mod tests {
                 if union.name == "ModifyMessageRequest"
                     && union.discriminant_property == "message_type"
         )));
+    }
+
+    #[test]
+    fn endpoint_hoists_inferred_discriminated_response_union() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "components": { "schemas": {
+                "UserMessage": {
+                    "type": "object", "properties": {
+                        "message_type": { "type": "string", "const": "user_message", "default": "user_message" },
+                        "content": { "type": "string" }
+                    }
+                },
+                "AssistantMessage": {
+                    "type": "object", "properties": {
+                        "message_type": { "type": "string", "const": "assistant_message", "default": "assistant_message" },
+                        "content": { "type": "string" }
+                    }
+                }
+            } },
+            "paths": { "/messages": { "get": {
+                "tags": ["messages"], "operationId": "messages.list",
+                "responses": { "200": { "description": "ok", "content": {
+                    "application/json": { "schema": { "oneOf": [
+                        { "$ref": "#/components/schemas/UserMessage" },
+                        { "$ref": "#/components/schemas/AssistantMessage" }
+                    ], "discriminator": { "propertyName": "message_type", "mapping": {
+                        "user_message": "#/components/schemas/UserMessage",
+                        "assistant_message": "#/components/schemas/AssistantMessage"
+                    } } } }
+                } } }
+            } } }
+        }))
+        .expect("document deserializes");
+        let (_, operation) = doc.paths["/messages"]
+            .operations()
+            .into_iter()
+            .next()
+            .expect("GET operation exists");
+        let mut tag_types = Vec::new();
+        let endpoint = super::build_endpoint(
+            &doc,
+            &[],
+            "/messages",
+            "GET",
+            operation,
+            &mut tag_types,
+            &std::collections::HashSet::new(),
+        );
+        assert_eq!(
+            endpoint.response,
+            Some(TypeRef::Named("MessagesListResponse".to_string()))
+        );
+        assert!(
+            tag_types.iter().any(|tag| matches!(
+                &tag.decl,
+                TypeDecl::DiscriminatedUnion(union)
+                    if union.name == "MessagesListResponse"
+                        && union.discriminant_property == "message_type"
+            )),
+            "{tag_types:?}"
+        );
     }
 
     #[test]
