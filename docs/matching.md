@@ -232,37 +232,23 @@ corpus already pins — and each records that exact generator in its
 Fern output, so **507 of the 524 measured residual files were version skew**: one
 shared ~18-file scaffold block (`src/*/core/*`, `client.py`, the `__init__.py`
 aggregators, `pyproject.toml`, `README.md`, `reference.md`, `requirements.txt`,
-`.fern/metadata.json`) repeated once per corpus, not a crozier defect. What the
-refresh leaves:
+`.fern/metadata.json`) repeated once per corpus, not a crozier defect. All 26
+hand-authored feature corpora now have empty `unmatched` lists, including
+`exhaustive` (all 111 files).
 
-- **Fully matched** (empty `unmatched`): `auth-schemes`, `basic-auth`,
-  `oauth-client-credentials`, `inline-request-response`, `cookie-parameters`,
-  `form-bodies`, `enum-name-sanitization`, `enum-receiver-collision`,
-  `enum-query-param`, `tag-based-grouping`, `operation-id-non-identifier`,
-  `missing-operation-id`, `exhaustive` (all 111 files), and — through the refresh
-  alone — the issue-#84/#85 targets `recursive-types` and `nested-core-imports`.
-- **One residual file each**: `discriminated-unions`, `schema-constraints`,
-  `integer-enums`, `servers-webhooks`, `inline-array-request`, `writeonly-fields`,
-  `error-responses`, and `bracketed-property-names` (all the same `README.md`
-  gap), plus `malformed-property-schema` (`search_widgets_response.py`) and
-  `digit-leading-property` (`client.py`).
-- **`sse-streaming`**: 4 of 40.
+The refresh's 14 genuine divergence files closed through four rules:
 
-The 14 surviving files are four real divergences:
-
-1. **Abbreviated calls in `README.md`** (8 corpora). Fern writes
-   `client.<tag>.<method>(...)` for a method that takes arguments; crozier writes
-   `()`.
-2. **Malformed nodes are over-optionalized** (`malformed-property-schema`'s
-   `search_widgets_response.py`). crozier wraps an already-optional unknown
-   property in a second `typing.Optional`.
-3. **SSE** (`sse-streaming`, all four files). The stream element type
-   (Fern's `typing.Any`), 5.20's `parse_sse_obj` deserializer, and 5.20's
-   streaming doc layout — no separate `## Streaming` README section, and a plain
-   call rather than crozier's `for chunk in response:` loop.
-4. **Root-level method examples** (`digit-leading-property`'s `client.py`). Fern's
-   worked example for a method on the root client constructs it with `base_url=`,
-   exactly as the class-level example does; crozier emits a bare `FernApi()`.
+1. **Abbreviated calls in `README.md`** (8 corpora) use `(...)` whenever the
+   demonstrated method takes any argument; argument-free methods use `()`.
+2. **Malformed-node optionality** is idempotent: an already-optional unknown
+   property is not wrapped in a second `typing.Optional`.
+3. **SSE** uses Fern 5.20's `typing.Any` stream element and `parse_sse_obj`
+   deserializer. Method docstrings retain their iteration examples, while
+   README/reference usage uses a plain call; the README also carries Fern's
+   dedicated `## Streaming` section.
+4. **Root-level method examples** derive environment presence from the actual
+   document, so a root client without environments includes Fern's required
+   `base_url=` constructor argument.
 
 The independent real-world residual in **`letta`'s `reference.md`** had two
 causes. Crozier documented a `$ref` request body that Fern ignores on a `GET`
@@ -474,15 +460,14 @@ the third does not reproduce at the corpus's pinned Fern version.
    client is a `@contextlib.(async)contextmanager` over `httpx_client.stream(...)`
    that decodes events through the vendored `core/http_sse` runtime
    (`EventSource.iter_sse`/`aiter_sse`) into
-   `typing.(Async)Iterator[typing.Optional[typing.Any]]` chunks, and the high-level
+   `typing.(Async)Iterator[typing.Any]` chunks, and the high-level
    client yields each chunk with a worked streaming `Examples` block. The chunk stays
    untyped: Fern's OpenAPI importer does not resolve the `x-fern-streaming`
    `chunk-schema-ref` (the same limitation as the OAuth extension), so crozier keys
-   off the content type alone. All four of `sse-streaming`'s remaining residual files
-   are 5.20 SSE changes crozier has not followed — Fern spells the untyped chunk
-   `typing.Any` rather than `typing.Optional[typing.Any]`, deserializes through a new
-   `parse_sse_obj` helper, and drops the separate `## Streaming` README section in
-   favor of a plain call snippet.
+   off the content type alone. Fern 5.20 deserializes the untyped chunk through
+   `parse_sse_obj`; its README/reference snippets show a plain call, while generated
+   method docstrings retain the worked iteration loop and the README retains a
+   separate `## Streaming` section.
 
 The generated **README/reference** now pick the first endpoint with a request body
 for the worked example and abbreviate the error-handling/advanced snippets to `...`
@@ -788,9 +773,7 @@ All four corpora are now regenerated as Fern's *packaged* SDK (`fern generate
 `reference.md`, `requirements.txt` — is present and compared rather than absent.
 `operation-id-non-identifier`, `missing-operation-id`, and the `f_2fa_enabled`
 model plus the root-level `get_thing` method behind `digit-leading-property` match
-in full. Two residual files remain: `bracketed-property-names`' `README.md` (the
-abbreviated-call gap) and `digit-leading-property`'s `client.py` (the root-level
-method example drops Fern's `base_url=` kwarg). Both are in the roadmap above.
+in full. None of these four corpora retains a measured residual.
 
 Still open from the issue (tracked, not yet done): hoisting an inline object nested
 inside an `array.items` of a *component* schema (dropped to `typing.Any` today —
