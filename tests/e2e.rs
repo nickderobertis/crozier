@@ -1841,6 +1841,8 @@ const CORPORA: &[&Corpus] = &[
     &SIGSTORE_REKOR,
     &LETTA,
     &FREE5GC_NAMF_COMMUNICATION,
+    &APIDECK_ATS,
+    &XTRF_EU,
 ];
 
 #[test]
@@ -2639,6 +2641,56 @@ const FREE5GC_NAMF_COMMUNICATION: Corpus = Corpus {
     extra_fields: None,
     unmatched: &[],
 };
+
+/// `apideck.com-ats`: the ATS API nests an inline social-link object in an
+/// array property of the `Applicant` component schema.
+const APIDECK_ATS: Corpus = Corpus {
+    api: "apideck.com-ats",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `xtrf.eu`: the XTRF Home Portal API declares inline-object bodies on five
+/// default error responses.
+const XTRF_EU: Corpus = Corpus {
+    api: "xtrf.eu",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn apideck_ats_matches_fern_output() {
+    if corpus_spec(APIDECK_ATS.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck ATS corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&APIDECK_ATS);
+}
+
+#[test]
+fn xtrf_eu_matches_fern_output() {
+    if corpus_spec(XTRF_EU.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the XTRF corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&XTRF_EU);
+}
 
 #[test]
 fn squareup_com_matches_fern_output() {
