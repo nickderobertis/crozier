@@ -58,17 +58,48 @@ const QUERY_PARAMETERS_REPOSITORY_SCAFFOLDING: &[&str] = &[
     "tests/utils/test_serialization.py",
 ];
 
-/// Generated files whose seed-repository form embeds local publication settings
-/// or local-generator snippet policy unavailable from the OpenAPI input. These
-/// remain compared and reverse-checked as explicit seed-artifact variants; they
-/// are not reported as unexplained Crozier gaps.
-const QUERY_PARAMETERS_SEED_VARIANTS: &[&str] = &[
-    ".fern/metadata.json",
-    "README.md",
-    "pyproject.toml",
-    "reference.md",
-    "src/seed/client.py",
-    "src/seed/core/client_wrapper.py",
+/// Exact raw-byte expectations for Crozier's packaged form of files whose Fern
+/// seed-repository form embeds local publication settings or local-generator
+/// snippet policy unavailable from the OpenAPI input. Length plus FNV-1a pins the
+/// whole emitted file: a change to any byte fails instead of passing merely
+/// because the result still differs from the seed golden.
+struct PackagedExpectation {
+    path: &'static str,
+    len: usize,
+    fnv1a64: u64,
+}
+
+const QUERY_PARAMETERS_PACKAGED_EXPECTATIONS: &[PackagedExpectation] = &[
+    PackagedExpectation {
+        path: ".fern/metadata.json",
+        len: 246,
+        fnv1a64: 0x5b7bf894b0008e9f,
+    },
+    PackagedExpectation {
+        path: "README.md",
+        len: 5_697,
+        fnv1a64: 0x92e578526100bf2a,
+    },
+    PackagedExpectation {
+        path: "pyproject.toml",
+        len: 2_628,
+        fnv1a64: 0xbed857a7b5dc639f,
+    },
+    PackagedExpectation {
+        path: "reference.md",
+        len: 2_309,
+        fnv1a64: 0x1dbb55afea9456ef,
+    },
+    PackagedExpectation {
+        path: "src/seed/client.py",
+        len: 16_711,
+        fnv1a64: 0x811b4c43d5d8a428,
+    },
+    PackagedExpectation {
+        path: "src/seed/core/client_wrapper.py",
+        len: 4_889,
+        fnv1a64: 0x6fb4f6254ede7d58,
+    },
 ];
 
 /// Packaged 5.20 runtime files absent from this locally generated seed tree.
@@ -82,12 +113,24 @@ fn repository_scaffolding(c: &Corpus) -> &'static [&'static str] {
     }
 }
 
-fn seed_artifact_variants(c: &Corpus) -> &'static [&'static str] {
+fn packaged_expectations(c: &Corpus) -> &'static [PackagedExpectation] {
     if c.api == QUERY_PARAMETERS.api {
-        QUERY_PARAMETERS_SEED_VARIANTS
+        QUERY_PARAMETERS_PACKAGED_EXPECTATIONS
     } else {
         &[]
     }
+}
+
+fn is_packaged_expectation(c: &Corpus, path: &str) -> bool {
+    packaged_expectations(c)
+        .iter()
+        .any(|expectation| expectation.path == path)
+}
+
+fn fnv1a64(bytes: &[u8]) -> u64 {
+    bytes.iter().fold(0xcbf29ce484222325, |hash, byte| {
+        (hash ^ u64::from(*byte)).wrapping_mul(0x100000001b3)
+    })
 }
 
 fn packaged_only_files(c: &Corpus) -> &'static [&'static str] {
@@ -831,11 +874,13 @@ fn assert_corpus_matches(c: &Corpus) {
 
     let expected_root = fixtures.join("expected");
     let repository_scaffolding = repository_scaffolding(c);
-    let seed_variants = seed_artifact_variants(c);
+    let packaged_expectations = packaged_expectations(c);
     for rel in walk_files(&expected_root) {
         if c.unmatched.contains(&rel.as_str())
             || repository_scaffolding.contains(&rel.as_str())
-            || seed_variants.contains(&rel.as_str())
+            || packaged_expectations
+                .iter()
+                .any(|expectation| expectation.path == rel)
         {
             continue;
         }
@@ -872,16 +917,36 @@ fn assert_corpus_matches(c: &Corpus) {
             "{rel} is now emitted by Crozier and must move back into the byte comparison"
         );
     }
-    for rel in seed_variants {
-        let expected = std::fs::read_to_string(expected_root.join(rel))
-            .unwrap_or_else(|e| panic!("seed-variant path is not in the Fern fixture: {rel}: {e}"));
-        let generated = std::fs::read_to_string(out.path().join(rel))
-            .unwrap_or_else(|e| panic!("Crozier stopped emitting seed-variant path {rel}: {e}"));
+    let mut packaged_mismatches = Vec::new();
+    for expectation in packaged_expectations {
+        let rel = expectation.path;
+        let expected = std::fs::read_to_string(expected_root.join(rel)).unwrap_or_else(|e| {
+            panic!("packaged-expectation path is not in the Fern fixture: {rel}: {e}")
+        });
+        let generated = std::fs::read(out.path().join(rel)).unwrap_or_else(|e| {
+            panic!("Crozier stopped emitting packaged-expectation path {rel}: {e}")
+        });
         assert!(
-            !generated_matches_fixture(rel, &generated, &expected),
+            !generated_matches_fixture(
+                rel,
+                std::str::from_utf8(&generated).expect("generated SDK files are UTF-8"),
+                &expected
+            ),
             "{rel} now matches Fern's seed artifact — remove its explicit variant"
         );
+        let actual = (generated.len(), fnv1a64(&generated));
+        if actual != (expectation.len, expectation.fnv1a64) {
+            packaged_mismatches.push(format!(
+                "{rel}: expected ({}, {:#018x}), got ({}, {:#018x})",
+                expectation.len, expectation.fnv1a64, actual.0, actual.1
+            ));
+        }
     }
+    assert!(
+        packaged_mismatches.is_empty(),
+        "Crozier's pinned packaged output changed:\n{}",
+        packaged_mismatches.join("\n")
+    );
     for rel in packaged_only_files(c) {
         assert!(
             !expected_root.join(rel).exists(),
@@ -2739,7 +2804,7 @@ fn report_fixture_gaps() {
             .filter(|rel| {
                 !confirmed.contains(rel.as_str())
                     && !repository_scaffolding(corpus).contains(&rel.as_str())
-                    && !seed_artifact_variants(corpus).contains(&rel.as_str())
+                    && !is_packaged_expectation(corpus, rel)
             })
             .collect();
         let accepted_upstream = known_fern_failure(corpus)
@@ -2754,10 +2819,10 @@ fn report_fixture_gaps() {
                 repository_scaffolding(corpus).len()
             );
         }
-        if !seed_artifact_variants(corpus).is_empty() {
+        if !packaged_expectations(corpus).is_empty() {
             println!(
-                "  {} explicit seed-artifact variant file(s).",
-                seed_artifact_variants(corpus).len()
+                "  {} exact packaged-output expectation(s).",
+                packaged_expectations(corpus).len()
             );
         }
         if divergent.is_empty() {
@@ -2781,7 +2846,7 @@ fn report_fixture_gaps() {
         // of the opt-out contract remain truthful.
         for rel in &expected_files {
             if repository_scaffolding(corpus).contains(&rel.as_str())
-                || seed_artifact_variants(corpus).contains(&rel.as_str())
+                || is_packaged_expectation(corpus, rel)
             {
                 continue;
             }

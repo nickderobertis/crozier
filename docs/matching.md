@@ -65,22 +65,25 @@ commit `4d07e6aeeed1d88917ce59dfc9b4cf9e6008e553` (the commit releasing
   the thirteen files under `tests/custom/` and `tests/utils/`. Inspection across
   the packaged `--preview` corpora confirms that they do not occur there;
   `_default_clients.py`, by contrast, occurs broadly and remains compared.
-- Six generated files are explicit seed-artifact variants rather than open
-  gaps: `README.md`, `reference.md`, `pyproject.toml`, `.fern/metadata.json`,
+- Six generated files have exact raw-byte expectations for Crozier's packaged
+  form: `README.md`, `reference.md`, `pyproject.toml`, `.fern/metadata.json`,
   `src/seed/client.py`, and `src/seed/core/client_wrapper.py`. The seed embeds a
   local repository publication (`generatorVersion: local`, requested SDK
   version `0.0.1`, GitHub repository metadata, and the local generator's
   all-optional snippet policy). Those inputs are not present in the OpenAPI
-  document or Crozier's naming settings; Crozier emits the packaged 5.20 form.
+  document or Crozier's naming settings. Length-plus-FNV fingerprints pin every
+  byte of the packaged 5.20 output, while a separate assertion preserves the
+  evidence that it differs from the local seed form.
 - Conversely, `src/seed/core/enum.py` is present throughout the packaged 5.20
   corpora but absent from this local seed. It is an explicit packaged-only file,
   reverse-checked on both sides.
 
 Both classifications are reverse-checked. A repository-only path becoming
-Crozier output fails and must re-enter comparison; a seed variant disappearing
-or unexpectedly matching fails until its classification is updated. The gate
-also walks Crozier's output back against the golden, so a newly emitted file can
-never silently fall outside the compared set.
+Crozier output fails and must re-enter comparison; a packaged expectation
+changing by any byte, disappearing, or unexpectedly matching the local seed
+fails until its evidence is deliberately updated. The gate also walks Crozier's
+output back against the golden, so a newly emitted file can never silently fall
+outside the compared set.
 
 **`exhaustive` matches all 111 of its files** — the widest single parity proof in
 the corpus, and the only fixture that exercises the whole generator end to end.
@@ -295,7 +298,7 @@ The configured `audience-filter`, `audience-filter-strict`,
 `client-class-name`, and `pydantic-extra-fields` fixtures are on 5.20.0 and fully
 matched. `query-parameters-openapi` is re-vendored from Fern's 5.20.0 release
 commit and has no unexplained residuals; its seed-repository boundary and six
-local-publication variants are documented above. `calorieninjas.com` remains on its preserved
+exact packaged-output expectations are documented above. `calorieninjas.com` remains on its preserved
 older tree because 5.20.0 cannot emit valid Python; its 19 paths are reported by
 `just fixtures-gaps` as accepted upstream-exception files, separately from open
 Crozier gaps. The items below record how each shape generates; remaining
