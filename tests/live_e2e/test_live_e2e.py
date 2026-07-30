@@ -98,6 +98,52 @@ def test_partial_corpus_exercises_the_fern_5_20_parsing_error_classifier(recordi
     ), reasons
 
 
+def test_placeholder_snippet_endpoint_is_driven_for_real(recordings):
+    """The one endpoint Fern documents with an abbreviated
+    `client.<sub>.<method>(...)` placeholder rather than a worked example —
+    `exhaustive`'s file upload, whose raw `application/octet-stream` body gives
+    Fern no example bytes to synthesize — is resolved and driven, not skipped.
+
+    crozier reproduces that placeholder byte-for-byte, so this pins the driver's
+    resolution path end to end: the endpoint is present, it went through the
+    synthesized-argument branch (rather than merely being catalogued), it really
+    round-tripped through Prism, and the reply deserialized into the declared
+    response model. Drop the upload operation, stop invoking it, or let it fall
+    back to a non-synthesized path and this fails."""
+    upload = "endpoints_params.endpoints_params_upload_with_path"
+    recording = recordings["exhaustive"]
+    assert upload in recording, (
+        f"{upload} was not driven — the placeholder snippet was dropped instead of "
+        f"being resolved into a real call"
+    )
+    observation = recording[upload]
+    assert observation.get("synthesized"), (
+        f"{upload} did not go through the synthesized-argument path: {observation}"
+    )
+    assert observation.get("ok"), (
+        f"{upload} did not round-trip: {observation.get('error')}"
+    )
+    assert observation["model"] == "TypesObjectWithRequiredField", (
+        f"{upload} returned {observation['model']}, not the declared response model"
+    )
+
+
+def test_every_documented_endpoint_actually_round_trips(recordings):
+    """No endpoint of a strict-coverage fixture is merely catalogued: each one
+    either round-tripped or is a classified mock-side skip. Guards the placeholder
+    path specifically — an endpoint that silently stopped being invoked would still
+    satisfy the key-set coverage test, but not this one."""
+    for fixture in FIXTURES:
+        if not fixture.strict_coverage:
+            continue
+        idle = {
+            endpoint: obs
+            for endpoint, obs in recordings[fixture.name].items()
+            if not obs.get("ok") and not obs.get("skipped")
+        }
+        assert not idle, f"{fixture.name}: endpoints never round-tripped: {idle}"
+
+
 def test_response_models_are_deserialized(recordings):
     """Guard against a trivially-passing sweep: a complicated corpus must return real
     pydantic response models, not merely primitives — proof deserialization ran."""

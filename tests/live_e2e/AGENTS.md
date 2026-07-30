@@ -15,8 +15,8 @@ required leg (`live-e2e`, aggregated into `gate`).
 ## How it works
 
 - **Spec-driven, not hand-authored.** The endpoint list and the example arguments
-  come from the SDK's own generated `reference.md` — one runnable `client.<sub>.
-  <method>(...)` usage snippet per typed method, already carrying valid example
+  come from the SDK's own generated `reference.md` — one `client.<sub>.<method>(...)`
+  usage snippet per typed method, already carrying valid example
   values. `_driver.py` executes each snippet, pointing the client at the mock
   (swapping the placeholder `base_url`, or injecting one when the spec's own
   `servers` made the snippet omit it). Endpoints are keyed by the full
@@ -59,6 +59,20 @@ required leg (`live-e2e`, aggregated into `gate`).
   fails the gate. This can't mask a crozier bug: the byte-diff e2e independently
   proves each model's required/optional shape against Fern. Do **not** widen this to
   silence a real failure — fix the generator instead.
+- **A placeholder snippet is resolved, never skipped.** Fern writes a worked
+  example only where it can synthesize the arguments; otherwise `reference.md` gets
+  an abbreviated `client.<sub>.<method>(...)` with no constructed client (a raw
+  `application/octet-stream` body has no example bytes to invent — `exhaustive`'s
+  `endpoints_params_upload_with_path` since Fern 5.20). crozier reproduces that
+  placeholder byte-for-byte, so the driver *resolves* it: it lifts the client
+  construction from a worked example in the same reference
+  (`_driver.client_preamble`), fills the required parameters from the method's own
+  resolved type hints (`_synthesized_arguments`, values from `_EXAMPLE_VALUES`),
+  and makes the call for real. The observation is tagged `synthesized` so
+  `test_placeholder_snippet_endpoint_is_driven_for_real` can assert the path ran
+  rather than that the endpoint was merely catalogued. An annotation
+  `_EXAMPLE_VALUES` cannot fill **raises** — extend the table; do not let an
+  endpoint go undriven, and do not classify it out of either catalog.
 - **One SDK per subprocess.** Every fixture's package is named `fern`, so two
   cannot coexist in one interpreter; `_driver.py` runs as a subprocess per fixture
   (as `tests/runtime/_recorder.py` does), printing its recording as JSON.
@@ -66,7 +80,7 @@ required leg (`live-e2e`, aggregated into `gate`).
 ## Two corpus kinds
 
 - **Vendored synthetic seeds** (`exhaustive`, …): the spec is committed at
-  `tests/fixtures/<name>/openapi.yml`. `exhaustive` (55 endpoints, 15 sub-clients)
+  `tests/fixtures/<name>/openapi.yml`. `exhaustive` (56 endpoints, 15 sub-clients)
   is the deliberately complicated seed.
 - **`link-ok` real-world corpus** (`apideck.com-crm`, 40 endpoints across 8
   sub-clients; `bunq.com`, 421 endpoints across 118 sub-clients — the at-scale
