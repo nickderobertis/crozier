@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "buildrelay",
+  "corpus_spec_ref": "e5f47309d1ca6fd28267de041e7ed2f61e477723",
+  "corpus_spec_url": "https://raw.githubusercontent.com/cnorlander/BuildRelay/e5f47309d1ca6fd28267de041e7ed2f61e477723/openapi.json"
+}

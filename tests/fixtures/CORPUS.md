@@ -1,6 +1,6 @@
 # Canonical real-world OpenAPI corpus (issue #77)
 
-This manifest tracks 76 real-world OpenAPI specs with redistribution-compatible
+This manifest tracks 78 real-world OpenAPI specs with redistribution-compatible
 license metadata. `decision` is `link-ok` when the permissively licensed source
 is fetched at generation time rather than vendored. Add or change one numbered
 row per feature branch and maintain its golden through the manually dispatched
@@ -85,6 +85,8 @@ row per feature branch and maintain its golden through the manually dispatched
 | 74 | `sigstore-rekor` | github-raw | https://raw.githubusercontent.com/trailofbits/sigstore-apis/c6bd8db7b1629104dfe241ad26a838f69199b169/openapi/rekor.openapi.json | `c6bd8db7b1629104dfe241ad26a838f69199b169` | Apache-2.0 | link-ok | Sigstore Rekor API with eight literal `2XX` plus `default` response pairs, 12 discriminators without mappings, and seven nested objects combining `readOnly` and `writeOnly` properties |
 | 75 | `letta` | github-raw | https://raw.githubusercontent.com/letta-ai/letta/e3fb00f97009cafe527cde93983cda0dfdd7e574/fern/openapi.json | `e3fb00f97009cafe527cde93983cda0dfdd7e574` | Apache-2.0 | link-ok | Letta API with 10 `text/event-stream` responses, 12 discriminators without mappings, 1 map-of-union schema, and 1,416 `anyOf` plus 87 `oneOf` compositions |
 | 76 | `free5gc-namf-communication` | github-raw | https://raw.githubusercontent.com/shynuu/free5gc-cli/7f775ecab0cbe3074b38e528581641cff5520c2f/lib/openapi/Namf_Communication/api/openapi.yaml | `7f775ecab0cbe3074b38e528581641cff5520c2f` | Apache-2.0 | link-ok | free5GC AMF Communication API with `ServiceAreaRestriction/allOf/0/oneOf/0/not` and 142 `application/problem+json` response media entries |
+| 77 | `apideck.com-ats` | api-guru | https://api.apis.guru/v2/specs/apideck.com/ats/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | ATS API with an inline object nested in `Applicant.properties.social_links.items` |
+| 78 | `buildrelay` | github-raw | https://raw.githubusercontent.com/cnorlander/BuildRelay/e5f47309d1ca6fd28267de041e7ed2f61e477723/openapi.json | `e5f47309d1ca6fd28267de041e7ed2f61e477723` | MIT | link-ok | BuildRelay API with a referenced request body and a direct inline-object `500` response body |
 
 ## Batch 2 — byte-matched (issue #77)
 

@@ -131,6 +131,7 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
                     .strip_suffix(" API")
                     .unwrap_or(&doc.info.title);
                 !description.eq_ignore_ascii_case("production server")
+                    && !description.eq_ignore_ascii_case("development server")
                     && !description.to_ascii_lowercase().starts_with("local ")
                     && !description.eq_ignore_ascii_case(&doc.info.title)
                     && (title_stem.is_empty()
@@ -2694,14 +2695,18 @@ fn error_body_type(resp: &Response, class: &str) -> TypeRef {
             TypeRef::List(Box::new(TypeRef::Named(format!("{class}BodyItem"))))
         }
         Some(schema)
-            if is_inline_struct(schema)
-                && (schema_example(schema).is_some() || class == "ConflictError") =>
+            if resp.reference.is_none()
+                && is_inline_struct(schema)
+                && (schema.required.is_empty()
+                    || schema_example(schema).is_some()
+                    || class == "ConflictError") =>
         {
             TypeRef::Named(format!("{class}Body"))
         }
         // A named `$ref`, scalar, or container keeps its resolved type. An inline
-        // object (bunq's `GenericError`, `{Error: ...}`) or an otherwise-untyped body
-        // resolves to bare `Any`, the same as a body-less error in Fern 5.20.
+        // object reached through a `$ref` to `components.responses` (bunq's
+        // `GenericError`) or an otherwise-untyped body resolves to bare `Any`, the
+        // same as a body-less error in Fern 5.20.
         Some(schema) => base_type_ref(schema),
         None => TypeRef::Primitive(Prim::Any),
     }
@@ -7003,11 +7008,11 @@ mod tests {
     }
 
     #[test]
-    fn conflict_error_uses_its_inline_body_model_without_an_example() {
-        let response: crate::openapi::Response = serde_json::from_value(serde_json::json!({
+    fn direct_inline_error_uses_its_body_model_but_a_response_ref_does_not() {
+        let mut response: crate::openapi::Response = serde_json::from_value(serde_json::json!({
             "description": "Conflict",
             "content": { "application/json": { "schema": {
-                "type": "object", "required": ["message"],
+                "type": "object",
                 "properties": { "message": { "type": "string" } }
             } } }
         }))
@@ -7016,6 +7021,11 @@ mod tests {
             super::error_body_type(&response, "ConflictError"),
             TypeRef::Named("ConflictErrorBody".to_string())
         );
+        assert_eq!(
+            super::error_body_type(&response, "BadRequestError"),
+            TypeRef::Named("BadRequestErrorBody".to_string())
+        );
+        response.reference = Some("#/components/responses/BadRequest".to_string());
         assert_eq!(
             super::error_body_type(&response, "BadRequestError"),
             TypeRef::Primitive(Prim::Any)
@@ -7091,6 +7101,19 @@ mod tests {
         }))
         .expect("cloud document deserializes");
         let env = environment_model(&cloud, "FernApi").expect("server yields environment");
+        assert_eq!(env.member.0, "DEFAULT");
+    }
+
+    #[test]
+    fn development_server_defaults_to_default_environment() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "servers": [{
+                "description": "Development server",
+                "url": "http://localhost:3000"
+            }]
+        }))
+        .expect("document deserializes");
+        let env = environment_model(&doc, "FernApi").expect("server yields environment");
         assert_eq!(env.member.0, "DEFAULT");
     }
 

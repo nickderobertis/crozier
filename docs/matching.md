@@ -462,9 +462,19 @@ the third does not reproduce at the corpus's pinned Fern version.
    the operation falls through to the generic `ApiError` (exactly as Fern does), and
    the body parses per declared shape — a `$ref` (`Error`), a container
    (`typing.List[str]`), or `typing.Optional[typing.Any]` for a content-less error.
-   Still open: an *inline object* error body, which Fern hoists to a root
-   `types/{ClassName}Body` model — crozier renders it `typing.Any` today (kept out of
-   the corpus, so unmatched rather than wrong).
+   Inline object error bodies are hoisted separately to package-root
+   `types/{ClassName}Body` models and re-exported through the type aggregators.
+   The exception keeps the body spelling Fern selects: a direct inline response
+   uses the named model, while a `$ref` to `components.responses` whose body is
+   inline remains `typing.Optional[typing.Any]` even though the separate body
+   model is emitted. Bodies shared by a status are merged before hoisting so the
+   root model is deterministic. The real-world `buildrelay` corpus pins the direct
+   inline case at Fern 5.20.0. Its first measured run had six residual files:
+   `README.md`, `reference.md`, the root client and environment modules, and—most
+   importantly—the `InternalServerError` and jobs raw-client modules where crozier
+   used `typing.Any`. Direct inline responses now type both sites as
+   `InternalServerErrorBody`; the neighbouring `$ref`-to-`components.responses`
+   behavior remains unchanged.
 2. **Discriminated-union alias annotation** (gap #2) is **now closed** (issue #50
    part 2). Fern wraps the alias in
    `typing_extensions.Annotated[Union[...], pydantic.Field(discriminator="…")]` so
@@ -795,11 +805,16 @@ All four corpora are now regenerated as Fern's *packaged* SDK (`fern generate
 model plus the root-level `get_thing` method behind `digit-leading-property` match
 in full. None of these four corpora retains a measured residual.
 
-Still open from the issue (tracked, not yet done): hoisting an inline object nested
-inside an `array.items` of a *component* schema (dropped to `typing.Any` today —
-adjacent to gap #4's request/response hoisting), Swagger 2.0 / fragment-doc
-tolerance, and the `address_line_1` → `address_line1` underscore-before-digit
-rename.
+The component-array-item gap is closed and pinned by the real-world
+`apideck.com-ats` corpus at Fern 5.20.0: its
+`Applicant.properties.social_links.items` object becomes the package-root
+`ApplicantSocialLinksItem` model, the `Applicant` field references it rather than
+`typing.Any`, and the aggregators re-export it. The first measured corpus run had
+no residual files because the general component hoister already covered the
+shape; registering the corpus turned that previously unmeasured rule into a
+byte-exact regression target. Still open from the issue: Swagger 2.0 /
+fragment-doc tolerance and the `address_line_1` → `address_line1`
+underscore-before-digit rename.
 
 ## Fern-python parity gaps (issue #41)
 

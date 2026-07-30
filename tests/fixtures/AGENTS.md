@@ -59,6 +59,8 @@ these is built from a spec with Fern overrides applied, not the raw document.
 |---|---|---|
 | `deepgram` | `deepgram/deepgram-api-specs@main/openapi.yml` | 342 errors: duplicate inline `ListRequest` across sub-clients, and integer enums (`16000`, `48000`, …) with no `x-fern-enum` names |
 | `asana` (api-guru `asana.com/1.0`) | already attempted by a prior agent too | 17 errors: inline request-body collisions (`AddFollowersRequest`, `RemoveFollowersRequest`, `ProjectSaveAsTemplateRequest`) and `date` fields with datetime examples |
+| `xtrf.eu` (api-guru `xtrf.eu/2.0`) | `https://api.apis.guru/v2/specs/xtrf.eu/2.0/openapi.json` | Python 5.20.0 generator rejects seven response-example fields across `getJobFiles` and `getTaskFiles`, despite `fern check` passing |
+| `github.com-ghes-3.8` (api-guru `github.com/ghes-3.8/1.1.4`) | `https://api.apis.guru/v2/specs/github.com/ghes-3.8/1.1.4/openapi.json` | Python 5.20.0 generator rejects 29 request collisions, examples, duplicate declarations, and enum names, despite `fern check` passing |
 
 Accepted and matched corpus status lives in [`CORPUS.md`](CORPUS.md); do not
 duplicate its batch ledger here.
