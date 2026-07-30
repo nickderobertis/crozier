@@ -8,6 +8,7 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .types import SearchResult
     from . import inlined
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .inlined import (
         InlinedIndexResponse,
@@ -18,6 +19,8 @@ if typing.TYPE_CHECKING:
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "InlinedIndexResponse": ".inlined",
     "InlinedSearchRequestFilter": ".inlined",
@@ -52,6 +55,8 @@ def __dir__():
 
 __all__ = [
     "AsyncFernApi",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "FernApi",
     "InlinedIndexResponse",
     "InlinedSearchRequestFilter",

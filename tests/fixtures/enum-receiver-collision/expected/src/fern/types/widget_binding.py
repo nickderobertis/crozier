@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WidgetBinding(str, enum.Enum):
+class WidgetBinding(enum.StrEnum):
     CLS = "cls"
     INSTANCE = "instance"
     STATIC = "static"

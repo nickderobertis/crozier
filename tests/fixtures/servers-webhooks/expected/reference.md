@@ -1,6 +1,6 @@
 # Reference
 ## Subscriptions
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">create</a>(...)</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">create</a>(...) -> Subscription</code></summary>
 <dl>
 <dd>
 
@@ -14,10 +14,13 @@
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.PRODUCTION,
 )
+
 client.subscriptions.create(
     callback_url="callbackUrl",
 )

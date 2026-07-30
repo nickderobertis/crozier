@@ -15,10 +15,14 @@ if typing.TYPE_CHECKING:
         UnprocessableEntityError,
     )
     from . import widgets
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
+    from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
     "BadRequestError": ".errors",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "Error": ".types",
     "FernApi": ".client",
     "InternalServerError": ".errors",
@@ -26,6 +30,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ServiceUnavailableError": ".errors",
     "UnprocessableEntityError": ".errors",
     "Widget": ".types",
+    "__version__": ".version",
     "widgets": ".widgets",
 }
 
@@ -54,6 +59,8 @@ def __dir__():
 __all__ = [
     "AsyncFernApi",
     "BadRequestError",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "Error",
     "FernApi",
     "InternalServerError",
@@ -61,5 +68,6 @@ __all__ = [
     "ServiceUnavailableError",
     "UnprocessableEntityError",
     "Widget",
+    "__version__",
     "widgets",
 ]

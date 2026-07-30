@@ -8,11 +8,16 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .types import StreamChunk
     from . import messages
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
+    from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "StreamChunk": ".types",
+    "__version__": ".version",
     "messages": ".messages",
 }
 
@@ -38,4 +43,12 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["AsyncFernApi", "FernApi", "StreamChunk", "messages"]
+__all__ = [
+    "AsyncFernApi",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
+    "FernApi",
+    "StreamChunk",
+    "__version__",
+    "messages",
+]

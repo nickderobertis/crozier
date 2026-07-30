@@ -1,0 +1,5 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "fern_cli_version": "5.67.1",
+  "vendored_spec_path": "tests/fixtures/operation-id-non-identifier/openapi.yml"
+}

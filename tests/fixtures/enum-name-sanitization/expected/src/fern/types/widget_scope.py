@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WidgetScope(str, enum.Enum):
+class WidgetScope(enum.StrEnum):
     GLOBAL = "global"
     PRACTICE = "practice"
     INTENT = "intent"

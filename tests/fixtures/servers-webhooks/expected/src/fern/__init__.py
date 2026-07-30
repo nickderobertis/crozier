@@ -8,11 +8,14 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .types import Event, Subscription
     from . import subscriptions
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "Event": ".types",
     "FernApi": ".client",
     "FernApiEnvironment": ".environment",
@@ -43,4 +46,14 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["AsyncFernApi", "Event", "FernApi", "FernApiEnvironment", "Subscription", "__version__", "subscriptions"]
+__all__ = [
+    "AsyncFernApi",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
+    "Event",
+    "FernApi",
+    "FernApiEnvironment",
+    "Subscription",
+    "__version__",
+    "subscriptions",
+]

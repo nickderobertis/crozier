@@ -10,7 +10,9 @@ from ..core.serialization import FieldMetadata
 
 class Subscription(UniversalBaseModel):
     id: str
-    callback_url: typing_extensions.Annotated[str, FieldMetadata(alias="callbackUrl")]
+    callback_url: typing_extensions.Annotated[
+        str, FieldMetadata(alias="callbackUrl"), pydantic.Field(alias="callbackUrl")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

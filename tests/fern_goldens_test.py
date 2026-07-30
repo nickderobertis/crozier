@@ -1071,6 +1071,85 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertFalse(list(fixture.glob(".fern-output.*")))
         self.assertFalse(list(fixture.glob(".expected.backup.*")))
 
+    def test_vendored_generation_records_provenance_and_ci_invocation(self) -> None:
+        root = Path(self.temporary.name) / "vendored repo"
+        scripts = root / "scripts"
+        fixture = root / "tests" / "fixtures" / "beta"
+        fake_bin = root / "fake bin"
+        target = root / "target" / "release"
+        for directory in (scripts, fixture, fake_bin, target):
+            directory.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(REPO / "scripts" / "generate-fern-fixture.sh", scripts)
+        shutil.copy2(REPO / "scripts" / "lib.sh", scripts)
+        (fixture / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
+
+        self.write_executable(
+            fake_bin / "fern",
+            r"""
+            #!/usr/bin/env python3
+            import json
+            import os
+            import pathlib
+            import sys
+
+            arguments = sys.argv[1:]
+            output = pathlib.Path(arguments[arguments.index("--output") + 1])
+            generated = output / "fern-python-sdk" / "src" / "fern"
+            generated.mkdir(parents=True)
+            (generated / "version.py").write_text("complete-fern-output\n", encoding="utf-8")
+            pathlib.Path(os.environ["INVOCATION_RECORD"]).write_text(
+                json.dumps({key: os.environ.get(key) for key in ("CI", "GITHUB_ACTIONS")}),
+                encoding="utf-8",
+            )
+            """,
+        )
+        self.write_executable(fake_bin / "docker", "#!/usr/bin/env bash\nexit 0\n")
+        self.write_executable(
+            target / "crozier",
+            r"""
+            #!/usr/bin/env python3
+            import pathlib
+            import sys
+
+            sys.stdout.buffer.write(pathlib.Path(sys.argv[2]).read_bytes())
+            """,
+        )
+
+        invocation_record = root / "invocation.json"
+        result = subprocess.run(
+            self.script_command(scripts / "generate-fern-fixture.sh", "beta", "5.20.0"),
+            cwd=root,
+            env=self.environment(
+                CROZIER_FERN_NO_DOCKER_SHIM="1",
+                PATH=f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
+                EXTRA_FIELDS="ignore",
+                INVOCATION_RECORD=str(invocation_record),
+            ),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+        # The vendored path is not a CORPUS.md row, so `fern-goldens` never
+        # records its generator; the script owns the provenance there.
+        provenance = json.loads(
+            (fixture / "expected" / STATE).read_text(encoding="utf-8")
+        )
+        self.assertEqual(provenance["fern_python_sdk_version"], "5.20.0")
+        self.assertEqual(provenance["vendored_spec_path"], "tests/fixtures/beta/openapi.yml")
+        self.assertEqual(provenance["extra_fields"], "ignore")
+        self.assertNotIn("audiences", provenance)
+        self.assertNotIn("client_class_name", provenance)
+        self.assertTrue(provenance["fern_cli_version"])
+
+        # Fern stamps `.fern/metadata.json`'s `invokedBy` from the environment,
+        # and every published golden comes from the workflow's Actions runner.
+        self.assertEqual(
+            json.loads(invocation_record.read_text(encoding="utf-8")),
+            {"CI": "true", "GITHUB_ACTIONS": "true"},
+        )
+
     def test_invalid_inputs_fail_before_generation_or_publication(self) -> None:
         cases = [
             ("generate", "--version", "latest", "--fixture", "alpha"),

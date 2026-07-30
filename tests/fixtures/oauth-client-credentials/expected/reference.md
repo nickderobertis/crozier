@@ -1,6 +1,6 @@
 # Reference
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">gettoken</a>(...)</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py">gettoken</a>(...) -> TokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -16,9 +16,10 @@
 from fern import FernApi
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.auth.gettoken(
     client_id="client_id",
     client_secret="client_secret",
@@ -67,7 +68,7 @@ client.auth.gettoken(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">list</a>()</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">list</a>() -> typing.List[User]</code></summary>
 <dl>
 <dd>
 
@@ -83,9 +84,10 @@ client.auth.gettoken(
 from fern import FernApi
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.users.list()
 
 ```

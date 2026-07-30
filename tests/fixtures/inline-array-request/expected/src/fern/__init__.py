@@ -8,11 +8,14 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .types import Item
     from . import items
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .items import ItemsCreateBatchRequestItem
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "Item": ".types",
     "ItemsCreateBatchRequestItem": ".items",
@@ -42,4 +45,13 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["AsyncFernApi", "FernApi", "Item", "ItemsCreateBatchRequestItem", "__version__", "items"]
+__all__ = [
+    "AsyncFernApi",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
+    "FernApi",
+    "Item",
+    "ItemsCreateBatchRequestItem",
+    "__version__",
+    "items",
+]

@@ -8,7 +8,7 @@ from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 class SearchWidgetsResponse(UniversalBaseModel):
     widgets: typing.Optional[typing.List[str]] = None
-    required: typing.Optional[typing.Optional[typing.Any]] = None
+    required: typing.Optional[typing.Any] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

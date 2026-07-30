@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -21,6 +22,7 @@ from ..types.types_object_with_map_of_map import TypesObjectWithMapOfMap
 from ..types.types_object_with_optional_field import TypesObjectWithOptionalField
 from ..types.types_object_with_required_field import TypesObjectWithRequiredField
 from ..types.types_object_with_unknown_field import TypesObjectWithUnknownField
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -123,6 +125,10 @@ class RawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_object_get_and_return_with_required_field(
@@ -166,6 +172,10 @@ class RawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_object_get_and_return_with_map_of_map(
@@ -209,6 +219,10 @@ class RawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_object_get_and_return_nested_with_optional_field(
@@ -261,6 +275,10 @@ class RawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_object_get_and_return_nested_with_required_field(
@@ -289,7 +307,7 @@ class RawEndpointsObjectClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"object/get-and-return-nested-with-required-field/{jsonable_encoder(string_)}",
+            f"object/get-and-return-nested-with-required-field/{encode_path_param(string_)}",
             method="POST",
             json={
                 "string": string,
@@ -316,6 +334,10 @@ class RawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_object_get_and_return_nested_with_required_field_as_list(
@@ -359,15 +381,19 @@ class RawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_object_get_and_return_with_unknown_field(
-        self, *, unknown: typing.Optional[typing.Any] = OMIT, request_options: typing.Optional[RequestOptions] = None
+        self, *, unknown: typing.Any, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[TypesObjectWithUnknownField]:
         """
         Parameters
         ----------
-        unknown : typing.Optional[typing.Any]
+        unknown : typing.Any
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -402,6 +428,10 @@ class RawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_object_get_and_return_with_documented_unknown_type(
@@ -448,6 +478,10 @@ class RawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_object_get_and_return_map_of_documented_unknown_type(
@@ -489,6 +523,10 @@ class RawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_object_get_and_return_with_datetime_like_string(
@@ -545,6 +583,10 @@ class RawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -645,6 +687,10 @@ class AsyncRawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_object_get_and_return_with_required_field(
@@ -688,6 +734,10 @@ class AsyncRawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_object_get_and_return_with_map_of_map(
@@ -731,6 +781,10 @@ class AsyncRawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_object_get_and_return_nested_with_optional_field(
@@ -783,6 +837,10 @@ class AsyncRawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_object_get_and_return_nested_with_required_field(
@@ -811,7 +869,7 @@ class AsyncRawEndpointsObjectClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"object/get-and-return-nested-with-required-field/{jsonable_encoder(string_)}",
+            f"object/get-and-return-nested-with-required-field/{encode_path_param(string_)}",
             method="POST",
             json={
                 "string": string,
@@ -838,6 +896,10 @@ class AsyncRawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_object_get_and_return_nested_with_required_field_as_list(
@@ -881,15 +943,19 @@ class AsyncRawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_object_get_and_return_with_unknown_field(
-        self, *, unknown: typing.Optional[typing.Any] = OMIT, request_options: typing.Optional[RequestOptions] = None
+        self, *, unknown: typing.Any, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[TypesObjectWithUnknownField]:
         """
         Parameters
         ----------
-        unknown : typing.Optional[typing.Any]
+        unknown : typing.Any
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -924,6 +990,10 @@ class AsyncRawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_object_get_and_return_with_documented_unknown_type(
@@ -970,6 +1040,10 @@ class AsyncRawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_object_get_and_return_map_of_documented_unknown_type(
@@ -1011,6 +1085,10 @@ class AsyncRawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_object_get_and_return_with_datetime_like_string(
@@ -1067,4 +1145,8 @@ class AsyncRawEndpointsObjectClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

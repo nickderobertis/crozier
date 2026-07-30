@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EndpointsErrorCategory(str, enum.Enum):
+class EndpointsErrorCategory(enum.StrEnum):
     API_ERROR = "API_ERROR"
     AUTHENTICATION_ERROR = "AUTHENTICATION_ERROR"
     INVALID_REQUEST_ERROR = "INVALID_REQUEST_ERROR"

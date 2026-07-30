@@ -1,6 +1,6 @@
 # Reference
 ## Cookies
-<details><summary><code>client.cookies.<a href="src/fern/cookies/client.py">getsession</a>()</code></summary>
+<details><summary><code>client.cookies.<a href="src/fern/cookies/client.py">getsession</a>() -> Session</code></summary>
 <dl>
 <dd>
 
@@ -16,10 +16,10 @@
 from fern import FernApi
 
 client = FernApi(
-    tenant="YOUR_TENANT",
-    token="YOUR_TOKEN",
+    token="<token>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.cookies.getsession()
 
 ```

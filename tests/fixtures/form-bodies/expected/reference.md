@@ -1,6 +1,6 @@
 # Reference
 ## Forms
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">upload</a>(...)</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py">upload</a>(...) -> UploadResponse</code></summary>
 <dl>
 <dd>
 
@@ -16,10 +16,13 @@
 from fern import FernApi
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
     base_url="https://yourhost.com/path/to/api",
 )
-client.forms.upload()
+
+client.forms.upload(
+    file="example_file",
+)
 
 ```
 </dd>
@@ -35,9 +38,7 @@ client.forms.upload()
 <dl>
 <dd>
 
-**file:** `from __future__ import annotations
-
-core.File` — See core.File for more documentation
+**file:** `core.File` 
     
 </dd>
 </dl>
@@ -89,9 +90,10 @@ core.File` — See core.File for more documentation
 from fern import FernApi
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.forms.submit(
     name="name",
 )

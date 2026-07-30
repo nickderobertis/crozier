@@ -8,11 +8,14 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .types import AndNode, LeafNode, Node, Node_And, Node_Leaf, TreeNode
     from . import pred, tree
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AndNode": ".types",
     "AsyncFernApi": ".client",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "LeafNode": ".types",
     "Node": ".types",
@@ -49,6 +52,8 @@ def __dir__():
 __all__ = [
     "AndNode",
     "AsyncFernApi",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "FernApi",
     "LeafNode",
     "Node",

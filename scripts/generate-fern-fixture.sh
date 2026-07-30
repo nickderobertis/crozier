@@ -173,6 +173,17 @@ echo "generate-fern-fixture: running Fern (python-sdk@${FERN_PYTHON_VERSION}) lo
 # a dummy is sufficient and carries no credential.
 export FERN_TOKEN="${FERN_TOKEN:-preview-only-no-publish}"
 
+# Fern stamps how it was invoked into `.fern/metadata.json` (`invokedBy` +
+# `ciProvider`), detected from the environment. Every committed golden is
+# published by the **Fern goldens** workflow from GitHub Actions, so the whole
+# corpus carries the `ci`/`github` form and crozier emits it. A local run is a
+# reproduction aid for that workflow, not a separate flavor of golden, so give
+# Fern the same invocation identity instead of stamping a `manual` record that
+# only the local path could ever produce. Already set under the workflow (and
+# under any real CI), where this is a no-op.
+export CI="${CI:-true}"
+export GITHUB_ACTIONS="${GITHUB_ACTIONS:-true}"
+
 # Under a TLS-intercepting sandbox, Fern's generator container runs an internal
 # `npm install @fern-api/generator-cli` that hangs forever: the container gets
 # neither the host's proxy (the proxy listens on 127.0.0.1, unreachable from a
@@ -256,6 +267,31 @@ mkdir -p "$staged_dest"
     *)    cp "$src/$rel" "$target" ;;
   esac
 done
+
+# Provenance for the vendored-spec path: hand-authored fixtures are not
+# CORPUS.md rows, so `fern-goldens` never records their generator version. It
+# writes its own corpus-form record (name/ref/URL) whenever it drives this
+# script, which is exactly when a spec override is supplied — so only the
+# vendored path writes one here. Any non-default generator knob is part of the
+# golden's identity and is recorded alongside the versions.
+if [ -z "$SPEC_OVERRIDE" ]; then
+  settings=""
+  for pair in "audiences=${FERN_AUDIENCES:-}" \
+    "client_class_name=${CLIENT_CLASS_NAME:-}" \
+    "extra_fields=${EXTRA_FIELDS:-}"; do
+    value="${pair#*=}"
+    [ -n "$value" ] || continue
+    settings="$settings,
+  \"${pair%%=*}\": \"$value\""
+  done
+  cat > "$staged_dest/.crozier-fern-golden.json" <<JSON
+{
+  "fern_python_sdk_version": "$FERN_PYTHON_VERSION",
+  "fern_cli_version": "$FERN_CLI_VERSION",
+  "vendored_spec_path": "tests/fixtures/$FIXTURE/openapi.yml"$settings
+}
+JSON
+fi
 
 backup="$(dirname "$dest")/.expected.backup.$$"
 [ ! -e "$backup" ] || {
