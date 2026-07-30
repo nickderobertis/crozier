@@ -56,7 +56,6 @@ const QUERY_PARAMETERS: Corpus = Corpus {
         "src/seed/_default_clients.py",
         "src/seed/client.py",
         "src/seed/core/client_wrapper.py",
-        "src/seed/core/http_client.py",
         "src/seed/raw_client.py",
         "tests/custom/test_client.py",
         "tests/utils/__init__.py",
@@ -2092,6 +2091,10 @@ fn calorieninjas_reproduces_the_exact_known_fern_failure_boundary() {
     let known = known_fern_failure(&CALORIENINJAS)
         .expect("known Fern failure contract must be valid")
         .expect("CalorieNinjas must register its Fern 5.20 failure");
+    assert!(
+        !CALORIENINJAS.unmatched.is_empty(),
+        "the preserved older golden must remain an explicit non-empty accepted exception"
+    );
     let out = generate_corpus(&CALORIENINJAS);
     let client = std::fs::read_to_string(out.path().join("src/fern/client.py"))
         .expect("Crozier generated a valid CalorieNinjas client");
@@ -2636,6 +2639,7 @@ fn report_fixture_gaps() {
     let corpus_count = corpora.len();
     let mut total_expected = 0usize;
     let mut total_unmatched = 0usize;
+    let mut total_accepted_upstream = 0usize;
     for corpus in corpora {
         let expected_root = fixture_dir(corpus.api).join("expected");
         let expected_files = walk_files(&expected_root);
@@ -2657,6 +2661,9 @@ fn report_fixture_gaps() {
             .iter()
             .filter(|rel| !confirmed.contains(rel.as_str()))
             .collect();
+        let accepted_upstream = known_fern_failure(corpus)
+            .unwrap_or_else(|error| panic!("{}: {error}", corpus.api))
+            .is_some();
 
         println!("\n=== {} ===", corpus.api);
         println!("  {} expected file(s).", expected_files.len());
@@ -2664,8 +2671,13 @@ fn report_fixture_gaps() {
             println!("  no unmatched files.");
         } else {
             println!(
-                "  {} file(s) still unmatched — use as this corpus's `unmatched`:",
-                divergent.len()
+                "  {} file(s) {} — use as this corpus's `unmatched`:",
+                divergent.len(),
+                if accepted_upstream {
+                    "accepted as a permanent upstream Fern exception"
+                } else {
+                    "still unmatched"
+                },
             );
             for rel in &divergent {
                 println!("        \"{rel}\",");
@@ -2684,10 +2696,15 @@ fn report_fixture_gaps() {
         }
 
         total_expected += expected_files.len();
-        total_unmatched += divergent.len();
+        if accepted_upstream {
+            total_accepted_upstream += divergent.len();
+        } else {
+            total_unmatched += divergent.len();
+        }
     }
     println!(
         "\n{total_unmatched} file(s) still unmatched across all corpora; \
+         {total_accepted_upstream} accepted upstream-exception file(s); \
          {total_expected} expected file(s) across {corpus_count} corpora."
     );
 }

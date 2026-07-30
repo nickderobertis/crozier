@@ -21,7 +21,7 @@ set -euo pipefail
 # Pin the Fern commit the fixtures were generated from — reproducibility and a
 # clear provenance record. Bump deliberately, then re-run and review the diff.
 FERN_REPO="https://github.com/fern-api/fern.git"
-FERN_COMMIT="3a471b03d4778f291849adc03bacfcd40340fc26"
+FERN_COMMIT="4d07e6aeeed1d88917ce59dfc9b4cf9e6008e553"
 
 # APIs whose Fern Python output is genuinely OpenAPI-derived (flat structure that
 # crozier can reproduce from openapi.yml alone). Each entry:

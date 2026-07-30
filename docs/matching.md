@@ -60,10 +60,11 @@ Currently matched for `query-parameters-openapi`:
   `force_multipart.py`, `query_encoder.py`, `remove_none_from_dict.py`, and the
   three `http_sse/` modules `__init__.py`/`_exceptions.py`/`_models.py`)
 
-This seed pins a **different Fern version** than `exhaustive`, so only the
-`core/` assets that are byte-identical between the two Fern versions are matched
-here — which is exactly what makes them a useful guard that the vendored
-`assets/core/` still tracks upstream.
+This seed is vendored from Fern commit
+`4d07e6aeeed1d88917ce59dfc9b4cf9e6008e553`, the repository commit that releases
+`fernapi/fern-python-sdk:5.20.0`; its parent contains the corresponding seed
+update. The seed's `core/http_client.py` now byte-matches too. The remaining 25
+files are genuine shape/surface gaps, not generator-version skew.
 
 **`exhaustive` matches all 111 of its files** — the widest single parity proof in
 the corpus, and the only fixture that exercises the whole generator end to end.
@@ -279,13 +280,14 @@ The refresh also **closed** two divergences it had first exposed, both in
 
 The exact residual per corpus is the `FEATURE_TARGETS`/`unmatched` data in
 `tests/e2e.rs`, the single source of truth; `just fixtures-gaps` re-measures it.
-Six fixtures are deliberately **not** on 5.20.0 and still carry the pre-5.20
-scaffold block: `audience-filter`, `audience-filter-strict`, `client-class-name`,
-and `pydantic-extra-fields` (their non-default generator config needs the same
-refresh), `query-parameters-openapi` (Fern's own repository seed, never generated
-here), and `calorieninjas.com` (the registered known upstream failure). The items
-below record how each shape generates; the remaining unproven paths are called out
-inline.
+The configured `audience-filter`, `audience-filter-strict`,
+`client-class-name`, and `pydantic-extra-fields` fixtures are on 5.20.0 and fully
+matched. `query-parameters-openapi` is re-vendored from Fern's 5.20.0 release
+commit and has 25 genuine residuals. `calorieninjas.com` remains on its preserved
+older tree because 5.20.0 cannot emit valid Python; its 19 paths are reported by
+`just fixtures-gaps` as accepted upstream-exception files, separately from open
+Crozier gaps. The items below record how each shape generates; remaining
+unproven paths are called out inline.
 
 The first **real-world** corpus, `apideck.com-crm` (issue #77), is **fully matched**
 too — all 167 files, byte-for-byte. As a `link-ok` entry its OpenAPI spec is
