@@ -3860,7 +3860,7 @@ components:
 "##,
     );
     let raw = &files["src/acme/raw_client.py"];
-    assert!(raw.contains("class RawFernApi:"), "{raw}");
+    assert!(raw.contains("class RawAcmeApi:"), "{raw}");
     assert!(
         raw.contains("@contextlib.contextmanager\n    def download("),
         "{raw}"
