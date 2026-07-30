@@ -1842,6 +1842,7 @@ const CORPORA: &[&Corpus] = &[
     &LETTA,
     &FREE5GC_NAMF_COMMUNICATION,
     &APIDECK_ATS,
+    &STRIPE_SYNC_ENGINE,
 ];
 
 #[test]
@@ -2654,6 +2655,34 @@ const APIDECK_ATS: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `stripe-sync-engine`: Stripe's Sync Engine declares direct inline-object
+/// bodies on nine bad-request responses.
+const STRIPE_SYNC_ENGINE: Corpus = Corpus {
+    api: "stripe-sync-engine",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[
+        "reference.md",
+        "src/fern/__init__.py",
+        "src/fern/stateless_sync_api/client.py",
+        "src/fern/stateless_sync_api/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/destination_stripe_config.py",
+        "src/fern/types/destination_stripe_config_api_version.py",
+        "src/fern/types/destination_stripe_config_object.py",
+        "src/fern/types/destination_stripe_config_streams_value.py",
+        "src/fern/types/destination_stripe_config_write_mode.py",
+        "src/fern/types/source_postgres_config.py",
+        "src/fern/types/source_state_message_source_state.py",
+        "src/fern/types/source_state_message_source_state_global.py",
+        "src/fern/types/source_state_message_source_state_stream.py",
+    ],
+};
+
 #[test]
 fn apideck_ats_matches_fern_output() {
     if corpus_spec(APIDECK_ATS.api).is_none() {
@@ -2664,6 +2693,18 @@ fn apideck_ats_matches_fern_output() {
         return;
     }
     assert_corpus_matches(&APIDECK_ATS);
+}
+
+#[test]
+fn stripe_sync_engine_matches_fern_output() {
+    if corpus_spec(STRIPE_SYNC_ENGINE.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Stripe Sync Engine corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&STRIPE_SYNC_ENGINE);
 }
 
 #[test]

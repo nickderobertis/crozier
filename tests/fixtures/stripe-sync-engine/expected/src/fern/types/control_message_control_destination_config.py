@@ -1,0 +1,22 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .control_message_control_destination_config_destination_config import (
+    ControlMessageControlDestinationConfigDestinationConfig,
+)
+
+
+class ControlMessageControlDestinationConfig(UniversalBaseModel):
+    destination_config: ControlMessageControlDestinationConfigDestinationConfig
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
