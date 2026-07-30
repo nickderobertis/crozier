@@ -65,9 +65,9 @@ This seed pins a **different Fern version** than `exhaustive`, so only the
 here — which is exactly what makes them a useful guard that the vendored
 `assets/core/` still tracks upstream.
 
-**`exhaustive` matches 108 of its 111 files** — everything but its `reference.md`
-and the `noauth` client pair (the unknown-body and doc-type-spelling gaps in the
-roadmap below). This
+**`exhaustive` matches all 111 of its files** — the widest single parity proof in
+the corpus, and the only fixture that exercises the whole generator end to end.
+This
 covers `version.py`, `py.typed`, the **entire type
 layer** (every `types/*.py` module including the hoisted `typesAnimal` variants),
 the **entire `core/` runtime** (19 files), the
@@ -238,36 +238,44 @@ refresh leaves:
   `oauth-client-credentials`, `inline-request-response`, `cookie-parameters`,
   `form-bodies`, `enum-name-sanitization`, `enum-receiver-collision`,
   `enum-query-param`, `tag-based-grouping`, `operation-id-non-identifier`,
-  `missing-operation-id`, and — through the refresh alone — the issue-#84/#85
-  targets `recursive-types` and `nested-core-imports`.
+  `missing-operation-id`, `exhaustive` (all 111 files), and — through the refresh
+  alone — the issue-#84/#85 targets `recursive-types` and `nested-core-imports`.
 - **One residual file each**: `discriminated-unions`, `schema-constraints`,
   `integer-enums`, `servers-webhooks`, `inline-array-request`, `writeonly-fields`,
   `error-responses`, and `bracketed-property-names` (all the same `README.md`
   gap), plus `malformed-property-schema` (`search_widgets_response.py`) and
   `digit-leading-property` (`client.py`).
-- **`exhaustive`**: 3 of 111. **`sse-streaming`**: 4 of 40.
+- **`sse-streaming`**: 4 of 40.
 
-The 17 surviving files are five real divergences:
+The 14 surviving files are four real divergences:
 
 1. **Abbreviated calls in `README.md`** (8 corpora). Fern writes
    `client.<tag>.<method>(...)` for a method that takes arguments; crozier writes
    `()`.
-2. **Unknown (`{}`) bodies and malformed nodes are over-optionalized**
-   (`exhaustive`'s `noauth` client pair and `reference.md`;
-   `malformed-property-schema`'s `search_widgets_response.py`). Fern types an
-   undocumented request body as a *required* `typing.Any` where crozier emits
-   `typing.Optional[typing.Any] = None`, and crozier wraps an already-optional
-   unknown property in a second `typing.Optional`.
-3. **Doc type spelling** (`exhaustive`'s `reference.md`). Fern names a return type
-   `datetime.datetime`/`datetime.date` in generated markdown; crozier carries the
-   code alias `dt.` through.
-4. **SSE** (`sse-streaming`, all four files). The stream element type
+2. **Malformed nodes are over-optionalized** (`malformed-property-schema`'s
+   `search_widgets_response.py`). crozier wraps an already-optional unknown
+   property in a second `typing.Optional`.
+3. **SSE** (`sse-streaming`, all four files). The stream element type
    (Fern's `typing.Any`), 5.20's `parse_sse_obj` deserializer, and 5.20's
    streaming doc layout — no separate `## Streaming` README section, and a plain
    call rather than crozier's `for chunk in response:` loop.
-5. **Root-level method examples** (`digit-leading-property`'s `client.py`). Fern's
+4. **Root-level method examples** (`digit-leading-property`'s `client.py`). Fern's
    worked example for a method on the root client constructs it with `base_url=`,
    exactly as the class-level example does; crozier emits a bare `FernApi()`.
+
+The refresh also **closed** two divergences it had first exposed, both in
+`exhaustive`:
+
+- **Unknown (`{}`) request-body requiredness.** Fern splits on the schema's
+  `nullable`, not the document version: a bare `{}` body is a *required*
+  `typing.Any`, and `{nullable: true}` is `typing.Optional[typing.Any] = None`.
+  crozier had gated the required form to OpenAPI 3.1 documents — a rule fitted to
+  the stale pre-5.20 `exhaustive` golden — which mistyped that 3.0.1 spec's
+  `noAuth_postWithNoAuth`. `letta` declares both shapes and pins the rule.
+- **Doc type spelling.** A `reference.md` entry's ` -> <type>` summary spells the
+  datetime types in full (`datetime.datetime`), never the `dt.` alias the
+  generated Python imports them under — the same prose spelling the parameter
+  rows already used.
 
 The exact residual per corpus is the `FEATURE_TARGETS`/`unmatched` data in
 `tests/e2e.rs`, the single source of truth; `just fixtures-gaps` re-measures it.
@@ -531,8 +539,9 @@ the document. Each has a hand-authored feature-coverage target with the full Fer
    ([`openapi`]'s `de_properties`), matching Fern's tolerance of the same document.
    One file still differs: Fern renders the degraded node as a plain
    `typing.Optional[typing.Any]` field, while crozier optionalizes the already
-   optional unknown a second time (`typing.Optional[typing.Optional[typing.Any]]`)
-   — the same over-optionalization as `exhaustive`'s unknown request bodies.
+   optional unknown a second time (`typing.Optional[typing.Optional[typing.Any]]`).
+   This is a *property*-level gap; the request-body counterpart is closed (see the
+   unknown-body requiredness rule above).
 
 ### Adding a gap target's golden tree
 

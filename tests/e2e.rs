@@ -74,10 +74,9 @@ const QUERY_PARAMETERS: Corpus = Corpus {
     ],
 };
 
-/// The broad legacy `exhaustive` target: Fern 4.35 output over the vendored
-/// OpenAPI document (see scripts/generate-fern-fixture.sh). Its residual list
-/// captures paths changed by the Fern 5.20 upgrade.
-/// See docs/matching.md.
+/// The broad `exhaustive` target: Fern 5.20.0 output over the vendored OpenAPI
+/// document (see scripts/generate-fern-fixture.sh). All 111 files match — the
+/// widest single proof of parity in the corpus. See docs/matching.md.
 const EXHAUSTIVE: Corpus = Corpus {
     api: "exhaustive",
     package_name: "fern",
@@ -86,11 +85,7 @@ const EXHAUSTIVE: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &[
-        "reference.md",
-        "src/fern/noauth/client.py",
-        "src/fern/noauth/raw_client.py",
-    ],
+    unmatched: &[],
 };
 
 /// Feature-coverage target specs: hand-authored OpenAPI documents that exercise

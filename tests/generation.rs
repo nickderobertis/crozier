@@ -1160,9 +1160,12 @@ fn renders_exhaustive_endpoint_layer_in_process() {
     assert!(params.contains("\"content-type\": \"application/octet-stream\","));
     assert!(params.contains("typing.Optional[typing.Union[str, typing.Sequence[str]]]"));
 
-    // Unknown body + a declared 400 raising the generated exception.
+    // Unknown body + a declared 400 raising the generated exception. The `{}` body
+    // is declared `required: true` and carries no `nullable`, so the argument is a
+    // required `typing.Any` — matching Fern's `noauth` client pair exactly.
     let noauth = &files["src/acme/noauth/raw_client.py"];
-    assert!(noauth.contains("request: typing.Optional[typing.Any] = None"));
+    assert!(noauth.contains("request: typing.Any,"), "{noauth}");
+    assert!(!noauth.contains("request: typing.Optional[typing.Any] = None"));
     assert!(noauth.contains("if _response.status_code == 400:"));
     assert!(noauth.contains("raise BadRequestError("));
 }
