@@ -2477,7 +2477,7 @@ const LETTA: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &["reference.md"],
+    unmatched: &[],
 };
 
 /// `free5gc-namf-communication`: the AMF Communication API nests `oneOf` and

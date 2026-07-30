@@ -2002,8 +2002,11 @@ fn reference_entry(
 ) -> Result<String> {
     let mut imports = Imports::at(RefLoc::Client(module.to_string()), tag_types);
     let mp = method_params(ep, &mut imports);
-    let has_args =
-        !mp.path.is_empty() || !mp.query.is_empty() || !mp.header.is_empty() || !mp.body.is_empty();
+    let has_args = !mp.path.is_empty()
+        || !mp.query.is_empty()
+        || !mp.header.is_empty()
+        || !mp.body.is_empty()
+        || !ep.constant_headers.is_empty();
 
     // The example (sync form). Bytes bodies are filtered out before this point.
     let mut ctx = ExampleCtx {
@@ -2060,17 +2063,20 @@ fn reference_entry(
         });
     }
     let reference_body = if !ep.body_schema_dropped {
-        ep.reference_body_type.as_ref().map_or_else(
-            || mp.body,
-            |request| {
-                vec![DocParam {
-                    name: "request".to_string(),
-                    annotation: raw_type_str_ctx(request, &mut imports, true),
-                    default: None,
-                    description: None,
-                }]
-            },
-        )
+        ep.request_body
+            .as_ref()
+            .and(ep.reference_body_type.as_ref())
+            .map_or_else(
+                || mp.body,
+                |request| {
+                    vec![DocParam {
+                        name: "request".to_string(),
+                        annotation: raw_type_str_ctx(request, &mut imports, true),
+                        default: None,
+                        description: None,
+                    }]
+                },
+            )
     } else {
         mp.body
     };
@@ -2151,6 +2157,15 @@ fn reference_entry(
             suffix: reference_param_suffix(description),
         });
     }
+    params.extend(ep.constant_headers.iter().map(|(wire_name, _)| {
+        ParamRow {
+            name: naming::field_name(wire_name)
+                .trim_end_matches('_')
+                .to_string(),
+            annot: "typing.Literal".to_string(),
+            suffix: " ".to_string(),
+        }
+    }));
     params.push(ParamRow {
         name: "request_options".to_string(),
         annot: "typing.Optional[RequestOptions]".to_string(),
