@@ -468,7 +468,13 @@ the third does not reproduce at the corpus's pinned Fern version.
    uses the named model, while a `$ref` to `components.responses` whose body is
    inline remains `typing.Optional[typing.Any]` even though the separate body
    model is emitted. Bodies shared by a status are merged before hoisting so the
-   root model is deterministic.
+   root model is deterministic. The real-world `buildrelay` corpus pins the direct
+   inline case at Fern 5.20.0. Its first measured run had six residual files:
+   `README.md`, `reference.md`, the root client and environment modules, and—most
+   importantly—the `InternalServerError` and jobs raw-client modules where crozier
+   used `typing.Any`. Direct inline responses now type both sites as
+   `InternalServerErrorBody`; the neighbouring `$ref`-to-`components.responses`
+   behavior remains unchanged.
 2. **Discriminated-union alias annotation** (gap #2) is **now closed** (issue #50
    part 2). Fern wraps the alias in
    `typing_extensions.Annotated[Union[...], pydantic.Field(discriminator="…")]` so
