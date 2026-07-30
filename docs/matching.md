@@ -264,6 +264,15 @@ The 14 surviving files are four real divergences:
    worked example for a method on the root client constructs it with `base_url=`,
    exactly as the class-level example does; crozier emits a bare `FernApi()`.
 
+The independent real-world residual in **`letta`'s `reference.md`** had two
+causes. Crozier documented a `$ref` request body that Fern ignores on a `GET`
+operation, even though both generated clients already omitted it; reference
+generation now consults the normalized request body before using its source-only
+type. Crozier also omitted an optional header whose default Fern promoted to a
+constant transport header; Fern still documents that input as
+`storage_unit: typing.Literal` and counts it when choosing `(...)` for the
+abbreviated signature. Both reference-only rules now match the 5.20 golden.
+
 The refresh also **closed** two divergences it had first exposed, both in
 `exhaustive`:
 
