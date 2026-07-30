@@ -149,3 +149,11 @@ The second command deliberately compares every available managed golden. For a
 narrower human-readable diff after that aggregate pass, use
 `just fixtures-diff anchore.io`, or add a literal path substring such as
 `just fixtures-diff anchore.io client.py`.
+
+Hand-authored fixtures generated directly by
+`scripts/generate-fern-fixture.sh` can carry fixture-owned non-default settings
+in [`fern-generator-config.txt`](../tests/fixtures/fern-generator-config.txt).
+The audience list, Crozier strict-audience identity, Fern `client_class_name`,
+and Fern `pydantic_config.extra_fields` values are loaded automatically and
+written into `.crozier-fern-golden.json`; explicit environment values remain a
+diagnostic override.

@@ -1082,6 +1082,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         shutil.copy2(REPO / "scripts" / "generate-fern-fixture.sh", scripts)
         shutil.copy2(REPO / "scripts" / "lib.sh", scripts)
         (fixture / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
+        (root / "tests" / "fixtures" / "fern-generator-config.txt").write_text(
+            "beta|public|true|AcmeClient|ignore\n", encoding="utf-8"
+        )
 
         self.write_executable(
             fake_bin / "fern",
@@ -1090,6 +1093,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             import json
             import os
             import pathlib
+            import shutil
             import sys
 
             arguments = sys.argv[1:]
@@ -1097,6 +1101,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             generated = output / "fern-python-sdk" / "src" / "fern"
             generated.mkdir(parents=True)
             (generated / "version.py").write_text("complete-fern-output\n", encoding="utf-8")
+            shutil.copy2("generators.yml", os.environ["GENERATOR_CONFIG_RECORD"])
             pathlib.Path(os.environ["INVOCATION_RECORD"]).write_text(
                 json.dumps({key: os.environ.get(key) for key in ("CI", "GITHUB_ACTIONS")}),
                 encoding="utf-8",
@@ -1116,14 +1121,15 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         )
 
         invocation_record = root / "invocation.json"
+        generator_config_record = root / "generators.yml"
         result = subprocess.run(
             self.script_command(scripts / "generate-fern-fixture.sh", "beta", "5.20.0"),
             cwd=root,
             env=self.environment(
                 CROZIER_FERN_NO_DOCKER_SHIM="1",
                 PATH=f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
-                EXTRA_FIELDS="ignore",
                 INVOCATION_RECORD=str(invocation_record),
+                GENERATOR_CONFIG_RECORD=str(generator_config_record),
             ),
             text=True,
             capture_output=True,
@@ -1138,10 +1144,15 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         )
         self.assertEqual(provenance["fern_python_sdk_version"], "5.20.0")
         self.assertEqual(provenance["vendored_spec_path"], "tests/fixtures/beta/openapi.yml")
+        self.assertEqual(provenance["audiences"], "public")
+        self.assertEqual(provenance["audience_strict"], "true")
+        self.assertEqual(provenance["client_class_name"], "AcmeClient")
         self.assertEqual(provenance["extra_fields"], "ignore")
-        self.assertNotIn("audiences", provenance)
-        self.assertNotIn("client_class_name", provenance)
         self.assertTrue(provenance["fern_cli_version"])
+        rendered = generator_config_record.read_text(encoding="utf-8")
+        self.assertIn("    audiences:\n      - public\n", rendered)
+        self.assertIn("          client_class_name: AcmeClient\n", rendered)
+        self.assertIn("            extra_fields: ignore\n", rendered)
 
         # Fern stamps `.fern/metadata.json`'s `invokedBy` from the environment,
         # and every published golden comes from the workflow's Actions runner.
