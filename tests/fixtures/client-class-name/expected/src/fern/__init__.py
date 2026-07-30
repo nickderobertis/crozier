@@ -8,11 +8,14 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .types import Widget
     from . import widgets
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AcmeClient, AsyncAcmeClient
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AcmeClient": ".client",
     "AsyncAcmeClient": ".client",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "Widget": ".types",
     "__version__": ".version",
     "widgets": ".widgets",
@@ -40,4 +43,12 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["AcmeClient", "AsyncAcmeClient", "Widget", "__version__", "widgets"]
+__all__ = [
+    "AcmeClient",
+    "AsyncAcmeClient",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
+    "Widget",
+    "__version__",
+    "widgets",
+]

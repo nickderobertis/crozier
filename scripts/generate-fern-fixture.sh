@@ -80,6 +80,41 @@ case "$dest_parent" in
     ;;
 esac
 
+# Fixture-owned non-default settings are declarative so automated and local
+# generation cannot silently refresh a golden with Fern's defaults. Explicit
+# environment values remain available for diagnostics and take precedence.
+fixture_config="$repo_root/tests/fixtures/fern-generator-config.txt"
+configured_audiences=""
+configured_audience_strict=""
+configured_client_class_name=""
+configured_extra_fields=""
+if [ -f "$fixture_config" ]; then
+  while IFS='|' read -r configured_fixture audiences strict client extra; do
+    case "$configured_fixture" in ""|\#*) continue ;; esac
+    [ "$configured_fixture" = "$FIXTURE" ] || continue
+    [ -z "$configured_audience_strict" ] || {
+      echo "generate-fern-fixture: duplicate configuration for '$FIXTURE' in $fixture_config" >&2
+      exit 1
+    }
+    configured_audiences="$audiences"
+    configured_audience_strict="$strict"
+    configured_client_class_name="$client"
+    configured_extra_fields="$extra"
+  done < "$fixture_config"
+fi
+FERN_AUDIENCES="${FERN_AUDIENCES:-$configured_audiences}"
+AUDIENCE_STRICT="${AUDIENCE_STRICT:-$configured_audience_strict}"
+CLIENT_CLASS_NAME="${CLIENT_CLASS_NAME:-$configured_client_class_name}"
+EXTRA_FIELDS="${EXTRA_FIELDS:-$configured_extra_fields}"
+case "$AUDIENCE_STRICT" in ""|true|false) ;; *)
+  echo "generate-fern-fixture: invalid audience_strict '$AUDIENCE_STRICT' for '$FIXTURE'" >&2
+  exit 1
+esac
+case "$EXTRA_FIELDS" in ""|allow|ignore|forbid) ;; *)
+  echo "generate-fern-fixture: invalid extra_fields '$EXTRA_FIELDS' for '$FIXTURE'" >&2
+  exit 1
+esac
+
 if [ -z "$FERN_PYTHON_VERSION" ]; then
   FERN_PYTHON_VERSION="$("$repo_root/scripts/fern-goldens" latest-version)"
   valid_fern_version "$FERN_PYTHON_VERSION" || {
@@ -277,6 +312,7 @@ done
 if [ -z "$SPEC_OVERRIDE" ]; then
   settings=""
   for pair in "audiences=${FERN_AUDIENCES:-}" \
+    "audience_strict=${AUDIENCE_STRICT:-}" \
     "client_class_name=${CLIENT_CLASS_NAME:-}" \
     "extra_fields=${EXTRA_FIELDS:-}"; do
     value="${pair#*=}"
