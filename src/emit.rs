@@ -987,7 +987,15 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         .collect();
     let root_emittable = !root_eps.is_empty() && root_eps.iter().all(|e| e.emittable);
     if root_emittable {
-        files.push(raw_client_file(&env, pkg, "", &root_eps, &tag_map, false)?);
+        files.push(raw_client_file(
+            &env,
+            pkg,
+            &ir.client_name,
+            "",
+            &root_eps,
+            &tag_map,
+            false,
+        )?);
     }
 
     // Per-tag `raw_client.py` and `client.py`, but only for modules whose every
@@ -1006,7 +1014,15 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 emittable_modules.push(module);
                 continue;
             }
-            files.push(raw_client_file(&env, pkg, module, &eps, &tag_map, false)?);
+            files.push(raw_client_file(
+                &env,
+                pkg,
+                &ir.client_name,
+                module,
+                &eps,
+                &tag_map,
+                false,
+            )?);
             let cx = ClientCtx {
                 pkg,
                 client_name: &ir.client_name,
@@ -1087,6 +1103,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         files.push(raw_client_file(
             &env,
             pkg,
+            &ir.client_name,
             "",
             &empty_namespace_eps,
             &empty_namespace_tag_map,
@@ -2360,6 +2377,19 @@ fn scaffolding_files(pkg: &str, project_name: &str) -> Vec<GeneratedFile> {
             .replace(SDK_NAME_PLACEHOLDER, project_name)
             .replace(PACKAGE_PLACEHOLDER, pkg)
     };
+    let mut default_clients = substitute_names(include_str!(
+        "../assets/scaffolding/default_clients.py.tmpl"
+    ));
+    if default_clients.lines().any(|line| line.len() > 120) {
+        default_clients = default_clients.replace(
+            &format!(
+                "\"To use the aiohttp client, install the aiohttp extra: pip install {project_name}[aiohttp]\""
+            ),
+            &format!(
+                "\"To use the aiohttp client, install the aiohttp extra: \"\n                \"pip install {project_name}[aiohttp]\""
+            ),
+        );
+    }
     vec![
         GeneratedFile {
             path: PathBuf::from("pyproject.toml"),
@@ -2379,9 +2409,7 @@ fn scaffolding_files(pkg: &str, project_name: &str) -> Vec<GeneratedFile> {
         },
         GeneratedFile {
             path: PathBuf::from(format!("src/{pkg}/_default_clients.py")),
-            contents: substitute_names(include_str!(
-                "../assets/scaffolding/default_clients.py.tmpl"
-            )),
+            contents: default_clients,
         },
         GeneratedFile {
             path: PathBuf::from("tests/conftest.py"),
@@ -7106,6 +7134,7 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
 fn raw_client_file(
     env: &Environment<'static>,
     pkg: &str,
+    root_client_name: &str,
     module: &str,
     endpoints: &[&Endpoint],
     tag_types: &BTreeMap<String, String>,
@@ -7130,7 +7159,7 @@ fn raw_client_file(
     imports.add_core("request_options", "RequestOptions");
 
     let class_stem = if module.is_empty() && !empty_namespace {
-        "FernApi".to_string()
+        root_client_name.to_string()
     } else {
         naming::to_pascal_case(module)
     };

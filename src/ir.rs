@@ -1791,10 +1791,13 @@ fn build_endpoint(
             // An inline string enum hoists to a named `{ctx}Request{Prop}` alias in
             // the tag's `types/` package (Fern's `ListWidgetsRequestLevel`); a
             // `$ref`/scalar passes through `base_type_ref`.
+            // Fern's OpenAPI importer treats a schema-less query parameter as a
+            // string. Content-based parameters remain strings for the same reason:
+            // both arrive on the URL as text.
             let type_ref = p
                 .schema
                 .as_ref()
-                .map_or(TypeRef::Primitive(Prim::Any), |s| {
+                .map_or(TypeRef::Primitive(Prim::Str), |s| {
                     hoister.hoist_param_enum(&request_ctx, &p.name, s)
                 });
             let type_ref = if p.schema.is_none() && !p.content.is_empty() {
