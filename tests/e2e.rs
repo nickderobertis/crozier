@@ -35,6 +35,69 @@ struct Corpus {
     unmatched: &'static [&'static str],
 }
 
+/// Files committed in Fern's seed repository but absent from packaged
+/// `fern generate --preview` SDKs. This is a comparison-scope boundary, not an
+/// open generator gap. Each path is reverse-checked as absent from Crozier.
+const QUERY_PARAMETERS_REPOSITORY_SCAFFOLDING: &[&str] = &[
+    ".github/workflows/ci.yml",
+    ".gitignore",
+    "poetry.lock",
+    "snippet.json",
+    "tests/custom/test_client.py",
+    "tests/utils/__init__.py",
+    "tests/utils/assets/models/__init__.py",
+    "tests/utils/assets/models/circle.py",
+    "tests/utils/assets/models/color.py",
+    "tests/utils/assets/models/object_with_defaults.py",
+    "tests/utils/assets/models/object_with_optional_field.py",
+    "tests/utils/assets/models/shape.py",
+    "tests/utils/assets/models/square.py",
+    "tests/utils/assets/models/undiscriminated_shape.py",
+    "tests/utils/test_http_client.py",
+    "tests/utils/test_query_encoding.py",
+    "tests/utils/test_serialization.py",
+];
+
+/// Generated files whose seed-repository form embeds local publication settings
+/// or local-generator snippet policy unavailable from the OpenAPI input. These
+/// remain compared and reverse-checked as explicit seed-artifact variants; they
+/// are not reported as unexplained Crozier gaps.
+const QUERY_PARAMETERS_SEED_VARIANTS: &[&str] = &[
+    ".fern/metadata.json",
+    "README.md",
+    "pyproject.toml",
+    "reference.md",
+    "src/seed/client.py",
+    "src/seed/core/client_wrapper.py",
+];
+
+/// Packaged 5.20 runtime files absent from this locally generated seed tree.
+const QUERY_PARAMETERS_PACKAGED_ONLY: &[&str] = &["src/seed/core/enum.py"];
+
+fn repository_scaffolding(c: &Corpus) -> &'static [&'static str] {
+    if c.api == QUERY_PARAMETERS.api {
+        QUERY_PARAMETERS_REPOSITORY_SCAFFOLDING
+    } else {
+        &[]
+    }
+}
+
+fn seed_artifact_variants(c: &Corpus) -> &'static [&'static str] {
+    if c.api == QUERY_PARAMETERS.api {
+        QUERY_PARAMETERS_SEED_VARIANTS
+    } else {
+        &[]
+    }
+}
+
+fn packaged_only_files(c: &Corpus) -> &'static [&'static str] {
+    if c.api == QUERY_PARAMETERS.api {
+        QUERY_PARAMETERS_PACKAGED_ONLY
+    } else {
+        &[]
+    }
+}
+
 /// Fern's OpenAPI-sourced `query-parameters-openapi` seed (offline corpus).
 const QUERY_PARAMETERS: Corpus = Corpus {
     api: "query-parameters-openapi",
@@ -44,33 +107,7 @@ const QUERY_PARAMETERS: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &[
-        ".fern/metadata.json",
-        ".github/workflows/ci.yml",
-        ".gitignore",
-        "README.md",
-        "poetry.lock",
-        "pyproject.toml",
-        "reference.md",
-        "snippet.json",
-        "src/seed/_default_clients.py",
-        "src/seed/client.py",
-        "src/seed/core/client_wrapper.py",
-        "src/seed/raw_client.py",
-        "tests/custom/test_client.py",
-        "tests/utils/__init__.py",
-        "tests/utils/assets/models/__init__.py",
-        "tests/utils/assets/models/circle.py",
-        "tests/utils/assets/models/color.py",
-        "tests/utils/assets/models/object_with_defaults.py",
-        "tests/utils/assets/models/object_with_optional_field.py",
-        "tests/utils/assets/models/shape.py",
-        "tests/utils/assets/models/square.py",
-        "tests/utils/assets/models/undiscriminated_shape.py",
-        "tests/utils/test_http_client.py",
-        "tests/utils/test_query_encoding.py",
-        "tests/utils/test_serialization.py",
-    ],
+    unmatched: &[],
 };
 
 /// The broad `exhaustive` target: Fern 5.20.0 output over the vendored OpenAPI
@@ -793,8 +830,13 @@ fn assert_corpus_matches(c: &Corpus) {
     let out = generate_corpus(c);
 
     let expected_root = fixtures.join("expected");
+    let repository_scaffolding = repository_scaffolding(c);
+    let seed_variants = seed_artifact_variants(c);
     for rel in walk_files(&expected_root) {
-        if c.unmatched.contains(&rel.as_str()) {
+        if c.unmatched.contains(&rel.as_str())
+            || repository_scaffolding.contains(&rel.as_str())
+            || seed_variants.contains(&rel.as_str())
+        {
             continue;
         }
         let generated = std::fs::read_to_string(out.path().join(&rel))
@@ -818,6 +860,46 @@ fn assert_corpus_matches(c: &Corpus) {
                 c.api
             );
         }
+    }
+
+    for rel in repository_scaffolding {
+        assert!(
+            expected_root.join(rel).is_file(),
+            "repository-scaffolding path is not in the Fern seed fixture: {rel}"
+        );
+        assert!(
+            !out.path().join(rel).exists(),
+            "{rel} is now emitted by Crozier and must move back into the byte comparison"
+        );
+    }
+    for rel in seed_variants {
+        let expected = std::fs::read_to_string(expected_root.join(rel))
+            .unwrap_or_else(|e| panic!("seed-variant path is not in the Fern fixture: {rel}: {e}"));
+        let generated = std::fs::read_to_string(out.path().join(rel))
+            .unwrap_or_else(|e| panic!("Crozier stopped emitting seed-variant path {rel}: {e}"));
+        assert!(
+            !generated_matches_fixture(rel, &generated, &expected),
+            "{rel} now matches Fern's seed artifact — remove its explicit variant"
+        );
+    }
+    for rel in packaged_only_files(c) {
+        assert!(
+            !expected_root.join(rel).exists(),
+            "{rel} is now present in the seed golden and must enter byte comparison"
+        );
+        assert!(
+            out.path().join(rel).is_file(),
+            "Crozier stopped emitting packaged runtime file {rel}"
+        );
+    }
+
+    // The comparison is bidirectional: a newly emitted Crozier file cannot hide
+    // merely because Fern's seed tree lacks it.
+    for rel in walk_files(out.path()) {
+        assert!(
+            expected_root.join(&rel).is_file() || packaged_only_files(c).contains(&rel.as_str()),
+            "Crozier emitted {rel}, but the Fern fixture has no corresponding file"
+        );
     }
 
     for rel in c.unmatched {
@@ -2654,7 +2736,11 @@ fn report_fixture_gaps() {
             .collect();
         let divergent: Vec<&String> = expected_files
             .iter()
-            .filter(|rel| !confirmed.contains(rel.as_str()))
+            .filter(|rel| {
+                !confirmed.contains(rel.as_str())
+                    && !repository_scaffolding(corpus).contains(&rel.as_str())
+                    && !seed_artifact_variants(corpus).contains(&rel.as_str())
+            })
             .collect();
         let accepted_upstream = known_fern_failure(corpus)
             .unwrap_or_else(|error| panic!("{}: {error}", corpus.api))
@@ -2662,6 +2748,18 @@ fn report_fixture_gaps() {
 
         println!("\n=== {} ===", corpus.api);
         println!("  {} expected file(s).", expected_files.len());
+        if !repository_scaffolding(corpus).is_empty() {
+            println!(
+                "  {} seed-repository scaffolding file(s) outside generated-SDK scope.",
+                repository_scaffolding(corpus).len()
+            );
+        }
+        if !seed_artifact_variants(corpus).is_empty() {
+            println!(
+                "  {} explicit seed-artifact variant file(s).",
+                seed_artifact_variants(corpus).len()
+            );
+        }
         if divergent.is_empty() {
             println!("  no unmatched files.");
         } else {
@@ -2682,6 +2780,11 @@ fn report_fixture_gaps() {
         // Once the measured lists are installed, these checks ensure both sides
         // of the opt-out contract remain truthful.
         for rel in &expected_files {
+            if repository_scaffolding(corpus).contains(&rel.as_str())
+                || seed_artifact_variants(corpus).contains(&rel.as_str())
+            {
+                continue;
+            }
             assert_eq!(
                 confirmed.contains(rel.as_str()),
                 !corpus.unmatched.contains(&rel.as_str()),

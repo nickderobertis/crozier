@@ -50,21 +50,37 @@ task lists and prints the corpus-wide census; `fixtures-candidates` remains an
 alias. `just fixtures-diff` prints normalized diffs for investigation. See
 [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md).
 
-Currently matched for `query-parameters-openapi`:
+`query-parameters-openapi` is the one corpus whose golden is not the installed
+result of `fern generate --preview`. It is Fern's committed
+`seed/python-sdk/query-parameters-openapi/no-custom-config` repository tree at
+commit `4d07e6aeeed1d88917ce59dfc9b4cf9e6008e553` (the commit releasing
+`fernapi/fern-python-sdk:5.20.0`). That distinction is explicit in the harness:
 
-- `src/seed/version.py`
-- `src/seed/py.typed`
-- `src/seed/types/user.py`
-- `src/seed/types/nested_user.py`
-- eight static `core/` runtime assets (`api_error.py`, `file.py`,
-  `force_multipart.py`, `query_encoder.py`, `remove_none_from_dict.py`, and the
-  three `http_sse/` modules `__init__.py`/`_exceptions.py`/`_models.py`)
+- The generated-SDK comparison covers every file Crozier emits. The two real
+  defects exposed by this seed are closed: a schema-less query parameter is a
+  string, and a package-root raw client derives its class from the configured
+  root client name. The packaged `_default_clients.py` helper matches too.
+- Seventeen repository-only files are classified separately:
+  `.github/workflows/ci.yml`, `.gitignore`, `poetry.lock`, `snippet.json`, and
+  the thirteen files under `tests/custom/` and `tests/utils/`. Inspection across
+  the packaged `--preview` corpora confirms that they do not occur there;
+  `_default_clients.py`, by contrast, occurs broadly and remains compared.
+- Six generated files are explicit seed-artifact variants rather than open
+  gaps: `README.md`, `reference.md`, `pyproject.toml`, `.fern/metadata.json`,
+  `src/seed/client.py`, and `src/seed/core/client_wrapper.py`. The seed embeds a
+  local repository publication (`generatorVersion: local`, requested SDK
+  version `0.0.1`, GitHub repository metadata, and the local generator's
+  all-optional snippet policy). Those inputs are not present in the OpenAPI
+  document or Crozier's naming settings; Crozier emits the packaged 5.20 form.
+- Conversely, `src/seed/core/enum.py` is present throughout the packaged 5.20
+  corpora but absent from this local seed. It is an explicit packaged-only file,
+  reverse-checked on both sides.
 
-This seed is vendored from Fern commit
-`4d07e6aeeed1d88917ce59dfc9b4cf9e6008e553`, the repository commit that releases
-`fernapi/fern-python-sdk:5.20.0`; its parent contains the corresponding seed
-update. The seed's `core/http_client.py` now byte-matches too. The remaining 25
-files are genuine shape/surface gaps, not generator-version skew.
+Both classifications are reverse-checked. A repository-only path becoming
+Crozier output fails and must re-enter comparison; a seed variant disappearing
+or unexpectedly matching fails until its classification is updated. The gate
+also walks Crozier's output back against the golden, so a newly emitted file can
+never silently fall outside the compared set.
 
 **`exhaustive` matches all 111 of its files** — the widest single parity proof in
 the corpus, and the only fixture that exercises the whole generator end to end.
@@ -278,7 +294,8 @@ The exact residual per corpus is the `FEATURE_TARGETS`/`unmatched` data in
 The configured `audience-filter`, `audience-filter-strict`,
 `client-class-name`, and `pydantic-extra-fields` fixtures are on 5.20.0 and fully
 matched. `query-parameters-openapi` is re-vendored from Fern's 5.20.0 release
-commit and has 25 genuine residuals. `calorieninjas.com` remains on its preserved
+commit and has no unexplained residuals; its seed-repository boundary and six
+local-publication variants are documented above. `calorieninjas.com` remains on its preserved
 older tree because 5.20.0 cannot emit valid Python; its 19 paths are reported by
 `just fixtures-gaps` as accepted upstream-exception files, separately from open
 Crozier gaps. The items below record how each shape generates; remaining
