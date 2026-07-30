@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.40](https://github.com/nickderobertis/crozier/compare/v0.0.39...v0.0.40) - 2026-07-30
+
+### Fixed
+
+- close measured residuals and correct the stale emit comment ([#133](https://github.com/nickderobertis/crozier/pull/133))
+
 ## [0.0.39](https://github.com/nickderobertis/crozier/compare/v0.0.38...v0.0.39) - 2026-07-30
 
 ### Other
