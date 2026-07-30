@@ -1,11 +1,13 @@
 {
   "cliVersion": "5.67.1",
   "generatorName": "fernapi/fern-python-sdk",
-  "generatorVersion": "4.35.0",
+  "generatorVersion": "5.20.0",
   "generatorConfig": {
     "client_class_name": "AcmeClient",
     "pydantic_config": {
       "enum_type": "python_enums"
     }
-  }
+  },
+  "invokedBy": "ci",
+  "ciProvider": "github"
 }

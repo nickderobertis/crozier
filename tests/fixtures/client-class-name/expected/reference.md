@@ -1,6 +1,6 @@
 # Reference
 ## Widgets
-<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py">list_widgets</a>()</code></summary>
+<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py">list_widgets</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -16,9 +16,10 @@
 from fern import AcmeClient
 
 client = AcmeClient(
-    token="YOUR_TOKEN",
+    token="<token>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.widgets.list_widgets()
 
 ```
@@ -47,7 +48,7 @@ client.widgets.list_widgets()
 </dl>
 </details>
 
-<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py">create_widget</a>(...)</code></summary>
+<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py">create_widget</a>(...) -> Widget</code></summary>
 <dl>
 <dd>
 
@@ -63,9 +64,10 @@ client.widgets.list_widgets()
 from fern import AcmeClient
 
 client = AcmeClient(
-    token="YOUR_TOKEN",
+    token="<token>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.widgets.create_widget(
     id="id",
     name="name",
@@ -85,15 +87,7 @@ client.widgets.create_widget(
 <dl>
 <dd>
 
-**id:** `str` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `str` 
+**request:** `Widget` 
     
 </dd>
 </dl>
