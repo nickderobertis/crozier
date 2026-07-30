@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.41](https://github.com/nickderobertis/crozier/compare/v0.0.40...v0.0.41) - 2026-07-30
+
+### Fixed
+
+- resolve the Fern seed corpus comparison scope ([#135](https://github.com/nickderobertis/crozier/pull/135))
+
 ## [0.0.40](https://github.com/nickderobertis/crozier/compare/v0.0.39...v0.0.40) - 2026-07-30
 
 ### Fixed
