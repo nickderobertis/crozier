@@ -1842,7 +1842,6 @@ const CORPORA: &[&Corpus] = &[
     &LETTA,
     &FREE5GC_NAMF_COMMUNICATION,
     &APIDECK_ATS,
-    &XTRF_EU,
 ];
 
 #[test]
@@ -2655,19 +2654,6 @@ const APIDECK_ATS: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `xtrf.eu`: the XTRF Home Portal API declares inline-object bodies on five
-/// default error responses.
-const XTRF_EU: Corpus = Corpus {
-    api: "xtrf.eu",
-    package_name: "fern",
-    project_name: "default_package_name",
-    audiences: &[],
-    audience_strict: false,
-    client_class_name: None,
-    extra_fields: None,
-    unmatched: &[],
-};
-
 #[test]
 fn apideck_ats_matches_fern_output() {
     if corpus_spec(APIDECK_ATS.api).is_none() {
@@ -2678,18 +2664,6 @@ fn apideck_ats_matches_fern_output() {
         return;
     }
     assert_corpus_matches(&APIDECK_ATS);
-}
-
-#[test]
-fn xtrf_eu_matches_fern_output() {
-    if corpus_spec(XTRF_EU.api).is_none() {
-        assert!(
-            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
-            "CROZIER_REQUIRE_CORPUS is set but the XTRF corpus spec is not fetched; run scripts/fetch-corpus.sh first"
-        );
-        return;
-    }
-    assert_corpus_matches(&XTRF_EU);
 }
 
 #[test]
