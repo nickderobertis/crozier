@@ -147,7 +147,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         audience_strict: false,
         client_class_name: None,
         extra_fields: None,
-        unmatched: &["README.md"],
+        unmatched: &[],
     },
     Corpus {
         api: "schema-constraints",
@@ -157,7 +157,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         audience_strict: false,
         client_class_name: None,
         extra_fields: None,
-        unmatched: &["README.md"],
+        unmatched: &[],
     },
     Corpus {
         api: "integer-enums",
@@ -167,7 +167,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         audience_strict: false,
         client_class_name: None,
         extra_fields: None,
-        unmatched: &["README.md"],
+        unmatched: &[],
     },
     Corpus {
         api: "servers-webhooks",
@@ -177,7 +177,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         audience_strict: false,
         client_class_name: None,
         extra_fields: None,
-        unmatched: &["README.md"],
+        unmatched: &[],
     },
     // Gap-exercising targets: previously unproven OpenAPI shapes, each now with its
     // golden Fern `expected/` tree generated (via scripts/generate-fern-fixture.sh)
@@ -224,7 +224,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         audience_strict: false,
         client_class_name: None,
         extra_fields: None,
-        unmatched: &["README.md"],
+        unmatched: &[],
     },
     // writeonly-fields: one schema used as *both* request body and response, with a
     // required `readOnly` field (server-populated) and a required `writeOnly` field
@@ -240,7 +240,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         audience_strict: false,
         client_class_name: None,
         extra_fields: None,
-        unmatched: &["README.md"],
+        unmatched: &[],
     },
     // Real-world-spec robustness targets (issue #40). These minimal specs used to
     // make crozier emit invalid Python or hard-error; each now matches Fern across
@@ -265,7 +265,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         audience_strict: false,
         client_class_name: None,
         extra_fields: None,
-        unmatched: &["src/fern/client.py"],
+        unmatched: &[],
     },
     // operation-id-non-identifier: a hyphen/space in the `operationId`
     // (`get-all-widgets`, `verify code`) once produced unparseable Python. Both
@@ -297,7 +297,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         audience_strict: false,
         client_class_name: None,
         extra_fields: None,
-        unmatched: &["README.md"],
+        unmatched: &[],
     },
     // missing-operation-id: an operation with no `operationId` (valid OpenAPI) once
     // hard-errored. crozier groups it by its `widgets` tag and synthesizes the
@@ -333,7 +333,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         audience_strict: false,
         client_class_name: None,
         extra_fields: None,
-        unmatched: &["README.md"],
+        unmatched: &[],
     },
     // tag-based-grouping (issue #41 gap 1): plain (no `group_method`) operationIds
     // `listWidgets`/`createWidget` under tags `widgets`, `gadgets`/`createGadget`
@@ -405,9 +405,9 @@ const FEATURE_TARGETS: &[Corpus] = &[
     // Fern's context-managed streaming shape: the raw client is a
     // `@contextlib.(async)contextmanager` over `httpx_client.stream(...)` that decodes
     // events through the `core/http_sse` runtime (`EventSource.iter_sse`/`aiter_sse`)
-    // into `typing.(Async)Iterator[typing.Optional[typing.Any]]` chunks (Fern's OpenAPI
+    // into `typing.(Async)Iterator[typing.Any]` chunks (Fern's OpenAPI
     // importer does not resolve the `x-fern-streaming` `chunk-schema-ref`, so the chunk
-    // stays `Optional[Any]`), and the high-level client yields each chunk with a worked
+    // stays `Any`), and the high-level client yields each chunk with a worked
     // streaming `Examples` block. Matches Fern's whole client layer; only the
     // package-root `__init__.py` stays unmatched (the `version.py` packaging difference).
     Corpus {
@@ -418,12 +418,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         audience_strict: false,
         client_class_name: None,
         extra_fields: None,
-        unmatched: &[
-            "README.md",
-            "reference.md",
-            "src/fern/messages/client.py",
-            "src/fern/messages/raw_client.py",
-        ],
+        unmatched: &[],
     },
     // issue #50: enum member / `visit()` parameter names are sanitized into legal
     // Python identifiers instead of crashing the final `ruff format`. `global` (a
@@ -529,7 +524,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         audience_strict: false,
         client_class_name: None,
         extra_fields: None,
-        unmatched: &["src/fern/widgets/types/search_widgets_response.py"],
+        unmatched: &[],
     },
 ];
 

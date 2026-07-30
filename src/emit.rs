@@ -448,7 +448,7 @@ struct FieldView {
 /// Compute a field's annotation + default, registering imports.
 fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
     let inner = render_type(&field.type_ref, imports);
-    let typ = if field.optional {
+    let typ = if field.optional && !matches!(field.type_ref, TypeRef::Optional(_)) {
         imports.add_plain("typing");
         Doc::group("typing.Optional[", vec![inner], "]")
     } else {
@@ -1516,6 +1516,7 @@ fn root_init_file(
 /// or legacy codegen-named body is always represented by a placeholder because Fern
 /// preserves its declared-body semantics even after flattening it into keyword
 /// arguments.
+#[cfg(test)]
 fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
     if (ep.body_codegen_named || ep.body_component_ref) && ep.request_body.is_some()
         || ep.body_media_has_example
@@ -1562,6 +1563,7 @@ fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) ->
 /// the `...` placeholder for a component-referenced collection body even when an
 /// object element has optional fields (OpenFIGI's `BulkMappingJob`); inline array
 /// bodies continue to use the element-shape heuristic below.
+#[cfg(test)]
 fn resolves_to_container(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
     match t {
         TypeRef::List(_) | TypeRef::Set(_) | TypeRef::Dict(..) => true,
@@ -1585,12 +1587,14 @@ fn resolves_to_container(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDe
 /// Whether an object rendered as a worked-example body is "complex" (`...`) rather
 /// than empty parens: two-or-more fields all required. A single field, or any
 /// optional field, renders `()` — the same evidence-based split as an inline body.
+#[cfg(test)]
 fn object_body_complex(obj: &ObjectType) -> bool {
     obj.fields.len() >= 2 && obj.fields.iter().all(|f| f.spec_required)
 }
 
 /// The object an example-body container holds, if any: unwrap optionals and resolve
 /// a `Named` to a package-root or hoisted tag object.
+#[cfg(test)]
 fn container_element_object<'a>(
     t: &TypeRef,
     types: &'a [TypeDecl],
@@ -1617,6 +1621,7 @@ fn container_element_object<'a>(
 /// (versus empty parens). A container of objects defers to its element's shape — an
 /// element with an optional field renders `()`, matching Fern; a container of
 /// scalars stays complex. A plain object is complex; a union/enum/scalar is not.
+#[cfg(test)]
 fn is_complex_type(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
     match t {
         TypeRef::List(inner) | TypeRef::Set(inner) => {
@@ -1759,18 +1764,11 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // for a bodyless endpoint with required path/query/header arguments, or an
     // endpoint with a complex (object/container/union) body, else empty parens; the
     // error/raw-response calls are ruff-wrapped at the snippet width 88.
-    let has_non_body_params = !first.path_params.is_empty()
-        || first.request_body.is_none()
-            && (!first.query_params.is_empty() || !first.header_params.is_empty());
-    let complex = first.method_name != "_"
-        && (has_non_body_params
-            || (ir.openapi_31
-                && first.body_schema_implicit_object
-                && matches!(
-                    &first.request_body,
-                    Some(RequestBody::Inline(fields)) if fields.iter().all(|field| field.spec_required)
-                ))
-            || complex_body(first, &ir.types, &ir.tag_types));
+    let has_arguments = !first.path_params.is_empty()
+        || !first.query_params.is_empty()
+        || !first.header_params.is_empty()
+        || first.request_body.is_some();
+    let complex = first.method_name != "_" && has_arguments;
     let err_call = abbrev_call(4, &client_call_prefix(first), complex);
     let raw_call = abbrev_call(0, &raw_client_call_prefix(first), complex);
     let retry_prefix = client_call_prefix(first);
@@ -1836,7 +1834,33 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         .join("\n")
     };
 
+    let mut streaming_args = documentation_auth_example_args(&ir.auth)
+        .into_iter()
+        .map(|arg| format!("    {arg},\n"))
+        .collect::<String>();
+    if ir.environment.is_none() {
+        streaming_args.push_str("    base_url=\"https://yourhost.com/path/to/api\",\n");
+    }
+    let streaming = if first.streaming {
+        format!(
+            "## Streaming\n\nThe SDK supports streaming responses, as well, the response will be a generator that you can loop over.\n\n```python\nfrom {pkg} import {}\n\nclient = {}(\n{streaming_args})\n\n{}()\n```\n\n",
+            ir.client_name,
+            ir.client_name,
+            client_call_prefix(first)
+        )
+    } else {
+        String::new()
+    };
     let contents = include_str!("../assets/scaffolding/README.md.tmpl")
+        .replace(
+            "@@STREAMING_TOC@@\n",
+            if first.streaming {
+                "- [Streaming](#streaming)\n"
+            } else {
+                ""
+            },
+        )
+        .replace("@@STREAMING@@\n", &streaming)
         .replace(
             "@@ENVIRONMENTS_TOC@@\n",
             if ir.environment.is_some() {
@@ -2193,10 +2217,8 @@ fn reference_param_annotation(annotation: &str) -> String {
 /// the same prose spelling [`reference_param_annotation`] applies to the
 /// parameter rows, so no golden's `reference.md` ever carries a `dt.` type.
 fn reference_return_type(ep: &Endpoint, response: &str) -> String {
-    let rendered = if ep.binary_response {
+    let rendered = if ep.binary_response || ep.streaming {
         "typing.Iterator[bytes]"
-    } else if ep.streaming {
-        "typing.Iterator[ServerSentEvent]"
     } else {
         response
     };
@@ -3979,8 +4001,8 @@ fn body_field_value_name(field: &BodyField) -> &str {
 
 /// The chunk type Fern yields from an OpenAPI-sourced SSE stream. Fern's OpenAPI
 /// importer does not resolve the `x-fern-streaming` `chunk-schema-ref`, so every
-/// streamed event is typed `typing.Optional[typing.Any]`.
-const SSE_CHUNK: &str = "typing.Optional[typing.Any]";
+/// streamed event is typed `typing.Any`.
+const SSE_CHUNK: &str = "typing.Any";
 
 /// Build one streaming raw-client method (sync or async): a context-managed
 /// `httpx_client.stream(...)` that decodes Server-Sent Events into an iterator of
@@ -3994,7 +4016,7 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     imports.add_core("api_error", "ApiError");
     imports.add_core("http_sse._api", "EventSource");
     imports.add_core("parse_error", "ParsingError");
-    imports.add_core("pydantic_utilities", "parse_obj_as");
+    imports.add_core("pydantic_utilities", "parse_sse_obj");
     imports.add_from("pydantic", "ValidationError");
     if !ep.path_params.is_empty() {
         imports.add_core("jsonable_encoder", "encode_path_param");
@@ -4059,9 +4081,9 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                                 try:
                                     yield typing.cast(
                                         {SSE_CHUNK},
-                                        parse_obj_as(
+                                        parse_sse_obj(
+                                            sse=_sse,
                                             type_={SSE_CHUNK},
-                                            object_=_sse.json(),
                                         ),
                                     )
                                 except JSONDecodeError as e:
@@ -4376,6 +4398,7 @@ fn root_client_file(
         tag_map,
         auth,
         global_headers,
+        environment.is_some(),
         false,
         &mut imports,
     )?;
@@ -4389,6 +4412,7 @@ fn root_client_file(
         tag_map,
         auth,
         global_headers,
+        environment.is_some(),
         true,
         &mut imports,
     )?;
@@ -4473,6 +4497,7 @@ fn root_client_methods(
     tag_map: &BTreeMap<String, String>,
     auth: &Auth,
     global_headers: &[GlobalHeader],
+    has_environment: bool,
     is_async: bool,
     imports: &mut Imports,
 ) -> Result<Vec<String>> {
@@ -4486,7 +4511,7 @@ fn root_client_methods(
         types,
         tag_decls,
         auth,
-        has_environment: true,
+        has_environment,
         tag_types: tag_map,
         global_headers,
         empty_namespace: false,
@@ -6706,13 +6731,11 @@ fn build_example_inner(
         )
     };
     // `render` positions continuation lines but leaves the first line for the
-    // caller to place, so prepend the base indent to it. A streaming endpoint binds
-    // the returned stream to `response` and iterates it (`for chunk in response:` /
-    // `async for chunk in response:`) instead of calling for its buffered value.
+    // caller to place, so prepend the base indent to it.
     let pad = " ".repeat(call_indent);
     let call = {
         let rendered = Example::Call(receiver, args).render(call_indent);
-        if ep.streaming {
+        if ep.streaming && !documentation {
             let for_kw = if is_async { "async for" } else { "for" };
             format!(
                 "{pad}response = {rendered}\n{pad}{for_kw} chunk in response:\n{pad}    yield chunk"

@@ -1319,7 +1319,7 @@ fn sse_response_generates_a_streaming_client() {
     );
     let raw = &files["src/acme/raw_client.py"];
     // Sync + async context managers over the streaming request, decoding via the
-    // `core/http_sse` runtime into an (Async)Iterator of Optional[Any] chunks.
+    // `core/http_sse` runtime into an (Async)Iterator of Any chunks.
     assert!(raw.contains("@contextlib.contextmanager"), "{raw}");
     assert!(raw.contains("@contextlib.asynccontextmanager"), "{raw}");
     assert!(
@@ -1339,16 +1339,15 @@ fn sse_response_generates_a_streaming_client() {
         "{raw}"
     );
     assert!(
-        raw.contains(
-            "-> typing.Iterator[HttpResponse[typing.Iterator[typing.Optional[typing.Any]]]]:"
-        ),
+        raw.contains("-> typing.Iterator[HttpResponse[typing.Iterator[typing.Any]]]:"),
         "{raw}"
     );
+    assert!(raw.contains("parse_sse_obj("), "{raw}");
     assert!(raw.contains("Yields"), "{raw}");
     // The high-level client yields each decoded chunk from the raw stream.
     let client = &files["src/acme/client.py"];
     assert!(
-        client.contains("-> typing.Iterator[typing.Optional[typing.Any]]:"),
+        client.contains("-> typing.Iterator[typing.Any]:"),
         "{client}"
     );
     assert!(client.contains("yield from r.data"), "{client}");
@@ -2446,7 +2445,8 @@ paths:
     let files = render(spec);
     let resp = &files["src/acme/types/search_response.py"];
     assert!(
-        resp.contains("required: typing.Optional[typing.Optional[typing.Any]]"),
+        resp.contains("required: typing.Optional[typing.Any] = None")
+            && !resp.contains("typing.Optional[typing.Optional[typing.Any]]"),
         "the array-valued node degrades to the unknown type:\n{resp}"
     );
     assert!(
@@ -3871,12 +3871,11 @@ components:
     );
     assert!(raw.contains("raise NotFoundError("), "{raw}");
     assert!(
-        raw.contains("def events(") && raw.contains("typing.Iterator[typing.Optional[typing.Any]]"),
+        raw.contains("def events(") && raw.contains("typing.Iterator[typing.Any]"),
         "{raw}"
     );
     assert!(
-        raw.contains("async def events(")
-            && raw.contains("typing.AsyncIterator[typing.Optional[typing.Any]]"),
+        raw.contains("async def events(") && raw.contains("typing.AsyncIterator[typing.Any]"),
         "{raw}"
     );
     let client = &files["src/acme/client.py"];
