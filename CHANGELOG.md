@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.39](https://github.com/nickderobertis/crozier/compare/v0.0.38...v0.0.39) - 2026-07-30
+
+### Other
+
+- *(fixtures)* refresh stale hand-authored goldens to Fern 5.20.0 ([#128](https://github.com/nickderobertis/crozier/pull/128))
+
 ## [0.0.38](https://github.com/nickderobertis/crozier/compare/v0.0.37...v0.0.38) - 2026-07-19
 
 ### Other
