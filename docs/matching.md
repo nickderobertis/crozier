@@ -545,10 +545,17 @@ the document. Each has a hand-authored feature-coverage target with the full Fer
    recursing forever ([`emit`]'s example cycle guard). Discriminated-union wrappers
    are now named after the discriminant **value** (`Node_And`), matching Fern —
    previously the referenced schema name (`Node_AndNode`) when the two differed.
-   The corpus **matches in full** at 5.20: the recursive `oneOf` with **inline**
-   (untitled, unmapped) variants that used to look like a missing
-   discriminator-mapping *inference* feature was pre-5.20 golden skew, not a
-   structural divergence.
+   The hand-authored corpus **matches in full** at 5.20, but its variants are
+   referenced and explicitly mapped, so the golden refresh did not cover the
+   documented inline-variant residual. The real-world `tlon-notes` corpus now
+   closes that coverage gap: `ImportNode` is a recursive `oneOf` whose two
+   variants are inline, untitled, and unmapped. Fern names those variants from
+   the last distinguishing property (`ImportNodeChildren` and `ImportNodeBody`);
+   crozier applies that inference only when an inline union closes a reference
+   cycle, preserving the established first-distinguishing-property rule for
+   acyclic unions. Its recursive alias, deferred imports, and transitive
+   `update_forward_refs` calls now match Fern 5.20 byte-for-byte. The same corpus
+   also proves singleton-value inference for four inline discriminated unions.
 2. **Nested-type `core` import depth** (`nested-core-imports`, issue #85). A
    per-operation hoisted type at `{pkg}/{tag}/types/…` reached `core.serialization`
    with a hardcoded `..core` — correct only at the root nesting level, a
@@ -657,7 +664,9 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    pydantic.Field(discriminator="…")]` alias (issue #50 part 2), and the
    discriminant property is stripped from each member's own model.
    `discriminated-unions` matches everything but its `README.md` abbreviated call.
-   A discriminator without an explicit `mapping` still falls back to a plain union.
+   A discriminator without an explicit `mapping` is inferred when every variant
+   exposes a common singleton string value; otherwise it falls back to a plain
+   union.
 8. **Schema annotations and constraints** (`schema-constraints`, mostly matched).
    Fern ignores the validation keywords (`minLength`/`pattern`/`minimum`/`maxItems`/
    …), `default`, and `deprecated` in its generated models, so crozier does too;

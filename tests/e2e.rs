@@ -1843,6 +1843,7 @@ const CORPORA: &[&Corpus] = &[
     &FREE5GC_NAMF_COMMUNICATION,
     &APIDECK_ATS,
     &BUILDRELAY,
+    &TLON_NOTES,
 ];
 
 #[test]
@@ -2668,6 +2669,19 @@ const BUILDRELAY: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `tlon-notes`: the Notes API combines four inline, untitled discriminated
+/// unions without explicit mappings with a recursive `ImportNode` schema.
+const TLON_NOTES: Corpus = Corpus {
+    api: "tlon-notes",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 #[test]
 fn apideck_ats_matches_fern_output() {
     if corpus_spec(APIDECK_ATS.api).is_none() {
@@ -2690,6 +2704,18 @@ fn buildrelay_matches_fern_output() {
         return;
     }
     assert_corpus_matches(&BUILDRELAY);
+}
+
+#[test]
+fn tlon_notes_matches_fern_output() {
+    if corpus_spec(TLON_NOTES.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Tlon Notes corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&TLON_NOTES);
 }
 
 #[test]

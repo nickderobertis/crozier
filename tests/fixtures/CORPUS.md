@@ -1,6 +1,6 @@
 # Canonical real-world OpenAPI corpus (issue #77)
 
-This manifest tracks 78 real-world OpenAPI specs with redistribution-compatible
+This manifest tracks 79 real-world OpenAPI specs with redistribution-compatible
 license metadata. `decision` is `link-ok` when the permissively licensed source
 is fetched at generation time rather than vendored. Add or change one numbered
 row per feature branch and maintain its golden through the manually dispatched
@@ -87,6 +87,7 @@ row per feature branch and maintain its golden through the manually dispatched
 | 76 | `free5gc-namf-communication` | github-raw | https://raw.githubusercontent.com/shynuu/free5gc-cli/7f775ecab0cbe3074b38e528581641cff5520c2f/lib/openapi/Namf_Communication/api/openapi.yaml | `7f775ecab0cbe3074b38e528581641cff5520c2f` | Apache-2.0 | link-ok | free5GC AMF Communication API with `ServiceAreaRestriction/allOf/0/oneOf/0/not` and 142 `application/problem+json` response media entries |
 | 77 | `apideck.com-ats` | api-guru | https://api.apis.guru/v2/specs/apideck.com/ats/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | ATS API with an inline object nested in `Applicant.properties.social_links.items` |
 | 78 | `buildrelay` | github-raw | https://raw.githubusercontent.com/cnorlander/BuildRelay/e5f47309d1ca6fd28267de041e7ed2f61e477723/openapi.json | `e5f47309d1ca6fd28267de041e7ed2f61e477723` | MIT | link-ok | BuildRelay API with a referenced request body and a direct inline-object `500` response body |
+| 79 | `tlon-notes` | github-raw | https://raw.githubusercontent.com/tloncorp/tlon-apps/2277696dcebb66270c6953b983e1a580b780071e/desk/app/notes/openapi.json | `2277696dcebb66270c6953b983e1a580b780071e` | MIT | link-ok | Tlon Notes API with four inline, untitled discriminated unions lacking mappings and a recursive `ImportNode` schema |
 
 ## Batch 2 — byte-matched (issue #77)
 

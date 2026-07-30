@@ -297,20 +297,11 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
 fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     use crate::openapi::SecuritySchemeType;
 
-    // Only the first *declared scheme* is the primary auth credential. If that
-    // scheme is OAuth/HTTP auth, every later header apiKey is an additional
-    // constructor field (Square declares OAuth first and an Authorization apiKey
-    // second). When the first scheme itself is a header apiKey, it is represented
-    // by `Auth::ApiKey` and must be skipped here to avoid a duplicate field.
-    let skip_first_api_key =
-        doc.components
-            .security_schemes
-            .values()
-            .next()
-            .is_some_and(|scheme| {
-                scheme.ty == SecuritySchemeType::ApiKey
-                    && scheme.location == Some(ParameterLocation::Header)
-            });
+    // When a supported header apiKey is the primary credential, skip that scheme
+    // here even if an unsupported cookie scheme was declared before it. Fern
+    // selects the first supported scheme (Tlon Notes declares cookie, then header)
+    // and does not expose the selected key a second time as a global header.
+    let skip_first_api_key = matches!(auth_model(doc), Auth::ApiKey { .. });
     let mut skipped_primary = !skip_first_api_key;
     doc.components
         .security_schemes
@@ -399,8 +390,10 @@ pub enum Auth {
     None,
 }
 
-/// Derive the [`Auth`] model: the first declared scheme selects the credential
-/// shape, and the credential is required when every operation is authenticated.
+/// Derive the [`Auth`] model: the first supported declared scheme selects the
+/// credential shape, and the credential is required when every operation is
+/// authenticated. Unsupported schemes (such as cookie api keys) are skipped when
+/// a later header api key is available, matching Fern's importer.
 fn auth_model(doc: &OpenApi) -> Auth {
     use crate::openapi::{HttpAuthScheme, SecuritySchemeType};
     // A document with no declared security scheme is unauthenticated: Fern emits a
@@ -408,7 +401,17 @@ fn auth_model(doc: &OpenApi) -> Auth {
     if doc.components.security_schemes.is_empty() {
         return Auth::None;
     }
-    match doc.components.security_schemes.values().next() {
+    let selected = doc.components.security_schemes.values().find(|scheme| {
+        (scheme.ty == SecuritySchemeType::ApiKey
+            && scheme.location == Some(ParameterLocation::Header))
+            || (scheme.ty == SecuritySchemeType::Http
+                && matches!(
+                    scheme.scheme,
+                    Some(HttpAuthScheme::Bearer | HttpAuthScheme::Basic)
+                ))
+            || scheme.ty == SecuritySchemeType::OAuth2
+    });
+    match selected {
         // `name` is validated non-empty at the boundary (see `openapi::load`).
         Some(s)
             if s.ty == SecuritySchemeType::ApiKey
@@ -5987,6 +5990,9 @@ impl Builder<'_> {
 }
 
 fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[Schema]) -> String {
+    let recursive_inline_union = siblings
+        .iter()
+        .any(|sibling| schema_references_class(sibling, parent));
     let shared_first = variant.properties.keys().next().filter(|candidate| {
         siblings
             .iter()
@@ -6004,7 +6010,7 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
             variant
                 .properties
                 .keys()
-                .find(|candidate| {
+                .rfind(|candidate| {
                     candidate.as_str() != "resource_list"
                         && candidate.as_str() != "metadata"
                         && candidate.as_str() != "url"
@@ -6013,6 +6019,19 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
                             .filter(|sibling| sibling.properties.contains_key(*candidate))
                             .count()
                             == 1
+                })
+                .filter(|_| recursive_inline_union)
+                .or_else(|| {
+                    variant.properties.keys().find(|candidate| {
+                        candidate.as_str() != "resource_list"
+                            && candidate.as_str() != "metadata"
+                            && candidate.as_str() != "url"
+                            && siblings
+                                .iter()
+                                .filter(|sibling| sibling.properties.contains_key(*candidate))
+                                .count()
+                                == 1
+                    })
                 })
                 .cloned()
         });
@@ -6054,6 +6073,26 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
             |name| naming::class_name(&name),
         );
     format!("{parent}{suffix}")
+}
+
+fn schema_references_class(schema: &Schema, class_name: &str) -> bool {
+    schema
+        .reference
+        .as_deref()
+        .is_some_and(|reference| ref_to_class(reference) == class_name)
+        || schema
+            .properties
+            .values()
+            .chain(schema.items.iter().map(Box::as_ref))
+            .chain(schema.one_of.iter().flatten())
+            .chain(schema.any_of.iter().flatten())
+            .chain(schema.all_of.iter().flatten())
+            .any(|child| schema_references_class(child, class_name))
+        || matches!(
+            schema.additional_properties.as_ref(),
+            Some(AdditionalProperties::Schema(child))
+                if schema_references_class(child, class_name)
+        )
 }
 
 fn resolve_schema_pointer<'a>(
@@ -6667,11 +6706,12 @@ fn example_literal(value: &serde_json::Value) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        array_item_type_ref, auth_model, base_type_ref, build_endpoint, build_enum,
-        described_all_of_ref, discriminant_strips, document_discriminant_strips, endpoint_module,
-        environment_model, extensible_enum, full_type_ref_resolved, global_headers, hoist_fields,
-        int_prim, member_fields, method_from_grouped_id, module_from_grouped_id, module_identifier,
-        oauth_scope_enum, optional_type_ref, parameter_example, path_group, property_description,
+        additional_api_key_global_headers, array_item_type_ref, auth_model, base_type_ref,
+        build_endpoint, build_enum, described_all_of_ref, discriminant_strips,
+        document_discriminant_strips, endpoint_module, environment_model, extensible_enum,
+        full_type_ref_resolved, global_headers, hoist_fields, int_prim, member_fields,
+        method_from_grouped_id, module_from_grouped_id, module_identifier, oauth_scope_enum,
+        optional_type_ref, parameter_example, path_group, property_description,
         query_parameter_example, ref_to_class, request_and_response_refs_match,
         request_schema_use_count, resolve_request_body, resolve_schema_pointer, response_schema,
         scalar_body, success_response_entry, synthesized_method_name, title_from_tag,
@@ -7228,6 +7268,37 @@ mod tests {
         assert_eq!(headers[0].py_name, "authorization");
         assert_eq!(headers[0].wire_name, "Authorization");
         assert!(headers[0].required);
+    }
+
+    #[test]
+    fn unsupported_cookie_auth_defers_to_a_header_api_key() {
+        let doc: crate::openapi::OpenApi = serde_json::from_str(
+            r#"{
+                "security": [{ "cookie": [] }, { "key": [] }],
+                "components": {
+                    "securitySchemes": {
+                        "cookie": {
+                            "type": "apiKey",
+                            "in": "cookie",
+                            "name": "session"
+                        },
+                        "key": {
+                            "type": "apiKey",
+                            "in": "header",
+                            "name": "X-Api-Key"
+                        }
+                    }
+                }
+            }"#,
+        )
+        .expect("document deserializes");
+
+        let Auth::ApiKey { header, required } = auth_model(&doc) else {
+            panic!("the supported header key should be primary");
+        };
+        assert_eq!(header, "X-Api-Key");
+        assert!(required);
+        assert!(additional_api_key_global_headers(&doc).is_empty());
     }
 
     #[test]
@@ -8187,6 +8258,31 @@ mod tests {
                 &[content_a, content_b.clone()]
             ),
             "AttestationOne"
+        );
+
+        let recursive_folder = schema(serde_json::json!({
+            "properties": {
+                "name": { "type": "string" },
+                "children": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/ImportNode" }
+                }
+            }
+        }));
+        let recursive_leaf = schema(serde_json::json!({
+            "properties": {
+                "title": { "type": "string" },
+                "body": { "type": "string" }
+            }
+        }));
+        let recursive_siblings = [recursive_folder.clone(), recursive_leaf.clone()];
+        assert_eq!(
+            variant_class_name("ImportNode", 0, &recursive_folder, &recursive_siblings),
+            "ImportNodeChildren"
+        );
+        assert_eq!(
+            variant_class_name("ImportNode", 1, &recursive_leaf, &recursive_siblings),
+            "ImportNodeBody"
         );
     }
 

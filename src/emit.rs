@@ -695,7 +695,8 @@ fn forward_ref_map(
         .collect();
     for decl in types.iter().chain(tag_types.iter().map(|t| &t.decl)) {
         let name = decl.name();
-        let defer_recursive_target = !matches!(decl, TypeDecl::Alias(_));
+        let defer_recursive_target =
+            !matches!(decl, TypeDecl::Alias(_) | TypeDecl::DiscriminatedUnion(_));
         let mut forward = HashSet::new();
         for r in decl_refs(decl) {
             // Render `r` as a string forward reference (deferred import) when it
@@ -727,6 +728,7 @@ fn forward_ref_map(
 #[derive(Default)]
 struct ForwardRepair {
     names: std::collections::HashSet<String>,
+    triggers: std::collections::HashSet<String>,
     import_order: Vec<String>,
 }
 
@@ -830,6 +832,16 @@ fn forward_repair_map(
             repair.remove(decl.name());
         }
         if reaches_cycle {
+            let triggers = edges
+                .get(decl.name())
+                .into_iter()
+                .flatten()
+                .filter(|name| {
+                    cyclic.contains(name.as_str())
+                        || cyclic.iter().any(|target| reaches(name.as_str(), target))
+                })
+                .cloned()
+                .collect();
             let mut import_order: Vec<String> = repair.iter().cloned().collect();
             import_order.sort_by(|left, right| {
                 aliases
@@ -841,6 +853,7 @@ fn forward_repair_map(
                 decl.name().to_string(),
                 ForwardRepair {
                     names: repair,
+                    triggers,
                     import_order,
                 },
             );
@@ -3096,14 +3109,13 @@ fn render_discriminated_union(
     // and, right after the alias, call it on each wrapper that carries a forward
     // reference (issue #84). Non-recursive unions emit no such trailer.
     let mut trailer = String::new();
-    if !forward.is_empty() {
+    if !forward.is_empty() || !repair.triggers.is_empty() {
         imports.add_core("pydantic_utilities", "update_forward_refs");
         for member in &union.members {
-            if member
-                .fields
-                .iter()
-                .any(|f| type_uses_forward(&f.type_ref, forward))
-            {
+            if member.fields.iter().any(|f| {
+                type_uses_forward(&f.type_ref, forward)
+                    || type_uses_forward(&f.type_ref, &repair.triggers)
+            }) {
                 trailer.push('\n');
                 trailer.push_str(&update_forward_refs_call(&member.class_name, repair));
             }
