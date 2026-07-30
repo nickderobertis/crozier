@@ -86,7 +86,7 @@ row per feature branch and maintain its golden through the manually dispatched
 | 75 | `letta` | github-raw | https://raw.githubusercontent.com/letta-ai/letta/e3fb00f97009cafe527cde93983cda0dfdd7e574/fern/openapi.json | `e3fb00f97009cafe527cde93983cda0dfdd7e574` | Apache-2.0 | link-ok | Letta API with 10 `text/event-stream` responses, 12 discriminators without mappings, 1 map-of-union schema, and 1,416 `anyOf` plus 87 `oneOf` compositions |
 | 76 | `free5gc-namf-communication` | github-raw | https://raw.githubusercontent.com/shynuu/free5gc-cli/7f775ecab0cbe3074b38e528581641cff5520c2f/lib/openapi/Namf_Communication/api/openapi.yaml | `7f775ecab0cbe3074b38e528581641cff5520c2f` | Apache-2.0 | link-ok | free5GC AMF Communication API with `ServiceAreaRestriction/allOf/0/oneOf/0/not` and 142 `application/problem+json` response media entries |
 | 77 | `apideck.com-ats` | api-guru | https://api.apis.guru/v2/specs/apideck.com/ats/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | ATS API with an inline object nested in `Applicant.properties.social_links.items` |
-| 78 | `stripe-sync-engine` | github-raw | https://raw.githubusercontent.com/stripe/sync-engine/96d302c9256bfa8d05653ec60cb8a7306d4a975e/apps/engine/src/__generated__/openapi.json | `96d302c9256bfa8d05653ec60cb8a7306d4a975e` | Apache-2.0 | link-ok | Stripe Sync Engine API with nine direct inline-object `400` response bodies |
+| 78 | `buildrelay` | github-raw | https://raw.githubusercontent.com/cnorlander/BuildRelay/e5f47309d1ca6fd28267de041e7ed2f61e477723/openapi.json | `e5f47309d1ca6fd28267de041e7ed2f61e477723` | MIT | link-ok | BuildRelay API with a referenced request body and a direct inline-object `500` response body |
 
 ## Batch 2 — byte-matched (issue #77)
 

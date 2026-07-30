@@ -133,7 +133,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e letta_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e free5gc_namf_communication_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_ats_matches_fern_output
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e stripe_sync_engine_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e buildrelay_matches_fern_output
 
 # Format the codebase in place.
 format:
