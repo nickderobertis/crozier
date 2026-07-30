@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.42](https://github.com/nickderobertis/crozier/compare/v0.0.41...v0.0.42) - 2026-07-30
+
+### Added
+
+- hoist inline error bodies and nested array items like Fern ([#137](https://github.com/nickderobertis/crozier/pull/137))
+
 ## [0.0.41](https://github.com/nickderobertis/crozier/compare/v0.0.40...v0.0.41) - 2026-07-30
 
 ### Fixed
