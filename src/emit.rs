@@ -1761,8 +1761,8 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let async_name = format!("Async{}", ir.client_name);
 
     // The abbreviated calls in the error-handling and advanced sections show `...`
-    // for a bodyless endpoint with required path/query/header arguments, or an
-    // endpoint with a complex (object/container/union) body, else empty parens; the
+    // whenever the endpoint has a path, query, or header argument or a request body;
+    // an argument-free endpoint (and the `_` placeholder) shows empty parens. The
     // error/raw-response calls are ruff-wrapped at the snippet width 88.
     let has_arguments = !first.path_params.is_empty()
         || !first.query_params.is_empty()
