@@ -11,7 +11,7 @@ from .types_optional_alias import TypesOptionalAlias
 
 class TypesDoubleOptional(UniversalBaseModel):
     optional_alias: typing_extensions.Annotated[
-        typing.Optional[TypesOptionalAlias], FieldMetadata(alias="optionalAlias")
+        typing.Optional[TypesOptionalAlias], FieldMetadata(alias="optionalAlias"), pydantic.Field(alias="optionalAlias")
     ] = None
 
     if IS_PYDANTIC_V2:

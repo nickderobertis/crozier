@@ -7,6 +7,7 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from . import gadgets, widgets
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .gadgets import CreateGadgetResponse
     from .version import __version__
@@ -15,6 +16,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
     "CreateGadgetResponse": ".gadgets",
     "CreateWidgetResponse": ".widgets",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "__version__": ".version",
     "gadgets": ".gadgets",
@@ -47,6 +50,8 @@ __all__ = [
     "AsyncFernApi",
     "CreateGadgetResponse",
     "CreateWidgetResponse",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "FernApi",
     "__version__",
     "gadgets",

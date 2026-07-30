@@ -2187,6 +2187,11 @@ fn reference_param_annotation(annotation: &str) -> String {
     annotation
 }
 
+/// The ` -> <type>` suffix on a `reference.md` entry's `<summary>` line. Fern's
+/// markdown writer spells the datetime types out in full (`datetime.datetime`)
+/// rather than with the `dt.` alias the generated Python imports them under —
+/// the same prose spelling [`reference_param_annotation`] applies to the
+/// parameter rows, so no golden's `reference.md` ever carries a `dt.` type.
 fn reference_return_type(ep: &Endpoint, response: &str) -> String {
     let rendered = if ep.binary_response {
         "typing.Iterator[bytes]"
@@ -2198,7 +2203,7 @@ fn reference_return_type(ep: &Endpoint, response: &str) -> String {
     if rendered == "None" {
         String::new()
     } else {
-        format!(" -> {rendered}")
+        format!(" -> {}", rendered.replace("dt.", "datetime."))
     }
 }
 
@@ -8383,6 +8388,28 @@ mod tests {
             reference_param_annotation("typing.Optional[typing.Optional[dt.date]]"),
             "typing.Optional[datetime.date]"
         );
+    }
+
+    #[test]
+    fn reference_return_type_spells_datetime_in_full() {
+        let endpoint = endpoint("/w", Vec::new(), None);
+        // The `<summary>` line is prose, so it uses Fern's full spelling rather
+        // than the `dt.` alias the generated Python imports the types under.
+        assert_eq!(
+            super::reference_return_type(&endpoint, "dt.datetime"),
+            " -> datetime.datetime"
+        );
+        assert_eq!(
+            super::reference_return_type(&endpoint, "typing.Optional[dt.date]"),
+            " -> typing.Optional[datetime.date]"
+        );
+        // A type that merely contains `dt` as part of a name is untouched, and a
+        // `None` response still renders no suffix at all.
+        assert_eq!(
+            super::reference_return_type(&endpoint, "UpdtStatus"),
+            " -> UpdtStatus"
+        );
+        assert_eq!(super::reference_return_type(&endpoint, "None"), "");
     }
 
     #[test]

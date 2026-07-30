@@ -23,4 +23,4 @@ class AndNode(UniversalBaseModel):
 
 from .node import Node
 
-update_forward_refs(AndNode)
+update_forward_refs(AndNode, Node=Node)

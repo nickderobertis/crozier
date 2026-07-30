@@ -54,12 +54,15 @@ if typing.TYPE_CHECKING:
         noreqbody,
         reqwithheaders,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
     "BadObjectRequestInfo": ".types",
     "BadRequestError": ".errors",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "EndpointsError": ".types",
     "EndpointsErrorCategory": ".types",
     "EndpointsErrorCode": ".types",
@@ -132,6 +135,8 @@ __all__ = [
     "AsyncFernApi",
     "BadObjectRequestInfo",
     "BadRequestError",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "EndpointsError",
     "EndpointsErrorCategory",
     "EndpointsErrorCode",

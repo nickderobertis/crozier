@@ -25,15 +25,13 @@ class NoauthClient:
         """
         return self._raw_client
 
-    def postwithnoauth(
-        self, *, request: typing.Optional[typing.Any] = None, request_options: typing.Optional[RequestOptions] = None
-    ) -> bool:
+    def postwithnoauth(self, *, request: typing.Any, request_options: typing.Optional[RequestOptions] = None) -> bool:
         """
         POST request with no auth
 
         Parameters
         ----------
-        request : typing.Optional[typing.Any]
+        request : typing.Any
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -75,14 +73,14 @@ class AsyncNoauthClient:
         return self._raw_client
 
     async def postwithnoauth(
-        self, *, request: typing.Optional[typing.Any] = None, request_options: typing.Optional[RequestOptions] = None
+        self, *, request: typing.Any, request_options: typing.Optional[RequestOptions] = None
     ) -> bool:
         """
         POST request with no auth
 
         Parameters
         ----------
-        request : typing.Optional[typing.Any]
+        request : typing.Any
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

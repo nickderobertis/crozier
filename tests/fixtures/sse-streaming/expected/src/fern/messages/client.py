@@ -22,9 +22,7 @@ class MessagesClient:
         """
         return self._raw_client
 
-    def streammessages(
-        self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Iterator[typing.Optional[typing.Any]]:
+    def streammessages(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.Iterator[typing.Any]:
         """
         Parameters
         ----------
@@ -33,7 +31,7 @@ class MessagesClient:
 
         Yields
         ------
-        typing.Iterator[typing.Optional[typing.Any]]
+        typing.Iterator[typing.Any]
             SSE stream
 
         Examples
@@ -69,7 +67,7 @@ class AsyncMessagesClient:
 
     async def streammessages(
         self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.AsyncIterator[typing.Optional[typing.Any]]:
+    ) -> typing.AsyncIterator[typing.Any]:
         """
         Parameters
         ----------
@@ -78,7 +76,7 @@ class AsyncMessagesClient:
 
         Yields
         ------
-        typing.AsyncIterator[typing.Optional[typing.Any]]
+        typing.AsyncIterator[typing.Any]
             SSE stream
 
         Examples

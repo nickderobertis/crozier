@@ -1,6 +1,6 @@
 # Reference
 ## Shapes
-<details><summary><code>client.shapes.<a href="src/fern/shapes/client.py">createshape</a>(...)</code></summary>
+<details><summary><code>client.shapes.<a href="src/fern/shapes/client.py">createshape</a>(...) -> Shape</code></summary>
 <dl>
 <dd>
 
@@ -16,9 +16,10 @@
 from fern import FernApi, Shape_Circle
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.shapes.createshape(
     request=Shape_Circle(
         radius=1.1,

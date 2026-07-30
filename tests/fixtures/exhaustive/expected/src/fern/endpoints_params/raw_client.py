@@ -6,10 +6,12 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.types_object_with_required_field import TypesObjectWithRequiredField
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -38,7 +40,7 @@ class RawEndpointsParamsClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"params/path/{jsonable_encoder(param)}",
+            f"params/path/{encode_path_param(param)}",
             method="GET",
             request_options=request_options,
         )
@@ -55,6 +57,10 @@ class RawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_params_upload_with_path(
@@ -82,7 +88,7 @@ class RawEndpointsParamsClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"params/path/{jsonable_encoder(param)}",
+            f"params/path/{encode_path_param(param)}",
             method="POST",
             content=request,
             headers={
@@ -104,6 +110,10 @@ class RawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_params_modify_with_path(
@@ -127,7 +137,7 @@ class RawEndpointsParamsClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"params/path/{jsonable_encoder(param)}",
+            f"params/path/{encode_path_param(param)}",
             method="PUT",
             json=request,
             headers={
@@ -149,6 +159,10 @@ class RawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_params_get_with_inline_path(
@@ -170,7 +184,7 @@ class RawEndpointsParamsClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"params/inline-path/{jsonable_encoder(param)}",
+            f"params/inline-path/{encode_path_param(param)}",
             method="GET",
             request_options=request_options,
         )
@@ -187,6 +201,10 @@ class RawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_params_modify_with_inline_path(
@@ -210,7 +228,7 @@ class RawEndpointsParamsClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"params/inline-path/{jsonable_encoder(param)}",
+            f"params/inline-path/{encode_path_param(param)}",
             method="PUT",
             json=request,
             headers={
@@ -232,6 +250,10 @@ class RawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_params_get_with_query(
@@ -268,6 +290,10 @@ class RawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_params_get_with_allow_multiple_query(
@@ -308,6 +334,10 @@ class RawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_params_get_with_path_and_query(
@@ -330,7 +360,7 @@ class RawEndpointsParamsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"params/path-query/{jsonable_encoder(param)}",
+            f"params/path-query/{encode_path_param(param)}",
             method="GET",
             params={
                 "query": query,
@@ -343,6 +373,10 @@ class RawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def endpoints_params_get_with_inline_path_and_query(
@@ -365,7 +399,7 @@ class RawEndpointsParamsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"params/inline-path-query/{jsonable_encoder(param)}",
+            f"params/inline-path-query/{encode_path_param(param)}",
             method="GET",
             params={
                 "query": query,
@@ -378,6 +412,10 @@ class RawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -404,7 +442,7 @@ class AsyncRawEndpointsParamsClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"params/path/{jsonable_encoder(param)}",
+            f"params/path/{encode_path_param(param)}",
             method="GET",
             request_options=request_options,
         )
@@ -421,6 +459,10 @@ class AsyncRawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_params_upload_with_path(
@@ -448,7 +490,7 @@ class AsyncRawEndpointsParamsClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"params/path/{jsonable_encoder(param)}",
+            f"params/path/{encode_path_param(param)}",
             method="POST",
             content=request,
             headers={
@@ -470,6 +512,10 @@ class AsyncRawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_params_modify_with_path(
@@ -493,7 +539,7 @@ class AsyncRawEndpointsParamsClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"params/path/{jsonable_encoder(param)}",
+            f"params/path/{encode_path_param(param)}",
             method="PUT",
             json=request,
             headers={
@@ -515,6 +561,10 @@ class AsyncRawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_params_get_with_inline_path(
@@ -536,7 +586,7 @@ class AsyncRawEndpointsParamsClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"params/inline-path/{jsonable_encoder(param)}",
+            f"params/inline-path/{encode_path_param(param)}",
             method="GET",
             request_options=request_options,
         )
@@ -553,6 +603,10 @@ class AsyncRawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_params_modify_with_inline_path(
@@ -576,7 +630,7 @@ class AsyncRawEndpointsParamsClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"params/inline-path/{jsonable_encoder(param)}",
+            f"params/inline-path/{encode_path_param(param)}",
             method="PUT",
             json=request,
             headers={
@@ -598,6 +652,10 @@ class AsyncRawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_params_get_with_query(
@@ -634,6 +692,10 @@ class AsyncRawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_params_get_with_allow_multiple_query(
@@ -674,6 +736,10 @@ class AsyncRawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_params_get_with_path_and_query(
@@ -696,7 +762,7 @@ class AsyncRawEndpointsParamsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"params/path-query/{jsonable_encoder(param)}",
+            f"params/path-query/{encode_path_param(param)}",
             method="GET",
             params={
                 "query": query,
@@ -709,6 +775,10 @@ class AsyncRawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def endpoints_params_get_with_inline_path_and_query(
@@ -731,7 +801,7 @@ class AsyncRawEndpointsParamsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"params/inline-path-query/{jsonable_encoder(param)}",
+            f"params/inline-path-query/{encode_path_param(param)}",
             method="GET",
             params={
                 "query": query,
@@ -744,4 +814,8 @@ class AsyncRawEndpointsParamsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

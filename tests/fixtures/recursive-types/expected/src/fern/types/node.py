@@ -38,4 +38,4 @@ class Node_Leaf(UniversalBaseModel):
 
 
 Node = typing_extensions.Annotated[typing.Union[Node_And, Node_Leaf], pydantic.Field(discriminator="kind")]
-update_forward_refs(Node_And)
+update_forward_refs(Node_And, Node=Node)

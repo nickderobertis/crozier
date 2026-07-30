@@ -18,6 +18,7 @@ from fern import FernApi
 client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.tree.put_tree()
 
 ```
@@ -34,15 +35,7 @@ client.tree.put_tree()
 <dl>
 <dd>
 
-**value:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**children:** `typing.Optional[typing.Sequence[TreeNode]]` 
+**request:** `TreeNode` 
     
 </dd>
 </dl>
@@ -81,6 +74,7 @@ from fern import FernApi, Node_And
 client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.pred.put_pred(
     request=Node_And(
         children=[],

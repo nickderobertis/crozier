@@ -4,8 +4,8 @@ This is a *helper*, not a test module. `test_live_e2e.py` runs it as a subproces
 (one generated SDK per process, since every fixture's package is named `fern` and
 two cannot coexist in one interpreter) and asserts over the recording it prints.
 
-The endpoint list is not hand-authored: it is the set of runnable usage snippets
-in the SDK's own generated `reference.md` — one per typed client method, already
+The endpoint list is not hand-authored: it is the set of usage snippets in the
+SDK's own generated `reference.md` — one per typed client method, already
 carrying valid example arguments. Each snippet is executed verbatim except that
 its placeholder `base_url` is repointed at the running Prism server; the returned
 value is then validated against the method's *declared return type*
@@ -15,10 +15,19 @@ and deserialized into exactly the type the SDK promises. A raised exception (e.g
 the SDK's `ApiError`) or a type-mismatched result is recorded as a failure rather
 than silently swallowed.
 
+A handful of endpoints carry an *abbreviated* snippet instead — a bare
+`client.<sub>.<method>(...)` with no constructed client, which Fern writes when it
+cannot synthesize the arguments (a raw `application/octet-stream` body has no
+example bytes to invent). Those are resolved rather than skipped: the client
+construction is lifted from a worked example in the same reference, the required
+arguments are synthesized from the method's own type hints, and the call goes over
+the wire like any other. Every documented endpoint is therefore really driven.
+
 Reads three environment variables set by the harness: `LIVE_SDK_SRC` (the
 generated SDK's `src/`), `LIVE_REFERENCE` (its `reference.md`), and
 `LIVE_BASE_URL` (the mock server). Prints the recording as JSON on stdout."""
 
+import inspect
 import json
 import os
 import re
@@ -33,14 +42,94 @@ import pydantic
 _FENCE = re.compile(r"```python\n(.*?)```", re.DOTALL)
 _CALL = re.compile(r"^client\.(\w+)\.(\w+)", re.MULTILINE)
 
+# Values used to fill a required argument whose endpoint Fern documented with an
+# abbreviated placeholder, keyed by the annotation's resolved type. Deliberately
+# small: an annotation this cannot fill raises (see `_example_value`) rather than
+# letting the endpoint quietly go undriven.
+_EXAMPLE_VALUES = {
+    str: "string",
+    bytes: b"live-e2e binary payload",
+    bytearray: bytearray(b"live-e2e binary payload"),
+    int: 1,
+    float: 1.0,
+    bool: True,
+}
+
 
 def usage_snippets(reference_text):
-    """Yield `(sub_client, method, source)` for every runnable endpoint snippet in
-    a generated `reference.md` — the blocks that construct a client and call it."""
+    """Yield `(sub_client, method, source)` for every endpoint snippet in a
+    generated `reference.md` — one per documented method, whether the snippet is a
+    worked example or an abbreviated placeholder (see `is_worked_example`)."""
     for block in _FENCE.findall(reference_text):
         call = _CALL.search(block)
-        if call and "client = " in block:
+        if call:
             yield call.group(1), call.group(2), block
+
+
+def is_worked_example(source):
+    """Whether a snippet carries Fern's full worked example — imports, a
+    constructed client, and real argument values — as opposed to the abbreviated
+    `client.<sub>.<method>(...)` placeholder. Only the worked form is executable
+    as written; the placeholder is resolved by `_synthesized_arguments`."""
+    return "client = " in source
+
+
+def client_preamble(reference_text):
+    """The client-construction prologue shared by every worked example in a
+    reference: its imports plus the `client = <Class>(...)` statement, i.e.
+    everything before the first line that calls a sub-client method.
+
+    A placeholder snippet omits this, so it is borrowed from a worked example in
+    the same file — which means the placeholder endpoint is driven against the
+    same client, auth and base URL as every other endpoint, not a hand-built one."""
+    for _, _, source in usage_snippets(reference_text):
+        if not is_worked_example(source):
+            continue
+        lines = source.splitlines()
+        for index, line in enumerate(lines):
+            if index and line.startswith("client."):
+                return "\n".join(lines[:index])
+    return None
+
+
+def _example_value(hint, where):
+    """A value satisfying `hint`, for an argument Fern left to a placeholder.
+
+    Unions are resolved to their first fillable member, which is how the upload
+    body's `typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]`
+    becomes real bytes. An annotation this cannot fill is a hard error: a silently
+    undriven endpoint is exactly the hole this driver exists to close."""
+    if hint in _EXAMPLE_VALUES:
+        return _EXAMPLE_VALUES[hint]
+    for member in typing.get_args(hint):
+        if member in _EXAMPLE_VALUES:
+            return _EXAMPLE_VALUES[member]
+    raise TypeError(
+        f"live e2e cannot synthesize an argument for {where}: {hint!r}. Add the "
+        f"type to _driver._EXAMPLE_VALUES — do not leave the endpoint undriven."
+    )
+
+
+def _synthesized_arguments(client, sub_client, method):
+    """`(args, kwargs)` filling every required parameter of a placeholder endpoint
+    from the method's own resolved type hints. Parameters carrying a default (and
+    `request_options`) are left alone, so the call is the minimal real one."""
+    func = getattr(type(getattr(client, sub_client)), method)
+    hints = typing.get_type_hints(func)
+    args, kwargs = [], {}
+    for name, parameter in inspect.signature(func).parameters.items():
+        if name in ("self", "request_options"):
+            continue
+        if parameter.default is not inspect.Parameter.empty:
+            continue
+        value = _example_value(
+            hints.get(name, typing.Any), f"{sub_client}.{method}.{name}"
+        )
+        if parameter.kind is inspect.Parameter.KEYWORD_ONLY:
+            kwargs[name] = value
+        else:
+            args.append(value)
+    return args, kwargs
 
 
 def _repoint(source, base_url):
@@ -125,16 +214,12 @@ def _mock_side_reason(error):
     return None
 
 
-def _observe(sub_client, method, source, base_url):
-    namespace = {}
-    exec(compile(_repoint(source, base_url), f"<snippet {method}>", "exec"), namespace)
-    result = namespace.get("__result__")
-    client = namespace["client"]
+def _validate(client, sub_client, method, result):
+    """Re-validate a returned value against the method's declared return type. The
+    SDK already returned an instance of it; this confirms the type is what the SDK
+    promises rather than merely "something non-erroring"."""
     func = getattr(type(getattr(client, sub_client)), method)
     hint = typing.get_type_hints(func).get("return", typing.Any)
-    # Re-validate the returned value against the method's declared return type. The
-    # SDK already returned an instance of it; this confirms the type is what the
-    # SDK promises rather than merely "something non-erroring".
     pydantic.TypeAdapter(hint).validate_python(result)
     return {
         "kind": _kind(result),
@@ -145,22 +230,55 @@ def _observe(sub_client, method, source, base_url):
     }
 
 
+def _observe(sub_client, method, source, base_url):
+    namespace = {}
+    exec(compile(_repoint(source, base_url), f"<snippet {method}>", "exec"), namespace)
+    return _validate(
+        namespace["client"], sub_client, method, namespace.get("__result__")
+    )
+
+
+def _observe_placeholder(sub_client, method, preamble, base_url):
+    """Drive an endpoint Fern documented with an abbreviated placeholder: build the
+    client from the shared preamble, synthesize the required arguments from the
+    method's type hints, and make the call for real. The observation is marked
+    `synthesized` so the suite can assert this path actually ran."""
+    if preamble is None:
+        raise RuntimeError(
+            f"{sub_client}.{method} is documented with a placeholder snippet, but "
+            f"the reference has no worked example to take a client from"
+        )
+    namespace = {}
+    exec(
+        compile(_repoint(preamble, base_url), f"<preamble {method}>", "exec"), namespace
+    )
+    client = namespace["client"]
+    args, kwargs = _synthesized_arguments(client, sub_client, method)
+    result = getattr(getattr(client, sub_client), method)(*args, **kwargs)
+    return {**_validate(client, sub_client, method, result), "synthesized": True}
+
+
 def record(sdk_src, reference_path, base_url):
     """Run every endpoint snippet and return `{"sub.method": observation}`. The key
     is the full `sub_client.method` call path, not the bare method: real specs reuse
     a method name (`add`, `all_`) across many sub-clients, so keying on the method
     alone would collapse them. An endpoint that raises or type-mismatches records
-    `{"ok": False, "error": ...}`; a clean round-trip records `{"ok": True, ...}`."""
+    `{"ok": False, "error": ...}`; a clean round-trip records `{"ok": True, ...}`,
+    carrying `"synthesized": True` when its snippet was an abbreviated placeholder
+    the driver resolved into a real call."""
     sys.path.insert(0, sdk_src)
     text = Path(reference_path).read_text()
+    preamble = client_preamble(text)
     recording = {}
     for sub_client, method, source in usage_snippets(text):
         endpoint = f"{sub_client}.{method}"
         try:
-            recording[endpoint] = {
-                "ok": True,
-                **_observe(sub_client, method, source, base_url),
-            }
+            observation = (
+                _observe(sub_client, method, source, base_url)
+                if is_worked_example(source)
+                else _observe_placeholder(sub_client, method, preamble, base_url)
+            )
+            recording[endpoint] = {"ok": True, **observation}
         except Exception as error:  # noqa: BLE001 — recorded, then asserted on by the suite
             reason = _mock_side_reason(error)
             if reason is not None:

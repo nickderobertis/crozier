@@ -1,6 +1,6 @@
 # Reference
 ## Inlined
-<details><summary><code>client.inlined.<a href="src/fern/inlined/client.py">search</a>(...)</code></summary>
+<details><summary><code>client.inlined.<a href="src/fern/inlined/client.py">search</a>(...) -> InlinedSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -16,9 +16,10 @@
 from fern import FernApi
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.inlined.search(
     query="query",
 )
@@ -73,7 +74,7 @@ client.inlined.search(
 </dl>
 </details>
 
-<details><summary><code>client.inlined.<a href="src/fern/inlined/client.py">index</a>(...)</code></summary>
+<details><summary><code>client.inlined.<a href="src/fern/inlined/client.py">index</a>(...) -> InlinedIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -89,9 +90,10 @@ client.inlined.search(
 from fern import FernApi, SearchResult
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.inlined.index(
     document=SearchResult(
         id="id",

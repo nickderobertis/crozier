@@ -1,6 +1,6 @@
 # Reference
 ## Accounts
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">createaccount</a>(...)</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">createaccount</a>(...) -> Account</code></summary>
 <dl>
 <dd>
 
@@ -16,9 +16,10 @@
 from fern import FernApi
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.accounts.createaccount(
     username="username",
     password="password",

@@ -15,7 +15,9 @@ class TypesObjectWithDocumentedUnknownType(UniversalBaseModel):
     """
 
     documented_unknown_type: typing_extensions.Annotated[
-        TypesDocumentedUnknownType, FieldMetadata(alias="documentedUnknownType")
+        TypesDocumentedUnknownType,
+        FieldMetadata(alias="documentedUnknownType"),
+        pydantic.Field(alias="documentedUnknownType"),
     ]
 
     if IS_PYDANTIC_V2:

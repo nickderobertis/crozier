@@ -1,6 +1,6 @@
 # Reference
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">whoami</a>()</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">whoami</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -16,10 +16,11 @@
 from fern import FernApi
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.user.whoami()
 
 ```

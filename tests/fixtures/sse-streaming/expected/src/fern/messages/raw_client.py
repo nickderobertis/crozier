@@ -9,8 +9,10 @@ from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.http_sse._api import EventSource
-from ..core.pydantic_utilities import parse_obj_as
+from ..core.parse_error import ParsingError
+from ..core.pydantic_utilities import parse_sse_obj
 from ..core.request_options import RequestOptions
+from pydantic import ValidationError
 
 
 class RawMessagesClient:
@@ -20,7 +22,7 @@ class RawMessagesClient:
     @contextlib.contextmanager
     def streammessages(
         self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Iterator[HttpResponse[typing.Iterator[typing.Optional[typing.Any]]]]:
+    ) -> typing.Iterator[HttpResponse[typing.Iterator[typing.Any]]]:
         """
         Parameters
         ----------
@@ -29,7 +31,7 @@ class RawMessagesClient:
 
         Yields
         ------
-        typing.Iterator[HttpResponse[typing.Iterator[typing.Optional[typing.Any]]]]
+        typing.Iterator[HttpResponse[typing.Iterator[typing.Any]]]
             SSE stream
         """
         with self._client_wrapper.httpx_client.stream(
@@ -38,7 +40,7 @@ class RawMessagesClient:
             request_options=request_options,
         ) as _response:
 
-            def _stream() -> HttpResponse[typing.Iterator[typing.Optional[typing.Any]]]:
+            def _stream() -> HttpResponse[typing.Iterator[typing.Any]]:
                 try:
                     if 200 <= _response.status_code < 300:
 
@@ -49,10 +51,10 @@ class RawMessagesClient:
                                     return
                                 try:
                                     yield typing.cast(
-                                        typing.Optional[typing.Any],
-                                        parse_obj_as(
-                                            type_=typing.Optional[typing.Any],
-                                            object_=_sse.json(),
+                                        typing.Any,
+                                        parse_sse_obj(
+                                            sse=_sse,
+                                            type_=typing.Any,
                                         ),
                                     )
                                 except JSONDecodeError as e:
@@ -74,6 +76,13 @@ class RawMessagesClient:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
                     )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
+                    )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield _stream()
@@ -86,7 +95,7 @@ class AsyncRawMessagesClient:
     @contextlib.asynccontextmanager
     async def streammessages(
         self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.AsyncIterator[AsyncHttpResponse[typing.AsyncIterator[typing.Optional[typing.Any]]]]:
+    ) -> typing.AsyncIterator[AsyncHttpResponse[typing.AsyncIterator[typing.Any]]]:
         """
         Parameters
         ----------
@@ -95,7 +104,7 @@ class AsyncRawMessagesClient:
 
         Yields
         ------
-        typing.AsyncIterator[AsyncHttpResponse[typing.AsyncIterator[typing.Optional[typing.Any]]]]
+        typing.AsyncIterator[AsyncHttpResponse[typing.AsyncIterator[typing.Any]]]
             SSE stream
         """
         async with self._client_wrapper.httpx_client.stream(
@@ -104,7 +113,7 @@ class AsyncRawMessagesClient:
             request_options=request_options,
         ) as _response:
 
-            async def _stream() -> AsyncHttpResponse[typing.AsyncIterator[typing.Optional[typing.Any]]]:
+            async def _stream() -> AsyncHttpResponse[typing.AsyncIterator[typing.Any]]:
                 try:
                     if 200 <= _response.status_code < 300:
 
@@ -115,10 +124,10 @@ class AsyncRawMessagesClient:
                                     return
                                 try:
                                     yield typing.cast(
-                                        typing.Optional[typing.Any],
-                                        parse_obj_as(
-                                            type_=typing.Optional[typing.Any],
-                                            object_=_sse.json(),
+                                        typing.Any,
+                                        parse_sse_obj(
+                                            sse=_sse,
+                                            type_=typing.Any,
                                         ),
                                     )
                                 except JSONDecodeError as e:
@@ -139,6 +148,13 @@ class AsyncRawMessagesClient:
                 except JSONDecodeError:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
                     )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 

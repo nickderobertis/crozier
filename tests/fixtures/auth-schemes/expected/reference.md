@@ -1,6 +1,6 @@
 # Reference
 ## Apikeyauth
-<details><summary><code>client.apikeyauth.<a href="src/fern/apikeyauth/client.py">whoami</a>()</code></summary>
+<details><summary><code>client.apikeyauth.<a href="src/fern/apikeyauth/client.py">whoami</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -16,9 +16,10 @@
 from fern import FernApi
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.apikeyauth.whoami()
 
 ```
@@ -48,7 +49,7 @@ client.apikeyauth.whoami()
 </details>
 
 ## Basicauth
-<details><summary><code>client.basicauth.<a href="src/fern/basicauth/client.py">whoami</a>()</code></summary>
+<details><summary><code>client.basicauth.<a href="src/fern/basicauth/client.py">whoami</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -64,9 +65,10 @@ client.apikeyauth.whoami()
 from fern import FernApi
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.basicauth.whoami()
 
 ```
@@ -96,7 +98,7 @@ client.basicauth.whoami()
 </details>
 
 ## Bearerauth
-<details><summary><code>client.bearerauth.<a href="src/fern/bearerauth/client.py">whoami</a>()</code></summary>
+<details><summary><code>client.bearerauth.<a href="src/fern/bearerauth/client.py">whoami</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -112,9 +114,10 @@ client.basicauth.whoami()
 from fern import FernApi
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.bearerauth.whoami()
 
 ```
@@ -144,7 +147,7 @@ client.bearerauth.whoami()
 </details>
 
 ## Oauth
-<details><summary><code>client.oauth.<a href="src/fern/oauth/client.py">gettoken</a>(...)</code></summary>
+<details><summary><code>client.oauth.<a href="src/fern/oauth/client.py">gettoken</a>(...) -> TokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -160,9 +163,10 @@ client.bearerauth.whoami()
 from fern import FernApi
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.oauth.gettoken(
     client_id="client_id",
     client_secret="client_secret",

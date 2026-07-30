@@ -5,8 +5,10 @@ These fixtures are the golden target crozier is verified against. They are
 
 - **Source:** The legacy offline seed is vendored from
   [fern-api/fern](https://github.com/fern-api/fern), commit
-  `3a471b03d4778f291849adc03bacfcd40340fc26`; `exhaustive/expected/` was generated
-  from `exhaustive/openapi.yml` with `fernapi/fern-python-sdk:4.35.0`. Numbered
+  `3a471b03d4778f291849adc03bacfcd40340fc26`. Every vendored-spec fixture's
+  `expected/` tree is generated from its own `openapi.yml` by
+  `scripts/generate-fern-fixture.sh`; each records the exact generator in its
+  provenance file. Numbered
   real-world corpus sources and refs live in [`CORPUS.md`](CORPUS.md). The
   **Fern goldens** workflow checks the latest stable generator from `main`
   weekly; each managed golden records its current exact version in provenance.
@@ -25,9 +27,10 @@ Each `<api>/` directory holds:
   string-safe removal of `#` comments, the only change from Fern's output). The
   same stripper normalizes crozier's output before the byte comparison, so
   generator-identifying comments never affect the match.
-- `expected/.crozier-fern-golden.json` on workflow-managed goldens — the exact
-  Fern generator version and manifest name/ref/URL. It is automation provenance,
-  not Fern output, so the comparison excludes it.
+- `expected/.crozier-fern-golden.json` — the exact Fern generator version, plus
+  the manifest name/ref/URL on a workflow-managed corpus golden or the vendored
+  spec path and any non-default generator knob on a vendored one. It is automation
+  provenance, not Fern output, so the comparison excludes it.
 - `known-fern-failure.json` only when an exact generator/version/spec-bound
   upstream failure prevents a current golden. Its fingerprint is revalidated on
   every generation retry; it never makes an arbitrary Fern failure non-fatal.
@@ -47,8 +50,8 @@ known failures, provenance, and the final green/no-change rerun.
 - **`exhaustive/`** — the broad target. `openapi.yml` (+ the source
   `generators.yml.source`, for reference) is vendored; its `expected/` tree is
   packaged Fern Python output generated from that OpenAPI document.
-- **Feature-coverage targets** — hand-authored specs for the shapes crozier does
-  not fully generate yet (the roadmap gaps in
+- **Feature-coverage targets** — hand-authored specs pinning one shape each, most
+  now matched in full (the roadmap in
   [`../../docs/matching.md`](../../docs/matching.md)): `auth-schemes`,
   `inline-request-response`, `cookie-parameters`, `form-bodies`,
   `discriminated-unions`, `schema-constraints`, `integer-enums`,

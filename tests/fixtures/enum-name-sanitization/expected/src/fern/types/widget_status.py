@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WidgetStatus(str, enum.Enum):
+class WidgetStatus(enum.StrEnum):
     ZERO_ACTIVE = "0: Active"
     ONE_IN_ACTIVE = "1: InActive"
 

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WidgetOwner(str, enum.Enum):
+class WidgetOwner(enum.StrEnum):
     SELF = "self"
     SPOUSE = "spouse"
     CHILD = "child"

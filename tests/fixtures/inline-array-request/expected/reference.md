@@ -1,6 +1,6 @@
 # Reference
 ## Items
-<details><summary><code>client.items.<a href="src/fern/items/client.py">createbatch</a>(...)</code></summary>
+<details><summary><code>client.items.<a href="src/fern/items/client.py">createbatch</a>(...) -> typing.List[Item]</code></summary>
 <dl>
 <dd>
 
@@ -13,14 +13,14 @@
 <dd>
 
 ```python
+from fern import FernApi
 from fern.items import ItemsCreateBatchRequestItem
 
-from fern import FernApi
-
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.items.createbatch(
     request=[
         ItemsCreateBatchRequestItem(
@@ -43,7 +43,7 @@ client.items.createbatch(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[ItemsCreateBatchRequestItem]` 
+**request:** `typing.List[ItemsCreateBatchRequestItem]` 
     
 </dd>
 </dl>

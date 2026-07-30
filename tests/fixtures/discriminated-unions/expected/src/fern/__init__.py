@@ -8,11 +8,14 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .types import Circle, Shape, Shape_Circle, Shape_Square, Square
     from . import shapes
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
     "Circle": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "Shape": ".types",
     "Shape_Circle": ".types",
@@ -47,6 +50,8 @@ def __dir__():
 __all__ = [
     "AsyncFernApi",
     "Circle",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "FernApi",
     "Shape",
     "Shape_Circle",

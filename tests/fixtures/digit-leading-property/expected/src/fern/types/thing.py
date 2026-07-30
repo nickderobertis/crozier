@@ -9,7 +9,9 @@ from ..core.serialization import FieldMetadata
 
 
 class Thing(UniversalBaseModel):
-    f_2fa_enabled: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="2fa_enabled")] = None
+    f_2fa_enabled: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="2fa_enabled"), pydantic.Field(alias="2fa_enabled")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

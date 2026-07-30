@@ -7,8 +7,17 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import Thing
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
-_dynamic_imports: typing.Dict[str, str] = {"AsyncFernApi": ".client", "FernApi": ".client", "Thing": ".types"}
+    from .version import __version__
+_dynamic_imports: typing.Dict[str, str] = {
+    "AsyncFernApi": ".client",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
+    "FernApi": ".client",
+    "Thing": ".types",
+    "__version__": ".version",
+}
 
 
 def __getattr__(attr_name: str) -> typing.Any:
@@ -32,4 +41,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["AsyncFernApi", "FernApi", "Thing"]
+__all__ = ["AsyncFernApi", "DefaultAioHttpClient", "DefaultAsyncHttpxClient", "FernApi", "Thing", "__version__"]

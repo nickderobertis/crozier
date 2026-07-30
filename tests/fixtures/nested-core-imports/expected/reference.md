@@ -18,6 +18,7 @@ from fern import FernApi
 client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.widgets.update_widget(
     widget_id="widget_id",
 )

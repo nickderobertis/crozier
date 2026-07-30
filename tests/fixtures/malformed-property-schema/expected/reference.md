@@ -1,6 +1,6 @@
 # Reference
 ## Widgets
-<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py">search_widgets</a>()</code></summary>
+<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py">search_widgets</a>() -> SearchWidgetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -18,6 +18,7 @@ from fern import FernApi
 client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
+
 client.widgets.search_widgets()
 
 ```

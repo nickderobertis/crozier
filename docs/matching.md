@@ -65,7 +65,9 @@ This seed pins a **different Fern version** than `exhaustive`, so only the
 here — which is exactly what makes them a useful guard that the vendored
 `assets/core/` still tracks upstream.
 
-**`exhaustive` matches all 104 files** — the byte-exact target is reached. This
+**`exhaustive` matches all 111 of its files** — the widest single parity proof in
+the corpus, and the only fixture that exercises the whole generator end to end.
+This
 covers `version.py`, `py.typed`, the **entire type
 layer** (every `types/*.py` module including the hoisted `typesAnimal` variants),
 the **entire `core/` runtime** (19 files), the
@@ -83,16 +85,18 @@ field-by-field (`endpoints_object`, `endpoints_http_methods`,
 (`endpoints_container`), unknown (`{}`) and `application/octet-stream` bytes bodies
 plus mixed path/query/body operations (`endpoints_params`, `noauth`), and declared
 4xx error responses that raise generated exceptions (`noauth`, `inlinedrequests`).
-The **high-level per-tag `client.py`** for all 15 tags and the **root `client.py`**
+The **high-level per-tag `client.py`** for 14 of the 15 tags and the **root
+`client.py`**
 (`FernApi`/`AsyncFernApi`, bearer auth) match too — each wrapper method returns
 `_response.data` and carries a worked `Examples` docstring produced by a byte-exact
 example-value generator (objects built from their required fields incl. inherited
 ones, unions/enums, containers, maps, datetimes, the `long` placeholder; ruff
 snippet formatting at line length 88). The two package `__init__.py` aggregators
-(`types/__init__.py`, package-root `__init__.py`), the generated **docs**
-(`README.md`, and the per-endpoint `reference.md`), and the project-root
+(`types/__init__.py`, package-root `__init__.py`), the generated `README.md`, and
+the project-root
 **scaffolding** (`pyproject.toml`, `requirements.txt`, `.fern/metadata.json`) all
-match. See the `EXHAUSTIVE` `matched` list in `tests/e2e.rs` for the exact set.
+match. See the `EXHAUSTIVE` `unmatched` list in `tests/e2e.rs` for the exact
+residual.
 
 Non-Python matched files (the scaffolding) are Fern's verbatim output and compared
 without comment stripping; `.py` files are still comment-stripped before the
@@ -220,22 +224,68 @@ here means matching Fern, not `ruff`.
 
 ## Known gaps (roadmap)
 
-The `exhaustive` corpus is fully matched, and **every** feature-coverage target is
-**fully matched too** — `auth-schemes`, `discriminated-unions`,
-`schema-constraints`, `integer-enums`, `form-bodies`, `inline-request-response`,
-`cookie-parameters`, `servers-webhooks`, the four former gap targets
-`basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
-`writeonly-fields`, the two issue-#43 targets `error-responses` and
-`sse-streaming`, the issue-#50 target `enum-name-sanitization`, and the issue-#57
-target `enum-receiver-collision` — with three **partially** matched targets whose
-headline files match while a residual feature is still unimplemented:
-`recursive-types`, `nested-core-imports`, and `malformed-property-schema` (issues
-#84–#86, below). (The exact
-matched-file set for each corpus — and the roster of
-corpora itself — is the `FEATURE_TARGETS`/`matched` data in `tests/e2e.rs`, the
-single source of truth; counts are deliberately not restated here so they cannot
-drift.) The items below record how each shape generates; the remaining unproven
-paths are called out inline.
+`exhaustive` and the 25 other hand-authored feature-coverage goldens were
+regenerated with `fernapi/fern-python-sdk:5.20.0` — the version the real-world
+corpus already pins — and each records that exact generator in its
+`expected/.crozier-fern-golden.json` provenance. Their trees had been pre-5.20
+Fern output, so **507 of the 524 measured residual files were version skew**: one
+shared ~18-file scaffold block (`src/*/core/*`, `client.py`, the `__init__.py`
+aggregators, `pyproject.toml`, `README.md`, `reference.md`, `requirements.txt`,
+`.fern/metadata.json`) repeated once per corpus, not a crozier defect. What the
+refresh leaves:
+
+- **Fully matched** (empty `unmatched`): `auth-schemes`, `basic-auth`,
+  `oauth-client-credentials`, `inline-request-response`, `cookie-parameters`,
+  `form-bodies`, `enum-name-sanitization`, `enum-receiver-collision`,
+  `enum-query-param`, `tag-based-grouping`, `operation-id-non-identifier`,
+  `missing-operation-id`, `exhaustive` (all 111 files), and — through the refresh
+  alone — the issue-#84/#85 targets `recursive-types` and `nested-core-imports`.
+- **One residual file each**: `discriminated-unions`, `schema-constraints`,
+  `integer-enums`, `servers-webhooks`, `inline-array-request`, `writeonly-fields`,
+  `error-responses`, and `bracketed-property-names` (all the same `README.md`
+  gap), plus `malformed-property-schema` (`search_widgets_response.py`) and
+  `digit-leading-property` (`client.py`).
+- **`sse-streaming`**: 4 of 40.
+
+The 14 surviving files are four real divergences:
+
+1. **Abbreviated calls in `README.md`** (8 corpora). Fern writes
+   `client.<tag>.<method>(...)` for a method that takes arguments; crozier writes
+   `()`.
+2. **Malformed nodes are over-optionalized** (`malformed-property-schema`'s
+   `search_widgets_response.py`). crozier wraps an already-optional unknown
+   property in a second `typing.Optional`.
+3. **SSE** (`sse-streaming`, all four files). The stream element type
+   (Fern's `typing.Any`), 5.20's `parse_sse_obj` deserializer, and 5.20's
+   streaming doc layout — no separate `## Streaming` README section, and a plain
+   call rather than crozier's `for chunk in response:` loop.
+4. **Root-level method examples** (`digit-leading-property`'s `client.py`). Fern's
+   worked example for a method on the root client constructs it with `base_url=`,
+   exactly as the class-level example does; crozier emits a bare `FernApi()`.
+
+The refresh also **closed** two divergences it had first exposed, both in
+`exhaustive`:
+
+- **Unknown (`{}`) request-body requiredness.** Fern splits on the schema's
+  `nullable`, not the document version: a bare `{}` body is a *required*
+  `typing.Any`, and `{nullable: true}` is `typing.Optional[typing.Any] = None`.
+  crozier had gated the required form to OpenAPI 3.1 documents — a rule fitted to
+  the stale pre-5.20 `exhaustive` golden — which mistyped that 3.0.1 spec's
+  `noAuth_postWithNoAuth`. `letta` declares both shapes and pins the rule.
+- **Doc type spelling.** A `reference.md` entry's ` -> <type>` summary spells the
+  datetime types in full (`datetime.datetime`), never the `dt.` alias the
+  generated Python imports them under — the same prose spelling the parameter
+  rows already used.
+
+The exact residual per corpus is the `FEATURE_TARGETS`/`unmatched` data in
+`tests/e2e.rs`, the single source of truth; `just fixtures-gaps` re-measures it.
+Six fixtures are deliberately **not** on 5.20.0 and still carry the pre-5.20
+scaffold block: `audience-filter`, `audience-filter-strict`, `client-class-name`,
+and `pydantic-extra-fields` (their non-default generator config needs the same
+refresh), `query-parameters-openapi` (Fern's own repository seed, never generated
+here), and `calorieninjas.com` (the registered known upstream failure). The items
+below record how each shape generates; the remaining unproven paths are called out
+inline.
 
 The first **real-world** corpus, `apideck.com-crm` (issue #77), is **fully matched**
 too — all 167 files, byte-for-byte. As a `link-ok` entry its OpenAPI spec is
@@ -404,8 +454,8 @@ the third does not reproduce at the corpus's pinned Fern version.
    pydantic can dispatch on the tag; a plain `Shape = typing.Union[...]` cannot.
    This landed in `fern-python-sdk` 4.35.0, so the corpus was bumped 4.34.0 → 4.35.0
    to pin it — a deliberately **minimal** bump: 4.35.0's only output change over
-   4.34.0 is this annotation (the 104-file `exhaustive` tree differs by only the
-   `.fern/metadata.json` version string), so no other generator work was needed.
+   4.34.0 is this annotation (the then-104-file `exhaustive` tree differed by only
+   the `.fern/metadata.json` version string), so no other generator work was needed.
    [`emit::render_discriminated_union`] now emits the annotated alias.
 3. **SSE streaming operations were reduced to a `-> None` method** that discarded
    the stream (`sse-streaming`, gap #3). A `text/event-stream` 2xx response now
@@ -415,19 +465,27 @@ the third does not reproduce at the corpus's pinned Fern version.
    (`EventSource.iter_sse`/`aiter_sse`) into
    `typing.(Async)Iterator[typing.Optional[typing.Any]]` chunks, and the high-level
    client yields each chunk with a worked streaming `Examples` block. The chunk stays
-   `Optional[Any]`: Fern's OpenAPI importer does not resolve the `x-fern-streaming`
+   untyped: Fern's OpenAPI importer does not resolve the `x-fern-streaming`
    `chunk-schema-ref` (the same limitation as the OAuth extension), so crozier keys
-   off the content type alone and matches Fern's untyped chunk.
+   off the content type alone. All four of `sse-streaming`'s remaining residual files
+   are 5.20 SSE changes crozier has not followed — Fern spells the untyped chunk
+   `typing.Any` rather than `typing.Optional[typing.Any]`, deserializes through a new
+   `parse_sse_obj` helper, and drops the separate `## Streaming` README section in
+   favor of a plain call snippet.
 
 The generated **README/reference** now pick the first endpoint with a request body
 for the worked example and abbreviate the error-handling/advanced snippets to `...`
 (for a fully-required inline body or a container body) or `()` (a body with an
 optional field, a union/enum/scalar body, or no body), ruff-wrapped at the 88-col
-snippet width. Each gap has a hand-authored **feature-coverage
+snippet width. **That abbreviation rule is the surviving `README.md` gap**: at 5.20
+Fern writes `(...)` whenever the method takes arguments at all, so the eight
+one-file residuals above are corpora whose sole endpoint takes an optional-field or
+scalar body. Each gap has a hand-authored **feature-coverage
 target** under `tests/fixtures/` (a `FEATURE_TARGETS` corpus in `tests/e2e.rs`),
-with the full Fern `expected/` tree committed. Each corpus's `matched` list grows
-file-by-file as generation lands; the smoke test also asserts crozier consumes
-every spec without panicking regardless of how much is matched. To reproduce the
+with the full Fern `expected/` tree committed. Each corpus's `unmatched` list
+shrinks file-by-file as generation lands; the smoke test also asserts crozier
+consumes every spec without panicking regardless of how much is matched. To
+reproduce the
 current output for a target (Fern generated these with the scaffold defaults):
 
 ```
@@ -461,10 +519,10 @@ the document. Each has a hand-authored feature-coverage target with the full Fer
    recursing forever ([`emit`]'s example cycle guard). Discriminated-union wrappers
    are now named after the discriminant **value** (`Node_And`), matching Fern —
    previously the referenced schema name (`Node_AndNode`) when the two differed.
-   Still partial: a recursive `oneOf` with **inline** (untitled, unmapped) variants
-   needs discriminator-mapping *inference* to match Fern's structure; crozier no
-   longer crashes on it, but that inference is a separate feature, so those files
-   stay out of `matched`.
+   The corpus **matches in full** at 5.20: the recursive `oneOf` with **inline**
+   (untitled, unmapped) variants that used to look like a missing
+   discriminator-mapping *inference* feature was pre-5.20 golden skew, not a
+   structural divergence.
 2. **Nested-type `core` import depth** (`nested-core-imports`, issue #85). A
    per-operation hoisted type at `{pkg}/{tag}/types/…` reached `core.serialization`
    with a hardcoded `..core` — correct only at the root nesting level, a
@@ -478,8 +536,12 @@ the document. Each has a hand-authored feature-coverage target with the full Fer
    fields positionally from that array, turning the first element into a bogus
    `$ref` and emitting a dangling type import. The `properties` deserializer now
    degrades any non-object value to a `malformed` unknown node
-   ([`openapi`]'s `de_properties`), which renders as Fern's `Optional[Any]` —
-   matching Fern's tolerance of the same document.
+   ([`openapi`]'s `de_properties`), matching Fern's tolerance of the same document.
+   One file still differs: Fern renders the degraded node as a plain
+   `typing.Optional[typing.Any]` field, while crozier optionalizes the already
+   optional unknown a second time (`typing.Optional[typing.Optional[typing.Any]]`).
+   This is a *property*-level gap; the request-body counterpart is closed (see the
+   unknown-body requiredness rule above).
 
 ### Adding a gap target's golden tree
 
@@ -501,7 +563,7 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    auth model is also threaded through the root `client.py` (constructor param, the
    docstring `Parameters` line, and the `Examples` instantiation) and every worked
    `Examples` snippet (per-tag `client.py`, README, reference), so `auth-schemes`
-   matches its root + per-tag clients and reference under api-key. **HTTP `basic`**
+   matches in full under api-key. **HTTP `basic`**
    is now a first-class primary ([`ir::Auth::Basic`]): a required `username`/
    `password` pair (each `str` or callable), the `httpx.BasicAuth(...)._auth_header`
    header wiring, and both credentials threaded through the wrapper, root/per-tag
@@ -522,7 +584,7 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    alias (Fern does not build a `Literal` union for them), and a `$ref` integer-enum
    request body is emittable (`json=request` + content-type header, like a string
    enum) — so `integer-enums` matches its whole `enums` module, root client, and
-   reference (only the README example placeholder differs).
+   reference (only the README abbreviated call differs).
 3. **Fern's `TYPE_CHECKING` traversal order** in `types/__init__.py` is reproduced
    empirically (the `Types*` types in reverse declaration order, then the rest
    alphabetically). It matches the corpus byte-for-byte; a spec with a different
@@ -567,9 +629,8 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    each carrying the discriminant as a `typing.Literal[..]` field plus the referenced
    model's other fields — over a `{Union} = typing_extensions.Annotated[typing.Union[..],
    pydantic.Field(discriminator="…")]` alias (issue #50 part 2), and the
-   discriminant property is stripped from each member's own model. The type layer
-   (`shape.py`, `circle.py`, `square.py`, `types/__init__.py`) matches in
-   `discriminated-unions`; the endpoint/docs layer awaits the auth + endpoint work.
+   discriminant property is stripped from each member's own model.
+   `discriminated-unions` matches everything but its `README.md` abbreviated call.
    A discriminator without an explicit `mapping` still falls back to a plain union.
 8. **Schema annotations and constraints** (`schema-constraints`, mostly matched).
    Fern ignores the validation keywords (`minLength`/`pattern`/`minimum`/`maxItems`/
@@ -577,12 +638,13 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    a `readOnly` property is now rendered optional even when `required` (it is
    server-populated), and `additionalProperties: true` maps to
    `Dict[str, Optional[Any]]`. The whole `schema-constraints` type + endpoint layer
-   matches (only the README example placeholder differs). When one schema is used as
+   matches (only the README abbreviated call differs). When one schema is used as
    *both* request body and response, Fern orders the inlined request signature and
    docstring **required-first** (optional `= OMIT` args last, a stable partition that
    preserves schema order within each group) while the `json={...}` dict keeps pure
    schema order — so a required `readOnly`/`writeOnly` field lands after the plain
-   required ones. `writeonly-fields` pins this in full. Not yet exercised: dropping a
+   required ones. `writeonly-fields` pins this, matching everything but its
+   `README.md` abbreviated call. Not yet exercised: dropping a
    `writeOnly`-only field from the *response* representation (Fern keeps it here).
 9. **Document-level `servers` (implemented); `webhooks`/`callbacks` (ignored).**
    When the document declares `servers`, crozier emits `environment.py` (an
@@ -593,7 +655,8 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    description (the "2 servers → only `PRODUCTION`" oddity) — which
    [`ir::Environment`] reproduces. `webhooks`/`callbacks` are still absent from the
    serde model (and Fern's OpenAPI SDK does not generate from them), so they are
-   ignored; `servers-webhooks` matches in full regardless.
+   ignored; `servers-webhooks` matches everything but its `README.md` abbreviated
+   call regardless.
 5. **The endpoint layer (implemented — kept as a reference of the covered
    shapes).** `paths` are read into an operation IR
    ([`ir::Endpoint`]): module, method name, HTTP method, URL, path params, and
@@ -642,8 +705,8 @@ operationIds and property names. Real vendor specs are messier, and three shapes
 that used to make crozier emit invalid Python or hard-error now generate legal —
 and, for the shapes below, byte-matched — output. Each has its own gap-target
 corpus (`digit-leading-property`, `operation-id-non-identifier`,
-`bracketed-property-names`, `missing-operation-id`), whose `matched` list is
-defined in `tests/e2e.rs`.
+`bracketed-property-names`, `missing-operation-id`), whose residual `unmatched`
+list is defined in `tests/e2e.rs`.
 
 - **Digit-leading property name** (`2fa_enabled`). [`naming::field_name`] prefixes
   `f_` when the snake-cased name would start with a digit, and the wire name is
@@ -664,8 +727,8 @@ defined in `tests/e2e.rs`.
   before snake-casing (`filter[name]` → `filter_name`, `page[size]` →
   `page_size`), while the raw bracketed name rides along as the wire
   serialization key (`needs_alias` fires) — byte-for-byte Fern's parameters and
-  `data`/`params` dict keys. The whole `bracketed-property-names` corpus matches,
-  including its raw and high-level `widgets` clients.
+  `data`/`params` dict keys. `bracketed-property-names` matches everything but its
+  `README.md` abbreviated call, including its raw and high-level `widgets` clients.
 
 - **Missing `operationId`** (optional in OpenAPI). Instead of hard-erroring,
   [`ir::endpoint_method_name`] synthesizes the method from the route:
@@ -705,24 +768,18 @@ non-behavioral differences in tool branding/packaging, so
 `tests/e2e.rs::normalize_sdk_headers` drops the `SDK-Name`/`SDK-Version` lines and
 canonicalizes the remaining `X-Crozier-` prefix (the `Language` header) to `X-Fern-`
 on both sides before comparison. Every other line of `client_wrapper.py` matches
-exactly, so the wrapper is in each corpus's `matched` list.
+exactly, so the wrapper is gated (never on an `unmatched` list) in every corpus.
 
-### What stays unmatched (packaged vs. local Fern output)
+### What stays unmatched
 
-The only files the golden trees carry that stay out of the `matched` lists are the
-package-root `__init__.py` aggregators (they import `__version__` from a
-`version.py` crozier emits but Fern's local output omits). The pure packaging
-scaffolding — `pyproject.toml`, `version.py`, `py.typed`, `README.md`,
-`reference.md` — is simply absent from the golden trees, so there is nothing to
-compare against. This is **not** a crozier defect: crozier reproduces Fern's
-*packaged* SDK (a pip package with all of the above), exactly as the auth'd corpora
-prove. Fern only writes that packaged form when generating for a registry
-(`output.location: pypi`/`github`), which needs publishing credentials; the
-credential-free local mode (`local-file-system` → `downloadFiles`) that vendors
-these golden trees omits it. (`digit-leading-property` additionally leaves its client
-layer unmatched: its `getThing` operation is untagged and groupless, so Fern emits a
-root-level method where crozier still nests a single-endpoint client — a separate
-root-client gap. Its `f_2fa_enabled` model, the fix under test, matches in full.)
+All four corpora are now regenerated as Fern's *packaged* SDK (`fern generate
+--preview`), so the packaging scaffolding — `pyproject.toml`, `README.md`,
+`reference.md`, `requirements.txt` — is present and compared rather than absent.
+`operation-id-non-identifier`, `missing-operation-id`, and the `f_2fa_enabled`
+model plus the root-level `get_thing` method behind `digit-leading-property` match
+in full. Two residual files remain: `bracketed-property-names`' `README.md` (the
+abbreviated-call gap) and `digit-leading-property`'s `client.py` (the root-level
+method example drops Fern's `base_url=` kwarg). Both are in the roadmap above.
 
 Still open from the issue (tracked, not yet done): hoisting an inline object nested
 inside an `array.items` of a *component* schema (dropped to `typing.Any` today —

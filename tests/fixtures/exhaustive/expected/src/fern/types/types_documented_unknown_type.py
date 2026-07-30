@@ -2,4 +2,7 @@
 
 import typing
 
-TypesDocumentedUnknownType = typing.Optional[typing.Any]
+TypesDocumentedUnknownType = typing.Any
+"""
+Tests that unknown types are able to preserve their docstrings.
+"""

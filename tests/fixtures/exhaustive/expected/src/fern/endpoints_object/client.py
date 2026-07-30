@@ -313,12 +313,12 @@ class EndpointsObjectClient:
         return _response.data
 
     def endpoints_object_get_and_return_with_unknown_field(
-        self, *, unknown: typing.Optional[typing.Any] = OMIT, request_options: typing.Optional[RequestOptions] = None
+        self, *, unknown: typing.Any, request_options: typing.Optional[RequestOptions] = None
     ) -> TypesObjectWithUnknownField:
         """
         Parameters
         ----------
-        unknown : typing.Optional[typing.Any]
+        unknown : typing.Any
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -805,12 +805,12 @@ class AsyncEndpointsObjectClient:
         return _response.data
 
     async def endpoints_object_get_and_return_with_unknown_field(
-        self, *, unknown: typing.Optional[typing.Any] = OMIT, request_options: typing.Optional[RequestOptions] = None
+        self, *, unknown: typing.Any, request_options: typing.Optional[RequestOptions] = None
     ) -> TypesObjectWithUnknownField:
         """
         Parameters
         ----------
-        unknown : typing.Optional[typing.Any]
+        unknown : typing.Any
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

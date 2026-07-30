@@ -3116,12 +3116,14 @@ fn resolve_request_body(
     }
     // An unknown (empty `{}`) body keeps the request wrapper's requiredness and
     // renders as `typing.Any`, with a plain `json=request` and no content-type.
+    // `nullable` on the schema — not the document version — is what makes the
+    // argument optional: letta declares all three shapes and Fern splits them on
+    // exactly that (`{}` → required, `{nullable: true}` → `Optional[Any] = None`),
+    // and `exhaustive`'s 3.0.1 `noAuth_postWithNoAuth` takes the required form too.
     if is_unknown(schema) {
         return Some(single(
             TypeRef::Primitive(Prim::Any),
-            doc.openapi.starts_with("3.1")
-                && schema.nullable != Some(true)
-                && (media_type == "*/*" || rb.required != Some(false)),
+            schema.nullable != Some(true) && (media_type == "*/*" || rb.required != Some(false)),
             false,
             false,
         ));
@@ -9260,12 +9262,33 @@ mod tests {
             matches!(resolved, Some(RequestBody::Single(ref body)) if body.required),
             "{resolved:?}"
         );
+        // The document version does not enter into it: `exhaustive` is 3.0.1 and
+        // Fern types its `{}` body required just as it does letta's 3.1 one. Only
+        // the schema's `nullable` and the wrapper's own `required: false` relax it.
         let legacy_doc: OpenApi = serde_json::from_value(serde_json::json!({ "openapi": "3.0.1" }))
             .expect("3.0 document deserializes");
         let resolved = super::resolve_request_body(
             &legacy_doc,
             &[],
             &unknown,
+            &mut hoister,
+            "DeleteRequest",
+            false,
+        );
+        assert!(
+            matches!(resolved, Some(RequestBody::Single(ref body)) if body.required),
+            "{resolved:?}"
+        );
+        let optional_unknown: crate::openapi::RequestBody =
+            serde_json::from_value(serde_json::json!({
+                "required": false,
+                "content": { "application/json": { "schema": {} } }
+            }))
+            .expect("not-required unknown body deserializes");
+        let resolved = super::resolve_request_body(
+            &legacy_doc,
+            &[],
+            &optional_unknown,
             &mut hoister,
             "DeleteRequest",
             false,

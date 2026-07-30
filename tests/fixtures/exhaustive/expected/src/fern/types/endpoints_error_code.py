@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EndpointsErrorCode(str, enum.Enum):
+class EndpointsErrorCode(enum.StrEnum):
     INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR"
     UNAUTHORIZED = "UNAUTHORIZED"
     FORBIDDEN = "FORBIDDEN"

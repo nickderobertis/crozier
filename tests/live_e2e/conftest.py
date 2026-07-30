@@ -103,7 +103,7 @@ class Fixture:
 
 # The corpora driven live. Spec-driven, so this grows by one line as more fixtures
 # gain a runnable SDK. `exhaustive` is the deliberately complicated synthetic seed
-# (55 typed endpoints across 15 sub-clients); `apideck.com-crm` is a real-world
+# (56 typed endpoints across 15 sub-clients); `apideck.com-crm` is a real-world
 # `link-ok` corpus API (40 endpoints across 8 sub-clients) whose spec is fetched,
 # not vendored; `bunq.com` is a much larger real-world `link-ok` corpus (421
 # endpoints across 118 sub-clients) that stresses the pipeline at scale. See

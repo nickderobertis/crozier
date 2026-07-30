@@ -5,3 +5,6 @@ import typing
 from .types_documented_unknown_type import TypesDocumentedUnknownType
 
 TypesMapOfDocumentedUnknownType = typing.Dict[str, TypesDocumentedUnknownType]
+"""
+Tests that map value types with unknown types don't get spurious | undefined.
+"""
