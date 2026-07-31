@@ -26,7 +26,9 @@ Each `<api>/` directory holds:
 - `expected/` — Fern's Python SDK output for that spec, **comment-stripped** (a
   string-safe removal of `#` comments, the only change from Fern's output). The
   same stripper normalizes crozier's output before the byte comparison, so
-  generator-identifying comments never affect the match.
+  generator-identifying comments never affect the match. This directory is
+  required unless a validated `known-fern-failure.json` records that Fern cannot
+  produce a current SDK.
 - `expected/.crozier-fern-golden.json` — the exact Fern generator version, plus
   the manifest name/ref/URL on a workflow-managed corpus golden or the vendored
   spec path and any non-default generator knob on a vendored one. It is automation

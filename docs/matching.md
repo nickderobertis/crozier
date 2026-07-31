@@ -50,6 +50,12 @@ task lists and prints the corpus-wide census; `fixtures-candidates` remains an
 alias. `just fixtures-diff` prints normalized diffs for investigation. See
 [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md).
 
+Every registered comparison corpus must have an `expected/` tree. The sole
+exception is a corpus with a validated exact `known-fern-failure.json`; it has
+no Fern output to compare and remains covered at the spec/process boundary.
+The harness fails on any other missing golden, so removing a tree cannot silently
+reduce byte-comparison coverage.
+
 `query-parameters-openapi` is the one corpus whose golden is not the installed
 result of `fern generate --preview`. It is Fern's committed
 `seed/python-sdk/query-parameters-openapi/no-custom-config` repository tree at
@@ -298,11 +304,15 @@ The configured `audience-filter`, `audience-filter-strict`,
 `client-class-name`, and `pydantic-extra-fields` fixtures are on 5.20.0 and fully
 matched. `query-parameters-openapi` is re-vendored from Fern's 5.20.0 release
 commit and has no unexplained residuals; its seed-repository boundary and six
-exact packaged-output expectations are documented above. `calorieninjas.com` remains on its preserved
-older tree because 5.20.0 cannot emit valid Python; its 19 paths are reported by
-`just fixtures-gaps` as accepted upstream-exception files, separately from open
-Crozier gaps. The items below record how each shape generates; remaining
-unproven paths are called out inline.
+exact packaged-output expectations are documented above. `calorieninjas.com`
+has no golden because 5.20.0 cannot emit valid Python and its former tree had no
+managed provenance, so retaining it would make byte parity depend on unidentified
+older Fern output. Its exact known-failure contract and real-spec Crozier
+robustness test remain registered, including the assertion that Crozier names
+the operation where Fern emits `def (`. If Fern fixes the defect, the managed
+workflow produces a provenanced golden and this corpus rejoins normal byte
+comparison. The items below record how each shape generates; remaining unproven
+paths are called out inline.
 
 The first **real-world** corpus, `apideck.com-crm` (issue #77), is **fully matched**
 too — all 167 files, byte-for-byte. As a `link-ok` entry its OpenAPI spec is

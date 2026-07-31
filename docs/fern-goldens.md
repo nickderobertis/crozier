@@ -91,12 +91,14 @@ command.
 Generation always retries that fixture, even after an exact reproduction. Only
 the normalized fingerprint is warning-only; a changed exit, diagnostic, source
 line, command, corpus identity, malformed registration, or unexpected Fern
-success is fatal. The prior Fern tree remains untouched in every case. Comparison
-does not call that older tree a 5.20 golden: it validates the registration and
-drives Crozier over the real cached spec as a subprocess, then reports the known
-upstream failure separately from the four zero-valued comparison failure counts.
-Remove the registration through a deliberate fixture refresh when a future Fern
-version generates a complete valid tree.
+success is fatal. There is deliberately no `expected/` tree: the former
+unprovenanced snapshot came from an unidentified older Fern and could not support
+a byte-parity claim. Comparison validates the registration and drives Crozier
+over the real cached spec as a subprocess, including the assertion that Crozier
+names the operation where Fern emits `def (`. A missing golden is otherwise a
+hard harness error. When a future Fern version generates a complete valid SDK,
+remove the failure registration and let the managed workflow publish its
+provenanced tree; CalorieNinjas then rejoins normal byte comparison.
 
 Red is expected during an upgrade loop. Successful fixtures are committed on a
 best-effort basis and remain usable even when another selection fails generation

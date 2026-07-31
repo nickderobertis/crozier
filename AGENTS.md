@@ -187,7 +187,7 @@ Use the `just` recipes; do not hand-roll equivalents.
   direct local commands are diagnostic only. See
   [`docs/fern-goldens.md`](docs/fern-goldens.md).
 - CalorieNinjas at Fern 5.20 is covered by an exact, always-retried upstream
-  failure fingerprint; never compare its preserved older tree as a 5.20 golden.
+  failure fingerprint and has no golden until Fern can generate one.
 
 ## Scripts and output are context
 
