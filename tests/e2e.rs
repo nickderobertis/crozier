@@ -1844,6 +1844,7 @@ const CORPORA: &[&Corpus] = &[
     &APIDECK_ATS,
     &BUILDRELAY,
     &TLON_NOTES,
+    &TWILIO_MESSAGING_V1,
 ];
 
 #[test]
@@ -2682,6 +2683,19 @@ const TLON_NOTES: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `twilio.com-twilio_messaging_v1`: the Twilio Messaging API includes a
+/// `russell_3000` property whose Python identifier drops the final underscore.
+const TWILIO_MESSAGING_V1: Corpus = Corpus {
+    api: "twilio.com-twilio_messaging_v1",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &["src/fern/client.py", "src/fern/raw_client.py"],
+};
+
 #[test]
 fn apideck_ats_matches_fern_output() {
     if corpus_spec(APIDECK_ATS.api).is_none() {
@@ -2716,6 +2730,11 @@ fn tlon_notes_matches_fern_output() {
         return;
     }
     assert_corpus_matches(&TLON_NOTES);
+}
+
+#[test]
+fn twilio_messaging_v1_matches_fern_output() {
+    assert_link_ok_corpus_matches(&TWILIO_MESSAGING_V1);
 }
 
 #[test]
