@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "tlon-notes",
+  "corpus_spec_ref": "2277696dcebb66270c6953b983e1a580b780071e",
+  "corpus_spec_url": "https://raw.githubusercontent.com/tloncorp/tlon-apps/2277696dcebb66270c6953b983e1a580b780071e/desk/app/notes/openapi.json"
+}
