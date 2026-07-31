@@ -136,6 +136,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e buildrelay_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e tlon_notes_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e twilio_messaging_v1_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e livepeer_ai_runner_matches_fern_output
 
 # Format the codebase in place.
 format:

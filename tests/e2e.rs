@@ -1845,6 +1845,7 @@ const CORPORA: &[&Corpus] = &[
     &BUILDRELAY,
     &TLON_NOTES,
     &TWILIO_MESSAGING_V1,
+    &LIVEPEER_AI_RUNNER,
 ];
 
 #[test]
@@ -2696,6 +2697,19 @@ const TWILIO_MESSAGING_V1: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `livepeer-ai-runner`: the production inference runtime publishes three
+/// untagged, groupless operations alongside ten tagged pipeline operations.
+const LIVEPEER_AI_RUNNER: Corpus = Corpus {
+    api: "livepeer-ai-runner",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 #[test]
 fn apideck_ats_matches_fern_output() {
     if corpus_spec(APIDECK_ATS.api).is_none() {
@@ -2735,6 +2749,11 @@ fn tlon_notes_matches_fern_output() {
 #[test]
 fn twilio_messaging_v1_matches_fern_output() {
     assert_link_ok_corpus_matches(&TWILIO_MESSAGING_V1);
+}
+
+#[test]
+fn livepeer_ai_runner_matches_fern_output() {
+    assert_link_ok_corpus_matches(&LIVEPEER_AI_RUNNER);
 }
 
 #[test]
