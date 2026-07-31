@@ -6738,13 +6738,24 @@ fn build_example_inner(
                 .fields
                 .iter()
                 .any(|field| field.form_content_type.is_some());
-            for f in form.fields.iter().filter(|f| {
-                if documentation && related {
-                    f.is_file
-                } else {
-                    f.spec_required && (documentation || !f.is_file)
-                }
-            }) {
+            let mut example_fields: Vec<_> = form
+                .fields
+                .iter()
+                .filter(|f| {
+                    if documentation && related {
+                        f.is_file
+                    } else {
+                        f.spec_required && (documentation || !f.is_file)
+                    }
+                })
+                .collect();
+            // Fern's reference writer lists required multipart file inputs before
+            // the other required fields, even though executable signatures retain
+            // the schema's required-first declaration order.
+            if reference && form.multipart {
+                example_fields.sort_by_key(|field| !field.is_file);
+            }
+            for f in example_fields {
                 let v = if documentation && f.is_file {
                     Example::Atom(format!("\"example_{}\"", f.wire_name))
                 } else {

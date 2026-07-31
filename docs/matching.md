@@ -814,6 +814,19 @@ All four corpora are now regenerated as Fern's *packaged* SDK (`fern generate
 model plus the root-level `get_thing` method behind `digit-leading-property` match
 in full. None of these four corpora retains a measured residual.
 
+The root-client rule is also durable against the real-world
+`livepeer-ai-runner` corpus at Fern 5.20.0. Its three untagged, groupless
+operations (`health`, `hardware_info`, and `hardware_stats`) are methods on the
+root sync and async clients alongside the tagged `generate` sub-client, and are
+wired through the package exports and their own `reference.md` sections exactly
+as Fern emits them. The first measured run found four residual files, none in
+root-method placement: the shared README/reference/root-client environment
+default plus `environment.py`. Matching them established two adjacent Fern
+rules: a server description beginning with the API provider name uses the
+`DEFAULT` environment member, and multipart reference examples list required
+file inputs before other required fields. All 73 golden files now match, while
+the synthetic `digit-leading-property` fixture remains fully matched.
+
 The component-array-item gap is closed and pinned by the real-world
 `apideck.com-ats` corpus at Fern 5.20.0: its
 `Applicant.properties.social_links.items` object becomes the package-root

@@ -103,8 +103,9 @@ impl Environment {
 /// Fern's single-member behavior: the first server only, its member named by
 /// uppercasing the description (non-identifier characters → `_`). A templated
 /// server, a single concrete server with no usable description, or a description
-/// that merely repeats the API title, or a numbered demo-server description is
-/// `DEFAULT`; other described concrete servers keep their description-derived name.
+/// that merely repeats the API provider (the first title word), or a numbered
+/// demo-server description is `DEFAULT`; other described concrete servers keep
+/// their description-derived name.
 fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     let first = doc.servers.first()?;
     // A server with a templated URL (`{basePath}` variables) is named `DEFAULT` — its
@@ -125,19 +126,15 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
             .description
             .as_deref()
             .filter(|description| {
-                let title_stem = doc
-                    .info
-                    .title
-                    .strip_suffix(" API")
-                    .unwrap_or(&doc.info.title);
+                let title_provider = doc.info.title.split_whitespace().next().unwrap_or_default();
                 !description.eq_ignore_ascii_case("production server")
                     && !description.eq_ignore_ascii_case("development server")
                     && !description.to_ascii_lowercase().starts_with("local ")
                     && !description.eq_ignore_ascii_case(&doc.info.title)
-                    && (title_stem.is_empty()
+                    && (title_provider.is_empty()
                         || !description
                             .to_ascii_lowercase()
-                            .starts_with(&title_stem.to_ascii_lowercase()))
+                            .starts_with(&title_provider.to_ascii_lowercase()))
             })
             .map(env_member_name)
             .filter(|n| !n.is_empty())
