@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.45](https://github.com/nickderobertis/crozier/compare/v0.0.44...v0.0.45) - 2026-07-31
+
+### Added
+
+- match Fern's root-client shape on a real-world spec ([#143](https://github.com/nickderobertis/crozier/pull/143))
+
 ## [0.0.44](https://github.com/nickderobertis/crozier/compare/v0.0.43...v0.0.44) - 2026-07-31
 
 ### Added
