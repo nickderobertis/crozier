@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.43](https://github.com/nickderobertis/crozier/compare/v0.0.42...v0.0.43) - 2026-07-31
+
+### Added
+
+- infer discriminator mappings for inline oneOf variants ([#139](https://github.com/nickderobertis/crozier/pull/139))
+
 ## [0.0.42](https://github.com/nickderobertis/crozier/compare/v0.0.41...v0.0.42) - 2026-07-30
 
 ### Added
