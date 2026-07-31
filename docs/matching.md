@@ -2,8 +2,8 @@
 
 crozier's contract: **its generated Python, with comments stripped, is
 byte-for-byte identical to Fern's**, for the same OpenAPI input and the same
-naming. This doc explains how that is verified, what is matched today, and the
-known gaps.
+naming. This doc explains how that is verified, why each shape generates the way
+it does, and the one accepted upstream exception.
 
 ## Why the fixtures are what they are
 
@@ -17,10 +17,10 @@ Two fixture sources, both Fern's real output (Apache-2.0, see `NOTICE`):
 
 - **Offline corpus** — Fern commits Python SDK snapshots for its OpenAPI-sourced
   test APIs (the `*-openapi` seeds). These need no Docker, are reproducible, and
-  gate on every run. `query-parameters-openapi` is the first one vendored.
-- **Exhaustive target** — the broad `exhaustive` spec the project aims at. Fern's
+  gate on every run. `query-parameters-openapi` is the one vendored seed.
+- **Exhaustive target** — the broad `exhaustive` spec. Fern's
   committed `exhaustive` Python output is *definition*-derived, so it is **not** a
-  valid OpenAPI target. Producing the true OpenAPI-derived output requires running
+  valid OpenAPI target. The OpenAPI-derived golden comes from running
   Fern's containerized generator over the vendored
   `tests/fixtures/exhaustive/openapi.yml`.
 
@@ -39,22 +39,51 @@ the committed fixtures (`crozier::strip_python_comments`, exposed as
 `tests/fixtures/<api>/expected/**`. Comment stripping is the *only* normalization
 — everything else must match exactly.
 
-## The unmatched manifest (source of truth)
+## Parity status and the residual manifest
 
-Each `Corpus` in `tests/e2e.rs` carries an `unmatched` list containing only its
-measured residual divergences. The gate walks the full Fern `expected/` tree and
-requires every other file to match, so newly emitted files are covered
-automatically. It also requires every listed gap to remain divergent, preventing
-closed work from lingering. `just fixtures-gaps` regenerates the exact residual
-task lists and prints the corpus-wide census; `fixtures-candidates` remains an
-alias. `just fixtures-diff` prints normalized diffs for investigation. See
+**Every registered corpus reproduces its whole committed Fern golden
+byte-for-byte at `fernapi/fern-python-sdk:5.20.0`.** Every `Corpus` in
+`tests/e2e.rs` carries an empty `unmatched` list; that file is the measured
+truth, and this document holds the judgment about *why* each shape generates the
+way it does. Per-corpus file counts deliberately live only next to the data they
+describe, so prose here cannot drift away from them.
+
+Parity is the harness's default rather than an opt-in claim. The gate walks the
+full Fern `expected/` tree and requires every file to match, walks crozier's
+output back so a newly emitted file cannot fall outside the compared set, and
+requires each `unmatched` entry to *stay* divergent so a closed gap cannot linger
+as a suppression. Nothing in the mechanism can hide a file that starts diverging:
+adding a path to `unmatched` is a visible source change, and the reporter rejects
+an entry that already matches. Registration alone would not be enough — a corpus
+no test drives, or a fetched-spec corpus missing from `just test-corpus-match`,
+would skip silently everywhere — so
+`every_registered_corpus_is_wired_into_the_gate` derives both wirings from
+`tests/e2e.rs` and the `justfile` and fails when either is absent.
+`just fixtures-gaps` re-measures every corpus and
+prints the census; `fixtures-candidates` remains an alias. `just fixtures-diff`
+prints normalized diffs for investigation. See
 [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md).
 
+### The one accepted exception
+
 Every registered comparison corpus must have an `expected/` tree. The sole
-exception is a corpus with a validated exact `known-fern-failure.json`; it has
-no Fern output to compare and remains covered at the spec/process boundary.
-The harness fails on any other missing golden, so removing a tree cannot silently
-reduce byte-comparison coverage.
+exception is a corpus with a validated exact `known-fern-failure.json`: Fern
+itself cannot produce an SDK, so there is no golden to compare, and the corpus
+stays covered at the spec/process boundary instead. The harness fails on any
+other missing golden, so removing a tree cannot silently reduce byte-comparison
+coverage.
+
+`calorieninjas.com` is the only such corpus. Its source operation declares no
+`operationId`; Fern 5.20.0 emits unnamed methods (`def (`, `_raw_client.(`) and
+its own Ruff pass then rejects the SDK, so the failure is upstream of crozier —
+crozier generates that same spec successfully and *names* the operation. The
+registration is bound to the exact generator version, corpus name/ref/URL, exit
+code, ordered syntax diagnostics with their source lines, Ruff summary, and
+failed command, and generation retries the fixture on every run: an unexpected
+Fern *success* is fatal, so the exception cannot outlive the limitation. It is a
+distinct harness state from an open gap — a corpus that carries both a
+`known-fern-failure.json` and an `expected/` tree is an error, not a suppression.
+See [`fern-goldens.md`](fern-goldens.md#exact-known-upstream-failures).
 
 `query-parameters-openapi` is the one corpus whose golden is not the installed
 result of `fern generate --preview`. It is Fern's committed
@@ -91,16 +120,16 @@ fails until its evidence is deliberately updated. The gate also walks Crozier's
 output back against the golden, so a newly emitted file can never silently fall
 outside the compared set.
 
-**`exhaustive` matches all 111 of its files** — the widest single parity proof in
+**`exhaustive` matches its whole tree** — the widest single parity proof in
 the corpus, and the only fixture that exercises the whole generator end to end.
 This
 covers `version.py`, `py.typed`, the **entire type
 layer** (every `types/*.py` module including the hoisted `typesAnimal` variants),
-the **entire `core/` runtime** (19 files), the
+the **entire `core/` runtime**, the
 **`errors/` package** (a generated exception class per declared error plus its
 lazy-loading `__init__.py`), each endpoint client's package marker
-(`<tag>/__init__.py`), and the per-tag `raw_client.py` for **every one of the 15
-endpoint tags**. That spans the no-request-body tags (`endpoints_put`,
+(`<tag>/__init__.py`), and the per-tag `raw_client.py` for **every endpoint
+tag**. That spans the no-request-body tags (`endpoints_put`,
 `endpoints_urls`, `noreqbody`), query parameters (`endpoints_pagination`,
 incl. array/allow-multiple params in `endpoints_params`), scalar/enum/union `$ref`
 bodies via the `convert_and_respect_annotation_metadata` wrapper where needed
@@ -111,7 +140,7 @@ field-by-field (`endpoints_object`, `endpoints_http_methods`,
 (`endpoints_container`), unknown (`{}`) and `application/octet-stream` bytes bodies
 plus mixed path/query/body operations (`endpoints_params`, `noauth`), and declared
 4xx error responses that raise generated exceptions (`noauth`, `inlinedrequests`).
-The **high-level per-tag `client.py`** for 14 of the 15 tags and the **root
+The **high-level per-tag `client.py`** and the **root
 `client.py`**
 (`FernApi`/`AsyncFernApi`, bearer auth) match too — each wrapper method returns
 `_response.data` and carries a worked `Examples` docstring produced by a byte-exact
@@ -121,8 +150,7 @@ snippet formatting at line length 88). The two package `__init__.py` aggregators
 (`types/__init__.py`, package-root `__init__.py`), the generated `README.md`, and
 the project-root
 **scaffolding** (`pyproject.toml`, `requirements.txt`, `.fern/metadata.json`) all
-match. See the `EXHAUSTIVE` `unmatched` list in `tests/e2e.rs` for the exact
-residual.
+match.
 
 Non-Python matched files (the scaffolding) are Fern's verbatim output and compared
 without comment stripping; `.py` files are still comment-stripped before the
@@ -130,8 +158,9 @@ comparison.
 
 ## Verifying the tool as a user runs it
 
-Byte-matching proves *equality to Fern* for the two corpora. The e2e also covers
-the journeys a user actually takes, independent of the golden fixtures:
+Byte-matching proves *equality to Fern* on the specs Fern has generated. The e2e
+also covers the journeys a user actually takes, independent of the golden
+fixtures:
 
 - **The generated SDK is valid Python.** `assert_valid_python` compiles the whole
   emitted tree with `python -m compileall` — for the `exhaustive` fixture and for
@@ -181,8 +210,9 @@ the journeys a user actually takes, independent of the golden fixtures:
 - **`--version`.** Asserted against the crate version, the same string the release
   smoke test checks against the published binary.
 
-The full expected tree is committed under `expected/` even where not yet matched,
-so the finish line is explicit and progress is measurable.
+Each corpus commits Fern's *whole* `expected/` tree, not the subset crozier
+happens to reproduce, so the comparison is over the complete output and a
+regression has nowhere to hide.
 
 ## What generates today
 
@@ -248,23 +278,24 @@ Fern's committed examples are not a `ruff` fixed point: `ruff` reformats a long
 the long `await …(` line and only explodes the call arguments. Reproducing Fern
 here means matching Fern, not `ruff`.
 
-## Known gaps (roadmap)
+## The 5.20.0 refresh and the rules it established
 
-`exhaustive` and the 25 other hand-authored feature-coverage goldens were
+`exhaustive` and the other hand-authored feature-coverage goldens were
 regenerated with `fernapi/fern-python-sdk:5.20.0` — the version the real-world
 corpus already pins — and each records that exact generator in its
 `expected/.crozier-fern-golden.json` provenance. Their trees had been pre-5.20
-Fern output, so **507 of the 524 measured residual files were version skew**: one
-shared ~18-file scaffold block (`src/*/core/*`, `client.py`, the `__init__.py`
-aggregators, `pyproject.toml`, `README.md`, `reference.md`, `requirements.txt`,
-`.fern/metadata.json`) repeated once per corpus, not a crozier defect. All 26
-hand-authored feature corpora now have empty `unmatched` lists, including
-`exhaustive` (all 111 files).
+Fern output, so the great majority of the residual measured before that refresh
+was **version skew**: one shared scaffold block (`src/*/core/*`, `client.py`, the
+`__init__.py` aggregators, `pyproject.toml`, `README.md`, `reference.md`,
+`requirements.txt`, `.fern/metadata.json`) repeated once per corpus, not a crozier
+defect. Measuring against a mixed-version corpus is why the count looked large; a
+provenanced golden per corpus is why it cannot happen again.
 
-The refresh's 14 genuine divergence files closed through four rules:
+What remained after the refresh was genuine divergence, and it closed through
+four rules:
 
-1. **Abbreviated calls in `README.md`** (8 corpora) use `(...)` whenever the
-   demonstrated method takes any argument; argument-free methods use `()`.
+1. **Abbreviated calls in `README.md`** use `(...)` whenever the demonstrated
+   method takes any argument; argument-free methods use `()`.
 2. **Malformed-node optionality** is idempotent: an already-optional unknown
    property is not wrapped in a second `typing.Optional`.
 3. **SSE** uses Fern 5.20's `typing.Any` stream element and `parse_sse_obj`
@@ -275,7 +306,7 @@ The refresh's 14 genuine divergence files closed through four rules:
    document, so a root client without environments includes Fern's required
    `base_url=` constructor argument.
 
-The independent real-world residual in **`letta`'s `reference.md`** had two
+The independent real-world divergence in **`letta`'s `reference.md`** had two
 causes. Crozier documented a `$ref` request body that Fern ignores on a `GET`
 operation, even though both generated clients already omitted it; reference
 generation now consults the normalized request body before using its source-only
@@ -298,24 +329,20 @@ The refresh also **closed** two divergences it had first exposed, both in
   generated Python imports them under — the same prose spelling the parameter
   rows already used.
 
-The exact residual per corpus is the `FEATURE_TARGETS`/`unmatched` data in
+The per-corpus measurement lives in the `CORPORA`/`FEATURE_TARGETS` data in
 `tests/e2e.rs`, the single source of truth; `just fixtures-gaps` re-measures it.
-The configured `audience-filter`, `audience-filter-strict`,
-`client-class-name`, and `pydantic-extra-fields` fixtures are on 5.20.0 and fully
-matched. `query-parameters-openapi` is re-vendored from Fern's 5.20.0 release
-commit and has no unexplained residuals; its seed-repository boundary and six
-exact packaged-output expectations are documented above. `calorieninjas.com`
-has no golden because 5.20.0 cannot emit valid Python and its former tree had no
-managed provenance, so retaining it would make byte parity depend on unidentified
-older Fern output. Its exact known-failure contract and real-spec Crozier
-robustness test remain registered, including the assertion that Crozier names
-the operation where Fern emits `def (`. If Fern fixes the defect, the managed
-workflow produces a provenanced golden and this corpus rejoins normal byte
-comparison. The items below record how each shape generates; remaining unproven
-paths are called out inline.
+The configured `audience-filter`, `audience-filter-strict`, `client-class-name`,
+and `pydantic-extra-fields` fixtures are on 5.20.0 like the rest.
+`query-parameters-openapi` is re-vendored from Fern's 5.20.0 release commit; its
+seed-repository boundary and exact packaged-output expectations are documented
+above. `calorieninjas.com` is the accepted exception described earlier: it has no
+golden because 5.20.0 cannot emit valid Python for it, and its former tree had no
+managed provenance, so retaining it would have made byte parity depend on
+unidentified older Fern output. The items below record how each shape generates;
+paths the corpus does not yet exercise are called out inline.
 
-The first **real-world** corpus, `apideck.com-crm` (issue #77), is **fully matched**
-too — all 167 files, byte-for-byte. As a `link-ok` entry its OpenAPI spec is
+The first **real-world** corpus, `apideck.com-crm` (issue #77), matches
+byte-for-byte too. As a `link-ok` entry its OpenAPI spec is
 fetched, not vendored, so its `apideck_crm_matches_fern_output` test resolves the
 spec from `.local/corpus` (`corpus_spec`), skips when it is absent (the offline
 `check` gate), and enforces the match under `CROZIER_REQUIRE_CORPUS` in the CI
@@ -323,17 +350,17 @@ live-e2e leg (`just test-corpus-match`). Reaching it exercised, on a messy
 real-world document, the `$ref` parameter/response resolution, Fern-matching method
 naming, ubiquitous-header promotion, inline-schema hoisting, and worked-example
 value synthesis (spec `example`s, shown only for a plain-scalar required-and-not-
-nullable field, with an enum rendered as its member); its `unmatched` list is empty.
+nullable field, with an enum rendered as its member).
 
 ### The `bunq.com` real-world corpus (issue #77): the at-scale target, fully matched
 
 The second real-world `link-ok` corpus, `bunq.com`, is deliberately an order of
-magnitude larger than apideck — **421 endpoints, 617 component schemas, 118 tags**,
-committed as a **956-file** Fern golden. Fern generates it cleanly (`fern check`
+magnitude larger than apideck — **421 endpoints, 617 component schemas, 118 tags**.
+Fern generates it cleanly (`fern check`
 passes) and crozier's SDK round-trips live against it (`bunq.com` in
-`conftest.FIXTURES`; see the mock-side-skip note below). It is now **fully
-byte-matched**: `bunq_matches_fern_output` walks and locks in all 956 files; its
-`unmatched` list is empty. Its guard
+`conftest.FIXTURES`; see the mock-side-skip note below). It is **fully
+byte-matched**: `bunq_matches_fern_output` walks and locks in the whole golden.
+Its guard
 mirrors apideck's — skip when the fetched spec is absent, enforce under
 `CROZIER_REQUIRE_CORPUS` in `just test-corpus-match`.
 
@@ -399,11 +426,11 @@ so a skip can never mask a crozier defect. See `tests/live_e2e/AGENTS.md`.
 ### The `bungie.net` real-world corpus (issue #77): schema-heavy target, fully matched
 
 The third real-world `link-ok` corpus, `bungie.net`, is the schema-layer-heavy
-counterpart to endpoint-heavy bunq: **869 component schemas across only 13 tags**,
-committed as a **1082-file** Fern golden. Fern generates it cleanly (`fern check`
+counterpart to endpoint-heavy bunq: **869 component schemas across only 13 tags**.
+Fern generates it cleanly (`fern check`
 passes) and crozier consumes it without error, so it is a valid byte-match target.
-It is now **fully byte-matched**: `bungie_matches_fern_output` locks in all 1082
-files by walking the entire golden; its `unmatched` list is empty.
+It is **fully byte-matched**: `bungie_matches_fern_output` locks in the entire
+golden by walking it.
 Its guard mirrors apideck's and bunq's — skip when the fetched spec is absent, enforce
 under `CROZIER_REQUIRE_CORPUS` in `just test-corpus-match`.
 
@@ -417,8 +444,8 @@ corpora stay byte-identical — none of them exercised these paths):
 2. **Named per-operation response types** (`src/ir.rs`, `src/emit.rs`,
    `src/openapi.rs`) — Fern synthesizes a `<OperationId>Response` type from each
    operation's inline response body (Bungie's standard
-   `{ Response, ErrorCode, ThrottleSeconds, Message, … }` envelope — 172
-   `*_response.py` files, the bulk of the gap). crozier now hoists and names them
+   `{ Response, ErrorCode, ThrottleSeconds, Message, … }` envelope, which is the
+   bulk of its `*_response.py` modules). crozier now hoists and names them
    identically, with their `types/__init__.py` lazy-import entries and the client
    return-type wiring that references them.
 3. **README examples for no-body operations** (`src/emit.rs`) — matched Fern's
@@ -427,37 +454,38 @@ corpora stay byte-identical — none of them exercised these paths):
 Future Bungie source changes or Fern upgrades follow the standard
 [`Fern golden lifecycle`](fern-goldens.md).
 
-### Five more real-world corpora (issue #77): a harder batch, byte-match in progress
+### Five more real-world corpora (issue #77): the harder batch
 
-Beyond the three fully-matched corpora above, five more `link-ok` corpora are added
+Beyond the three corpora above, five more `link-ok` corpora were added
 together as a batch of deliberately harder, feature-diverse targets. All five pass
 `fern check` (the prerequisite — Fern must accept the raw spec, and the largest raw
 public specs do not: `github.com`, `box.com`, and `atlassian.com-jira` each fail its
 gate, and `conjur.local` hits a ref-resolution error, so all four are out). Each
-`Corpus` is registered in `tests/e2e.rs` with a measured `unmatched` list and the
-usual `link-ok` guard, so the offline `check` gate skips unfetched specs; the
-byte-match pass shrinks each list as the generator is brought to a match.
-Their Fern goldens are generated and published to the same feature branch by the
-**Fern goldens** workflow.
+`Corpus` is registered in `tests/e2e.rs` with the usual `link-ok` guard, so the
+offline `check` gate skips unfetched specs while
+`just test-corpus-match` enforces them. All five now match byte-for-byte.
 
-| corpus | shape it stresses | current crozier status |
-|---|---|---|
-| `anchore.io` | largest clean schema surface (149 schemas), heavy `allOf` + enums | coins a **duplicate method parameter** in its `policies` client — generator gap |
-| `apache.org` (Airflow) | heaviest composition (`allOf`×22) + the only discriminated union; 18 tags | same duplicate-parameter gap, in its `dag` client |
-| `discourse.local` | all-inline (0 named schemas → ~113 coined types) | consumes cleanly (224 files) |
-| `appwrite.io-server` | widest operation surface (95 ops); `url` format | consumes cleanly (97 files) |
-| `apicurio.local-registry` | only `int64`-format corpus; `allOf` | parser **rejects a paths-level `x-codegen-contextRoot`** extension — `x-*` keys under `paths` must be skipped, not parsed as path items |
+| corpus | shape it stresses |
+|---|---|
+| `anchore.io` | largest clean schema surface (149 schemas), heavy `allOf` + enums |
+| `apache.org` (Airflow) | heaviest composition (`allOf`×22) + the only discriminated union; 18 tags |
+| `discourse.local` | all-inline (0 named schemas → ~113 coined types) |
+| `appwrite.io-server` | widest operation surface (95 ops); `url` format |
+| `apicurio.local-registry` | only `int64`-format corpus; `allOf` |
 
-The three gaps are the batch's first byte-match work; because anchore and apache
-share the duplicate-parameter gap, the corpora are worked **serially** (one fix
-unblocks both). Future fixture refreshes use the standard
-[`Fern golden lifecycle`](fern-goldens.md).
+Two rules closed the batch. An api-key header that is *both* a security scheme and
+an explicit parameter on every operation is promoted once, not twice — crozier
+drops it from the ordinary header set and appends the scheme-derived field, which
+is what stopped `anchore.io` and `apache.org` coining a duplicate method
+parameter. And an `x-*` key under `paths` is a vendor extension, not a path item:
+the `paths` deserializer skips it rather than trying to parse
+`apicurio.local-registry`'s `x-codegen-contextRoot` as a route. Future fixture
+refreshes use the standard [`Fern golden lifecycle`](fern-goldens.md).
 
 ### Issue #43: error responses, discriminated-union aliases, and SSE streaming
 
 Three gaps found while checking whether crozier could stand in for a fern-python
-SDK. Both real gaps are closed byte-for-byte against a Docker-generated Fern tree;
-the third does not reproduce at the corpus's pinned Fern version.
+SDK. All three are closed byte-for-byte against Fern goldens.
 
 1. **Operations that declared any non-2xx response were silently dropped**
    (`error-responses`, gap #1 — the serious one). crozier emitted the response
@@ -479,7 +507,7 @@ the third does not reproduce at the corpus's pinned Fern version.
    inline remains `typing.Optional[typing.Any]` even though the separate body
    model is emitted. Bodies shared by a status are merged before hoisting so the
    root model is deterministic. The real-world `buildrelay` corpus pins the direct
-   inline case at Fern 5.20.0. Its first measured run had six residual files:
+   inline case at Fern 5.20.0. Its first measured run diverged in
    `README.md`, `reference.md`, the root client and environment modules, and—most
    importantly—the `InternalServerError` and jobs raw-client modules where crozier
    used `typing.Any`. Direct inline responses now type both sites as
@@ -491,7 +519,7 @@ the third does not reproduce at the corpus's pinned Fern version.
    pydantic can dispatch on the tag; a plain `Shape = typing.Union[...]` cannot.
    This landed in `fern-python-sdk` 4.35.0, so the corpus was bumped 4.34.0 → 4.35.0
    to pin it — a deliberately **minimal** bump: 4.35.0's only output change over
-   4.34.0 is this annotation (the then-104-file `exhaustive` tree differed by only
+   4.34.0 is this annotation (the `exhaustive` tree of the day differed by only
    the `.fern/metadata.json` version string), so no other generator work was needed.
    [`emit::render_discriminated_union`] now emits the annotated alias.
 3. **SSE streaming operations were reduced to a `-> None` method** that discarded
@@ -509,18 +537,16 @@ the third does not reproduce at the corpus's pinned Fern version.
    method docstrings retain the worked iteration loop and the README retains a
    separate `## Streaming` section.
 
-The generated **README/reference** now pick the first endpoint with a request body
-for the worked example and abbreviate the error-handling/advanced snippets to `...`
-(for a fully-required inline body or a container body) or `()` (a body with an
-optional field, a union/enum/scalar body, or no body), ruff-wrapped at the 88-col
-snippet width. **That abbreviation rule is the surviving `README.md` gap**: at 5.20
-Fern writes `(...)` whenever the method takes arguments at all, so the eight
-one-file residuals above are corpora whose sole endpoint takes an optional-field or
-scalar body. Each gap has a hand-authored **feature-coverage
+The generated **README/reference** pick the first endpoint with a request body
+for the worked example and abbreviate the error-handling/advanced snippets,
+ruff-wrapped at the 88-col snippet width. At 5.20 the abbreviation is purely
+arity-driven — `(...)` whenever the demonstrated method takes any argument, `()`
+only for an argument-free method — which is refresh rule 1 above; the earlier
+body-shape-driven rule was fitted to pre-5.20 goldens. Each shape has a
+hand-authored **feature-coverage
 target** under `tests/fixtures/` (a `FEATURE_TARGETS` corpus in `tests/e2e.rs`),
-with the full Fern `expected/` tree committed. Each corpus's `unmatched` list
-shrinks file-by-file as generation lands; the smoke test also asserts crozier
-consumes every spec without panicking regardless of how much is matched. To
+with the full Fern `expected/` tree committed and compared in its entirety; the
+smoke test additionally asserts crozier consumes every spec without panicking. To
 reproduce the
 current output for a target (Fern generated these with the scaffold defaults):
 
@@ -580,19 +606,22 @@ the document. Each has a hand-authored feature-coverage target with the full Fer
    `$ref` and emitting a dangling type import. The `properties` deserializer now
    degrades any non-object value to a `malformed` unknown node
    ([`openapi`]'s `de_properties`), matching Fern's tolerance of the same document.
-   One file still differs: Fern renders the degraded node as a plain
-   `typing.Optional[typing.Any]` field, while crozier optionalizes the already
-   optional unknown a second time (`typing.Optional[typing.Optional[typing.Any]]`).
-   This is a *property*-level gap; the request-body counterpart is closed (see the
-   unknown-body requiredness rule above).
+   Optionality on that node is idempotent (refresh rule 2): the degraded property
+   renders as a plain `typing.Optional[typing.Any]` field rather than wrapping an
+   already-optional unknown a second time
+   (`typing.Optional[typing.Optional[typing.Any]]`). The request-body counterpart
+   is the unknown-body requiredness rule above.
 
-### Adding a gap target's golden tree
+### Adding a new target's golden tree
 
-Add the target as one numbered `CORPUS.md` row and an `unmatched: &[]` `Corpus`,
-then dispatch **Fern goldens** for its source URL. The first red comparison is the
-generator work to land next; run `just fixtures-gaps` to seed its measured gaps.
+Add the target as one numbered `CORPUS.md` row and a `Corpus` with
+`unmatched: &[]`, wire its `#[test]` and its `just test-corpus-match` line, then
+dispatch **Fern goldens** for its source URL. The first red comparison is the
+generator work to land next; `just fixtures-gaps` measures exactly which files
+diverge. The corpus joins at full parity or not at all — `unmatched` is a
+staging area for work in flight, never a place to park a known divergence.
 See the complete [`Fern golden lifecycle`](fern-goldens.md). This is
-the maintained successor to the manual Docker process used for former gap targets
+the maintained successor to the manual Docker process used for earlier targets
 such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
 `writeonly-fields`.
 
@@ -626,8 +655,8 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    *Integer enums* now generate: a `type: integer` enum becomes a plain `Name = int`
    alias (Fern does not build a `Literal` union for them), and a `$ref` integer-enum
    request body is emittable (`json=request` + content-type header, like a string
-   enum) — so `integer-enums` matches its whole `enums` module, root client, and
-   reference (only the README abbreviated call differs).
+   enum) — so `integer-enums` matches its whole tree, including the `enums`
+   module, root client, README, and reference.
 3. **Fern's `TYPE_CHECKING` traversal order** in `types/__init__.py` is reproduced
    empirically (the `Types*` types in reverse declaration order, then the rest
    alphabetically). It matches the corpus byte-for-byte; a spec with a different
@@ -673,23 +702,22 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    model's other fields — over a `{Union} = typing_extensions.Annotated[typing.Union[..],
    pydantic.Field(discriminator="…")]` alias (issue #50 part 2), and the
    discriminant property is stripped from each member's own model.
-   `discriminated-unions` matches everything but its `README.md` abbreviated call.
+   `discriminated-unions` matches in full.
    A discriminator without an explicit `mapping` is inferred when every variant
    exposes a common singleton string value; otherwise it falls back to a plain
    union.
-8. **Schema annotations and constraints** (`schema-constraints`, mostly matched).
+8. **Schema annotations and constraints** (`schema-constraints`).
    Fern ignores the validation keywords (`minLength`/`pattern`/`minimum`/`maxItems`/
    …), `default`, and `deprecated` in its generated models, so crozier does too;
    a `readOnly` property is now rendered optional even when `required` (it is
    server-populated), and `additionalProperties: true` maps to
-   `Dict[str, Optional[Any]]`. The whole `schema-constraints` type + endpoint layer
-   matches (only the README abbreviated call differs). When one schema is used as
+   `Dict[str, Optional[Any]]`. `schema-constraints` matches in full. When one schema is used as
    *both* request body and response, Fern orders the inlined request signature and
    docstring **required-first** (optional `= OMIT` args last, a stable partition that
    preserves schema order within each group) while the `json={...}` dict keeps pure
    schema order — so a required `readOnly`/`writeOnly` field lands after the plain
-   required ones. `writeonly-fields` pins this, matching everything but its
-   `README.md` abbreviated call. Not yet exercised: dropping a
+   required ones. `writeonly-fields` pins this and matches in full. Not yet
+   exercised: dropping a
    `writeOnly`-only field from the *response* representation (Fern keeps it here).
 9. **Document-level `servers` (implemented); `webhooks`/`callbacks` (ignored).**
    When the document declares `servers`, crozier emits `environment.py` (an
@@ -700,8 +728,7 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    description (the "2 servers → only `PRODUCTION`" oddity) — which
    [`ir::Environment`] reproduces. `webhooks`/`callbacks` are still absent from the
    serde model (and Fern's OpenAPI SDK does not generate from them), so they are
-   ignored; `servers-webhooks` matches everything but its `README.md` abbreviated
-   call regardless.
+   ignored; `servers-webhooks` matches in full regardless.
 5. **The endpoint layer (implemented — kept as a reference of the covered
    shapes).** `paths` are read into an operation IR
    ([`ir::Endpoint`]): module, method name, HTTP method, URL, path params, and
@@ -740,18 +767,17 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    from a byte-exact example-value generator, and the root `FernApi`/`AsyncFernApi`
    aggregates the tag clients under bearer auth. The package `__init__.py`
    aggregators and the generated docs (`README.md`, `reference.md`) all match too,
-   so the endpoint layer — and the whole `exhaustive` corpus — is complete. Gap #4
-   (inline request/response hoisting) is the next generalization step.
+   so the endpoint layer — and the whole `exhaustive` corpus — is complete. Item 4
+   above (inline request/response hoisting) generalized it beyond these shapes.
 
 ## Real-world-spec robustness (issue #40)
 
 The other corpora are hand-authored to have clean, Fern-style `group_method`
 operationIds and property names. Real vendor specs are messier, and three shapes
 that used to make crozier emit invalid Python or hard-error now generate legal —
-and, for the shapes below, byte-matched — output. Each has its own gap-target
+and byte-matched — output. Each has its own feature-coverage
 corpus (`digit-leading-property`, `operation-id-non-identifier`,
-`bracketed-property-names`, `missing-operation-id`), whose residual `unmatched`
-list is defined in `tests/e2e.rs`.
+`bracketed-property-names`, `missing-operation-id`), registered in `tests/e2e.rs`.
 
 - **Digit-leading property name** (`2fa_enabled`). [`naming::field_name`] prefixes
   `f_` when the snake-cased name would start with a digit, and the wire name is
@@ -772,8 +798,8 @@ list is defined in `tests/e2e.rs`.
   before snake-casing (`filter[name]` → `filter_name`, `page[size]` →
   `page_size`), while the raw bracketed name rides along as the wire
   serialization key (`needs_alias` fires) — byte-for-byte Fern's parameters and
-  `data`/`params` dict keys. `bracketed-property-names` matches everything but its
-  `README.md` abbreviated call, including its raw and high-level `widgets` clients.
+  `data`/`params` dict keys. `bracketed-property-names` matches in full, including
+  its raw and high-level `widgets` clients.
 
 - **Missing `operationId`** (optional in OpenAPI). Instead of hard-erroring,
   [`ir::endpoint_method_name`] synthesizes the method from the route:
@@ -815,34 +841,34 @@ canonicalizes the remaining `X-Crozier-` prefix (the `Language` header) to `X-Fe
 on both sides before comparison. Every other line of `client_wrapper.py` matches
 exactly, so the wrapper is gated (never on an `unmatched` list) in every corpus.
 
-### What stays unmatched
+### Real-world corpora that pin these rules
 
 All four corpora are now regenerated as Fern's *packaged* SDK (`fern generate
 --preview`), so the packaging scaffolding — `pyproject.toml`, `README.md`,
 `reference.md`, `requirements.txt` — is present and compared rather than absent.
 `operation-id-non-identifier`, `missing-operation-id`, and the `f_2fa_enabled`
 model plus the root-level `get_thing` method behind `digit-leading-property` match
-in full. None of these four corpora retains a measured residual.
+in full.
 
 The root-client rule is also durable against the real-world
 `livepeer-ai-runner` corpus at Fern 5.20.0. Its three untagged, groupless
 operations (`health`, `hardware_info`, and `hardware_stats`) are methods on the
 root sync and async clients alongside the tagged `generate` sub-client, and are
 wired through the package exports and their own `reference.md` sections exactly
-as Fern emits them. The first measured run found four residual files, none in
-root-method placement: the shared README/reference/root-client environment
-default plus `environment.py`. Matching them established two adjacent Fern
+as Fern emits them. The first measured run diverged only outside root-method
+placement — the shared README/reference/root-client environment
+default plus `environment.py` — and matching those established two adjacent Fern
 rules: a server description beginning with the API provider name uses the
 `DEFAULT` environment member, and multipart reference examples list required
-file inputs before other required fields. All 73 golden files now match, while
-the synthetic `digit-leading-property` fixture remains fully matched.
+file inputs before other required fields. Its whole golden matches, while
+the synthetic `digit-leading-property` fixture stays matched alongside it.
 
-The component-array-item gap is closed and pinned by the real-world
+The component-array-item rule is pinned by the real-world
 `apideck.com-ats` corpus at Fern 5.20.0: its
 `Applicant.properties.social_links.items` object becomes the package-root
 `ApplicantSocialLinksItem` model, the `Applicant` field references it rather than
-`typing.Any`, and the aggregators re-export it. The first measured corpus run had
-no residual files because the general component hoister already covered the
+`typing.Any`, and the aggregators re-export it. The first measured corpus run
+matched immediately because the general component hoister already covered the
 shape; registering the corpus turned that previously unmeasured rule into a
 byte-exact regression target.
 
@@ -851,19 +877,18 @@ The underscore-before-digit rename is now pinned by the real-world
 `MessagingV1BrandRegistrations.russell_3000` becomes the Python field
 `russell3000` with `russell_3000` retained as its wire alias. The first measured
 corpus run found that type file already byte-matched through the shared numeric
-field-boundary rule; its two residual files were `src/fern/client.py` and
+field-boundary rule; what diverged were `src/fern/client.py` and
 `src/fern/raw_client.py`, where URL-encoded array inputs used `List` plus JSON
 encoding instead of Fern's `Sequence` passed directly as form data. URL-encoded
 form arrays now follow Fern without changing multipart JSON encoding. The naming
 test keeps both adjacent rules explicit: a word ending in a digit still absorbs
 the following segment (`Cvc2Create` → `cvc2create`), while a digit-led boundary
-is preserved (`2Factor` → `f_2_factor` for a property). Swagger 2.0 /
-fragment-document tolerance remains open from the issue.
+is preserved (`2Factor` → `f_2_factor` for a property).
 
-## Fern-python parity gaps (issue #41)
+## Fern-python parity shapes (issue #41)
 
-Issue #41's shape gaps are closed with real Fern golden trees, so all are
-byte-match targets like the rest of the corpus.
+Issue #41's shapes are all closed against real Fern golden trees, so each is a
+byte-match target like the rest of the corpus.
 
 - **Tag-based client grouping** (`tag-based-grouping`). Plain (no `group_method`)
   operationIds `listWidgets`/`createWidget` tagged `widgets` and
@@ -1068,7 +1093,7 @@ package-derived default is unchanged, so every other corpus is unaffected.
 
 `client-class-name` pins this against real Fern output: a two-endpoint `widgets`
 API generated with `client_class_name: AcmeClient` byte-matches Fern's whole
-33-file tree (`AcmeClient`/`AsyncAcmeClient`). Its Fern generator config carries
+tree (`AcmeClient`/`AsyncAcmeClient`). Its Fern generator config carries
 `client_class_name: AcmeClient`; the value is recorded
 in `.fern/metadata.json`'s `generatorConfig`, which the e2e already normalizes out
 (`normalize_metadata`), so the provenance difference does not gate.
@@ -1090,7 +1115,7 @@ since v2's own default is `ignore`), while `allow`/`forbid` spell it out
 (`extra="allow"`/`extra="forbid"`). The **v1** `Config` always writes the explicit
 member (`extra = pydantic.Extra.<name>`). `pydantic-extra-fields` — the two-endpoint
 `widgets` API generated with `extra_fields: ignore` — byte-matches Fern's whole
-33-file tree, so `Widget`'s model reproduces that asymmetry exactly. Its Fern
+tree, so `Widget`'s model reproduces that asymmetry exactly. Its Fern
 generator config carries `extra_fields: ignore`; like the enum/client-class-name
 config, Fern records it in `.fern/metadata.json`'s
 `generatorConfig`, which the e2e normalizes out (`normalize_metadata`).

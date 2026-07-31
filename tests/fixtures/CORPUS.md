@@ -1,11 +1,18 @@
 # Canonical real-world OpenAPI corpus (issue #77)
 
-This manifest tracks 81 real-world OpenAPI specs with redistribution-compatible
+This manifest tracks the real-world OpenAPI specs with redistribution-compatible
 license metadata. `decision` is `link-ok` when the permissively licensed source
 is fetched at generation time rather than vendored. Add or change one numbered
 row per feature branch and maintain its golden through the manually dispatched
 **Fern goldens** workflow; see
 [`../../docs/fern-goldens.md`](../../docs/fern-goldens.md).
+
+Every row registered in `tests/e2e.rs` reproduces its Fern 5.20.0 golden
+byte-for-byte, with the single accepted upstream exception noted in the batch 4
+table (`calorieninjas.com`). A row registered without a golden and without that
+exception is a hard harness error, so this ledger records history — which
+selections were dropped and why — rather than any outstanding match work. The
+measured state is `tests/e2e.rs`; re-measure with `just fixtures-gaps`.
 
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
@@ -106,38 +113,38 @@ do not re-select them in a future batch.**
 | name | selected for | status |
 |---|---|---|
 | `bbci.co.uk` | oneOf/anyOf + ~79 free-form maps | **DROPPED** — Fern golden generation failed (do not retry) |
-| `gambitcomm.local-mimic` | 356 operations; maps + links | ✅ matched (112) — fixed reserved-word `del` method name |
-| `dnd5eapi.co` | oneOf/anyOf/allOf + recursion | ✅ matched (263) — fixed allOf-as-map parse + recursive composition |
-| `airbyte.local-config` | 102 ops / 210 schemas; format diversity | ✅ matched (284) |
-| `etsi.local-mec010-2_apppkgmgmt` | `application/zip`, binary, custom formats | ✅ matched (118) |
-| `apideck.com-webhook` | oneOf/anyOf + deepObject/header params | ✅ matched (88) |
-| `apache.org-qakka` | `application/octet-stream` (binary) | ✅ matched (40) |
+| `gambitcomm.local-mimic` | 356 operations; maps + links | ✅ matched — fixed reserved-word `del` method name |
+| `dnd5eapi.co` | oneOf/anyOf/allOf + recursion | ✅ matched — fixed allOf-as-map parse + recursive composition |
+| `airbyte.local-config` | 102 ops / 210 schemas; format diversity | ✅ matched |
+| `etsi.local-mec010-2_apppkgmgmt` | `application/zip`, binary, custom formats | ✅ matched |
+| `apideck.com-webhook` | oneOf/anyOf + deepObject/header params | ✅ matched |
+| `apache.org-qakka` | `application/octet-stream` (binary) | ✅ matched |
 | `canada-holidays.ca` | recursive schemas + numeric enums | **DROPPED** — Fern golden generation failed (do not retry) |
-| `apideck.com-vault` | spaceDelimited/deepObject params, dense anyOf | ✅ matched (124) |
-| `6-dot-authentiqio.appspot.com` | `application/jwt` + wildcard media type | ✅ matched (64) — added HEAD operation generation |
+| `apideck.com-vault` | spaceDelimited/deepObject params, dense anyOf | ✅ matched |
+| `6-dot-authentiqio.appspot.com` | `application/jwt` + wildcard media type | ✅ matched — added HEAD operation generation |
 
 ## Batch 3 — selected (issue #77)
 
 Thirteen `link-ok` corpora were approved for the next byte-match batch. All 13
 passed native `fern check`; their specs are fetched locally and are not vendored.
-Fern goldens were generated successfully for 12 corpora, which now proceed to byte
-matching. `groundhog-day.com` failed Fern golden generation and is dropped.
+Fern goldens were generated successfully for 12 corpora, and all 12 are now
+byte-matched. `groundhog-day.com` failed Fern golden generation and is dropped.
 
 | name | selected for | status |
 |---|---|---|
-| `apideck.com-accounting` | 53 ops / 140 schemas; anyOf, maps, deepObject, recursion | Fern golden generated — byte matching pending |
-| `apideck.com-file-storage` | 32 ops / 75 schemas; binary, wildcard media, maps, deepObject | Fern golden generated — byte matching pending |
-| `appwrite.io-client` | 61 ops; `multipart/form-data` | Fern golden generated — byte matching pending |
-| `apideck.com-hris` | 27 ops / 87 schemas; anyOf/allOf, maps, deepObject | Fern golden generated — byte matching pending |
-| `byautomata.io` | Crozier probe emits invalid Python from a slash-containing operation name; intentional generator-gap target | Fern golden generated — byte matching pending |
+| `apideck.com-accounting` | 53 ops / 140 schemas; anyOf, maps, deepObject, recursion | ✅ matched |
+| `apideck.com-file-storage` | 32 ops / 75 schemas; binary, wildcard media, maps, deepObject | ✅ matched |
+| `appwrite.io-client` | 61 ops; `multipart/form-data` | ✅ matched |
+| `apideck.com-hris` | 27 ops / 87 schemas; anyOf/allOf, maps, deepObject | ✅ matched |
+| `byautomata.io` | Crozier probe emits invalid Python from a slash-containing operation name; intentional generator-gap target | ✅ matched |
 | `groundhog-day.com` | mutually recursive `Groundhog`/`Prediction` schemas | **DROPPED** — Fern golden generation failed (do not retry) |
-| `apideck.com-connector` | anyOf, recursive schema, maps, deepObject, links, `text/markdown` | Fern golden generated — byte matching pending |
-| `color.pizza` | `image/svg+xml` response media | Fern golden generated — byte matching pending |
-| `apideck.com-proxy` | all-inline schema surface, anyOf, wildcard media | Fern golden generated — byte matching pending |
-| `apis.guru` | typed free-form maps | Fern golden generated — byte matching pending |
-| `apideck.com-ecommerce` | 64 schemas; anyOf, maps, deepObject | Fern golden generated — byte matching pending |
-| `apideck.com-issue-tracking` | 65 schemas; anyOf/allOf, maps, deepObject | Fern golden generated — byte matching pending |
-| `bintable.com` | wildcard response media | Fern golden generated — byte matching pending |
+| `apideck.com-connector` | anyOf, recursive schema, maps, deepObject, links, `text/markdown` | ✅ matched |
+| `color.pizza` | `image/svg+xml` response media | ✅ matched |
+| `apideck.com-proxy` | all-inline schema surface, anyOf, wildcard media | ✅ matched |
+| `apis.guru` | typed free-form maps | ✅ matched |
+| `apideck.com-ecommerce` | 64 schemas; anyOf, maps, deepObject | ✅ matched |
+| `apideck.com-issue-tracking` | 65 schemas; anyOf/allOf, maps, deepObject | ✅ matched |
+| `bintable.com` | wildcard response media | ✅ matched |
 
 The status table is the durable result of that generation pass; use the standard
 workflow for any future source change or Fern upgrade.
@@ -154,15 +161,15 @@ for, with no backups to invent.
 
 | name | selected for | status |
 |---|---|---|
-| `apache.org-airflow` | 50 paths / 85 schemas; 22 allOf, anyOf, discriminator; invalid title-derived `airflow_api_(stable)` package naming made this an intentional generator-gap target | ✅ matched (182) — fixed invalid title-derived package naming |
-| `apideck.com-lead` | anyOf/allOf, free-form maps, two deepObject params | ✅ matched (84) |
-| `apideck.com-ecosystem` | 12 paths / 32 schemas; 17 free-form maps | ✅ matched (86) |
-| `apideck.com-customer-support` | anyOf plus maps | ✅ matched (89) |
-| `apideck.com-sms` | compact anyOf corpus | ✅ matched (73) |
-| `eos.local` | four paths, all-inline / zero named schemas | ✅ matched (35) |
+| `apache.org-airflow` | 50 paths / 85 schemas; 22 allOf, anyOf, discriminator; invalid title-derived `airflow_api_(stable)` package naming made this an intentional generator-gap target | ✅ matched — fixed invalid title-derived package naming |
+| `apideck.com-lead` | anyOf/allOf, free-form maps, two deepObject params | ✅ matched |
+| `apideck.com-ecosystem` | 12 paths / 32 schemas; 17 free-form maps | ✅ matched |
+| `apideck.com-customer-support` | anyOf plus maps | ✅ matched |
+| `apideck.com-sms` | compact anyOf corpus | ✅ matched |
+| `eos.local` | four paths, all-inline / zero named schemas | ✅ matched |
 | `codesearch.debian.net` | compact conventional two-schema baseline | **DROPPED** — Fern golden generation failed (do not retry) |
 | `appng-rest-api` | matrix path serialization and cookie parameters | **DROPPED** — Fern golden generation failed: generator exits 1 at 5.20.0 despite `fern check` passing (do not retry) |
-| `calorieninjas.com` | minimal one-path / zero-schema boundary case | ⚠️ Fern 5.20 exact known upstream failure; Crozier subprocess generation covered |
+| `calorieninjas.com` | minimal one-path / zero-schema boundary case | ⚠️ **ACCEPTED EXCEPTION** — Fern 5.20.0 emits unnamed methods for its `operationId`-less operation and its own Ruff pass rejects the SDK, so no golden exists; the exact failure is fingerprinted in `known-fern-failure.json` and Crozier generates the same spec successfully |
 | `conjur.local` | screened but Fern did not produce a usable result | **DROPPED** — Fern falsely returned success while stderr reported an OpenAPI parse failure and an unresolved response reference (do not retry) |
 | `asana.com` | screened but failed Fern validation | **DROPPED** — Fern check failed with 17 fatal diagnostics (do not retry) |
 | `apideck.com-pos` | screened but failed Fern validation | **DROPPED** — Fern check failed with 4 fatal diagnostics (do not retry) |
@@ -187,19 +194,19 @@ now byte-matched byte-for-byte.
 
 | name | role | selected for | status |
 |---|---|---|---|
-| `amazonaws.com-cloudformation` | primary | 132 ops, 465 schemas, 859 allOf, 1,523 header/query params, XML request/response, server variables | ✅ matched (1044) |
-| `netbox.dev` | primary | 844 ops, 233 schemas, 823 nullable, 1,318 readOnly, 6,867 params, custom formats/numeric enums | ✅ matched (705) |
-| `squareup.com` | primary | 200 ops, 807 schemas, mutually recursive four-schema graph, two security schemes | ✅ matched (860) |
-| `redhat.com-catalog_inventory` | primary | 40 deepObject params, 113 readOnly, multiple servers/server variables, inline bodies | ✅ matched (108) |
-| `microcks.local` | primary | discriminator with two mappings, oneOf/allOf, binary multipart bodies | ✅ matched (100) |
-| `xero.com-xero-payroll-au` | primary | UUID-heavy graph, readOnly fields, inline request bodies, header/path/query mix | ✅ matched (117) |
-| `openfigi.com` | primary | simple-style path param, wildcard response media, oneOf, alternative document security, server variable | ✅ matched (52) |
-| `openbanking.org.uk-account-info-openapi` | primary | 209 schemas, 1,188 refs, application/jose+jwe, dual security schemes; Crozier invalid-Python gap | ✅ matched (597) |
-| `maif.local-otoroshi` | primary | 22 oneOf, NDJSON request bodies, SSE response, 102 ops, format diversity | ✅ matched (208) |
-| `traccar.org` | primary | GPX/XML, CSV, XLSX media, urlencoded request, six servers/two variables | ✅ matched (118) |
-| `twilio.com-twilio_voice_v1` | backup | 17 path-level servers, 87 nullable nodes, urlencoded bodies, custom formats | ✅ matched (66) |
-| `portfoliooptimizer.io` | backup | 83 operations and 15 oneOf across an all-inline zero-component-schema surface | ✅ matched (379) |
-| `reverb.com` | backup | 163 operations, 126 paths, zero component schemas, 21 inline request bodies | ✅ matched (153) |
+| `amazonaws.com-cloudformation` | primary | 132 ops, 465 schemas, 859 allOf, 1,523 header/query params, XML request/response, server variables | ✅ matched |
+| `netbox.dev` | primary | 844 ops, 233 schemas, 823 nullable, 1,318 readOnly, 6,867 params, custom formats/numeric enums | ✅ matched |
+| `squareup.com` | primary | 200 ops, 807 schemas, mutually recursive four-schema graph, two security schemes | ✅ matched |
+| `redhat.com-catalog_inventory` | primary | 40 deepObject params, 113 readOnly, multiple servers/server variables, inline bodies | ✅ matched |
+| `microcks.local` | primary | discriminator with two mappings, oneOf/allOf, binary multipart bodies | ✅ matched |
+| `xero.com-xero-payroll-au` | primary | UUID-heavy graph, readOnly fields, inline request bodies, header/path/query mix | ✅ matched |
+| `openfigi.com` | primary | simple-style path param, wildcard response media, oneOf, alternative document security, server variable | ✅ matched |
+| `openbanking.org.uk-account-info-openapi` | primary | 209 schemas, 1,188 refs, application/jose+jwe, dual security schemes; Crozier invalid-Python gap | ✅ matched |
+| `maif.local-otoroshi` | primary | 22 oneOf, NDJSON request bodies, SSE response, 102 ops, format diversity | ✅ matched |
+| `traccar.org` | primary | GPX/XML, CSV, XLSX media, urlencoded request, six servers/two variables | ✅ matched |
+| `twilio.com-twilio_voice_v1` | backup | 17 path-level servers, 87 nullable nodes, urlencoded bodies, custom formats | ✅ matched |
+| `portfoliooptimizer.io` | backup | 83 operations and 15 oneOf across an all-inline zero-component-schema surface | ✅ matched |
+| `reverb.com` | backup | 163 operations, 126 paths, zero component schemas, 21 inline request bodies | ✅ matched |
 
 ### Screened failures
 
@@ -230,14 +237,14 @@ standard workflow for any future source change or Fern upgrade.
 ## Batch 6 — composition and media selected (issue #77)
 
 Three new permissively licensed, immutable specs passed native Fern CLI 5.75.4
-screening and are registered in the match-all-by-default harness. Their workflow-owned
-goldens have not been generated locally.
+screening and are registered in the match-all-by-default harness. Their
+workflow-owned goldens are committed and all three are byte-matched.
 
 | name | selected for | status |
 |---|---|---|
-| `sigstore-rekor` | literal ranged `2XX` plus `default`; implicit discriminators; nested objects mixing `readOnly` and `writeOnly` | Fern check passed — golden generation pending |
-| `letta` | SSE; implicit discriminators; map of unions; deep `anyOf`/`oneOf` | Fern check passed — golden generation pending |
-| `free5gc-namf-communication` | structurally nested `allOf` → `oneOf` → `not`; 142 problem+json responses | Fern check passed — golden generation pending |
+| `sigstore-rekor` | literal ranged `2XX` plus `default`; implicit discriminators; nested objects mixing `readOnly` and `writeOnly` | ✅ matched |
+| `letta` | SSE; implicit discriminators; map of unions; deep `anyOf`/`oneOf` | ✅ matched |
+| `free5gc-namf-communication` | structurally nested `allOf` → `oneOf` → `not`; 142 problem+json responses | ✅ matched |
 
 ### Screened failures
 
@@ -265,3 +272,21 @@ goldens have not been generated locally.
 | `jaewook-epcis` | **REJECTED** — Fern check reports 35 endpoint-example errors because `headers` examples are strings rather than maps |
 | `mardi-gras` | **REJECTED** — Fern-clean and MIT, but it has no `allOf` and therefore could not consolidate the nested composition requirement |
 | `paypal-checkout` | **DROPPED** — the only revision with `not` fails Fern on five invalid carrier enum names; Fern-clean older revisions lack `not` |
+
+## Batch 7 — shape-targeted additions (issue #77)
+
+Five further permissively licensed, immutable specs were added one row at a time,
+each selected to pin a naming or structural rule the corpus had exercised only
+incidentally. All five passed native Fern check, have workflow-managed Fern 5.20.0
+goldens, and are byte-matched.
+
+| name | selected for | status |
+|---|---|---|
+| `apideck.com-ats` | inline object nested in a component array's `items` | ✅ matched |
+| `buildrelay` | direct inline-object `500` response body alongside a referenced request body | ✅ matched |
+| `tlon-notes` | recursive `oneOf` with inline, untitled, unmapped variants | ✅ matched |
+| `twilio.com-twilio_messaging_v1` | underscore-before-trailing-digit rename (`russell_3000`) and URL-encoded form arrays | ✅ matched |
+| `livepeer-ai-runner` | untagged, groupless root operations beside a tagged sub-client | ✅ matched |
+
+The status tables above are the durable results of their generation passes; use
+the standard workflow for any future source change or Fern upgrade.
