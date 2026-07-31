@@ -3408,7 +3408,7 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
                     imports.add_core_package();
                     "core.File".to_string()
                 } else {
-                    raw_type_str(&f.type_ref, imports)
+                    raw_type_str_ctx(&f.type_ref, imports, !form.multipart)
                 };
                 let description = if f.is_file {
                     Some("See core.File for more documentation".to_string())

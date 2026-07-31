@@ -2865,7 +2865,7 @@ fn resolve_request_body(
                 .and_then(|r| resolve_ref(doc, r))
                 .unwrap_or(schema);
             return Some(RequestBody::Form(FormBody {
-                fields: hoist_form_object(obj, &media.encoding, hoister, request_ctx),
+                fields: hoist_form_object(obj, &media.encoding, hoister, request_ctx, true),
                 multipart: true,
             }));
         }
@@ -2884,7 +2884,7 @@ fn resolve_request_body(
                 .and_then(|r| resolve_ref(doc, r))
                 .unwrap_or(schema);
             return Some(RequestBody::Form(FormBody {
-                fields: hoist_form_object(obj, &media.encoding, hoister, request_ctx),
+                fields: hoist_form_object(obj, &media.encoding, hoister, request_ctx, multipart),
                 multipart,
             }));
         }
@@ -3853,6 +3853,7 @@ fn hoist_form_object(
     encoding: &IndexMap<String, crate::openapi::Encoding>,
     hoister: &mut InlineHoister,
     request_ctx: &str,
+    multipart: bool,
 ) -> Vec<BodyField> {
     let required: Vec<&str> = schema.required.iter().map(String::as_str).collect();
     schema
@@ -3868,7 +3869,8 @@ fn hoist_form_object(
                 .as_deref()
                 .and_then(|reference| hoister.schemas?.get(reference.rsplit('/').next()?))
                 .unwrap_or(prop_schema);
-            let form_json = !is_file
+            let form_json = multipart
+                && !is_file
                 && simple_nullable_primitive_member(resolved).is_none()
                 && (is_unknown(resolved)
                     || matches!(
@@ -9347,9 +9349,19 @@ mod tests {
             &indexmap::IndexMap::new(),
             &mut hoister,
             "UploadRequest",
+            true,
         );
         assert!(!fields[0].form_json);
         assert!(fields[1].form_json);
+
+        let urlencoded = super::hoist_form_object(
+            &form,
+            &indexmap::IndexMap::new(),
+            &mut hoister,
+            "UploadRequest",
+            false,
+        );
+        assert!(urlencoded.iter().all(|field| !field.form_json));
     }
 
     #[test]

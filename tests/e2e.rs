@@ -2693,7 +2693,7 @@ const TWILIO_MESSAGING_V1: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &["src/fern/client.py", "src/fern/raw_client.py"],
+    unmatched: &[],
 };
 
 #[test]
