@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.46](https://github.com/nickderobertis/crozier/compare/v0.0.45...v0.0.46) - 2026-07-31
+
+### Other
+
+- *(fixtures)* prove and document full corpus byte parity with Fern ([#146](https://github.com/nickderobertis/crozier/pull/146))
+
 ## [0.0.45](https://github.com/nickderobertis/crozier/compare/v0.0.44...v0.0.45) - 2026-07-31
 
 ### Added
