@@ -187,8 +187,7 @@ fn collapse_field_digit_boundaries(name: &str) -> String {
         .filter_map(|(index, &ch)| {
             if ch == '_'
                 && (index.checked_sub(1).is_some_and(|i| {
-                    chars[i].is_ascii_digit()
-                        && i.checked_sub(1).is_some_and(|before| chars[before] == '_')
+                    chars[i].is_ascii_digit() && digit_suffix_absorbs_following(&chars, i)
                 }) || chars.get(index + 1).is_some_and(char::is_ascii_digit))
             {
                 None
@@ -197,6 +196,19 @@ fn collapse_field_digit_boundaries(name: &str) -> String {
             }
         })
         .collect()
+}
+
+fn digit_suffix_absorbs_following(chars: &[char], digit_index: usize) -> bool {
+    let mut digit_start = digit_index;
+    while digit_start > 0 && chars[digit_start - 1].is_ascii_digit() {
+        digit_start -= 1;
+    }
+    (digit_start > 0 && chars[digit_start - 1] == '_')
+        || chars[..digit_start]
+            .iter()
+            .rev()
+            .take_while(|&&candidate| candidate != '_')
+            .any(|candidate| candidate.is_ascii_alphabetic())
 }
 
 fn collapse_digit_boundaries(name: &str) -> String {
@@ -720,6 +732,8 @@ mod tests {
     fn numeric_field_boundaries_match_fern_without_changing_adjacent_word_rules() {
         assert_eq!(field_name("address_line_1"), "address_line1");
         assert_eq!(field_name("Cvc2Create"), "cvc2create");
+        assert_eq!(field_name("prop65_warning"), "prop65warning");
+        assert_eq!(field_name("prop_65_warning"), "prop65warning");
         assert_eq!(field_name("2Factor"), "f_2_factor");
     }
 
