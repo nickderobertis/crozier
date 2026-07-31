@@ -37,8 +37,9 @@ schema` or the drift test fails. See
 [`docs/configuration.md`](docs/configuration.md).
 
 The north star: **`crozier`'s output, with comments stripped, equals Fern's
-output with comments stripped.** See [`docs/matching.md`](docs/matching.md) for
-the strategy, the fixture corpus, and what is implemented vs. planned.
+output with comments stripped.** The whole registered corpus reaches it today.
+See [`docs/matching.md`](docs/matching.md) for the strategy, the fixture corpus,
+and why each shape generates the way it does.
 
 Being a Fern drop-in extends to its `x-*` vendor extensions (audience labels,
 per-node ignore, …). The standing **dual-header policy**: read *both* the
@@ -200,8 +201,10 @@ The suite is the only QA loop. E2E runs the real binary and byte-compares its
 (comment-stripped) output to the committed fixtures — never mock the generator or
 the filesystem it writes. Done means complete, not minimal: cover malformed-spec
 failure and missing-file recovery, not just the happy path. Coverage is a floor
-(95%), not the target. The e2e fixture manifest ([`docs/matching.md`]) is the
-source of truth for residual divergences; it shrinks as generation lands.
+(95%), not the target. `tests/e2e.rs` is the source of truth for measured
+divergence — every corpus's `unmatched` list is empty, so a non-empty one means
+work in flight, never an accepted state; [`docs/matching.md`](docs/matching.md)
+holds the judgment about why.
 
 ## Keeping the allowlist current
 

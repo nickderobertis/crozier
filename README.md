@@ -9,10 +9,11 @@ target language.
 
 Python is the only target today; more will follow.
 
-> **Status:** early. crozier generates the Python **type layer** (pydantic models,
-> enums, unions/aliases) plus `version.py`/`py.typed`, and byte-matches Fern's
-> output for those files. See [`docs/matching.md`](docs/matching.md) for exactly
-> what is matched and the roadmap.
+> **Status:** pre-1.0. crozier generates the whole Python SDK — the type layer
+> (pydantic models, enums, unions/aliases), the endpoint clients, the `core/`
+> runtime, and the packaging scaffolding — and reproduces Fern's output
+> byte-for-byte across every corpus in its golden suite. See
+> [`docs/matching.md`](docs/matching.md) for how that is verified.
 
 ## See it in action
 

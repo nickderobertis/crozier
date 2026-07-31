@@ -30,7 +30,10 @@ Work on one corpus row at a time:
    row with its unique spec name, credential-free HTTPS source URL, and pinned
    source ref. A direct spec URL must end in `.json`, `.yaml`, or `.yml`.
 2. For a new fixture, register the same name as a `Corpus` in `tests/e2e.rs` with
-   `unmatched: &[]`, then seed its measured residual list with `just fixtures-gaps`.
+   `unmatched: &[]`, add the `#[test]` that drives it, and — for a fetched
+   `link-ok` spec — add its `just test-corpus-match` line;
+   `every_registered_corpus_is_wired_into_the_gate` fails without both. Measure
+   the first comparison with `just fixtures-gaps`.
 3. Commit and push the branch, then manually run **Fern goldens** and select that
    branch. The optional workflow inputs are:
 
@@ -64,10 +67,11 @@ Work on one corpus row at a time:
    and fetch failures without fail-fast. Run `just fixtures-diff <fixture>`
    locally when a full unified diff is needed.
 6. Repair Crozier on the same feature branch. Use `just fixtures-gaps` to
-   refresh each measured `unmatched` list with `just fixtures-gaps`; never edit Fern's
+   re-measure each `unmatched` list; never edit Fern's
    output to make Crozier pass. Commit and push the repair, then dispatch the
-   workflow again with the same inputs. Repeat until the aggregate comparison is
-   green and the final run reports no generated changes and no publication.
+   workflow again with the same inputs. Repeat until every `unmatched` list is
+   empty again, the aggregate comparison is
+   green, and the final run reports no generated changes and no publication.
 
 Once a fixture's exact generator version and manifest identity are current, a
 rerun fetches the source but skips Fern generation. A fully repaired final rerun
@@ -80,7 +84,7 @@ newly released Fern version cannot join the same repair cycle.
 
 ### Exact known upstream failures
 
-`calorieninjas.com` is the single registered exception at
+`calorieninjas.com` is the single registered exception across the whole corpus at
 `fernapi/fern-python-sdk:5.20.0`. Its source operation has no `operationId`, and
 Fern emits unnamed methods (`def (` and `_raw_client.(`) before Ruff rejects the
 SDK. [`known-fern-failure.json`](../tests/fixtures/calorieninjas.com/known-fern-failure.json)
@@ -91,7 +95,11 @@ command.
 Generation always retries that fixture, even after an exact reproduction. Only
 the normalized fingerprint is warning-only; a changed exit, diagnostic, source
 line, command, corpus identity, malformed registration, or unexpected Fern
-success is fatal. There is deliberately no `expected/` tree: the former
+success is fatal. The registration is therefore not a suppression an operator can
+reach for: it is bound to this one spec's measured failure, so it cannot be
+copied onto a corpus whose golden merely started diverging, and a fixture
+carrying both a registration and an `expected/` tree is an error. There is
+deliberately no `expected/` tree: the former
 unprovenanced snapshot came from an unidentified older Fern and could not support
 a byte-parity claim. Comparison validates the registration and drives Crozier
 over the real cached spec as a subprocess, including the assertion that Crozier

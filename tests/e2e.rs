@@ -13,7 +13,8 @@ use predicates::prelude::*;
 /// A vendored Fern corpus: the spec at `tests/fixtures/<api>/openapi.yml`, the
 /// naming flags crozier is driven with, and the generated files it reproduces
 /// byte-for-byte today (paths relative to the output root). `unmatched` is the
-/// measured residual task list; every other expected file is gated.
+/// measured residual task list — empty across the whole corpus today, so parity
+/// is the default and every expected file is gated.
 struct Corpus {
     api: &'static str,
     package_name: &'static str,
@@ -167,17 +168,17 @@ const EXHAUSTIVE: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// Feature-coverage target specs: hand-authored OpenAPI documents that exercise
-/// shapes crozier does not fully generate yet (the gaps in docs/matching.md) —
-/// auth schemes beyond bearer, inline request/response hoisting, cookie params,
-/// form bodies, discriminated unions, schema constraints, integer enums, and
-/// document-level servers/webhooks/callbacks.
+/// Feature-coverage target specs: hand-authored OpenAPI documents that each pin
+/// one shape (see docs/matching.md) — auth schemes beyond bearer, inline
+/// request/response hoisting, cookie params, form bodies, discriminated unions,
+/// schema constraints, integer enums, and document-level
+/// servers/webhooks/callbacks.
 ///
 /// Their Fern `expected/` trees were produced by running Fern's container
 /// generator with the scaffold defaults (`--package-name fern`,
 /// `--project-name default_package_name`; see scripts/generate-fern-fixture.sh),
-/// so the corpora drive crozier with the same naming. Each `unmatched` list is a
-/// measured residual task list.
+/// so the corpora drive crozier with the same naming. Every `unmatched` list is
+/// empty: each target reproduces its whole golden byte-for-byte.
 const FEATURE_TARGETS: &[Corpus] = &[
     Corpus {
         api: "auth-schemes",
@@ -609,6 +610,7 @@ fn fixture_dir(api: &str) -> PathBuf {
 
 const KNOWN_FERN_FAILURE_FILE: &str = "known-fern-failure.json";
 
+#[derive(Debug)]
 struct KnownFernFailure {
     generator: String,
     generator_version: String,
@@ -625,11 +627,33 @@ fn known_fern_failure(c: &Corpus) -> Result<Option<KnownFernFailure>, String> {
     }
     let bytes = std::fs::read(&path)
         .map_err(|error| format!("could not read {}: {error}", path.display()))?;
-    let payload: serde_json::Value = serde_json::from_slice(&bytes)
-        .map_err(|error| format!("invalid {}: {error}", path.display()))?;
+    let label = path.display().to_string();
+    let known = validate_known_fern_failure(c.api, &label, &bytes)?;
+    if fixture_dir(c.api)
+        .join("expected/.crozier-fern-golden.json")
+        .exists()
+    {
+        return Err(format!(
+            "{label} is stale because a provenance-current golden exists"
+        ));
+    }
+    Ok(Some(known))
+}
+
+/// The registration's own content check, split out from the filesystem so the
+/// exception mechanism can be driven with tampered and foreign registrations.
+/// Every field is pinned to the one measured upstream failure, so a registration
+/// cannot be copied onto a second corpus or loosened to excuse a divergence.
+fn validate_known_fern_failure(
+    api: &str,
+    label: &str,
+    bytes: &[u8],
+) -> Result<KnownFernFailure, String> {
+    let payload: serde_json::Value =
+        serde_json::from_slice(bytes).map_err(|error| format!("invalid {label}: {error}"))?;
     let object = payload
         .as_object()
-        .ok_or_else(|| format!("{} must contain a JSON object", path.display()))?;
+        .ok_or_else(|| format!("{label} must contain a JSON object"))?;
     let expected_keys = [
         "schema_version",
         "generator",
@@ -644,15 +668,14 @@ fn known_fern_failure(c: &Corpus) -> Result<Option<KnownFernFailure>, String> {
         || expected_keys.iter().any(|key| !object.contains_key(*key))
     {
         return Err(format!(
-            "{} does not have the exact known-failure contract keys",
-            path.display()
+            "{label} does not have the exact known-failure contract keys"
         ));
     }
     let exact_values = [
         ("schema_version", serde_json::json!(1)),
         ("generator", serde_json::json!("fernapi/fern-python-sdk")),
         ("generator_version", serde_json::json!("5.20.0")),
-        ("corpus_spec_name", serde_json::json!(c.api)),
+        ("corpus_spec_name", serde_json::json!(api)),
         ("corpus_spec_ref", serde_json::json!("1.0.0")),
         (
             "corpus_spec_url",
@@ -664,15 +687,12 @@ fn known_fern_failure(c: &Corpus) -> Result<Option<KnownFernFailure>, String> {
     ];
     for (key, expected) in exact_values {
         if object.get(key) != Some(&expected) {
-            return Err(format!(
-                "{} has stale {key}: expected {expected}",
-                path.display()
-            ));
+            return Err(format!("{label} has stale {key}: expected {expected}"));
         }
     }
     let fingerprint = object["fingerprint"]
         .as_object()
-        .ok_or_else(|| format!("{} has no fingerprint object", path.display()))?;
+        .ok_or_else(|| format!("{label} has no fingerprint object"))?;
     if fingerprint.get("failed_command")
         != Some(&serde_json::json!(
             "ruff check --fix --no-cache --ignore E741 /fern/output"
@@ -682,12 +702,12 @@ fn known_fern_failure(c: &Corpus) -> Result<Option<KnownFernFailure>, String> {
                 "Found 11 errors (5 fixed, 6 remaining)."
             ))
     {
-        return Err(format!("{} has stale Ruff failure markers", path.display()));
+        return Err(format!("{label} has stale Ruff failure markers"));
     }
     let diagnostics = fingerprint
         .get("diagnostics")
         .and_then(serde_json::Value::as_array)
-        .ok_or_else(|| format!("{} has no diagnostic list", path.display()))?;
+        .ok_or_else(|| format!("{label} has no diagnostic list"))?;
     if diagnostics.len() != 6
         || diagnostics.iter().any(|diagnostic| {
             diagnostic.get("message")
@@ -695,23 +715,13 @@ fn known_fern_failure(c: &Corpus) -> Result<Option<KnownFernFailure>, String> {
         })
     {
         return Err(format!(
-            "{} must fingerprint exactly six identifier syntax errors",
-            path.display()
+            "{label} must fingerprint exactly six identifier syntax errors"
         ));
     }
-    if fixture_dir(c.api)
-        .join("expected/.crozier-fern-golden.json")
-        .exists()
-    {
-        return Err(format!(
-            "{} is stale because a provenance-current golden exists",
-            path.display()
-        ));
-    }
-    Ok(Some(KnownFernFailure {
+    Ok(KnownFernFailure {
         generator: object["generator"].as_str().unwrap().to_owned(),
         generator_version: object["generator_version"].as_str().unwrap().to_owned(),
-    }))
+    })
 }
 
 fn known_fern_failure_marker(c: &Corpus, known: &KnownFernFailure) -> String {
@@ -1291,12 +1301,10 @@ const BUNGIE: Corpus = Corpus {
 // Five additional real-world `link-ok` corpora (issue #77), added together as a
 // batch of harder, feature-diverse targets. Each passes `fern check` cleanly (the
 // prerequisite — Fern must accept the raw spec first); their Fern golden `expected/`
-// trees are generated with Docker (`just fixtures-generate-corpus --only <name>`)
-// and land in the same PR before byte-matching begins. `unmatched` is populated
-// by `just fixtures-gaps` and shrinks as the generator is brought to a byte-match.
-// Where crozier does not yet consume the spec cleanly, the gap is named
-// on the const so the byte-match pass knows the work; the offline `check` gate skips
-// every one of these (their specs are fetched, not vendored).
+// trees are workflow-managed. All five reproduce their goldens byte-for-byte, so
+// each `unmatched` list is empty and any future divergence fails by default. The
+// offline `check` gate skips every one of these (their specs are fetched, not
+// vendored); `just test-corpus-match` enforces them.
 // ---------------------------------------------------------------------------
 
 /// `anchore.io`: the Anchore Engine API server — the largest clean component-schema
@@ -3373,6 +3381,170 @@ fn missing_golden_is_allowed_only_for_a_validated_known_fern_failure() {
         .expect("CalorieNinjas has a valid exact known-failure registration"),
         "an exact known Fern failure has no golden to compare"
     );
+}
+
+/// The accepted-exception mechanism is the only way a registered corpus escapes
+/// byte comparison, so it must be impossible to reuse as a suppression. Drive the
+/// validator with the real registration and with the tampered forms someone would
+/// reach for to excuse a divergence: copying it onto another corpus, moving it to
+/// a newer Fern, shrinking the fingerprint, or widening the contract.
+#[test]
+fn a_known_fern_failure_registration_cannot_excuse_anything_else() {
+    let path = fixture_dir(CALORIENINJAS.api).join(KNOWN_FERN_FAILURE_FILE);
+    let bytes = std::fs::read(&path).expect("the registered exception is committed");
+    validate_known_fern_failure(CALORIENINJAS.api, "registered", &bytes)
+        .expect("the one registered exception is valid");
+
+    // Bound to the spec it was measured against: the same bytes cannot cover a
+    // corpus whose golden merely started diverging.
+    let error = validate_known_fern_failure(BUNQ.api, "copied", &bytes)
+        .expect_err("a registration must not transfer to another corpus");
+    assert!(error.contains("stale corpus_spec_name"), "{error}");
+
+    let tampered = |mutate: &dyn Fn(&mut serde_json::Value)| {
+        let mut payload: serde_json::Value =
+            serde_json::from_slice(&bytes).expect("the registration is JSON");
+        mutate(&mut payload);
+        validate_known_fern_failure(
+            CALORIENINJAS.api,
+            "tampered",
+            serde_json::to_vec(&payload).expect("re-encode").as_slice(),
+        )
+        .expect_err("a tampered registration must be rejected")
+    };
+
+    // Bound to the exact generator that fails, so it cannot silently outlive it.
+    let error = tampered(&|payload| payload["generator_version"] = serde_json::json!("5.21.0"));
+    assert!(error.contains("stale generator_version"), "{error}");
+
+    // Bound to the exact evidence, so the fingerprint cannot be blurred.
+    let error = tampered(&|payload| {
+        payload["fingerprint"]["diagnostics"]
+            .as_array_mut()
+            .expect("diagnostic list")
+            .pop();
+    });
+    assert!(error.contains("exactly six identifier"), "{error}");
+
+    // Bound to an exact key set, so no extra field can be smuggled in.
+    let error = tampered(&|payload| payload["also_ignore"] = serde_json::json!("everything"));
+    assert!(
+        error.contains("exact known-failure contract keys"),
+        "{error}"
+    );
+}
+
+/// Registration only becomes coverage when something *runs* it. A `Corpus` that
+/// no test drives, or a fetched-spec corpus missing from `just test-corpus-match`,
+/// would skip silently in every gate — so a reintroduced residual would go
+/// unnoticed exactly where the corpus is supposed to catch it. Both wirings are
+/// derived from the sources themselves, so adding a corpus without them fails
+/// here rather than years later.
+#[test]
+fn every_registered_corpus_is_wired_into_the_gate() {
+    let source = include_str!("e2e.rs");
+    let recipe = corpus_match_recipe(include_str!("../justfile"));
+
+    let mut enforced = std::collections::BTreeSet::new();
+    for corpus in registered_diff_corpora() {
+        // Feature targets are driven as a set by
+        // `feature_target_specs_generate_without_panicking`, and their specs are
+        // vendored, so they need no per-corpus wiring.
+        if FEATURE_TARGETS.iter().any(|t| t.api == corpus.api) {
+            continue;
+        }
+        let constant = corpus_constant_for(source, corpus.api).unwrap_or_else(|| {
+            panic!(
+                "{}: registered corpora need a named `Corpus` const",
+                corpus.api
+            )
+        });
+        let test = corpus_test_for(source, &constant).unwrap_or_else(|| {
+            panic!(
+                "{}: no #[test] drives {constant}, so the gate would never compare it",
+                corpus.api
+            )
+        });
+        if fixture_dir(corpus.api).join("openapi.yml").exists() {
+            continue;
+        }
+        assert!(
+            recipe.contains(&test),
+            "{}: {test} is missing from `just test-corpus-match`, so CI would skip its fetched spec",
+            corpus.api
+        );
+        enforced.insert(test);
+    }
+
+    let listed: std::collections::BTreeSet<String> = recipe.iter().cloned().collect();
+    assert_eq!(
+        listed, enforced,
+        "`just test-corpus-match` lists tests that no registered corpus owns"
+    );
+}
+
+/// The test names `just test-corpus-match` enforces, in recipe order.
+fn corpus_match_recipe(justfile: &str) -> Vec<String> {
+    let tests: Vec<String> = justfile
+        .lines()
+        .skip_while(|line| !line.starts_with("test-corpus-match:"))
+        .skip(1)
+        .take_while(|line| line.starts_with(' ') || line.starts_with('\t'))
+        .filter_map(|line| {
+            line.trim_end()
+                .rsplit_once("--test e2e ")
+                .map(|(_, test)| test.to_string())
+        })
+        .collect();
+    assert!(!tests.is_empty(), "`test-corpus-match` enforces no tests");
+    tests
+}
+
+/// The `const NAME: Corpus` whose `api` field is `api`.
+fn corpus_constant_for(source: &str, api: &str) -> Option<String> {
+    let mut pending: Option<&str> = None;
+    for line in source.lines() {
+        if let Some(rest) = line.strip_prefix("const ") {
+            if rest.contains(": Corpus = Corpus {") {
+                pending = rest.split(':').next().map(str::trim);
+            }
+            continue;
+        }
+        if let Some(rest) = line.trim().strip_prefix("api: \"") {
+            let declared = rest.trim_end_matches(',').trim_matches('"');
+            if let Some(name) = pending.take() {
+                if declared == api {
+                    return Some(name.to_string());
+                }
+            }
+        }
+    }
+    None
+}
+
+/// The `#[test] fn` that drives `constant` through a byte comparison or, for the
+/// accepted exception, through its known-failure boundary.
+fn corpus_test_for(source: &str, constant: &str) -> Option<String> {
+    const DRIVERS: [&str; 3] = [
+        "assert_corpus_matches(&",
+        "assert_link_ok_corpus_matches(&",
+        "known_fern_failure(&",
+    ];
+    let mut current = None;
+    for line in source.lines() {
+        if let Some(rest) = line.strip_prefix("fn ") {
+            current = rest.split('(').next();
+        }
+        for driver in DRIVERS {
+            let Some((_, rest)) = line.split_once(driver) else {
+                continue;
+            };
+            if rest.split([')', ',']).next() == Some(constant) {
+                return current.map(str::to_string);
+            }
+        }
+    }
+    None
 }
 
 fn safe_fixture_name(value: &str) -> bool {

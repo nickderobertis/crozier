@@ -52,16 +52,19 @@ known failures, provenance, and the final green/no-change rerun.
 - **`exhaustive/`** — the broad target. `openapi.yml` (+ the source
   `generators.yml.source`, for reference) is vendored; its `expected/` tree is
   packaged Fern Python output generated from that OpenAPI document.
-- **Feature-coverage targets** — hand-authored specs pinning one shape each, most
-  now matched in full (the roadmap in
+- **Feature-coverage targets** — hand-authored specs pinning one shape each, all
+  matched in full (the shape-by-shape rationale is in
   [`../../docs/matching.md`](../../docs/matching.md)): `auth-schemes`,
   `inline-request-response`, `cookie-parameters`, `form-bodies`,
   `discriminated-unions`, `schema-constraints`, `integer-enums`,
   `servers-webhooks`, and the issue-#84–#86 targets `recursive-types`,
   `nested-core-imports`, and `malformed-property-schema`. Their `FEATURE_TARGETS`
   entries in `tests/e2e.rs` also provide compile/smoke coverage independently of
-  how many golden paths are matched.
+  the byte comparison.
 
-Each `Corpus` in `tests/e2e.rs` carries the residual `unmatched` task list. Every
-other file in the full golden tree is gated, including newly emitted files. See
-[`AGENTS.md`](AGENTS.md); `just fixtures-gaps` measures the remaining divergences.
+Every `Corpus` in `tests/e2e.rs` carries an empty `unmatched` residual list: the
+whole corpus reproduces its Fern goldens byte-for-byte, apart from the one
+accepted upstream exception (`calorieninjas.com`, which has no golden because
+Fern cannot produce one). Every file in every golden tree is gated in both
+directions, including newly emitted files. See [`AGENTS.md`](AGENTS.md);
+`just fixtures-gaps` re-measures the census.

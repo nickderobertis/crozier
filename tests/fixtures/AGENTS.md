@@ -11,7 +11,9 @@ the rest.
 
 Add one numbered [`CORPUS.md`](CORPUS.md) row and source URL per feature branch,
 then wire a `Corpus { api, package_name, project_name, unmatched: &[] }` into
-`tests/e2e.rs`. Push the branch and manually dispatch
+`tests/e2e.rs`, plus its `#[test]` and its `just test-corpus-match` line —
+`every_registered_corpus_is_wired_into_the_gate` fails without both, because a
+corpus nothing runs is not coverage. Push the branch and manually dispatch
 the **Fern goldens** workflow on that branch for the fixture; red comparison is
 expected until Crozier is repaired. A Monday 05:17 UTC run from `main` leaves
 both inputs blank to check the latest Fern against every managed golden. Do Fern
@@ -67,13 +69,21 @@ duplicate its batch ledger here.
 
 ## Shrinking `unmatched` — don't diff by hand
 
-`just fixtures-gaps` generates every available corpus and reports the exact
-remaining divergent files as ready-to-paste `unmatched` arrays. Every expected
-file outside that opt-out list is gated, including files newly emitted by Fern.
-The reporter also rejects stale entries that now match. `fixtures-candidates` is
-retained as an alias. A validated `known-fern-failure.json` is the only reason a
-registered corpus may have no `expected/` tree; every other missing golden is a
-hard error. Such a corpus remains a spec-level robustness test until Fern
+The corpus is at full byte parity: every `unmatched` list is empty, so a
+non-empty one means work in flight, not an accepted state. `just fixtures-gaps`
+generates every available corpus and reports the exact divergent files as
+ready-to-paste `unmatched` arrays; land the generator fix and empty the list
+again. Every expected file outside that list is gated, including files newly
+emitted by Fern, and the comparison also walks Crozier's output back, so nothing
+can be suppressed by omission. The reporter rejects stale entries that now match.
+`fixtures-candidates` is retained as an alias.
+
+A validated `known-fern-failure.json` is the only reason a registered corpus may
+have no `expected/` tree; every other missing golden is a hard error. That
+registration is bound to one exact generator version, corpus identity, exit code,
+and diagnostic fingerprint, so it cannot be copied onto a corpus that merely
+diverges — see `a_known_fern_failure_registration_cannot_excuse_anything_else`.
+Such a corpus remains a spec-level robustness test until Fern
 succeeds, at which point remove the failure registration and use the managed
 workflow to publish a provenanced golden so it rejoins byte comparison.
 
@@ -91,9 +101,10 @@ inline, so a regression outside `unmatched` is diagnosable straight from
 
 ## Non-negotiable
 
-- **`unmatched` contains only measured divergences.** Never edit a committed
-  fixture to match crozier — the fixture is Fern's golden output; fix the
-  generator instead. `just fixtures-gaps` reports gaps and never rewrites fixtures.
+- **`unmatched` holds only measured divergence, never an accepted one.** Never
+  edit a committed fixture to match crozier — the fixture is Fern's golden
+  output; fix the generator instead. `just fixtures-gaps` reports divergence and
+  never rewrites fixtures.
 - **Keep attribution.** The corpus is Fern's output (Apache-2.0); `../../NOTICE`
   and `../../licenses/fern-APACHE-2.0.txt` must survive any regeneration (the
   refresh scripts preserve them).
