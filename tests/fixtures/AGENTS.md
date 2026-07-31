@@ -71,9 +71,11 @@ duplicate its batch ledger here.
 remaining divergent files as ready-to-paste `unmatched` arrays. Every expected
 file outside that opt-out list is gated, including files newly emitted by Fern.
 The reporter also rejects stale entries that now match. `fixtures-candidates` is
-retained as an alias. A corpus with a validated `known-fern-failure.json` keeps
-the same reverse-checked non-empty list but is counted and labeled separately as
-an accepted upstream exception, never as an open Crozier gap.
+retained as an alias. A validated `known-fern-failure.json` is the only reason a
+registered corpus may have no `expected/` tree; every other missing golden is a
+hard error. Such a corpus remains a spec-level robustness test until Fern
+succeeds, at which point remove the failure registration and use the managed
+workflow to publish a provenanced golden so it rejoins byte comparison.
 
 ## Why a file *doesn't* match — `just fixtures-diff`
 

@@ -721,6 +721,31 @@ fn known_fern_failure_marker(c: &Corpus, known: &KnownFernFailure) -> String {
     )
 }
 
+/// Decide whether a corpus has a Fern tree to byte-compare. A validated exact
+/// upstream failure is the only registration allowed to omit `expected/`;
+/// every other missing tree is an error so aggregate comparison cannot silently
+/// lose coverage.
+fn corpus_has_comparable_golden(c: &Corpus, expected: &Path) -> Result<bool, String> {
+    if expected.is_symlink() {
+        return Err("refusing to compare a symlinked expected/ golden tree".to_string());
+    }
+    let known_failure = known_fern_failure(c)?;
+    if expected.is_dir() {
+        if known_failure.is_some() {
+            return Err(
+                "fixture has both known-fern-failure.json and an expected/ golden tree; \
+                 remove the failure registration after Fern succeeds"
+                    .to_string(),
+            );
+        }
+        return Ok(true);
+    }
+    if known_failure.is_some() {
+        return Ok(false);
+    }
+    Err("fixture has no expected/ golden tree".to_string())
+}
+
 /// The OpenAPI spec a corpus generates from. A vendored corpus ships its
 /// `openapi.yml`; a `link-ok` corpus (`tests/fixtures/CORPUS.md`, spec not
 /// redistributed) is fetched into `.local/corpus/<api>/openapi.<source suffix>`
@@ -862,9 +887,14 @@ fn try_ruff_isort(source: &str) -> Result<String, String> {
 /// Require every Fern file except explicit residual gaps to match byte-for-byte.
 fn assert_corpus_matches(c: &Corpus) {
     let fixtures = fixture_dir(c.api);
-    let out = generate_corpus(c);
-
     let expected_root = fixtures.join("expected");
+    assert!(
+        corpus_has_comparable_golden(c, &expected_root)
+            .unwrap_or_else(|error| panic!("{}: {error}", c.api)),
+        "{} has no Fern golden to compare",
+        c.api
+    );
+    let out = generate_corpus(c);
     let repository_scaffolding = repository_scaffolding(c);
     let packaged_expectations = packaged_expectations(c);
     for rel in walk_files(&expected_root) {
@@ -1558,29 +1588,8 @@ const CALORIENINJAS: Corpus = Corpus {
     client_class_name: None,
     extra_fields: None,
     // Fern 5.20 cannot produce a valid tree for this spec. Its exact registered
-    // upstream failure is covered at the process boundary instead of comparing
-    // against the preserved, non-authoritative 4.35 output.
-    unmatched: &[
-        ".fern/metadata.json",
-        "README.md",
-        "pyproject.toml",
-        "reference.md",
-        "requirements.txt",
-        "src/fern/__init__.py",
-        "src/fern/client.py",
-        "src/fern/core/__init__.py",
-        "src/fern/core/client_wrapper.py",
-        "src/fern/core/datetime_utils.py",
-        "src/fern/core/http_client.py",
-        "src/fern/core/http_response.py",
-        "src/fern/core/http_sse/_api.py",
-        "src/fern/core/http_sse/_decoders.py",
-        "src/fern/core/jsonable_encoder.py",
-        "src/fern/core/pydantic_utilities.py",
-        "src/fern/core/request_options.py",
-        "src/fern/core/serialization.py",
-        "src/fern/raw_client.py",
-    ],
+    // upstream failure is covered at the process boundary, with no golden.
+    unmatched: &[],
 };
 
 const EOS: Corpus = Corpus {
@@ -2230,10 +2239,6 @@ fn calorieninjas_reproduces_the_exact_known_fern_failure_boundary() {
     let known = known_fern_failure(&CALORIENINJAS)
         .expect("known Fern failure contract must be valid")
         .expect("CalorieNinjas must register its Fern 5.20 failure");
-    assert!(
-        !CALORIENINJAS.unmatched.is_empty(),
-        "the preserved older golden must remain an explicit non-empty accepted exception"
-    );
     let out = generate_corpus(&CALORIENINJAS);
     let client = std::fs::read_to_string(out.path().join("src/fern/client.py"))
         .expect("Crozier generated a valid CalorieNinjas client");
@@ -2875,7 +2880,16 @@ fn report_fixture_gaps() {
     let corpus_filter = std::env::var("CROZIER_GAPS_CORPUS")
         .ok()
         .filter(|value| !value.is_empty());
-    let mut corpora = registered_diff_corpora();
+    let (mut corpora, selection_failures) = select_diff_corpora(None);
+    assert!(
+        selection_failures.is_empty(),
+        "corpus selection failures:\n{}",
+        selection_failures
+            .iter()
+            .map(|(name, error)| format!("{name}: {error}"))
+            .collect::<Vec<_>>()
+            .join("\n")
+    );
     corpora.retain(|corpus| corpus_spec(corpus.api).is_some());
 
     if let Some(filter) = &corpus_filter {
@@ -2889,7 +2903,6 @@ fn report_fixture_gaps() {
     let corpus_count = corpora.len();
     let mut total_expected = 0usize;
     let mut total_unmatched = 0usize;
-    let mut total_accepted_upstream = 0usize;
     for corpus in corpora {
         let expected_root = fixture_dir(corpus.api).join("expected");
         let expected_files = walk_files(&expected_root);
@@ -2915,10 +2928,6 @@ fn report_fixture_gaps() {
                     && !is_packaged_expectation(corpus, rel)
             })
             .collect();
-        let accepted_upstream = known_fern_failure(corpus)
-            .unwrap_or_else(|error| panic!("{}: {error}", corpus.api))
-            .is_some();
-
         println!("\n=== {} ===", corpus.api);
         println!("  {} expected file(s).", expected_files.len());
         if !repository_scaffolding(corpus).is_empty() {
@@ -2937,13 +2946,8 @@ fn report_fixture_gaps() {
             println!("  no unmatched files.");
         } else {
             println!(
-                "  {} file(s) {} — use as this corpus's `unmatched`:",
+                "  {} file(s) still unmatched — use as this corpus's `unmatched`:",
                 divergent.len(),
-                if accepted_upstream {
-                    "accepted as a permanent upstream Fern exception"
-                } else {
-                    "still unmatched"
-                },
             );
             for rel in &divergent {
                 println!("        \"{rel}\",");
@@ -2967,15 +2971,10 @@ fn report_fixture_gaps() {
         }
 
         total_expected += expected_files.len();
-        if accepted_upstream {
-            total_accepted_upstream += divergent.len();
-        } else {
-            total_unmatched += divergent.len();
-        }
+        total_unmatched += divergent.len();
     }
     println!(
         "\n{total_unmatched} file(s) still unmatched across all corpora; \
-         {total_accepted_upstream} accepted upstream-exception file(s); \
          {total_expected} expected file(s) across {corpus_count} corpora."
     );
 }
@@ -3016,23 +3015,13 @@ fn select_diff_corpora(requested: Option<&str>) -> (Vec<&'static Corpus>, Vec<(S
             continue;
         };
         let expected = fixture_dir(corpus.api).join("expected");
-        if expected.is_symlink() {
-            if requested.is_some() {
-                failures.push((
-                    name.to_string(),
-                    "refusing to compare a symlinked expected/ golden tree".to_string(),
-                ));
+        match corpus_has_comparable_golden(corpus, &expected) {
+            Ok(true) => {}
+            Ok(false) => continue,
+            Err(error) => {
+                failures.push((name.to_string(), error));
+                continue;
             }
-            continue;
-        }
-        if !expected.is_dir() {
-            if requested.is_some() {
-                failures.push((
-                    name.to_string(),
-                    "fixture has no expected/ golden tree".to_string(),
-                ));
-            }
-            continue;
         }
         if corpus_spec(corpus.api).is_none() {
             if requested.is_some() {
@@ -3364,6 +3353,26 @@ fn exact_comparison_scope_reports_unregistered_managed_fixtures() {
     assert_eq!(failures.len(), 1, "{failures:?}");
     assert_eq!(failures[0].0, "new-unregistered-fixture");
     assert!(failures[0].1.contains("not registered"));
+}
+
+#[test]
+fn missing_golden_is_allowed_only_for_a_validated_known_fern_failure() {
+    let missing = tempfile::tempdir()
+        .expect("temporary parent")
+        .path()
+        .join("expected");
+    let error = corpus_has_comparable_golden(&BUNQ, &missing)
+        .expect_err("a normal corpus must never silently skip a missing golden");
+    assert_eq!(error, "fixture has no expected/ golden tree");
+
+    assert!(
+        !corpus_has_comparable_golden(
+            &CALORIENINJAS,
+            &fixture_dir(CALORIENINJAS.api).join("expected")
+        )
+        .expect("CalorieNinjas has a valid exact known-failure registration"),
+        "an exact known Fern failure has no golden to compare"
+    );
 }
 
 fn safe_fixture_name(value: &str) -> bool {
