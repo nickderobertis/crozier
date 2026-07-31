@@ -327,16 +327,8 @@ const FEATURE_TARGETS: &[Corpus] = &[
     // the whole generated SDK — types, the tag-grouped raw/high-level clients, the
     // root client, and the package aggregators — with no auth (no bearer token).
     //
-    // Two files per fixture stay unmatched, for reasons orthogonal to #40: (1)
-    // `core/client_wrapper.py` — Fern's `X-Fern-SDK-*` identity headers and the
-    // `pyproject.toml`/`version.py` scaffolding come from Fern's *packaged* output
-    // mode, which needs publishing credentials; the vendored golden trees are Fern's
-    // credential-free local (`downloadFiles`) output, which omits them. crozier's
-    // packaged wrapper is already byte-validated by the auth'd corpora above. (2)
-    // For digit-leading-property only, the client layer — its `getThing` operation
-    // is untagged and groupless, so Fern emits a root-level method while crozier
-    // still nests it under a single-endpoint client (a separate root-client gap);
-    // the fix under test, the `f_2fa_enabled` model, matches in full.
+    // `digit-leading-property` also pins the root-client shape: its untagged,
+    // groupless `getThing` operation is emitted directly on the root client.
     Corpus {
         api: "digit-leading-property",
         package_name: "fern",
@@ -1845,6 +1837,7 @@ const CORPORA: &[&Corpus] = &[
     &BUILDRELAY,
     &TLON_NOTES,
     &TWILIO_MESSAGING_V1,
+    &LIVEPEER_AI_RUNNER,
 ];
 
 #[test]
@@ -2696,6 +2689,19 @@ const TWILIO_MESSAGING_V1: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `livepeer-ai-runner`: the production inference runtime publishes three
+/// untagged, groupless operations alongside ten tagged pipeline operations.
+const LIVEPEER_AI_RUNNER: Corpus = Corpus {
+    api: "livepeer-ai-runner",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 #[test]
 fn apideck_ats_matches_fern_output() {
     if corpus_spec(APIDECK_ATS.api).is_none() {
@@ -2735,6 +2741,11 @@ fn tlon_notes_matches_fern_output() {
 #[test]
 fn twilio_messaging_v1_matches_fern_output() {
     assert_link_ok_corpus_matches(&TWILIO_MESSAGING_V1);
+}
+
+#[test]
+fn livepeer_ai_runner_matches_fern_output() {
+    assert_link_ok_corpus_matches(&LIVEPEER_AI_RUNNER);
 }
 
 #[test]

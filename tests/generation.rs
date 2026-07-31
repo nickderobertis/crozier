@@ -1585,6 +1585,41 @@ fn form_bodies_split_data_and_files() {
     assert!(raw.contains("\"content-type\": \"application/x-www-form-urlencoded\""));
 }
 
+#[test]
+fn multipart_reference_examples_put_files_before_other_required_fields() {
+    let files = render(
+        r#"openapi: 3.0.1
+info: { title: Upload }
+paths:
+  /up:
+    post:
+      operationId: uploads_send
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [prompt, doc]
+              properties:
+                prompt: { type: string }
+                doc: { type: string, format: binary }
+      responses: { "204": { description: "" } }
+"#,
+    );
+    let reference = &files["reference.md"];
+    let file = reference
+        .find("doc=\"example_doc\"")
+        .expect("reference example includes the required file");
+    let prompt = reference
+        .find("prompt=\"prompt\"")
+        .expect("reference example includes the required prompt");
+    assert!(
+        file < prompt,
+        "multipart reference files come first: {reference}"
+    );
+}
+
 /// The README example is the first endpoint with a request body, and its
 /// abbreviated snippets show `...` for a fully-required body (here a container).
 #[test]
@@ -1706,6 +1741,16 @@ fn servers_generate_environment_and_thread_root_client() {
     assert!(!client.contains("https://yourhost.com/path/to/api"));
 
     assert!(files["src/acme/__init__.py"].contains("AcmeApiEnvironment"));
+}
+
+#[test]
+fn provider_named_server_description_uses_default_environment() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: Livepeer AI Runner\nservers:\n  - url: https://gateway.example.com\n    description: Livepeer Cloud Community Gateway\npaths:\n  /health:\n    get:\n      operationId: health\n      responses:\n        \"204\": { description: healthy }\n",
+    );
+    assert!(files["src/acme/environment.py"].contains("DEFAULT = \"https://gateway.example.com\""));
+    assert!(files["src/acme/client.py"]
+        .contains("environment: AcmeApiEnvironment = AcmeApiEnvironment.DEFAULT"));
 }
 
 /// `--client-class-name` (Fern's `client_class_name`) overrides the root client

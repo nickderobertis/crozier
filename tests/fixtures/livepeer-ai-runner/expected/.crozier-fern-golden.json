@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "livepeer-ai-runner",
+  "corpus_spec_ref": "50a742cee7c5789ef4a10f8117f30de3758366a9",
+  "corpus_spec_url": "https://raw.githubusercontent.com/livepeer/ai-runner/50a742cee7c5789ef4a10f8117f30de3758366a9/openapi.yaml"
+}
