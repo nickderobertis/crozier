@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.44](https://github.com/nickderobertis/crozier/compare/v0.0.43...v0.0.44) - 2026-07-31
+
+### Added
+
+- match Fern's identifier normalization at digit boundaries ([#141](https://github.com/nickderobertis/crozier/pull/141))
+
 ## [0.0.43](https://github.com/nickderobertis/crozier/compare/v0.0.42...v0.0.43) - 2026-07-31
 
 ### Added
