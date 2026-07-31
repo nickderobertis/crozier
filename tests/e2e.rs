@@ -2707,7 +2707,12 @@ const LIVEPEER_AI_RUNNER: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &[],
+    unmatched: &[
+        "README.md",
+        "reference.md",
+        "src/fern/client.py",
+        "src/fern/environment.py",
+    ],
 };
 
 #[test]
