@@ -821,9 +821,21 @@ The component-array-item gap is closed and pinned by the real-world
 `typing.Any`, and the aggregators re-export it. The first measured corpus run had
 no residual files because the general component hoister already covered the
 shape; registering the corpus turned that previously unmeasured rule into a
-byte-exact regression target. Still open from the issue: Swagger 2.0 /
-fragment-doc tolerance and the `address_line_1` → `address_line1`
-underscore-before-digit rename.
+byte-exact regression target.
+
+The underscore-before-digit rename is now pinned by the real-world
+`twilio.com-twilio_messaging_v1` corpus at Fern 5.20.0:
+`MessagingV1BrandRegistrations.russell_3000` becomes the Python field
+`russell3000` with `russell_3000` retained as its wire alias. The first measured
+corpus run found that type file already byte-matched through the shared numeric
+field-boundary rule; its two residual files were `src/fern/client.py` and
+`src/fern/raw_client.py`, where URL-encoded array inputs used `List` plus JSON
+encoding instead of Fern's `Sequence` passed directly as form data. URL-encoded
+form arrays now follow Fern without changing multipart JSON encoding. The naming
+test keeps both adjacent rules explicit: a word ending in a digit still absorbs
+the following segment (`Cvc2Create` → `cvc2create`), while a digit-led boundary
+is preserved (`2Factor` → `f_2_factor` for a property). Swagger 2.0 /
+fragment-document tolerance remains open from the issue.
 
 ## Fern-python parity gaps (issue #41)
 

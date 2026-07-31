@@ -153,7 +153,7 @@ pub fn module_name(class_name: &str) -> String {
 /// name still rides along as the serialization key, since `needs_alias` fires.
 #[must_use]
 pub fn field_name(wire_name: &str) -> String {
-    let snake = collapse_digit_boundaries(&to_snake_case(&fold_non_identifier(wire_name)));
+    let snake = collapse_field_digit_boundaries(&to_snake_case(&fold_non_identifier(wire_name)));
     if snake.starts_with(|c: char| c.is_ascii_digit()) {
         format!("f_{snake}")
     } else if is_reserved(&snake) {
@@ -167,7 +167,7 @@ pub fn field_name(wire_name: &str) -> String {
 /// digit-leading body argument with `_` (distinct from model fields' `f_`).
 #[must_use]
 pub fn request_field_name(wire_name: &str) -> String {
-    let snake = collapse_digit_boundaries(&to_snake_case(&fold_non_identifier(wire_name)));
+    let snake = collapse_field_digit_boundaries(&to_snake_case(&fold_non_identifier(wire_name)));
     if snake.starts_with(|c: char| c.is_ascii_digit()) {
         format!("_{snake}")
     } else {
@@ -176,8 +176,41 @@ pub fn request_field_name(wire_name: &str) -> String {
 }
 
 /// Fern joins numeric field-name segments to their neighbors (`day_0_end_time` →
-/// `day0end_time`, `user_fields[1]` → `user_fields1`). Serialization still uses
-/// the original wire name through field aliases.
+/// `day0end_time`, `user_fields[1]` → `user_fields1`) but preserves a boundary
+/// after an initial digit (`2Factor` → `2_factor`). Serialization still uses the
+/// original wire name through field aliases.
+fn collapse_field_digit_boundaries(name: &str) -> String {
+    let chars: Vec<char> = name.chars().collect();
+    chars
+        .iter()
+        .enumerate()
+        .filter_map(|(index, &ch)| {
+            if ch == '_'
+                && (index.checked_sub(1).is_some_and(|i| {
+                    chars[i].is_ascii_digit() && digit_suffix_absorbs_following(&chars, i)
+                }) || chars.get(index + 1).is_some_and(char::is_ascii_digit))
+            {
+                None
+            } else {
+                Some(ch)
+            }
+        })
+        .collect()
+}
+
+fn digit_suffix_absorbs_following(chars: &[char], digit_index: usize) -> bool {
+    let mut digit_start = digit_index;
+    while digit_start > 0 && chars[digit_start - 1].is_ascii_digit() {
+        digit_start -= 1;
+    }
+    (digit_start > 0 && chars[digit_start - 1] == '_')
+        || chars[..digit_start]
+            .iter()
+            .rev()
+            .take_while(|&&candidate| candidate != '_')
+            .any(|candidate| candidate.is_ascii_alphabetic())
+}
+
 fn collapse_digit_boundaries(name: &str) -> String {
     let chars: Vec<char> = name.chars().collect();
     chars
@@ -690,9 +723,18 @@ mod tests {
         assert_eq!(field_name("3d"), "f_3d");
         // Fern's default smart casing rejoins digit-adjacent fragments before
         // applying the leading-digit prefix.
-        assert_eq!(field_name("2-factor"), "f_2factor");
+        assert_eq!(field_name("2-factor"), "f_2_factor");
         // Non-digit-leading names are untouched.
         assert_eq!(field_name("v2"), "v2");
+    }
+
+    #[test]
+    fn numeric_field_boundaries_match_fern_without_changing_adjacent_word_rules() {
+        assert_eq!(field_name("address_line_1"), "address_line1");
+        assert_eq!(field_name("Cvc2Create"), "cvc2create");
+        assert_eq!(field_name("prop65_warning"), "prop65warning");
+        assert_eq!(field_name("prop_65_warning"), "prop65warning");
+        assert_eq!(field_name("2Factor"), "f_2_factor");
     }
 
     #[test]
