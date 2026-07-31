@@ -5990,9 +5990,15 @@ impl Builder<'_> {
 }
 
 fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[Schema]) -> String {
-    let recursive_inline_union = siblings
+    let required_recursive_inline_union = siblings
         .iter()
-        .any(|sibling| schema_references_class(sibling, parent));
+        .any(|sibling| schema_references_class(sibling, parent))
+        && siblings.iter().all(|sibling| {
+            sibling
+                .properties
+                .keys()
+                .all(|property| sibling.required.contains(property))
+        });
     let shared_first = variant.properties.keys().next().filter(|candidate| {
         siblings
             .iter()
@@ -6020,7 +6026,7 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
                             .count()
                             == 1
                 })
-                .filter(|_| recursive_inline_union)
+                .filter(|_| required_recursive_inline_union)
                 .or_else(|| {
                     variant.properties.keys().find(|candidate| {
                         candidate.as_str() != "resource_list"
@@ -8261,6 +8267,7 @@ mod tests {
         );
 
         let recursive_folder = schema(serde_json::json!({
+            "required": ["name", "children"],
             "properties": {
                 "name": { "type": "string" },
                 "children": {
@@ -8270,6 +8277,7 @@ mod tests {
             }
         }));
         let recursive_leaf = schema(serde_json::json!({
+            "required": ["title", "body"],
             "properties": {
                 "title": { "type": "string" },
                 "body": { "type": "string" }
@@ -8283,6 +8291,32 @@ mod tests {
         assert_eq!(
             variant_class_name("ImportNode", 1, &recursive_leaf, &recursive_siblings),
             "ImportNodeBody"
+        );
+
+        let optional_recursive = schema(serde_json::json!({
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/Option" }
+                },
+                "option_type": { "type": "string" }
+            }
+        }));
+        let optional_leaf = schema(serde_json::json!({
+            "properties": {
+                "alignments": { "type": "array" },
+                "desc": { "type": "string" },
+                "option_type": { "type": "string" }
+            }
+        }));
+        let optional_siblings = [optional_recursive.clone(), optional_leaf.clone()];
+        assert_eq!(
+            variant_class_name("Option", 0, &optional_recursive, &optional_siblings),
+            "OptionItems"
+        );
+        assert_eq!(
+            variant_class_name("Option", 1, &optional_leaf, &optional_siblings),
+            "OptionAlignments"
         );
     }
 
