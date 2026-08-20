@@ -2559,8 +2559,9 @@ const ELECTRIC_SQL: Corpus = Corpus {
 };
 
 /// `tamoss`: TAMOSS's OpenAPI 3.1 contract, covering conditional schemas,
-/// `const`, and top-level webhooks. Fern accepts the raw pinned spec; the golden
-/// is workflow-owned.
+/// `const`, and top-level webhooks — the only corpus pinning webhook payload
+/// hoisting (eight inline webhook bodies become `Post*Payload` types). Fern
+/// accepts the raw pinned spec; the golden is workflow-owned.
 const TAMOSS: Corpus = Corpus {
     api: "tamoss",
     package_name: "fern",

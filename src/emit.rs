@@ -1304,10 +1304,8 @@ fn render_lazy_loader(
     )
 }
 
-/// The `types/__init__.py` lazy loader. `_dynamic_imports`/`__all__` are
-/// alphabetical; the `TYPE_CHECKING` block follows Fern's endpoint-traversal
-/// order, which for this corpus is the `Types*` types in reverse declaration
-/// order followed by the remaining types alphabetically.
+/// The `types/__init__.py` lazy loader. `_dynamic_imports`, `__all__`, and the
+/// `TYPE_CHECKING` block are all emitted alphabetically.
 fn types_init_file(
     env: &Environment<'static>,
     pkg: &str,
