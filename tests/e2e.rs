@@ -6481,3 +6481,793 @@ fn client_class_name_is_configurable_via_the_config_file() {
         "config-set client-class-name should reach generation"
     );
 }
+
+// --- Configuration-surface journeys ------------------------------------------
+// Everything below drives the real binary over a real temp directory and real
+// config files to prove the *layering* — discovery, the `CROZIER_*` env layer,
+// the documented precedence, multi-generator selection, and the `init`/`config`/
+// `schema` subcommands. The pure merge logic is unit-tested in `src/settings.rs`;
+// these are the journeys a user actually takes.
+
+/// The `CROZIER_*` variables the settings layer reads (the documented set in
+/// `docs/configuration.md`). The journeys below drive this layer deliberately, so
+/// they start from a known-clean environment rather than inheriting whatever the
+/// developer's shell happens to export.
+const CROZIER_ENV_VARS: &[&str] = &[
+    "CROZIER_CONFIG",
+    "CROZIER_SPEC",
+    "CROZIER_OUTPUT",
+    "CROZIER_PACKAGE_NAME",
+    "CROZIER_PROJECT_NAME",
+    "CROZIER_CLIENT_CLASS_NAME",
+    "CROZIER_AUDIENCES",
+    "CROZIER_AUDIENCE_STRICT",
+    "CROZIER_EXTRA_FIELDS",
+];
+
+/// `TINY_SPEC` plus one operation, so the run also emits a root `client.py` —
+/// needed wherever a journey asserts the generated client class name.
+const TINY_SPEC_WITH_OP: &str = "openapi: 3.0.0\ninfo:\n  title: Tiny\npaths:\n  /thing:\n    get:\n      operationId: getThing\n      tags: [Thing]\n      responses:\n        '200':\n          description: OK\n          content:\n            application/json:\n              schema: { $ref: '#/components/schemas/Thing' }\ncomponents:\n  schemas:\n    Thing:\n      type: object\n      properties:\n        name: { type: string }\n";
+
+/// The binary with every `CROZIER_*` override cleared, so a journey's env layer
+/// is exactly what the journey sets.
+fn crozier_clean_env() -> Command {
+    let mut cmd = crozier();
+    for name in CROZIER_ENV_VARS {
+        cmd.env_remove(name);
+    }
+    cmd
+}
+
+/// The config-file names crozier auto-discovers, highest priority first. Mirrors
+/// `settings::CONFIG_NAMES` — asserted against it so the journey below can never
+/// silently test a stale list.
+const DISCOVERED_CONFIG_NAMES: &[&str] = &[
+    "crozier.yml",
+    "crozier.yaml",
+    ".crozier.yml",
+    ".crozier.yaml",
+];
+
+/// A config naming one generator that writes `<name>` as its package, so which
+/// file was loaded is visible in the generated tree.
+fn config_naming(package: &str) -> String {
+    format!(
+        "spec: ./api.yml\ngenerators:\n  python:\n    output: ./out\n    package-name: {package}\n"
+    )
+}
+
+#[test]
+fn every_discovered_config_filename_is_loaded_in_priority_order() {
+    assert_eq!(
+        DISCOVERED_CONFIG_NAMES,
+        crozier::settings::CONFIG_NAMES,
+        "the journey's filename list drifted from the discovery order"
+    );
+
+    // Each name on its own is discovered with no `--config` flag at all.
+    for name in DISCOVERED_CONFIG_NAMES {
+        let dir = tempfile::tempdir().expect("tempdir");
+        std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+        let package = name.replace(['.', '-'], "_");
+        std::fs::write(dir.path().join(name), config_naming(&package)).unwrap();
+
+        crozier_clean_env()
+            .current_dir(dir.path())
+            .arg("generate")
+            .assert()
+            .success()
+            .stderr(predicate::str::contains("generated"));
+        assert!(
+            dir.path()
+                .join(format!("out/src/{package}/types/thing.py"))
+                .is_file(),
+            "{name} should be discovered in the working directory"
+        );
+    }
+
+    // All four present at once: the highest-priority name wins, and removing it
+    // promotes the next — walking the whole documented priority order.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    for (i, name) in DISCOVERED_CONFIG_NAMES.iter().enumerate() {
+        std::fs::write(dir.path().join(name), config_naming(&format!("rank{i}"))).unwrap();
+    }
+    for (i, name) in DISCOVERED_CONFIG_NAMES.iter().enumerate() {
+        crozier_clean_env()
+            .current_dir(dir.path())
+            .arg("generate")
+            .assert()
+            .success();
+        assert!(
+            dir.path()
+                .join(format!("out/src/rank{i}/types/thing.py"))
+                .is_file(),
+            "{name} should win once the higher-priority names are gone"
+        );
+        std::fs::remove_file(dir.path().join(name)).unwrap();
+    }
+}
+
+#[test]
+fn the_env_layer_supplies_every_documented_generation_setting() {
+    // No config file at all: `CROZIER_*` alone drives a complete run of the
+    // built-in `python` generator, through the real process environment.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC_WITH_OP).unwrap();
+
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .env("CROZIER_SPEC", "./api.yml")
+        .env("CROZIER_OUTPUT", "./from-env")
+        .env("CROZIER_PACKAGE_NAME", "envpkg")
+        .env("CROZIER_PROJECT_NAME", "env-dist")
+        .env("CROZIER_CLIENT_CLASS_NAME", "EnvClient")
+        .env("CROZIER_EXTRA_FIELDS", "forbid")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("./from-env"));
+
+    let root = dir.path().join("from-env/src/envpkg");
+    assert!(
+        root.join("types/thing.py").is_file(),
+        "CROZIER_OUTPUT/_PACKAGE_NAME"
+    );
+    assert!(
+        std::fs::read_to_string(root.join("version.py"))
+            .unwrap()
+            .contains("metadata.version(\"env-dist\")"),
+        "CROZIER_PROJECT_NAME should reach version.py"
+    );
+    assert!(
+        std::fs::read_to_string(root.join("client.py"))
+            .unwrap()
+            .contains("class EnvClient"),
+        "CROZIER_CLIENT_CLASS_NAME should name the root client"
+    );
+    assert!(
+        std::fs::read_to_string(root.join("types/thing.py"))
+            .unwrap()
+            .contains("extra=\"forbid\""),
+        "CROZIER_EXTRA_FIELDS should reach the pydantic config"
+    );
+}
+
+#[test]
+fn the_env_layer_filters_audiences_like_the_flags_do() {
+    // `CROZIER_AUDIENCES` is comma-separated and `CROZIER_AUDIENCE_STRICT` is a
+    // permissive boolean; both must prune exactly as `--audience`/
+    // `--audience-strict` do over the same spec.
+    let spec = fixture_dir("audience-filter-strict").join("openapi.yml");
+
+    let permissive = tempfile::tempdir().expect("tempdir");
+    crozier_clean_env()
+        .current_dir(permissive.path())
+        .env("CROZIER_SPEC", &spec)
+        .env("CROZIER_OUTPUT", "./out")
+        .env("CROZIER_PACKAGE_NAME", "aud")
+        .env("CROZIER_AUDIENCES", " public , public ")
+        .env("CROZIER_AUDIENCE_STRICT", "false")
+        .args(["generate", "python"])
+        .assert()
+        .success();
+    assert!(permissive
+        .path()
+        .join("out/src/aud/widgets/client.py")
+        .is_file());
+    assert!(
+        permissive
+            .path()
+            .join("out/src/aud/health/client.py")
+            .is_file(),
+        "a permissive CROZIER_AUDIENCES keeps the un-annotated op"
+    );
+    assert!(
+        !permissive.path().join("out/src/aud/admin").exists(),
+        "CROZIER_AUDIENCES should prune the internal op"
+    );
+
+    let strict = tempfile::tempdir().expect("tempdir");
+    crozier_clean_env()
+        .current_dir(strict.path())
+        .env("CROZIER_SPEC", &spec)
+        .env("CROZIER_OUTPUT", "./out")
+        .env("CROZIER_PACKAGE_NAME", "aud")
+        .env("CROZIER_AUDIENCES", "public")
+        .env("CROZIER_AUDIENCE_STRICT", "1")
+        .args(["generate", "python"])
+        .assert()
+        .success();
+    assert!(strict
+        .path()
+        .join("out/src/aud/widgets/client.py")
+        .is_file());
+    assert!(
+        !strict.path().join("out/src/aud/health").exists(),
+        "CROZIER_AUDIENCE_STRICT=1 should also prune the un-annotated op"
+    );
+}
+
+#[test]
+fn a_malformed_env_override_exits_nonzero_with_an_actionable_message() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .env("CROZIER_SPEC", "./api.yml")
+        .env("CROZIER_OUTPUT", "./out")
+        .env("CROZIER_AUDIENCE_STRICT", "maybe")
+        .args(["generate", "python"])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(
+            predicate::str::contains("CROZIER_AUDIENCE_STRICT")
+                .and(predicate::str::contains("`true` or `false`"))
+                .and(predicate::str::contains("panicked").not()),
+        );
+
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .env("CROZIER_SPEC", "./api.yml")
+        .env("CROZIER_OUTPUT", "./out")
+        .env("CROZIER_EXTRA_FIELDS", "sometimes")
+        .args(["generate", "python"])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(
+            predicate::str::contains("CROZIER_EXTRA_FIELDS")
+                .and(predicate::str::contains("forbid"))
+                .and(predicate::str::contains("panicked").not()),
+        );
+
+    assert!(
+        !dir.path().join("out").exists(),
+        "a rejected override must not generate anything"
+    );
+}
+
+/// Run `crozier generate python` in a fresh directory holding `TINY_SPEC` and
+/// `config`, with `env` exported and `extra_args` appended. Returns the directory
+/// so the caller can assert which package name the layering produced.
+fn layered_run(config: &str, env: &[(&str, &str)], extra_args: &[&str]) -> tempfile::TempDir {
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    std::fs::write(dir.path().join("crozier.yml"), config).unwrap();
+    let mut cmd = crozier_clean_env();
+    cmd.current_dir(dir.path()).args(["generate", "python"]);
+    for (name, value) in env {
+        cmd.env(name, value);
+    }
+    cmd.args(extra_args).assert().success();
+    dir
+}
+
+/// One case of the precedence journey: a config file, the env layer, the CLI
+/// flags, and the `package-name` the documented order should resolve to.
+struct PrecedenceCase {
+    config: &'static str,
+    env: &'static [(&'static str, &'static str)],
+    args: &'static [&'static str],
+    winner: &'static str,
+}
+
+#[test]
+fn a_field_resolves_cli_then_env_then_generator_then_shared_then_default() {
+    // One field — `package-name` — supplied by all four layers at once, then
+    // peeled one layer at a time. The generated package directory names the
+    // winner, so the documented order is proven end to end rather than asserted
+    // about the merge function.
+    let all_four =
+        "spec: ./api.yml\npackage-name: fromshared\ngenerators:\n  python:\n    output: ./out\n    package-name: fromgenerator\n";
+    let shared_only =
+        "spec: ./api.yml\npackage-name: fromshared\ngenerators:\n  python:\n    output: ./out\n";
+    let neither = "spec: ./api.yml\ngenerators:\n  python:\n    output: ./out\n";
+
+    let cases = [
+        // All four layers supply it: the CLI flag wins.
+        PrecedenceCase {
+            config: all_four,
+            env: &[("CROZIER_PACKAGE_NAME", "fromenv")],
+            args: &["--package-name", "fromcli"],
+            winner: "fromcli",
+        },
+        // Drop the flag: the environment wins over both config layers.
+        PrecedenceCase {
+            config: all_four,
+            env: &[("CROZIER_PACKAGE_NAME", "fromenv")],
+            args: &[],
+            winner: "fromenv",
+        },
+        // Drop the environment: the generator's own value beats the shared one.
+        PrecedenceCase {
+            config: all_four,
+            env: &[],
+            args: &[],
+            winner: "fromgenerator",
+        },
+        // Drop the generator's value: the shared top-level value is inherited.
+        PrecedenceCase {
+            config: shared_only,
+            env: &[],
+            args: &[],
+            winner: "fromshared",
+        },
+        // Drop every layer: the built-in default is a snake_case of the API title.
+        PrecedenceCase {
+            config: neither,
+            env: &[],
+            args: &[],
+            winner: "tiny",
+        },
+    ];
+
+    for case in cases {
+        let dir = layered_run(case.config, case.env, case.args);
+        let winner = case.winner;
+        assert!(
+            dir.path()
+                .join(format!("out/src/{winner}/types/thing.py"))
+                .is_file(),
+            "expected `{winner}` to win; generated instead: {:?}",
+            std::fs::read_dir(dir.path().join("out/src")).map(|entries| entries
+                .filter_map(|entry| entry.ok().map(|entry| entry.file_name()))
+                .collect::<Vec<_>>()),
+        );
+    }
+}
+
+#[test]
+fn a_generator_overrides_the_shared_top_level_field_by_field() {
+    // Shared defaults plus one generator that overrides some of them: the
+    // generator's `spec`/`output`/`package-name` win, while the shared
+    // `project-name` it does not set is inherited. The two specs declare
+    // different schemas, so which document was read is visible in the tree.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("shared.yml"), TINY_SPEC).unwrap();
+    std::fs::write(
+        dir.path().join("own.yml"),
+        TINY_SPEC.replace("Thing:", "Gadget:"),
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("crozier.yml"),
+        "spec: ./shared.yml\noutput: ./shared-out\npackage-name: sharedpkg\nproject-name: shared-dist\n\
+         generators:\n  python:\n    spec: ./own.yml\n    output: ./own-out\n    package-name: ownpkg\n",
+    )
+    .unwrap();
+
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .args(["generate", "python"])
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("./own-out"));
+
+    assert!(
+        !dir.path().join("shared-out").exists(),
+        "the generator's `output` should win over the shared one"
+    );
+    let root = dir.path().join("own-out/src/ownpkg");
+    assert!(
+        root.is_dir() && !dir.path().join("own-out/src/sharedpkg").exists(),
+        "the generator's `package-name` should win over the shared one"
+    );
+    assert!(
+        root.join("types/gadget.py").is_file() && !root.join("types/thing.py").exists(),
+        "the generator's `spec` should be the document that was read"
+    );
+    assert!(
+        std::fs::read_to_string(root.join("version.py"))
+            .unwrap()
+            .contains("metadata.version(\"shared-dist\")"),
+        "a shared field the generator does not set is still inherited"
+    );
+}
+
+#[test]
+fn config_flag_beats_crozier_config_env_which_beats_discovery() {
+    // Three candidate configs in one directory: the discovered `crozier.yml`, one
+    // named by `CROZIER_CONFIG`, and one named by `--config`.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    std::fs::write(dir.path().join("crozier.yml"), config_naming("discovered")).unwrap();
+    std::fs::write(dir.path().join("from-env.yml"), config_naming("viaenv")).unwrap();
+    std::fs::write(dir.path().join("from-flag.yml"), config_naming("viaflag")).unwrap();
+
+    // `--config` wins outright, even with `CROZIER_CONFIG` set.
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .env("CROZIER_CONFIG", "./from-env.yml")
+        .args(["--config", "./from-flag.yml", "generate", "python"])
+        .assert()
+        .success();
+    assert!(dir.path().join("out/src/viaflag/types/thing.py").is_file());
+
+    // Without the flag, `CROZIER_CONFIG` beats the discovered `crozier.yml`.
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .env("CROZIER_CONFIG", "./from-env.yml")
+        .args(["generate", "python"])
+        .assert()
+        .success();
+    assert!(dir.path().join("out/src/viaenv/types/thing.py").is_file());
+
+    // An empty `CROZIER_CONFIG` counts as unset, so discovery applies.
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .env("CROZIER_CONFIG", "")
+        .args(["generate", "python"])
+        .assert()
+        .success();
+    assert!(dir
+        .path()
+        .join("out/src/discovered/types/thing.py")
+        .is_file());
+}
+
+#[test]
+fn no_config_ignores_the_discovered_file_and_the_env_layer() {
+    // `--no-config` is the hermetic escape hatch: neither the discovered
+    // `crozier.yml` nor `CROZIER_*` may shape the run, only CLI flags and
+    // built-in defaults. docs/configuration.md is the source of truth here; the
+    // flag's own `--help` line still claims the env layer survives.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    std::fs::write(dir.path().join("crozier.yml"), config_naming("fromconfig")).unwrap();
+
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .env("CROZIER_PACKAGE_NAME", "fromenv")
+        .env("CROZIER_OUTPUT", "./from-env")
+        .args([
+            "--no-config",
+            "generate",
+            "python",
+            "--spec",
+            "./api.yml",
+            "--output",
+            "./hermetic",
+        ])
+        .assert()
+        .success();
+
+    // The package name fell all the way through to the title-derived default.
+    assert!(dir
+        .path()
+        .join("hermetic/src/tiny/types/thing.py")
+        .is_file());
+    assert!(
+        !dir.path().join("hermetic/src/fromconfig").exists()
+            && !dir.path().join("hermetic/src/fromenv").exists(),
+        "--no-config must ignore both the config file and the env layer"
+    );
+    assert!(
+        !dir.path().join("out").exists() && !dir.path().join("from-env").exists(),
+        "--no-config must ignore the config's and the env's output directories"
+    );
+    // And with those layers gone there is nothing to generate from at all.
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .env("CROZIER_SPEC", "./api.yml")
+        .env("CROZIER_OUTPUT", "./out")
+        .args(["--no-config", "generate", "python"])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(predicate::str::contains("has no spec"));
+}
+
+#[test]
+fn generators_run_in_declaration_order_not_sorted_order() {
+    // `generators` is an ordered map: bare `crozier` runs every configured
+    // generator in *file* order. Names chosen so declaration order differs from
+    // both alphabetical and reverse-alphabetical order.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    std::fs::write(
+        dir.path().join("crozier.yml"),
+        "spec: ./api.yml\ngenerators:\n  zeta:\n    output: ./z\n    package-name: z\n  \
+         alpha:\n    output: ./a\n    package-name: a\n  middle:\n    output: ./m\n    package-name: m\n",
+    )
+    .unwrap();
+
+    let out = crozier_clean_env()
+        .current_dir(dir.path())
+        .output()
+        .expect("run crozier");
+    assert!(out.status.success(), "bare crozier runs the configured set");
+    let stderr = String::from_utf8(out.stderr).expect("utf-8 stderr");
+
+    let positions: Vec<usize> = ["zeta:", "alpha:", "middle:"]
+        .iter()
+        .map(|name| {
+            stderr
+                .find(name)
+                .unwrap_or_else(|| panic!("no summary line for {name} in:\n{stderr}"))
+        })
+        .collect();
+    assert!(
+        positions[0] < positions[1] && positions[1] < positions[2],
+        "generators should run in declaration order (zeta, alpha, middle):\n{stderr}"
+    );
+
+    // Every one of them actually generated, each into its own output.
+    assert!(dir.path().join("z/src/z/types/thing.py").is_file());
+    assert!(dir.path().join("a/src/a/types/thing.py").is_file());
+    assert!(dir.path().join("m/src/m/types/thing.py").is_file());
+
+    // `crozier generate <name>` narrows the same set to one.
+    let single = tempfile::tempdir().expect("tempdir");
+    std::fs::write(single.path().join("api.yml"), TINY_SPEC).unwrap();
+    std::fs::copy(
+        dir.path().join("crozier.yml"),
+        single.path().join("crozier.yml"),
+    )
+    .unwrap();
+    crozier_clean_env()
+        .current_dir(single.path())
+        .args(["generate", "middle"])
+        .assert()
+        .success()
+        // The single-generator summary is unprefixed.
+        .stderr(predicate::str::contains("middle:").not());
+    assert!(single.path().join("m/src/m/types/thing.py").is_file());
+    assert!(
+        !single.path().join("z").exists() && !single.path().join("a").exists(),
+        "naming one generator must not run the others"
+    );
+}
+
+/// Parse `crozier config` stdout into `(field, value, source)` rows for one
+/// generator, so the user-visible table can be asserted as output.
+fn config_rows(stdout: &str, generator: &str) -> Vec<(String, String, String)> {
+    let header = format!("generator `{generator}`");
+    stdout
+        .lines()
+        .skip_while(|line| *line != header)
+        .skip(1)
+        .take_while(|line| line.starts_with("  "))
+        .map(|line| {
+            let open = line.rfind('(').expect("a source label");
+            let close = line.rfind(')').expect("a closed source label");
+            let mut cells = line[..open].split_whitespace();
+            let field = cells.next().expect("a field name").to_string();
+            let value = cells.collect::<Vec<_>>().join(" ");
+            (field, value, line[open + 1..close].to_string())
+        })
+        .collect()
+}
+
+#[test]
+fn config_labels_the_layer_every_field_came_from() {
+    // `crozier config` is the tool users reach for when the layering surprises
+    // them, so its per-field source column is asserted verbatim.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    // Several fields are supplied by *more than one* layer, so the reported label
+    // has to name the layer that actually won, not merely the only one present.
+    std::fs::write(
+        dir.path().join("crozier.yml"),
+        "spec: ./api.yml\npackage-name: fromshared\nproject-name: shared-dist\naudiences: [internal]\n\
+         generators:\n  python:\n    type: python\n    output: ./out\n    package-name: fromgenerator\n    audiences: [public]\n    extra-fields: forbid\n",
+    )
+    .unwrap();
+
+    let out = crozier_clean_env()
+        .current_dir(dir.path())
+        .env("CROZIER_CLIENT_CLASS_NAME", "FromEnv")
+        .env("CROZIER_PROJECT_NAME", "env-dist")
+        .env("CROZIER_AUDIENCE_STRICT", "true")
+        .args(["config", "python"])
+        .output()
+        .expect("run crozier config");
+    assert!(out.status.success());
+    let stdout = String::from_utf8(out.stdout).expect("utf-8 stdout");
+
+    // The discovered file is reported by path.
+    assert!(
+        stdout.starts_with("config files: ") && stdout.contains("crozier.yml"),
+        "{stdout}"
+    );
+    let rows = config_rows(&stdout, "python");
+    let expected = [
+        ("type", "python", "generator"),
+        ("spec", "./api.yml", "shared"),
+        ("output", "./out", "generator"),
+        // Also set at the shared top level: the generator's value wins.
+        ("package-name", "fromgenerator", "generator"),
+        // Also set at the shared top level: the environment wins.
+        ("project-name", "env-dist", "env"),
+        ("client-class-name", "FromEnv", "env"),
+        // Also set at the shared top level: the generator's list wins.
+        ("audiences", "public", "generator"),
+        ("audience-strict", "true", "env"),
+        ("extra-fields", "forbid", "generator"),
+    ];
+    assert_eq!(rows.len(), expected.len(), "{stdout}");
+    for (row, want) in rows.iter().zip(expected) {
+        assert_eq!(
+            (row.0.as_str(), row.1.as_str(), row.2.as_str()),
+            want,
+            "{stdout}"
+        );
+    }
+
+    // With every layer gone, each field is `(unset)` from the built-in default —
+    // and `config` still succeeds, because it never runs generation.
+    let bare = crozier_clean_env()
+        .current_dir(dir.path())
+        .env("CROZIER_CLIENT_CLASS_NAME", "FromEnv")
+        .args(["--no-config", "config"])
+        .output()
+        .expect("run crozier config --no-config");
+    assert!(bare.status.success());
+    let bare_stdout = String::from_utf8(bare.stdout).expect("utf-8 stdout");
+    assert!(
+        bare_stdout.contains("config files: none (built-in defaults)"),
+        "{bare_stdout}"
+    );
+    for (field, value, source) in config_rows(&bare_stdout, "python") {
+        assert_eq!(
+            source, "default",
+            "{field} should fall to the default layer"
+        );
+        let expected = if field == "type" { "python" } else { "(unset)" };
+        assert_eq!(value, expected, "{field}");
+    }
+}
+
+#[test]
+fn a_malformed_config_file_exits_nonzero_naming_the_file() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+
+    // Broken YAML.
+    std::fs::write(
+        dir.path().join("crozier.yml"),
+        "generators:\n  python:\n   - not: a map\n",
+    )
+    .unwrap();
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .args(["generate", "python"])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(
+            predicate::str::contains("invalid config")
+                .and(predicate::str::contains("crozier.yml"))
+                .and(predicate::str::contains("panicked").not()),
+        );
+
+    // Structurally valid YAML with a misspelled field: the typo is named, not
+    // silently ignored.
+    std::fs::write(
+        dir.path().join("crozier.yml"),
+        "spec: ./api.yml\ngenerators:\n  python:\n    output: ./out\n    packge-name: oops\n",
+    )
+    .unwrap();
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .args(["generate", "python"])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(
+            predicate::str::contains("invalid config").and(predicate::str::contains("packge-name")),
+        );
+
+    // `crozier config` reports the same failure rather than printing a half-read
+    // config.
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .arg("config")
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(predicate::str::contains("invalid config"));
+
+    assert!(
+        !dir.path().join("out").exists(),
+        "a rejected config must not generate anything"
+    );
+}
+
+#[test]
+fn a_named_but_missing_config_file_exits_nonzero() {
+    // A file the user *named* must exist; a merely-discovered one need not.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+
+    for args in [
+        vec!["--config", "./no-such-config.yml", "generate", "python"],
+        vec!["--config", "./no-such-config.yml", "config"],
+    ] {
+        crozier_clean_env()
+            .current_dir(dir.path())
+            .args(&args)
+            .assert()
+            .failure()
+            .code(1)
+            .stderr(
+                predicate::str::contains("config file not found")
+                    .and(predicate::str::contains("no-such-config.yml"))
+                    .and(predicate::str::contains("panicked").not()),
+            );
+    }
+
+    // The same path via `CROZIER_CONFIG` is equally an error.
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .env("CROZIER_CONFIG", "./no-such-config.yml")
+        .args(["generate", "python"])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(predicate::str::contains("config file not found"));
+
+    // But with no config file present and none named, discovery is simply empty —
+    // the CLI flags carry the run.
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .args([
+            "generate",
+            "python",
+            "--spec",
+            "./api.yml",
+            "--output",
+            "./out",
+        ])
+        .assert()
+        .success();
+    assert!(dir.path().join("out/src/tiny/types/thing.py").is_file());
+}
+
+#[test]
+fn init_writes_a_config_a_later_run_generates_from() {
+    // The starter config is only useful if it actually runs: `init`, drop the spec
+    // where it points, and bare `crozier` generates with zero further arguments.
+    let dir = tempfile::tempdir().expect("tempdir");
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .arg("init")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("wrote crozier.yml"));
+
+    let written = std::fs::read_to_string(dir.path().join("crozier.yml")).expect("init wrote");
+    let modeline = written.lines().next().expect("a modeline");
+    let url = modeline
+        .strip_prefix("# yaml-language-server: $schema=")
+        .unwrap_or_else(|| panic!("unexpected modeline: {modeline}"));
+
+    // `crozier schema` prints the very schema that modeline points at.
+    let schema = crozier_clean_env()
+        .arg("schema")
+        .output()
+        .expect("run crozier schema");
+    assert!(schema.status.success());
+    let printed: serde_json::Value =
+        serde_json::from_slice(&schema.stdout).expect("schema stdout is valid JSON");
+    assert_eq!(
+        printed["$id"], url,
+        "`init`'s modeline and `schema`'s $id must name the same document"
+    );
+
+    // The starter points at `./openapi.yml`; put one there and run it.
+    std::fs::write(dir.path().join("openapi.yml"), TINY_SPEC).unwrap();
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("generated"));
+    assert!(
+        dir.path()
+            .join("sdk/python/src/tiny/types/thing.py")
+            .is_file(),
+        "the starter config's `output`/defaults should generate as written"
+    );
+}
