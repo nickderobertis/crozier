@@ -6505,6 +6505,55 @@ const CROZIER_ENV_VARS: &[&str] = &[
     "CROZIER_EXTRA_FIELDS",
 ];
 
+/// Every `CROZIER_*` identifier mentioned in a source file, in order.
+fn crozier_env_names(source: &str) -> Vec<String> {
+    let bytes = source.as_bytes();
+    let mut names = Vec::new();
+    let mut cursor = 0;
+    while let Some(offset) = source[cursor..].find("CROZIER_") {
+        let start = cursor + offset;
+        let mut end = start + "CROZIER_".len();
+        while end < bytes.len() && (bytes[end].is_ascii_uppercase() || bytes[end] == b'_') {
+            end += 1;
+        }
+        // `CROZIER_*` in prose stops at the glob, leaving the bare prefix; only a
+        // real variable name has something after it.
+        if end > start + "CROZIER_".len() {
+            names.push(source[start..end].to_string());
+        }
+        cursor = end;
+    }
+    names
+}
+
+#[test]
+fn the_cleared_env_list_covers_every_variable_the_settings_surface_reads() {
+    // `crozier_clean_env` is only isolation if it names *every* `CROZIER_*`
+    // variable the binary reads: a new one added to the settings surface would
+    // otherwise leak in from the developer's shell and quietly weaken every
+    // journey below. Pin the list to the two modules that read the environment —
+    // the same drift-gate shape `DISCOVERED_CONFIG_NAMES` uses.
+    let mut read_by_the_binary: Vec<String> = ["src/settings.rs", "src/cli.rs"]
+        .iter()
+        .flat_map(|relative| {
+            let source =
+                std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join(relative))
+                    .expect("read the settings surface");
+            crozier_env_names(&source)
+        })
+        .collect();
+    read_by_the_binary.sort();
+    read_by_the_binary.dedup();
+
+    let mut cleared: Vec<String> = CROZIER_ENV_VARS.iter().map(|n| (*n).to_string()).collect();
+    cleared.sort();
+
+    assert_eq!(
+        read_by_the_binary, cleared,
+        "CROZIER_ENV_VARS drifted from the variables src/settings.rs and src/cli.rs read"
+    );
+}
+
 /// `TINY_SPEC` plus one operation, so the run also emits a root `client.py` —
 /// needed wherever a journey asserts the generated client class name.
 const TINY_SPEC_WITH_OP: &str = "openapi: 3.0.0\ninfo:\n  title: Tiny\npaths:\n  /thing:\n    get:\n      operationId: getThing\n      tags: [Thing]\n      responses:\n        '200':\n          description: OK\n          content:\n            application/json:\n              schema: { $ref: '#/components/schemas/Thing' }\ncomponents:\n  schemas:\n    Thing:\n      type: object\n      properties:\n        name: { type: string }\n";
