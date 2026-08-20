@@ -102,6 +102,11 @@ Use the `just` recipes; do not hand-roll equivalents.
   reports the measured residual `unmatched` task lists; `diff`
   prints the normalized diff of files it doesn't (to fix the generator). Neither
   gates. See [`tests/fixtures/AGENTS.md`](tests/fixtures/AGENTS.md).
+- `just fixtures-coverage` — what the committed Fern **goldens** reach in `src/`,
+  apart from what crozier's own tests reach. Outside `check` (needs network, runs
+  the corpus instrumented); `just test-fixtures-coverage` guards it and IS in
+  `check`. Reading the split:
+  [`tests/fixtures/AGENTS.md`](tests/fixtures/AGENTS.md).
 - `just lint-llm` / `just lint-llm-diff` — LLM-judge tier (llmlint), separate from
   `check` and non-deterministic; config in `llmlint.yml`. `just setup-llmlint`
   installs it.
