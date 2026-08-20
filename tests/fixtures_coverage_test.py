@@ -133,22 +133,18 @@ class RecipeEndToEndTests(unittest.TestCase):
             [str(SCRIPT), *args], cwd=REPO, capture_output=True, text=True, env=env
         )
 
-    def run_reporter(self, out: Path, *args: str):
-        """The reporter as its own process, over exports a real run produced."""
+    def reporter_process(self, *args: str):
+        """The reporter as its own process, exactly as the recipe invokes it."""
         return subprocess.run(
-            [
-                sys.executable,
-                str(REPORTER),
-                "--repo-root",
-                str(REPO),
-                "--golden-tier",
-                "golden-only",
-                *args,
-            ],
+            [sys.executable, str(REPORTER), "--repo-root", str(REPO), *args],
             cwd=REPO,
             capture_output=True,
             text=True,
         )
+
+    def run_reporter(self, *args: str):
+        """The reporter with golden-only as the golden tier, as the recipe runs it."""
+        return self.reporter_process("--golden-tier", "golden-only", *args)
 
     def scoped_run(self):
         """The one scoped recipe run every export-reading case shares."""
@@ -253,7 +249,6 @@ class RecipeEndToEndTests(unittest.TestCase):
         """Handing every tier the same export must report nothing blind, not crash."""
         out = self.scoped_exports()
         completed = self.run_reporter(
-            out,
             *self.tier_args(out, "golden-only", "all-e2e", "non-e2e", export="golden-only"),
         )
         self.assertEqual(0, completed.returncode, completed.stderr)
@@ -263,7 +258,6 @@ class RecipeEndToEndTests(unittest.TestCase):
         """non-e2e genuinely never runs the binary, so demanding proof of it must fail."""
         out = self.scoped_exports()
         completed = self.run_reporter(
-            out,
             "--subprocess-tier",
             "non-e2e",
             *self.tier_args(out, "golden-only", "all-e2e", "non-e2e"),
@@ -277,7 +271,6 @@ class RecipeEndToEndTests(unittest.TestCase):
         broken = out / "broken.json"
         broken.write_text('{"data": [{"functions": [{"regions": [[1, 1]]}]}]}', encoding="utf-8")
         completed = self.run_reporter(
-            out,
             "--tier",
             json.dumps(
                 {"name": "golden-only", "export": str(broken), "tests": 1, "selection": "s"}
@@ -287,7 +280,6 @@ class RecipeEndToEndTests(unittest.TestCase):
         self.assertIn("is not the llvm-cov export", completed.stderr)
 
     def test_a_malformed_tier_argument_is_refused(self) -> None:
-        out = self.scoped_exports()
         for spec, expected in (
             ("golden-only=x.json=1=s", "--tier is not JSON"),
             ('{"name": "golden-only"}', "needs exactly the fields"),
@@ -301,9 +293,24 @@ class RecipeEndToEndTests(unittest.TestCase):
             ),
         ):
             with self.subTest(spec=spec):
-                completed = self.run_reporter(out, "--tier", spec)
+                completed = self.run_reporter("--tier", spec)
                 self.assertEqual(2, completed.returncode, completed.stdout)
                 self.assertIn(expected, completed.stderr)
+
+    def test_a_tier_name_that_matches_no_tier_is_refused(self) -> None:
+        """A typo'd --subprocess-tier would retire the proof without saying so."""
+        out = self.scoped_exports()
+        tiers = self.tier_args(out, "golden-only", "all-e2e", "non-e2e")
+
+        typo = self.reporter_process(
+            "--golden-tier", "golden-only", "--subprocess-tier", "goldenonly", *tiers
+        )
+        self.assertEqual(2, typo.returncode, typo.stdout)
+        self.assertIn("names no declared tier", typo.stderr)
+
+        absent = self.reporter_process("--golden-tier", "not-a-tier", *tiers)
+        self.assertEqual(2, absent.returncode, absent.stdout)
+        self.assertIn("is not one of the declared tiers", absent.stderr)
 
     def test_the_argument_parser_refuses_bad_invocations(self) -> None:
         for args, expected in (

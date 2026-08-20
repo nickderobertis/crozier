@@ -479,6 +479,19 @@ def main(argv: list[str] | None = None) -> int:
         tiers[name] = load_tier(Path(tier["export"]), repo_root)
         selections[name] = (tier["selection"], tier["tests"])
 
+    if args.golden_tier not in order:
+        parser.error(
+            f"--golden-tier {args.golden_tier!r} is not one of the declared tiers {order}"
+        )
+    # A typo here would match no tier and silently retire the subprocess proof,
+    # which is the one assertion keeping the e2e figures from understating.
+    unknown = [name for name in args.subprocess_tier if name not in order]
+    if unknown:
+        parser.error(
+            f"--subprocess-tier {unknown} names no declared tier {order}; the "
+            f"subprocess-coverage proof would pass without ever being enforced"
+        )
+
     drop_test_regions(tiers, repo_root)
 
     report, _ = render(tiers, order, selections)
