@@ -97,6 +97,7 @@ measured state is `tests/e2e.rs`; re-measure with `just fixtures-gaps`.
 | 79 | `tlon-notes` | github-raw | https://raw.githubusercontent.com/tloncorp/tlon-apps/2277696dcebb66270c6953b983e1a580b780071e/desk/app/notes/openapi.json | `2277696dcebb66270c6953b983e1a580b780071e` | MIT | link-ok | Tlon Notes API with four inline, untitled discriminated unions lacking mappings and a recursive `ImportNode` schema |
 | 80 | `twilio.com-twilio_messaging_v1` | api-guru | https://api.apis.guru/v2/specs/twilio.com/twilio_messaging_v1/1.42.0/openapi.json | `1.42.0` | Apache 2.0 | link-ok | Twilio Messaging API with a `russell_3000` property that exercises Fern's underscore-before-trailing-digit rename |
 | 81 | `livepeer-ai-runner` | github-raw | https://raw.githubusercontent.com/livepeer/ai-runner/50a742cee7c5789ef4a10f8117f30de3758366a9/openapi.yaml | `50a742cee7c5789ef4a10f8117f30de3758366a9` | MIT | link-ok | Livepeer AI Runner with three untagged, groupless root operations alongside ten tagged pipeline operations |
+| 82 | `eos.local-extra-fields-forbid` | api-guru | https://api.apis.guru/v2/specs/eos.local/1.0.0/openapi.json | `1.0.0` | MIT | link-ok | Row 43's Net API regenerated with `pydantic_config.extra_fields: forbid`, pinning `extra="forbid"` / `pydantic.Extra.forbid` |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -290,3 +291,21 @@ goldens, and are byte-matched.
 
 The status tables above are the durable results of their generation passes; use
 the standard workflow for any future source change or Fern upgrade.
+
+## Batch 8 — generator-setting coverage over a registered source (issue #63)
+
+A generator setting is not expressible in an OpenAPI document, so pinning one
+needs no new spec: it needs the *same* spec generated under a different Fern
+generator config. Row 82 is that shape — a second row over row 43's already
+registered `eos.local` source, differing only in the
+`pydantic_config.extra_fields: forbid` that
+[`fern-generator-config.txt`](fern-generator-config.txt) declares for it. The
+row name is the fixture directory, so the two goldens, cached specs, and
+`unmatched` lists stay independent.
+
+| name | selected for | status |
+|---|---|---|
+| `eos.local-extra-fields-forbid` | `extra_fields: forbid`, unpinned in both the pydantic-v2 `model_config` and the v1 `Config` block until this row | ✅ matched |
+
+Reuse this shape for any future generator setting a document cannot express:
+add a row over a small registered source rather than hunting a new spec.
