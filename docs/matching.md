@@ -262,7 +262,7 @@ comment-strip comparison.
 
 **Aggregator imports.** The lazy-loader `__init__.py` files (`types/`, `errors/`,
 the package root) are formatted like any other file, but two artifacts are
-normalized on both sides of the e2e comparison (see `normalize_init` in
+normalized on both sides of the e2e comparison (see `try_normalize_init` in
 `tests/e2e.rs`) rather than reproduced: their leading blank lines (a comment-strip
 artifact of Fern's multi-line header that a one-line header plus `ruff`, which
 caps module-top blanks at two, cannot reproduce), and the order of the
@@ -643,8 +643,21 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    plain-OpenAPI primary (no `x-fern-*` extensions) produces output identical to the
    optional-bearer fallback, which `oauth-client-credentials` pins in full; a
    token-provider wrapper would need Fern's OAuth extensions, which the OpenAPI
-   document does not carry. Still unexercised: an *optional* basic primary (no
-   fixture splits basic on `required`).
+   document does not carry. Basic **is** split on `required` by the corpus: five
+   goldens emit the optional primary — `apache.org`, `apache.org-airflow`,
+   `http-toolkit`, `maif.local-otoroshi`, and `worldcoin-signup-sequencer`, each
+   with `username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] =
+   None` in `expected/src/fern/core/client_wrapper.py` — against eight that emit
+   the required pair, so both branches are pinned. Still unexercised: an
+   *optional* **api-key** primary. Every api-key golden declares it required
+   (`api_key: str`), so the optional branch in [`emit::auth_wrapper_parts`]
+   (`api_key: typing.Optional[str] = None` plus the `if self.api_key is not None:`
+   header guard) is reached by no golden. Getting there needs a document that
+   declares a root `security` with only empty requirements *and* leaves an
+   operation unauthenticated — a header api-key with no root `security` at all
+   stays required ([`ir::auth_model`], unit-tested by
+   `header_api_key_without_root_security_is_still_required`) — so confirm the
+   branch when such a fixture lands.
 2. **Broader example coverage.** The example-value generator is proven against the
    corpus (objects, unions, enums, containers, maps, datetimes, a required `date`
    via `writeonly-fields`, `long`) and constructs hoisted tag-scoped element types
@@ -657,10 +670,14 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    request body is emittable (`json=request` + content-type header, like a string
    enum) — so `integer-enums` matches its whole tree, including the `enums`
    module, root client, README, and reference.
-3. **Fern's `TYPE_CHECKING` traversal order** in `types/__init__.py` is reproduced
-   empirically (the `Types*` types in reverse declaration order, then the rest
-   alphabetically). It matches the corpus byte-for-byte; a spec with a different
-   type-namespace layout may need the true endpoint-traversal derivation.
+3. **Fern's `TYPE_CHECKING` order** in `types/__init__.py` is *not* reproduced,
+   and no golden pins it. crozier sorts the block alphabetically
+   ([`emit::types_init_file`]) while Fern emits it in endpoint-traversal order;
+   the e2e canonicalizes every `__init__.py` on **both** sides with `ruff` isort
+   before comparing (`tests/e2e.rs::try_normalize_init`), as [How the comparison
+   works](#how-the-comparison-works) describes. The block is never executed, so
+   its order is unobservable and no traversal derivation is owed — a spec with a
+   different type-namespace layout cannot regress here.
 4. **Request/response inline-schema hoisting (implemented).** A component schema
    used *only* as an inlined (plain-object `$ref`) request body is not emitted as a
    standalone type — Fern inlines its fields onto the request method and drops the
@@ -719,16 +736,31 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    required ones. `writeonly-fields` pins this and matches in full. Not yet
    exercised: dropping a
    `writeOnly`-only field from the *response* representation (Fern keeps it here).
-9. **Document-level `servers` (implemented); `webhooks`/`callbacks` (ignored).**
+9. **Document-level `servers` and `webhooks` (implemented); `callbacks`
+   (ignored).**
    When the document declares `servers`, crozier emits `environment.py` (an
    `enum.Enum` of environments) and threads an `environment` / optional-`base_url`
    through the root client, resolving the base URL via a generated `_get_base_url`
    and dropping the hardcoded `base_url` from the worked examples. Fern's OpenAPI
    importer emits a **single** environment member — the first server, named from its
    description (the "2 servers → only `PRODUCTION`" oddity) — which
-   [`ir::Environment`] reproduces. `webhooks`/`callbacks` are still absent from the
-   serde model (and Fern's OpenAPI SDK does not generate from them), so they are
-   ignored; `servers-webhooks` matches in full regardless.
+   [`ir::Environment`] reproduces. OpenAPI 3.1 **`webhooks`** are modeled
+   ([`openapi::OpenApi::webhooks`], an ordered map of `PathItem`) and consumed
+   twice: [`ir::build`] hoists a named payload type from every webhook
+   operation's *inline* `application/json` request body (`{METHOD}_{event}_payload`
+   through [`naming::class_name`], `/` in the event name becoming `_`), and
+   [`ir::document_discriminant_strips`] walks `paths` and `webhooks` alike. A
+   `$ref` body is skipped — the referenced component is already a named type — so
+   `servers-webhooks`, whose one webhook body `$ref`s `Event`, takes that
+   early-continue path and pins nothing here. The real-world `tamoss` corpus is
+   what pins it: its eight inline webhook bodies (`flows/created`,
+   `flows/updated`, `flows/deleted`, `flows/segments_added`,
+   `flows/segments_deleted`, `sources/created`, `sources/updated`,
+   `sources/deleted`) produce `PostFlowsCreatedPayload`,
+   `PostSourcesCreatedPayload`, `PostFlowsSegmentsAddedPayloadEvent` and their
+   siblings under `tests/fixtures/tamoss/expected/src/fern/types/`. **`callbacks`**
+   remain genuinely absent from the serde model and are ignored. `servers-webhooks`
+   matches in full regardless.
 5. **The endpoint layer (implemented — kept as a reference of the covered
    shapes).** `paths` are read into an operation IR
    ([`ir::Endpoint`]): module, method name, HTTP method, URL, path params, and
