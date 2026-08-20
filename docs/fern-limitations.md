@@ -35,6 +35,11 @@ future probe is worth running:
 | **coincidence** | Fern's output happens to equal the standard's wire form, produced by an unconditional default rather than by handling the shape |
 | **unmeasured** | **an open question**, not a proven absence: no screen probed what Fern emits here, and a probe could still answer it |
 
+A verdict is joined with a qualifier where supply also bore on the outcome:
+**supply** (too few verified candidates), **licence** (verified candidates fail the
+census licence bar), **pipeline** (crozier's fixture pipeline cannot register the
+shape). Those bear on registrability, not on what Fern does.
+
 A **probe** is a minimal, locally authored OpenAPI document isolating one shape.
 Probes are evidence about Fern; none is a corpus fixture and none is proposed as
 one — the corpus takes real-world specifications only
@@ -103,11 +108,11 @@ Every row above ran `fern check` 0 and `fern generate` 0 unless stated otherwise
   `Sequence[str]` path parameter renders Python's `str(['a','b'])` — a literally
   malformed path segment.
 
-*Beside crozier's source:* crozier's whole style-and-explode rule is one
-expression in `src/ir.rs` (`let comma_separated = p.explode == Some(false) &&
-p.style.as_deref().is_none_or(|style| style == "form") && …schema is an array…`),
-which selects the same parameters Fern comma-joins and falls through where Fern
-falls through. That reading is inference from source; only a golden proves it.
+*Beside crozier's source:* crozier's whole style-and-explode rule is the
+`comma_separated` predicate in `src/ir.rs` — explode explicitly false, style absent
+or `form`, resolved schema an array — which selects the same parameters Fern
+comma-joins and falls through where Fern falls through. That reading is inference
+from source; only a golden proves it.
 
 ### Cookie parameters are dropped from the generated client entirely
 
@@ -366,9 +371,9 @@ reuses `operationId: showPetById` across **18 operations** and Fern emits one. O
 the sibling `openapi-validator/.../config/openapi.yaml`: **22 operations in, 5
 client methods out**. Both exit 0 at both stages, so only reading the output finds
 it. Across those three documents only 1 of the 15 operations carrying the shapes
-they were ranked for reaches the generated client — and that document was the
-census's **#1-ranked candidate** for `matrix-array`, `matrix-object`,
-`label-array-or-object` and `cookie-array`. A byte-match fixture on it would have
+they were ranked for (14 for the third) reaches the generated client — and that
+document was the census's **#1-ranked candidate** for `matrix-array`,
+`matrix-object`, `label-array-or-object` and `cookie-array`. A byte-match fixture on it would have
 proved almost nothing about the shapes it was selected for.
 
 ### 28 candidates generated a complete, valid, *empty* SDK
@@ -451,8 +456,8 @@ repository, unchanged by the screen:
    one spec path pointing at an existing non-empty file.
 2. `scripts/corpus-lib.sh` does have a repository-clone shape
    (`corpus_fetch_repo`, a `git clone --filter=blob:none` at the pinned ref), but
-   the suffix check in (1) makes it unreachable from the golden path — and all 81
-   numbered `CORPUS.md` rows are direct spec URLs anyway.
+   the suffix check in (1) makes it unreachable from the golden path — and every
+   numbered `CORPUS.md` row is a direct spec URL anyway.
 3. `scripts/generate-fern-fixture.sh` copies the one spec file into the workspace,
    leaving its siblings behind.
 
@@ -520,6 +525,10 @@ emitted module:
 | `info-title` | `info.title: 推奨データセット` | 0 | 0 | accepted; never reaches an identifier |
 | `path-segment` | path `/天気/current` | 0 | 0 | accepted; emitted verbatim as a URL string |
 
+For the three refusing probes the recorded `fern generate` exit is 1 as well; the
+`fern check` refusal is the finding, and the screen's verdict for them is a
+rejection.
+
 The middle block is the dangerous one: `fern check` passes and the **generator
 fails on its own output**. Every probe that generated also passed
 `python3 -m py_compile` on every emitted module (exit 0), so "emits invalid Python"
@@ -536,7 +545,7 @@ is Fern failing on what it wrote, not an artefact of how it was checked.
 No `Literal`, no members, nothing reported. A golden here pins the *absence* of the
 enum.
 
-### Seven naming and type gaps have no complete proposable set, for four reasons
+### Seven naming and type gaps have no complete proposable set
 
 | gap | reason |
 |---|---|
@@ -744,12 +753,3 @@ In every row above the class name itself is **not** in doubt — it was measured
 against Fern's output and matches crozier's table. What is missing is a
 redistributable witness set to pin it.
 
-## See also
-
-- [`matching.md`](matching.md) — the byte-match contract these limitations bound,
-  and why each shape crozier *does* generate generates the way it does.
-- [`fern-goldens.md`](fern-goldens.md) — how a golden is produced and published.
-- [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md) — choosing a
-  real-world specification, and the specs already tried and rejected.
-- [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md) — the corpus ledger,
-  including every `DROPPED` / `REJECTED` ref this file refers to.
