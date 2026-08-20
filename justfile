@@ -265,16 +265,10 @@ fixtures-diff corpus="" file="":
       exit 1
     fi
 
-# Measure what the committed Fern GOLDENS reach in src/, reported separately from
-# what the crozier-only e2e journeys and the unit tiers reach — the number that
-# answers "which fixture next?". Fetches the corpus and sets
-# CROZIER_REQUIRE_CORPUS so an unfetched spec is a hard failure instead of the
-# silent skip that would shrink the golden denominator. Reports counter regions
-# (this crate emits no branch records, so regions are the closest branch proxy)
-# as well as lines, with `#[cfg(test)]` stripped from the denominator. NOT part
-# of `check`: needs network and runs the whole corpus instrumented. Pass a
-# cargo-nextest filter expression to scope it, e.g.
-# `just fixtures-coverage 'test(/frankfurter/) or test(/wrap::/)'`. See
+# Measure what the committed Fern GOLDENS reach in src/, apart from what
+# crozier's own tests reach — the number that answers "which fixture next?".
+# Outside `check`: needs network and runs the whole corpus instrumented. Takes an
+# optional cargo-nextest filter expression to scope it. Reading the split:
 # tests/fixtures/AGENTS.md.
 fixtures-coverage *args:
     ./scripts/fixtures-coverage.sh "$@"

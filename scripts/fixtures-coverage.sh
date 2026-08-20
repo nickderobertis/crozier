@@ -1,30 +1,17 @@
 #!/usr/bin/env bash
-# Measure what the committed Fern goldens actually reach in src/, separately from
-# what crozier's own tests reach. See `just fixtures-coverage` and
-# tests/fixtures/AGENTS.md ("Where the goldens are blind").
+# Measure what the committed Fern goldens reach in src/, separately from what
+# crozier's own tests reach: the golden-only, all-e2e and non-e2e tiers, against
+# one instrumented build. What the tiers mean and how to read the split when
+# choosing the next fixture is tests/fixtures/AGENTS.md ("Where the goldens are
+# BLIND"); what makes the numbers honest is the docstring of
+# scripts/fixtures-coverage-report.py. Neither is restated here.
 #
-# Three tiers are measured against one instrumented build:
+# The one thing only this script knows: the golden tier runs first and is
+# exported BEFORE the journey tier runs without an intervening clean, so the
+# second export is the accumulated union — the all-e2e tier — and the corpus is
+# generated once rather than twice.
 #
-#   golden-only  the byte-match tests that compare crozier's output to a
-#                committed Fern golden — the only Fern-parity evidence there is
-#   all-e2e      every e2e test (golden-only plus crozier's own journeys),
-#                accumulated onto the golden-only profile
-#   non-e2e      the unit/integration tiers, which assert crozier against
-#                crozier's own expectations
-#
-# Two things a naive `cargo llvm-cov` run gets wrong, and this fixes:
-#
-#   * The corpus specs are fetched, not vendored, and the byte-match tests SKIP
-#     silently when a spec is absent — quietly shrinking the golden tier into a
-#     greener-looking number. This fetches first and sets CROZIER_REQUIRE_CORPUS
-#     so an unfetched corpus is a hard failure instead.
-#   * `#[cfg(test)]` regions are production code to llvm-cov but not to us;
-#     scripts/fixtures-coverage-report.py strips them from the denominator, and
-#     reports counter regions rather than only lines (this crate has no branch
-#     records, so regions are the closest available branch proxy).
-#
-# NOT part of `just check`: it needs network for the corpus fetch and runs the
-# whole corpus under an instrumented build.
+# NOT part of `just check`: needs network, and runs the corpus instrumented.
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "$0")" && pwd)"

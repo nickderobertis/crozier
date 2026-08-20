@@ -11,6 +11,7 @@ instead of the whole corpus; that is the same code path the unscoped recipe runs
 
 from __future__ import annotations
 
+import atexit
 import importlib.util
 import os
 import re
@@ -124,17 +125,50 @@ class RecipeEndToEndTests(unittest.TestCase):
 
     def run_recipe(self, *args: str, env: dict[str, str] | None = None):
         out = Path(self.enterContext(tempfile.TemporaryDirectory())) / "out"
+        return self.run_script("--no-fetch", "--out", str(out), *args, env=env), out
+
+    def run_script(self, *args: str, env: dict[str, str] | None = None):
         return subprocess.run(
-            [str(SCRIPT), "--no-fetch", "--out", str(out), *args],
+            [str(SCRIPT), *args], cwd=REPO, capture_output=True, text=True, env=env
+        )
+
+    def run_reporter(self, out: Path, *args: str):
+        """The reporter as its own process, over exports a real run produced."""
+        return subprocess.run(
+            [
+                sys.executable,
+                str(REPORTER),
+                "--repo-root",
+                str(REPO),
+                "--golden-tier",
+                "golden-only",
+                *args,
+            ],
             cwd=REPO,
             capture_output=True,
             text=True,
-            env=env,
-        ), out
+        )
+
+    def scoped_run(self):
+        """The one scoped recipe run every export-reading case shares."""
+        completed, out = _scoped_run()
+        self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+        return completed, out
+
+    def scoped_exports(self) -> Path:
+        completed, out = self.scoped_run()
+        self.report = completed.stdout
+        return out
+
+    def tier_args(self, out: Path, *names: str) -> list[str]:
+        return [
+            arg
+            for name in names
+            for arg in ("--tier", f"{name}={out / f'{name}.json'}=1=selection")
+        ]
 
     def test_scoped_run_reports_three_tiers_and_proves_subprocess_coverage(self) -> None:
-        completed, out = self.run_recipe(OFFLINE_SCOPE)
-        self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+        completed, out = self.scoped_run()
         report = completed.stdout
 
         for tier in ("golden-only", "all-e2e", "non-e2e"):
@@ -156,8 +190,7 @@ class RecipeEndToEndTests(unittest.TestCase):
         self.assertTrue((out / "golden-only.json").is_file())
 
     def test_cfg_test_regions_are_excluded_from_the_denominator(self) -> None:
-        completed, out = self.run_recipe(OFFLINE_SCOPE)
-        self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+        completed, out = self.scoped_run()
 
         reported = _reported_region_total(completed.stdout, "src/emit.rs")
         tiers = {
@@ -174,6 +207,95 @@ class RecipeEndToEndTests(unittest.TestCase):
         # `mod tests`, so nothing at or below that line may survive the filter.
         marker = _mod_tests_line(REPO / "src" / "emit.rs")
         self.assertEqual([], [r for r in kept if r.line_start >= marker])
+
+    def test_the_blind_spot_block_is_the_journeys_minus_the_goldens(self) -> None:
+        """The block the recipe exists to produce, checked against the exports."""
+        out = self.scoped_exports()
+        block = self.report.split("golden blind spots")[1]
+        self.assertIn("src/main.rs", block)
+
+        tiers = {
+            name: reporter.load_tier(out / f"{name}.json", REPO)
+            for name in ("golden-only", "all-e2e", "non-e2e")
+        }
+        reporter.drop_test_regions(tiers, REPO)
+        reached = {
+            name: {
+                (path, region)
+                for path, counts in tier.items()
+                for region, count in counts.items()
+                if count > 0
+            }
+            for name, tier in tiers.items()
+        }
+        expected = (reached["all-e2e"] | reached["non-e2e"]) - reached["golden-only"]
+        self.assertTrue(expected, "the scoped run should leave the goldens blind somewhere")
+        self.assertIn(f"total {len(expected)} region(s)", block)
+        for path, count in re.findall(r"^  (\S+)\s+(\d+)\s+\(", block, re.M):
+            self.assertEqual(
+                len({r for f, r in expected if f == path}),
+                int(count),
+                f"the blind-spot count for {path} is not the measured one",
+            )
+
+    def test_no_blind_spots_renders_as_such(self) -> None:
+        """Handing every tier the same export must report nothing blind, not crash."""
+        out = self.scoped_exports()
+        completed = self.run_reporter(
+            out,
+            *[
+                arg
+                for name in ("golden-only", "all-e2e", "non-e2e")
+                for arg in ("--tier", f"{name}={out / 'golden-only.json'}=1=selection")
+            ],
+        )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertIn("(none — every region any tier reaches, a golden reaches too)", completed.stdout)
+
+    def test_the_subprocess_proof_refuses_a_tier_that_never_spawned_the_binary(self) -> None:
+        """non-e2e genuinely never runs the binary, so demanding proof of it must fail."""
+        out = self.scoped_exports()
+        completed = self.run_reporter(
+            out,
+            "--subprocess-tier",
+            "non-e2e",
+            *self.tier_args(out, "golden-only", "all-e2e", "non-e2e"),
+        )
+        self.assertEqual(1, completed.returncode, completed.stdout)
+        self.assertIn("was NOT captured", completed.stderr)
+        self.assertIn("LLVM_PROFILE_FILE", completed.stderr)
+
+    def test_a_malformed_coverage_export_is_refused_not_trusted(self) -> None:
+        out = self.scoped_exports()
+        broken = out / "broken.json"
+        broken.write_text('{"data": [{"functions": [{"regions": [[1, 1]]}]}]}', encoding="utf-8")
+        completed = self.run_reporter(
+            out,
+            "--tier",
+            f"golden-only={broken}=1=selection",
+        )
+        self.assertEqual(1, completed.returncode, completed.stdout)
+        self.assertIn("is not the llvm-cov export", completed.stderr)
+
+    def test_the_argument_parser_refuses_bad_invocations(self) -> None:
+        for args, expected in (
+            (("--out",), "--out needs a directory"),
+            (("--nonsense",), "unknown argument '--nonsense'"),
+            (("one", "two"), "more than one SCOPE expression"),
+        ):
+            with self.subTest(args=args):
+                completed = self.run_script(*args)
+                self.assertEqual(1, completed.returncode, completed.stdout)
+                self.assertIn(expected, completed.stderr)
+        helped = self.run_script("--help")
+        self.assertEqual(0, helped.returncode)
+        self.assertIn("Usage: scripts/fixtures-coverage.sh", helped.stderr)
+
+    def test_an_unresolvable_filter_expression_names_the_tier(self) -> None:
+        completed, _ = self.run_recipe("test(=unclosed")
+        self.assertEqual(1, completed.returncode, completed.stdout)
+        self.assertIn("could not resolve", completed.stderr)
+        self.assertIn("cargo nextest list --help", completed.stderr)
 
     def test_a_tier_that_selects_nothing_fails_with_a_next_action(self) -> None:
         completed, _ = self.run_recipe(f"test(={JOURNEY})")
@@ -262,11 +384,38 @@ class CfgTestSpanTests(unittest.TestCase):
             "the scanner closed the test module on a brace it should have skipped",
         )
 
+    def test_an_unbounded_test_item_is_refused(self) -> None:
+        with self.assertRaises(SystemExit) as raised:
+            reporter.cfg_test_spans("#[cfg(test)]\nmod tests {\n    fn f() {}\n")
+        self.assertIn("unbalanced braces", str(raised.exception))
+
     def test_an_unrecognized_test_conditional_attribute_is_refused(self) -> None:
         source = "#[cfg(all(test, feature = \"x\"))]\nmod tests {}\n"
         with self.assertRaises(SystemExit) as raised:
             reporter.cfg_test_spans(source)
         self.assertIn("does not recognize", str(raised.exception))
+
+
+_SCOPED: tuple | None = None
+
+
+def _scoped_run():
+    """One offline-scoped run of the real recipe, shared by every case that reads
+    its exports — the recipe is deterministic here, and re-running it per test
+    would triple this file's contribution to `just check`."""
+    global _SCOPED
+    if _SCOPED is None:
+        directory = tempfile.TemporaryDirectory()
+        atexit.register(directory.cleanup)
+        out = Path(directory.name) / "out"
+        completed = subprocess.run(
+            [str(SCRIPT), "--no-fetch", "--out", str(out), OFFLINE_SCOPE],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+        )
+        _SCOPED = (completed, out)
+    return _SCOPED
 
 
 def _subprocess_proof(report: str) -> dict[str, int]:

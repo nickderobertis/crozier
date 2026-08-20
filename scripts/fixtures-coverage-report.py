@@ -43,6 +43,8 @@ from typing import Iterable, NamedTuple
 # with kind 0 == Code; the other kinds (expansion/skipped/gap) carry no counter of
 # their own and are dropped.
 REGION_CODE_KIND = 0
+REGION_FILE_INDEX = 5
+REGION_KIND_INDEX = 7
 
 
 class Region(NamedTuple):
@@ -209,6 +211,28 @@ def _char_literal_width(line: str, position: int) -> int:
     return 0  # `'a` — a lifetime, whose following token must still be scanned
 
 
+def _refuse_export(path: Path, detail: str) -> None:
+    """Refuse a coverage export whose shape is not llvm.coverage.json.export 3.x."""
+    raise SystemExit(
+        f"fixtures-coverage: {path} is not the llvm-cov export this report "
+        f"understands ({detail}). cargo-llvm-cov's export format changed; update "
+        f"scripts/fixtures-coverage-report.py to the new schema rather than "
+        f"trusting the numbers."
+    )
+
+
+def _validated_export(document: object, path: Path) -> dict:
+    """The one `data` entry of a coverage export, or an actionable refusal."""
+    if not isinstance(document, dict):
+        _refuse_export(path, "the top level is not an object")
+    data = document.get("data")
+    if not isinstance(data, list) or len(data) != 1 or not isinstance(data[0], dict):
+        _refuse_export(path, "`data` is not a single-element list of objects")
+    if not isinstance(data[0].get("functions"), list):
+        _refuse_export(path, "`data[0].functions` is missing or not a list")
+    return data[0]
+
+
 def load_tier(path: Path, repo_root: Path) -> dict[str, dict[Region, int]]:
     """Region -> max execution count, per repo-relative `src/` file, for one tier.
 
@@ -224,14 +248,21 @@ def load_tier(path: Path, repo_root: Path) -> dict[str, dict[Region, int]]:
             f"Re-run `just fixtures-coverage`; if it persists, check that "
             f"`cargo llvm-cov report --json` still emits llvm.coverage.json.export."
         ) from error
-    export = document["data"][0]
+    export = _validated_export(document, path)
     files: dict[str, dict[Region, int]] = defaultdict(dict)
-    for function in export.get("functions", []):
-        filenames = function["filenames"]
-        for raw in function["regions"]:
-            if raw[7] != REGION_CODE_KIND:
+    for function in export["functions"]:
+        filenames = function.get("filenames")
+        regions = function.get("regions")
+        if not isinstance(filenames, list) or not isinstance(regions, list):
+            _refuse_export(path, "a function record has no filenames/regions list")
+        for raw in regions:
+            if len(raw) <= REGION_KIND_INDEX or not isinstance(raw[REGION_FILE_INDEX], int):
+                _refuse_export(path, f"a region row is not an 8-field record: {raw!r}")
+            if not 0 <= raw[REGION_FILE_INDEX] < len(filenames):
+                _refuse_export(path, f"a region names file {raw[REGION_FILE_INDEX]} of {len(filenames)}")
+            if raw[REGION_KIND_INDEX] != REGION_CODE_KIND:
                 continue
-            absolute = Path(filenames[raw[5]])
+            absolute = Path(filenames[raw[REGION_FILE_INDEX]])
             try:
                 relative = absolute.relative_to(repo_root).as_posix()
             except ValueError:
@@ -264,7 +295,7 @@ def drop_test_regions(
     return spans
 
 
-def covered_lines(counts: dict[Region, int]) -> tuple[set[int], set[int]]:
+def line_coverage(counts: dict[Region, int]) -> tuple[set[int], set[int]]:
     """(instrumented lines, covered lines) implied by a file's regions."""
     instrumented: set[int] = set()
     covered: set[int] = set()
@@ -291,7 +322,7 @@ def render(
     for tier in tiers.values():
         for relative, counts in tier.items():
             universe[relative].update(counts)
-            line_universe[relative].update(covered_lines(counts)[0])
+            line_universe[relative].update(line_coverage(counts)[0])
 
     out: list[str] = []
     out.append("=== fixtures-coverage: src/ production coverage, #[cfg(test)] excluded ===")
@@ -314,7 +345,7 @@ def render(
         for name in order:
             counts = tiers[name].get(relative, {})
             region_covered = sum(1 for count in counts.values() if count > 0)
-            line_covered = len(covered_lines(counts)[1])
+            line_covered = len(line_coverage(counts)[1])
             running[name][0] += region_covered
             running[name][1] += region_total
             running[name][2] += line_covered
