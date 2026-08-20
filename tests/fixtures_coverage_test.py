@@ -371,7 +371,8 @@ class CfgTestSpanTests(unittest.TestCase):
     """The span scanner decides the denominator, so it gets its own hostile cases."""
 
     def test_spans_over_the_real_crate_end_on_a_closing_brace(self) -> None:
-        seen = 0
+        markers_seen = 0
+        spans_seen = 0
         for path in sorted((REPO / "src").glob("*.rs")):
             source = path.read_text(encoding="utf-8")
             lines = source.splitlines()
@@ -382,11 +383,20 @@ class CfgTestSpanTests(unittest.TestCase):
                 [m for m in markers if any(s.start <= m <= s.end for s in spans)],
                 f"{path.name}: a #[cfg(test)] item was not bounded by any span",
             )
+            markers_seen += len(markers)
             for span in spans:
-                seen += 1
+                spans_seen += 1
                 self.assertEqual("#[cfg(test)]", lines[span.start - 1].strip())
                 self.assertEqual("}", lines[span.end - 1].strip(), f"{path.name}:{span.end}")
-        self.assertGreater(seen, 10, "the crate should have many #[cfg(test)] items")
+        # Non-vacuity guard. Every assertion above quantifies over what this scan
+        # found, so a crate with no `#[cfg(test)]` item would satisfy all of them
+        # by leaving nothing to check. Requiring at least one marker (read off the
+        # source, not off the scanner) means the scanner had real work, and a
+        # scanner that then returned nothing fails the marker-bounded assertEqual.
+        # Deliberately not a literal count: any legitimate removal of test-only
+        # code moves that number without saying anything about the scanner.
+        self.assertGreater(markers_seen, 0, "no #[cfg(test)] item was found to scan")
+        self.assertGreater(spans_seen, 0, "the scanner returned no span for the crate")
 
     def test_braces_inside_raw_strings_and_comments_do_not_close_the_span(self) -> None:
         source = textwrap.dedent(
