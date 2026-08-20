@@ -249,6 +249,28 @@ scheme map is *empty*. Read against the two rows above, an openIdConnect-only fu
 secured document and an unenforced-unsupported-scheme document both look like
 divergences. Inference from source — no screen ran crozier.
 
+### The four `http-digest` witnesses, and why none can be registered
+
+`http-digest` is the one dropped scheme whose whole verified supply fails the
+licence bar rather than failing Fern, so the four documents are named here with
+their measurements — the supply is exhausted, and re-searching it would repeat
+this. Every one carried from its pinned URL through both stages at exit 0, with
+`digest` declared and absent from the client:
+
+| witness | `check` | `generate` | declared | credential Fern emitted | licence bar |
+|---|:--:|:--:|---|---|---|
+| [`mongodb/openapi:openapi/v2/private/openapi-private-preview-sql-interface.yaml`](https://raw.githubusercontent.com/mongodb/openapi/44ea8293091ddf05272f6ef9bf73637a3833cbbe/openapi/v2/private/openapi-private-preview-sql-interface.yaml) | 0 | 0 | `DigestAuth: http/digest` + `ServiceAccounts: oauth2/clientCredentials` | required `token` → `Authorization` (47 files, 9 types, 7 error classes) | specification declares CC BY-NC-SA 3.0 US |
+| [`mongodb/openapi:openapi/v2/openapi-preview.yaml`](https://raw.githubusercontent.com/mongodb/openapi/44ea8293091ddf05272f6ef9bf73637a3833cbbe/openapi/v2/openapi-preview.yaml) | 0 | 0 | same pair | required `token` → `Authorization` (46 files, 9 types, 6 error classes) | specification declares CC BY-NC-SA 3.0 US |
+| [`mongodb/openapi:openapi/v2/private/openapi-private-preview-invoicereporting.yaml`](https://raw.githubusercontent.com/mongodb/openapi/44ea8293091ddf05272f6ef9bf73637a3833cbbe/openapi/v2/private/openapi-private-preview-invoicereporting.yaml) | 0 | 0 | same pair | required `token` → `Authorization: f"Bearer {self._get_token()}"` (46 files, 9 types, 6 error classes) | specification declares CC BY-NC-SA 3.0 US |
+| [`Valiantsin2021/Cypress-Jenkins:automation-excersize-spec.json`](https://raw.githubusercontent.com/Valiantsin2021/Cypress-Jenkins/7ff789585a1615ee88c4deec07dd0a6d2e427ed2/automation-excersize-spec.json) | 0 | 0 | `basicAuth: http/basic` + `digestAuth: http/digest` | optional `username`/`password` → `Authorization` (28 files, 0 types, 0 error classes) | licence tier Q |
+
+Each is Fern generating from the *other* scheme in the document — the
+`clientCredentials` OAuth2 flow in the three MongoDB documents, HTTP basic in the
+Cypress one — with the digest scheme leaving no trace. The three MongoDB documents
+sit in an Apache-2.0 repository while the specification itself declares CC
+BY-NC-SA 3.0 US — the same "the repository's licence does not cover the
+specification it holds" problem that tier Q names.
+
 ### Ranged responses yield no error class
 
 A `1XX`/`3XX`/`4XX`/`5XX` response key produces **no `errors/` package entry** and
@@ -620,8 +642,11 @@ Two consequences worth recording so the supply is not re-searched:
 
 - **`http-digest` has no redistribution-compatible witness at all** — a distinct
   empty reason from any the screens recorded, since all four of its verified
-  witnesses fail the licence bar rather than failing Fern (three declare CC
-  BY-NC-SA 3.0 US; one is tier Q).
+  witnesses fail the licence bar rather than failing Fern. They are named with
+  their measurements under
+  [The four `http-digest` witnesses](#the-four-http-digest-witnesses-and-why-none-can-be-registered):
+  three MongoDB documents whose specification declares CC BY-NC-SA 3.0 US, and one
+  tier-Q document.
 - **`oauth2-implicit` is the near miss beside it**: its one licence-clean
   candidate, `xataio/xata`, declares zero operations, and an empty SDK is not a
   witness.
