@@ -176,5 +176,4 @@ workflow included, since it drives the same script. Fern records it in each
 golden's `.fern/metadata.json` (`generatorConfig`) and the e2e normalizes that
 block off both sides, so it never shows up as a per-fixture setting; regenerating
 a golden any other way silently reverts its enums to Fern's default open-`Literal`
-union. See [`matching.md`](matching.md) and
-[`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md).
+union.

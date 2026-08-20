@@ -33,8 +33,7 @@ config table below and no fixture opts out; Fern records it in each golden's
 shape unconditionally the e2e normalizes the block off both sides
 (`tests/e2e.rs::normalize_metadata`). Regenerate through that script, never a
 hand-rolled `fern generate`, or the golden silently comes back in Fern's
-out-of-the-box open-`Literal`-union enum shape. Rationale:
-[`../../docs/matching.md`](../../docs/matching.md).
+out-of-the-box open-`Literal`-union enum shape.
 
 Per-fixture non-default settings live in **one shared table**,
 [`fern-generator-config.txt`](fern-generator-config.txt) — a single file for the

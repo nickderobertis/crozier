@@ -1304,11 +1304,8 @@ fn render_lazy_loader(
     )
 }
 
-/// The `types/__init__.py` lazy loader. `_dynamic_imports`/`__all__` are
-/// alphabetical, and so is the `TYPE_CHECKING` block: Fern emits that block in
-/// endpoint-traversal order, but it is never executed and the e2e canonicalizes
-/// both sides with `ruff` isort, so no golden pins the order (see the inline note
-/// below and `docs/matching.md`).
+/// The `types/__init__.py` lazy loader. `_dynamic_imports`, `__all__`, and the
+/// `TYPE_CHECKING` block are all emitted alphabetically.
 fn types_init_file(
     env: &Environment<'static>,
     pkg: &str,
