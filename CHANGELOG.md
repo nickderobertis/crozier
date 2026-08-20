@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.47](https://github.com/nickderobertis/crozier/compare/v0.0.46...v0.0.47) - 2026-08-20
+
+### Other
+
+- correct stale matching and fixture-config claims ([#149](https://github.com/nickderobertis/crozier/pull/149))
+
 ## [0.0.46](https://github.com/nickderobertis/crozier/compare/v0.0.45...v0.0.46) - 2026-07-31
 
 ### Other
