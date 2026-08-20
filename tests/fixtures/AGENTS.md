@@ -87,6 +87,52 @@ Such a corpus remains a spec-level robustness test until Fern
 succeeds, at which point remove the failure registration and use the managed
 workflow to publish a provenanced golden so it rejoins byte comparison.
 
+## Where the goldens are BLIND — `just fixtures-coverage`
+
+`unmatched` answers *"does crozier reproduce the goldens we have?"*. It cannot
+answer *"what does no golden exercise at all?"* — and nothing else in the repo
+distinguishes "a committed Fern golden proves this" from "a crozier test asserts
+crozier agrees with its own expectation". `just fixtures-coverage` measures three
+tiers against one instrumented build and prints them side by side, per `src/`
+file, in counter regions and lines:
+
+| tier | what a covered region there means |
+|---|---|
+| `golden-only` | Fern produced this output and crozier reproduces it byte for byte — **the only Fern-parity evidence that exists** |
+| `all-e2e` | the goldens *plus* crozier's own journeys, which pin behavior against crozier's expectation, not Fern's |
+| `non-e2e` | a unit/integration test asserts crozier agrees with itself |
+
+Read it in this order when choosing the next fixture:
+
+1. **The `golden blind spots` block at the bottom is the fixture backlog.** Every
+   region it lists is generator behavior only crozier vouches for. The file with
+   the biggest count is where a new corpus spec buys the most parity evidence;
+   `just fixtures-diff` then tells you what that spec's shapes must contain.
+2. **`all-e2e` minus `golden-only` is what the journeys add** — and it is not
+   parity evidence, however large. First measured at v0.0.46: the goldens reach
+   17,691 of 20,013 production regions (88.4%), all-e2e 18,815 (94.0%), non-e2e
+   19,037 (95.1%), leaving 1,798 regions blind to every golden. The journeys
+   supply about a third of that (351 regions in `emit.rs`, 360 in `settings.rs`,
+   220 in `openapi.rs`, 15 in `ir.rs`), but a journey pins crozier against
+   crozier. Only a golden moves the `golden-only` column, so don't read a rising
+   `all-e2e` figure as progress toward parity.
+3. **Regions, not lines.** A `match` with forty unexercised arms reads as covered
+   *lines* the moment the match head runs; each arm is its own counter region.
+   The crate emits no branch records at all, so regions are the closest branch
+   proxy available — treat the region column as the real number.
+4. **Scope while iterating.** The unscoped run fetches the corpus and measures it
+   all; `just fixtures-coverage 'test(/frankfurter/) or test(/wrap::/)'` reruns in
+   seconds. Every tier must still select at least one test, or the recipe refuses.
+
+Two things the figures are *not*: they are not a gate (nothing here fails a
+build on a percentage), and they are not comparable to `just test`'s 95% line
+floor — that one counts `#[cfg(test)]` code and every tier at once, which is
+exactly the inflation this recipe removes. `just test-fixtures-coverage` (in
+`check`) is what keeps the recipe honest: it drives the real script under a
+scope, asserts the three tiers partition the suite exactly, and proves the
+spawned binary's profile is captured by requiring non-zero coverage of
+`src/main.rs`, which exists only inside that binary.
+
 ## Why a file *doesn't* match — `just fixtures-diff`
 
 The inverse tool. `just fixtures-diff [<corpus> [<file-substring>]]` prints the

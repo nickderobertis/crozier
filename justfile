@@ -20,7 +20,7 @@ bootstrap:
     @echo "enabled .githooks (shared sccache + visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
-check: fmt-check lint test test-e2e test-fern-goldens supply-chain doc
+check: fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage supply-chain doc
     @echo "check: ok"
 
 # Format check (does not modify files).
@@ -199,6 +199,13 @@ fern-goldens-result *args:
 test-fern-goldens:
     python3 tests/fern_goldens_test.py
 
+# Process/filesystem/test-selection-boundary coverage for `fixtures-coverage`.
+# Drives the real recipe under a SCOPE so it measures a handful of tests instead
+# of the whole corpus; the unmeasured thing would otherwise be the measurement.
+# Part of `check` (the recipe itself is not — it needs network and is slow).
+test-fixtures-coverage:
+    python3 tests/fixtures_coverage_test.py
+
 # Census aid: report the exact expected files crozier still does not reproduce.
 # The output is the ready-to-paste `unmatched` task list. Not part of `check`.
 # The grep is a drift gate: `cargo test <name>` exits 0 even when the exact-name
@@ -257,6 +264,20 @@ fixtures-diff corpus="" file="":
       echo "fixtures-diff: no report from report_fixture_diffs — renamed/removed in tests/e2e.rs, or the corpus filter matched nothing" >&2
       exit 1
     fi
+
+# Measure what the committed Fern GOLDENS reach in src/, reported separately from
+# what the crozier-only e2e journeys and the unit tiers reach — the number that
+# answers "which fixture next?". Fetches the corpus and sets
+# CROZIER_REQUIRE_CORPUS so an unfetched spec is a hard failure instead of the
+# silent skip that would shrink the golden denominator. Reports counter regions
+# (this crate emits no branch records, so regions are the closest branch proxy)
+# as well as lines, with `#[cfg(test)]` stripped from the denominator. NOT part
+# of `check`: needs network and runs the whole corpus instrumented. Pass a
+# cargo-nextest filter expression to scope it, e.g.
+# `just fixtures-coverage 'test(/frankfurter/) or test(/wrap::/)'`. See
+# tests/fixtures/AGENTS.md.
+fixtures-coverage *args:
+    ./scripts/fixtures-coverage.sh "$@"
 
 # Install/refresh the llmlint toolchain (oneharness + llmlint). Idempotent.
 setup-llmlint:

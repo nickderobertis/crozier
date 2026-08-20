@@ -102,6 +102,16 @@ Use the `just` recipes; do not hand-roll equivalents.
   reports the measured residual `unmatched` task lists; `diff`
   prints the normalized diff of files it doesn't (to fix the generator). Neither
   gates. See [`tests/fixtures/AGENTS.md`](tests/fixtures/AGENTS.md).
+- `just fixtures-coverage` — what the committed Fern **goldens** reach in `src/`,
+  reported apart from what the crozier-only e2e journeys and the unit tiers
+  reach: counter regions (the crate emits no branch records, so regions are the
+  closest branch proxy) plus lines, with `#[cfg(test)]` out of the denominator.
+  Fetches the corpus and sets `CROZIER_REQUIRE_CORPUS`, so a corpus that would
+  otherwise skip silently can't shrink the golden denominator. Needs network and
+  runs the corpus instrumented, so it is outside `check`; pass a cargo-nextest
+  filter expression to scope it. `just test-fixtures-coverage` guards the recipe
+  and IS in `check`. Reading the split:
+  [`tests/fixtures/AGENTS.md`](tests/fixtures/AGENTS.md).
 - `just lint-llm` / `just lint-llm-diff` — LLM-judge tier (llmlint), separate from
   `check` and non-deterministic; config in `llmlint.yml`. `just setup-llmlint`
   installs it.
