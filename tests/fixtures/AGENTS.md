@@ -24,11 +24,25 @@ generate or publish. The complete selection, provenance, partial-success,
 publication, and rerun contract is in
 [`../../docs/fern-goldens.md`](../../docs/fern-goldens.md).
 
-The managed workflow uses Fern's standard corpus generator configuration.
-Hand-authored fixtures with non-default audience, client-class-name, or
-extra-fields settings declare them in `fern-generator-config.txt`; the generator
-loads that file and records the settings in golden provenance. Model and test a
-new setting there before regenerating; do not silently use different defaults.
+**One non-default Fern setting is corpus-wide.** Every golden — managed or
+hand-authored — is generated with `pydantic_config.enum_type: python_enums`,
+which `scripts/generate-fern-fixture.sh` writes into `generators.yml`
+unconditionally for *all* fixtures rather than per row. It is not a column of the
+config table below and no fixture opts out; Fern records it in each golden's
+`.fern/metadata.json` (`generatorConfig`), and because crozier renders that enum
+shape unconditionally the e2e normalizes the block off both sides
+(`tests/e2e.rs::normalize_metadata`). Regenerate through that script, never a
+hand-rolled `fern generate`, or the golden silently comes back in Fern's
+out-of-the-box open-`Literal`-union enum shape.
+
+Per-fixture non-default settings live in **one shared table**,
+[`fern-generator-config.txt`](fern-generator-config.txt) — a single file for the
+whole corpus keyed by fixture name (`fixture|audiences|audience_strict|
+client_class_name|extra_fields`), not a file per fixture directory. A fixture
+needing a non-default audience, client-class-name, or extra-fields setting adds
+its row there; the generator loads that row and records the settings in the
+golden's provenance (`expected/.crozier-fern-golden.json`). Model and test a new
+setting there before regenerating; do not silently use different defaults.
 
 ## Choosing a real-world spec — Fern must accept it FIRST
 

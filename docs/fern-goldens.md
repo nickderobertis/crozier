@@ -162,8 +162,18 @@ narrower human-readable diff after that aggregate pass, use
 
 Hand-authored fixtures generated directly by
 `scripts/generate-fern-fixture.sh` can carry fixture-owned non-default settings
-in [`fern-generator-config.txt`](../tests/fixtures/fern-generator-config.txt).
+as a row in the shared table
+[`fern-generator-config.txt`](../tests/fixtures/fern-generator-config.txt).
 The audience list, Crozier strict-audience identity, Fern `client_class_name`,
 and Fern `pydantic_config.extra_fields` values are loaded automatically and
 written into `.crozier-fern-golden.json`; explicit environment values remain a
 diagnostic override.
+
+One non-default setting is **not** in that table and applies corpus-wide:
+`scripts/generate-fern-fixture.sh` writes `pydantic_config.enum_type:
+python_enums` into `generators.yml` for every fixture it generates — this
+workflow included, since it drives the same script. Fern records it in each
+golden's `.fern/metadata.json` (`generatorConfig`) and the e2e normalizes that
+block off both sides, so it never shows up as a per-fixture setting; regenerating
+a golden any other way silently reverts its enums to Fern's default open-`Literal`
+union.
