@@ -162,14 +162,21 @@ step "measuring the e2e journey tests" \
 step "exporting the all-e2e tier" "Retry; if it persists, upgrade cargo-llvm-cov." \
   cargo llvm-cov report --locked --json --output-path "$out_dir/all-e2e.json"
 
+# JSON-encode each tier: an export path and a nextest filter expression can both
+# contain any delimiter a flat string would need, so let python3 (already a hard
+# dependency here) do the quoting.
+tier() { # tier NAME EXPORT TESTS EXPRESSION
+  python3 -c 'import json,sys; n,e,t,s=sys.argv[1:5]; print(json.dumps({"name":n,"export":e,"tests":int(t),"selection":s}))' "$@"
+}
+
 python3 "$script_dir/fixtures-coverage-report.py" \
   --repo-root "$repo_root" \
   --golden-tier golden-only \
   --subprocess-file src/main.rs \
   --subprocess-tier golden-only \
   --subprocess-tier all-e2e \
-  --tier "golden-only=$out_dir/golden-only.json=$golden_tests=$golden_expr" \
-  --tier "all-e2e=$out_dir/all-e2e.json=$e2e_tests=$(scoped 'binary(e2e)')" \
-  --tier "non-e2e=$out_dir/non-e2e.json=$unit_tests=$unit_expr"
+  --tier "$(tier golden-only "$out_dir/golden-only.json" "$golden_tests" "$golden_expr")" \
+  --tier "$(tier all-e2e "$out_dir/all-e2e.json" "$e2e_tests" "$(scoped 'binary(e2e)')")" \
+  --tier "$(tier non-e2e "$out_dir/non-e2e.json" "$unit_tests" "$unit_expr")"
 
 echo "fixtures-coverage: per-tier llvm-cov exports in $out_dir" >&2

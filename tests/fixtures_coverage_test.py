@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import atexit
 import importlib.util
+import json
 import os
 import re
 import shutil
@@ -160,11 +161,21 @@ class RecipeEndToEndTests(unittest.TestCase):
         self.report = completed.stdout
         return out
 
-    def tier_args(self, out: Path, *names: str) -> list[str]:
+    def tier_args(self, out: Path, *names: str, export: str | None = None) -> list[str]:
         return [
             arg
             for name in names
-            for arg in ("--tier", f"{name}={out / f'{name}.json'}=1=selection")
+            for arg in (
+                "--tier",
+                json.dumps(
+                    {
+                        "name": name,
+                        "export": str(out / f"{export or name}.json"),
+                        "tests": 1,
+                        "selection": "selection",
+                    }
+                ),
+            )
         ]
 
     def test_scoped_run_reports_three_tiers_and_proves_subprocess_coverage(self) -> None:
@@ -243,11 +254,7 @@ class RecipeEndToEndTests(unittest.TestCase):
         out = self.scoped_exports()
         completed = self.run_reporter(
             out,
-            *[
-                arg
-                for name in ("golden-only", "all-e2e", "non-e2e")
-                for arg in ("--tier", f"{name}={out / 'golden-only.json'}=1=selection")
-            ],
+            *self.tier_args(out, "golden-only", "all-e2e", "non-e2e", export="golden-only"),
         )
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertIn("(none — every region any tier reaches, a golden reaches too)", completed.stdout)
@@ -272,10 +279,31 @@ class RecipeEndToEndTests(unittest.TestCase):
         completed = self.run_reporter(
             out,
             "--tier",
-            f"golden-only={broken}=1=selection",
+            json.dumps(
+                {"name": "golden-only", "export": str(broken), "tests": 1, "selection": "s"}
+            ),
         )
         self.assertEqual(1, completed.returncode, completed.stdout)
         self.assertIn("is not the llvm-cov export", completed.stderr)
+
+    def test_a_malformed_tier_argument_is_refused(self) -> None:
+        out = self.scoped_exports()
+        for spec, expected in (
+            ("golden-only=x.json=1=s", "--tier is not JSON"),
+            ('{"name": "golden-only"}', "needs exactly the fields"),
+            (
+                json.dumps({"name": "g", "export": "x", "tests": "many", "selection": "s"}),
+                "must be a int",
+            ),
+            (
+                json.dumps({"name": "g", "export": "x", "tests": 0, "selection": "s"}),
+                "must be a positive count",
+            ),
+        ):
+            with self.subTest(spec=spec):
+                completed = self.run_reporter(out, "--tier", spec)
+                self.assertEqual(2, completed.returncode, completed.stdout)
+                self.assertIn(expected, completed.stderr)
 
     def test_the_argument_parser_refuses_bad_invocations(self) -> None:
         for args, expected in (

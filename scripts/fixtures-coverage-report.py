@@ -419,6 +419,25 @@ def blind_spots(
     return out
 
 
+TIER_FIELDS = {"name": str, "export": str, "tests": int, "selection": str}
+
+
+def _validated_tier_spec(spec: str, parser: argparse.ArgumentParser) -> dict:
+    """One `--tier` argument, or an argparse usage error naming what is wrong."""
+    try:
+        tier = json.loads(spec)
+    except ValueError as error:
+        parser.error(f"--tier is not JSON ({error}): {spec!r}")
+    if not isinstance(tier, dict) or set(tier) != set(TIER_FIELDS):
+        parser.error(f"--tier needs exactly the fields {sorted(TIER_FIELDS)}: {spec!r}")
+    for field, kind in TIER_FIELDS.items():
+        if type(tier[field]) is not kind:
+            parser.error(f"--tier field {field!r} must be a {kind.__name__}: {tier[field]!r}")
+    if tier["tests"] < 1:
+        parser.error(f"--tier field 'tests' must be a positive count: {tier['tests']!r}")
+    return tier
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", required=True, type=Path)
@@ -426,8 +445,10 @@ def main(argv: list[str] | None = None) -> int:
         "--tier",
         action="append",
         required=True,
-        metavar="NAME=JSON=TESTS=EXPRESSION",
-        help="a tier's name, llvm-cov JSON export, test count, and nextest filter",
+        metavar="JSON",
+        help='one tier as {"name", "export", "tests", "selection"} — JSON rather '
+        "than a delimited string because both an export path and a nextest filter "
+        "expression may legitimately contain the delimiter",
     )
     parser.add_argument(
         "--golden-tier",
@@ -452,10 +473,11 @@ def main(argv: list[str] | None = None) -> int:
     tiers: dict[str, dict[str, dict[Region, int]]] = {}
     selections: dict[str, tuple[str, int]] = {}
     for spec in args.tier:
-        name, path, count, expression = spec.split("=", 3)
+        tier = _validated_tier_spec(spec, parser)
+        name = tier["name"]
         order.append(name)
-        tiers[name] = load_tier(Path(path), repo_root)
-        selections[name] = (expression, int(count))
+        tiers[name] = load_tier(Path(tier["export"]), repo_root)
+        selections[name] = (tier["selection"], tier["tests"])
 
     drop_test_regions(tiers, repo_root)
 
