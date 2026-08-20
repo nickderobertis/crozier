@@ -31,7 +31,7 @@ struct Corpus {
     client_class_name: Option<&'static str>,
     /// `--extra-fields` to drive crozier with (Fern's `pydantic_config.extra_fields`);
     /// `None` uses the default `allow`, as every corpus but `pydantic-extra-fields`
-    /// does.
+    /// (`ignore`) and `eos.local-extra-fields-forbid` (`forbid`) does.
     extra_fields: Option<&'static str>,
     unmatched: &'static [&'static str],
 }
@@ -1855,6 +1855,7 @@ const CORPORA: &[&Corpus] = &[
     &TLON_NOTES,
     &TWILIO_MESSAGING_V1,
     &LIVEPEER_AI_RUNNER,
+    &EOS_EXTRA_FIELDS_FORBID,
 ];
 
 #[test]
@@ -2716,6 +2717,24 @@ const LIVEPEER_AI_RUNNER: Corpus = Corpus {
     unmatched: &[],
 };
 
+// Issue #63: `extra_fields: forbid` — the one `--extra-fields` value no golden
+// pinned. A generator setting is not expressible in an OpenAPI document, so this
+// row reuses `eos.local`'s already registered source (CORPUS.md row 43) under a
+// second corpus name whose `fern-generator-config.txt` entry carries
+// `extra_fields: forbid`. Its four models pin both halves of the pydantic
+// asymmetry `pydantic-extra-fields` documents: the v2 `model_config` spells
+// `extra="forbid"` out, and the v1 `Config` writes `pydantic.Extra.forbid`.
+const EOS_EXTRA_FIELDS_FORBID: Corpus = Corpus {
+    api: "eos.local-extra-fields-forbid",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: Some("forbid"),
+    unmatched: &[],
+};
+
 #[test]
 fn apideck_ats_matches_fern_output() {
     if corpus_spec(APIDECK_ATS.api).is_none() {
@@ -2760,6 +2779,11 @@ fn twilio_messaging_v1_matches_fern_output() {
 #[test]
 fn livepeer_ai_runner_matches_fern_output() {
     assert_link_ok_corpus_matches(&LIVEPEER_AI_RUNNER);
+}
+
+#[test]
+fn eos_extra_fields_forbid_matches_fern_output() {
+    assert_link_ok_corpus_matches(&EOS_EXTRA_FIELDS_FORBID);
 }
 
 #[test]
