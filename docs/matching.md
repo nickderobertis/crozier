@@ -332,7 +332,8 @@ The refresh also **closed** two divergences it had first exposed, both in
 The per-corpus measurement lives in the `CORPORA`/`FEATURE_TARGETS` data in
 `tests/e2e.rs`, the single source of truth; `just fixtures-gaps` re-measures it.
 The configured `audience-filter`, `audience-filter-strict`, `client-class-name`,
-and `pydantic-extra-fields` fixtures are on 5.20.0 like the rest.
+`pydantic-extra-fields`, and `eos.local-extra-fields-forbid` fixtures are on
+5.20.0 like the rest.
 `query-parameters-openapi` is re-vendored from Fern's 5.20.0 release commit; its
 seed-repository boundary and exact packaged-output expectations are documented
 above. `calorieninjas.com` is the accepted exception described earlier: it has no
@@ -1151,6 +1152,14 @@ tree, so `Widget`'s model reproduces that asymmetry exactly. Its Fern
 generator config carries `extra_fields: ignore`; like the enum/client-class-name
 config, Fern records it in `.fern/metadata.json`'s
 `generatorConfig`, which the e2e normalizes out (`normalize_metadata`).
+
+`forbid` is pinned the same way, by `eos.local-extra-fields-forbid` — CORPUS.md
+row 82, which is row 43's real-world `eos.local` spec generated a second time
+with `extra_fields: forbid`. A generator setting is not expressible in an
+OpenAPI document, so pinning one needs no new spec, only a second corpus name
+over a registered source with its own `fern-generator-config.txt` entry. Its
+four models carry `extra="forbid"` in the v2 `model_config` and
+`pydantic.Extra.forbid` in the v1 `Config`, and all 42 files byte-match.
 
 ## Coverage note
 

@@ -31,7 +31,7 @@ struct Corpus {
     client_class_name: Option<&'static str>,
     /// `--extra-fields` to drive crozier with (Fern's `pydantic_config.extra_fields`);
     /// `None` uses the default `allow`, as every corpus but `pydantic-extra-fields`
-    /// does.
+    /// (`ignore`) and `eos.local-extra-fields-forbid` (`forbid`) does.
     extra_fields: Option<&'static str>,
     unmatched: &'static [&'static str],
 }

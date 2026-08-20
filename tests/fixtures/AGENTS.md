@@ -13,14 +13,18 @@ Add one numbered [`CORPUS.md`](CORPUS.md) row and source URL per feature branch,
 then wire a `Corpus { api, package_name, project_name, unmatched: &[] }` into
 `tests/e2e.rs`, plus its `#[test]` and its `just test-corpus-match` line —
 `every_registered_corpus_is_wired_into_the_gate` fails without both, because a
-corpus nothing runs is not coverage. Push the branch and manually dispatch
-the **Fern goldens** workflow on that branch for the fixture; red comparison is
-expected until Crozier is repaired. A Monday 05:17 UTC run from `main` leaves
-both inputs blank to check the latest Fern against every managed golden. Do Fern
-upgrade work on an expected-red feature branch, retain the workflow's
-best-effort successful commits and exact known-failure evidence, then rerun with
-the resolved exact version until the final run is green with no changes to
-generate or publish. The complete selection, provenance, partial-success,
+corpus nothing runs is not coverage. Generate the golden with **Route A**, the
+local Docker loop (`just fern-goldens-generate --version "$pin" --fixture
+<name>`, always with the exact pin the goldens' provenance records — never a
+blank, which resolves the latest tag and starts a Fern upgrade), then measure,
+repair Crozier, and repeat; red comparison is expected until Crozier is repaired.
+A dispatched agent cannot use the hosted workflow, because a dispatch needs the
+branch on the remote and publication is the lifecycle's job. A Monday 05:17 UTC
+run from `main` leaves both inputs blank to check the latest Fern against every
+managed golden. Do Fern upgrade work on an expected-red feature branch, retain
+the workflow's best-effort successful commits and exact known-failure evidence,
+then rerun with the resolved exact version until the final run is green with no
+changes to generate or publish. The complete selection, provenance, partial-success,
 publication, and rerun contract is in
 [`../../docs/fern-goldens.md`](../../docs/fern-goldens.md).
 
@@ -38,11 +42,20 @@ out-of-the-box open-`Literal`-union enum shape.
 Per-fixture non-default settings live in **one shared table**,
 [`fern-generator-config.txt`](fern-generator-config.txt) — a single file for the
 whole corpus keyed by fixture name (`fixture|audiences|audience_strict|
-client_class_name|extra_fields`), not a file per fixture directory. A fixture
+client_class_name|extra_fields`), not a file per fixture directory. Both routes
+otherwise use Fern's standard corpus generator configuration, and both load that
+table by fixture name whether the spec is vendored or fetched, so a fixture
 needing a non-default audience, client-class-name, or extra-fields setting adds
-its row there; the generator loads that row and records the settings in the
-golden's provenance (`expected/.crozier-fern-golden.json`). Model and test a new
-setting there before regenerating; do not silently use different defaults.
+one row there and nothing else. A hand-authored fixture also gets the settings
+recorded in its golden's provenance (`expected/.crozier-fern-golden.json`); a
+`CORPUS.md` row's provenance is the manifest form (name, ref, URL, version), so
+for a corpus row this table is the authority for what it was generated with.
+Model and test a new setting there before regenerating; do not silently use
+different defaults.
+
+A generator setting no OpenAPI document can express is pinned by giving an
+already-registered source a second row name with that declaration
+(`eos.local-extra-fields-forbid` over `eos.local`), not by hunting a new spec.
 
 ## Choosing a real-world spec — Fern must accept it FIRST
 
@@ -62,8 +75,9 @@ that kill most specs:
 
 An optional pre-screen can count, per operation, request bodies without a `$ref`
 schema and `format: date` fields whose example contains a time. Zero of both is a
-good signal, but the dispatched workflow is the authoritative Fern check and
-retains any successful sibling results when another selection fails.
+good signal, but a real Fern generate is the authoritative check: locally via
+Route A, or via the dispatched workflow, which retains any successful sibling
+results when another selection fails.
 
 ### Specs already tried and REJECTED (do not re-attempt without a fix upstream)
 
