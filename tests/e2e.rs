@@ -6639,9 +6639,10 @@ fn every_discovered_config_filename_is_loaded_in_priority_order() {
 }
 
 #[test]
-fn the_env_layer_supplies_every_documented_generation_setting() {
+fn the_env_layer_supplies_the_naming_and_output_settings() {
     // No config file at all: `CROZIER_*` alone drives a complete run of the
-    // built-in `python` generator, through the real process environment.
+    // built-in `python` generator, through the real process environment. The two
+    // audience variables are the sibling journey below.
     let dir = tempfile::tempdir().expect("tempdir");
     std::fs::write(dir.path().join("api.yml"), TINY_SPEC_WITH_OP).unwrap();
 
