@@ -138,6 +138,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e twilio_messaging_v1_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e livepeer_ai_runner_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e eos_extra_fields_forbid_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e med_anvisa_price_matches_fern_output
 
 # Format the codebase in place.
 format:
