@@ -1859,6 +1859,7 @@ const CORPORA: &[&Corpus] = &[
     &KYTOS_SDNTRACE_CP,
     &WITHSECURE_GDPR_SUBJECT_RIGHTS,
     &PROMETHEUS_X_EDGE_COMPUTING,
+    &EXA_GATE,
 ];
 
 #[test]
@@ -2720,6 +2721,19 @@ const LIVEPEER_AI_RUNNER: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
+/// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
+const EXA_GATE: Corpus = Corpus {
+    api: "exa-gate",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `prometheus-x-edge-computing`: the Prometheus-X edge-computing API declares
 /// both `408` and `412` responses, pinning Fern's `RequestTimeoutError` and
 /// `PreconditionFailedError` names for those statuses.
@@ -2844,6 +2858,11 @@ fn withsecure_gdpr_subject_rights_matches_fern_output() {
 #[test]
 fn prometheus_x_edge_computing_matches_fern_output() {
     assert_link_ok_corpus_matches(&PROMETHEUS_X_EDGE_COMPUTING);
+}
+
+#[test]
+fn exa_gate_matches_fern_output() {
+    assert_link_ok_corpus_matches(&EXA_GATE);
 }
 
 #[test]
