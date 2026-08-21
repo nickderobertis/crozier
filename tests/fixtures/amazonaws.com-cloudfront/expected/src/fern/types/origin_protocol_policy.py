@@ -1,0 +1,26 @@
+
+
+import typing
+
+from ..core import enum
+
+T_Result = typing.TypeVar("T_Result")
+
+
+class OriginProtocolPolicy(enum.StrEnum):
+    HTTP_ONLY = "http-only"
+    MATCH_VIEWER = "match-viewer"
+    HTTPS_ONLY = "https-only"
+
+    def visit(
+        self,
+        http_only: typing.Callable[[], T_Result],
+        match_viewer: typing.Callable[[], T_Result],
+        https_only: typing.Callable[[], T_Result],
+    ) -> T_Result:
+        if self is OriginProtocolPolicy.HTTP_ONLY:
+            return http_only()
+        if self is OriginProtocolPolicy.MATCH_VIEWER:
+            return match_viewer()
+        if self is OriginProtocolPolicy.HTTPS_ONLY:
+            return https_only()

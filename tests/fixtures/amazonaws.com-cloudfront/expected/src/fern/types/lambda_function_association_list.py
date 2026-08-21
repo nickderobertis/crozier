@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .lambda_function_association_list_item import LambdaFunctionAssociationListItem
+
+LambdaFunctionAssociationList = typing.List[LambdaFunctionAssociationListItem]
