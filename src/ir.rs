@@ -102,10 +102,7 @@ impl Environment {
 /// Derive the [`Environment`] model from the document's `servers`. Reproduces
 /// Fern's single-member behavior: the first server only, its member named by
 /// uppercasing the description (non-identifier characters → `_`). A templated
-/// server, a single concrete server with no usable description, or a description
-/// that merely repeats the API provider (the first title word), or a numbered
-/// demo-server description is `DEFAULT`; other described concrete servers keep
-/// their description-derived name.
+/// server, or one whose description is not usable as a name, is `DEFAULT`.
 fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     let first = doc.servers.first()?;
     // A server with a templated URL (`{basePath}` variables) is named `DEFAULT` — its
@@ -122,20 +119,15 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     {
         "DEFAULT".to_string()
     } else {
+        // Fern reads a server description as an environment *name*, not as prose:
+        // only a single word qualifies (`Production` → `PRODUCTION`). Anything with
+        // whitespace in it — "Development server", "Letta Cloud", "Demo Server 1",
+        // "The general CloudFront multi-region endpoint" — is a sentence about the
+        // server rather than a name for it, and falls back to `DEFAULT`.
         first
             .description
             .as_deref()
-            .filter(|description| {
-                let title_provider = doc.info.title.split_whitespace().next().unwrap_or_default();
-                !description.eq_ignore_ascii_case("production server")
-                    && !description.eq_ignore_ascii_case("development server")
-                    && !description.to_ascii_lowercase().starts_with("local ")
-                    && !description.eq_ignore_ascii_case(&doc.info.title)
-                    && (title_provider.is_empty()
-                        || !description
-                            .to_ascii_lowercase()
-                            .starts_with(&title_provider.to_ascii_lowercase()))
-            })
+            .filter(|description| description.split_whitespace().nth(1).is_none())
             .map(env_member_name)
             .filter(|n| !n.is_empty())
             .unwrap_or_else(|| "DEFAULT".to_string())
