@@ -4127,11 +4127,9 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
         })
         .or_else(|| {
             let response = success_response_entry(op)?;
-            response
-                .content
-                .get("text/plain")
-                .or_else(|| response.content.get("text/markdown"))
-                .or_else(|| response.content.get("text/xml"))
+            TEXT_RESPONSE_MEDIA
+                .iter()
+                .find_map(|media_type| response.content.get(*media_type))
                 .and_then(|media| media.schema.as_ref())
                 .map(|_| TypeRef::Primitive(Prim::Str))
         })
@@ -4144,13 +4142,18 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
         })
 }
 
+/// The response media types Fern reads back as one plain `str` body.
+/// `text/event-stream` is deliberately absent: an SSE response is generated as a
+/// stream of parsed events, not as a single text body.
+const TEXT_RESPONSE_MEDIA: &[&str] = &["text/plain", "text/markdown", "text/xml", "text/csv"];
+
 fn has_text_response(op: &Operation) -> bool {
     success_response_entry(op).is_some_and(|response| {
         !response.content.contains_key("application/json")
             && !response.content.contains_key("*/*")
-            && (response.content.contains_key("text/plain")
-                || response.content.contains_key("text/markdown")
-                || response.content.contains_key("text/xml"))
+            && TEXT_RESPONSE_MEDIA
+                .iter()
+                .any(|media_type| response.content.contains_key(*media_type))
     })
 }
 
