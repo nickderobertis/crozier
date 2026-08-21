@@ -100,6 +100,7 @@ measured state is `tests/e2e.rs`; re-measure with `just fixtures-gaps`.
 | 82 | `eos.local-extra-fields-forbid` | api-guru | https://api.apis.guru/v2/specs/eos.local/1.0.0/openapi.json | `1.0.0` | MIT | link-ok | Row 43's Net API regenerated with `pydantic_config.extra_fields: forbid`, pinning `extra="forbid"` / `pydantic.Extra.forbid` |
 | 83 | `kytos-sdntrace-cp` | github-raw | https://raw.githubusercontent.com/kytos-ng/sdntrace_cp/269f4482ecd4125dc1c115e059dbce26b7269216/openapi.yml | `269f4482ecd4125dc1c115e059dbce26b7269216` | MIT | link-ok | Kytos SDNTrace-CP API whose two operations both declare `424`, pinning Fern's `FailedDependencyError` name for a status no golden emitted |
 | 84 | `withsecure-gdpr-subject-rights` | github-raw | https://raw.githubusercontent.com/WithSecureOpenSource/gdpr-subject-rights-api/0d2775dbf1c0830671a9efd878f03ae1eaf97995/openapi.yaml | `0d2775dbf1c0830671a9efd878f03ae1eaf97995` | Apache 2.0 | link-ok | WithSecure GDPR subject-rights API whose five operations declare `451`, pinning Fern's `UnavailableForLegalReasonsError` name for a status no golden emitted |
+| 85 | `prometheus-x-edge-computing` | github-raw | https://raw.githubusercontent.com/Prometheus-X-association/edge-computing/78ed883317ec8739e985780c998d9f73f1e370a8/spec/openapi.yaml | `78ed883317ec8739e985780c998d9f73f1e370a8` | Apache-2.0 | link-ok | Prometheus-X edge-computing API declaring `408` and `412`, pinning Fern's `RequestTimeoutError` and `PreconditionFailedError` names for two statuses no golden emitted |
 
 ## Batch 2 — byte-matched (issue #77)
 

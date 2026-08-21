@@ -1858,6 +1858,7 @@ const CORPORA: &[&Corpus] = &[
     &EOS_EXTRA_FIELDS_FORBID,
     &KYTOS_SDNTRACE_CP,
     &WITHSECURE_GDPR_SUBJECT_RIGHTS,
+    &PROMETHEUS_X_EDGE_COMPUTING,
 ];
 
 #[test]
@@ -2719,6 +2720,20 @@ const LIVEPEER_AI_RUNNER: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `prometheus-x-edge-computing`: the Prometheus-X edge-computing API declares
+/// both `408` and `412` responses, pinning Fern's `RequestTimeoutError` and
+/// `PreconditionFailedError` names for those statuses.
+const PROMETHEUS_X_EDGE_COMPUTING: Corpus = Corpus {
+    api: "prometheus-x-edge-computing",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `withsecure-gdpr-subject-rights`: every operation of WithSecure's GDPR
 /// subject-rights API declares a `451` response, pinning Fern's
 /// `UnavailableForLegalReasonsError` name for that status.
@@ -2824,6 +2839,11 @@ fn kytos_sdntrace_cp_matches_fern_output() {
 #[test]
 fn withsecure_gdpr_subject_rights_matches_fern_output() {
     assert_link_ok_corpus_matches(&WITHSECURE_GDPR_SUBJECT_RIGHTS);
+}
+
+#[test]
+fn prometheus_x_edge_computing_matches_fern_output() {
+    assert_link_ok_corpus_matches(&PROMETHEUS_X_EDGE_COMPUTING);
 }
 
 #[test]
