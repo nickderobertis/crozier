@@ -669,6 +669,27 @@ impl Schema {
     pub fn ignored(&self) -> bool {
         self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
     }
+
+    /// Whether the document says this schema admits `null`: the 3.0 `nullable`
+    /// flag, a 3.1 `type` list carrying `null`, or a composition with an explicit
+    /// `type: null` alternative.
+    #[must_use]
+    pub fn explicitly_nullable(&self) -> bool {
+        self.nullable == Some(true)
+            || matches!(
+                self.ty.as_ref(),
+                Some(TypeField::Multiple(types)) if types.iter().any(|ty| ty == "null")
+            )
+            || self
+                .one_of
+                .as_ref()
+                .or(self.any_of.as_ref())
+                .is_some_and(|members| {
+                    members.iter().any(|member| {
+                        member.ty.as_ref().and_then(TypeField::primary) == Some("null")
+                    })
+                })
+    }
 }
 
 /// An object schema's ordered properties plus whether the source explicitly
@@ -946,6 +967,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     crate::refs::resolve(&mut doc, &crate::refs::CurlFetcher, path)?;
 
     normalize_unresolvable_schema_refs(&mut doc);
+    normalize_nullable_schema_refs(&mut doc);
     normalize_parameters(&mut doc);
     normalize_responses(&mut doc);
     normalize_response_alias_refs(&mut doc);
@@ -1043,6 +1065,37 @@ pub(crate) fn referenced_component_schema(reference: &str) -> Option<&str> {
     reference
         .strip_prefix("#/components/schemas/")
         .map(|pointer| pointer.split('/').next().unwrap_or(pointer))
+}
+
+/// Carry a component schema's nullability to every reference to it.
+///
+/// Fern keeps nullability at the use site rather than in the declaration: helios'
+/// `FilterTopic` declares `Union[Bytes32, List[Bytes32]]` — its `type: null`
+/// alternative left the union — and every reference to it generates as
+/// `Optional[FilterTopic]`.
+fn normalize_nullable_schema_refs(doc: &mut OpenApi) {
+    let nullable: std::collections::BTreeSet<String> = doc
+        .components
+        .schemas
+        .iter()
+        .filter(|(_, schema)| schema.explicitly_nullable())
+        .map(|(name, _)| name.clone())
+        .collect();
+    if nullable.is_empty() {
+        return;
+    }
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            let names = node
+                .reference
+                .as_deref()
+                .and_then(referenced_component_schema)
+                .is_some_and(|name| nullable.contains(name));
+            if names {
+                node.nullable = Some(true);
+            }
+        });
+    });
 }
 
 /// Resolve an operation response that names a component schema which is nothing

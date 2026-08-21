@@ -3163,9 +3163,16 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
                 description,
             }
         } else {
+            // An argument whose own type is already optional — a `$ref` to a
+            // nullable schema — is not wrapped twice.
+            let annotation = if base.starts_with("typing.Optional[") {
+                base
+            } else {
+                format!("typing.Optional[{base}]")
+            };
             DocParam {
                 name,
-                annotation: format!("typing.Optional[{base}]"),
+                annotation,
                 default: Some("None".to_string()),
                 description,
             }

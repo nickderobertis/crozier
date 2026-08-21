@@ -1784,7 +1784,11 @@ fn build_endpoint(
             } else {
                 type_ref
             };
-            let convert = hoister.needs_convert(&type_ref);
+            // A query value that reaches nothing but scalars goes onto the URL as
+            // text, so Fern serializes it directly even when the same type would
+            // be converted in a request body (helios sends `block` raw as a query
+            // parameter and converted as a body field).
+            let convert = hoister.needs_convert(&type_ref) && !hoister.is_scalar(&type_ref);
             // The parameter's declared example, where Fern keeps it at all.
             let without_declared_example = parameter_example_value(doc, p).is_none();
             let omit_synthesized_example = without_declared_example
@@ -3816,8 +3820,13 @@ impl InlineHoister<'_> {
                 self.hoist_object(&name, schema);
                 return TypeRef::Named(name);
             }
+            return base_type_ref(schema);
         }
-        base_type_ref(schema)
+        // A `$ref` to a nullable schema carries that nullability to its use site
+        // (see `openapi::normalize_nullable_schema_refs`), so a parameter naming
+        // one is typed `Optional[..]` — which Fern also passes as the annotation
+        // it serializes the value against.
+        full_type_ref(schema)
     }
 
     /// Hoist an inline string enum array item to `{ctx}Item`, preserving the
@@ -3850,6 +3859,11 @@ impl InlineHoister<'_> {
     /// the inline types just hoisted.
     fn needs_convert(&self, t: &TypeRef) -> bool {
         type_needs_convert(t, self.root_types) || type_needs_convert(t, &self.out)
+    }
+
+    fn is_scalar(&self, t: &TypeRef) -> bool {
+        type_is_scalar(t, self.root_types, &mut Vec::new())
+            || type_is_scalar(t, &self.out, &mut Vec::new())
     }
 }
 
@@ -4084,6 +4098,35 @@ fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
         TypeRef::Union(variants) => variants
             .iter()
             .any(|variant| type_needs_convert(variant, types)),
+        _ => false,
+    }
+}
+
+/// Does this type reach nothing but scalars? A union of them serializes straight
+/// onto the wire, so Fern passes it through without the annotation converter
+/// (helios' `Union[Uint, BlockTag, Hash32]` is unwrapped, while its sibling
+/// `Union[Address, Addresses]` is wrapped for the list it can hold). `seen`
+/// guards a self-referential alias chain.
+fn type_is_scalar<'a>(t: &'a TypeRef, types: &'a [TypeDecl], seen: &mut Vec<&'a str>) -> bool {
+    match t {
+        TypeRef::Primitive(primitive) => *primitive != Prim::Any,
+        TypeRef::Literal(_) => true,
+        TypeRef::Union(variants) => variants
+            .iter()
+            .all(|variant| type_is_scalar(variant, types, seen)),
+        TypeRef::Named(name) => {
+            if seen.contains(&name.as_str()) {
+                return true;
+            }
+            seen.push(name.as_str());
+            let scalar = types.iter().any(|decl| match decl {
+                TypeDecl::Enum(e) => e.name == *name,
+                TypeDecl::Alias(a) => a.name == *name && type_is_scalar(&a.target, types, seen),
+                _ => false,
+            });
+            seen.pop();
+            scalar
+        }
         _ => false,
     }
 }
@@ -5131,17 +5174,34 @@ impl Builder<'_> {
                     }
                     return;
                 }
+                // An explicit `type: null` alternative is Fern's nullability, not a
+                // member: it leaves the union and makes what remains nullable.
+                // A single survivor becomes that type, made optional; two or more
+                // stay an undiscriminated union, which carries its own nullability
+                // at each use site rather than in the alias (helios' `FilterTopic`
+                // is `Union[Bytes32, List[Bytes32]]`, while its sibling
+                // `FilterTopics` collapses to `Optional[List[...]]`). Variant
+                // indices are the source's, so dropping one never renames the
+                // inline classes the others hoist.
+                let dropped_null = variants.iter().any(is_null_variant);
                 let mut members: Vec<TypeRef> = variants
                     .iter()
                     .enumerate()
+                    .filter(|(_, variant)| !is_null_variant(variant))
                     .map(|(i, v)| self.variant_ref(name, i, v, variants))
                     .collect();
                 members.dedup();
-                let target = TypeRef::Union(members);
-                let target = if schema_accepts_none(schema, self.schemas) {
-                    optional_type_ref(target)
-                } else {
-                    target
+                let target = match (dropped_null, members.len()) {
+                    (true, 1) => optional_type_ref(members.remove(0)),
+                    (true, _) => TypeRef::Union(members),
+                    (false, _) => {
+                        let target = TypeRef::Union(members);
+                        if schema_accepts_none(schema, self.schemas) {
+                            optional_type_ref(target)
+                        } else {
+                            target
+                        }
+                    }
                 };
                 self.push_alias(name, module, target, docstring);
                 return;
@@ -6604,21 +6664,14 @@ fn is_optional(schema: &Schema) -> bool {
     is_explicitly_nullable(schema)
 }
 
+/// Is this schema the explicit `type: null` alternative of a composition? Fern
+/// reads it as nullability rather than as a member of the union.
+fn is_null_variant(schema: &Schema) -> bool {
+    schema.ty.as_ref().and_then(TypeField::primary) == Some("null")
+}
+
 fn is_explicitly_nullable(schema: &Schema) -> bool {
-    schema.nullable == Some(true)
-        || matches!(
-            schema.ty.as_ref(),
-            Some(TypeField::Multiple(types)) if types.iter().any(|ty| ty == "null")
-        )
-        || schema
-            .one_of
-            .as_ref()
-            .or(schema.any_of.as_ref())
-            .is_some_and(|members| {
-                members
-                    .iter()
-                    .any(|member| member.ty.as_ref().and_then(TypeField::primary) == Some("null"))
-            })
+    schema.explicitly_nullable()
 }
 
 /// A schema that carries nothing to determine a type — Fern treats it as an
