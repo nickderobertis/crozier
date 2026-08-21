@@ -98,6 +98,7 @@ measured state is `tests/e2e.rs`; re-measure with `just fixtures-gaps`.
 | 80 | `twilio.com-twilio_messaging_v1` | api-guru | https://api.apis.guru/v2/specs/twilio.com/twilio_messaging_v1/1.42.0/openapi.json | `1.42.0` | Apache 2.0 | link-ok | Twilio Messaging API with a `russell_3000` property that exercises Fern's underscore-before-trailing-digit rename |
 | 81 | `livepeer-ai-runner` | github-raw | https://raw.githubusercontent.com/livepeer/ai-runner/50a742cee7c5789ef4a10f8117f30de3758366a9/openapi.yaml | `50a742cee7c5789ef4a10f8117f30de3758366a9` | MIT | link-ok | Livepeer AI Runner with three untagged, groupless root operations alongside ten tagged pipeline operations |
 | 82 | `eos.local-extra-fields-forbid` | api-guru | https://api.apis.guru/v2/specs/eos.local/1.0.0/openapi.json | `1.0.0` | MIT | link-ok | Row 43's Net API regenerated with `pydantic_config.extra_fields: forbid`, pinning `extra="forbid"` / `pydantic.Extra.forbid` |
+| 83 | `khoainats` | github-raw | https://raw.githubusercontent.com/cukhoaimon/khoainats/e680e29affee221e3a6c379b1e51c98ef241da7a/api/generated/.docs/api/openapi.yaml | `e680e29affee221e3a6c379b1e51c98ef241da7a` | MIT | link-ok | Khoai NATS Admin API declaring an `openIdConnect` scheme beside an HTTP bearer one, with one unsecured operation: the only member of the scheme family Fern imports rather than drops, pinning the optional bearer `token` crozier reaches through `auth_model`'s fallthrough |
 
 ## Batch 2 — byte-matched (issue #77)
 

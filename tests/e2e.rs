@@ -1856,6 +1856,7 @@ const CORPORA: &[&Corpus] = &[
     &TWILIO_MESSAGING_V1,
     &LIVEPEER_AI_RUNNER,
     &EOS_EXTRA_FIELDS_FORBID,
+    &KHOAINATS,
 ];
 
 #[test]
@@ -2735,6 +2736,23 @@ const EOS_EXTRA_FIELDS_FORBID: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `khoainats`: the Khoai NATS Admin API declares an `openIdConnect` scheme
+/// (`Roles`) beside an HTTP bearer one, and leaves `/v1/noauth` unsecured.
+/// `openIdConnect` is the one member of its scheme family Fern's importer keeps
+/// rather than drops, so this row is the only golden that pins how crozier's
+/// `auth_model` treats it: a bearer `token` on `Authorization`, optional because
+/// not every operation is authenticated.
+const KHOAINATS: Corpus = Corpus {
+    api: "khoainats",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 #[test]
 fn apideck_ats_matches_fern_output() {
     if corpus_spec(APIDECK_ATS.api).is_none() {
@@ -2784,6 +2802,11 @@ fn livepeer_ai_runner_matches_fern_output() {
 #[test]
 fn eos_extra_fields_forbid_matches_fern_output() {
     assert_link_ok_corpus_matches(&EOS_EXTRA_FIELDS_FORBID);
+}
+
+#[test]
+fn khoainats_matches_fern_output() {
+    assert_link_ok_corpus_matches(&KHOAINATS);
 }
 
 #[test]
