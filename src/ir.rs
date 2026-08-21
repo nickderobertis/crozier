@@ -3685,19 +3685,19 @@ impl InlineHoister<'_> {
             } else {
                 item
             };
-            return Some(self.sequence_of(array, item));
+            return Some(sequence_of(array, item));
         }
         if let Some(members) = item_schema.one_of.as_ref().or(item_schema.any_of.as_ref()) {
             if members.len() == 1 && is_inline_struct(&members[0]) {
                 self.hoist_object(&item_name, &members[0]);
-                return Some(self.sequence_of(array, TypeRef::Named(item_name)));
+                return Some(sequence_of(array, TypeRef::Named(item_name)));
             }
             if let Some(item) = self.hoist_discriminated_union(
                 &item_name,
                 item_schema,
                 clean_doc(item_schema.description.as_deref()),
             ) {
-                return Some(self.sequence_of(array, item));
+                return Some(sequence_of(array, item));
             }
             let mut variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
             variants.dedup();
@@ -3707,26 +3707,16 @@ impl InlineHoister<'_> {
                 target: TypeRef::Union(variants),
                 docstring: clean_doc(item_schema.description.as_deref()),
             }));
-            return Some(self.sequence_of(array, TypeRef::Named(item_name)));
+            return Some(sequence_of(array, TypeRef::Named(item_name)));
         }
         // An array of arrays takes one `Item` per nesting level, so the inline
         // element of `result: array of array of object` lands in
         // `{Ctx}ItemItem` instead of degrading to `List[List[Any]]`.
         if item_schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
             let inner = self.hoist_array_item_type(&item_name, item_schema)?;
-            return Some(self.sequence_of(array, inner));
+            return Some(sequence_of(array, inner));
         }
         None
-    }
-
-    /// Wrap a hoisted element in the container the array declares — `Set` only
-    /// for `uniqueItems`, `List` otherwise.
-    fn sequence_of(&self, array: &Schema, item: TypeRef) -> TypeRef {
-        if array_uses_set(array) {
-            TypeRef::Set(Box::new(item))
-        } else {
-            TypeRef::List(Box::new(item))
-        }
     }
 
     /// Hoist an inline string enum on a request parameter's schema into a named
@@ -5263,6 +5253,28 @@ impl Builder<'_> {
                     );
                     return;
                 }
+                // An array of arrays names its leaf element with one `Item` per
+                // nesting level, even when that element would render inline at the
+                // top level (WithSecure's `RequiredAuth` → `List[List[
+                // RequiredAuthItemItem]]` over an `anyOf` of four `$ref`s).
+                if items.reference.is_none()
+                    && items.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
+                {
+                    if let Some(element) = self.nested_array_element(&item_name, items) {
+                        let collection = if array_uses_set(schema) {
+                            TypeRef::Set(Box::new(element))
+                        } else {
+                            TypeRef::List(Box::new(element))
+                        };
+                        let target = if schema_accepts_none(schema, self.schemas) {
+                            TypeRef::Optional(Box::new(collection))
+                        } else {
+                            collection
+                        };
+                        self.push_alias(name, module, target, docstring);
+                        return;
+                    }
+                }
             }
         }
 
@@ -5274,6 +5286,57 @@ impl Builder<'_> {
             full_type_ref_resolved(schema, self.schemas),
             docstring,
         );
+    }
+
+    /// The sequence type of an array nested inside another array, naming its leaf
+    /// element `{ctx}Item` and recursing through any further nesting. `None` when
+    /// the leaf names nothing, leaving the array to [`full_type_ref_resolved`].
+    fn nested_array_element(&mut self, ctx: &str, array: &Schema) -> Option<TypeRef> {
+        let items = array.items.as_deref()?;
+        let name = format!("{ctx}Item");
+        if items.reference.is_none()
+            && items.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
+        {
+            let inner = self.nested_array_element(&name, items)?;
+            return Some(sequence_of(array, inner));
+        }
+        let module = naming::module_name(&name);
+        if let Some(decl) = self.discriminated_union(
+            &name,
+            &module,
+            items,
+            clean_doc(items.description.as_deref()),
+        ) {
+            self.types.push(TypeDecl::DiscriminatedUnion(decl));
+            return Some(sequence_of(array, TypeRef::Named(name)));
+        }
+        if items.reference.is_some() {
+            return None;
+        }
+        if is_inline_struct(items) {
+            self.add_object(
+                &name,
+                module,
+                items,
+                clean_doc(items.description.as_deref()),
+            );
+            return Some(sequence_of(array, TypeRef::Named(name)));
+        }
+        if let Some(members) = items.one_of.as_ref().or(items.any_of.as_ref()) {
+            let variants = members
+                .iter()
+                .enumerate()
+                .map(|(index, variant)| self.variant_ref(&name, index, variant, members))
+                .collect();
+            self.push_alias(
+                &name,
+                module,
+                TypeRef::Union(variants),
+                clean_doc(items.description.as_deref()),
+            );
+            return Some(sequence_of(array, TypeRef::Named(name)));
+        }
+        None
     }
 
     /// Build an object model. `allOf` `$ref` members become base classes and
@@ -6408,6 +6471,16 @@ fn array_item_type_ref(schema: &Schema) -> TypeRef {
             other => TypeRef::Optional(Box::new(other)),
         },
         other => other,
+    }
+}
+
+/// Wrap a hoisted array element in the container the array declares — `Set` only
+/// for `uniqueItems`, `List` otherwise.
+fn sequence_of(array: &Schema, item: TypeRef) -> TypeRef {
+    if array_uses_set(array) {
+        TypeRef::Set(Box::new(item))
+    } else {
+        TypeRef::List(Box::new(item))
     }
 }
 
