@@ -3955,6 +3955,15 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
         };
     let mp = method_params(ep, imports);
     let chunk = sse_chunk(ep, imports);
+    // A streaming operation still declares error statuses, and Fern raises them
+    // from inside the stream body once the response has been read, exactly as the
+    // buffered path does.
+    let error_branches = raw_error_branches(ep, imports);
+    let error_branches = if error_branches.is_empty() {
+        String::new()
+    } else {
+        format!("\n{error_branches}")
+    };
     let data_type = format!("{aiter}[{chunk}]");
     let return_type = format!("{iter_t}[{wrapper}[{data_type}]]");
     let sig = signature(ep, &mp, &return_type, is_async);
@@ -4005,7 +4014,7 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                             return
 
                         return {inner_return}
-                    {read}
+                    {read}{error_branches}
                     _response_json = _response.json()
                 except JSONDecodeError:
                     raise ApiError(
@@ -4196,6 +4205,7 @@ fn raw_binary_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &s
 fn raw_error_branches(ep: &Endpoint, imports: &mut Imports) -> String {
     let mut lines = Vec::new();
     for err in &ep.errors {
+        imports.add_core("pydantic_utilities", "parse_obj_as");
         let module = naming::module_name(&err.class_name);
         imports.add_from(&imports.error_import_path(&module), &err.class_name);
         let body = raw_type_str(&err.body_type, imports);
