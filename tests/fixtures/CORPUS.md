@@ -339,3 +339,41 @@ Neither backup set was needed: both primaries generated and matched. The row-2
 divergences are a reminder that a fixture chosen for one shape pays for itself in
 the shapes it drags in — three generator rules were replaced with measured ones
 because `sac-backend` happened to describe its server in Spanish.
+## Batch 10 — the unpinned HTTP status exception names (issue #77)
+
+`error_class_name` maps HTTP statuses to Fern's exception class names, and 21
+of them were emitted by no golden — every one a hand-written guess. A wrong
+name is never one line: it renames the `errors/` module file, its lazy-import
+and `__all__` entries, its `reference.md` row, and every `raise` site in every
+raw client that declares the status. Five rows were selected, each for the
+statuses it declares, and between them they pin 13 of the 21.
+
+| name | selected for | status |
+|---|---|---|
+| `kytos-sdntrace-cp` | `424` → `FailedDependencyError` | ✅ matched |
+| `withsecure-gdpr-subject-rights` | `451` → `UnavailableForLegalReasonsError` | ✅ matched |
+| `prometheus-x-edge-computing` | `408` → `RequestTimeoutError`, `412` → `PreconditionFailedError` | ✅ matched |
+| `exa-gate` | `423` → `LockedError`, `426` → `UpgradeRequiredError` | ✅ matched |
+| `amazonaws.com-cloudfront` | `502`, `505`, `506`, `507`, `508`, `510`, `511` — the whole `5xx` tail above `503` — plus the non-IANA `498`, `499` and `509` its operations also declare | ✅ matched |
+
+No candidate was dropped: all five primaries carried through, so none of the
+screened backups was needed.
+
+### The eight statuses this batch could not pin, and why
+
+Not a shortfall to retry blindly — a measured supply limit in the eligible
+pool. Fern generates all eight correctly when probed directly; what is missing
+is a redistributable specification that declares them.
+
+| statuses | why unpinned |
+|---|---|
+| `407`, `421` | **zero** documents in the eligible pool declare them anywhere |
+| `414`, `418`, `425`, `431` | one eligible witness each — too thin to register |
+| `417`, `428` | two eligible witnesses each. `428` is the one worth reading twice: issue #148 reasoned from RFC 6585 that `PreconditionError` was likely wrong, and it is exactly what Fern emits |
+
+CloudFront also moved two rules the corpus had only approximated: annotated
+`$ref` use-site copies now cascade through array elements, and `text/csv` reads
+back as a `str` body. It contradicted the environment-member rule too, but batch
+9's `production`/`sandbox`-only rule — measured from Fern probes and landed
+first — already names its multi-word server description `DEFAULT`, so no third
+repair was needed. See `../../docs/matching.md`.
