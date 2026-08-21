@@ -100,12 +100,8 @@ impl Environment {
 }
 
 /// Derive the [`Environment`] model from the document's `servers`. Reproduces
-/// Fern's single-member behavior: the first server only, its member named by
-/// uppercasing the description (non-identifier characters → `_`). A templated
-/// server, a single concrete server with no usable description, or a description
-/// that merely repeats the API provider (the first title word), or a numbered
-/// demo-server description is `DEFAULT`; other described concrete servers keep
-/// their description-derived name.
+/// Fern's single-member behavior: the first server only, named `DEFAULT` unless
+/// its description is one of the two environment names Fern recognizes.
 fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     let first = doc.servers.first()?;
     // Only the first server becomes an environment, and Fern names it from the

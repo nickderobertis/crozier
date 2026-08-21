@@ -278,6 +278,20 @@ order is meaningless — Fern emits it in traversal order; crozier sorts it
 straightforwardly and the e2e canonicalizes both sides with `ruff` isort. The
 `_dynamic_imports` map and `__all__` (which *are* executed) stay alphabetical.
 
+**Which parameter examples reach a worked call.** Fern keeps a *parameter-level*
+`example`/`examples` only on a `type: string` parameter, and does so identically
+for query, header and path parameters. Probed directly against Fern 5.20.0: an
+integer or boolean example declared on the parameter never reaches the call, nor
+does a string-*valued* example on an `integer` schema — the gate is the declared
+type, not the example's JSON kind — and a required argument whose example was
+discarded falls back to Fern's synthesized placeholder (`1`, `1.1`). A
+*schema-level* example has no such restriction and is used whatever its type is,
+so `page: {type: integer, example: 0}` renders `page=0` beside a string example
+in the same call. One shape overrides all of it: an **optional** enum-typed query
+parameter is never exampled, however its enum (inline or `$ref`) and its example
+are declared, while a required one is rendered from the enum's first member.
+`med-anvisa-price` and `sac-backend` pin the combination.
+
 **Example snippets.** The worked examples in docstrings/`README`/`reference.md`
 are laid out by hand (`Example::render`), *not* through `ruff format`, because
 Fern's committed examples are not a `ruff` fixed point: `ruff` reformats a long
@@ -383,6 +397,25 @@ stay byte-identical — none of them exercised these paths):
   `endpoint_method_name` (`src/ir.rs`) now group by the tag unless the operationId
   prefix *is* the tag (`inlinedRequests_post…` under `InlinedRequests` — the case the
   synthetic seeds hit, where both rules agree). This was the bulk of the gap.
+- **Latin accents fold in an enum member and vanish from a property.** Fern's two
+  naming paths disagree with each other over the same word, and
+  `med-anvisa-price` pins both halves from one document: the enum path folds a
+  Latin accent to its base ASCII letter (`SUBSTÂNCIA` → the member `SUBSTANCIA`,
+  `LABORATÓRIO` → `LABORATORIO`), while the property path treats it as a word
+  separator (`laborat_rio`, aliased back to `LABORATÓRIO`); `sac-backend`
+  witnesses the property half again in another language (`tamaño` → `tama_o`).
+  [`naming::deburr`] therefore runs on the enum path only, over Latin-1
+  Supplement and Latin Extended-A. Latin-1 is the *only* non-ASCII case worth
+  encoding: Fern refuses a non-ASCII schema name or enum value outright and emits
+  invalid Python for a non-ASCII property or parameter name — see
+  [`fern-limitations.md`](fern-limitations.md).
+- **Whitespace is a hard boundary for the property digit collapse.** The collapse
+  that joins `day_0_end_time` → `day0end_time` and `user_fields[1]` →
+  `user_fields1` never reaches across a space, so `EAN 1` stays `ean_1` and
+  `PF 17,5% ALC` becomes `pf_175_alc` — the comma-separated digits still collapse
+  *inside* one whitespace-delimited chunk. [`naming::field_name`] chunks on
+  whitespace before collapsing; a name without whitespace is one chunk and folds
+  exactly as it always did.
 - **Global-header order + `User-Agent`.** Fern lists promoted headers optional-first
   (optionals in spec order, requireds by field name) and never promotes the
   transport-managed `User-Agent`; crozier sorted alphabetically and promoted it.
@@ -412,8 +445,9 @@ stay byte-identical — none of them exercised these paths):
   digit-led boundary (`2Factor` → `2_factor`) is preserved.
 - **Forward references, verbatim descriptions, templated servers.** Cyclic types emit
   `update_forward_refs`; a request field's description is preserved byte-for-byte
-  (no trim); a `servers` entry with URL variables names its environment member
-  `DEFAULT` and resolves the variable defaults into the base URL.
+  (no trim); a `servers` entry with URL variables resolves the variable defaults
+  into the base URL (its environment member is named by the description rule
+  below, which the URL shape does not enter into).
 - **`reference.md` section titles + doc-snippet wrapping.** A section's `## ` title is
   the tag verbatim when the operationId carries an underscore separator (bunq's
   `attachment-public`), else the PascalCase tag (`Widgets`, `Companies`) or, untagged,
@@ -750,9 +784,15 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    `enum.Enum` of environments) and threads an `environment` / optional-`base_url`
    through the root client, resolving the base URL via a generated `_get_base_url`
    and dropping the hardcoded `base_url` from the worked examples. Fern's OpenAPI
-   importer emits a **single** environment member — the first server, named from its
-   description (the "2 servers → only `PRODUCTION`" oddity) — which
-   [`ir::Environment`] reproduces. OpenAPI 3.1 **`webhooks`** are modeled
+   importer emits a **single** environment member — the first server only (the
+   "2 servers → only `PRODUCTION`" oddity) — and names it `DEFAULT` unless that
+   server's description is, whole and case-insensitively, one of the two
+   environment names Fern recognizes: `production` or `sandbox`. Probed directly
+   against Fern 5.20.0 over one-server documents: `Prod`, `Staging`, `Live`,
+   `Test`, `Development`, `Production API`, `Production server` and
+   `Servidor de desarrollo local` are all `DEFAULT`, while `Production` stays
+   `PRODUCTION` even on a templated or root-relative URL. [`ir::Environment`]
+   reproduces that. OpenAPI 3.1 **`webhooks`** are modeled
    ([`openapi::OpenApi::webhooks`], an ordered map of `PathItem`) and consumed
    twice: [`ir::build`] hoists a named payload type from every webhook
    operation's *inline* `application/json` request body (`{METHOD}_{event}_payload`
@@ -898,8 +938,8 @@ wired through the package exports and their own `reference.md` sections exactly
 as Fern emits them. The first measured run diverged only outside root-method
 placement — the shared README/reference/root-client environment
 default plus `environment.py` — and matching those established two adjacent Fern
-rules: a server description beginning with the API provider name uses the
-`DEFAULT` environment member, and multipart reference examples list required
+rules: a server description Fern does not recognize as an environment name uses
+the `DEFAULT` environment member, and multipart reference examples list required
 file inputs before other required fields. Its whole golden matches, while
 the synthetic `digit-leading-property` fixture stays matched alongside it.
 
