@@ -2491,9 +2491,7 @@ fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {
 /// Whether the operation's selected success response is a Server-Sent-Events
 /// stream. Fern prefers an `application/json` representation when a response
 /// advertises both it and `text/event-stream`; an SSE-only response becomes an
-/// iterator of chunks. The `x-fern-streaming` extension is not needed — Fern's
-/// OpenAPI importer does not resolve its `chunk-schema-ref`, so the chunk is
-/// `typing.Optional[typing.Any]` regardless.
+/// iterator of chunks, typed by [`stream_chunk_type`].
 fn is_streaming(op: &Operation) -> bool {
     success_response_entry(op).is_some_and(|response| {
         response.content.contains_key("text/event-stream")
@@ -5720,11 +5718,6 @@ impl Builder<'_> {
         if is_map(prop_schema) && prop_schema.nullable == Some(true) {
             return legacy_nullable_map_type_ref(prop_schema);
         }
-        // AWS-style OpenAPI documents commonly decorate a property reference as
-        // `allOf: [$ref, { description }]`. Fern treats that as a use-site copy:
-        // scalar/collection aliases resolve to their underlying type, while enums
-        // and object models are cloned under `{Owner}{Property}` so the contextual
-        // description belongs to the generated type. It is not inheritance.
         let owner_prop = format!("{owner}{}", naming::class_name(prop));
         if let Some(type_ref) = self.annotated_ref_type(&owner_prop, prop_schema) {
             return type_ref;
