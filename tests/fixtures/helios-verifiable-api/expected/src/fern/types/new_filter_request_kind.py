@@ -1,0 +1,26 @@
+
+
+import typing
+
+from ..core import enum
+
+T_Result = typing.TypeVar("T_Result")
+
+
+class NewFilterRequestKind(enum.StrEnum):
+    LOGS = "Logs"
+    NEW_BLOCKS = "NewBlocks"
+    NEW_PENDING_TRANSACTIONS = "NewPendingTransactions"
+
+    def visit(
+        self,
+        logs: typing.Callable[[], T_Result],
+        new_blocks: typing.Callable[[], T_Result],
+        new_pending_transactions: typing.Callable[[], T_Result],
+    ) -> T_Result:
+        if self is NewFilterRequestKind.LOGS:
+            return logs()
+        if self is NewFilterRequestKind.NEW_BLOCKS:
+            return new_blocks()
+        if self is NewFilterRequestKind.NEW_PENDING_TRANSACTIONS:
+            return new_pending_transactions()

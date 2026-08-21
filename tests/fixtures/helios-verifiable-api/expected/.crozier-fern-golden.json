@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "helios-verifiable-api",
+  "corpus_spec_ref": "43a8c9f3cdda41a6f383c4db41d9a83f102638b1",
+  "corpus_spec_url": "https://raw.githubusercontent.com/a16z/helios/43a8c9f3cdda41a6f383c4db41d9a83f102638b1/verifiable-api/server/openapi.yaml"
+}
