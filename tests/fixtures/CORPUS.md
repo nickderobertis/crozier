@@ -105,7 +105,7 @@ measured state is `tests/e2e.rs`; re-measure with `just fixtures-gaps`.
 | 87 | `prometheus-x-edge-computing` | github-raw | https://raw.githubusercontent.com/Prometheus-X-association/edge-computing/78ed883317ec8739e985780c998d9f73f1e370a8/spec/openapi.yaml | `78ed883317ec8739e985780c998d9f73f1e370a8` | Apache-2.0 | link-ok | Prometheus-X edge-computing API declaring `408` and `412`, pinning Fern's `RequestTimeoutError` and `PreconditionFailedError` names for two statuses no golden emitted |
 | 88 | `exa-gate` | github-raw | https://raw.githubusercontent.com/apaidedie/exa-gate/37cf047d828665004b4900ce672aa3f27b0bb844/docs/openapi.json | `37cf047d828665004b4900ce672aa3f27b0bb844` | MIT | link-ok | Exa Gate API declaring `423` and `426`, pinning Fern's `LockedError` and `UpgradeRequiredError` names for two statuses no golden emitted |
 | 89 | `amazonaws.com-cloudfront` | api-guru | https://api.apis.guru/v2/specs/amazonaws.com/cloudfront/2016-11-25/openapi.json | `2016-11-25` | Apache 2.0 License | link-ok | AWS CloudFront API whose 27 operations declare `502`, `505`, `506`, `507`, `508`, `510` and `511`, pinning Fern's `BadGatewayError`, `HttpVersionNotSupportedError`, `VariantAlsoNegotiatesError`, `InsufficientStorageError`, `LoopDetectedError`, `NotExtendedError` and `NetworkAuthenticationRequiredError` names for seven statuses no golden emitted |
-| 90 | `khoainats` | github-raw | https://raw.githubusercontent.com/cukhoaimon/khoainats/e680e29affee221e3a6c379b1e51c98ef241da7a/api/generated/.docs/api/openapi.yaml | `e680e29affee221e3a6c379b1e51c98ef241da7a` | MIT | link-ok | Khoai NATS Admin API declaring an `openIdConnect` scheme beside an HTTP bearer one, with one unsecured operation: the only member of the scheme family Fern imports rather than drops, pinning the optional bearer `token` crozier reaches through `auth_model`'s fallthrough |
+| 90 | `khoainats` | github-raw | https://raw.githubusercontent.com/cukhoaimon/khoainats/e680e29affee221e3a6c379b1e51c98ef241da7a/api/generated/.docs/api/openapi.yaml | `e680e29affee221e3a6c379b1e51c98ef241da7a` | MIT | link-ok | Khoai NATS Admin API declaring an `openIdConnect` scheme (`Roles`) beside an HTTP bearer one, with `/v1/noauth` unsecured: `openIdConnect` is the one member of its scheme family Fern imports rather than drops, and this row pins the optional bearer `token` Fern emits for such a document |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -378,3 +378,32 @@ back as a `str` body. It contradicted the environment-member rule too, but batch
 9's `production`/`sandbox`-only rule — measured from Fern probes and landed
 first — already names its multi-word server description `DEFAULT`, so no third
 repair was needed. See `../../docs/matching.md`.
+
+## Batch 11 — security-scheme coverage (issue #77)
+
+Crozier's `auth_model` names four security-scheme shapes — `apiKey` in a header,
+HTTP `bearer`, HTTP `basic` and `oauth2` — and sends everything else to one
+fallthrough arm. Of the schemes that land there, `openIdConnect` is the only one
+Fern's importer keeps rather than drops at import, so it is the only one a golden
+can pin as behaviour rather than as an absence. Row 90 is that golden.
+
+| name | selected for | status |
+|---|---|---|
+| `khoainats` | a document declaring `openIdConnect` — the one scheme in Crozier's fallthrough family Fern imports — with one unsecured operation, so the credential is optional | ✅ matched, no repair needed |
+
+Crozier reproduced the golden byte for byte on its first measurement, so the
+predicted divergence (a required token from Fern against an optional one from the
+fallthrough) did not occur here: the row's document also declares an HTTP bearer
+scheme *ahead* of its `openIdConnect` one, and Crozier selects the first
+supported scheme, so it emits the same optional bearer `token` through its
+HTTP-bearer arm. All three screened candidates for this row shared that shape —
+none declares `openIdConnect` without a supported scheme preceding it — so the
+corpus still has no golden that forces the fallthrough arm itself. A future
+candidate for that gap must declare `openIdConnect` alone.
+
+### Not registered
+
+| name | status |
+|---|---|
+| `gh:teamdigitale/api-openapi-samples:openapi-v3/spid-aa-template.yaml` | **unused backup** — the primary carried; it declares HTTP bearer and two `oauth2` schemes and no `openIdConnect` at all |
+| `gh:Gravitate-Health/keycloak:openapi.yaml` | **unused backup** — the primary carried; its `openIdConnect` scheme also sits behind an `oauth2` one, so it witnesses the same shape as row 90 |
