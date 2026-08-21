@@ -2723,6 +2723,20 @@ const LIVEPEER_AI_RUNNER: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `amazonaws.com-cloudfront`: every CloudFront operation declares the whole `5xx`
+/// tail — `502`, `505`, `506`, `507`, `508`, `510` and `511` — so this row pins
+/// Fern's exception name for each of the seven at once.
+const AMAZONAWS_COM_CLOUDFRONT: Corpus = Corpus {
+    api: "amazonaws.com-cloudfront",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -2907,6 +2921,11 @@ fn prometheus_x_edge_computing_matches_fern_output() {
 #[test]
 fn exa_gate_matches_fern_output() {
     assert_link_ok_corpus_matches(&EXA_GATE);
+}
+
+#[test]
+fn amazonaws_com_cloudfront_matches_fern_output() {
+    assert_link_ok_corpus_matches(&AMAZONAWS_COM_CLOUDFRONT);
 }
 
 #[test]
