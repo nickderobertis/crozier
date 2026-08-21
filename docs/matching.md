@@ -24,6 +24,13 @@ Two fixture sources, both Fern's real output (Apache-2.0, see `NOTICE`):
   Fern's containerized generator over the vendored
   `tests/fixtures/exhaustive/openapi.yml`.
 
+What a golden *can* pin is bounded by what Fern implements, and that boundary is
+measured rather than guessed: [`fern-limitations.md`](fern-limitations.md) records
+every limitation Fern 5.20.0 was measured to have — the shapes it discards,
+ignores, refuses or matches only by coincidence — with the probe, the emitted
+output and the exit code behind each. Read it before choosing what a new fixture
+should contain.
+
 Numbered real-world corpus goldens are maintained through the manually
 dispatched **Fern goldens** workflow, not by running the generator scripts by
 hand. The fixture/upgrade loop, exact provenance, partial-success behavior, and

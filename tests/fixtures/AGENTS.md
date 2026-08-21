@@ -73,6 +73,14 @@ that kill most specs:
   is a full datetime (or an integer `enum` value with no `x-fern-enum` name) is a
   hard error. Screen `format: date` examples and numeric `enum`s.
 
+A clean generate is still not enough on its own: check the shape you are buying
+against [`../../docs/fern-limitations.md`](../../docs/fern-limitations.md), which
+records what Fern 5.20.0 was measured to discard, ignore, refuse or match only by
+coincidence — a golden cannot pin a shape Fern throws away — plus the two
+exit-0-and-nothing-happened failure modes no exit code reveals: a check that
+passes over an unparsed document, and a duplicate `operationId` that collapses
+operations into one method.
+
 An optional pre-screen can count, per operation, request bodies without a `$ref`
 schema and `format: date` fields whose example contains a time. Zero of both is a
 good signal, but a real Fern generate is the authoritative check: locally via

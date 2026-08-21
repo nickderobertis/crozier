@@ -26,6 +26,11 @@ writer midway; different branches remain independent.
 
 ## Add or change a fixture
 
+Before spending a generate on a shape, check
+[`fern-limitations.md`](fern-limitations.md): it records, with the measured
+evidence, which shapes Fern 5.20.0 discards, ignores or refuses — a golden cannot
+pin a style Fern throws away — and which candidate pools are exhausted.
+
 Work on one corpus row at a time. There are two routes to the same golden, and
 who can run them differs:
 
