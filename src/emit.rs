@@ -1582,24 +1582,41 @@ fn select_readme_endpoint<'a>(
         })
 }
 
-fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
+/// The order the README walks endpoints in. Fern builds client modules in
+/// first-seen module order and reads the README's endpoints from that grouped
+/// view. Keep operations within each module in source order, but do not let an
+/// operation from a later module leapfrog one from the first module merely
+/// because their paths were interleaved.
+fn readme_endpoint_order(ir: &Ir) -> Vec<&Endpoint> {
     if ir.openapi_31 {
-        return select_readme_endpoint(ir.endpoints.iter());
+        return ir.endpoints.iter().collect();
     }
-    // Fern builds client modules in first-seen module order and selects the README
-    // example from that grouped view. Keep operations within each module in source
-    // order, but do not let a POST from a later module leapfrog one from the first
-    // module merely because their paths were interleaved.
     let grouped: Vec<&Endpoint> = ir
         .endpoint_modules
         .iter()
         .flat_map(|module| ir.endpoints.iter().filter(move |ep| &ep.module == module))
         .collect();
     if grouped.is_empty() {
-        select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
+        ir.endpoints
+            .iter()
+            .filter(|e| e.module.is_empty())
+            .collect()
     } else {
-        select_readme_endpoint(grouped.iter().copied())
+        grouped
     }
+}
+
+fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
+    select_readme_endpoint(readme_endpoint_order(ir).into_iter())
+}
+
+/// The endpoint the README's streaming section demonstrates: the first emittable
+/// streaming operation anywhere in the SDK. Fern documents streaming whenever the
+/// SDK has it, so this is independent of the endpoint the usage example shows.
+fn readme_streaming_endpoint(ir: &Ir) -> Option<&Endpoint> {
+    readme_endpoint_order(ir)
+        .into_iter()
+        .find(|e| e.emittable && e.streaming)
 }
 
 fn client_call_prefix(ep: &Endpoint) -> String {
@@ -1709,27 +1726,26 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         .join("\n")
     };
 
-    let mut streaming_args = documentation_auth_example_args(&ir.auth)
+    let mut streaming_args = documentation_client_example_args(&ir.auth, &ir.global_headers)
         .into_iter()
         .map(|arg| format!("    {arg},\n"))
         .collect::<String>();
     if ir.environment.is_none() {
         streaming_args.push_str("    base_url=\"https://yourhost.com/path/to/api\",\n");
     }
-    let streaming = if first.streaming {
+    let stream_ep = readme_streaming_endpoint(ir);
+    let streaming = stream_ep.map_or_else(String::new, |ep| {
         format!(
             "## Streaming\n\nThe SDK supports streaming responses, as well, the response will be a generator that you can loop over.\n\n```python\nfrom {pkg} import {}\n\nclient = {}(\n{streaming_args})\n\n{}()\n```\n\n",
             ir.client_name,
             ir.client_name,
-            client_call_prefix(first)
+            client_call_prefix(ep)
         )
-    } else {
-        String::new()
-    };
+    });
     let contents = include_str!("../assets/scaffolding/README.md.tmpl")
         .replace(
             "@@STREAMING_TOC@@\n",
-            if first.streaming {
+            if stream_ep.is_some() {
                 "- [Streaming](#streaming)\n"
             } else {
                 ""
@@ -6753,11 +6769,8 @@ fn build_example_inner(
     // Method docstrings follow constructor order (global headers, auth). Fern's
     // Markdown snippets instead lead with auth and omit optional global headers.
     if documentation {
-        for arg in documentation_auth_example_args(ctx.auth) {
+        for arg in documentation_client_example_args(ctx.auth, ctx.global_headers) {
             client_args.push(format!("    {arg},"));
-        }
-        for h in ctx.global_headers.iter().filter(|header| header.required) {
-            client_args.push(format!("    {}=\"<{}>\",", h.py_name, h.wire_name));
         }
     } else {
         for h in ctx.global_headers {
@@ -6832,6 +6845,20 @@ fn build_example_inner(
     } else {
         Some(out)
     }
+}
+
+/// The client-constructor arguments Fern's Markdown snippets pass: auth first,
+/// then every *required* global header (optional ones are left out).
+fn documentation_client_example_args(auth: &Auth, global_headers: &[GlobalHeader]) -> Vec<String> {
+    documentation_auth_example_args(auth)
+        .into_iter()
+        .chain(
+            global_headers
+                .iter()
+                .filter(|header| header.required)
+                .map(|header| format!("{}=\"<{}>\"", header.py_name, header.wire_name)),
+        )
+        .collect()
 }
 
 fn documentation_auth_example_args(auth: &Auth) -> Vec<String> {
