@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.48](https://github.com/nickderobertis/crozier/compare/v0.0.47...v0.0.48) - 2026-08-21
+
+### Other
+
+- drop the superseded pre-5.20 complex-body rule ([#154](https://github.com/nickderobertis/crozier/pull/154))
+
 ## [0.0.47](https://github.com/nickderobertis/crozier/compare/v0.0.46...v0.0.47) - 2026-08-20
 
 ### Other
