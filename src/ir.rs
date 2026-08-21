@@ -5281,6 +5281,13 @@ impl Builder<'_> {
                     self.push_alias(name, module, target, docstring);
                     return;
                 }
+                // An element that only annotates a `$ref` is that `$ref`'s type,
+                // not a composition to hoist: `AliasList`'s `allOf: [$ref string,
+                // { xml }]` element is `str`, so the alias is `List[str]`.
+                if let Some(element) = self.annotated_ref_type(&item_name, items) {
+                    self.push_alias(name, module, sequence_of(schema, element), docstring);
+                    return;
+                }
                 if is_inline_struct(items) {
                     let item_doc = clean_doc(items.description.as_deref());
                     self.add_object(&item_name, item_module, items, item_doc);
@@ -5656,6 +5663,60 @@ impl Builder<'_> {
         })
     }
 
+    /// The type of a schema that only hangs annotations off one `$ref` — the
+    /// `allOf: [$ref, { description }]` form Swagger-generated AWS documents use
+    /// for nearly every documented node. Fern treats it as a use-site copy rather
+    /// than inheritance: an enum or object target is cloned under `ctx` so the
+    /// contextual description belongs to the generated type, while a scalar or
+    /// collection alias resolves straight to its underlying type. `None` when the
+    /// schema is not that shape, or its `$ref` does not resolve.
+    fn annotated_ref_type(&mut self, ctx: &str, schema: &Schema) -> Option<TypeRef> {
+        let (reference, description) = described_all_of_ref(schema)?;
+        let target = resolve_ref_from_schemas(self.schemas, reference).cloned()?;
+        Some(self.use_site_copy(ctx, &target, description))
+    }
+
+    /// One use-site copy of an annotated `$ref`'s target under the name `ctx`. An
+    /// enum or object is cloned so the contextual description belongs to the copy;
+    /// an array alias copies its element too, taking one `Item` per nesting level
+    /// (`ActiveTrustedSigners.Items` over a list of `Signer` →
+    /// `List[ActiveTrustedSignersItemsItem]`); anything else is a scalar or
+    /// collection alias that resolves straight to its underlying type.
+    fn use_site_copy(&mut self, ctx: &str, target: &Schema, description: Option<&str>) -> TypeRef {
+        // The copy documents itself with the annotation that named it, and keeps the
+        // target's own description when the annotation carried none — an element
+        // annotated only with an XML name (`SignerList.items`) still documents
+        // itself as a `Signer`.
+        let docstring = clean_doc(description.or(target.description.as_deref()));
+        if let Some(values) = string_enum_values(target) {
+            self.types
+                .push(TypeDecl::Enum(build_enum(ctx, values, docstring)));
+            return TypeRef::Named(ctx.to_string());
+        }
+        if !is_map(target)
+            && !is_bare_object(target)
+            && (!target.properties.is_empty() || target.all_of.is_some() || is_object_type(target))
+        {
+            self.add_object(ctx, naming::module_name(ctx), target, docstring);
+            return TypeRef::Named(ctx.to_string());
+        }
+        if target.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
+            if let Some(element) = target
+                .items
+                .as_deref()
+                .and_then(|items| self.annotated_ref_type(&format!("{ctx}Item"), items))
+            {
+                let sequence = sequence_of(target, element);
+                return if schema_accepts_none(target, self.schemas) {
+                    TypeRef::Optional(Box::new(sequence))
+                } else {
+                    sequence
+                };
+            }
+        }
+        full_type_ref_resolved(target, self.schemas)
+    }
+
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
@@ -5667,33 +5728,9 @@ impl Builder<'_> {
         // scalar/collection aliases resolve to their underlying type, while enums
         // and object models are cloned under `{Owner}{Property}` so the contextual
         // description belongs to the generated type. It is not inheritance.
-        if let Some((reference, description)) = described_all_of_ref(prop_schema) {
-            if let Some(target) = resolve_ref_from_schemas(self.schemas, reference).cloned() {
-                let name = format!("{owner}{}", naming::class_name(prop));
-                if let Some(values) = string_enum_values(&target) {
-                    self.types.push(TypeDecl::Enum(build_enum(
-                        &name,
-                        values,
-                        clean_doc(description),
-                    )));
-                    return TypeRef::Named(name);
-                }
-                if !is_map(&target)
-                    && !is_bare_object(&target)
-                    && (!target.properties.is_empty()
-                        || target.all_of.is_some()
-                        || is_object_type(&target))
-                {
-                    self.add_object(
-                        &name,
-                        naming::module_name(&name),
-                        &target,
-                        clean_doc(description),
-                    );
-                    return TypeRef::Named(name);
-                }
-                return full_type_ref_resolved(&target, self.schemas);
-            }
+        let owner_prop = format!("{owner}{}", naming::class_name(prop));
+        if let Some(type_ref) = self.annotated_ref_type(&owner_prop, prop_schema) {
+            return type_ref;
         }
         if prop_schema.reference.is_none() {
             if let Some(values) = string_enum_values(prop_schema) {
