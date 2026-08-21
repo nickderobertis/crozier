@@ -1856,6 +1856,7 @@ const CORPORA: &[&Corpus] = &[
     &TWILIO_MESSAGING_V1,
     &LIVEPEER_AI_RUNNER,
     &EOS_EXTRA_FIELDS_FORBID,
+    &KYTOS_SDNTRACE_CP,
 ];
 
 #[test]
@@ -2717,6 +2718,20 @@ const LIVEPEER_AI_RUNNER: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `kytos-sdntrace-cp`: both operations of the Kytos SDN tracing API declare a
+/// `424` response, so this row is the first golden to pin Fern's
+/// `FailedDependencyError` name for that status.
+const KYTOS_SDNTRACE_CP: Corpus = Corpus {
+    api: "kytos-sdntrace-cp",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 // Issue #63: `extra_fields: forbid` — the one `--extra-fields` value no golden
 // pinned. A generator setting is not expressible in an OpenAPI document, so this
 // row reuses `eos.local`'s already registered source (CORPUS.md row 43) under a
@@ -2784,6 +2799,11 @@ fn livepeer_ai_runner_matches_fern_output() {
 #[test]
 fn eos_extra_fields_forbid_matches_fern_output() {
     assert_link_ok_corpus_matches(&EOS_EXTRA_FIELDS_FORBID);
+}
+
+#[test]
+fn kytos_sdntrace_cp_matches_fern_output() {
+    assert_link_ok_corpus_matches(&KYTOS_SDNTRACE_CP);
 }
 
 #[test]

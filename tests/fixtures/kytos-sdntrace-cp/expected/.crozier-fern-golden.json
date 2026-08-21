@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "kytos-sdntrace-cp",
+  "corpus_spec_ref": "269f4482ecd4125dc1c115e059dbce26b7269216",
+  "corpus_spec_url": "https://raw.githubusercontent.com/kytos-ng/sdntrace_cp/269f4482ecd4125dc1c115e059dbce26b7269216/openapi.yml"
+}
