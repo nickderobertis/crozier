@@ -2374,13 +2374,15 @@ fn schema_property_is_read_only(doc: &OpenApi, schema: &Schema, property: &str) 
 
 /// A parameter's declared example, or `None` where Fern discards it.
 ///
-/// Fern keeps a *parameter-level* `example` only on a `type: string` parameter —
-/// the one shape it can spell verbatim into a URL. Measured against Fern 5.20.0:
-/// a parameter-level integer or boolean example never reaches the worked call,
-/// and neither does a *string-valued* example declared on an `integer` schema, so
-/// the gate is the declared type rather than the example's JSON kind. A
-/// *schema-level* example carries no such restriction and is used whatever the
-/// type is (`page: {type: integer, example: 0}` renders `page=0`).
+/// Fern keeps a *parameter-level* `example`/`examples` only on a `type: string`
+/// parameter. Measured against Fern 5.20.0, identically for query, header and
+/// path parameters: a parameter-level integer or boolean example never reaches
+/// the worked call, and neither does a *string-valued* example declared on an
+/// `integer` schema — so the gate is the declared type, not the example's JSON
+/// kind. Where it applies, a required argument falls back to Fern's synthesized
+/// placeholder (`1`, `1.1`). A *schema-level* example carries no such
+/// restriction and is used whatever the type is, so
+/// `page: {type: integer, example: 0}` still renders `page=0`.
 fn parameter_example_value<'a>(
     doc: &'a OpenApi,
     parameter: &'a crate::openapi::Parameter,
