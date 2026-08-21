@@ -898,10 +898,10 @@ wired through the package exports and their own `reference.md` sections exactly
 as Fern emits them. The first measured run diverged only outside root-method
 placement — the shared README/reference/root-client environment
 default plus `environment.py` — and matching those established two adjacent Fern
-rules: a server description beginning with the API provider name uses the
-`DEFAULT` environment member, and multipart reference examples list required
-file inputs before other required fields. Its whole golden matches, while
-the synthetic `digit-leading-property` fixture stays matched alongside it.
+rules: its server description does not name the environment member, and
+multipart reference examples list required file inputs before other required
+fields. Its whole golden matches, while the synthetic `digit-leading-property`
+fixture stays matched alongside it.
 
 The component-array-item rule is pinned by the real-world
 `apideck.com-ats` corpus at Fern 5.20.0: its
@@ -924,6 +924,43 @@ form arrays now follow Fern without changing multipart JSON encoding. The naming
 test keeps both adjacent rules explicit: a word ending in a digit still absorbs
 the following segment (`Cvc2Create` → `cvc2create`), while a digit-led boundary
 is preserved (`2Factor` → `f_2_factor` for a property).
+
+The HTTP-status exception names are pinned by the five corpora of
+[`CORPUS.md`](../tests/fixtures/CORPUS.md)'s batch 9. `error_class_name` maps a
+status to the class Fern raises, and 21 of its entries were reached by no
+golden; `kytos-sdntrace-cp`, `withsecure-gdpr-subject-rights`,
+`prometheus-x-edge-computing`, `exa-gate` and `amazonaws.com-cloudfront` between
+them pin 13, including the whole `5xx` tail above `503`. Getting one wrong is
+never one line — it renames the `errors/` module file, its lazy-import and
+`__all__` entries, its `reference.md` row, and every `raise` site that declares
+the status — so these rows exist to make a future edit fail loudly. Fern's map
+is also not the IANA registry: it names Esri's `498`, nginx's `499` and Apache's
+`509`, which CloudFront declares alongside the standard ones.
+
+CloudFront additionally moved three rules the corpus had only approximated:
+
+- **An annotated `$ref` is a use-site copy, at every depth.** Swagger-generated
+  AWS documents write `allOf: [$ref, { description }]` on nearly every node.
+  Fern copies the target under the using node's name rather than subclassing it,
+  and the copy cascades: an array alias copies its element with one `Item` per
+  nesting level, and a copied element's own annotated properties copy in turn
+  (`ActiveTrustedSigners.Items` over a list of `Signer` →
+  `List[ActiveTrustedSignersItemsItem]`, whose `KeyPairIds` becomes
+  `ActiveTrustedSignersItemsItemKeyPairIds`). A copy documents itself with the
+  annotation that named it, falling back to the target's own description when
+  the annotation carried none. A scalar or collection alias resolves straight to
+  its underlying type, so `allOf: [$ref string, { xml }]` is `str`, not the
+  `String` alias.
+- **An environment member is named only from a one-word server description.**
+  Fern reads `servers[].description` as a *name*, not as prose about the server.
+  `Production` becomes `PRODUCTION`; anything containing whitespace —
+  "Development server", "Letta Cloud", "Demo Server 1", "The general CloudFront
+  multi-region endpoint" — is `DEFAULT`. This replaced a growing list of
+  special cases, each of which had been added when a golden contradicted the one
+  before, and every corpus that keeps a description-derived name uses the single
+  word `Production`.
+- **`text/csv` reads back as a `str` body**, exactly as `text/plain`,
+  `text/markdown` and `text/xml` do.
 
 ## Fern-python parity shapes (issue #41)
 
