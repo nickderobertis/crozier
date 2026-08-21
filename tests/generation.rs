@@ -4324,7 +4324,7 @@ paths:
 }
 
 #[test]
-fn parameter_examples_normalize_numbers_and_preserve_serialization_styles() {
+fn off_string_parameter_examples_are_discarded_and_serialization_styles_survive() {
     let files = render(
         r##"openapi: 3.0.3
 info: { title: Parameter Examples, version: 1.0.0 }

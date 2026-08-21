@@ -458,7 +458,7 @@ fn deburr_letter(character: char) -> Option<&'static str> {
 
 /// Latin-1 Supplement and Latin Extended-A letters paired with the ASCII they
 /// fold to, sorted by code point so [`deburr_letter`] can binary-search it.
-/// `deburred_latin_table_is_sorted_and_ascii` pins both invariants.
+/// `the_latin_folding_table_is_sorted_and_spans_both_blocks` pins both invariants.
 const DEBURRED_LATIN: &[(char, &str)] = &[
     ('À', "A"),
     ('Á', "A"),
