@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "sac-backend",
+  "corpus_spec_ref": "3c0ee7959c334a750496d2db2c26791a5aa0185f",
+  "corpus_spec_url": "https://raw.githubusercontent.com/walter1705/SAC/3c0ee7959c334a750496d2db2c26791a5aa0185f/backend/src/main/resources/static/openapi.yaml"
+}

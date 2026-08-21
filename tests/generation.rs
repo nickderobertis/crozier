@@ -2729,8 +2729,13 @@ fn catalog_spec_resolves_refs_hoists_inline_schemas_and_promotes_headers() {
     assert!(reference.contains("name=\"Gadget\""), "{reference}");
     assert!(reference.contains("active=True"), "{reference}");
     assert!(reference.contains("count=5"), "{reference}");
-    // The required query param's example seeds its worked call.
-    assert!(reference.contains("limit=25"), "{reference}");
+    // `limit`'s example is declared on the *parameter*, not its schema, and the
+    // parameter is `type: integer` — Fern 5.20.0 discards a parameter-level example
+    // on anything but a `type: string` parameter, then fills the required argument
+    // with its synthesized integer instead (probed directly; a schema-level example
+    // on the same parameter would have been used verbatim, as `limit=7` and
+    // `limit=15` below are).
+    assert!(reference.contains("limit=1"), "{reference}");
 }
 
 /// Operations with neither an `operationId` nor a summary fall back to the lowercase
@@ -4319,7 +4324,7 @@ paths:
 }
 
 #[test]
-fn parameter_examples_normalize_numbers_and_preserve_serialization_styles() {
+fn off_string_parameter_examples_are_discarded_and_serialization_styles_survive() {
     let files = render(
         r##"openapi: 3.0.3
 info: { title: Parameter Examples, version: 1.0.0 }
@@ -4378,9 +4383,14 @@ paths:
         "only form-style arrays use comma serialization: {raw}"
     );
     assert!(client.contains("ids=\"ids\""), "{client}");
+    // Every example here is declared on the *parameter* rather than its schema, and
+    // no parameter is `type: string` — Fern 5.20.0 discards a parameter-level example
+    // in that case and synthesizes the required argument instead, identically for
+    // query, header and path parameters (probed directly against the generator). A
+    // schema-level example on the same parameter is used verbatim, whatever its type.
     assert!(client.contains("page=1"), "{client}");
-    assert!(client.contains("ratio=2.0"), "{client}");
-    assert!(client.contains("limit=7"), "{client}");
+    assert!(client.contains("ratio=1.1"), "{client}");
+    assert!(client.contains("limit=1"), "{client}");
 }
 
 #[test]

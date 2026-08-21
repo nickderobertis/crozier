@@ -98,6 +98,8 @@ measured state is `tests/e2e.rs`; re-measure with `just fixtures-gaps`.
 | 80 | `twilio.com-twilio_messaging_v1` | api-guru | https://api.apis.guru/v2/specs/twilio.com/twilio_messaging_v1/1.42.0/openapi.json | `1.42.0` | Apache 2.0 | link-ok | Twilio Messaging API with a `russell_3000` property that exercises Fern's underscore-before-trailing-digit rename |
 | 81 | `livepeer-ai-runner` | github-raw | https://raw.githubusercontent.com/livepeer/ai-runner/50a742cee7c5789ef4a10f8117f30de3758366a9/openapi.yaml | `50a742cee7c5789ef4a10f8117f30de3758366a9` | MIT | link-ok | Livepeer AI Runner with three untagged, groupless root operations alongside ten tagged pipeline operations |
 | 82 | `eos.local-extra-fields-forbid` | api-guru | https://api.apis.guru/v2/specs/eos.local/1.0.0/openapi.json | `1.0.0` | MIT | link-ok | Row 43's Net API regenerated with `pydantic_config.extra_fields: forbid`, pinning `extra="forbid"` / `pydantic.Extra.forbid` |
+| 83 | `med-anvisa-price` | github-raw | https://raw.githubusercontent.com/breno12321/medAnvisaPrice/43866742c2db0f2064ceb99071ebb058c804580b/docs/apiSchema.yml | `43866742c2db0f2064ceb99071ebb058c804580b` | MIT | link-ok | Latin-1 accented enum values Fern folds into ASCII member names (`SUBSTANCIA = "SUBSTÂNCIA"`) beside accented property names it drops the accent from (`laborat_rio` aliased to `LABORATÓRIO`) |
+| 84 | `sac-backend` | github-raw | https://raw.githubusercontent.com/walter1705/SAC/3c0ee7959c334a750496d2db2c26791a5aa0185f/backend/src/main/resources/static/openapi.yaml | `3c0ee7959c334a750496d2db2c26791a5aa0185f` | MIT | link-ok | Second, independent witness of the accent-dropping property rule from another project and language: `tamaño` becomes `tama_o` with the wire name kept as the alias |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -309,3 +311,26 @@ row name is the fixture directory, so the two goldens, cached specs, and
 
 Reuse this shape for any future generator setting a document cannot express:
 add a row over a small registered source rather than hunting a new spec.
+
+## Batch 9 — the Latin-1 naming asymmetry (issue #77)
+
+Thirty-three gated specs carry non-ASCII bytes, but every one of them carries
+them in a *description*: non-ASCII property names and enum values were both
+measured at zero. Both strings reach `naming.rs`, and Fern's own naming layer
+disagrees with itself over them — one generated SDK turns `LABORATÓRIO` into the
+enum member `LABORATORIO` and the property `laborat_rio`. A hand-authored fixture
+would have had to guess which behaviour to encode, so the two rows below are real
+specs that pin both halves. Latin-1 accents are the only case Fern folds rather
+than rejecting: a non-ASCII *schema* name fails `fern check` outright, and a
+non-ASCII parameter name or `operationId` passes `check` and then makes Fern emit
+invalid Python — see [`../../docs/fern-limitations.md`](../../docs/fern-limitations.md).
+
+| name | selected for | status |
+|---|---|---|
+| `med-anvisa-price` | accented enum values folded to ASCII member names (`SUBSTANCIA = "SUBSTÂNCIA"`) beside accented property names the accent is dropped from (`laborat_rio`), from one document | ✅ matched — taught the enum path to fold Latin-1/Latin Extended-A accents, and made whitespace a hard boundary for the property digit collapse (`EAN 1` → `ean_1`, not `ean1`) |
+| `sac-backend` | a second, independent witness of the property rule from another project and language (`tamaño` → `tama_o`) | ✅ matched — its golden also exposed three unrelated gaps, each re-measured with local Fern 5.20.0 probes: environment naming (`production`/`sandbox` only), parameter-level examples (kept only on `type: string`), and optional enum query parameters (never exampled, inline or `$ref`) |
+
+Neither backup set was needed: both primaries generated and matched. The row-2
+divergences are a reminder that a fixture chosen for one shape pays for itself in
+the shapes it drags in — three generator rules were replaced with measured ones
+because `sac-backend` happened to describe its server in Spanish.

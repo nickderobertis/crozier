@@ -153,7 +153,7 @@ pub fn module_name(class_name: &str) -> String {
 /// name still rides along as the serialization key, since `needs_alias` fires.
 #[must_use]
 pub fn field_name(wire_name: &str) -> String {
-    let snake = collapse_field_digit_boundaries(&to_snake_case(&fold_non_identifier(wire_name)));
+    let snake = field_snake_case(wire_name);
     if snake.starts_with(|c: char| c.is_ascii_digit()) {
         format!("f_{snake}")
     } else if is_reserved(&snake) {
@@ -167,12 +167,29 @@ pub fn field_name(wire_name: &str) -> String {
 /// digit-leading body argument with `_` (distinct from model fields' `f_`).
 #[must_use]
 pub fn request_field_name(wire_name: &str) -> String {
-    let snake = collapse_field_digit_boundaries(&to_snake_case(&fold_non_identifier(wire_name)));
+    let snake = field_snake_case(wire_name);
     if snake.starts_with(|c: char| c.is_ascii_digit()) {
         format!("_{snake}")
     } else {
         field_name(wire_name)
     }
+}
+
+/// The `snake_case` stem shared by [`field_name`] and [`request_field_name`].
+///
+/// A whitespace run is a *hard* word boundary in Fern's property casing: the
+/// digit-boundary collapse below joins segments freely inside one whitespace-
+/// delimited chunk (`user_fields[1]` → `user_fields1`, `PF 17,5%` → `pf_175`)
+/// but never reaches across a space, so `EAN 1` stays `ean_1` and `PF 17% ALC`
+/// stays `pf_17_alc`. Chunking first is what keeps the two apart; every name
+/// without whitespace is a single chunk and folds exactly as before.
+fn field_snake_case(wire_name: &str) -> String {
+    wire_name
+        .split_whitespace()
+        .map(|chunk| collapse_field_digit_boundaries(&to_snake_case(&fold_non_identifier(chunk))))
+        .filter(|chunk| !chunk.is_empty())
+        .collect::<Vec<String>>()
+        .join("_")
 }
 
 /// Fern joins numeric field-name segments to their neighbors (`day_0_end_time` →
@@ -403,12 +420,237 @@ fn enum_words(value: &str) -> String {
 }
 
 fn enum_identifier(value: &str) -> String {
+    let value = &deburr(value);
     if is_uuid(value) {
         uuid_enum_identifier(value)
     } else {
         enum_words(value)
     }
 }
+
+/// Fold Latin accents to their base ASCII letters, the way Fern's enum-name
+/// casing does. This is the half of Fern's naming asymmetry that *keeps* the
+/// letter: the same accented word yields the member `SUBSTANCIA` from
+/// `SUBSTÂNCIA` while the property path drops the accent as a separator
+/// (`subst_ncia`), which is why only this path deburrs. Golden-confirmed for
+/// `Â`, `Ã`, `Ç`, `Ê`, `É` and `Ó` (`med-anvisa-price`); the rest of the table
+/// is the rest of Latin-1 Supplement and Latin Extended-A, folded consistently
+/// so a neighbouring accent cannot behave differently from a measured one.
+fn deburr(value: &str) -> String {
+    let mut folded = String::with_capacity(value.len());
+    for character in value.chars() {
+        match deburr_letter(character) {
+            Some(ascii) => folded.push_str(ascii),
+            None => folded.push(character),
+        }
+    }
+    folded
+}
+
+/// The ASCII spelling of one accented Latin letter, or `None` when the character
+/// is outside the folded range.
+fn deburr_letter(character: char) -> Option<&'static str> {
+    DEBURRED_LATIN
+        .binary_search_by(|(candidate, _)| candidate.cmp(&character))
+        .ok()
+        .map(|index| DEBURRED_LATIN[index].1)
+}
+
+/// Latin-1 Supplement and Latin Extended-A letters paired with the ASCII they
+/// fold to, sorted by code point so [`deburr_letter`] can binary-search it.
+/// `the_latin_folding_table_is_sorted_and_spans_both_blocks` pins both invariants.
+const DEBURRED_LATIN: &[(char, &str)] = &[
+    ('À', "A"),
+    ('Á', "A"),
+    ('Â', "A"),
+    ('Ã', "A"),
+    ('Ä', "A"),
+    ('Å', "A"),
+    ('Æ', "Ae"),
+    ('Ç', "C"),
+    ('È', "E"),
+    ('É', "E"),
+    ('Ê', "E"),
+    ('Ë', "E"),
+    ('Ì', "I"),
+    ('Í', "I"),
+    ('Î', "I"),
+    ('Ï', "I"),
+    ('Ð', "D"),
+    ('Ñ', "N"),
+    ('Ò', "O"),
+    ('Ó', "O"),
+    ('Ô', "O"),
+    ('Õ', "O"),
+    ('Ö', "O"),
+    ('Ø', "O"),
+    ('Ù', "U"),
+    ('Ú', "U"),
+    ('Û', "U"),
+    ('Ü', "U"),
+    ('Ý', "Y"),
+    ('Þ', "Th"),
+    ('ß', "ss"),
+    ('à', "a"),
+    ('á', "a"),
+    ('â', "a"),
+    ('ã', "a"),
+    ('ä', "a"),
+    ('å', "a"),
+    ('æ', "ae"),
+    ('ç', "c"),
+    ('è', "e"),
+    ('é', "e"),
+    ('ê', "e"),
+    ('ë', "e"),
+    ('ì', "i"),
+    ('í', "i"),
+    ('î', "i"),
+    ('ï', "i"),
+    ('ð', "d"),
+    ('ñ', "n"),
+    ('ò', "o"),
+    ('ó', "o"),
+    ('ô', "o"),
+    ('õ', "o"),
+    ('ö', "o"),
+    ('ø', "o"),
+    ('ù', "u"),
+    ('ú', "u"),
+    ('û', "u"),
+    ('ü', "u"),
+    ('ý', "y"),
+    ('þ', "th"),
+    ('ÿ', "y"),
+    ('Ā', "A"),
+    ('ā', "a"),
+    ('Ă', "A"),
+    ('ă', "a"),
+    ('Ą', "A"),
+    ('ą', "a"),
+    ('Ć', "C"),
+    ('ć', "c"),
+    ('Ĉ', "C"),
+    ('ĉ', "c"),
+    ('Ċ', "C"),
+    ('ċ', "c"),
+    ('Č', "C"),
+    ('č', "c"),
+    ('Ď', "D"),
+    ('ď', "d"),
+    ('Đ', "D"),
+    ('đ', "d"),
+    ('Ē', "E"),
+    ('ē', "e"),
+    ('Ĕ', "E"),
+    ('ĕ', "e"),
+    ('Ė', "E"),
+    ('ė', "e"),
+    ('Ę', "E"),
+    ('ę', "e"),
+    ('Ě', "E"),
+    ('ě', "e"),
+    ('Ĝ', "G"),
+    ('ĝ', "g"),
+    ('Ğ', "G"),
+    ('ğ', "g"),
+    ('Ġ', "G"),
+    ('ġ', "g"),
+    ('Ģ', "G"),
+    ('ģ', "g"),
+    ('Ĥ', "H"),
+    ('ĥ', "h"),
+    ('Ħ', "H"),
+    ('ħ', "h"),
+    ('Ĩ', "I"),
+    ('ĩ', "i"),
+    ('Ī', "I"),
+    ('ī', "i"),
+    ('Ĭ', "I"),
+    ('ĭ', "i"),
+    ('Į', "I"),
+    ('į', "i"),
+    ('İ', "I"),
+    ('ı', "i"),
+    ('Ĳ', "IJ"),
+    ('ĳ', "ij"),
+    ('Ĵ', "J"),
+    ('ĵ', "j"),
+    ('Ķ', "K"),
+    ('ķ', "k"),
+    ('ĸ', "k"),
+    ('Ĺ', "L"),
+    ('ĺ', "l"),
+    ('Ļ', "L"),
+    ('ļ', "l"),
+    ('Ľ', "L"),
+    ('ľ', "l"),
+    ('Ŀ', "L"),
+    ('ŀ', "l"),
+    ('Ł', "L"),
+    ('ł', "l"),
+    ('Ń', "N"),
+    ('ń', "n"),
+    ('Ņ', "N"),
+    ('ņ', "n"),
+    ('Ň', "N"),
+    ('ň', "n"),
+    ('ŉ', "'n"),
+    ('Ŋ', "N"),
+    ('ŋ', "n"),
+    ('Ō', "O"),
+    ('ō', "o"),
+    ('Ŏ', "O"),
+    ('ŏ', "o"),
+    ('Ő', "O"),
+    ('ő', "o"),
+    ('Œ', "Oe"),
+    ('œ', "oe"),
+    ('Ŕ', "R"),
+    ('ŕ', "r"),
+    ('Ŗ', "R"),
+    ('ŗ', "r"),
+    ('Ř', "R"),
+    ('ř', "r"),
+    ('Ś', "S"),
+    ('ś', "s"),
+    ('Ŝ', "S"),
+    ('ŝ', "s"),
+    ('Ş', "S"),
+    ('ş', "s"),
+    ('Š', "S"),
+    ('š', "s"),
+    ('Ţ', "T"),
+    ('ţ', "t"),
+    ('Ť', "T"),
+    ('ť', "t"),
+    ('Ŧ', "T"),
+    ('ŧ', "t"),
+    ('Ũ', "U"),
+    ('ũ', "u"),
+    ('Ū', "U"),
+    ('ū', "u"),
+    ('Ŭ', "U"),
+    ('ŭ', "u"),
+    ('Ů', "U"),
+    ('ů', "u"),
+    ('Ű', "U"),
+    ('ű', "u"),
+    ('Ų', "U"),
+    ('ų', "u"),
+    ('Ŵ', "W"),
+    ('ŵ', "w"),
+    ('Ŷ', "Y"),
+    ('ŷ', "y"),
+    ('Ÿ', "Y"),
+    ('Ź', "Z"),
+    ('ź', "z"),
+    ('Ż', "Z"),
+    ('ż', "z"),
+    ('Ž', "Z"),
+    ('ž', "z"),
+    ('ſ', "s"),
+];
 
 /// Fern spells a canonical, entirely numeric enum value as English words. This
 /// The same spelling is applied to a leading numeric run in an alphanumeric value
@@ -738,6 +980,80 @@ mod tests {
     }
 
     #[test]
+    fn whitespace_is_a_hard_boundary_for_field_digit_collapse() {
+        // Measured on `med-anvisa-price`: inside one whitespace-delimited chunk
+        // the digit boundaries collapse exactly as they always have, but a space
+        // between a word and a digit survives into the identifier.
+        assert_eq!(field_name("EAN 1"), "ean_1");
+        assert_eq!(field_name("PF 0%"), "pf_0");
+        assert_eq!(field_name("CONFAZ 87"), "confaz_87");
+        assert_eq!(field_name("PF 17% ALC"), "pf_17_alc");
+        assert_eq!(field_name("PF 17,5%"), "pf_175");
+        assert_eq!(field_name("PF 17,5% ALC"), "pf_175_alc");
+        // A chunk of pure punctuation contributes no segment at all.
+        assert_eq!(field_name("PF 17 % ALC"), "pf_17_alc");
+        assert_eq!(field_name("   "), "");
+        // Non-ASCII letters remain separators on this path — Fern does not fold
+        // them here, unlike the enum path.
+        assert_eq!(field_name("SUBSTÂNCIA"), "subst_ncia");
+        assert_eq!(field_name("COMERCIALIZAÇÃO 2019"), "comercializa_o_2019");
+        assert_eq!(
+            field_name("LISTA DE CONCESSÃO DE CRÉDITO TRIBUTÁRIO (PIS/COFINS)"),
+            "lista_de_concess_o_de_cr_dito_tribut_rio_pis_cofins"
+        );
+        // Chunking leaves every whitespace-free name exactly where it was.
+        assert_eq!(field_name("day_0_end_time"), "day0end_time");
+        assert_eq!(field_name("user_fields[1]"), "user_fields1");
+        assert_eq!(request_field_name("user_fields[1]"), "user_fields1");
+        assert_eq!(request_field_name("EAN 1"), "ean_1");
+    }
+
+    #[test]
+    fn enum_member_names_fold_latin_accents_the_property_path_drops() {
+        // The two halves of Fern's asymmetry over one `med-anvisa-price` word.
+        assert_eq!(enum_member_name("SUBSTÂNCIA"), "SUBSTANCIA");
+        assert_eq!(field_name("SUBSTÂNCIA"), "subst_ncia");
+        assert_eq!(enum_member_name("LABORATÓRIO"), "LABORATORIO");
+        assert_eq!(enum_member_name("CÓDIGO GGREM"), "CODIGO_GGREM");
+        assert_eq!(enum_member_name("APRESENTAÇÃO"), "APRESENTACAO");
+        assert_eq!(enum_member_name("CLASSE TERAPÊUTICA"), "CLASSE_TERAPEUTICA");
+        assert_eq!(enum_member_name("REGIME DE PREÇO"), "REGIME_DE_PRECO");
+        assert_eq!(
+            enum_member_name("COMERCIALIZAÇÃO 2019"),
+            "COMERCIALIZACAO2019"
+        );
+        assert_eq!(enum_visit_param("ANÁLISE RECURSAL"), "analise_recursal");
+    }
+
+    #[test]
+    fn the_latin_folding_table_is_sorted_and_spans_both_blocks() {
+        assert!(
+            DEBURRED_LATIN.windows(2).all(|pair| pair[0].0 < pair[1].0),
+            "DEBURRED_LATIN must stay sorted for the binary search in deburr_letter"
+        );
+        assert!(
+            DEBURRED_LATIN
+                .iter()
+                .all(|(accented, ascii)| !accented.is_ascii() && ascii.is_ascii()),
+            "every entry folds one non-ASCII letter to an ASCII spelling"
+        );
+        // Latin-1 Supplement and Latin Extended-A, including the multi-letter and
+        // unmapped-neighbour cases.
+        assert_eq!(deburr_letter('Ä'), Some("A"));
+        assert_eq!(deburr_letter('ß'), Some("ss"));
+        assert_eq!(deburr_letter('Æ'), Some("Ae"));
+        assert_eq!(deburr_letter('ŉ'), Some("'n"));
+        assert_eq!(deburr_letter('ž'), Some("z"));
+        assert_eq!(deburr_letter('×'), None);
+        assert_eq!(deburr_letter('a'), None);
+        assert_eq!(deburr_letter('気'), None);
+        // Unmapped characters ride through untouched, so a CJK enum value keeps
+        // reaching the existing separator fold rather than silently changing.
+        assert_eq!(deburr("Ærøskøbing 気温"), "Aeroskobing 気温");
+        assert_eq!(enum_member_name("気温"), "_");
+    }
+
+    #[test]
     fn digit_leading_request_fields_get_underscore_prefix() {
         assert_eq!(request_field_name("5gMmCauseValue"), "_5g_mm_cause_value");
     }
@@ -818,6 +1134,44 @@ mod tests {
         // is legal and does not shadow the receiver — Fern leaves it alone.
         assert_eq!(enum_member_name("cls"), "CLS");
         assert_eq!(enum_visit_param("cls"), "cls");
+    }
+
+    #[test]
+    fn spelled_number_tables_cover_every_digit_and_stop_at_five_figures() {
+        // `digit_word` and `numeric_enum_identifier` are lookup tables: a wrong
+        // entry changes an enum member silently, so pin every branch of both.
+        for (digit, word) in [
+            ("0", "zero"),
+            ("1", "one"),
+            ("2", "two"),
+            ("3", "three"),
+            ("4", "four"),
+            ("5", "five"),
+            ("6", "six"),
+            ("7", "seven"),
+            ("8", "eight"),
+            ("9", "nine"),
+        ] {
+            assert_eq!(digit_word(digit), Some(word));
+        }
+        assert_eq!(digit_word("12"), None);
+        assert_eq!(digit_word("x"), None);
+        assert_eq!(digit_word(""), None);
+        // Tens with and without a trailing unit, and the hundreds/thousands join.
+        assert_eq!(enum_member_name("40"), "FORTY");
+        assert_eq!(enum_member_name("45"), "FORTY_FIVE");
+        assert_eq!(enum_member_name("19"), "NINETEEN");
+        assert_eq!(enum_member_name("999"), "NINE_HUNDRED_NINETY_NINE");
+        assert_eq!(
+            enum_member_name("9999"),
+            "NINE_THOUSAND_NINE_HUNDRED_NINETY_NINE"
+        );
+        // Past four figures Fern stops spelling; Crozier keeps the name legal.
+        assert_eq!(enum_member_name("10000"), "_10000");
+        // A bare wildcard is the one non-alphanumeric value Fern names rather
+        // than treating as a separator.
+        assert_eq!(enum_member_name("*"), "ALL");
+        assert_eq!(enum_visit_param("*"), "all_");
     }
 
     #[test]

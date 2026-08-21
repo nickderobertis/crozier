@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "med-anvisa-price",
+  "corpus_spec_ref": "43866742c2db0f2064ceb99071ebb058c804580b",
+  "corpus_spec_url": "https://raw.githubusercontent.com/breno12321/medAnvisaPrice/43866742c2db0f2064ceb99071ebb058c804580b/docs/apiSchema.yml"
+}

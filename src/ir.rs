@@ -100,46 +100,29 @@ impl Environment {
 }
 
 /// Derive the [`Environment`] model from the document's `servers`. Reproduces
-/// Fern's single-member behavior: the first server only, its member named by
-/// uppercasing the description (non-identifier characters → `_`). A templated
-/// server, a single concrete server with no usable description, or a description
-/// that merely repeats the API provider (the first title word), or a numbered
-/// demo-server description is `DEFAULT`; other described concrete servers keep
-/// their description-derived name.
+/// Fern's single-member behavior: the first server only, named `DEFAULT` unless
+/// its description is one of the two environment names Fern recognizes.
 fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     let first = doc.servers.first()?;
-    // A server with a templated URL (`{basePath}` variables) is named `DEFAULT` — its
-    // member value is the variables resolved to their defaults (bunq). A concrete-URL
-    // server takes its member name from its description, even across several servers
-    // (the `servers-webhooks` seed's Production/Staging pair keeps `PRODUCTION`).
-    let member_name = if !first.variables.is_empty()
-        || first.url.starts_with('/')
-        || !first.url.contains("://")
-        || first
-            .description
-            .as_deref()
-            .is_some_and(|description| description.to_ascii_lowercase().starts_with("demo server"))
-    {
-        "DEFAULT".to_string()
-    } else {
-        first
-            .description
-            .as_deref()
-            .filter(|description| {
-                let title_provider = doc.info.title.split_whitespace().next().unwrap_or_default();
-                !description.eq_ignore_ascii_case("production server")
-                    && !description.eq_ignore_ascii_case("development server")
-                    && !description.to_ascii_lowercase().starts_with("local ")
-                    && !description.eq_ignore_ascii_case(&doc.info.title)
-                    && (title_provider.is_empty()
-                        || !description
-                            .to_ascii_lowercase()
-                            .starts_with(&title_provider.to_ascii_lowercase()))
-            })
-            .map(env_member_name)
-            .filter(|n| !n.is_empty())
-            .unwrap_or_else(|| "DEFAULT".to_string())
-    };
+    // Only the first server becomes an environment, and Fern names it from the
+    // description *only* when that description is one of the two environment names
+    // it recognizes, compared whole and case-insensitively. Measured against Fern
+    // 5.20.0: `Production`/`production`/`PRODUCTION` and `Sandbox` are named, while
+    // `Prod`, `Staging`, `Live`, `Production API`, `Production server` and
+    // `Servidor de desarrollo local` all fall back to `DEFAULT` — and the URL shape
+    // does not enter into it (a templated or root-relative URL described
+    // `Production` is still `PRODUCTION`).
+    const NAMED_ENVIRONMENTS: [&str; 2] = ["production", "sandbox"];
+    let member_name = first
+        .description
+        .as_deref()
+        .map(str::trim)
+        .and_then(|description| {
+            NAMED_ENVIRONMENTS
+                .into_iter()
+                .find(|named| description.eq_ignore_ascii_case(named))
+        })
+        .map_or_else(|| "DEFAULT".to_string(), str::to_ascii_uppercase);
     Some(Environment {
         enum_name: format!("{client_name}Environment"),
         member: (member_name, resolve_server_url(first)),
@@ -191,23 +174,6 @@ fn percent_encode_server_variable(value: &str) -> String {
         }
     }
     encoded
-}
-
-/// Turn a server description into a Python enum member identifier: uppercased,
-/// with each run of non-alphanumeric characters collapsed to a single `_`.
-fn env_member_name(description: &str) -> String {
-    let mut out = String::new();
-    let mut prev_underscore = false;
-    for ch in description.chars() {
-        if ch.is_ascii_alphanumeric() {
-            out.push(ch.to_ascii_uppercase());
-            prev_underscore = false;
-        } else if !prev_underscore && !out.is_empty() {
-            out.push('_');
-            prev_underscore = true;
-        }
-    }
-    out.trim_end_matches('_').to_string()
 }
 
 /// An operation header promoted to a client-wrapper-level field. Fern lifts a
@@ -1807,19 +1773,26 @@ fn build_endpoint(
                 type_ref
             };
             let convert = hoister.needs_convert(&type_ref);
-            // A parameter-level `example` wins; otherwise the schema's own.
+            // The parameter's declared example, where Fern keeps it at all.
             let without_declared_example = parameter_example_value(doc, p).is_none();
             let omit_synthesized_example = without_declared_example
                 && (p.required != Some(true) || success_response(op).is_none());
-            let optional_referenced_enum = p.required != Some(true)
-                && p.example.is_none()
-                && p.examples.is_empty()
-                && p.schema
-                    .as_ref()
-                    .and_then(|schema| schema.reference.as_deref())
-                    .and_then(|reference| resolve_ref(doc, reference))
-                    .is_some_and(|schema| string_enum_values(schema).is_some());
-            let example = if omit_synthesized_example || optional_referenced_enum {
+            // Fern leaves an optional enum-typed query parameter out of a worked
+            // call however its enum and its example are declared: measured on Fern
+            // 5.20.0, an inline `enum` carrying a schema example, the same enum
+            // carrying a parameter-level example, and a `$ref` to a named enum all
+            // render the call without it. (A *required* one is rendered from the
+            // enum's first member, not from its example.)
+            let optional_enum = p.required != Some(true)
+                && p.schema.as_ref().is_some_and(|schema| {
+                    let resolved = schema
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| resolve_ref(doc, reference))
+                        .unwrap_or(schema);
+                    string_enum_values(resolved).is_some()
+                });
+            let example = if omit_synthesized_example || optional_enum {
                 None
             } else {
                 query_parameter_example(doc, p)
@@ -2395,10 +2368,26 @@ fn schema_property_is_read_only(doc: &OpenApi, schema: &Schema, property: &str) 
     })
 }
 
+/// A parameter's declared example, or `None` where Fern discards it.
+///
+/// Fern keeps a *parameter-level* `example`/`examples` only on a `type: string`
+/// parameter. Measured against Fern 5.20.0, identically for query, header and
+/// path parameters: a parameter-level integer or boolean example never reaches
+/// the worked call, and neither does a *string-valued* example declared on an
+/// `integer` schema — so the gate is the declared type, not the example's JSON
+/// kind. Where it applies, a required argument falls back to Fern's synthesized
+/// placeholder (`1`, `1.1`). A *schema-level* example carries no such
+/// restriction and is used whatever the type is, so
+/// `page: {type: integer, example: 0}` still renders `page=0`.
 fn parameter_example_value<'a>(
     doc: &'a OpenApi,
     parameter: &'a crate::openapi::Parameter,
 ) -> Option<&'a serde_json::Value> {
+    let declared_string = parameter
+        .schema
+        .as_ref()
+        .and_then(|schema| schema.ty.as_ref()?.primary())
+        == Some("string");
     parameter
         .example
         .as_ref()
@@ -2408,6 +2397,7 @@ fn parameter_example_value<'a>(
                 .values()
                 .find_map(|example| component_example_value(doc, example))
         })
+        .filter(|_| declared_string)
         .or_else(|| parameter.schema.as_ref().and_then(schema_example))
         .or_else(|| {
             parameter
@@ -2429,12 +2419,6 @@ fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Op
         && !value.is_string()
     {
         return None;
-    }
-    if schema.and_then(|schema| schema.ty.as_ref()?.primary()) == Some("integer") {
-        if let Some(minimum) = schema.and_then(|schema| schema.minimum.as_ref()) {
-            return example_literal(minimum)
-                .map(|value| if value == "0" { "1".into() } else { value });
-        }
     }
     if schema.and_then(|schema| schema.ty.as_ref()?.primary()) == Some("number") {
         return example_literal(value).map(|literal| {
@@ -7160,6 +7144,135 @@ mod tests {
         .expect("document deserializes");
         let env = environment_model(&doc, "FernApi").expect("server yields environment");
         assert_eq!(env.member.0, "DEFAULT");
+    }
+
+    #[test]
+    fn only_fern_s_two_recognized_server_descriptions_name_an_environment() {
+        // Measured against Fern 5.20.0 over a one-server document: `Production`
+        // and `Sandbox` name the member (whatever their case), and everything
+        // else — including near-misses and a non-English description — is
+        // `DEFAULT`. The URL shape does not enter into it.
+        let named = |description: &str, url: &str| {
+            let doc: OpenApi = serde_json::from_value(serde_json::json!({
+                "info": { "title": "Probe API" },
+                "servers": [{ "description": description, "url": url }]
+            }))
+            .expect("document deserializes");
+            environment_model(&doc, "FernApi")
+                .expect("server yields environment")
+                .member
+                .0
+        };
+        assert_eq!(named("Production", "https://api.example.com"), "PRODUCTION");
+        assert_eq!(named("production", "https://api.example.com"), "PRODUCTION");
+        assert_eq!(named("PRODUCTION", "https://api.example.com"), "PRODUCTION");
+        assert_eq!(named("Sandbox", "https://api.example.com"), "SANDBOX");
+        // A templated or root-relative URL is named the same way.
+        assert_eq!(
+            named("Production", "https://api.example.com/{v}"),
+            "PRODUCTION"
+        );
+        assert_eq!(named("Production", "/api/v1"), "PRODUCTION");
+        for unrecognized in [
+            "Prod",
+            "Staging",
+            "Live",
+            "Test",
+            "Development",
+            "Production API",
+            "Production server",
+            "Sandbox server",
+            "Demo Server 1",
+            "Servidor de desarrollo local",
+        ] {
+            assert_eq!(
+                named(unrecognized, "https://api.example.com"),
+                "DEFAULT",
+                "{unrecognized}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_parameter_level_example_survives_only_on_a_string_parameter() {
+        let doc: OpenApi =
+            serde_json::from_value(serde_json::json!({})).expect("document deserializes");
+        let typed = |ty: &str, example: serde_json::Value| Parameter {
+            schema: Some(Schema {
+                ty: Some(TypeField::Single(ty.to_string())),
+                ..Schema::default()
+            }),
+            example: Some(example),
+            ..Parameter::default()
+        };
+        // Fern spells a string parameter's own example straight into the URL...
+        assert_eq!(
+            parameter_example(&doc, &typed("string", serde_json::json!("hello"))).as_deref(),
+            Some("\"hello\"")
+        );
+        // ...and discards a parameter-level example on any other declared type,
+        // even when the example itself is a string.
+        assert_eq!(
+            parameter_example(&doc, &typed("integer", serde_json::json!(7))),
+            None
+        );
+        assert_eq!(
+            parameter_example(&doc, &typed("integer", serde_json::json!("7"))),
+            None
+        );
+        assert_eq!(
+            parameter_example(&doc, &typed("boolean", serde_json::json!(true))),
+            None
+        );
+        // A schema-level example is kept whatever the type is, and a `minimum`
+        // never displaces it.
+        let schema_level = |ty: &str, schema: Schema| Parameter {
+            schema: Some(Schema {
+                ty: Some(TypeField::Single(ty.to_string())),
+                ..schema
+            }),
+            ..Parameter::default()
+        };
+        assert_eq!(
+            parameter_example(
+                &doc,
+                &schema_level(
+                    "integer",
+                    Schema {
+                        example: Some(serde_json::json!(20)),
+                        minimum: Some(serde_json::json!(1)),
+                        ..Schema::default()
+                    }
+                )
+            )
+            .as_deref(),
+            Some("20")
+        );
+        assert_eq!(
+            parameter_example(
+                &doc,
+                &schema_level(
+                    "integer",
+                    Schema {
+                        example: Some(serde_json::json!(0)),
+                        minimum: Some(serde_json::json!(0)),
+                        ..Schema::default()
+                    }
+                )
+            )
+            .as_deref(),
+            Some("0")
+        );
+        // A parameter-level example does not mask the schema's own.
+        let mut both = schema_level(
+            "integer",
+            Schema {
+                example: Some(serde_json::json!(20)),
+                ..Schema::default()
+            },
+        );
+        both.example = Some(serde_json::json!(7));
+        assert_eq!(parameter_example(&doc, &both).as_deref(), Some("20"));
     }
 
     #[test]
