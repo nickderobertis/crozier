@@ -755,6 +755,10 @@ pub struct Endpoint {
     /// (`text/event-stream`). A streaming operation is emitted as a
     /// context-managed iterator of chunks rather than a buffered response.
     pub streaming: bool,
+    /// The type of one streamed chunk, read from the `text/event-stream` media
+    /// type's own schema. `None` when that media declares no schema, which Fern
+    /// yields as `typing.Any`.
+    pub stream_chunk: Option<TypeRef>,
     /// Whether the selected success response uses `text/plain` media.
     pub text_response: bool,
     /// Whether the success body is Markdown text. Fern types it as `str` but
@@ -2357,6 +2361,7 @@ fn build_endpoint(
             .as_deref()
             .map_or_else(String::new, reference_description_suffix),
         streaming: is_streaming(op),
+        stream_chunk: stream_chunk_type(op),
         text_response: has_text_response(op),
         markdown_response: has_markdown_response(op),
         binary_response: is_binary_response(doc, op),
@@ -2494,6 +2499,21 @@ fn is_streaming(op: &Operation) -> bool {
         response.content.contains_key("text/event-stream")
             && !response.content.contains_key("application/json")
     })
+}
+
+/// The type of one Server-Sent-Events chunk. Fern types each event from the
+/// `text/event-stream` media type's own schema — a `type: string` stream yields
+/// `str` — and falls back to `typing.Any` when that media declares none.
+fn stream_chunk_type(op: &Operation) -> Option<TypeRef> {
+    if !is_streaming(op) {
+        return None;
+    }
+    let schema = success_response_entry(op)?
+        .content
+        .get("text/event-stream")?
+        .schema
+        .as_ref()?;
+    Some(base_type_ref(schema))
 }
 
 fn body_response_same_ref(doc: &OpenApi, op: &Operation) -> bool {

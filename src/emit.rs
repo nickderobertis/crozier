@@ -3899,10 +3899,15 @@ fn body_field_value_name(field: &BodyField) -> &str {
         .unwrap_or(&field.py_name)
 }
 
-/// The chunk type Fern yields from an OpenAPI-sourced SSE stream. Fern's OpenAPI
-/// importer does not resolve the `x-fern-streaming` `chunk-schema-ref`, so every
-/// streamed event is typed `typing.Any`.
-const SSE_CHUNK: &str = "typing.Any";
+/// The chunk type Fern yields from an OpenAPI-sourced SSE stream: the
+/// `text/event-stream` media type's own schema, or `typing.Any` when it declares
+/// none — Fern's importer does not resolve `x-fern-streaming`'s
+/// `chunk-schema-ref`, so no extension can supply one.
+fn sse_chunk(ep: &Endpoint, imports: &mut Imports) -> String {
+    ep.stream_chunk
+        .as_ref()
+        .map_or_else(|| "typing.Any".to_string(), |ty| raw_type_str(ty, imports))
+}
 
 /// Build one streaming raw-client method (sync or async): a context-managed
 /// `httpx_client.stream(...)` that decodes Server-Sent Events into an iterator of
@@ -3949,7 +3954,8 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
             )
         };
     let mp = method_params(ep, imports);
-    let data_type = format!("{aiter}[{SSE_CHUNK}]");
+    let chunk = sse_chunk(ep, imports);
+    let data_type = format!("{aiter}[{chunk}]");
     let return_type = format!("{iter_t}[{wrapper}[{data_type}]]");
     let sig = signature(ep, &mp, &return_type, is_async);
     let docstring = raw_stream_docstring(ep, &mp, &return_type);
@@ -3980,10 +3986,10 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                                     return
                                 try:
                                     yield typing.cast(
-                                        {SSE_CHUNK},
+                                        {chunk},
                                         parse_sse_obj(
                                             sse=_sse,
-                                            type_={SSE_CHUNK},
+                                            type_={chunk},
                                         ),
                                     )
                                 except JSONDecodeError as e:
@@ -4911,9 +4917,10 @@ fn client_stream_method(
     } else {
         "typing.Iterator"
     };
-    let return_type = format!("{iter_t}[{SSE_CHUNK}]");
+    let chunk = sse_chunk(ep, imports);
+    let return_type = format!("{iter_t}[{chunk}]");
     let sig = signature(ep, &mp, &return_type, is_async);
-    let docstring = client_stream_docstring(cx, ep, &mp, is_async);
+    let docstring = client_stream_docstring(cx, ep, &mp, is_async, &chunk);
 
     // Delegation call arguments, in signature order (path positionally, the rest as
     // keywords, then `request_options`) — identical to the buffered high-level method.
@@ -4945,6 +4952,7 @@ fn client_stream_docstring(
     ep: &Endpoint,
     mp: &MethodParams,
     is_async: bool,
+    chunk: &str,
 ) -> String {
     let iter_t = if is_async {
         "typing.AsyncIterator"
@@ -4972,7 +4980,7 @@ fn client_stream_docstring(
     lines.push(String::new());
     lines.push("        Yields".to_string());
     lines.push("        ------".to_string());
-    lines.push(format!("        {iter_t}[{SSE_CHUNK}]"));
+    lines.push(format!("        {iter_t}[{chunk}]"));
     push_return_doc(&mut lines, ep.response_doc.as_deref());
 
     let mut ctx = ExampleCtx {
@@ -7784,6 +7792,7 @@ mod tests {
             docstring: None,
             reference_description_suffix: String::new(),
             streaming: false,
+            stream_chunk: None,
             text_response: false,
             markdown_response: false,
             binary_response: false,
