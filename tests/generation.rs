@@ -1192,11 +1192,12 @@ fn unmapped_error_status_is_skipped_but_the_module_still_emits() {
     );
 }
 
-/// Every standard 4xx/5xx status maps to Fern's named exception (issue #43). One
-/// operation declaring the whole range emits a `raise` branch per status and a
-/// generated `errors/` module per class — exercising the full status→name map.
+/// Every status Fern names maps to its exception (issue #43) — the IANA 4xx/5xx
+/// registry plus the three widely deployed codes outside it. One operation
+/// declaring them all emits a `raise` branch per status and a generated `errors/`
+/// module per class, exercising the full status→name map.
 #[test]
-fn every_standard_error_status_maps_to_its_fern_exception() {
+fn every_error_status_fern_names_maps_to_its_exception() {
     // (status, class name, module file stem) — the complete Fern map.
     let cases: &[(u16, &str, &str)] = &[
         (400, "BadRequestError", "bad_request_error"),
@@ -1252,6 +1253,14 @@ fn every_standard_error_status_maps_to_its_fern_exception() {
             "UnavailableForLegalReasonsError",
             "unavailable_for_legal_reasons_error",
         ),
+        // Outside the IANA registry, but Fern names them: Esri's 498, nginx's 499,
+        // and Apache's 509.
+        (498, "InvalidTokenError", "invalid_token_error"),
+        (
+            499,
+            "ClientClosedRequestError",
+            "client_closed_request_error",
+        ),
         (500, "InternalServerError", "internal_server_error"),
         (501, "NotImplementedError", "not_implemented_error"),
         (502, "BadGatewayError", "bad_gateway_error"),
@@ -1273,6 +1282,11 @@ fn every_standard_error_status_maps_to_its_fern_exception() {
             "insufficient_storage_error",
         ),
         (508, "LoopDetectedError", "loop_detected_error"),
+        (
+            509,
+            "BandwidthLimitExceededError",
+            "bandwidth_limit_exceeded_error",
+        ),
         (510, "NotExtendedError", "not_extended_error"),
         (
             511,
