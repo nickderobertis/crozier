@@ -1864,6 +1864,7 @@ const CORPORA: &[&Corpus] = &[
     &EXA_GATE,
     &AMAZONAWS_COM_CLOUDFRONT,
     &KHOAINATS,
+    &HELIOS_VERIFIABLE_API,
 ];
 
 #[test]
@@ -2760,6 +2761,22 @@ const KHOAINATS: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `helios-verifiable-api`: every one of its 27 component schemas is a
+/// remote-URL `$ref` into an `ethereum/execution-apis` document, the one
+/// reference form Fern follows rather than discards. Fern fetches each
+/// referenced document over HTTPS and resolves it transitively, so this row is
+/// the corpus's only evidence that crozier opens a second document at all.
+const HELIOS_VERIFIABLE_API: Corpus = Corpus {
+    api: "helios-verifiable-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -2954,6 +2971,11 @@ fn amazonaws_com_cloudfront_matches_fern_output() {
 #[test]
 fn khoainats_matches_fern_output() {
     assert_link_ok_corpus_matches(&KHOAINATS);
+}
+
+#[test]
+fn helios_verifiable_api_matches_fern_output() {
+    assert_link_ok_corpus_matches(&HELIOS_VERIFIABLE_API);
 }
 
 #[test]
