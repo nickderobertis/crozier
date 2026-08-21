@@ -1857,6 +1857,7 @@ const CORPORA: &[&Corpus] = &[
     &LIVEPEER_AI_RUNNER,
     &EOS_EXTRA_FIELDS_FORBID,
     &MED_ANVISA_PRICE,
+    &SAC_BACKEND,
 ];
 
 #[test]
@@ -2753,6 +2754,21 @@ const MED_ANVISA_PRICE: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `sac-backend`: the SAC request-classification API witnesses the accent-
+/// dropping property rule from a second project and a second language — its
+/// `tamaño` page-size field becomes `tama_o`, with the accented wire name kept
+/// as the serialization alias.
+const SAC_BACKEND: Corpus = Corpus {
+    api: "sac-backend",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 #[test]
 fn apideck_ats_matches_fern_output() {
     if corpus_spec(APIDECK_ATS.api).is_none() {
@@ -2807,6 +2823,11 @@ fn eos_extra_fields_forbid_matches_fern_output() {
 #[test]
 fn med_anvisa_price_matches_fern_output() {
     assert_link_ok_corpus_matches(&MED_ANVISA_PRICE);
+}
+
+#[test]
+fn sac_backend_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SAC_BACKEND);
 }
 
 #[test]

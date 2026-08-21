@@ -99,6 +99,7 @@ measured state is `tests/e2e.rs`; re-measure with `just fixtures-gaps`.
 | 81 | `livepeer-ai-runner` | github-raw | https://raw.githubusercontent.com/livepeer/ai-runner/50a742cee7c5789ef4a10f8117f30de3758366a9/openapi.yaml | `50a742cee7c5789ef4a10f8117f30de3758366a9` | MIT | link-ok | Livepeer AI Runner with three untagged, groupless root operations alongside ten tagged pipeline operations |
 | 82 | `eos.local-extra-fields-forbid` | api-guru | https://api.apis.guru/v2/specs/eos.local/1.0.0/openapi.json | `1.0.0` | MIT | link-ok | Row 43's Net API regenerated with `pydantic_config.extra_fields: forbid`, pinning `extra="forbid"` / `pydantic.Extra.forbid` |
 | 83 | `med-anvisa-price` | github-raw | https://raw.githubusercontent.com/breno12321/medAnvisaPrice/43866742c2db0f2064ceb99071ebb058c804580b/docs/apiSchema.yml | `43866742c2db0f2064ceb99071ebb058c804580b` | MIT | link-ok | Latin-1 accented enum values Fern folds into ASCII member names (`SUBSTANCIA = "SUBSTÂNCIA"`) beside accented property names it drops the accent from (`laborat_rio` aliased to `LABORATÓRIO`) |
+| 84 | `sac-backend` | github-raw | https://raw.githubusercontent.com/walter1705/SAC/3c0ee7959c334a750496d2db2c26791a5aa0185f/backend/src/main/resources/static/openapi.yaml | `3c0ee7959c334a750496d2db2c26791a5aa0185f` | MIT | link-ok | Second, independent witness of the accent-dropping property rule from another project and language: `tamaño` becomes `tama_o` with the wire name kept as the alias |
 
 ## Batch 2 — byte-matched (issue #77)
 

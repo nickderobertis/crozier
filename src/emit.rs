@@ -6249,7 +6249,6 @@ fn build_example_inner(
         .request_body
         .as_ref()
         .is_some_and(RequestBody::is_wildcard_media);
-    let mut optional_query_example_type: Option<&TypeRef> = None;
     for qp in ep
         .query_params
         .iter()
@@ -6376,16 +6375,6 @@ fn build_example_inner(
     {
         if qp.example.is_none() || !qp.example_is_scalar {
             continue;
-        }
-        // For a bodyless operation, Fern keeps optional examples matching the
-        // first example's type (Xero's `where` + `order` strings), but omits other
-        // types (Discourse omits the integer `page` after its string `q`).
-        // Body-bearing operations retain every optional example.
-        if ep.request_body.is_none() && !ctx.example_is_temporal(&qp.type_ref) {
-            if optional_query_example_type.is_some_and(|first| first != &qp.type_ref) {
-                continue;
-            }
-            optional_query_example_type.get_or_insert(&qp.type_ref);
         }
         let example = qp.example.as_deref().unwrap_or_default();
         args.push((
@@ -9453,7 +9442,7 @@ mod tests {
     }
 
     #[test]
-    fn worked_example_keeps_same_typed_optional_query_examples() {
+    fn worked_example_renders_every_optional_query_example_it_is_given() {
         let mut ep = endpoint("/widgets", Vec::new(), Some(TypeRef::Primitive(Prim::Str)));
         ep.query_params = vec![
             QueryParam {
@@ -9498,9 +9487,14 @@ mod tests {
         let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx, false)
             .expect("bodyless query endpoint has a worked example")
             .join("\n");
+        // Whether an optional query example survives at all is decided while
+        // building the IR (see `ir::parameter_example_value`) — Fern discards a
+        // parameter-level example on a non-string parameter there, so by the time
+        // the emitter sees one it renders it whatever its type is, and a mixed-type
+        // run comes out whole (`med-anvisa-price`, `sac-backend`).
         assert!(rendered.contains("where_=\"active\""), "{rendered}");
         assert!(rendered.contains("order=\"name\""), "{rendered}");
-        assert!(!rendered.contains("page=1"), "{rendered}");
+        assert!(rendered.contains("page=1"), "{rendered}");
     }
 
     #[test]

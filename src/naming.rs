@@ -1137,6 +1137,44 @@ mod tests {
     }
 
     #[test]
+    fn spelled_number_tables_cover_every_digit_and_stop_at_five_figures() {
+        // `digit_word` and `numeric_enum_identifier` are lookup tables: a wrong
+        // entry changes an enum member silently, so pin every branch of both.
+        for (digit, word) in [
+            ("0", "zero"),
+            ("1", "one"),
+            ("2", "two"),
+            ("3", "three"),
+            ("4", "four"),
+            ("5", "five"),
+            ("6", "six"),
+            ("7", "seven"),
+            ("8", "eight"),
+            ("9", "nine"),
+        ] {
+            assert_eq!(digit_word(digit), Some(word));
+        }
+        assert_eq!(digit_word("12"), None);
+        assert_eq!(digit_word("x"), None);
+        assert_eq!(digit_word(""), None);
+        // Tens with and without a trailing unit, and the hundreds/thousands join.
+        assert_eq!(enum_member_name("40"), "FORTY");
+        assert_eq!(enum_member_name("45"), "FORTY_FIVE");
+        assert_eq!(enum_member_name("19"), "NINETEEN");
+        assert_eq!(enum_member_name("999"), "NINE_HUNDRED_NINETY_NINE");
+        assert_eq!(
+            enum_member_name("9999"),
+            "NINE_THOUSAND_NINE_HUNDRED_NINETY_NINE"
+        );
+        // Past four figures Fern stops spelling; Crozier keeps the name legal.
+        assert_eq!(enum_member_name("10000"), "_10000");
+        // A bare wildcard is the one non-alphanumeric value Fern names rather
+        // than treating as a separator.
+        assert_eq!(enum_member_name("*"), "ALL");
+        assert_eq!(enum_visit_param("*"), "all_");
+    }
+
+    #[test]
     fn enum_names_stay_legal_where_fern_would_error() {
         // A leading-zero token retains Crozier's legal-identifier guard where
         // Fern would reject the enum name.
