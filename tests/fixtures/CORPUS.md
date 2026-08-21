@@ -100,6 +100,7 @@ measured state is `tests/e2e.rs`; re-measure with `just fixtures-gaps`.
 | 82 | `eos.local-extra-fields-forbid` | api-guru | https://api.apis.guru/v2/specs/eos.local/1.0.0/openapi.json | `1.0.0` | MIT | link-ok | Row 43's Net API regenerated with `pydantic_config.extra_fields: forbid`, pinning `extra="forbid"` / `pydantic.Extra.forbid` |
 | 83 | `med-anvisa-price` | github-raw | https://raw.githubusercontent.com/breno12321/medAnvisaPrice/43866742c2db0f2064ceb99071ebb058c804580b/docs/apiSchema.yml | `43866742c2db0f2064ceb99071ebb058c804580b` | MIT | link-ok | Latin-1 accented enum values Fern folds into ASCII member names (`SUBSTANCIA = "SUBSTÂNCIA"`) beside accented property names it drops the accent from (`laborat_rio` aliased to `LABORATÓRIO`) |
 | 84 | `sac-backend` | github-raw | https://raw.githubusercontent.com/walter1705/SAC/3c0ee7959c334a750496d2db2c26791a5aa0185f/backend/src/main/resources/static/openapi.yaml | `3c0ee7959c334a750496d2db2c26791a5aa0185f` | MIT | link-ok | Second, independent witness of the accent-dropping property rule from another project and language: `tamaño` becomes `tama_o` with the wire name kept as the alias |
+| 85 | `kytos-sdntrace-cp` | github-raw | https://raw.githubusercontent.com/kytos-ng/sdntrace_cp/269f4482ecd4125dc1c115e059dbce26b7269216/openapi.yml | `269f4482ecd4125dc1c115e059dbce26b7269216` | MIT | link-ok | Kytos SDNTrace-CP API whose two operations both declare `424`, pinning Fern's `FailedDependencyError` name for a status no golden emitted |
 
 ## Batch 2 — byte-matched (issue #77)
 
