@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "exa-gate",
+  "corpus_spec_ref": "37cf047d828665004b4900ce672aa3f27b0bb844",
+  "corpus_spec_url": "https://raw.githubusercontent.com/apaidedie/exa-gate/37cf047d828665004b4900ce672aa3f27b0bb844/docs/openapi.json"
+}
