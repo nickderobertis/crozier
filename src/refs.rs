@@ -60,34 +60,42 @@ pub struct CurlFetcher;
 
 impl RemoteFetcher for CurlFetcher {
     fn fetch(&self, url: &str) -> std::result::Result<String, String> {
-        let output = Command::new("curl")
-            .arg("--silent")
-            .arg("--show-error")
-            // Fail loudly on a 4xx/5xx instead of writing the error page into the
-            // spec, and follow redirects the way an importer is expected to.
-            .arg("--fail")
-            .arg("--location")
-            .arg("--max-time")
-            .arg(FETCH_TIMEOUT_SECONDS.to_string())
-            // `--` so a URL beginning with `-` can never be read as an option.
-            .arg("--")
-            .arg(url)
-            .output()
-            .map_err(|error| match error.kind() {
-                std::io::ErrorKind::NotFound => "`curl` was not found on PATH; install it — \
-                     crozier fetches documents named by an absolute-URL `$ref` with curl"
-                    .to_string(),
-                _ => format!("could not run `curl`: {error}"),
-            })?;
-        if !output.status.success() {
-            return Err(format!(
-                "curl failed ({}): {}",
-                output.status,
-                String::from_utf8_lossy(&output.stderr).trim()
-            ));
-        }
-        String::from_utf8(output.stdout).map_err(|error| format!("not valid UTF-8: {error}"))
+        curl_fetch(CURL, url)
     }
+}
+
+/// The program [`CurlFetcher`] runs. Named so the tests can drive the same
+/// invocation against a program that is not installed.
+const CURL: &str = "curl";
+
+fn curl_fetch(program: &str, url: &str) -> std::result::Result<String, String> {
+    let output = Command::new(program)
+        .arg("--silent")
+        .arg("--show-error")
+        // Fail loudly on a 4xx/5xx instead of writing the error page into the
+        // spec, and follow redirects the way an importer is expected to.
+        .arg("--fail")
+        .arg("--location")
+        .arg("--max-time")
+        .arg(FETCH_TIMEOUT_SECONDS.to_string())
+        // `--` so a URL beginning with `-` can never be read as an option.
+        .arg("--")
+        .arg(url)
+        .output()
+        .map_err(|error| match error.kind() {
+            std::io::ErrorKind::NotFound => "`curl` was not found on PATH; install it — \
+                     crozier fetches documents named by an absolute-URL `$ref` with curl"
+                .to_string(),
+            _ => format!("could not run `curl`: {error}"),
+        })?;
+    if !output.status.success() {
+        return Err(format!(
+            "curl failed ({}): {}",
+            output.status,
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
+    }
+    String::from_utf8(output.stdout).map_err(|error| format!("not valid UTF-8: {error}"))
 }
 
 /// Replace every remote `$ref` in `doc` with the schema it names, fetching each
@@ -787,6 +795,63 @@ components:
         assert_eq!(pointer(&document, "/a~1b/nope"), None);
         assert_eq!(pointer(&document, "/missing"), None);
         assert_eq!(pointer(&document, "/a~1b/0/deeper"), None);
+    }
+
+    /// A loopback server that answers one request with a fixed status and body,
+    /// so the real `curl` invocation is exercised without leaving the machine.
+    fn serve_once(status: &'static str, body: &'static str) -> String {
+        use std::io::{BufRead, BufReader, Write};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("bind a loopback port");
+        let url = format!(
+            "http://{}/doc.yaml",
+            listener.local_addr().expect("address")
+        );
+        std::thread::spawn(move || {
+            let Ok((mut stream, _)) = listener.accept() else {
+                return;
+            };
+            let mut reader = BufReader::new(stream.try_clone().expect("clone the socket"));
+            let mut line = String::new();
+            while reader.read_line(&mut line).is_ok() {
+                if line.trim().is_empty() {
+                    break;
+                }
+                line.clear();
+            }
+            let response = format!(
+                "HTTP/1.1 {status}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                body.len()
+            );
+            let _ = stream.write_all(response.as_bytes());
+        });
+        url
+    }
+
+    #[test]
+    fn the_curl_fetcher_returns_the_served_document() {
+        let url = serve_once("200 OK", "address:\n  type: string\n");
+        assert_eq!(
+            CurlFetcher.fetch(&url).expect("a served document"),
+            "address:\n  type: string\n"
+        );
+    }
+
+    #[test]
+    fn the_curl_fetcher_reports_an_error_status_rather_than_its_body() {
+        let url = serve_once("404 Not Found", "<html>nope</html>");
+        let message = curl_fetch(CURL, &url).expect_err("a 404 is not a document");
+        assert!(message.starts_with("curl failed"), "{message}");
+        assert!(!message.contains("<html>"), "{message}");
+    }
+
+    #[test]
+    fn a_missing_curl_is_an_actionable_error() {
+        let message = curl_fetch(
+            "crozier-no-such-fetcher-on-path",
+            "https://example.test/doc.yaml",
+        )
+        .expect_err("the program does not exist");
+        assert!(message.contains("was not found on PATH"), "{message}");
     }
 
     #[test]

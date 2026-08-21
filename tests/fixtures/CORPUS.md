@@ -408,3 +408,28 @@ candidate for that gap must declare `openIdConnect` alone.
 |---|---|
 | `gh:teamdigitale/api-openapi-samples:openapi-v3/spid-aa-template.yaml` | **unused backup** — the primary carried; it declares HTTP bearer and two `oauth2` schemes and no `openIdConnect` at all |
 | `gh:Gravitate-Health/keycloak:openapi.yaml` | **unused backup** — the primary carried; its `openIdConnect` scheme also sits behind an `oauth2` one, so it witnesses the same shape as row 90 |
+
+## Batch 12 — the cross-document reference gap (issue #77)
+
+Every row above is a single self-contained document whose every `$ref` is a
+local `#/...` pointer, so nothing pinned whether crozier can open a *second*
+document. Of the reference forms that cross a document boundary, a remote-URL
+`$ref` is the only one Fern 5.20.0 was measured to follow rather than discard
+(see [`../../docs/fern-limitations.md`](../../docs/fern-limitations.md)), so it
+is the only one a golden can pin. One row closes it.
+
+| name | selected for | status |
+|---|---|---|
+| `helios-verifiable-api` | 27 component schemas that are remote-URL `$ref`s into six `ethereum/execution-apis` documents, fetched and resolved transitively | ✅ matched |
+
+Repairing crozier to reproduce it needed cross-document resolution
+([`src/refs.rs`](../../src/refs.rs)) plus five rules the golden exposed along the
+way — fetched-schema naming, unresolvable references, response aliases,
+use-site nullability, and scalar query serialization — all recorded in
+[`../../docs/matching.md`](../../docs/matching.md#cross-document-ref-resolution-issue-77).
+
+**This row alone depends on a third-party fetch at generation time**, and the URLs
+it references address `refs/heads/main` rather than an immutable ref. An upstream
+edit to those six `ethereum/execution-apis` files breaks its reproduction for a
+reason unrelated to crozier; regenerate the golden through the standard workflow
+if that happens, rather than treating it as a generator regression.

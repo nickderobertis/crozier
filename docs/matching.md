@@ -1237,6 +1237,78 @@ over a registered source with its own `fern-generator-config.txt` entry. Its
 four models carry `extra="forbid"` in the v2 `model_config` and
 `pydantic.Extra.forbid` in the v1 `Config`, and all 42 files byte-match.
 
+## Cross-document `$ref` resolution (issue #77)
+
+Every corpus spec but one is a single self-contained document: every `$ref` is a
+local JSON pointer into the same file. `helios-verifiable-api` (CORPUS.md row 83)
+is not — all 27 of its component schemas are `$ref`s naming a document in
+`ethereum/execution-apis` by absolute URL, and Fern's importer **fetches** each
+one and resolves it transitively. That is the only reference form Fern was
+measured to follow rather than discard ([`fern-limitations.md`](fern-limitations.md)
+records the ones it drops), so it is the only golden that can pin whether crozier
+opens a second document at all.
+
+[`src/refs.rs`](../src/refs.rs) runs that resolution as a load-time pass, before
+every other normalization, so the rest of the pipeline still sees one document.
+Fetching is a **conditional generation-time capability**: a document with no
+remote `$ref` never opens a socket. It shells out to `curl`, the same shape
+[`pyfmt`](../src/pyfmt.rs) uses for `ruff` — crozier ships one static binary, and
+an in-process TLS stack would be a large supply-chain addition (a new license tier
+in `deny.toml`, a C toolchain on every release target) for a path almost no spec
+takes. A missing or failing `curl` is an actionable `Error::RemoteRef`, never a
+silently dropped schema: dropping one would emit a plausible SDK with the wrong
+types in it. Only `http`/`https` references reach the fetcher, and the URL is
+passed after `--` so it can never be read as an option.
+
+The golden pins four rules that follow from resolving at all:
+
+- **A fetched schema takes its pointer's name, and the local key aliases it.**
+  `TransactionReceipt: {$ref: …/receipt.yaml#/ReceiptInfo}` declares the model as
+  `ReceiptInfo`, leaves `TransactionReceipt = ReceiptInfo` beside it, and types
+  every other reference — `BlockReceiptsResponse`, `TransactionReceiptResponse` —
+  against `ReceiptInfo`. Where the two names coincide (`address: {$ref:
+  …#/address}`, which is most of them) the schema simply resolves in place.
+- **A local pointer inside a fetched document resolves against the *root*.** The
+  referenced files are schema fragments an assembling document is expected to
+  supply, so their `#/components/schemas/…` pointers are left untouched. helios
+  declares the ones it needs; the two it does not (`TransactionSigned`,
+  `BlockNumberOrTagForRange`) are unresolvable, and Fern degrades them to the
+  unknown type — `Optional[Any]` on a property, nothing at all as an `allOf`
+  member. crozier had been inventing a class for such a reference, emitting an
+  import of a module it never wrote.
+- **An endpoint response follows a bare alias.** `BlockResponse: {$ref:
+  …/Block}` still declares `BlockResponse = Block`, but `get_block_information`
+  returns `Block`. A reference from *inside* another schema keeps the alias name
+  — Airbyte's `DestinationAuthSpecification` stays itself on the property that
+  carries it — so the rewrite is confined to response media schemas.
+- **Nullability lives at the use site.** An explicit `type: null` alternative is
+  not a union member: it leaves the composition and makes what remains nullable.
+  One survivor becomes that type made optional (`FilterTopics =
+  Optional[List[Optional[FilterTopic]]]`); two or more stay an undiscriminated
+  union whose alias carries no `Optional` (`FilterTopic = Union[Bytes32,
+  List[Bytes32]]`) and whose every *reference* is `Optional[FilterTopic]`.
+
+Two unrelated rules the same golden forced out, neither of which needs a remote
+reference to reach:
+
+- **A query value that reaches nothing but scalars is serialized directly.**
+  helios sends `block` (a `Union[Uint, BlockTag, Hash32]` of two string aliases
+  and an enum) raw as a query parameter and through
+  `convert_and_respect_annotation_metadata` as a request-body field. Only the
+  query position takes the shortcut, because only there does the value go onto the
+  URL as text.
+- **A union example comes from the alternative that names values.** A free-form
+  scalar alternative can only supply a placeholder from the argument name, so Fern
+  reaches past `Uint` to `BlockTag` and uses `"earliest"` — as the plain string the
+  union's own annotation accepts, not the `BlockTag.EARLIEST` member a
+  single-enum argument would take.
+
+The row's one standing liability is recorded in its `CORPUS.md` shapes cell: its
+golden depends on a **third-party fetch at generation time**, and the referenced
+URLs address `refs/heads/main` rather than an immutable ref, so an upstream edit
+to those six files breaks this row's reproduction for a reason unrelated to
+crozier.
+
 ## Coverage note
 
 The gate measures coverage with `cargo llvm-cov --fail-under-lines 95`, which

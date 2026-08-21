@@ -18,7 +18,12 @@ matching [Fern](https://github.com/fern-api/fern)'s generator output byte-for-by
 (comments aside). Python is the only target today. It ships as a single static
 binary, with one **generation-time dependency**: `crozier generate` shells out to
 `ruff format` (over the CLI) to wrap the emitted Python, so `ruff` must be on
-PATH — a missing one is an actionable error, not a panic. Generators are Rust +
+PATH — a missing one is an actionable error, not a panic. A document whose `$ref`
+names *another* document by absolute URL adds a second, conditional one: crozier
+fetches it with `curl`, on the same contract; a self-contained document never
+opens a socket (see
+[`docs/matching.md`](docs/matching.md#cross-document-ref-resolution-issue-77)).
+Generators are Rust +
 [minijinja](https://github.com/mitsuhiko/minijinja) templates — there is no
 plugin-in-target-language model: the OpenAPI document plus a few naming settings
 are the entire input. Those settings resolve per field as CLI > `CROZIER_*` env

@@ -2007,6 +2007,46 @@ components:
         );
     }
 
+    /// Fern keeps a schema's nullability at its use sites rather than in the
+    /// alias it declares, so a reference to one is optional wherever it appears.
+    #[test]
+    fn normalize_nullable_schema_refs_marks_every_reference_nullable() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+components:
+  schemas:
+    Topic:
+      oneOf:
+        - { type: "null" }
+        - { type: string }
+    Solid:
+      type: string
+    Holder:
+      type: object
+      properties:
+        topic: { $ref: "#/components/schemas/Topic" }
+        solid: { $ref: "#/components/schemas/Solid" }
+        topics:
+          type: array
+          items: { $ref: "#/components/schemas/Topic" }
+"##,
+        );
+        normalize_nullable_schema_refs(&mut doc);
+        let holder = &doc.components.schemas["Holder"];
+        assert_eq!(holder.properties["topic"].nullable, Some(true));
+        assert_eq!(holder.properties["solid"].nullable, None);
+        assert_eq!(
+            holder.properties["topics"]
+                .items
+                .as_ref()
+                .expect("array items")
+                .nullable,
+            Some(true)
+        );
+    }
+
     /// Fern types an endpoint's response against the schema an alias points at,
     /// while a reference from inside another schema keeps the alias name.
     #[test]
