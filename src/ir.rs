@@ -2642,7 +2642,7 @@ fn success_response_doc(op: &Operation) -> Option<String> {
 /// status range under Docker, `scripts/generate-fern-fixture.sh`). Its drift gates:
 /// the `error-responses` corpus pins the shape byte-for-byte for the common statuses
 /// (400/404/422/500/503), and the exhaustive
-/// `every_standard_error_status_maps_to_its_fern_exception` test
+/// `every_error_status_fern_names_maps_to_its_exception` test
 /// (`tests/generation.rs`) locks every entry's class name, `errors/` module filename,
 /// and `status_code`, so an accidental edit here fails loudly. See `docs/matching.md`.
 fn error_class_name(status: u16) -> Option<&'static str> {
@@ -6547,8 +6547,10 @@ fn array_item_type_ref(schema: &Schema) -> TypeRef {
     }
 }
 
-/// Wrap a hoisted array element in the container the array declares — `Set` only
-/// for `uniqueItems`, `List` otherwise.
+/// Wrap a hoisted array element in the container [`array_uses_set`] picks, so
+/// hoisted elements and ordinary ones agree on it. That is always `List` today —
+/// Fern ignores `uniqueItems` — and the `Set` branch exists only so a future
+/// change to that one predicate reaches every call site.
 fn sequence_of(array: &Schema, item: TypeRef) -> TypeRef {
     if array_uses_set(array) {
         TypeRef::Set(Box::new(item))
