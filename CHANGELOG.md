@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.49](https://github.com/nickderobertis/crozier/compare/v0.0.48...v0.0.49) - 2026-08-21
+
+### Fixed
+
+- *(naming)* match Fern's Latin-1 accent asymmetry ([#158](https://github.com/nickderobertis/crozier/pull/158))
+
 ## [0.0.48](https://github.com/nickderobertis/crozier/compare/v0.0.47...v0.0.48) - 2026-08-21
 
 ### Other
