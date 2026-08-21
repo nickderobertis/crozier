@@ -99,6 +99,7 @@ measured state is `tests/e2e.rs`; re-measure with `just fixtures-gaps`.
 | 81 | `livepeer-ai-runner` | github-raw | https://raw.githubusercontent.com/livepeer/ai-runner/50a742cee7c5789ef4a10f8117f30de3758366a9/openapi.yaml | `50a742cee7c5789ef4a10f8117f30de3758366a9` | MIT | link-ok | Livepeer AI Runner with three untagged, groupless root operations alongside ten tagged pipeline operations |
 | 82 | `eos.local-extra-fields-forbid` | api-guru | https://api.apis.guru/v2/specs/eos.local/1.0.0/openapi.json | `1.0.0` | MIT | link-ok | Row 43's Net API regenerated with `pydantic_config.extra_fields: forbid`, pinning `extra="forbid"` / `pydantic.Extra.forbid` |
 | 83 | `kytos-sdntrace-cp` | github-raw | https://raw.githubusercontent.com/kytos-ng/sdntrace_cp/269f4482ecd4125dc1c115e059dbce26b7269216/openapi.yml | `269f4482ecd4125dc1c115e059dbce26b7269216` | MIT | link-ok | Kytos SDNTrace-CP API whose two operations both declare `424`, pinning Fern's `FailedDependencyError` name for a status no golden emitted |
+| 84 | `withsecure-gdpr-subject-rights` | github-raw | https://raw.githubusercontent.com/WithSecureOpenSource/gdpr-subject-rights-api/0d2775dbf1c0830671a9efd878f03ae1eaf97995/openapi.yaml | `0d2775dbf1c0830671a9efd878f03ae1eaf97995` | Apache 2.0 | link-ok | WithSecure GDPR subject-rights API whose five operations declare `451`, pinning Fern's `UnavailableForLegalReasonsError` name for a status no golden emitted |
 
 ## Batch 2 — byte-matched (issue #77)
 

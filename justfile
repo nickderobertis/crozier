@@ -139,6 +139,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e livepeer_ai_runner_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e eos_extra_fields_forbid_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e kytos_sdntrace_cp_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e withsecure_gdpr_subject_rights_matches_fern_output
 
 # Format the codebase in place.
 format:

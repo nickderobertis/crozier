@@ -1857,6 +1857,7 @@ const CORPORA: &[&Corpus] = &[
     &LIVEPEER_AI_RUNNER,
     &EOS_EXTRA_FIELDS_FORBID,
     &KYTOS_SDNTRACE_CP,
+    &WITHSECURE_GDPR_SUBJECT_RIGHTS,
 ];
 
 #[test]
@@ -2718,6 +2719,20 @@ const LIVEPEER_AI_RUNNER: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `withsecure-gdpr-subject-rights`: every operation of WithSecure's GDPR
+/// subject-rights API declares a `451` response, pinning Fern's
+/// `UnavailableForLegalReasonsError` name for that status.
+const WITHSECURE_GDPR_SUBJECT_RIGHTS: Corpus = Corpus {
+    api: "withsecure-gdpr-subject-rights",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `kytos-sdntrace-cp`: both operations of the Kytos SDN tracing API declare a
 /// `424` response, so this row is the first golden to pin Fern's
 /// `FailedDependencyError` name for that status.
@@ -2804,6 +2819,11 @@ fn eos_extra_fields_forbid_matches_fern_output() {
 #[test]
 fn kytos_sdntrace_cp_matches_fern_output() {
     assert_link_ok_corpus_matches(&KYTOS_SDNTRACE_CP);
+}
+
+#[test]
+fn withsecure_gdpr_subject_rights_matches_fern_output() {
+    assert_link_ok_corpus_matches(&WITHSECURE_GDPR_SUBJECT_RIGHTS);
 }
 
 #[test]
