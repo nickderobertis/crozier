@@ -1863,6 +1863,7 @@ const CORPORA: &[&Corpus] = &[
     &PROMETHEUS_X_EDGE_COMPUTING,
     &EXA_GATE,
     &AMAZONAWS_COM_CLOUDFRONT,
+    &KHOAINATS,
 ];
 
 #[test]
@@ -2738,6 +2739,23 @@ const AMAZONAWS_COM_CLOUDFRONT: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `khoainats`: the Khoai NATS Admin API declares an `openIdConnect` scheme
+/// (`Roles`) beside an HTTP bearer one, and leaves `/v1/noauth` unsecured.
+/// `openIdConnect` is the one member of its scheme family Fern's importer keeps
+/// rather than drops, so this row is the only golden that pins how crozier's
+/// `auth_model` treats it: a bearer `token` on `Authorization`, optional because
+/// not every operation is authenticated.
+const KHOAINATS: Corpus = Corpus {
+    api: "khoainats",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -2927,6 +2945,11 @@ fn exa_gate_matches_fern_output() {
 #[test]
 fn amazonaws_com_cloudfront_matches_fern_output() {
     assert_link_ok_corpus_matches(&AMAZONAWS_COM_CLOUDFRONT);
+}
+
+#[test]
+fn khoainats_matches_fern_output() {
+    assert_link_ok_corpus_matches(&KHOAINATS);
 }
 
 #[test]
