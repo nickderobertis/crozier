@@ -3671,72 +3671,78 @@ impl InlineHoister<'_> {
         }
         if prop_schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
             let item_context = format!("{parent}{}", naming::class_name(prop));
-            if let Some(array) = self.hoist_array_item_enum(&item_context, prop_schema) {
+            if let Some(array) = self.hoist_array_item_type(&item_context, prop_schema) {
                 return array;
-            }
-            if let Some(item_schema) = prop_schema.items.as_deref() {
-                if item_schema.reference.is_none() && is_inline_struct(item_schema) {
-                    let item_name = format!("{parent}{}Item", naming::class_name(prop));
-                    self.hoist_object(&item_name, item_schema);
-                    let item = TypeRef::Named(item_name);
-                    let item = if is_optional(item_schema) {
-                        TypeRef::Optional(Box::new(item))
-                    } else {
-                        item
-                    };
-                    return if array_uses_set(prop_schema) {
-                        TypeRef::Set(Box::new(item))
-                    } else {
-                        TypeRef::List(Box::new(item))
-                    };
-                }
-                if item_schema.reference.is_none() {
-                    if let Some(members) =
-                        item_schema.one_of.as_ref().or(item_schema.any_of.as_ref())
-                    {
-                        let item_name = format!("{parent}{}Item", naming::class_name(prop));
-                        if members.len() == 1 && is_inline_struct(&members[0]) {
-                            self.hoist_object(&item_name, &members[0]);
-                            let item = Box::new(TypeRef::Named(item_name));
-                            return if array_uses_set(prop_schema) {
-                                TypeRef::Set(item)
-                            } else {
-                                TypeRef::List(item)
-                            };
-                        }
-                        if let Some(item) = self.hoist_discriminated_union(
-                            &item_name,
-                            item_schema,
-                            clean_doc(item_schema.description.as_deref()),
-                        ) {
-                            let item = Box::new(item);
-                            return if array_uses_set(prop_schema) {
-                                TypeRef::Set(item)
-                            } else {
-                                TypeRef::List(item)
-                            };
-                        }
-                        let mut variants: Vec<TypeRef> =
-                            members.iter().map(base_type_ref).collect();
-                        variants.dedup();
-                        self.out.push(TypeDecl::Alias(AliasType {
-                            name: item_name.clone(),
-                            module: naming::module_name(&item_name),
-                            target: TypeRef::Union(variants),
-                            docstring: clean_doc(item_schema.description.as_deref()),
-                        }));
-                        let item = Box::new(TypeRef::Named(item_name));
-                        return if array_uses_set(prop_schema) {
-                            TypeRef::Set(item)
-                        } else {
-                            TypeRef::List(item)
-                        };
-                    }
-                }
             }
         }
         // A `$ref`, scalar, or container of `$ref`/scalar items passes through.
         base_type_ref(prop_schema)
+    }
+
+    /// The sequence type of an array schema whose inline element hoists to
+    /// `{ctx}Item` (Fern names an array property's element after the property, so
+    /// `PutV1TraceResponse.result` yields `PutV1TraceResponseResultItem`).
+    /// `None` when the element names nothing and the array passes through
+    /// [`base_type_ref`].
+    fn hoist_array_item_type(&mut self, ctx: &str, array: &Schema) -> Option<TypeRef> {
+        if let Some(hoisted) = self.hoist_array_item_enum(ctx, array) {
+            return Some(hoisted);
+        }
+        let item_schema = array.items.as_deref()?;
+        if item_schema.reference.is_some() {
+            return None;
+        }
+        let item_name = format!("{ctx}Item");
+        if is_inline_struct(item_schema) {
+            self.hoist_object(&item_name, item_schema);
+            let item = TypeRef::Named(item_name);
+            let item = if is_optional(item_schema) {
+                TypeRef::Optional(Box::new(item))
+            } else {
+                item
+            };
+            return Some(self.sequence_of(array, item));
+        }
+        if let Some(members) = item_schema.one_of.as_ref().or(item_schema.any_of.as_ref()) {
+            if members.len() == 1 && is_inline_struct(&members[0]) {
+                self.hoist_object(&item_name, &members[0]);
+                return Some(self.sequence_of(array, TypeRef::Named(item_name)));
+            }
+            if let Some(item) = self.hoist_discriminated_union(
+                &item_name,
+                item_schema,
+                clean_doc(item_schema.description.as_deref()),
+            ) {
+                return Some(self.sequence_of(array, item));
+            }
+            let mut variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
+            variants.dedup();
+            self.out.push(TypeDecl::Alias(AliasType {
+                name: item_name.clone(),
+                module: naming::module_name(&item_name),
+                target: TypeRef::Union(variants),
+                docstring: clean_doc(item_schema.description.as_deref()),
+            }));
+            return Some(self.sequence_of(array, TypeRef::Named(item_name)));
+        }
+        // An array of arrays takes one `Item` per nesting level, so the inline
+        // element of `result: array of array of object` lands in
+        // `{Ctx}ItemItem` instead of degrading to `List[List[Any]]`.
+        if item_schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
+            let inner = self.hoist_array_item_type(&item_name, item_schema)?;
+            return Some(self.sequence_of(array, inner));
+        }
+        None
+    }
+
+    /// Wrap a hoisted element in the container the array declares — `Set` only
+    /// for `uniqueItems`, `List` otherwise.
+    fn sequence_of(&self, array: &Schema, item: TypeRef) -> TypeRef {
+        if array_uses_set(array) {
+            TypeRef::Set(Box::new(item))
+        } else {
+            TypeRef::List(Box::new(item))
+        }
     }
 
     /// Hoist an inline string enum on a request parameter's schema into a named
