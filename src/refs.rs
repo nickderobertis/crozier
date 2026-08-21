@@ -8,12 +8,15 @@
 //! a load-time pass over the parsed document: every remote `$ref` node is
 //! replaced, in place, by the schema the referenced document declares.
 //!
-//! Three rules follow from what Fern was measured to do (see the
+//! Four rules follow from what Fern was measured to do (see the
 //! `helios-verifiable-api` corpus row, whose 27 component schemas are all remote
 //! references into `ethereum/execution-apis`):
 //!
 //! - **Resolution is transitive.** A fetched schema may itself carry a remote
 //!   `$ref`, which is fetched in turn.
+//! - **A fetched schema takes its pointer's name.** The local key that named the
+//!   reference is left as an alias to it, and every other reference to that key
+//!   is renamed, so the SDK agrees with Fern on which class each one means.
 //! - **A local pointer inside a fetched schema stays local to the *root*
 //!   document.** The referenced documents are schema fragments assembled by the
 //!   root, so their `#/components/schemas/…` pointers are left untouched and
@@ -131,8 +134,8 @@ pub fn resolve(doc: &mut OpenApi, fetcher: &dyn RemoteFetcher, spec: &Path) -> R
 /// (`address: $ref …#/address` declares `address`), and where they differ
 /// (`TransactionReceipt: $ref …#/ReceiptInfo`) the document gains a
 /// `ReceiptInfo` schema and `TransactionReceipt` becomes `$ref
-/// #/components/schemas/ReceiptInfo` — which, being a bare alias, is transparent
-/// at every other reference site (see `normalize_schema_aliases`).
+/// #/components/schemas/ReceiptInfo`, with every other reference to the local key
+/// renamed to the fetched one (see [`rename_references`]).
 ///
 /// A pointer name the document already uses keeps the schema in place under the
 /// local key rather than silently rebinding an existing name.
