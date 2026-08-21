@@ -2684,6 +2684,10 @@ fn error_class_name(status: u16) -> Option<&'static str> {
         429 => "TooManyRequestsError",
         431 => "RequestHeaderFieldsTooLargeError",
         451 => "UnavailableForLegalReasonsError",
+        // Fern also names three widely deployed non-IANA statuses: Esri's 498,
+        // nginx's 499, and Apache's 509.
+        498 => "InvalidTokenError",
+        499 => "ClientClosedRequestError",
         500 => "InternalServerError",
         501 => "NotImplementedError",
         502 => "BadGatewayError",
@@ -2693,6 +2697,7 @@ fn error_class_name(status: u16) -> Option<&'static str> {
         506 => "VariantAlsoNegotiatesError",
         507 => "InsufficientStorageError",
         508 => "LoopDetectedError",
+        509 => "BandwidthLimitExceededError",
         510 => "NotExtendedError",
         511 => "NetworkAuthenticationRequiredError",
         _ => return None,
