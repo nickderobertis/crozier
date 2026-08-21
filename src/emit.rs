@@ -955,7 +955,10 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 contents: file,
             });
         }
-        if !(ir.empty_endpoint_namespace && *module == "_") {
+        // The root `types/` package has one aggregator, written below over the
+        // component types *and* these hoisted ones; a second one here would land
+        // on the same path and lose whichever was written first.
+        if !(module.is_empty() || ir.empty_endpoint_namespace && *module == "_") {
             files.push(tag_types_init_file(&env, pkg, module, decls)?);
         }
     }
@@ -1086,8 +1089,9 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // Package aggregators: `types/__init__.py` over the type layer, and the
     // package-root `__init__.py` re-exporting types, errors, the endpoint
     // submodules, the root client, and `__version__`.
-    if !ir.types.is_empty() {
-        files.push(types_init_file(&env, pkg, &ir.types)?);
+    let root_tag_types: &[&TypeDecl] = tag_type_modules.get("").map_or(&[], Vec::as_slice);
+    if !ir.types.is_empty() || !root_tag_types.is_empty() {
+        files.push(types_init_file(&env, pkg, &ir.types, root_tag_types)?);
     }
     if root_emittable || !emittable_modules.is_empty() {
         files.push(root_init_file(&env, pkg, ir, &emittable_modules)?);
@@ -1310,12 +1314,13 @@ fn types_init_file(
     env: &Environment<'static>,
     pkg: &str,
     types: &[TypeDecl],
+    hoisted: &[&TypeDecl],
 ) -> Result<GeneratedFile> {
     // Each declaration may export more than its primary name (a discriminated
     // union also exports its per-variant wrappers), all sharing the decl module.
     let mut module_of: std::collections::HashMap<String, String> = std::collections::HashMap::new();
     let mut names: Vec<String> = Vec::new();
-    for decl in types {
+    for decl in types.iter().chain(hoisted.iter().copied()) {
         for n in decl.exported_names() {
             names.push(n.to_string());
             module_of.insert(n.to_string(), decl.module().to_string());
