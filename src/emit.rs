@@ -3817,7 +3817,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         // documented body with at least one optional field — which may serialize to
         // nothing — or a legacy codegen-named body that rides no header-forcing
         // param, leaving the content-type to httpx. An all-required body
-        // (`CREATE_SessionServer`) keeps it.
+        // (`CREATE_SessionServer`) keeps it. A `components.requestBodies` body drops
+        // it only while its schema survives in the public type layer; one whose
+        // schema exists solely to be flattened here (exa-gate's `KeyBatch`) keeps it.
         Some(body)
             if !body.is_wildcard_media()
                 && (ep.body_media_has_example && ep.body_schema_dropped && ep.body_schema_ref
@@ -3829,7 +3831,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     || (body.content_type_header()
                         && (!ep.basic_auth || !ep.body_description_missing)
                         && !ep.body_codegen_named
-                        && !ep.body_component_ref
+                        && (!ep.body_component_ref || ep.body_schema_dropped)
                         && !(matches!(body, RequestBody::Inline(_))
                             && (ep.body_all_of || ep.body_response_same_ref))
                         && !matches!(body, RequestBody::Inline(fields)
