@@ -98,7 +98,7 @@ measured state is `tests/e2e.rs`; re-measure with `just fixtures-gaps`.
 | 80 | `twilio.com-twilio_messaging_v1` | api-guru | https://api.apis.guru/v2/specs/twilio.com/twilio_messaging_v1/1.42.0/openapi.json | `1.42.0` | Apache 2.0 | link-ok | Twilio Messaging API with a `russell_3000` property that exercises Fern's underscore-before-trailing-digit rename |
 | 81 | `livepeer-ai-runner` | github-raw | https://raw.githubusercontent.com/livepeer/ai-runner/50a742cee7c5789ef4a10f8117f30de3758366a9/openapi.yaml | `50a742cee7c5789ef4a10f8117f30de3758366a9` | MIT | link-ok | Livepeer AI Runner with three untagged, groupless root operations alongside ten tagged pipeline operations |
 | 82 | `eos.local-extra-fields-forbid` | api-guru | https://api.apis.guru/v2/specs/eos.local/1.0.0/openapi.json | `1.0.0` | MIT | link-ok | Row 43's Net API regenerated with `pydantic_config.extra_fields: forbid`, pinning `extra="forbid"` / `pydantic.Extra.forbid` |
-| 83 | `khoainats` | github-raw | https://raw.githubusercontent.com/cukhoaimon/khoainats/e680e29affee221e3a6c379b1e51c98ef241da7a/api/generated/.docs/api/openapi.yaml | `e680e29affee221e3a6c379b1e51c98ef241da7a` | MIT | link-ok | Khoai NATS Admin API declaring an `openIdConnect` scheme beside an HTTP bearer one, with one unsecured operation: the only member of the scheme family Fern imports rather than drops, pinning the optional bearer `token` crozier reaches through `auth_model`'s fallthrough |
+| 83 | `khoainats` | github-raw | https://raw.githubusercontent.com/cukhoaimon/khoainats/e680e29affee221e3a6c379b1e51c98ef241da7a/api/generated/.docs/api/openapi.yaml | `e680e29affee221e3a6c379b1e51c98ef241da7a` | MIT | link-ok | Khoai NATS Admin API declaring an `openIdConnect` scheme (`Roles`) beside an HTTP bearer one, with `/v1/noauth` unsecured: `openIdConnect` is the one member of its scheme family Fern imports rather than drops, and this row pins the optional bearer `token` Fern emits for such a document |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -310,3 +310,32 @@ row name is the fixture directory, so the two goldens, cached specs, and
 
 Reuse this shape for any future generator setting a document cannot express:
 add a row over a small registered source rather than hunting a new spec.
+
+## Batch 9 — security-scheme coverage (issue #77)
+
+Crozier's `auth_model` names four security-scheme shapes — `apiKey` in a header,
+HTTP `bearer`, HTTP `basic` and `oauth2` — and sends everything else to one
+fallthrough arm. Of the schemes that land there, `openIdConnect` is the only one
+Fern's importer keeps rather than drops at import, so it is the only one a golden
+can pin as behaviour rather than as an absence. Row 83 is that golden.
+
+| name | selected for | status |
+|---|---|---|
+| `khoainats` | a document declaring `openIdConnect` — the one scheme in Crozier's fallthrough family Fern imports — with one unsecured operation, so the credential is optional | ✅ matched, no repair needed |
+
+Crozier reproduced the golden byte for byte on its first measurement, so the
+predicted divergence (a required token from Fern against an optional one from the
+fallthrough) did not occur here: the row's document also declares an HTTP bearer
+scheme *ahead* of its `openIdConnect` one, and Crozier selects the first
+supported scheme, so it emits the same optional bearer `token` through its
+HTTP-bearer arm. All three screened candidates for this row shared that shape —
+none declares `openIdConnect` without a supported scheme preceding it — so the
+corpus still has no golden that forces the fallthrough arm itself. A future
+candidate for that gap must declare `openIdConnect` alone.
+
+### Not registered
+
+| name | status |
+|---|---|
+| `gh:teamdigitale/api-openapi-samples:openapi-v3/spid-aa-template.yaml` | **unused backup** — the primary carried; it declares HTTP bearer and two `oauth2` schemes and no `openIdConnect` at all |
+| `gh:Gravitate-Health/keycloak:openapi.yaml` | **unused backup** — the primary carried; its `openIdConnect` scheme also sits behind an `oauth2` one, so it witnesses the same shape as row 83 |

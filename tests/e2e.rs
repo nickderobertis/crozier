@@ -2739,9 +2739,13 @@ const EOS_EXTRA_FIELDS_FORBID: Corpus = Corpus {
 /// `khoainats`: the Khoai NATS Admin API declares an `openIdConnect` scheme
 /// (`Roles`) beside an HTTP bearer one, and leaves `/v1/noauth` unsecured.
 /// `openIdConnect` is the one member of its scheme family Fern's importer keeps
-/// rather than drops, so this row is the only golden that pins how crozier's
-/// `auth_model` treats it: a bearer `token` on `Authorization`, optional because
-/// not every operation is authenticated.
+/// rather than drops, so this is the corpus's only golden over a document that
+/// declares one: Fern emits a bearer `token` on `Authorization`, optional
+/// because not every operation is authenticated. Crozier reaches the same bytes
+/// through `auth_model`'s HTTP-bearer arm, since `BearerToken` precedes `Roles`
+/// in the document — no public spec the corpus screened declares
+/// `openIdConnect` without a supported scheme ahead of it, so the golden pins
+/// the emitted credential rather than the fallthrough arm.
 const KHOAINATS: Corpus = Corpus {
     api: "khoainats",
     package_name: "fern",
