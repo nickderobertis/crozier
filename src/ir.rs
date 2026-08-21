@@ -1456,6 +1456,14 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     builder
         .types
         .retain(|d| !dropped_sources.contains(d.name()) && !moved_enums.contains(d.name()));
+    // An inlined body's hoisted type whose owning operation is untagged has no tag
+    // package to move into: Fern leaves it in the package-root `types/`, exported
+    // from that aggregator like any component type.
+    let root_moved: Vec<TypeDecl> = tag_types
+        .extract_if(.., |tag_type| tag_type.module.is_empty())
+        .map(|tag_type| tag_type.decl)
+        .collect();
+    builder.types.extend(root_moved);
 
     // Fern also emits a standalone package-root type for each error response whose
     // body is an inline object, named `{ErrorClassName}Body` (bunq's 400
