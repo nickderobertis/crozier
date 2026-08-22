@@ -2041,6 +2041,887 @@ one of which it rejects at check time rather than dropping quietly. The dividing
 line is whether the document is describing *a body Fern will send* or *a
 relationship between operations*; only the former has a slot.
 
+### Round 4 — schema shapes
+
+Seven rows, and they do not behave alike. **Three are
+[implements](#how-to-read-a-verdict)** — Fern reads the shape and emits output
+derived from it — which is the first time in this file that more than one row in a
+family has reached that verdict. Two of the three are **`REGISTRABLE`** and carry
+candidate sets below; the third is already pinned by a committed, byte-matching
+golden. Two rows are **discards**, one is **coincidence** in the form the corpus
+actually declares, and the seventh discards in a way that takes the whole
+enclosing object with it.
+
+Round 3's expectation that this family was the likeliest place for a real gap was
+right. The eleven document-metadata rows measured before it produced exactly one
+**implements** between them — `encoding.<part>.contentType`, already pinned by two
+goldens — while this one family produced three, two of them registrable.
+
+#### Which rows the corpus can answer — censused first
+
+Route 1 needs the shape present in a golden's own source, quantified, before its
+absence from the golden means anything. Censused across all 91 fetched `link-ok`
+sources and all 31 vendored fixture specs, the corpus declares string `const`s
+densely, nullable-via-`type`-array densely, **and neither of the two `const` types
+these rows are about, nor a single multi-type array with two non-null members**:
+
+```console
+$ scripts/fetch-corpus.sh          # all 91 link-ok rows, into .local/corpus/
+$ uv run --no-project --quiet --with pyyaml python3 - <<'PY'
+> import glob, os, yaml, collections
+> def walk(n):
+>     yield n
+>     if isinstance(n, dict):
+>         for v in n.values(): yield from walk(v)
+>     elif isinstance(n, list):
+>         for v in n: yield from walk(v)
+> tot, docs = collections.Counter(), collections.Counter()
+> files = sorted(glob.glob('.local/corpus/*/openapi.*')) + sorted(glob.glob('tests/fixtures/*/openapi.*'))
+> for f in files:
+>     seen = set()
+>     for n in walk(yaml.safe_load(open(f))):
+>         if not isinstance(n, dict): continue
+>         c = n.get('const')
+>         k = ('const-boolean' if isinstance(c, bool) else
+>              'const-integer' if isinstance(c, int) else
+>              'const-string' if isinstance(c, str) else None)
+>         if k: tot[k] += 1; seen.add(k)
+>         t = n.get('type')
+>         if isinstance(t, list):
+>             k = ('type-array-multi-nonnull' if len([x for x in t if x != 'null']) >= 2
+>                  else 'type-array-nullable')
+>             tot[k] += 1; seen.add(k)
+>     for k in seen: docs[k] += 1
+> print('documents censused:', len(files))
+> for k in ('const-string', 'const-boolean', 'const-integer',
+>           'type-array-nullable', 'type-array-multi-nonnull'):
+>     print(f'  {k}: {tot[k]} occurrences in {docs[k]} documents')
+> PY
+documents censused: 122
+  const-string: 147 occurrences in 3 documents
+  const-boolean: 0 occurrences in 0 documents
+  const-integer: 0 occurrences in 0 documents
+  type-array-nullable: 498 occurrences in 3 documents
+  type-array-multi-nonnull: 0 occurrences in 0 documents
+```
+
+That walk visits *every* dict node in the document, including examples and vendor
+extensions, so each zero is a strict upper bound rather than a sample. It also
+settles the `frankfurter` question directly: `CORPUS.md` row 66 is registered for
+"15 nullable-via-`type`-array schemas", and every one of the corpus's 498 `type`
+arrays has exactly one non-null member.
+
+The same census, run over the four schema-position boolean subschemas JSON Schema
+allows, finds only one of them declared anywhere:
+
+```console
+$ uv run --no-project --quiet --with pyyaml python3 - <<'PY'
+> import glob, os, yaml, collections
+> SUB = ('items', 'additionalProperties', 'not', 'contains',
+>        'unevaluatedProperties', 'propertyNames', 'if', 'then', 'else')
+> LIST = ('allOf', 'anyOf', 'oneOf', 'prefixItems')
+> tot, docs = collections.Counter(), collections.Counter()
+> def schema(n, seen):
+>     if not isinstance(n, dict) or id(n) in seen: return
+>     seen.add(id(n))
+>     props = n.get('properties')
+>     for k, v in (props.items() if isinstance(props, dict) else ()):
+>         if v is True: tot['property schema: true'] += 1
+>         else: schema(v, seen)
+>     for k in SUB:
+>         if n.get(k) is True: tot[f'{k}: true'] += 1
+>         else: schema(n.get(k), seen)
+>     for k in LIST:
+>         for v in (n.get(k) or []) if isinstance(n.get(k), list) else (): schema(v, seen)
+> def roots(doc):
+>     yield from ((doc.get('components') or {}).get('schemas') or {}).values()
+>     def rec(x):
+>         if isinstance(x, dict):
+>             if isinstance(x.get('schema'), dict): yield x['schema']
+>             for v in x.values(): yield from rec(v)
+>         elif isinstance(x, list):
+>             for v in x: yield from rec(v)
+>     for k in ('paths', 'webhooks', 'components'): yield from rec(doc.get(k) or {})
+> files = sorted(glob.glob('.local/corpus/*/openapi.*')) + sorted(glob.glob('tests/fixtures/*/openapi.*'))
+> for f in files:
+>     before, seen = dict(tot), set()
+>     for r in roots(yaml.safe_load(open(f))): schema(r, seen)
+>     for k in tot:
+>         if tot[k] != before.get(k, 0): docs[k] += 1
+> print('documents censused:', len(files))
+> for k in sorted(tot): print(f'  {k}: {tot[k]} occurrences in {docs[k]} documents')
+> PY
+documents censused: 122
+  additionalProperties: true: 217 occurrences in 30 documents
+```
+
+That walk follows only schema-valued keywords, which matters: a path-based walk
+reports five `property schema: true` hits in `atlassian.com-jira` and `letta`, and
+every one is a trap — the `True` sits at `…/properties/<name>/readOnly` or
+`…/properties/<name>/nullable`, a *keyword* of a property's schema, not a property
+whose schema **is** `true`. `additionalProperties: true` is the only boolean
+subschema any of the 122 documents declares.
+
+So the route split for this family is: `boolean-schema-true` (in the one form the
+corpus declares), `nesting-depth-ge-15` and `normalization-collision` are Route 1,
+settled by committed goldens. `const-boolean`, `const-integer`,
+`type-array-multi-nonnull` and `cycle-via-additionalProperties` are Route 2, and
+each was probed. `boolean-schema-true` needs both routes: the corpus declares only
+`additionalProperties: true`, so `items: true` and the property position were
+probed — and the property position was then re-measured on one of the row's own
+real-world candidates, because the probe result was large enough to deserve a real
+document behind it.
+
+Every probe below was run through the workspace scaffold
+`scripts/generate-fern-fixture.sh` builds — Fern CLI `5.67.1`, generator
+`fernapi/fern-python-sdk:5.20.0` under `pydantic_config.enum_type: python_enums`,
+`CI=true`/`GITHUB_ACTIONS=true`, `fern check` then
+`fern generate --group python-sdk --local --preview --output <ws>/preview --force`.
+The only diagnostic any of them produced is the scaffold's own doubled
+`::warning:: Using "api.path" is deprecated` line, which every corpus generation
+also emits; where a probe is described as saying nothing about its shape, that
+warning is what it said instead.
+
+#### `const-boolean` and `const-integer` — discards
+
+**The baseline, Route 1. `tamoss`, `CORPUS.md` row 69**
+(`https://raw.githubusercontent.com/livewyer-ops/tamoss/ccbef170204082f3ae3842c2ffee476f5008e1fb/src/openapi-contract.yaml`).
+Its source declares **eight** `const` schemas and every one of the eight is
+string-valued, each on a `type: string` property:
+
+```console
+$ grep -c '^ *const:' .local/corpus/tamoss/openapi.yaml
+8
+$ grep -B1 '^ *const:' .local/corpus/tamoss/openapi.yaml | grep -c 'type: string'
+8
+$ grep '^ *const:' .local/corpus/tamoss/openapi.yaml
+                  const: flows/created
+                  const: flows/updated
+                  const: flows/deleted
+                  const: flows/segments_added
+                  const: flows/segments_deleted
+                  const: sources/created
+                  const: sources/updated
+                  const: sources/deleted
+```
+
+A string `const` **does** reach Fern's output, as a single-member `StrEnum`.
+`tests/fixtures/tamoss/expected/src/fern/types/post_flows_created_payload_event_type.py`
+is, in full:
+
+```python
+import typing
+
+from ..core import enum
+
+T_Result = typing.TypeVar("T_Result")
+
+
+class PostFlowsCreatedPayloadEventType(enum.StrEnum):
+    FLOWS_CREATED = "flows/created"
+
+    def visit(self, flows_created: typing.Callable[[], T_Result]) -> T_Result:
+        if self is PostFlowsCreatedPayloadEventType.FLOWS_CREATED:
+            return flows_created()
+```
+
+That is what makes these two rows sharp rather than routine: a boolean or an
+integer cannot be a `StrEnum` member, so Fern has to be doing something else.
+
+**Route 2 — two probes, each carrying a string `const` as its own control** so the
+comparison is inside one generation rather than across two. The boolean probe, in
+full:
+
+```yaml
+openapi: 3.1.0
+info:
+  title: Const Boolean Probe
+  version: 1.0.0
+paths:
+  /event:
+    get:
+      operationId: getEvent
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [event_type, is_final]
+                properties:
+                  event_type:
+                    type: string
+                    const: flows/created
+                  is_final:
+                    type: boolean
+                    const: true
+```
+
+`fern check` **exit 0**, `fern generate` **exit 0**; neither said anything about a
+`const`. `preview/fern-python-sdk/src/fern/types/get_event_response.py`:
+
+```python
+class GetEventResponse(UniversalBaseModel):
+    event_type: GetEventResponseEventType
+    is_final: bool
+```
+
+and `get_event_response_event_type.py` reproduces the `tamoss` shape exactly:
+
+```python
+class GetEventResponseEventType(enum.StrEnum):
+    FLOWS_CREATED = "flows/created"
+
+    def visit(self, flows_created: typing.Callable[[], T_Result]) -> T_Result:
+        if self is GetEventResponseEventType.FLOWS_CREATED:
+            return flows_created()
+```
+
+The string `const` becomes a type; **`const: true` becomes a plain `bool`** — no
+`typing.Literal[True]`, no default, no validator, no separate module. The integer
+probe is that document again but for its `info.title`, with `is_final` replaced by
+`schema_version: {type: integer, const: 3}`; `fern check` **exit 0**,
+`fern generate` **exit 0**, same silence, and the same collapse:
+
+```python
+class GetEventResponse(UniversalBaseModel):
+    event_type: GetEventResponseEventType
+    schema_version: int
+```
+
+Both rows are **discards**. Fern reads the `type` and drops the `const` beside it,
+which is why neither is registrable: a fixture would pin `bool` and `int`, the same
+bytes a schema with no `const` at all produces.
+
+#### `type-array-multi-nonnull` — implements
+
+**Route 2.** The census above shows no corpus document declares the shape, and the
+`typing.Union[...]` occurrences already in the goldens do not settle it either:
+those arise from `oneOf`/`anyOf`, which is a different keyword taking a different
+code path. The probe therefore carries an `anyOf` control in the same document, plus
+two further type arrays whose members differ, so that "the union is derived from the
+declared list" is measured rather than assumed:
+
+```yaml
+openapi: 3.1.0
+info:
+  title: Multi-type Array Probe
+  version: 1.0.0
+paths:
+  /value:
+    get:
+      operationId: getValue
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [multi_type, via_any_of, multi_type_bool_num, multi_type_three]
+                properties:
+                  multi_type:
+                    type: [string, integer]
+                  via_any_of:
+                    anyOf:
+                      - type: string
+                      - type: integer
+                  multi_type_bool_num:
+                    type: [boolean, number]
+                  multi_type_three:
+                    type: [string, integer, boolean]
+```
+
+`fern check` **exit 0**, `fern generate` **exit 0**. Four named modules come out,
+one per property, and the three type arrays each produce a union whose members are
+exactly their declared non-null types, in the declared order:
+
+```python
+# get_value_response_multi_type.py
+GetValueResponseMultiType = typing.Union[str, int]
+
+# get_value_response_via_any_of.py          <- the anyOf control
+GetValueResponseViaAnyOf = typing.Union[str, int]
+
+# get_value_response_multi_type_bool_num.py
+GetValueResponseMultiTypeBoolNum = typing.Union[bool, float]
+
+# get_value_response_multi_type_three.py
+GetValueResponseMultiTypeThree = typing.Union[str, int, bool]
+```
+
+`[boolean, number]` → `Union[bool, float]` and `[string, integer, boolean]` →
+`Union[str, int, bool]` are what rule out a coincidence: no unconditional default
+tracks the member list. The row is **implements**, and **`REGISTRABLE`** — see the
+candidate set below.
+
+#### `cycle-via-additionalProperties` — implements
+
+**Route 2.** No committed golden can answer this one, and the reason is precise:
+335 golden files call `update_forward_refs`, so recursion *through `properties` and
+`items`* is densely pinned — but **not one golden file in the corpus emits a
+forward-referenced map**, which is the artifact a cycle through
+`additionalProperties` produces:
+
+```console
+$ ls -d tests/fixtures/*/expected | wc -l
+105
+$ grep -rl 'update_forward_refs' tests/fixtures/*/expected/ | wc -l
+335
+$ grep -rl 'typing\.Dict\[str, "' tests/fixtures/*/expected/ | wc -l
+0
+```
+
+The probe is a map of self, the shape a `Field` whose child fields are keyed by
+name:
+
+```yaml
+openapi: 3.1.0
+info:
+  title: Map-of-self Cycle Probe
+  version: 1.0.0
+paths:
+  /field:
+    get:
+      operationId: getField
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Field'
+components:
+  schemas:
+    Field:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        fields:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Field'
+```
+
+`fern check` **exit 0**, `fern generate` **exit 0**.
+`preview/fern-python-sdk/src/fern/types/field.py` is, in full:
+
+```python
+from __future__ import annotations
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel, update_forward_refs
+
+
+class Field(UniversalBaseModel):
+    name: str
+    fields: typing.Optional[typing.Dict[str, "Field"]] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+update_forward_refs(Field)
+```
+
+Three separate bytes derive from the cycle and from nothing else: the
+`from __future__ import annotations` header, the quoted `"Field"` inside the map,
+and the trailing `update_forward_refs(Field)`. The row is **implements**, and
+**`REGISTRABLE`**.
+
+#### `boolean-schema-true` — coincidence, except in the property position
+
+**Route 1 for the one form the corpus declares.** `additionalProperties: true` on a
+schema with no `properties` of its own emits a free-form map — and so does a bare
+`type: object` that says nothing about additional properties at all. Two committed
+goldens make the comparison directly.
+
+`etsi.local-mec010-2_apppkgmgmt`, `CORPUS.md` row 46, declares
+`KeyValuePairs` as `{additionalProperties: true, description: …, type: object}`, and
+`tests/fixtures/etsi.local-mec010-2_apppkgmgmt/expected/src/fern/types/key_value_pairs.py`
+is, in full:
+
+```python
+import typing
+
+KeyValuePairs = typing.Dict[str, typing.Any]
+"""
+'This data type represents a list of key-value pairs. The order of the pairs in the list is not significant. In JSON, a set of key-value pairs is represented as an object. It shall comply with the provisions defined in clause 4 of IETF RFC 8259'
+"""
+```
+
+`anchore.io`, `CORPUS.md` row 3, declares `Annotations` as
+`{description: …, type: object}` — **no `additionalProperties` key at all** — and
+`tests/fixtures/anchore.io/expected/src/fern/types/annotations.py` is, in full:
+
+```python
+import typing
+
+Annotations = typing.Dict[str, typing.Any]
+"""
+Simple key/value pairs where the value may be optional
+"""
+```
+
+Same type, from a source that never declared the keyword. The with-`properties`
+form is the same story: `tamoss`'s `ErrorPayload` carries
+`additionalProperties: true` beside five properties and emits no map field at all,
+only `extra="allow"` — and `tamoss`'s own `HttpRequest`, which declares no
+`additionalProperties`, emits the identical `extra="allow"` block, because that is
+the generator's `pydantic_config.extra_fields` default and every model in every
+golden carries it.
+
+**Route 2 for `items: true`**, which none of the 122 documents declares. One probe
+carries it and `additionalProperties: true` each beside a bare-container control:
+
+```yaml
+                properties:
+                  name:
+                    type: string
+                  list_of_anything:
+                    type: array
+                    items: true
+                  control_list:
+                    type: array
+                  free_map:
+                    type: object
+                    additionalProperties: true
+                  control_map:
+                    type: object
+```
+
+`fern check` **exit 0**, `fern generate` **exit 0**, and the boolean subschema and
+its control are indistinguishable in the output:
+
+```python
+class GetThingResponse(UniversalBaseModel):
+    name: str
+    list_of_anything: typing.List[typing.Any]
+    control_list: typing.List[typing.Any]
+    free_map: typing.Dict[str, typing.Any]
+    control_map: typing.Dict[str, typing.Any]
+```
+
+That is a [coincidence](#how-to-read-a-verdict) in the exact sense this file
+defines: Fern's output equals the standard's meaning, produced by an unconditional
+default rather than by reading the keyword. A fixture would pin the default.
+
+**The property position is different, and it is not a coincidence.** A property
+whose schema is literally `true` does not merely lose that property — Fern drops the
+**enclosing object whole**, silently, at exit 0. That was measured on a real
+specification rather than inferred, because this row's own candidates declare the
+form: `rocketmq-sre-phase02.openapi.json`
+(`https://raw.githubusercontent.com/mxsm/rocketmq-rust/91dceb7e7be6e1321aa954fdf44739143377f297/rocketmq-sre/openapi/rocketmq-sre-phase02.openapi.json`)
+was carried through the same scaffold on this host — `fern check` **exit 0**,
+`fern generate` **exit 0**, `Found 0 errors and 2 warnings`, both of them the
+`api.path` deprecation. It emits **286** type modules, of which exactly **four** are
+`typing.Any` aliases:
+
+```console
+$ ls preview/fern-python-sdk/src/fern/types/*.py | wc -l
+286
+$ grep -h '= typing.Any$' preview/fern-python-sdk/src/fern/types/*.py
+ActionItem = typing.Any
+PostmortemRevision = typing.Any
+IncidentOperationResultTimelineEvent = typing.Any
+WhatIfSimulation = typing.Any
+```
+
+Those four are exactly the four component schemas that declare a property-position
+boolean schema directly. `WhatIfSimulation` declares sixteen properties, two of them
+(`input`, `projected_utilization`) as `true`; `what_if_simulation.py` is, in full:
+
+```python
+import typing
+
+WhatIfSimulation = typing.Any
+"""
+Read-only what-if result. It never carries an executable action.
+"""
+```
+
+Fourteen ordinary property schemas, and the object itself, reach zero bytes because
+of two siblings — and nothing in either exit code or the logs says so.
+
+**A probe isolates the rule**, because the real document cannot separate position
+from `required`. Two operations, one document:
+
+```yaml
+paths:
+  /top-optional:
+    get:
+      operationId: getTopOptional
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [name]
+                properties:
+                  name:
+                    type: string
+                  anything: true
+  /nested-required:
+    get:
+      operationId: getNestedRequired
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [nested]
+                properties:
+                  nested:
+                    type: object
+                    required: [inner_name, inner_anything]
+                    properties:
+                      inner_name:
+                        type: string
+                      inner_anything: true
+```
+
+`fern check` **exit 0**, `fern generate` **exit 0**. The generated tree holds one
+type module, not two, and `name` — a sibling that declared nothing unusual — is gone
+with the model that would have held it:
+
+```console
+$ ls preview/fern-python-sdk/src/fern/types/
+__init__.py
+get_nested_required_response.py
+$ grep -n 'def get' preview/fern-python-sdk/src/fern/raw_client.py
+20:    def get_top_optional(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[typing.Any]:
+58:    def get_nested_required(
+101:    async def get_top_optional(
+141:    async def get_nested_required(
+```
+
+```python
+# get_nested_required_response.py — the only type module emitted
+class GetNestedRequiredResponse(UniversalBaseModel):
+    nested: typing.Any
+```
+
+The rule is position, not `required`: `anything` was **optional** and still took the
+whole top-level response model with it, while the nested object — whose boolean
+property *was* required — collapsed to `typing.Any` and left its parent standing. An
+earlier single-operation probe in which the boolean property sat on the top-level
+response schema produced no `types/` package at all and a bare
+`HttpResponse[typing.Any]`, which is the same rule with nothing above it to survive.
+
+One position escapes it. `rocketmq-sre-phase02`'s fifth declaration sits in a
+discriminated `oneOf` branch (`EvidenceSnapshot__EvidenceContent.oneOf[0]
+.properties.value`), and there the branch model survives with the property typed
+`typing.Any` rather than the model collapsing:
+
+```python
+class EvidenceSnapshotEvidenceContent_Inline(UniversalBaseModel):
+    value: typing.Any
+    storage: typing.Literal["inline"] = "inline"
+```
+
+The row's verdict is therefore split, and it is not registrable either way: the
+`additionalProperties`/`items` forms would pin an unconditional default, and the
+property form makes the golden emit strictly less than the document declares —
+`WhatIfSimulation` is what a fixture from this row's own candidate pool would pin.
+Its four verified candidates are also **not four independent witnesses**: three are
+files from the single repository `mxsm/rocketmq-rust` at one pinned commit
+(`91dceb7e7be6e1321aa954fdf44739143377f297`), leaving `secunet-AG/hwaas` as the only
+other. Both repositories declare Apache-2.0 at source, which is worth stating because
+the round-3 screen rendered `mxsm/rocketmq-rust` as `APACHE-2.0` under one gap and
+`None` under another:
+
+```console
+$ gh api repos/mxsm/rocketmq-rust --jq '.license.spdx_id'
+Apache-2.0
+$ gh api repos/secunet-AG/hwaas --jq '.license.spdx_id'
+Apache-2.0
+```
+
+Across the four candidate files the three forms are declared 44, 32 and 2 times —
+and the property form, the destructive one, is the one crozier's whole 122-document
+corpus never declares:
+
+```console
+$ R=https://raw.githubusercontent.com/mxsm/rocketmq-rust/91dceb7e7be6e1321aa954fdf44739143377f297/rocketmq-sre/openapi
+$ for n in 02 03 05; do curl -sSO "$R/rocketmq-sre-phase$n.openapi.json"; done
+$ curl -sSo hwaas-contextapi.json \
+>   https://raw.githubusercontent.com/secunet-AG/hwaas/dcf11f0ee1836559c511d5e18e8c9b4d6aa38984/expected-oas/contextapi.openapi.json
+$ uv run --no-project --quiet python3 - <<'PY'
+> import glob, json, collections
+> SUB, LIST = ('items', 'additionalProperties'), ('allOf', 'anyOf', 'oneOf')
+> for f in sorted(glob.glob('*.json')):
+>     tot, seen = collections.Counter(), set()
+>     def schema(n):
+>         if not isinstance(n, dict) or id(n) in seen: return
+>         seen.add(id(n))
+>         for v in (n.get('properties') or {}).values():
+>             if v is True: tot['property'] += 1
+>             else: schema(v)
+>         for k in SUB:
+>             if n.get(k) is True: tot[k] += 1
+>             else: schema(n.get(k))
+>         for k in LIST:
+>             for v in n.get(k) or []: schema(v)
+>     for v in (json.load(open(f)).get('components') or {}).get('schemas', {}).values(): schema(v)
+>     print(f, dict(tot))
+> PY
+hwaas-contextapi.json {'additionalProperties': 31, 'property': 6, 'items': 2}
+rocketmq-sre-phase02.openapi.json {'additionalProperties': 3, 'property': 6}
+rocketmq-sre-phase03.openapi.json {'additionalProperties': 3, 'property': 10}
+rocketmq-sre-phase05.openapi.json {'additionalProperties': 7, 'property': 10}
+```
+
+#### `nesting-depth-ge-15` — implements
+
+**Route 1. `openbanking.org.uk-account-info-openapi`, `CORPUS.md` row 58**
+(`https://api.apis.guru/v2/specs/openbanking.org.uk/account-info-openapi/3.1.7/openapi.json`),
+registered in `tests/e2e.rs` with `unmatched: &[]`. Its source reaches inline depth
+**19**, with **91** inline schema nodes at depth ≥ 15:
+
+```console
+$ uv run --no-project --quiet --with pyyaml python3 - <<'PY'
+> import json
+> d = json.load(open('.local/corpus/openbanking.org.uk-account-info-openapi/openapi.json'))
+> best, deep = (0, []), 0
+> def rec(n, depth, path):
+>     global best, deep
+>     if depth >= 15: deep += 1
+>     if depth > best[0]: best = (depth, path)
+>     if not isinstance(n, dict): return
+>     for pn, pv in (n.get('properties') or {}).items():
+>         if isinstance(pv, dict): rec(pv, depth + 1, path + [f'properties/{pn}'])
+>     for k in ('items', 'additionalProperties'):
+>         if isinstance(n.get(k), dict): rec(n[k], depth + 1, path + [k])
+>     for k in ('allOf', 'anyOf', 'oneOf'):
+>         for i, v in enumerate(n.get(k) or []):
+>             if isinstance(v, dict): rec(v, depth + 1, path + [f'{k}/{i}'])
+> for s, v in d['components']['schemas'].items():
+>     if isinstance(v, dict): rec(v, 1, [s])
+> print('max inline depth:', best[0])
+> print('inline schema nodes at depth >= 15:', deep)
+> print(' -> '.join(best[1]))
+> PY
+max inline depth: 19
+inline schema nodes at depth >= 15: 91
+OBReadProduct2 -> properties/Data -> properties/Product -> items -> properties/OtherProductType -> properties/Overdraft -> properties/OverdraftTierBandSet -> items -> properties/OverdraftTierBand -> items -> properties/OverdraftFeesCharges -> items -> properties/OverdraftFeeChargeDetail -> items -> properties/OverdraftFeeChargeCap -> items -> properties/OtherFeeType -> items -> properties/Code
+```
+
+Fern names the deepest of them by concatenating every segment of that chain. The
+golden's longest module is 230 characters of filename, and it is a fully populated
+model, not a fallback:
+
+```console
+$ ls tests/fixtures/openbanking.org.uk-account-info-openapi/expected/src/fern/types \
+>   | awk '{print length($0), $0}' | sort -rn | head -1
+230 ob_read_product2data_product_item_other_product_type_overdraft_overdraft_tier_band_set_item_overdraft_tier_band_item_overdraft_fees_charges_item_overdraft_fee_charge_detail_item_overdraft_fee_charge_cap_item_other_fee_type_item.py
+```
+
+```python
+class ObReadProduct2DataProductItemOtherProductTypeOverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItemOverdraftFeeChargeCapItemOtherFeeTypeItem(
+    UniversalBaseModel
+):
+    """
+    Other fee type code which is not available in the standard code set
+    """
+
+    code: typing_extensions.Annotated[
+        typing.Optional[ObCodeMnemonic], FieldMetadata(alias="Code"), pydantic.Field(alias="Code")
+    ] = None
+    description: typing_extensions.Annotated[
+        Description3, FieldMetadata(alias="Description"), pydantic.Field(alias="Description")
+    ]
+    name: typing_extensions.Annotated[Name4, FieldMetadata(alias="Name"), pydantic.Field(alias="Name")]
+```
+
+No truncation, no `typing.Any`, no depth limit: the row is **implements**. It
+proposes no fixture and no `REGISTRABLE` entry, because the behaviour is already
+pinned — `CORPUS.md` row 58 is registered and byte-matching, and crozier reproduces
+that 230-character module name byte-for-byte today.
+
+#### `normalization-collision` — discards
+
+**Route 1, same document.** `openbanking.org.uk-account-info-openapi` declares two
+pairs of component schemas whose names differ only in an underscore, and each pair
+normalizes to one Python name. The two members of a pair are not the same type:
+
+```console
+$ jq -r '.components.schemas | to_entries[]
+>   | select(.key|test("^OB_?Rate1_[01]$"))
+>   | "\(.key)\t\(.value.type)\t\(.value.description)"' \
+>   .local/corpus/openbanking.org.uk-account-info-openapi/openapi.json
+OBRate1_0	number	Rate charged for Statement Fee (where it is charged in terms of a rate rather than an amount)
+OBRate1_1	number	field representing a percentage (e.g. 0.05 represents 5% and 0.9525 represents 95.25%). Note the number of decimal places may vary.
+OB_Rate1_0	string	Rate charged for overdraft fee/charge (where it is charged in terms of a rate rather than an amount)
+OB_Rate1_1	string	Rate charged for Fee/Charge (where it is charged in terms of a rate rather than an amount)
+```
+
+Four schemas in; **two** modules out, and the survivor of each pair is the `string`
+one:
+
+```console
+$ ls tests/fixtures/openbanking.org.uk-account-info-openapi/expected/src/fern/types \
+>   | grep -i 'rate1'
+ob_rate10.py
+ob_rate11.py
+```
+
+```python
+# ob_rate10.py, in full
+ObRate10 = str
+"""
+Rate charged for overdraft fee/charge (where it is charged in terms of a rate rather than an amount)
+"""
+```
+
+The loss is not confined to the discarded declaration. `OBStatement2` `$ref`s
+`OBRate1_0`, the `number`, at `properties/StatementFee/items/properties/Rate` — and
+the golden types that field with the `str` that replaced it:
+
+```python
+# ob_statement2statement_fee_item.py
+    rate: typing_extensions.Annotated[
+        typing.Optional[ObRate10], FieldMetadata(alias="Rate"), pydantic.Field(alias="Rate")
+    ] = None
+```
+
+A second, independent witness shows the collapse is not specific to that document.
+`amazonaws.com-cloudformation`, `CORPUS.md` row 51, also registered with
+`unmatched: &[]`, declares `RoleArn` and `RoleARN` — different constraints, both
+referenced, one of them eleven times:
+
+```console
+$ jq -r '.components.schemas | to_entries[]
+>   | select(.key|test("^RoleAr?n$";"i"))
+>   | "\(.key)\ttype=\(.value.type)\tminLength=\(.value.minLength)"' \
+>   .local/corpus/amazonaws.com-cloudformation/openapi.json
+RoleArn	type=string	minLength=1
+RoleARN	type=string	minLength=20
+$ ls tests/fixtures/amazonaws.com-cloudformation/expected/src/fern/types | grep '^role'
+role_arn.py
+```
+
+```python
+# role_arn.py, in full
+RoleArn = str
+```
+
+`fern check` and `fern generate` both pass on these documents — the corpus goldens
+exist — and neither says anything about a collision. Fern accepts the second
+declaration, emits nothing derived from it, and silently retypes every reference to
+it: **discards**. It is not registrable for the ordinary reason plus a sharper one —
+a fixture would pin the *loss*, and both documents that exhibit it are already
+registered and byte-matching, so crozier already reproduces the loss exactly.
+
+#### `REGISTRABLE` — two candidate sets
+
+Neither is registered here; `justfile`, `tests/e2e.rs` and `tests/fixtures/CORPUS.md`
+belong to the registering node. Every candidate below was carried end to end on this
+host under the pins above: `fern check` **exit 0**, `fern generate` **exit 0**, and
+the shape's artifact present in the generated tree. That is a stronger bar than the
+round-3 screens applied, and it is the bar that matters, because
+[`tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md) records that Fern's own
+gate is what kills most raw public specs.
+
+Licences were re-verified at each source repository rather than copied from the
+round-3 candidate lists:
+
+```console
+$ for r in eo-tools/eozilla sam0delkin/intellij-psa \
+>          gonecentrix/gcx-access-control-management \
+>          openepcis/openepcis-dpp-ready nicholas-ruest/wildfire-robotics \
+>          agentic-commerce-protocol/agentic-commerce-protocol; do
+>   printf '%-45s %s\n' "$r" "$(gh api repos/$r --jq '.license.spdx_id')"
+> done
+eo-tools/eozilla                              Apache-2.0
+sam0delkin/intellij-psa                       MIT
+gonecentrix/gcx-access-control-management     MIT
+openepcis/openepcis-dpp-ready                 Apache-2.0
+nicholas-ruest/wildfire-robotics              MIT
+agentic-commerce-protocol/agentic-commerce-protocol Apache-2.0
+```
+
+**`cycle-via-additionalProperties`** — Fern emits `from __future__ import
+annotations`, a forward-referenced `typing.Dict[str, "<Schema>"]`, and a trailing
+`update_forward_refs(...)`. Three witnesses, three different projects:
+
+| role | pinned URL | licence | cyclic `additionalProperties` edges | emitted |
+|---|---|---|---:|---|
+| primary | `https://raw.githubusercontent.com/eo-tools/eozilla/70187a1bba9fe5a77001a623322f23bb30ea49c7/tools/openapi.yaml` | Apache-2.0 | 3 | `properties: typing.Optional[typing.Dict[str, "Schema"]] = None` |
+| backup | `https://raw.githubusercontent.com/sam0delkin/intellij-psa/079c0377d4e33dab1b18a97a539c30580595f4b7/doc/schema.yaml` | MIT | 1 | `options: typing.Optional[typing.Dict[str, "PsiElementModelChild"]] = None` |
+| backup | `https://raw.githubusercontent.com/gonecentrix/gcx-access-control-management/e472a0819f1423fae10f9ac8ee0c01139c79f0ea/admin-interface/src/main/resources/openapi/openapi.json` | MIT | 3 | `properties: typing.Optional[typing.Dict[str, "Schema"]] = None` |
+
+`eo-tools/eozilla` is the primary rather than round 3's `sam0delkin/intellij-psa`
+because its three cycles are *direct* — `Schema.properties.<k> → Schema` — where the
+`intellij-psa` cycle is two hops
+(`PsiElementModel -[additionalProperties]→ PsiElementModelChild → PsiElementModel`),
+and because it carries nine operations to `intellij-psa`'s six. `intellij-psa` is a
+sound backup, but the round-3 lead's shape claim needed the indirect edge to hold at
+all, which a direct self-reference check does not find.
+
+**`type-array-multi-nonnull`** — Fern emits a `typing.Union[...]` whose members are
+the declared non-null types. Three witnesses:
+
+| role | pinned URL | licence | multi-non-null `type` arrays | emitted |
+|---|---|---|---:|---|
+| primary | `https://raw.githubusercontent.com/openepcis/openepcis-dpp-ready/5c1f308d350cfcc9abb80aa6c70262c87141f201/extensions/common/interop/api/en18222-dpp-api.openapi.yaml` | Apache-2.0 | 2 | `SingleValuedDataElementValue = typing.Union[str, float, bool]` |
+| backup | `https://raw.githubusercontent.com/nicholas-ruest/wildfire-robotics/29077c9f6536fb649673b93a185ea1cbc5c35a01/contracts/openapi/wildfire-api-v1.yaml` | MIT | 1 | `ReadModelSummaryValue = typing.Union[str, float, int, bool]` |
+| backup | `https://raw.githubusercontent.com/agentic-commerce-protocol/agentic-commerce-protocol/32b1cad685b566fdab43e0c73f2773fd578c8478/spec/2025-12-12/openapi/openapi.agentic_checkout.yaml` | Apache-2.0 | 1 | `IntentTraceMetadataValue = typing.Union[str, float, bool]` |
+
+Two of round 3's leads for this gap are disqualified, and neither is a licence
+problem — both are schema libraries with no `paths`, so Fern generates a complete,
+valid, **empty** SDK from them and they can never be fixtures:
+
+```console
+$ uv run --no-project --quiet --with pyyaml python3 -c '
+> import sys, yaml
+> for f in sys.argv[1:]:
+>     d = yaml.safe_load(open(f))
+>     print(f, "paths=", len(d.get("paths") or {}),
+>              "schemas=", len((d.get("components") or {}).get("schemas") or {}))' \
+>   allez/condarc_openapi.json opensearch/security._common.yaml
+allez/condarc_openapi.json paths= 0 schemas= 23
+opensearch/security._common.yaml paths= 0 schemas= 52
+```
+
+`nteract/allez` was round 3's **primary** for this gap on a count of 14 occurrences;
+the occurrences are real and the BSD-3-Clause licence checks out, but a zero-path
+document is the failure mode this file already records under
+[28 candidates generated a complete, valid, *empty* SDK](#28-candidates-generated-a-complete-valid-empty-sdk).
+The `agentic-commerce-protocol` entry is likewise **one** witness and not four: the
+repository holds six dated copies of the same specification
+(`spec/2025-09-29`, `2025-12-12`, `2026-01-16`, `2026-01-30`, `2026-04-17`,
+`unreleased`), and the round-3 list named four of them separately.
+
+#### What this family changes about the round's headline
+
+Round 3's result was that four gaps of fifty-nine cleared the registration bar, and
+Round 4's first eleven rows added one already-pinned `implements` to that: server
+metadata, XML bodies and Link objects are shapes Fern's importer flattens, and the
+one Encoding field it reads is registered twice over already. This family is the
+counterweight. Fern's **type system** is real — multi-type arrays become unions,
+map-of-self becomes a forward-referenced map, and eighteen levels of inline nesting
+become eighteen named models with no fallback anywhere in the chain. What it drops
+is the *annotation beside* the type: a `const` next to a `type`, a boolean subschema
+in place of one, the second of two names that normalize alike. The dividing line in
+[servers and XML](#round-4--servers-and-xml) was whether a document is describing a
+body Fern will send; here it is whether the document is describing a **shape** or a
+**constraint on** a shape. Shapes survive. Constraints beside them do not.
+
 ## What Round 3 did not register, and why
 
 The round's main result. Round 3 registers a fixture only where **both** bars are
@@ -2068,15 +2949,15 @@ question a future probe could answer**, not a proven absence.
 |---|---:|---:|---|---|
 | `apiKey-cookie` | 4 | 6 | discards | the importer drops the scheme outright; the client is generated from whatever other scheme the document declares |
 | `apiKey-query` | 2 | 6 | discards + supply | as `apiKey-cookie`; and only 2 eligible of 6 verified — 4× licence tier Q — short of a primary plus two backups |
-| `boolean-schema-true` | 4 | 4 | **unmeasured** | no screen measured what Fern emits for a boolean schema `true`; the verdict recorded is a non-empty generation |
+| `boolean-schema-true` | 4 | 4 | coincidence (`additionalProperties`, `items`) / discards (property position) | the corpus declares one form of it, 217 times across 30 documents, and Fern's output for that form is the no-keyword default: `additionalProperties: true` emits the `typing.Dict[str, typing.Any]` a bare `type: object` emits, and `items: true` emits the `typing.List[typing.Any]` a bare `type: array` emits. A property whose schema is literally `true` is different — Fern drops the **enclosing object whole**, measured on this row's own candidate `rocketmq-sre-phase02`, whose `WhatIfSimulation` loses sixteen properties to become `typing.Any` at exit 0. Its four verified candidates are three files from the single repository `mxsm/rocketmq-rust` plus `secunet-AG/hwaas`, so the pool holds two independent witnesses, not four. Measured in [Round 4](#round-4--schema-shapes) |
 | `components-links` | 2 | 4 | discards + supply | probed directly: a response Link that is a `$ref` to a `components.links` entry emits nothing — the component's name, description, `requestBody` and `server` all reach zero bytes, and no corpus document declares `components.links` at all. 2 eligible of 4 verified, short of a primary plus two backups. Measured in [Round 4](#round-4--links-and-encoding) |
 | `components-pathItems` | 6 | 7 | discards | `components.pathItems` reaches the SDK only through a Path Item `$ref`, which Fern discards; the one candidate that loses nothing witnesses the *declaration* alone |
-| `const-boolean` | 13 | 13 | **unmeasured** | no screen measured what Fern emits for a boolean `const`; the verdict recorded is a non-empty generation |
-| `const-integer` | 7 | 8 | **unmeasured** | no screen measured what Fern emits for an integer `const`; the verdict recorded is a non-empty generation |
+| `const-boolean` | 13 | 13 | discards | probed directly: `type: boolean` with `const: true` emits a plain `bool` — no `typing.Literal[True]`, no default, no validator — beside a `type: string` `const` in the same document that emits the single-member `StrEnum` `tamoss` (row 69) pins. `fern check` and `fern generate` both exit 0 and say nothing. No corpus document declares a boolean `const` at all. Measured in [Round 4](#round-4--schema-shapes) |
+| `const-integer` | 7 | 8 | discards | as `const-boolean`, in the same probe shape: `type: integer` with `const: 3` emits a plain `int` beside a string `const` that becomes a `StrEnum`. No corpus document declares an integer `const` at all. Measured in [Round 4](#round-4--schema-shapes) |
 | `cookie-array` | 0 | 3 | discards + supply | cookie parameters are dropped from the client entirely; and 0 eligible of 3 verified — 3× licence untiered |
 | `cookie-object` | 1 | 6 | discards + supply | as `cookie-array`; 1 eligible of 6 verified — 5× licence untiered |
 | `cookie-parameter` | 7 | 7 | discards | cookie parameters are dropped from the client entirely; the warning does not fail `fern check` |
-| `cycle-via-additionalProperties` | 3 | 3 | **unmeasured** | no screen measured what Fern emits for a map-of-self cycle; the verdict recorded is a non-empty generation |
+| `cycle-via-additionalProperties` | 3 | 3 | implements | probed directly: a map of self emits `from __future__ import annotations`, `typing.Optional[typing.Dict[str, "Field"]]` and a trailing `update_forward_refs(Field)` — three bytes that derive from the cycle and nothing else. Recursion through `properties`/`items` is densely pinned already (335 golden files call `update_forward_refs`), but no golden emits a forward-referenced *map*, so this is not registered anywhere. **REGISTRABLE** — candidate set in [Round 4](#round-4--schema-shapes) |
 | `deepObject-real-object` | 5 | 5 | **coincidence** | `query_encoder.py` flattens *every* dict-valued query parameter to `key[subkey]=value` unconditionally, and `form`, `pipeDelimited` and `deepObject` objects emit byte-identical code. A golden would pin the default, not style handling |
 | `encoding-explode-or-allowReserved` | 3 | 3 | refuses (multipart object `explode`) / ignores (list `explode`, `allowReserved`) | probed directly, and the two fields do not behave alike. `explode: true` on a **non-list multipart part** is refused at check time: `fern check` **exit 1**, `meta is exploded and must be a list`. In the other six configurations — `explode` true and false on a list part, `allowReserved` on either, and `explode: true` on a form-urlencoded map part — the emitted method is byte-identical to a no-encoding control. `fern generate` **exits 0** even on the refused document, emitting that same identical code. Measured in [Round 4](#round-4--links-and-encoding) |
 | `encoding-object` | 4 | 6 | implements (`contentType`) / discards (`headers`) | the object's two fields differ. `free5gc-pdu-session` (row 73) declares 99 Encoding objects; its golden emits `default_content_type="application/vnd.3gpp.5gnas"` from one of them — the only shape Round 4 found Fern handles — while the 58 per-part `Content-Id` headers reach zero bytes. No fixture is proposed because the shape is already registered, at `CORPUS.md` rows 73 and 76, both byte-matching. Measured in [Round 4](#round-4--links-and-encoding) |
@@ -2094,10 +2975,10 @@ question a future probe could answer**, not a proven absence.
 | `matrix-array` | 0 | 4 | discards + licence | Fern discards the `matrix` style and renders `str(list)` into the path segment; 0 eligible of 4 verified — 4× licence untiered |
 | `matrix-object` | 0 | 0 | discards | Fern discards the `matrix` style; no candidate carried end to end at all |
 | `mutualTLS` | 2 | 6 | discards + supply | the importer drops the scheme outright; 2 eligible of 6 verified — 2× tier Q, 2× untiered |
-| `nesting-depth-ge-15` | 6 | 6 | **unmeasured** | no screen measured what Fern emits at depth; the verdict recorded is a non-empty generation |
+| `nesting-depth-ge-15` | 6 | 6 | implements | `openbanking.org.uk-account-info-openapi` (row 58) reaches inline depth 19 with 91 schema nodes at depth ≥ 15, and its golden emits a fully populated model for the deepest of them, named by concatenating all eighteen path segments — no truncation, no `typing.Any`, no depth limit. No fixture is proposed because the shape is already registered, at `CORPUS.md` row 58, byte-matching. Measured in [Round 4](#round-4--schema-shapes) |
 | `nonascii-info-title` | 5 | 5 | ignores | probed directly: `info.title: 推奨データセット` is accepted and never reaches an identifier, so nothing emitted derives from it |
 | `nonascii-operationId` | 1 | 1 | crashes + supply | the generator emits invalid Python for a genuinely non-ASCII operationId; the one surviving candidate carries a Latin-1 accented one that folds, so it does not carry the shape |
-| `normalization-collision` | 4 | 5 | **unmeasured** | no screen measured how Fern resolves a post-normalization collision; the verdict recorded is a non-empty generation |
+| `normalization-collision` | 4 | 5 | discards | Fern does not resolve the collision, it loses one side of it. `openbanking.org.uk-account-info-openapi` (row 58) declares `OBRate1_0` (`type: number`) and `OB_Rate1_0` (`type: string`); the golden emits one module, `ObRate10 = str`, and silently retypes every reference to the `number` schema. `amazonaws.com-cloudformation` (row 51) is a second witness, collapsing `RoleArn` and `RoleARN` into one `role_arn.py`. Both documents are registered and byte-matching, so crozier already reproduces the loss. Measured in [Round 4](#round-4--schema-shapes) |
 | `oauth2-implicit` | 0 | 7 | supply | no eligible candidate carries the screen's verdict that Fern selected the flow; 0 eligible of 7 verified — 4× untiered, 3× tier Q |
 | `oauth2-password` | 5 | 6 | supply | only two eligible candidates carry the screen's verdict that Fern *selected* the password flow; the others show Fern selecting a different scheme from the same document |
 | `operation-security-alternatives` | 2 | 5 | ignores + supply | Fern collapses declared alternatives to a single credential — the first supported scheme — so the alternatives are not represented; 2 eligible of 5 verified — 2× tier Q, 1× OGC license |
@@ -2117,7 +2998,7 @@ question a future probe could answer**, not a proven absence.
 | `servers-three-levels` | 1 | 5 | discards | probed directly: with a root, a Path Item and an Operation server in one document, `fern check` and `fern generate` both exit 0 and only the root URL is emitted. Measured in [Round 4](#round-4--servers-and-xml) |
 | `spaceDelimited-object` | 0 | 6 | discards + licence | Fern discards the declared style; object query parameters are flattened regardless of it; 0 eligible of 6 verified — 6× licence untiered |
 | `trace-operation` | 2 | 5 | discards + supply | Fern emits no client method for `trace`; 2 eligible of 5 verified — 3× licence tier Q |
-| `type-array-multi-nonnull` | 8 | 8 | **unmeasured** | no screen measured what Fern emits for a 3.1 multi-type array; the verdict recorded is a non-empty generation |
+| `type-array-multi-nonnull` | 8 | 8 | implements | probed directly: `type: [string, integer]` emits `typing.Union[str, int]`, and the members track the declared list — `[boolean, number]` gives `typing.Union[bool, float]`, `[string, integer, boolean]` gives `typing.Union[str, int, bool]`, so no unconditional default can account for it. The `typing.Union[...]` occurrences already in the goldens all arise from `oneOf`/`anyOf`; of the corpus's 498 `type` arrays every one has a single non-null member. **REGISTRABLE** — candidate set in [Round 4](#round-4--schema-shapes) |
 | `x-fern-or-crozier-ignore` | 2 | 4 | supply | two of its four verified candidates are the AssemblyAI specification `CORPUS.md` records REJECTED, leaving two eligible |
 | `xml-request` | 18 | 20 | discards | probed directly: a **required** `application/xml` request body is dropped whole — the method takes no body argument and the call site sends none. No committed golden declares `application/xml`, so this rests on the probe. Measured in [Round 4](#round-4--servers-and-xml) |
 | `xml-response` | 20 | 24 | discards | probed directly: an `application/xml` response schema is dropped whole — the method returns `HttpResponse[None]` and never parses the body. No committed golden declares `application/xml`, so this rests on the probe. Measured in [Round 4](#round-4--servers-and-xml) |
