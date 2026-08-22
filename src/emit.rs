@@ -6007,10 +6007,11 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
-    /// The example for a union: the first variant that names concrete values,
-    /// else its first variant. An enum alternative supplies a real value where a
-    /// free-form scalar can only supply a placeholder, so Fern reaches past
-    /// helios' `Union[Uint, BlockTag, Hash32]` to `BlockTag`'s `"earliest"`.
+    /// The example for a union: the first alternative that names concrete values,
+    /// else its first alternative. A free-form scalar can only supply a
+    /// placeholder, so Fern reaches past helios' `Union[Uint, BlockTag, Hash32]`
+    /// to `BlockTag`'s `"earliest"` — rendered as the plain string the union's own
+    /// annotation accepts, not the enum member a `BlockTag` argument would take.
     fn union_value(&mut self, variants: &[TypeRef], slot: Slot<'_>) -> Example {
         if let Some(value) = variants
             .iter()
@@ -6031,11 +6032,7 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
-    /// The first value an alternative spells out, when it spells any out. A
-    /// free-form scalar alternative can only supply a placeholder, so Fern takes
-    /// the value: helios' `Union[Uint, BlockTag, Hash32]` reaches past `Uint` to
-    /// `BlockTag`'s `"earliest"`, as the plain string the union's own annotation
-    /// accepts rather than the enum member a `BlockTag` argument would take.
+    /// The first value an alternative spells out, when it spells any out.
     fn enumerated_value(&self, t: &TypeRef) -> Option<String> {
         match t {
             TypeRef::Literal(values) => values.first().cloned(),
