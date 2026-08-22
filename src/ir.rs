@@ -755,6 +755,10 @@ pub struct Endpoint {
     /// (`text/event-stream`). A streaming operation is emitted as a
     /// context-managed iterator of chunks rather than a buffered response.
     pub streaming: bool,
+    /// The type of one streamed chunk, read from the `text/event-stream` media
+    /// type's own schema. `None` when that media declares no schema, which Fern
+    /// yields as `typing.Any`.
+    pub stream_chunk: Option<TypeRef>,
     /// Whether the selected success response uses `text/plain` media.
     pub text_response: bool,
     /// Whether the success body is Markdown text. Fern types it as `str` but
@@ -1422,6 +1426,14 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     builder
         .types
         .retain(|d| !dropped_sources.contains(d.name()) && !moved_enums.contains(d.name()));
+    // An inlined body's hoisted type whose owning operation is untagged has no tag
+    // package to move into: Fern leaves it in the package-root `types/`, exported
+    // from that aggregator like any component type.
+    let root_moved: Vec<TypeDecl> = tag_types
+        .extract_if(.., |tag_type| tag_type.module.is_empty())
+        .map(|tag_type| tag_type.decl)
+        .collect();
+    builder.types.extend(root_moved);
 
     // Fern also emits a standalone package-root type for each error response whose
     // body is an inline object, named `{ErrorClassName}Body` (bunq's 400
@@ -1772,7 +1784,11 @@ fn build_endpoint(
             } else {
                 type_ref
             };
-            let convert = hoister.needs_convert(&type_ref);
+            // A query value that reaches nothing but scalars goes onto the URL as
+            // text, so Fern serializes it directly even when the same type would
+            // be converted in a request body (helios sends `block` raw as a query
+            // parameter and converted as a body field).
+            let convert = hoister.needs_convert(&type_ref) && !hoister.is_scalar(&type_ref);
             // The parameter's declared example, where Fern keeps it at all.
             let without_declared_example = parameter_example_value(doc, p).is_none();
             let omit_synthesized_example = without_declared_example
@@ -2349,6 +2365,7 @@ fn build_endpoint(
             .as_deref()
             .map_or_else(String::new, reference_description_suffix),
         streaming: is_streaming(op),
+        stream_chunk: stream_chunk_type(op),
         text_response: has_text_response(op),
         markdown_response: has_markdown_response(op),
         binary_response: is_binary_response(doc, op),
@@ -2478,14 +2495,27 @@ fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {
 /// Whether the operation's selected success response is a Server-Sent-Events
 /// stream. Fern prefers an `application/json` representation when a response
 /// advertises both it and `text/event-stream`; an SSE-only response becomes an
-/// iterator of chunks. The `x-fern-streaming` extension is not needed — Fern's
-/// OpenAPI importer does not resolve its `chunk-schema-ref`, so the chunk is
-/// `typing.Optional[typing.Any]` regardless.
+/// iterator of chunks, typed by [`stream_chunk_type`].
 fn is_streaming(op: &Operation) -> bool {
     success_response_entry(op).is_some_and(|response| {
         response.content.contains_key("text/event-stream")
             && !response.content.contains_key("application/json")
     })
+}
+
+/// The type of one Server-Sent-Events chunk. Fern types each event from the
+/// `text/event-stream` media type's own schema — a `type: string` stream yields
+/// `str` — and falls back to `typing.Any` when that media declares none.
+fn stream_chunk_type(op: &Operation) -> Option<TypeRef> {
+    if !is_streaming(op) {
+        return None;
+    }
+    let schema = success_response_entry(op)?
+        .content
+        .get("text/event-stream")?
+        .schema
+        .as_ref()?;
+    Some(base_type_ref(schema))
 }
 
 fn body_response_same_ref(doc: &OpenApi, op: &Operation) -> bool {
@@ -2614,7 +2644,7 @@ fn success_response_doc(op: &Operation) -> Option<String> {
 /// status range under Docker, `scripts/generate-fern-fixture.sh`). Its drift gates:
 /// the `error-responses` corpus pins the shape byte-for-byte for the common statuses
 /// (400/404/422/500/503), and the exhaustive
-/// `every_standard_error_status_maps_to_its_fern_exception` test
+/// `every_error_status_fern_names_maps_to_its_exception` test
 /// (`tests/generation.rs`) locks every entry's class name, `errors/` module filename,
 /// and `status_code`, so an accidental edit here fails loudly. See `docs/matching.md`.
 fn error_class_name(status: u16) -> Option<&'static str> {
@@ -2648,6 +2678,10 @@ fn error_class_name(status: u16) -> Option<&'static str> {
         429 => "TooManyRequestsError",
         431 => "RequestHeaderFieldsTooLargeError",
         451 => "UnavailableForLegalReasonsError",
+        // Fern also names three widely deployed non-IANA statuses: Esri's 498,
+        // nginx's 499, and Apache's 509.
+        498 => "InvalidTokenError",
+        499 => "ClientClosedRequestError",
         500 => "InternalServerError",
         501 => "NotImplementedError",
         502 => "BadGatewayError",
@@ -2657,6 +2691,7 @@ fn error_class_name(status: u16) -> Option<&'static str> {
         506 => "VariantAlsoNegotiatesError",
         507 => "InsufficientStorageError",
         508 => "LoopDetectedError",
+        509 => "BandwidthLimitExceededError",
         510 => "NotExtendedError",
         511 => "NetworkAuthenticationRequiredError",
         _ => return None,
@@ -3655,72 +3690,68 @@ impl InlineHoister<'_> {
         }
         if prop_schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
             let item_context = format!("{parent}{}", naming::class_name(prop));
-            if let Some(array) = self.hoist_array_item_enum(&item_context, prop_schema) {
+            if let Some(array) = self.hoist_array_item_type(&item_context, prop_schema) {
                 return array;
-            }
-            if let Some(item_schema) = prop_schema.items.as_deref() {
-                if item_schema.reference.is_none() && is_inline_struct(item_schema) {
-                    let item_name = format!("{parent}{}Item", naming::class_name(prop));
-                    self.hoist_object(&item_name, item_schema);
-                    let item = TypeRef::Named(item_name);
-                    let item = if is_optional(item_schema) {
-                        TypeRef::Optional(Box::new(item))
-                    } else {
-                        item
-                    };
-                    return if array_uses_set(prop_schema) {
-                        TypeRef::Set(Box::new(item))
-                    } else {
-                        TypeRef::List(Box::new(item))
-                    };
-                }
-                if item_schema.reference.is_none() {
-                    if let Some(members) =
-                        item_schema.one_of.as_ref().or(item_schema.any_of.as_ref())
-                    {
-                        let item_name = format!("{parent}{}Item", naming::class_name(prop));
-                        if members.len() == 1 && is_inline_struct(&members[0]) {
-                            self.hoist_object(&item_name, &members[0]);
-                            let item = Box::new(TypeRef::Named(item_name));
-                            return if array_uses_set(prop_schema) {
-                                TypeRef::Set(item)
-                            } else {
-                                TypeRef::List(item)
-                            };
-                        }
-                        if let Some(item) = self.hoist_discriminated_union(
-                            &item_name,
-                            item_schema,
-                            clean_doc(item_schema.description.as_deref()),
-                        ) {
-                            let item = Box::new(item);
-                            return if array_uses_set(prop_schema) {
-                                TypeRef::Set(item)
-                            } else {
-                                TypeRef::List(item)
-                            };
-                        }
-                        let mut variants: Vec<TypeRef> =
-                            members.iter().map(base_type_ref).collect();
-                        variants.dedup();
-                        self.out.push(TypeDecl::Alias(AliasType {
-                            name: item_name.clone(),
-                            module: naming::module_name(&item_name),
-                            target: TypeRef::Union(variants),
-                            docstring: clean_doc(item_schema.description.as_deref()),
-                        }));
-                        let item = Box::new(TypeRef::Named(item_name));
-                        return if array_uses_set(prop_schema) {
-                            TypeRef::Set(item)
-                        } else {
-                            TypeRef::List(item)
-                        };
-                    }
-                }
             }
         }
         // A `$ref`, scalar, or container of `$ref`/scalar items passes through.
         base_type_ref(prop_schema)
+    }
+
+    /// The sequence type of an array schema whose inline element hoists to
+    /// `{ctx}Item` (Fern names an array property's element after the property, so
+    /// `PutV1TraceResponse.result` yields `PutV1TraceResponseResultItem`).
+    /// `None` when the element names nothing and the array passes through
+    /// [`base_type_ref`].
+    fn hoist_array_item_type(&mut self, ctx: &str, array: &Schema) -> Option<TypeRef> {
+        if let Some(hoisted) = self.hoist_array_item_enum(ctx, array) {
+            return Some(hoisted);
+        }
+        let item_schema = array.items.as_deref()?;
+        if item_schema.reference.is_some() {
+            return None;
+        }
+        let item_name = format!("{ctx}Item");
+        if is_inline_struct(item_schema) {
+            self.hoist_object(&item_name, item_schema);
+            let item = TypeRef::Named(item_name);
+            let item = if is_optional(item_schema) {
+                TypeRef::Optional(Box::new(item))
+            } else {
+                item
+            };
+            return Some(sequence_of(array, item));
+        }
+        if let Some(members) = item_schema.one_of.as_ref().or(item_schema.any_of.as_ref()) {
+            if members.len() == 1 && is_inline_struct(&members[0]) {
+                self.hoist_object(&item_name, &members[0]);
+                return Some(sequence_of(array, TypeRef::Named(item_name)));
+            }
+            if let Some(item) = self.hoist_discriminated_union(
+                &item_name,
+                item_schema,
+                clean_doc(item_schema.description.as_deref()),
+            ) {
+                return Some(sequence_of(array, item));
+            }
+            let mut variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
+            variants.dedup();
+            self.out.push(TypeDecl::Alias(AliasType {
+                name: item_name.clone(),
+                module: naming::module_name(&item_name),
+                target: TypeRef::Union(variants),
+                docstring: clean_doc(item_schema.description.as_deref()),
+            }));
+            return Some(sequence_of(array, TypeRef::Named(item_name)));
+        }
+        // An array of arrays takes one `Item` per nesting level, so the inline
+        // element of `result: array of array of object` lands in
+        // `{Ctx}ItemItem` instead of degrading to `List[List[Any]]`.
+        if item_schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
+            let inner = self.hoist_array_item_type(&item_name, item_schema)?;
+            return Some(sequence_of(array, inner));
+        }
+        None
     }
 
     /// Hoist an inline string enum on a request parameter's schema into a named
@@ -3789,8 +3820,13 @@ impl InlineHoister<'_> {
                 self.hoist_object(&name, schema);
                 return TypeRef::Named(name);
             }
+            return base_type_ref(schema);
         }
-        base_type_ref(schema)
+        // A `$ref` to a nullable schema carries that nullability to its use site
+        // (see `openapi::normalize_nullable_schema_refs`), so a parameter naming
+        // one is typed `Optional[..]` — which Fern also passes as the annotation
+        // it serializes the value against.
+        full_type_ref(schema)
     }
 
     /// Hoist an inline string enum array item to `{ctx}Item`, preserving the
@@ -3823,6 +3859,11 @@ impl InlineHoister<'_> {
     /// the inline types just hoisted.
     fn needs_convert(&self, t: &TypeRef) -> bool {
         type_needs_convert(t, self.root_types) || type_needs_convert(t, &self.out)
+    }
+
+    fn is_scalar(&self, t: &TypeRef) -> bool {
+        type_is_scalar(t, self.root_types, &mut Vec::new())
+            || type_is_scalar(t, &self.out, &mut Vec::new())
     }
 }
 
@@ -4061,6 +4102,35 @@ fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
     }
 }
 
+/// Does this type reach nothing but scalars? A union of them serializes straight
+/// onto the wire, so Fern passes it through without the annotation converter
+/// (helios' `Union[Uint, BlockTag, Hash32]` is unwrapped, while its sibling
+/// `Union[Address, Addresses]` is wrapped for the list it can hold). `seen`
+/// guards a self-referential alias chain.
+fn type_is_scalar<'a>(t: &'a TypeRef, types: &'a [TypeDecl], seen: &mut Vec<&'a str>) -> bool {
+    match t {
+        TypeRef::Primitive(primitive) => *primitive != Prim::Any,
+        TypeRef::Literal(_) => true,
+        TypeRef::Union(variants) => variants
+            .iter()
+            .all(|variant| type_is_scalar(variant, types, seen)),
+        TypeRef::Named(name) => {
+            if seen.contains(&name.as_str()) {
+                return true;
+            }
+            seen.push(name.as_str());
+            let scalar = types.iter().any(|decl| match decl {
+                TypeDecl::Enum(e) => e.name == *name,
+                TypeDecl::Alias(a) => a.name == *name && type_is_scalar(&a.target, types, seen),
+                _ => false,
+            });
+            seen.pop();
+            scalar
+        }
+        _ => false,
+    }
+}
+
 fn type_ref_allows_none(t: &TypeRef, types: &[TypeDecl]) -> bool {
     match t {
         TypeRef::Optional(_) => true,
@@ -4131,11 +4201,9 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
         })
         .or_else(|| {
             let response = success_response_entry(op)?;
-            response
-                .content
-                .get("text/plain")
-                .or_else(|| response.content.get("text/markdown"))
-                .or_else(|| response.content.get("text/xml"))
+            TEXT_RESPONSE_MEDIA
+                .iter()
+                .find_map(|media_type| response.content.get(*media_type))
                 .and_then(|media| media.schema.as_ref())
                 .map(|_| TypeRef::Primitive(Prim::Str))
         })
@@ -4148,13 +4216,18 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
         })
 }
 
+/// The response media types Fern reads back as one plain `str` body.
+/// `text/event-stream` is deliberately absent: an SSE response is generated as a
+/// stream of parsed events, not as a single text body.
+const TEXT_RESPONSE_MEDIA: &[&str] = &["text/plain", "text/markdown", "text/xml", "text/csv"];
+
 fn has_text_response(op: &Operation) -> bool {
     success_response_entry(op).is_some_and(|response| {
         !response.content.contains_key("application/json")
             && !response.content.contains_key("*/*")
-            && (response.content.contains_key("text/plain")
-                || response.content.contains_key("text/markdown")
-                || response.content.contains_key("text/xml"))
+            && TEXT_RESPONSE_MEDIA
+                .iter()
+                .any(|media_type| response.content.contains_key(*media_type))
     })
 }
 
@@ -5101,17 +5174,34 @@ impl Builder<'_> {
                     }
                     return;
                 }
+                // An explicit `type: null` alternative is Fern's nullability, not a
+                // member: it leaves the union and makes what remains nullable.
+                // A single survivor becomes that type, made optional; two or more
+                // stay an undiscriminated union, which carries its own nullability
+                // at each use site rather than in the alias (helios' `FilterTopic`
+                // is `Union[Bytes32, List[Bytes32]]`, while its sibling
+                // `FilterTopics` collapses to `Optional[List[...]]`). Variant
+                // indices are the source's, so dropping one never renames the
+                // inline classes the others hoist.
+                let dropped_null = variants.iter().any(is_null_variant);
                 let mut members: Vec<TypeRef> = variants
                     .iter()
                     .enumerate()
+                    .filter(|(_, variant)| !is_null_variant(variant))
                     .map(|(i, v)| self.variant_ref(name, i, v, variants))
                     .collect();
                 members.dedup();
-                let target = TypeRef::Union(members);
-                let target = if schema_accepts_none(schema, self.schemas) {
-                    optional_type_ref(target)
-                } else {
-                    target
+                let target = match (dropped_null, members.len()) {
+                    (true, 1) => optional_type_ref(members.remove(0)),
+                    (true, _) => TypeRef::Union(members),
+                    (false, _) => {
+                        let target = TypeRef::Union(members);
+                        if schema_accepts_none(schema, self.schemas) {
+                            optional_type_ref(target)
+                        } else {
+                            target
+                        }
+                    }
                 };
                 self.push_alias(name, module, target, docstring);
                 return;
@@ -5246,6 +5336,13 @@ impl Builder<'_> {
                     self.push_alias(name, module, target, docstring);
                     return;
                 }
+                // An element that only annotates a `$ref` is that `$ref`'s type,
+                // not a composition to hoist: `AliasList`'s `allOf: [$ref string,
+                // { xml }]` element is `str`, so the alias is `List[str]`.
+                if let Some(element) = self.annotated_ref_type(&item_name, items) {
+                    self.push_alias(name, module, sequence_of(schema, element), docstring);
+                    return;
+                }
                 if is_inline_struct(items) {
                     let item_doc = clean_doc(items.description.as_deref());
                     self.add_object(&item_name, item_module, items, item_doc);
@@ -5256,6 +5353,28 @@ impl Builder<'_> {
                         docstring,
                     );
                     return;
+                }
+                // An array of arrays names its leaf element with one `Item` per
+                // nesting level, even when that element would render inline at the
+                // top level (WithSecure's `RequiredAuth` → `List[List[
+                // RequiredAuthItemItem]]` over an `anyOf` of four `$ref`s).
+                if items.reference.is_none()
+                    && items.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
+                {
+                    if let Some(element) = self.nested_array_element(&item_name, items) {
+                        let collection = if array_uses_set(schema) {
+                            TypeRef::Set(Box::new(element))
+                        } else {
+                            TypeRef::List(Box::new(element))
+                        };
+                        let target = if schema_accepts_none(schema, self.schemas) {
+                            TypeRef::Optional(Box::new(collection))
+                        } else {
+                            collection
+                        };
+                        self.push_alias(name, module, target, docstring);
+                        return;
+                    }
                 }
             }
         }
@@ -5268,6 +5387,57 @@ impl Builder<'_> {
             full_type_ref_resolved(schema, self.schemas),
             docstring,
         );
+    }
+
+    /// The sequence type of an array nested inside another array, naming its leaf
+    /// element `{ctx}Item` and recursing through any further nesting. `None` when
+    /// the leaf names nothing, leaving the array to [`full_type_ref_resolved`].
+    fn nested_array_element(&mut self, ctx: &str, array: &Schema) -> Option<TypeRef> {
+        let items = array.items.as_deref()?;
+        let name = format!("{ctx}Item");
+        if items.reference.is_none()
+            && items.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
+        {
+            let inner = self.nested_array_element(&name, items)?;
+            return Some(sequence_of(array, inner));
+        }
+        let module = naming::module_name(&name);
+        if let Some(decl) = self.discriminated_union(
+            &name,
+            &module,
+            items,
+            clean_doc(items.description.as_deref()),
+        ) {
+            self.types.push(TypeDecl::DiscriminatedUnion(decl));
+            return Some(sequence_of(array, TypeRef::Named(name)));
+        }
+        if items.reference.is_some() {
+            return None;
+        }
+        if is_inline_struct(items) {
+            self.add_object(
+                &name,
+                module,
+                items,
+                clean_doc(items.description.as_deref()),
+            );
+            return Some(sequence_of(array, TypeRef::Named(name)));
+        }
+        if let Some(members) = items.one_of.as_ref().or(items.any_of.as_ref()) {
+            let variants = members
+                .iter()
+                .enumerate()
+                .map(|(index, variant)| self.variant_ref(&name, index, variant, members))
+                .collect();
+            self.push_alias(
+                &name,
+                module,
+                TypeRef::Union(variants),
+                clean_doc(items.description.as_deref()),
+            );
+            return Some(sequence_of(array, TypeRef::Named(name)));
+        }
+        None
     }
 
     /// Build an object model. `allOf` `$ref` members become base classes and
@@ -5548,44 +5718,69 @@ impl Builder<'_> {
         })
     }
 
+    /// The type of a schema that only hangs annotations off one `$ref` — the
+    /// `allOf: [$ref, { description }]` form Swagger-generated AWS documents use
+    /// for nearly every documented node. Fern treats it as a use-site copy rather
+    /// than inheritance: an enum or object target is cloned under `ctx` so the
+    /// contextual description belongs to the generated type, while a scalar or
+    /// collection alias resolves straight to its underlying type. `None` when the
+    /// schema is not that shape, or its `$ref` does not resolve.
+    fn annotated_ref_type(&mut self, ctx: &str, schema: &Schema) -> Option<TypeRef> {
+        let (reference, description) = described_all_of_ref(schema)?;
+        let target = resolve_ref_from_schemas(self.schemas, reference).cloned()?;
+        Some(self.use_site_copy(ctx, &target, description))
+    }
+
+    /// One use-site copy of an annotated `$ref`'s target under the name `ctx`. An
+    /// enum or object is cloned so the contextual description belongs to the copy;
+    /// an array alias copies its element too, taking one `Item` per nesting level
+    /// (`ActiveTrustedSigners.Items` over a list of `Signer` →
+    /// `List[ActiveTrustedSignersItemsItem]`); anything else is a scalar or
+    /// collection alias that resolves straight to its underlying type.
+    fn use_site_copy(&mut self, ctx: &str, target: &Schema, description: Option<&str>) -> TypeRef {
+        // The copy documents itself with the annotation that named it, and keeps the
+        // target's own description when the annotation carried none — an element
+        // annotated only with an XML name (`SignerList.items`) still documents
+        // itself as a `Signer`.
+        let docstring = clean_doc(description.or(target.description.as_deref()));
+        if let Some(values) = string_enum_values(target) {
+            self.types
+                .push(TypeDecl::Enum(build_enum(ctx, values, docstring)));
+            return TypeRef::Named(ctx.to_string());
+        }
+        if !is_map(target)
+            && !is_bare_object(target)
+            && (!target.properties.is_empty() || target.all_of.is_some() || is_object_type(target))
+        {
+            self.add_object(ctx, naming::module_name(ctx), target, docstring);
+            return TypeRef::Named(ctx.to_string());
+        }
+        if target.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
+            if let Some(element) = target
+                .items
+                .as_deref()
+                .and_then(|items| self.annotated_ref_type(&format!("{ctx}Item"), items))
+            {
+                let sequence = sequence_of(target, element);
+                return if schema_accepts_none(target, self.schemas) {
+                    TypeRef::Optional(Box::new(sequence))
+                } else {
+                    sequence
+                };
+            }
+        }
+        full_type_ref_resolved(target, self.schemas)
+    }
+
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
         if is_map(prop_schema) && prop_schema.nullable == Some(true) {
             return legacy_nullable_map_type_ref(prop_schema);
         }
-        // AWS-style OpenAPI documents commonly decorate a property reference as
-        // `allOf: [$ref, { description }]`. Fern treats that as a use-site copy:
-        // scalar/collection aliases resolve to their underlying type, while enums
-        // and object models are cloned under `{Owner}{Property}` so the contextual
-        // description belongs to the generated type. It is not inheritance.
-        if let Some((reference, description)) = described_all_of_ref(prop_schema) {
-            if let Some(target) = resolve_ref_from_schemas(self.schemas, reference).cloned() {
-                let name = format!("{owner}{}", naming::class_name(prop));
-                if let Some(values) = string_enum_values(&target) {
-                    self.types.push(TypeDecl::Enum(build_enum(
-                        &name,
-                        values,
-                        clean_doc(description),
-                    )));
-                    return TypeRef::Named(name);
-                }
-                if !is_map(&target)
-                    && !is_bare_object(&target)
-                    && (!target.properties.is_empty()
-                        || target.all_of.is_some()
-                        || is_object_type(&target))
-                {
-                    self.add_object(
-                        &name,
-                        naming::module_name(&name),
-                        &target,
-                        clean_doc(description),
-                    );
-                    return TypeRef::Named(name);
-                }
-                return full_type_ref_resolved(&target, self.schemas);
-            }
+        let owner_prop = format!("{owner}{}", naming::class_name(prop));
+        if let Some(type_ref) = self.annotated_ref_type(&owner_prop, prop_schema) {
+            return type_ref;
         }
         if prop_schema.reference.is_none() {
             if let Some(values) = string_enum_values(prop_schema) {
@@ -6405,6 +6600,18 @@ fn array_item_type_ref(schema: &Schema) -> TypeRef {
     }
 }
 
+/// Wrap a hoisted array element in the container [`array_uses_set`] picks, so
+/// hoisted elements and ordinary ones agree on it. That is always `List` today —
+/// Fern ignores `uniqueItems` — and the `Set` branch exists only so a future
+/// change to that one predicate reaches every call site.
+fn sequence_of(array: &Schema, item: TypeRef) -> TypeRef {
+    if array_uses_set(array) {
+        TypeRef::Set(Box::new(item))
+    } else {
+        TypeRef::List(Box::new(item))
+    }
+}
+
 /// Fern's OpenAPI importer keeps arrays as lists even when `uniqueItems` is true;
 /// the constraint does not change the generated Python collection type.
 fn array_uses_set(_schema: &Schema) -> bool {
@@ -6457,21 +6664,14 @@ fn is_optional(schema: &Schema) -> bool {
     is_explicitly_nullable(schema)
 }
 
+/// Is this schema the explicit `type: null` alternative of a composition? Fern
+/// reads it as nullability rather than as a member of the union.
+fn is_null_variant(schema: &Schema) -> bool {
+    schema.ty.as_ref().and_then(TypeField::primary) == Some("null")
+}
+
 fn is_explicitly_nullable(schema: &Schema) -> bool {
-    schema.nullable == Some(true)
-        || matches!(
-            schema.ty.as_ref(),
-            Some(TypeField::Multiple(types)) if types.iter().any(|ty| ty == "null")
-        )
-        || schema
-            .one_of
-            .as_ref()
-            .or(schema.any_of.as_ref())
-            .is_some_and(|members| {
-                members
-                    .iter()
-                    .any(|member| member.ty.as_ref().and_then(TypeField::primary) == Some("null"))
-            })
+    schema.explicitly_nullable()
 }
 
 /// A schema that carries nothing to determine a type — Fern treats it as an

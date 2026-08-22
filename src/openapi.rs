@@ -269,7 +269,7 @@ impl PathItem {
 
     /// Mutable references to each method slot, in the same stable order as
     /// [`PathItem::operations`], for filters that clear operations in place.
-    fn operation_slots(&mut self) -> [&mut Option<Operation>; 6] {
+    pub(crate) fn operation_slots(&mut self) -> [&mut Option<Operation>; 6] {
         [
             &mut self.get,
             &mut self.post,
@@ -669,6 +669,27 @@ impl Schema {
     pub fn ignored(&self) -> bool {
         self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
     }
+
+    /// Whether the document says this schema admits `null`: the 3.0 `nullable`
+    /// flag, a 3.1 `type` list carrying `null`, or a composition with an explicit
+    /// `type: null` alternative.
+    #[must_use]
+    pub fn explicitly_nullable(&self) -> bool {
+        self.nullable == Some(true)
+            || matches!(
+                self.ty.as_ref(),
+                Some(TypeField::Multiple(types)) if types.iter().any(|ty| ty == "null")
+            )
+            || self
+                .one_of
+                .as_ref()
+                .or(self.any_of.as_ref())
+                .is_some_and(|members| {
+                    members.iter().any(|member| {
+                        member.ty.as_ref().and_then(TypeField::primary) == Some("null")
+                    })
+                })
+    }
 }
 
 /// An object schema's ordered properties plus whether the source explicitly
@@ -941,12 +962,225 @@ pub fn load(path: &Path) -> Result<OpenApi> {
         }
     }
 
+    // A `$ref` into another document is fetched and resolved before the local
+    // normalizations run, so every later pass sees one self-contained document.
+    crate::refs::resolve(&mut doc, &crate::refs::CurlFetcher, path)?;
+
+    normalize_unresolvable_schema_refs(&mut doc);
+    normalize_nullable_schema_refs(&mut doc);
     normalize_parameters(&mut doc);
     normalize_responses(&mut doc);
+    normalize_response_alias_refs(&mut doc);
     normalize_response_schema_refs(&mut doc);
     normalize_request_bodies(&mut doc);
 
     Ok(doc)
+}
+
+/// Visit every schema the document declares, wherever it sits: the component
+/// maps, the path-level and operation parameters, and the request and response
+/// bodies. Nested schemas are reached by the visitor itself.
+pub(crate) fn for_each_root_schema<F: FnMut(&mut Schema)>(doc: &mut OpenApi, visit: &mut F) {
+    for schema in doc.components.schemas.values_mut() {
+        visit(schema);
+    }
+    for parameter in doc.components.parameters.values_mut() {
+        parameter_schemas(parameter, visit);
+    }
+    for response in doc.components.responses.values_mut() {
+        media_schemas(&mut response.content, visit);
+    }
+    for body in doc.components.request_bodies.values_mut() {
+        media_schemas(&mut body.content, visit);
+    }
+    for item in doc.paths.values_mut() {
+        for parameter in &mut item.parameters {
+            parameter_schemas(parameter, visit);
+        }
+        for slot in item.operation_slots() {
+            if let Some(operation) = slot.as_mut() {
+                operation_schemas(operation, visit);
+            }
+        }
+    }
+}
+
+fn operation_schemas<F: FnMut(&mut Schema)>(operation: &mut Operation, visit: &mut F) {
+    for parameter in &mut operation.parameters {
+        parameter_schemas(parameter, visit);
+    }
+    if let Some(body) = &mut operation.request_body {
+        request_body_schemas(body, visit);
+    }
+    for response in operation.responses.values_mut() {
+        response_schemas(response, visit);
+    }
+}
+
+fn parameter_schemas<F: FnMut(&mut Schema)>(parameter: &mut Parameter, visit: &mut F) {
+    if let Some(schema) = &mut parameter.schema {
+        visit(schema);
+    }
+    media_schemas(&mut parameter.content, visit);
+}
+
+fn request_body_schemas<F: FnMut(&mut Schema)>(body: &mut RequestBody, visit: &mut F) {
+    media_schemas(&mut body.content, visit);
+}
+
+fn response_schemas<F: FnMut(&mut Schema)>(response: &mut Response, visit: &mut F) {
+    media_schemas(&mut response.content, visit);
+}
+
+fn media_schemas<F: FnMut(&mut Schema)>(content: &mut IndexMap<String, MediaType>, visit: &mut F) {
+    for media in content.values_mut() {
+        if let Some(schema) = &mut media.schema {
+            visit(schema);
+        }
+    }
+}
+
+/// Apply `visit` to `schema` and to every schema nested inside it.
+pub(crate) fn for_each_schema_in<F: FnMut(&mut Schema)>(schema: &mut Schema, visit: &mut F) {
+    visit(schema);
+    for property in schema.properties.values_mut() {
+        for_each_schema_in(property, visit);
+    }
+    if let Some(items) = &mut schema.items {
+        for_each_schema_in(items, visit);
+    }
+    if let Some(AdditionalProperties::Schema(value)) = &mut schema.additional_properties {
+        for_each_schema_in(value, visit);
+    }
+    for members in [&mut schema.one_of, &mut schema.any_of, &mut schema.all_of] {
+        for member in members.iter_mut().flatten() {
+            for_each_schema_in(member, visit);
+        }
+    }
+}
+
+/// The component-schema name a local `$ref` points at, ignoring any deeper
+/// pointer into that schema (`#/components/schemas/User/properties/name`).
+pub(crate) fn referenced_component_schema(reference: &str) -> Option<&str> {
+    reference
+        .strip_prefix("#/components/schemas/")
+        .map(|pointer| pointer.split('/').next().unwrap_or(pointer))
+}
+
+/// Carry a component schema's nullability to every reference to it.
+///
+/// Fern keeps nullability at the use site rather than in the declaration: helios'
+/// `FilterTopic` declares `Union[Bytes32, List[Bytes32]]` — its `type: null`
+/// alternative left the union — and every reference to it generates as
+/// `Optional[FilterTopic]`.
+fn normalize_nullable_schema_refs(doc: &mut OpenApi) {
+    let nullable: std::collections::BTreeSet<String> = doc
+        .components
+        .schemas
+        .iter()
+        .filter(|(_, schema)| schema.explicitly_nullable())
+        .map(|(name, _)| name.clone())
+        .collect();
+    if nullable.is_empty() {
+        return;
+    }
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            let names = node
+                .reference
+                .as_deref()
+                .and_then(referenced_component_schema)
+                .is_some_and(|name| nullable.contains(name));
+            if names {
+                node.nullable = Some(true);
+            }
+        });
+    });
+}
+
+/// Resolve an operation response that names a component schema which is nothing
+/// but a `$ref`.
+///
+/// Fern follows such an alias when it types an endpoint's response: helios'
+/// `BlockResponse: {$ref: #/components/schemas/Block}` still *declares*
+/// `BlockResponse = Block`, but `get_block_information` is generated as returning
+/// `Block`. A reference from inside another schema keeps the alias name
+/// (Airbyte's `DestinationAuthSpecification` stays itself on the property that
+/// carries it), so this rewrite is confined to response media schemas.
+fn normalize_response_alias_refs(doc: &mut OpenApi) {
+    let mut targets: IndexMap<String, String> = IndexMap::new();
+    for name in doc.components.schemas.keys() {
+        let mut seen = std::collections::BTreeSet::new();
+        let mut current = name.as_str();
+        while let Some(next) = doc
+            .components
+            .schemas
+            .get(current)
+            .and_then(|schema| schema.reference.as_deref())
+            .and_then(referenced_component_schema)
+        {
+            if next == name || !seen.insert(next.to_string()) {
+                break;
+            }
+            current = next;
+        }
+        if current != name {
+            targets.insert(name.clone(), current.to_string());
+        }
+    }
+    if targets.is_empty() {
+        return;
+    }
+    for item in doc.paths.values_mut() {
+        for slot in item.operation_slots() {
+            let Some(operation) = slot.as_mut() else {
+                continue;
+            };
+            for response in operation.responses.values_mut() {
+                for media in response.content.values_mut() {
+                    let Some(schema) = &mut media.schema else {
+                        continue;
+                    };
+                    let Some(target) = schema
+                        .reference
+                        .as_deref()
+                        .filter(|reference| reference.starts_with("#/components/schemas/"))
+                        .and_then(referenced_component_schema)
+                        .and_then(|name| targets.get(name))
+                    else {
+                        continue;
+                    };
+                    schema.reference = Some(format!("#/components/schemas/{target}"));
+                }
+            }
+        }
+    }
+}
+
+/// Degrade a `$ref` to a component schema the document never declares.
+///
+/// Fern resolves what it can and treats the rest as an unknown value: an
+/// unresolvable property reference generates `Optional[Any]` and an unresolvable
+/// `allOf` member contributes nothing. Real documents reach this through
+/// [`crate::refs`] — a fetched schema fragment may name a sibling the root does
+/// not assemble — but a hand-written spec with a typo lands here too, and
+/// inventing a class for a schema that was never declared would emit Python that
+/// imports a module crozier never wrote.
+fn normalize_unresolvable_schema_refs(doc: &mut OpenApi) {
+    let declared: std::collections::BTreeSet<String> =
+        doc.components.schemas.keys().cloned().collect();
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            let unresolvable = node
+                .reference
+                .as_deref()
+                .and_then(referenced_component_schema)
+                .is_some_and(|name| !declared.contains(name));
+            if unresolvable {
+                node.reference = None;
+            }
+        });
+    });
 }
 
 /// Resolve response-schema `$ref`s that point into another operation response
@@ -1719,6 +1953,150 @@ components:
         assert_eq!(
             ok.reference.as_deref(),
             Some("#/components/responses/ItemsResponse")
+        );
+    }
+
+    /// A reference to a schema the document never declares is Fern's unknown
+    /// value, not an invented class: crozier would otherwise emit Python that
+    /// imports a module it never wrote. Reachable in practice through a fetched
+    /// remote fragment naming a sibling the root document does not assemble.
+    #[test]
+    fn normalize_unresolvable_schema_refs_degrades_to_the_unknown_type() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+paths:
+  /items:
+    get:
+      operationId: getItems
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/Missing" } }
+components:
+  schemas:
+    Item:
+      type: object
+      properties:
+        known: { $ref: "#/components/schemas/Known" }
+        unknown: { $ref: "#/components/schemas/NeverDeclared" }
+      allOf:
+        - { $ref: "#/components/schemas/NeverDeclared" }
+    Known:
+      type: string
+"##,
+        );
+        normalize_unresolvable_schema_refs(&mut doc);
+        let item = &doc.components.schemas["Item"];
+        assert_eq!(
+            item.properties["known"].reference.as_deref(),
+            Some("#/components/schemas/Known")
+        );
+        assert_eq!(item.properties["unknown"].reference, None);
+        assert_eq!(item.all_of.as_ref().unwrap()[0].reference, None);
+        let response = &doc.paths["/items"].get.as_ref().unwrap().responses["200"];
+        assert_eq!(
+            response.content["application/json"]
+                .schema
+                .as_ref()
+                .unwrap()
+                .reference,
+            None
+        );
+    }
+
+    /// Fern keeps a schema's nullability at its use sites rather than in the
+    /// alias it declares, so a reference to one is optional wherever it appears.
+    #[test]
+    fn normalize_nullable_schema_refs_marks_every_reference_nullable() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+components:
+  schemas:
+    Topic:
+      oneOf:
+        - { type: "null" }
+        - { type: string }
+    Solid:
+      type: string
+    Holder:
+      type: object
+      properties:
+        topic: { $ref: "#/components/schemas/Topic" }
+        solid: { $ref: "#/components/schemas/Solid" }
+        topics:
+          type: array
+          items: { $ref: "#/components/schemas/Topic" }
+"##,
+        );
+        normalize_nullable_schema_refs(&mut doc);
+        let holder = &doc.components.schemas["Holder"];
+        assert_eq!(holder.properties["topic"].nullable, Some(true));
+        assert_eq!(holder.properties["solid"].nullable, None);
+        assert_eq!(
+            holder.properties["topics"]
+                .items
+                .as_ref()
+                .expect("array items")
+                .nullable,
+            Some(true)
+        );
+    }
+
+    /// Fern types an endpoint's response against the schema an alias points at,
+    /// while a reference from inside another schema keeps the alias name.
+    #[test]
+    fn normalize_response_alias_refs_follows_only_response_references() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+paths:
+  /block:
+    get:
+      operationId: getBlock
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/BlockResponse" } }
+components:
+  schemas:
+    BlockResponse: { $ref: "#/components/schemas/Block" }
+    Block:
+      type: object
+      properties:
+        hash: { type: string }
+    Holder:
+      type: object
+      properties:
+        block: { $ref: "#/components/schemas/BlockResponse" }
+"##,
+        );
+        normalize_response_alias_refs(&mut doc);
+        let response = &doc.paths["/block"].get.as_ref().unwrap().responses["200"];
+        assert_eq!(
+            response.content["application/json"]
+                .schema
+                .as_ref()
+                .unwrap()
+                .reference
+                .as_deref(),
+            Some("#/components/schemas/Block")
+        );
+        assert_eq!(
+            doc.components.schemas["Holder"].properties["block"]
+                .reference
+                .as_deref(),
+            Some("#/components/schemas/BlockResponse")
+        );
+        assert_eq!(
+            doc.components.schemas["BlockResponse"].reference.as_deref(),
+            Some("#/components/schemas/Block")
         );
     }
 

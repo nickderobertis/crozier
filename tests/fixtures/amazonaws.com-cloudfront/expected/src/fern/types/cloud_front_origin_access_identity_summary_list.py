@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .cloud_front_origin_access_identity_summary_list_item import CloudFrontOriginAccessIdentitySummaryListItem
+
+CloudFrontOriginAccessIdentitySummaryList = typing.List[CloudFrontOriginAccessIdentitySummaryListItem]

@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .streaming_distribution_summary_list_item import StreamingDistributionSummaryListItem
+
+StreamingDistributionSummaryList = typing.List[StreamingDistributionSummaryListItem]

@@ -1,0 +1,217 @@
+
+
+
+
+import typing
+from importlib import import_module
+
+if typing.TYPE_CHECKING:
+    from .types import (
+        AccessList,
+        AccessListEntry,
+        AccountResponse,
+        AccountResponseAccount,
+        Address,
+        Addresses,
+        AuthorizationList,
+        AuthorizationListItem,
+        Block,
+        BlockNumberOrTagOrHash,
+        BlockReceiptsResponse,
+        BlockResponse,
+        BlockTag,
+        BlockTransactions,
+        Byte,
+        Bytes,
+        Bytes256,
+        Bytes32,
+        Bytes8,
+        BytesMax32,
+        ChainIdResponse,
+        ErrorResponse,
+        ExtendedAccessListResponse,
+        Filter,
+        FilterBlockHash,
+        FilterBlockHashAddress,
+        FilterChangesResponse,
+        FilterChangesResponseHashes,
+        FilterFromBlock,
+        FilterFromBlockAddress,
+        FilterLogsResponse,
+        FilterTopic,
+        FilterTopics,
+        GenericTransaction,
+        GetEthV1ProofLogsRequestAddress,
+        Hash32,
+        Log,
+        LogsResponse,
+        NewFilterRequestKind,
+        NewFilterResponse,
+        NewFilterResponseKind,
+        ReceiptInfo,
+        ReceiptProofsMap,
+        SendRawTxResponse,
+        StorageProof,
+        TransactionInfo,
+        TransactionReceipt,
+        TransactionReceiptResponse,
+        Uint,
+        Uint256,
+        Uint64,
+        UninstallFilterResponse,
+        Withdrawal,
+    )
+    from .errors import BadRequestError, InternalServerError
+    from . import verifiable
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
+    from .client import AsyncFernApi, FernApi
+    from .version import __version__
+_dynamic_imports: typing.Dict[str, str] = {
+    "AccessList": ".types",
+    "AccessListEntry": ".types",
+    "AccountResponse": ".types",
+    "AccountResponseAccount": ".types",
+    "Address": ".types",
+    "Addresses": ".types",
+    "AsyncFernApi": ".client",
+    "AuthorizationList": ".types",
+    "AuthorizationListItem": ".types",
+    "BadRequestError": ".errors",
+    "Block": ".types",
+    "BlockNumberOrTagOrHash": ".types",
+    "BlockReceiptsResponse": ".types",
+    "BlockResponse": ".types",
+    "BlockTag": ".types",
+    "BlockTransactions": ".types",
+    "Byte": ".types",
+    "Bytes": ".types",
+    "Bytes256": ".types",
+    "Bytes32": ".types",
+    "Bytes8": ".types",
+    "BytesMax32": ".types",
+    "ChainIdResponse": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
+    "ErrorResponse": ".types",
+    "ExtendedAccessListResponse": ".types",
+    "FernApi": ".client",
+    "Filter": ".types",
+    "FilterBlockHash": ".types",
+    "FilterBlockHashAddress": ".types",
+    "FilterChangesResponse": ".types",
+    "FilterChangesResponseHashes": ".types",
+    "FilterFromBlock": ".types",
+    "FilterFromBlockAddress": ".types",
+    "FilterLogsResponse": ".types",
+    "FilterTopic": ".types",
+    "FilterTopics": ".types",
+    "GenericTransaction": ".types",
+    "GetEthV1ProofLogsRequestAddress": ".types",
+    "Hash32": ".types",
+    "InternalServerError": ".errors",
+    "Log": ".types",
+    "LogsResponse": ".types",
+    "NewFilterRequestKind": ".types",
+    "NewFilterResponse": ".types",
+    "NewFilterResponseKind": ".types",
+    "ReceiptInfo": ".types",
+    "ReceiptProofsMap": ".types",
+    "SendRawTxResponse": ".types",
+    "StorageProof": ".types",
+    "TransactionInfo": ".types",
+    "TransactionReceipt": ".types",
+    "TransactionReceiptResponse": ".types",
+    "Uint": ".types",
+    "Uint256": ".types",
+    "Uint64": ".types",
+    "UninstallFilterResponse": ".types",
+    "Withdrawal": ".types",
+    "__version__": ".version",
+    "verifiable": ".verifiable",
+}
+
+
+def __getattr__(attr_name: str) -> typing.Any:
+    module_name = _dynamic_imports.get(attr_name)
+    if module_name is None:
+        raise AttributeError(f"No {attr_name} found in _dynamic_imports for module name -> {__name__}")
+    try:
+        module = import_module(module_name, __package__)
+        if module_name == f".{attr_name}":
+            return module
+        else:
+            return getattr(module, attr_name)
+    except ImportError as e:
+        raise ImportError(f"Failed to import {attr_name} from {module_name}: {e}") from e
+    except AttributeError as e:
+        raise AttributeError(f"Failed to get {attr_name} from {module_name}: {e}") from e
+
+
+def __dir__():
+    lazy_attrs = list(_dynamic_imports.keys())
+    return sorted(lazy_attrs)
+
+
+__all__ = [
+    "AccessList",
+    "AccessListEntry",
+    "AccountResponse",
+    "AccountResponseAccount",
+    "Address",
+    "Addresses",
+    "AsyncFernApi",
+    "AuthorizationList",
+    "AuthorizationListItem",
+    "BadRequestError",
+    "Block",
+    "BlockNumberOrTagOrHash",
+    "BlockReceiptsResponse",
+    "BlockResponse",
+    "BlockTag",
+    "BlockTransactions",
+    "Byte",
+    "Bytes",
+    "Bytes256",
+    "Bytes32",
+    "Bytes8",
+    "BytesMax32",
+    "ChainIdResponse",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
+    "ErrorResponse",
+    "ExtendedAccessListResponse",
+    "FernApi",
+    "Filter",
+    "FilterBlockHash",
+    "FilterBlockHashAddress",
+    "FilterChangesResponse",
+    "FilterChangesResponseHashes",
+    "FilterFromBlock",
+    "FilterFromBlockAddress",
+    "FilterLogsResponse",
+    "FilterTopic",
+    "FilterTopics",
+    "GenericTransaction",
+    "GetEthV1ProofLogsRequestAddress",
+    "Hash32",
+    "InternalServerError",
+    "Log",
+    "LogsResponse",
+    "NewFilterRequestKind",
+    "NewFilterResponse",
+    "NewFilterResponseKind",
+    "ReceiptInfo",
+    "ReceiptProofsMap",
+    "SendRawTxResponse",
+    "StorageProof",
+    "TransactionInfo",
+    "TransactionReceipt",
+    "TransactionReceiptResponse",
+    "Uint",
+    "Uint256",
+    "Uint64",
+    "UninstallFilterResponse",
+    "Withdrawal",
+    "__version__",
+    "verifiable",
+]

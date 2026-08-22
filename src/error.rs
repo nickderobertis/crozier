@@ -31,6 +31,19 @@ pub enum Error {
         message: String,
     },
 
+    /// A `$ref` naming another document by absolute URL could not be fetched or
+    /// resolved. Dropping it silently would emit a plausible SDK with the wrong
+    /// types in it, so it fails the run (see [`crate::refs`]).
+    #[error("could not resolve remote $ref `{reference}` in {path}: {message}")]
+    RemoteRef {
+        /// The document being loaded.
+        path: PathBuf,
+        /// The reference that could not be resolved.
+        reference: String,
+        /// What went wrong and, where possible, how to fix it.
+        message: String,
+    },
+
     /// The document is syntactically valid but not usable (e.g. wrong version).
     #[error("invalid OpenAPI document {path}: {message}")]
     InvalidSpec {

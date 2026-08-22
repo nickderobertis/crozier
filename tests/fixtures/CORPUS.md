@@ -100,6 +100,13 @@ measured state is `tests/e2e.rs`; re-measure with `just fixtures-gaps`.
 | 82 | `eos.local-extra-fields-forbid` | api-guru | https://api.apis.guru/v2/specs/eos.local/1.0.0/openapi.json | `1.0.0` | MIT | link-ok | Row 43's Net API regenerated with `pydantic_config.extra_fields: forbid`, pinning `extra="forbid"` / `pydantic.Extra.forbid` |
 | 83 | `med-anvisa-price` | github-raw | https://raw.githubusercontent.com/breno12321/medAnvisaPrice/43866742c2db0f2064ceb99071ebb058c804580b/docs/apiSchema.yml | `43866742c2db0f2064ceb99071ebb058c804580b` | MIT | link-ok | Latin-1 accented enum values Fern folds into ASCII member names (`SUBSTANCIA = "SUBSTÂNCIA"`) beside accented property names it drops the accent from (`laborat_rio` aliased to `LABORATÓRIO`) |
 | 84 | `sac-backend` | github-raw | https://raw.githubusercontent.com/walter1705/SAC/3c0ee7959c334a750496d2db2c26791a5aa0185f/backend/src/main/resources/static/openapi.yaml | `3c0ee7959c334a750496d2db2c26791a5aa0185f` | MIT | link-ok | Second, independent witness of the accent-dropping property rule from another project and language: `tamaño` becomes `tama_o` with the wire name kept as the alias |
+| 85 | `kytos-sdntrace-cp` | github-raw | https://raw.githubusercontent.com/kytos-ng/sdntrace_cp/269f4482ecd4125dc1c115e059dbce26b7269216/openapi.yml | `269f4482ecd4125dc1c115e059dbce26b7269216` | MIT | link-ok | Kytos SDNTrace-CP API whose two operations both declare `424`, pinning Fern's `FailedDependencyError` name for a status no golden emitted |
+| 86 | `withsecure-gdpr-subject-rights` | github-raw | https://raw.githubusercontent.com/WithSecureOpenSource/gdpr-subject-rights-api/0d2775dbf1c0830671a9efd878f03ae1eaf97995/openapi.yaml | `0d2775dbf1c0830671a9efd878f03ae1eaf97995` | Apache 2.0 | link-ok | WithSecure GDPR subject-rights API whose five operations declare `451`, pinning Fern's `UnavailableForLegalReasonsError` name for a status no golden emitted |
+| 87 | `prometheus-x-edge-computing` | github-raw | https://raw.githubusercontent.com/Prometheus-X-association/edge-computing/78ed883317ec8739e985780c998d9f73f1e370a8/spec/openapi.yaml | `78ed883317ec8739e985780c998d9f73f1e370a8` | Apache-2.0 | link-ok | Prometheus-X edge-computing API declaring `408` and `412`, pinning Fern's `RequestTimeoutError` and `PreconditionFailedError` names for two statuses no golden emitted |
+| 88 | `exa-gate` | github-raw | https://raw.githubusercontent.com/apaidedie/exa-gate/37cf047d828665004b4900ce672aa3f27b0bb844/docs/openapi.json | `37cf047d828665004b4900ce672aa3f27b0bb844` | MIT | link-ok | Exa Gate API declaring `423` and `426`, pinning Fern's `LockedError` and `UpgradeRequiredError` names for two statuses no golden emitted |
+| 89 | `amazonaws.com-cloudfront` | api-guru | https://api.apis.guru/v2/specs/amazonaws.com/cloudfront/2016-11-25/openapi.json | `2016-11-25` | Apache 2.0 License | link-ok | AWS CloudFront API whose 27 operations declare `502`, `505`, `506`, `507`, `508`, `510` and `511`, pinning Fern's `BadGatewayError`, `HttpVersionNotSupportedError`, `VariantAlsoNegotiatesError`, `InsufficientStorageError`, `LoopDetectedError`, `NotExtendedError` and `NetworkAuthenticationRequiredError` names for seven statuses no golden emitted |
+| 90 | `khoainats` | github-raw | https://raw.githubusercontent.com/cukhoaimon/khoainats/e680e29affee221e3a6c379b1e51c98ef241da7a/api/generated/.docs/api/openapi.yaml | `e680e29affee221e3a6c379b1e51c98ef241da7a` | MIT | link-ok | Khoai NATS Admin API declaring an `openIdConnect` scheme (`Roles`) beside an HTTP bearer one, with `/v1/noauth` unsecured: `openIdConnect` is the one member of its scheme family Fern imports rather than drops, and this row pins the optional bearer `token` Fern emits for such a document |
+| 91 | `helios-verifiable-api` | github-raw | https://raw.githubusercontent.com/a16z/helios/43a8c9f3cdda41a6f383c4db41d9a83f102638b1/verifiable-api/server/openapi.yaml | `43a8c9f3cdda41a6f383c4db41d9a83f102638b1` | MIT | link-ok | 27 component schemas that are remote-URL `$ref`s into six `ethereum/execution-apis` documents, which Fern fetches and resolves transitively — the only reference form Fern was measured to follow rather than discard. Unlike every other row, the golden depends on a third-party fetch at generation time, and those URLs address `refs/heads/main` rather than an immutable ref, so an upstream edit to those six files breaks this row's reproduction for a reason unrelated to crozier |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -334,3 +341,95 @@ Neither backup set was needed: both primaries generated and matched. The row-2
 divergences are a reminder that a fixture chosen for one shape pays for itself in
 the shapes it drags in — three generator rules were replaced with measured ones
 because `sac-backend` happened to describe its server in Spanish.
+## Batch 10 — the unpinned HTTP status exception names (issue #77)
+
+`error_class_name` maps HTTP statuses to Fern's exception class names, and 21
+of them were emitted by no golden — every one a hand-written guess. A wrong
+name is never one line: it renames the `errors/` module file, its lazy-import
+and `__all__` entries, its `reference.md` row, and every `raise` site in every
+raw client that declares the status. Five rows were selected, each for the
+statuses it declares, and between them they pin 13 of the 21.
+
+| name | selected for | status |
+|---|---|---|
+| `kytos-sdntrace-cp` | `424` → `FailedDependencyError` | ✅ matched |
+| `withsecure-gdpr-subject-rights` | `451` → `UnavailableForLegalReasonsError` | ✅ matched |
+| `prometheus-x-edge-computing` | `408` → `RequestTimeoutError`, `412` → `PreconditionFailedError` | ✅ matched |
+| `exa-gate` | `423` → `LockedError`, `426` → `UpgradeRequiredError` | ✅ matched |
+| `amazonaws.com-cloudfront` | `502`, `505`, `506`, `507`, `508`, `510`, `511` — the whole `5xx` tail above `503` — plus the non-IANA `498`, `499` and `509` its operations also declare | ✅ matched |
+
+No candidate was dropped: all five primaries carried through, so none of the
+screened backups was needed.
+
+### The eight statuses this batch could not pin, and why
+
+Not a shortfall to retry blindly — a measured supply limit in the eligible
+pool. Fern generates all eight correctly when probed directly; what is missing
+is a redistributable specification that declares them.
+
+| statuses | why unpinned |
+|---|---|
+| `407`, `421` | **zero** documents in the eligible pool declare them anywhere |
+| `414`, `418`, `425`, `431` | one eligible witness each — too thin to register |
+| `417`, `428` | two eligible witnesses each. `428` is the one worth reading twice: issue #148 reasoned from RFC 6585 that `PreconditionError` was likely wrong, and it is exactly what Fern emits |
+
+CloudFront also moved two rules the corpus had only approximated: annotated
+`$ref` use-site copies now cascade through array elements, and `text/csv` reads
+back as a `str` body. It contradicted the environment-member rule too, but batch
+9's `production`/`sandbox`-only rule — measured from Fern probes and landed
+first — already names its multi-word server description `DEFAULT`, so no third
+repair was needed. See `../../docs/matching.md`.
+
+## Batch 11 — security-scheme coverage (issue #77)
+
+Crozier's `auth_model` names four security-scheme shapes — `apiKey` in a header,
+HTTP `bearer`, HTTP `basic` and `oauth2` — and sends everything else to one
+fallthrough arm. Of the schemes that land there, `openIdConnect` is the only one
+Fern's importer keeps rather than drops at import, so it is the only one a golden
+can pin as behaviour rather than as an absence. Row 90 is that golden.
+
+| name | selected for | status |
+|---|---|---|
+| `khoainats` | a document declaring `openIdConnect` — the one scheme in Crozier's fallthrough family Fern imports — with one unsecured operation, so the credential is optional | ✅ matched, no repair needed |
+
+Crozier reproduced the golden byte for byte on its first measurement, so the
+predicted divergence (a required token from Fern against an optional one from the
+fallthrough) did not occur here: the row's document also declares an HTTP bearer
+scheme *ahead* of its `openIdConnect` one, and Crozier selects the first
+supported scheme, so it emits the same optional bearer `token` through its
+HTTP-bearer arm. All three screened candidates for this row shared that shape —
+none declares `openIdConnect` without a supported scheme preceding it — so the
+corpus still has no golden that forces the fallthrough arm itself. A future
+candidate for that gap must declare `openIdConnect` alone.
+
+### Not registered
+
+| name | status |
+|---|---|
+| `gh:teamdigitale/api-openapi-samples:openapi-v3/spid-aa-template.yaml` | **unused backup** — the primary carried; it declares HTTP bearer and two `oauth2` schemes and no `openIdConnect` at all |
+| `gh:Gravitate-Health/keycloak:openapi.yaml` | **unused backup** — the primary carried; its `openIdConnect` scheme also sits behind an `oauth2` one, so it witnesses the same shape as row 90 |
+
+## Batch 12 — the cross-document reference gap (issue #77)
+
+Every row above is a single self-contained document whose every `$ref` is a
+local `#/...` pointer, so nothing pinned whether crozier can open a *second*
+document. Of the reference forms that cross a document boundary, a remote-URL
+`$ref` is the only one Fern 5.20.0 was measured to follow rather than discard
+(see [`../../docs/fern-limitations.md`](../../docs/fern-limitations.md)), so it
+is the only one a golden can pin. One row closes it.
+
+| name | selected for | status |
+|---|---|---|
+| `helios-verifiable-api` | 27 component schemas that are remote-URL `$ref`s into six `ethereum/execution-apis` documents, fetched and resolved transitively | ✅ matched |
+
+Repairing crozier to reproduce it needed cross-document resolution
+([`src/refs.rs`](../../src/refs.rs)) plus five rules the golden exposed along the
+way — fetched-schema naming, unresolvable references, response aliases,
+use-site nullability, and scalar query serialization — all recorded in
+[`../../docs/matching.md`](../../docs/matching.md#cross-document-ref-resolution-issue-77).
+
+**This row alone depends on a third-party fetch at generation time**, and the URLs
+it references address `refs/heads/main` rather than an immutable ref. An upstream
+edit to those six `ethereum/execution-apis` files breaks its reproduction for a
+reason unrelated to crozier; regenerate the golden through the standard workflow
+if that happens, rather than treating it as a generator regression.

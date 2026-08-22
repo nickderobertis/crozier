@@ -955,7 +955,10 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 contents: file,
             });
         }
-        if !(ir.empty_endpoint_namespace && *module == "_") {
+        // The root `types/` package has one aggregator, written below over the
+        // component types *and* these hoisted ones; a second one here would land
+        // on the same path and lose whichever was written first.
+        if !(module.is_empty() || ir.empty_endpoint_namespace && *module == "_") {
             files.push(tag_types_init_file(&env, pkg, module, decls)?);
         }
     }
@@ -1086,8 +1089,9 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // Package aggregators: `types/__init__.py` over the type layer, and the
     // package-root `__init__.py` re-exporting types, errors, the endpoint
     // submodules, the root client, and `__version__`.
-    if !ir.types.is_empty() {
-        files.push(types_init_file(&env, pkg, &ir.types)?);
+    let root_tag_types: &[&TypeDecl] = tag_type_modules.get("").map_or(&[], Vec::as_slice);
+    if !ir.types.is_empty() || !root_tag_types.is_empty() {
+        files.push(types_init_file(&env, pkg, &ir.types, root_tag_types)?);
     }
     if root_emittable || !emittable_modules.is_empty() {
         files.push(root_init_file(&env, pkg, ir, &emittable_modules)?);
@@ -1310,12 +1314,13 @@ fn types_init_file(
     env: &Environment<'static>,
     pkg: &str,
     types: &[TypeDecl],
+    hoisted: &[&TypeDecl],
 ) -> Result<GeneratedFile> {
     // Each declaration may export more than its primary name (a discriminated
     // union also exports its per-variant wrappers), all sharing the decl module.
     let mut module_of: std::collections::HashMap<String, String> = std::collections::HashMap::new();
     let mut names: Vec<String> = Vec::new();
-    for decl in types {
+    for decl in types.iter().chain(hoisted.iter().copied()) {
         for n in decl.exported_names() {
             names.push(n.to_string());
             module_of.insert(n.to_string(), decl.module().to_string());
@@ -1582,24 +1587,41 @@ fn select_readme_endpoint<'a>(
         })
 }
 
-fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
+/// The order the README walks endpoints in. Fern builds client modules in
+/// first-seen module order and reads the README's endpoints from that grouped
+/// view. Keep operations within each module in source order, but do not let an
+/// operation from a later module leapfrog one from the first module merely
+/// because their paths were interleaved.
+fn readme_endpoint_order(ir: &Ir) -> Vec<&Endpoint> {
     if ir.openapi_31 {
-        return select_readme_endpoint(ir.endpoints.iter());
+        return ir.endpoints.iter().collect();
     }
-    // Fern builds client modules in first-seen module order and selects the README
-    // example from that grouped view. Keep operations within each module in source
-    // order, but do not let a POST from a later module leapfrog one from the first
-    // module merely because their paths were interleaved.
     let grouped: Vec<&Endpoint> = ir
         .endpoint_modules
         .iter()
         .flat_map(|module| ir.endpoints.iter().filter(move |ep| &ep.module == module))
         .collect();
     if grouped.is_empty() {
-        select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
+        ir.endpoints
+            .iter()
+            .filter(|e| e.module.is_empty())
+            .collect()
     } else {
-        select_readme_endpoint(grouped.iter().copied())
+        grouped
     }
+}
+
+fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
+    select_readme_endpoint(readme_endpoint_order(ir).into_iter())
+}
+
+/// The endpoint the README's streaming section demonstrates: the first emittable
+/// streaming operation anywhere in the SDK. Fern documents streaming whenever the
+/// SDK has it, so this is independent of the endpoint the usage example shows.
+fn readme_streaming_endpoint(ir: &Ir) -> Option<&Endpoint> {
+    readme_endpoint_order(ir)
+        .into_iter()
+        .find(|e| e.emittable && e.streaming)
 }
 
 fn client_call_prefix(ep: &Endpoint) -> String {
@@ -1709,27 +1731,26 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         .join("\n")
     };
 
-    let mut streaming_args = documentation_auth_example_args(&ir.auth)
+    let mut streaming_args = documentation_client_example_args(&ir.auth, &ir.global_headers)
         .into_iter()
         .map(|arg| format!("    {arg},\n"))
         .collect::<String>();
     if ir.environment.is_none() {
         streaming_args.push_str("    base_url=\"https://yourhost.com/path/to/api\",\n");
     }
-    let streaming = if first.streaming {
+    let stream_ep = readme_streaming_endpoint(ir);
+    let streaming = stream_ep.map_or_else(String::new, |ep| {
         format!(
             "## Streaming\n\nThe SDK supports streaming responses, as well, the response will be a generator that you can loop over.\n\n```python\nfrom {pkg} import {}\n\nclient = {}(\n{streaming_args})\n\n{}()\n```\n\n",
             ir.client_name,
             ir.client_name,
-            client_call_prefix(first)
+            client_call_prefix(ep)
         )
-    } else {
-        String::new()
-    };
+    });
     let contents = include_str!("../assets/scaffolding/README.md.tmpl")
         .replace(
             "@@STREAMING_TOC@@\n",
-            if first.streaming {
+            if stream_ep.is_some() {
                 "- [Streaming](#streaming)\n"
             } else {
                 ""
@@ -3142,9 +3163,16 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
                 description,
             }
         } else {
+            // An argument whose own type is already optional — a `$ref` to a
+            // nullable schema — is not wrapped twice.
+            let annotation = if base.starts_with("typing.Optional[") {
+                base
+            } else {
+                format!("typing.Optional[{base}]")
+            };
             DocParam {
                 name,
-                annotation: format!("typing.Optional[{base}]"),
+                annotation,
                 default: Some("None".to_string()),
                 description,
             }
@@ -3817,7 +3845,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         // documented body with at least one optional field — which may serialize to
         // nothing — or a legacy codegen-named body that rides no header-forcing
         // param, leaving the content-type to httpx. An all-required body
-        // (`CREATE_SessionServer`) keeps it.
+        // (`CREATE_SessionServer`) keeps it. A `components.requestBodies` body drops
+        // it only while its schema survives in the public type layer; one whose
+        // schema exists solely to be flattened here (exa-gate's `KeyBatch`) keeps it.
         Some(body)
             if !body.is_wildcard_media()
                 && (ep.body_media_has_example && ep.body_schema_dropped && ep.body_schema_ref
@@ -3829,7 +3859,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     || (body.content_type_header()
                         && (!ep.basic_auth || !ep.body_description_missing)
                         && !ep.body_codegen_named
-                        && !ep.body_component_ref
+                        && (!ep.body_component_ref || ep.body_schema_dropped)
                         && !(matches!(body, RequestBody::Inline(_))
                             && (ep.body_all_of || ep.body_response_same_ref))
                         && !matches!(body, RequestBody::Inline(fields)
@@ -3899,10 +3929,15 @@ fn body_field_value_name(field: &BodyField) -> &str {
         .unwrap_or(&field.py_name)
 }
 
-/// The chunk type Fern yields from an OpenAPI-sourced SSE stream. Fern's OpenAPI
-/// importer does not resolve the `x-fern-streaming` `chunk-schema-ref`, so every
-/// streamed event is typed `typing.Any`.
-const SSE_CHUNK: &str = "typing.Any";
+/// The chunk type Fern yields from an OpenAPI-sourced SSE stream: the
+/// `text/event-stream` media type's own schema, or `typing.Any` when it declares
+/// none — Fern's importer does not resolve `x-fern-streaming`'s
+/// `chunk-schema-ref`, so no extension can supply one.
+fn sse_chunk(ep: &Endpoint, imports: &mut Imports) -> String {
+    ep.stream_chunk
+        .as_ref()
+        .map_or_else(|| "typing.Any".to_string(), |ty| raw_type_str(ty, imports))
+}
 
 /// Build one streaming raw-client method (sync or async): a context-managed
 /// `httpx_client.stream(...)` that decodes Server-Sent Events into an iterator of
@@ -3949,7 +3984,17 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
             )
         };
     let mp = method_params(ep, imports);
-    let data_type = format!("{aiter}[{SSE_CHUNK}]");
+    let chunk = sse_chunk(ep, imports);
+    // A streaming operation still declares error statuses, and Fern raises them
+    // from inside the stream body once the response has been read, exactly as the
+    // buffered path does.
+    let error_branches = raw_error_branches(ep, imports);
+    let error_branches = if error_branches.is_empty() {
+        String::new()
+    } else {
+        format!("\n{error_branches}")
+    };
+    let data_type = format!("{aiter}[{chunk}]");
     let return_type = format!("{iter_t}[{wrapper}[{data_type}]]");
     let sig = signature(ep, &mp, &return_type, is_async);
     let docstring = raw_stream_docstring(ep, &mp, &return_type);
@@ -3980,10 +4025,10 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                                     return
                                 try:
                                     yield typing.cast(
-                                        {SSE_CHUNK},
+                                        {chunk},
                                         parse_sse_obj(
                                             sse=_sse,
-                                            type_={SSE_CHUNK},
+                                            type_={chunk},
                                         ),
                                     )
                                 except JSONDecodeError as e:
@@ -3999,7 +4044,7 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                             return
 
                         return {inner_return}
-                    {read}
+                    {read}{error_branches}
                     _response_json = _response.json()
                 except JSONDecodeError:
                     raise ApiError(
@@ -4190,6 +4235,7 @@ fn raw_binary_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &s
 fn raw_error_branches(ep: &Endpoint, imports: &mut Imports) -> String {
     let mut lines = Vec::new();
     for err in &ep.errors {
+        imports.add_core("pydantic_utilities", "parse_obj_as");
         let module = naming::module_name(&err.class_name);
         imports.add_from(&imports.error_import_path(&module), &err.class_name);
         let body = raw_type_str(&err.body_type, imports);
@@ -4911,9 +4957,10 @@ fn client_stream_method(
     } else {
         "typing.Iterator"
     };
-    let return_type = format!("{iter_t}[{SSE_CHUNK}]");
+    let chunk = sse_chunk(ep, imports);
+    let return_type = format!("{iter_t}[{chunk}]");
     let sig = signature(ep, &mp, &return_type, is_async);
-    let docstring = client_stream_docstring(cx, ep, &mp, is_async);
+    let docstring = client_stream_docstring(cx, ep, &mp, is_async, &chunk);
 
     // Delegation call arguments, in signature order (path positionally, the rest as
     // keywords, then `request_options`) — identical to the buffered high-level method.
@@ -4945,6 +4992,7 @@ fn client_stream_docstring(
     ep: &Endpoint,
     mp: &MethodParams,
     is_async: bool,
+    chunk: &str,
 ) -> String {
     let iter_t = if is_async {
         "typing.AsyncIterator"
@@ -4972,7 +5020,7 @@ fn client_stream_docstring(
     lines.push(String::new());
     lines.push("        Yields".to_string());
     lines.push("        ------".to_string());
-    lines.push(format!("        {iter_t}[{SSE_CHUNK}]"));
+    lines.push(format!("        {iter_t}[{chunk}]"));
     push_return_doc(&mut lines, ep.response_doc.as_deref());
 
     let mut ctx = ExampleCtx {
@@ -5959,15 +6007,43 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
-    /// The example for a union: its first variant (an extensible enum's first
-    /// literal, else the first variant's own example).
+    /// The example for a union: the first alternative that names concrete values,
+    /// else its first alternative. A free-form scalar can only supply a
+    /// placeholder, so Fern reaches past helios' `Union[Uint, BlockTag, Hash32]`
+    /// to `BlockTag`'s `"earliest"` — rendered as the plain string the union's own
+    /// annotation accepts, not the enum member a `BlockTag` argument would take.
     fn union_value(&mut self, variants: &[TypeRef], slot: Slot<'_>) -> Example {
+        if let Some(value) = variants
+            .iter()
+            .skip(1)
+            .find_map(|variant| self.enumerated_value(variant))
+        {
+            return Example::Atom(format!("{value:?}"));
+        }
         match variants.first() {
-            Some(first) => self.value(first, slot),
+            Some(first) => {
+                let first = first.clone();
+                self.value(&first, slot)
+            }
             None => Example::Dict(vec![(
                 "key".to_string(),
                 Example::Atom("\"value\"".to_string()),
             )]),
+        }
+    }
+
+    /// The first value an alternative spells out, when it spells any out.
+    fn enumerated_value(&self, t: &TypeRef) -> Option<String> {
+        match t {
+            TypeRef::Literal(values) => values.first().cloned(),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Enum(declaration)) => declaration
+                    .members
+                    .first()
+                    .map(|member| member.value.clone()),
+                _ => None,
+            },
+            _ => None,
         }
     }
 
@@ -6733,11 +6809,8 @@ fn build_example_inner(
     // Method docstrings follow constructor order (global headers, auth). Fern's
     // Markdown snippets instead lead with auth and omit optional global headers.
     if documentation {
-        for arg in documentation_auth_example_args(ctx.auth) {
+        for arg in documentation_client_example_args(ctx.auth, ctx.global_headers) {
             client_args.push(format!("    {arg},"));
-        }
-        for h in ctx.global_headers.iter().filter(|header| header.required) {
-            client_args.push(format!("    {}=\"<{}>\",", h.py_name, h.wire_name));
         }
     } else {
         for h in ctx.global_headers {
@@ -6812,6 +6885,20 @@ fn build_example_inner(
     } else {
         Some(out)
     }
+}
+
+/// The client-constructor arguments Fern's Markdown snippets pass: auth first,
+/// then every *required* global header (optional ones are left out).
+fn documentation_client_example_args(auth: &Auth, global_headers: &[GlobalHeader]) -> Vec<String> {
+    documentation_auth_example_args(auth)
+        .into_iter()
+        .chain(
+            global_headers
+                .iter()
+                .filter(|header| header.required)
+                .map(|header| format!("{}=\"<{}>\"", header.py_name, header.wire_name)),
+        )
+        .collect()
 }
 
 fn documentation_auth_example_args(auth: &Auth) -> Vec<String> {
@@ -7784,6 +7871,7 @@ mod tests {
             docstring: None,
             reference_description_suffix: String::new(),
             streaming: false,
+            stream_chunk: None,
             text_response: false,
             markdown_response: false,
             binary_response: false,

@@ -1,0 +1,3 @@
+
+
+BytesMax32 = str

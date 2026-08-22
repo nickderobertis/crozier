@@ -1192,11 +1192,12 @@ fn unmapped_error_status_is_skipped_but_the_module_still_emits() {
     );
 }
 
-/// Every standard 4xx/5xx status maps to Fern's named exception (issue #43). One
-/// operation declaring the whole range emits a `raise` branch per status and a
-/// generated `errors/` module per class — exercising the full status→name map.
+/// Every status Fern names maps to its exception (issue #43) — the IANA 4xx/5xx
+/// registry plus the three widely deployed codes outside it. One operation
+/// declaring them all emits a `raise` branch per status and a generated `errors/`
+/// module per class, exercising the full status→name map.
 #[test]
-fn every_standard_error_status_maps_to_its_fern_exception() {
+fn every_error_status_fern_names_maps_to_its_exception() {
     // (status, class name, module file stem) — the complete Fern map.
     let cases: &[(u16, &str, &str)] = &[
         (400, "BadRequestError", "bad_request_error"),
@@ -1252,6 +1253,14 @@ fn every_standard_error_status_maps_to_its_fern_exception() {
             "UnavailableForLegalReasonsError",
             "unavailable_for_legal_reasons_error",
         ),
+        // Outside the IANA registry, but Fern names them: Esri's 498, nginx's 499,
+        // and Apache's 509.
+        (498, "InvalidTokenError", "invalid_token_error"),
+        (
+            499,
+            "ClientClosedRequestError",
+            "client_closed_request_error",
+        ),
         (500, "InternalServerError", "internal_server_error"),
         (501, "NotImplementedError", "not_implemented_error"),
         (502, "BadGatewayError", "bad_gateway_error"),
@@ -1273,6 +1282,11 @@ fn every_standard_error_status_maps_to_its_fern_exception() {
             "insufficient_storage_error",
         ),
         (508, "LoopDetectedError", "loop_detected_error"),
+        (
+            509,
+            "BandwidthLimitExceededError",
+            "bandwidth_limit_exceeded_error",
+        ),
         (510, "NotExtendedError", "not_extended_error"),
         (
             511,
@@ -5351,5 +5365,375 @@ paths:
         with_subclient["src/acme/client.py"].contains("from __future__ import annotations"),
         "{}",
         with_subclient["src/acme/client.py"]
+    );
+}
+
+/// A component alias over an array of arrays names its leaf element with one
+/// `Item` per nesting level, whatever that leaf is — an `anyOf` of `$ref`s
+/// (WithSecure's `RequiredAuth`), a discriminated `oneOf`, or an inline object
+/// three levels down. A leaf that is itself a plain `$ref` names nothing, so the
+/// alias keeps the referenced model inline.
+#[test]
+fn nested_array_aliases_name_their_leaf_element_once_per_level() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Nested Arrays, version: 1.0.0 }
+paths:
+  /grids:
+    get:
+      operationId: grids_list
+      tags: [Grids]
+      responses: { '204': { description: Done } }
+components:
+  schemas:
+    Ping:
+      type: object
+      properties: { id: { type: string } }
+    Pong:
+      type: object
+      properties: { name: { type: string } }
+    Started:
+      type: object
+      required: [kind]
+      properties:
+        kind: { type: string }
+        at: { type: string }
+    Stopped:
+      type: object
+      required: [kind]
+      properties:
+        kind: { type: string }
+        why: { type: string }
+    RequiredAuth:
+      description: Nested anyOf leaf.
+      type: array
+      items:
+        type: array
+        items:
+          anyOf:
+            - { $ref: '#/components/schemas/Ping' }
+            - { $ref: '#/components/schemas/Pong' }
+    Matrix:
+      type: array
+      items:
+        type: array
+        items:
+          type: array
+          items:
+            type: object
+            properties: { cell: { type: string } }
+    RefGrid:
+      type: array
+      items:
+        type: array
+        items: { $ref: '#/components/schemas/Ping' }
+    Timeline:
+      type: array
+      items:
+        type: array
+        items:
+          oneOf:
+            - { $ref: '#/components/schemas/Started' }
+            - { $ref: '#/components/schemas/Stopped' }
+          discriminator:
+            propertyName: kind
+            mapping:
+              started: '#/components/schemas/Started'
+              stopped: '#/components/schemas/Stopped'
+"#,
+    );
+
+    let required_auth = &files["src/acme/types/required_auth.py"];
+    assert!(
+        required_auth.contains("RequiredAuth = typing.List[typing.List[RequiredAuthItemItem]]"),
+        "{required_auth}"
+    );
+    assert!(
+        files["src/acme/types/required_auth_item_item.py"]
+            .contains("RequiredAuthItemItem = typing.Union[Ping, Pong]"),
+        "{}",
+        files["src/acme/types/required_auth_item_item.py"]
+    );
+
+    let matrix = &files["src/acme/types/matrix.py"];
+    assert!(
+        matrix.contains("Matrix = typing.List[typing.List[typing.List[MatrixItemItemItem]]]"),
+        "{matrix}"
+    );
+    assert!(
+        files["src/acme/types/matrix_item_item_item.py"].contains("class MatrixItemItemItem("),
+        "{}",
+        files["src/acme/types/matrix_item_item_item.py"]
+    );
+
+    // A `$ref` leaf already has a name, so nothing is hoisted for it.
+    let ref_grid = &files["src/acme/types/ref_grid.py"];
+    assert!(
+        ref_grid.contains("RefGrid = typing.List[typing.List[Ping]]"),
+        "{ref_grid}"
+    );
+    assert!(!files.contains_key("src/acme/types/ref_grid_item_item.py"));
+
+    let timeline = &files["src/acme/types/timeline.py"];
+    assert!(
+        timeline.contains("Timeline = typing.List[typing.List[TimelineItemItem]]"),
+        "{timeline}"
+    );
+    let timeline_item = &files["src/acme/types/timeline_item_item.py"];
+    assert!(
+        timeline_item.contains("class TimelineItemItem_Started(")
+            && timeline_item.contains(r#"pydantic.Field(discriminator="kind")"#),
+        "{timeline_item}"
+    );
+}
+
+/// The same one-`Item`-per-level rule applies to an element hoisted out of an
+/// operation's inline response, alongside the two other element shapes that
+/// path hoists: a multi-member `anyOf` becomes a `{Ctx}Item` union alias, and a
+/// nullable inline object element stays `Optional` inside the list.
+#[test]
+fn hoisted_response_array_elements_nest_and_carry_their_own_optionality() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Hoisted Items, version: 1.0.0 }
+paths:
+  /grids:
+    get:
+      operationId: grids_list
+      tags: [Grids]
+      responses:
+        '200':
+          description: Grids
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          port: { type: integer }
+                  mixed:
+                    type: array
+                    items:
+                      anyOf:
+                        - { $ref: '#/components/schemas/Ping' }
+                        - { type: string }
+                  optionals:
+                    type: array
+                    items:
+                      type: object
+                      nullable: true
+                      properties:
+                        note: { type: string }
+components:
+  schemas:
+    Ping:
+      type: object
+      properties: { id: { type: string } }
+"#,
+    );
+
+    let response = &files["src/acme/grids/types/grids_list_response.py"];
+    assert!(
+        response.contains(
+            "result: typing.Optional[typing.List[typing.List[GridsListResponseResultItemItem]]]"
+        ),
+        "{response}"
+    );
+    assert!(
+        response.contains("mixed: typing.Optional[typing.List[GridsListResponseMixedItem]]"),
+        "{response}"
+    );
+    assert!(
+        response.contains(
+            "optionals: typing.Optional[typing.List[typing.Optional[GridsListResponseOptionalsItem]]]"
+        ),
+        "{response}"
+    );
+    assert!(
+        files["src/acme/grids/types/grids_list_response_result_item_item.py"]
+            .contains("class GridsListResponseResultItemItem("),
+        "{}",
+        files["src/acme/grids/types/grids_list_response_result_item_item.py"]
+    );
+    assert!(
+        files["src/acme/grids/types/grids_list_response_mixed_item.py"]
+            .contains("GridsListResponseMixedItem = typing.Union[Ping, str]"),
+        "{}",
+        files["src/acme/grids/types/grids_list_response_mixed_item.py"]
+    );
+}
+
+/// An `allOf: [$ref, { annotation }]` is a use-site copy rather than a subclass,
+/// and the copy cascades through array elements: CloudFront's `SignerList` copies
+/// its annotated element into `SignerListItem`, and a property that annotates
+/// `SignerList` in turn copies the element again under its own name. An annotated
+/// `$ref` to a scalar resolves straight to that scalar.
+#[test]
+fn an_annotated_ref_copies_itself_through_array_elements() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Annotated Refs, version: 1.0.0 }
+paths:
+  /distributions:
+    get:
+      operationId: distributions_get
+      tags: [Distributions]
+      responses:
+        '200':
+          description: Distribution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Distribution' }
+components:
+  schemas:
+    AwsAccountNumber:
+      type: string
+    Signer:
+      type: object
+      properties:
+        awsAccountNumber:
+          allOf:
+            - { $ref: '#/components/schemas/AwsAccountNumber' }
+            - { description: The account that signs. }
+    SignerList:
+      type: array
+      items:
+        allOf:
+          - { $ref: '#/components/schemas/Signer' }
+          - { xml: { name: Signer } }
+    Distribution:
+      type: object
+      properties:
+        signers:
+          allOf:
+            - { $ref: '#/components/schemas/SignerList' }
+            - { description: The trusted signers. }
+"#,
+    );
+
+    let signer_list = &files["src/acme/types/signer_list.py"];
+    assert!(
+        signer_list.contains("SignerList = typing.List[SignerListItem]"),
+        "{signer_list}"
+    );
+    assert!(
+        files["src/acme/types/signer_list_item.py"].contains("class SignerListItem("),
+        "{}",
+        files["src/acme/types/signer_list_item.py"]
+    );
+
+    let distribution = &files["src/acme/types/distribution.py"];
+    assert!(
+        distribution.contains("signers: typing.Optional[typing.List[DistributionSignersItem]]"),
+        "{distribution}"
+    );
+    assert!(
+        files["src/acme/types/distribution_signers_item.py"]
+            .contains("class DistributionSignersItem("),
+        "{}",
+        files["src/acme/types/distribution_signers_item.py"]
+    );
+
+    // The scalar target is copied as the scalar, not as its `String` alias.
+    let signer = &files["src/acme/types/signer.py"];
+    assert!(
+        signer.contains(
+            "aws_account_number: typing_extensions.Annotated[\n        typing.Optional[str],"
+        ),
+        "{signer}"
+    );
+}
+
+/// A query value that reaches nothing but scalars goes onto the URL as text, so
+/// it is passed through without the annotation converter, while a sibling union
+/// that can hold a list is converted. The same document pins how a `null`
+/// alternative collapses: one surviving member becomes `Optional`, two or more
+/// stay an undiscriminated union that carries nullability at its use sites.
+#[test]
+fn a_scalar_only_query_union_skips_the_annotation_converter() {
+    let files = render(
+        r#"openapi: 3.1.0
+info: { title: Scalar Queries, version: 1.0.0 }
+paths:
+  /blocks:
+    get:
+      operationId: blocks_get
+      tags: [Blocks]
+      parameters:
+        - name: block
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/BlockId' }
+        - name: address
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/AddressFilter' }
+      responses:
+        '200':
+          description: Block
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Block' }
+components:
+  schemas:
+    Uint: { type: string }
+    Hash32: { type: string }
+    Address: { type: string }
+    BlockTag:
+      type: string
+      enum: [earliest, latest, pending]
+    Addresses:
+      type: array
+      items: { $ref: '#/components/schemas/Address' }
+    BlockId:
+      anyOf:
+        - { $ref: '#/components/schemas/Uint' }
+        - { $ref: '#/components/schemas/BlockTag' }
+        - { $ref: '#/components/schemas/Hash32' }
+    AddressFilter:
+      anyOf:
+        - { $ref: '#/components/schemas/Address' }
+        - { $ref: '#/components/schemas/Addresses' }
+    FilterTopic:
+      anyOf:
+        - { $ref: '#/components/schemas/Hash32' }
+        - { type: array, items: { $ref: '#/components/schemas/Hash32' } }
+        - { type: 'null' }
+    MaybeHash:
+      anyOf:
+        - { $ref: '#/components/schemas/Hash32' }
+        - { type: 'null' }
+    Block:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/BlockId' }
+        topic: { $ref: '#/components/schemas/FilterTopic' }
+        parent: { $ref: '#/components/schemas/MaybeHash' }
+"#,
+    );
+
+    let raw = &files["src/acme/blocks/raw_client.py"];
+    assert!(raw.contains("\"block\": block,"), "{raw}");
+    assert!(
+        raw.contains("\"address\": convert_and_respect_annotation_metadata("),
+        "{raw}"
+    );
+
+    assert!(
+        files["src/acme/types/filter_topic.py"]
+            .contains("FilterTopic = typing.Union[Hash32, typing.List[Hash32]]"),
+        "{}",
+        files["src/acme/types/filter_topic.py"]
+    );
+    assert!(
+        files["src/acme/types/maybe_hash.py"].contains("MaybeHash = typing.Optional[Hash32]"),
+        "{}",
+        files["src/acme/types/maybe_hash.py"]
     );
 }

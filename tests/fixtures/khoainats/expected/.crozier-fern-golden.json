@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "khoainats",
+  "corpus_spec_ref": "e680e29affee221e3a6c379b1e51c98ef241da7a",
+  "corpus_spec_url": "https://raw.githubusercontent.com/cukhoaimon/khoainats/e680e29affee221e3a6c379b1e51c98ef241da7a/api/generated/.docs/api/openapi.yaml"
+}

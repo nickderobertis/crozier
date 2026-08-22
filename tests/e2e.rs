@@ -1858,6 +1858,13 @@ const CORPORA: &[&Corpus] = &[
     &EOS_EXTRA_FIELDS_FORBID,
     &MED_ANVISA_PRICE,
     &SAC_BACKEND,
+    &KYTOS_SDNTRACE_CP,
+    &WITHSECURE_GDPR_SUBJECT_RIGHTS,
+    &PROMETHEUS_X_EDGE_COMPUTING,
+    &EXA_GATE,
+    &AMAZONAWS_COM_CLOUDFRONT,
+    &KHOAINATS,
+    &HELIOS_VERIFIABLE_API,
 ];
 
 #[test]
@@ -2719,6 +2726,112 @@ const LIVEPEER_AI_RUNNER: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `amazonaws.com-cloudfront`: every CloudFront operation declares the whole `5xx`
+/// tail — `502`, `505`, `506`, `507`, `508`, `510` and `511` — so this row pins
+/// Fern's exception name for each of the seven at once.
+const AMAZONAWS_COM_CLOUDFRONT: Corpus = Corpus {
+    api: "amazonaws.com-cloudfront",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `khoainats`: the Khoai NATS Admin API declares an `openIdConnect` scheme
+/// (`Roles`) beside an HTTP bearer one, and leaves `/v1/noauth` unsecured.
+/// `openIdConnect` is the one member of its scheme family Fern's importer keeps
+/// rather than drops, so this is the corpus's only golden over a document that
+/// declares one: Fern emits a bearer `token` on `Authorization`, optional
+/// because not every operation is authenticated. Crozier reaches the same bytes
+/// through `auth_model`'s HTTP-bearer arm, since `BearerToken` precedes `Roles`
+/// in the document — no public spec the corpus screened declares
+/// `openIdConnect` without a supported scheme ahead of it, so the golden pins
+/// the emitted credential rather than the fallthrough arm.
+const KHOAINATS: Corpus = Corpus {
+    api: "khoainats",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `helios-verifiable-api`: every one of its 27 component schemas is a
+/// remote-URL `$ref` into an `ethereum/execution-apis` document, the one
+/// reference form Fern follows rather than discards. Fern fetches each
+/// referenced document over HTTPS and resolves it transitively, so this row is
+/// the corpus's only evidence that crozier opens a second document at all.
+const HELIOS_VERIFIABLE_API: Corpus = Corpus {
+    api: "helios-verifiable-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
+/// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
+const EXA_GATE: Corpus = Corpus {
+    api: "exa-gate",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `prometheus-x-edge-computing`: the Prometheus-X edge-computing API declares
+/// both `408` and `412` responses, pinning Fern's `RequestTimeoutError` and
+/// `PreconditionFailedError` names for those statuses.
+const PROMETHEUS_X_EDGE_COMPUTING: Corpus = Corpus {
+    api: "prometheus-x-edge-computing",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `withsecure-gdpr-subject-rights`: every operation of WithSecure's GDPR
+/// subject-rights API declares a `451` response, pinning Fern's
+/// `UnavailableForLegalReasonsError` name for that status.
+const WITHSECURE_GDPR_SUBJECT_RIGHTS: Corpus = Corpus {
+    api: "withsecure-gdpr-subject-rights",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `kytos-sdntrace-cp`: both operations of the Kytos SDN tracing API declare a
+/// `424` response, so this row is the first golden to pin Fern's
+/// `FailedDependencyError` name for that status.
+const KYTOS_SDNTRACE_CP: Corpus = Corpus {
+    api: "kytos-sdntrace-cp",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 // Issue #63: `extra_fields: forbid` — the one `--extra-fields` value no golden
 // pinned. A generator setting is not expressible in an OpenAPI document, so this
 // row reuses `eos.local`'s already registered source (CORPUS.md row 43) under a
@@ -2828,6 +2941,41 @@ fn med_anvisa_price_matches_fern_output() {
 #[test]
 fn sac_backend_matches_fern_output() {
     assert_link_ok_corpus_matches(&SAC_BACKEND);
+}
+
+#[test]
+fn kytos_sdntrace_cp_matches_fern_output() {
+    assert_link_ok_corpus_matches(&KYTOS_SDNTRACE_CP);
+}
+
+#[test]
+fn withsecure_gdpr_subject_rights_matches_fern_output() {
+    assert_link_ok_corpus_matches(&WITHSECURE_GDPR_SUBJECT_RIGHTS);
+}
+
+#[test]
+fn prometheus_x_edge_computing_matches_fern_output() {
+    assert_link_ok_corpus_matches(&PROMETHEUS_X_EDGE_COMPUTING);
+}
+
+#[test]
+fn exa_gate_matches_fern_output() {
+    assert_link_ok_corpus_matches(&EXA_GATE);
+}
+
+#[test]
+fn amazonaws_com_cloudfront_matches_fern_output() {
+    assert_link_ok_corpus_matches(&AMAZONAWS_COM_CLOUDFRONT);
+}
+
+#[test]
+fn khoainats_matches_fern_output() {
+    assert_link_ok_corpus_matches(&KHOAINATS);
+}
+
+#[test]
+fn helios_verifiable_api_matches_fern_output() {
+    assert_link_ok_corpus_matches(&HELIOS_VERIFIABLE_API);
 }
 
 #[test]
@@ -7388,5 +7536,182 @@ fn init_writes_a_config_a_later_run_generates_from() {
             .join("sdk/python/src/tiny/types/thing.py")
             .is_file(),
         "the starter config's `output`/defaults should generate as written"
+    );
+}
+
+/// A local HTTP server for the remote-`$ref` journeys.
+///
+/// crozier fetches a document a `$ref` names by absolute URL, so the only honest
+/// test of that is a real request over a real socket. This serves a fixed
+/// path → body map on an ephemeral loopback port, which keeps the journey
+/// offline and free of the fixed-port collisions a shared port would invite.
+struct LocalDocumentServer {
+    base_url: String,
+}
+
+impl LocalDocumentServer {
+    fn start(documents: &'static [(&'static str, &'static str)]) -> Self {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0")
+            .expect("bind a loopback port for the server");
+        let base_url = format!(
+            "http://{}",
+            listener.local_addr().expect("the bound address")
+        );
+        std::thread::spawn(move || {
+            for stream in listener.incoming() {
+                let Ok(mut stream) = stream else { break };
+                Self::serve(&mut stream, documents);
+            }
+        });
+        Self { base_url }
+    }
+
+    fn serve(stream: &mut std::net::TcpStream, documents: &[(&str, &str)]) {
+        use std::io::{BufRead, BufReader, Write};
+        let mut reader = BufReader::new(stream.try_clone().expect("clone the accepted socket"));
+        let mut request_line = String::new();
+        if reader.read_line(&mut request_line).is_err() {
+            return;
+        }
+        // Drain the headers so the client sees a complete exchange.
+        loop {
+            let mut header = String::new();
+            match reader.read_line(&mut header) {
+                Ok(0) => break,
+                Ok(_) if header.trim().is_empty() => break,
+                Ok(_) => {}
+                Err(_) => return,
+            }
+        }
+        let path = request_line.split_whitespace().nth(1).unwrap_or_default();
+        let response = match documents.iter().find(|(name, _)| *name == path) {
+            Some((_, body)) => format!(
+                "HTTP/1.1 200 OK\r\nContent-Type: text/yaml\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                body.len()
+            ),
+            None => "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+                .to_string(),
+        };
+        let _ = stream.write_all(response.as_bytes());
+        let _ = stream.flush();
+    }
+}
+
+const REMOTE_REF_DOCUMENT: &str = "\
+Address:
+  type: string
+Tags:
+  type: array
+  items:
+    $ref: '#/components/schemas/Address'
+";
+
+/// A `$ref` naming another document by absolute URL is fetched and resolved.
+///
+/// Fern's importer opens the referenced document, and every other corpus spec is
+/// self-contained, so this is the journey that proves crozier opens a second one
+/// at all: the whole run goes through the real binary against a real HTTP server,
+/// and the generated SDK is typed against schemas that exist only in the fetched
+/// document. `Tags` also pins the transitive half — a pointer *inside* the fetched
+/// document resolves against the root's components, as Fern resolves it.
+#[test]
+fn a_remote_url_ref_is_fetched_and_generates_against_the_referenced_document() {
+    let server = LocalDocumentServer::start(&[("/schemas.yaml", REMOTE_REF_DOCUMENT)]);
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("openapi.yml");
+    std::fs::write(
+        &spec,
+        format!(
+            "openapi: 3.0.0\n\
+             info: {{ title: Remote Ref API, version: '1.0' }}\n\
+             paths:\n\
+             \x20 /widgets:\n\
+             \x20   get:\n\
+             \x20     operationId: listWidgets\n\
+             \x20     responses:\n\
+             \x20       '200':\n\
+             \x20         description: OK\n\
+             \x20         content:\n\
+             \x20           application/json:\n\
+             \x20             schema: {{ $ref: '#/components/schemas/Widget' }}\n\
+             components:\n\
+             \x20 schemas:\n\
+             \x20   Widget:\n\
+             \x20     type: object\n\
+             \x20     properties:\n\
+             \x20       owner: {{ $ref: '#/components/schemas/Address' }}\n\
+             \x20       tags: {{ $ref: '#/components/schemas/Tags' }}\n\
+             \x20   Address:\n\
+             \x20     $ref: {base}/schemas.yaml#/Address\n\
+             \x20   Tags:\n\
+             \x20     $ref: {base}/schemas.yaml#/Tags\n",
+            base = server.base_url
+        ),
+    )
+    .unwrap();
+
+    let out = dir.path().join("sdk");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&out)
+        .args(["--package-name", "fern"])
+        .assert()
+        .success();
+
+    let types = out.join("src/fern/types");
+    let address = std::fs::read_to_string(types.join("address.py")).expect("address.py");
+    assert!(
+        address.contains("Address = str"),
+        "the fetched string schema should type the alias:\n{address}"
+    );
+    let tags = std::fs::read_to_string(types.join("tags.py")).expect("tags.py");
+    assert!(
+        tags.contains("Tags = typing.List[Address]"),
+        "a pointer inside the fetched document resolves against the root:\n{tags}"
+    );
+    let widget = std::fs::read_to_string(types.join("widget.py")).expect("widget.py");
+    assert!(
+        widget.contains("owner: typing.Optional[Address] = None")
+            && widget.contains("tags: typing.Optional[Tags] = None"),
+        "the model should be typed against the fetched schemas:\n{widget}"
+    );
+}
+
+/// A referenced document that cannot be fetched fails the run with an actionable
+/// message rather than silently generating an SDK with the wrong types in it.
+#[test]
+fn a_remote_ref_that_cannot_be_fetched_fails_with_an_actionable_message() {
+    let server = LocalDocumentServer::start(&[]);
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("openapi.yml");
+    let reference = format!("{}/missing.yaml#/Address", server.base_url);
+    std::fs::write(
+        &spec,
+        format!(
+            "openapi: 3.0.0\n\
+             info: {{ title: Remote Ref API, version: '1.0' }}\n\
+             paths: {{}}\n\
+             components:\n\
+             \x20 schemas:\n\
+             \x20   Address:\n\
+             \x20     $ref: {reference}\n"
+        ),
+    )
+    .unwrap();
+
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("sdk"))
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("could not resolve remote $ref"))
+        .stderr(predicate::str::contains(reference));
+    assert!(
+        !dir.path().join("sdk").exists(),
+        "a failed fetch should write no SDK"
     );
 }

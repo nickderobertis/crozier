@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "prometheus-x-edge-computing",
+  "corpus_spec_ref": "78ed883317ec8739e985780c998d9f73f1e370a8",
+  "corpus_spec_url": "https://raw.githubusercontent.com/Prometheus-X-association/edge-computing/78ed883317ec8739e985780c998d9f73f1e370a8/spec/openapi.yaml"
+}
