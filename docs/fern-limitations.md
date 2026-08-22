@@ -2043,7 +2043,9 @@ relationship between operations*; only the former has a slot.
 
 ### Round 4 — schema shapes
 
-Seven rows, and they do not behave alike. **Three are
+Seven rows, and they do not behave alike. Every verdict below is read off an
+artifact Fern actually emitted on this host or off a committed golden; no verdict
+rests on a minimal probe alone. **Three are
 [implements](#how-to-read-a-verdict)** — Fern reads the shape and emits output
 derived from it — which is the first time in this file that more than one row in a
 family has reached that verdict. Two of the three are **`REGISTRABLE`** and carry
@@ -2165,8 +2167,12 @@ subschema any of the 122 documents declares.
 So the route split for this family is: `boolean-schema-true` (in the one form the
 corpus declares), `nesting-depth-ge-15` and `normalization-collision` are Route 1,
 settled by committed goldens. `const-boolean`, `const-integer`,
-`type-array-multi-nonnull` and `cycle-via-additionalProperties` are Route 2, and
-each was probed. `boolean-schema-true` needs both routes: the corpus declares only
+`type-array-multi-nonnull` and `cycle-via-additionalProperties` are Route 2 — but a
+probe alone is a hypothesis about a two-property document, so **each of those four
+was additionally carried on real candidate specifications**, fetched at a pinned
+commit, licence-verified at source and generated on this host, with the verdict read
+off the real document's emitted artifact. Where a probe and a real candidate could
+disagree, the real candidate is the measurement; none of the four disagreed. `boolean-schema-true` needs both routes: the corpus declares only
 `additionalProperties: true`, so `items: true` and the property position were
 probed — and the property position was then re-measured on one of the row's own
 real-world candidates, because the probe result was large enough to deserve a real
@@ -2228,9 +2234,10 @@ class PostFlowsCreatedPayloadEventType(enum.StrEnum):
 That is what makes these two rows sharp rather than routine: a boolean or an
 integer cannot be a `StrEnum` member, so Fern has to be doing something else.
 
-**Route 2 — two probes, each carrying a string `const` as its own control** so the
-comparison is inside one generation rather than across two. The boolean probe, in
-full:
+**Two probes first, each carrying a string `const` as its own control**, so the
+comparison against the `tamoss` baseline is inside one generation rather than across
+two. They isolate the shape; the three real specifications below are what the
+verdict rests on. The boolean probe, in full:
 
 ```yaml
 openapi: 3.1.0
@@ -2290,9 +2297,72 @@ class GetEventResponse(UniversalBaseModel):
     schema_version: int
 ```
 
-Both rows are **discards**. Fern reads the `type` and drops the `const` beside it,
-which is why neither is registrable: a fixture would pin `bool` and `int`, the same
-bytes a schema with no `const` at all produces.
+**The probes are the isolating control, not the finding.** Neither row's verdict is
+left resting on a two-property document: three of the round-3 candidate
+specifications were fetched at a pinned commit, licence-verified at source, and
+carried through the same scaffold on this host. All three pass `fern check` **exit
+0** and `fern generate` **exit 0**, and all three emit the bare type.
+
+`omersiar/ript` (MIT,
+`https://raw.githubusercontent.com/omersiar/ript/2766ac2460130b3c5cc365254760e807e65bf82a/openapi.yaml`,
+8 paths / 8 operations) settles both rows in a single class, and carries its own
+control. `ListTopicsUnavailableResponse.allOf[1]` declares five properties — three
+integer `const`s, one boolean `const`, and one integer with a *different* constraint:
+
+```json
+"count":    {"type": "integer", "const": 0},
+"total":    {"type": "integer", "const": 0},
+"page":     {"type": "integer", "const": 1},
+"limit":    {"type": "integer", "minimum": 1},
+"has_more": {"type": "boolean", "const": false}
+```
+
+`list_topics_unavailable_response.py` emits all five identically — the three
+`const`s, the `minimum`, and the boolean `const` are indistinguishable from a bare
+`type`:
+
+```python
+class ListTopicsUnavailableResponse(ErrorResponse):
+    topics: typing.List[typing.Any]
+    count: int
+    total: int
+    page: int
+    limit: int
+    has_more: bool
+```
+
+`wink-wink-wink555/MarkiNote` (MIT,
+`https://raw.githubusercontent.com/wink-wink-wink555/MarkiNote/71c239b7436dd2d071c98eeaada1b0b9b53cabb6/packages/api-client/openapi.json`,
+24 paths / 29 operations) declares 13 boolean `const`s and one integer `const`, and
+shows the loss is wider than the `const` keyword alone. `CreatedFileResponse.success`
+is `{"const": true, "default": true, "type": "boolean"}` — a flag the document says
+is always present and always `true`:
+
+```python
+class CreatedFileResponse(UniversalBaseModel):
+    file_name: str
+    path: str
+    size: int
+    success: typing.Optional[bool] = None
+    version: str
+```
+
+Both the `const` **and** the `default` beside it reach zero bytes, and the field
+comes out `typing.Optional[bool] = None`: the generated client will construct
+`CreatedFileResponse(success=False)` without complaint. Its `ApiRootResponse.contract`,
+`{"const": 1, "type": "integer"}`, likewise emits `contract: int`.
+
+`tltv-org/protocol` (MIT,
+`https://raw.githubusercontent.com/tltv-org/protocol/21fa80202825801b0ce152d367825987f1400f94/schemas/openapi.yaml`,
+6 paths / 6 operations) is the third witness: `ChannelMetadata.v`,
+`{type: integer, const: 1}`, emits `v: int`.
+
+Both rows are **discards**, and the verdict rests on the three real specifications
+rather than on the probes; the probes contribute only the string-`const` control
+inside a single generation. Neither row is registrable: a fixture would pin `bool`
+and `int`, the same bytes a schema with no `const` at all produces — and, in
+`MarkiNote`'s case, it would pin an *optional* field the document declares required
+and constant.
 
 #### `type-array-multi-nonnull` — implements
 
@@ -2353,8 +2423,39 @@ GetValueResponseMultiTypeThree = typing.Union[str, int, bool]
 
 `[boolean, number]` → `Union[bool, float]` and `[string, integer, boolean]` →
 `Union[str, int, bool]` are what rule out a coincidence: no unconditional default
-tracks the member list. The row is **implements**, and **`REGISTRABLE`** — see the
-candidate set below.
+tracks the member list.
+
+**Confirmed on the real candidates, at their use sites.** All three specifications
+in the candidate set below were carried through the same scaffold on this host
+(`fern check` **exit 0**, `fern generate` **exit 0**), and in each the union is a
+*used* type, not an orphan alias. `openepcis/openepcis-dpp-ready` declares
+`SingleValuedDataElement.value` as `type: [string, number, boolean]`:
+
+```python
+# single_valued_data_element.py
+    value: typing.Optional[SingleValuedDataElementValue] = pydantic.Field(default=None)
+# single_valued_data_element_value.py
+SingleValuedDataElementValue = typing.Union[str, float, bool]
+```
+
+`nicholas-ruest/wildfire-robotics` is the sharpest of the three, because its array
+has five members including `"null"` — `ReadModel.summary` is a map whose values are
+`type: [string, number, integer, boolean, null]` — and every one of the five is
+represented, the four non-null ones in the union and `"null"` as the `Optional`
+wrapper around it:
+
+```python
+# read_model.py
+    summary: typing.Dict[str, typing.Optional[ReadModelSummaryValue]]
+# read_model_summary_value.py
+ReadModelSummaryValue = typing.Union[str, float, int, bool]
+```
+
+`agentic-commerce-protocol` is the third: `IntentTrace.metadata`'s
+`type: [string, number, boolean]` emits
+`IntentTraceMetadataValue = typing.Union[str, float, bool]`.
+
+The row is **implements**, and **`REGISTRABLE`** — see the candidate set below.
 
 #### `cycle-via-additionalProperties` — implements
 
@@ -2437,8 +2538,28 @@ update_forward_refs(Field)
 
 Three separate bytes derive from the cycle and from nothing else: the
 `from __future__ import annotations` header, the quoted `"Field"` inside the map,
-and the trailing `update_forward_refs(Field)`. The row is **implements**, and
-**`REGISTRABLE`**.
+and the trailing `update_forward_refs(Field)`.
+
+**Confirmed on the real candidates.** All three specifications in the candidate set
+below were carried through the same scaffold on this host (`fern check` **exit 0**,
+`fern generate` **exit 0**), and each emits the same three artifacts on its own
+cycle. `eo-tools/eozilla`'s `Schema.properties` is a map of `Schema`:
+
+```console
+$ grep -n 'from __future__\|properties:\|update_forward_refs' \
+>   preview/fern-python-sdk/src/fern/types/schema.py
+3:from __future__ import annotations
+9:from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel, update_forward_refs
+69:    properties: typing.Optional[typing.Dict[str, "Schema"]] = None
+112:update_forward_refs(
+```
+
+`sam0delkin/intellij-psa` emits
+`options: typing.Optional[typing.Dict[str, "PsiElementModelChild"]] = None` for its
+two-hop cycle, and `gonecentrix/gcx-access-control-management` emits
+`properties: typing.Optional[typing.Dict[str, "Schema"]] = None`.
+
+The row is **implements**, and **`REGISTRABLE`**.
 
 #### `boolean-schema-true` — coincidence, except in the property position
 
@@ -2517,16 +2638,20 @@ That is a [coincidence](#how-to-read-a-verdict) in the exact sense this file
 defines: Fern's output equals the standard's meaning, produced by an unconditional
 default rather than by reading the keyword. A fixture would pin the default.
 
-**The property position is different, and it is not a coincidence.** A property
-whose schema is literally `true` does not merely lose that property — Fern drops the
-**enclosing object whole**, silently, at exit 0. That was measured on a real
-specification rather than inferred, because this row's own candidates declare the
-form: `rocketmq-sre-phase02.openapi.json`
+**The property position is different, and it is not a coincidence.** The module is
+still written, but there is no model inside it: Fern emits the enclosing object as a
+bare `typing.Any` alias carrying only its description, and every property it
+declared — the boolean-schema one and its ordinary siblings alike — is gone with the
+class that would have held them. That was measured on a real specification rather
+than inferred from the probe, because this row's own candidates declare the form.
+
+`rocketmq-sre-phase02.openapi.json`
 (`https://raw.githubusercontent.com/mxsm/rocketmq-rust/91dceb7e7be6e1321aa954fdf44739143377f297/rocketmq-sre/openapi/rocketmq-sre-phase02.openapi.json`)
-was carried through the same scaffold on this host — `fern check` **exit 0**,
-`fern generate` **exit 0**, `Found 0 errors and 2 warnings`, both of them the
-`api.path` deprecation. It emits **286** type modules, of which exactly **four** are
-`typing.Any` aliases:
+was carried through the same scaffold on this host: `fern check` **exit 0**,
+`fern generate` **exit 0**, `Found 0 errors and 2 warnings`, both warnings the
+`api.path` deprecation. It emits **286** type modules from **253** component
+schemas, and exactly **four** of those modules hold a `typing.Any` alias instead of
+a class:
 
 ```console
 $ ls preview/fern-python-sdk/src/fern/types/*.py | wc -l
@@ -2538,9 +2663,17 @@ IncidentOperationResultTimelineEvent = typing.Any
 WhatIfSimulation = typing.Any
 ```
 
-Those four are exactly the four component schemas that declare a property-position
-boolean schema directly. `WhatIfSimulation` declares sixteen properties, two of them
-(`input`, `projected_utilization`) as `true`; `what_if_simulation.py` is, in full:
+The correlation is exact, not approximate. Of the 253 component schemas, exactly
+**four** declare a property whose schema is literally `true` **directly on the
+schema**, five such properties between them — `WhatIfSimulation.input`,
+`WhatIfSimulation.projected_utilization`, `PostmortemRevision.timeline`,
+`ActionItem.execution_journal` and
+`IncidentOperationResult__TimelineEvent.details` — and those four schemas are the
+four aliases above, name for name. No other schema in the document collapses, and
+none of these four survives.
+
+`WhatIfSimulation` declares sixteen properties, two of them `true`.
+`what_if_simulation.py` is, in full:
 
 ```python
 import typing
@@ -2551,8 +2684,32 @@ Read-only what-if result. It never carries an executable action.
 """
 ```
 
-Fourteen ordinary property schemas, and the object itself, reach zero bytes because
-of two siblings — and nothing in either exit code or the logs says so.
+Fourteen ordinary property schemas — `algorithm_version`, `cluster_id`, `status`,
+`created_at` and ten more — reach zero bytes because of two siblings, and nothing in
+either exit code or in the logs says so. What survives is only what was declared
+*elsewhere*: the six `WhatIfSimulation__*` components
+(`ClusterId`, `EvidenceId`, `SimulationId`, `SimulationKind`, `SimulationStatus`,
+`TenantId`) still emit their own modules, because they are components in their own right, not inline
+subschemas of the collapsed object — nothing references them from `WhatIfSimulation`
+any more.
+
+The loss reaches the client surface, and the same method shows the contrast. The
+request body of `run_what_if_simulation` declares no boolean-schema property and is
+emitted as fully typed keyword arguments; its response is the collapsed schema:
+
+```python
+# raw_client.py:3136
+        current_utilization: typing.Optional[float] = OMIT,
+        evidence_ids: typing.Optional[typing.Sequence[WhatIfSimulationRequestEvidenceId]] = OMIT,
+        instance_delta: typing.Optional[int] = OMIT,
+        queue_delta: typing.Optional[int] = OMIT,
+        target_version: typing.Optional[str] = OMIT,
+        traffic_increase_percent: typing.Optional[int] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[WhatIfSimulation]:
+```
+
+`HttpResponse[WhatIfSimulation]` is `HttpResponse[typing.Any]`.
 
 **A probe isolates the rule**, because the real document cannot separate position
 from `required`. Two operations, one document:
@@ -2623,8 +2780,14 @@ earlier single-operation probe in which the boolean property sat on the top-leve
 response schema produced no `types/` package at all and a bare
 `HttpResponse[typing.Any]`, which is the same rule with nothing above it to survive.
 
-One position escapes it. `rocketmq-sre-phase02`'s fifth declaration sits in a
-discriminated `oneOf` branch (`EvidenceSnapshot__EvidenceContent.oneOf[0]
+Probe and real candidate agree here, which is worth stating because they need not
+have: the probe's collapse could have been an artefact of a two-property document.
+`rocketmq-sre-phase02` is a 253-schema specification and it collapses in exactly the
+same way, on schemas of sixteen properties. Where a probe and a real candidate
+disagree, the real candidate is the measurement and the probe is the hypothesis.
+
+One position escapes it. `rocketmq-sre-phase02`'s sixth and last declaration sits
+in a discriminated `oneOf` branch (`EvidenceSnapshot__EvidenceContent.oneOf[0]
 .properties.value`), and there the branch model survives with the property typed
 `typing.Any` rather than the model collapsing:
 
@@ -2949,15 +3112,15 @@ question a future probe could answer**, not a proven absence.
 |---|---:|---:|---|---|
 | `apiKey-cookie` | 4 | 6 | discards | the importer drops the scheme outright; the client is generated from whatever other scheme the document declares |
 | `apiKey-query` | 2 | 6 | discards + supply | as `apiKey-cookie`; and only 2 eligible of 6 verified — 4× licence tier Q — short of a primary plus two backups |
-| `boolean-schema-true` | 4 | 4 | coincidence (`additionalProperties`, `items`) / discards (property position) | the corpus declares one form of it, 217 times across 30 documents, and Fern's output for that form is the no-keyword default: `additionalProperties: true` emits the `typing.Dict[str, typing.Any]` a bare `type: object` emits, and `items: true` emits the `typing.List[typing.Any]` a bare `type: array` emits. A property whose schema is literally `true` is different — Fern drops the **enclosing object whole**, measured on this row's own candidate `rocketmq-sre-phase02`, whose `WhatIfSimulation` loses sixteen properties to become `typing.Any` at exit 0. Its four verified candidates are three files from the single repository `mxsm/rocketmq-rust` plus `secunet-AG/hwaas`, so the pool holds two independent witnesses, not four. Measured in [Round 4](#round-4--schema-shapes) |
+| `boolean-schema-true` | 4 | 4 | coincidence (`additionalProperties`, `items`) / discards (property position) | the corpus declares one form of it, 217 times across 30 documents, and Fern's output for that form is the no-keyword default: `additionalProperties: true` emits the `typing.Dict[str, typing.Any]` a bare `type: object` emits, and `items: true` emits the `typing.List[typing.Any]` a bare `type: array` emits. A property whose schema is literally `true` is different — the module is still written but holds no model, and every property of the enclosing object goes with the class. Measured on this row's own candidate `rocketmq-sre-phase02`: of 253 component schemas exactly four declare the form directly, and exactly those four emit `X = typing.Any`, `WhatIfSimulation` shedding all sixteen of its properties and degrading `run_what_if_simulation` to `HttpResponse[typing.Any]`, at exit 0 with no diagnostic. Its four verified candidates are three files from the single repository `mxsm/rocketmq-rust` plus `secunet-AG/hwaas`, so the pool holds two independent witnesses, not four. Measured in [Round 4](#round-4--schema-shapes) |
 | `components-links` | 2 | 4 | discards + supply | probed directly: a response Link that is a `$ref` to a `components.links` entry emits nothing — the component's name, description, `requestBody` and `server` all reach zero bytes, and no corpus document declares `components.links` at all. 2 eligible of 4 verified, short of a primary plus two backups. Measured in [Round 4](#round-4--links-and-encoding) |
 | `components-pathItems` | 6 | 7 | discards | `components.pathItems` reaches the SDK only through a Path Item `$ref`, which Fern discards; the one candidate that loses nothing witnesses the *declaration* alone |
-| `const-boolean` | 13 | 13 | discards | probed directly: `type: boolean` with `const: true` emits a plain `bool` — no `typing.Literal[True]`, no default, no validator — beside a `type: string` `const` in the same document that emits the single-member `StrEnum` `tamoss` (row 69) pins. `fern check` and `fern generate` both exit 0 and say nothing. No corpus document declares a boolean `const` at all. Measured in [Round 4](#round-4--schema-shapes) |
-| `const-integer` | 7 | 8 | discards | as `const-boolean`, in the same probe shape: `type: integer` with `const: 3` emits a plain `int` beside a string `const` that becomes a `StrEnum`. No corpus document declares an integer `const` at all. Measured in [Round 4](#round-4--schema-shapes) |
+| `const-boolean` | 13 | 13 | discards | measured on two of its own candidate specifications, both generating at exit 0: `omersiar/ript` emits `has_more: bool` for `{type: boolean, const: false}`, and `MarkiNote` emits `success: typing.Optional[bool] = None` for `{const: true, default: true, type: boolean}` — the `default` is dropped with the `const`, so the client can construct the flag `False`. A probe supplies the control: a `type: string` `const` in the same document becomes the single-member `StrEnum` `tamoss` (row 69) pins, while the boolean one becomes a bare `bool`. No corpus document declares a boolean `const` at all. Measured in [Round 4](#round-4--schema-shapes) |
+| `const-integer` | 7 | 8 | discards | as `const-boolean`, on three candidate specifications that all generate at exit 0: `omersiar/ript` emits `count: int`, `total: int` and `page: int` for `const` 0, 0 and 1 — indistinguishable from the `limit: int` beside them, which declares `minimum: 1` instead — and `MarkiNote` and `tltv-org/protocol` each emit a bare `int` for their own integer `const`. No corpus document declares an integer `const` at all. Measured in [Round 4](#round-4--schema-shapes) |
 | `cookie-array` | 0 | 3 | discards + supply | cookie parameters are dropped from the client entirely; and 0 eligible of 3 verified — 3× licence untiered |
 | `cookie-object` | 1 | 6 | discards + supply | as `cookie-array`; 1 eligible of 6 verified — 5× licence untiered |
 | `cookie-parameter` | 7 | 7 | discards | cookie parameters are dropped from the client entirely; the warning does not fail `fern check` |
-| `cycle-via-additionalProperties` | 3 | 3 | implements | probed directly: a map of self emits `from __future__ import annotations`, `typing.Optional[typing.Dict[str, "Field"]]` and a trailing `update_forward_refs(Field)` — three bytes that derive from the cycle and nothing else. Recursion through `properties`/`items` is densely pinned already (335 golden files call `update_forward_refs`), but no golden emits a forward-referenced *map*, so this is not registered anywhere. **REGISTRABLE** — candidate set in [Round 4](#round-4--schema-shapes) |
+| `cycle-via-additionalProperties` | 3 | 3 | implements | probed directly: a map of self emits `from __future__ import annotations`, `typing.Optional[typing.Dict[str, "Field"]]` and a trailing `update_forward_refs(Field)` — three bytes that derive from the cycle and nothing else. Confirmed on all three candidate specifications, which generate at exit 0 and each emit the same three artifacts on their own cycle. Recursion through `properties`/`items` is densely pinned already (335 golden files call `update_forward_refs`), but no golden emits a forward-referenced *map*, so this is not registered anywhere. **REGISTRABLE** — candidate set in [Round 4](#round-4--schema-shapes) |
 | `deepObject-real-object` | 5 | 5 | **coincidence** | `query_encoder.py` flattens *every* dict-valued query parameter to `key[subkey]=value` unconditionally, and `form`, `pipeDelimited` and `deepObject` objects emit byte-identical code. A golden would pin the default, not style handling |
 | `encoding-explode-or-allowReserved` | 3 | 3 | refuses (multipart object `explode`) / ignores (list `explode`, `allowReserved`) | probed directly, and the two fields do not behave alike. `explode: true` on a **non-list multipart part** is refused at check time: `fern check` **exit 1**, `meta is exploded and must be a list`. In the other six configurations — `explode` true and false on a list part, `allowReserved` on either, and `explode: true` on a form-urlencoded map part — the emitted method is byte-identical to a no-encoding control. `fern generate` **exits 0** even on the refused document, emitting that same identical code. Measured in [Round 4](#round-4--links-and-encoding) |
 | `encoding-object` | 4 | 6 | implements (`contentType`) / discards (`headers`) | the object's two fields differ. `free5gc-pdu-session` (row 73) declares 99 Encoding objects; its golden emits `default_content_type="application/vnd.3gpp.5gnas"` from one of them — the only shape Round 4 found Fern handles — while the 58 per-part `Content-Id` headers reach zero bytes. No fixture is proposed because the shape is already registered, at `CORPUS.md` rows 73 and 76, both byte-matching. Measured in [Round 4](#round-4--links-and-encoding) |
@@ -2998,7 +3161,7 @@ question a future probe could answer**, not a proven absence.
 | `servers-three-levels` | 1 | 5 | discards | probed directly: with a root, a Path Item and an Operation server in one document, `fern check` and `fern generate` both exit 0 and only the root URL is emitted. Measured in [Round 4](#round-4--servers-and-xml) |
 | `spaceDelimited-object` | 0 | 6 | discards + licence | Fern discards the declared style; object query parameters are flattened regardless of it; 0 eligible of 6 verified — 6× licence untiered |
 | `trace-operation` | 2 | 5 | discards + supply | Fern emits no client method for `trace`; 2 eligible of 5 verified — 3× licence tier Q |
-| `type-array-multi-nonnull` | 8 | 8 | implements | probed directly: `type: [string, integer]` emits `typing.Union[str, int]`, and the members track the declared list — `[boolean, number]` gives `typing.Union[bool, float]`, `[string, integer, boolean]` gives `typing.Union[str, int, bool]`, so no unconditional default can account for it. The `typing.Union[...]` occurrences already in the goldens all arise from `oneOf`/`anyOf`; of the corpus's 498 `type` arrays every one has a single non-null member. **REGISTRABLE** — candidate set in [Round 4](#round-4--schema-shapes) |
+| `type-array-multi-nonnull` | 8 | 8 | implements | probed directly: `type: [string, integer]` emits `typing.Union[str, int]`, and the members track the declared list — `[boolean, number]` gives `typing.Union[bool, float]`, `[string, integer, boolean]` gives `typing.Union[str, int, bool]`, so no unconditional default can account for it. Confirmed at the use sites of all three candidate specifications, which generate at exit 0 — `wildfire-robotics`'s five-member `[string, number, integer, boolean, null]` emits `typing.Dict[str, typing.Optional[ReadModelSummaryValue]]` with `ReadModelSummaryValue = typing.Union[str, float, int, bool]`, representing every declared member. The `typing.Union[...]` occurrences already in the goldens all arise from `oneOf`/`anyOf`; of the corpus's 498 `type` arrays every one has a single non-null member. **REGISTRABLE** — candidate set in [Round 4](#round-4--schema-shapes) |
 | `x-fern-or-crozier-ignore` | 2 | 4 | supply | two of its four verified candidates are the AssemblyAI specification `CORPUS.md` records REJECTED, leaving two eligible |
 | `xml-request` | 18 | 20 | discards | probed directly: a **required** `application/xml` request body is dropped whole — the method takes no body argument and the call site sends none. No committed golden declares `application/xml`, so this rests on the probe. Measured in [Round 4](#round-4--servers-and-xml) |
 | `xml-response` | 20 | 24 | discards | probed directly: an `application/xml` response schema is dropped whole — the method returns `HttpResponse[None]` and never parses the body. No committed golden declares `application/xml`, so this rests on the probe. Measured in [Round 4](#round-4--servers-and-xml) |
