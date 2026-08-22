@@ -668,6 +668,609 @@ screen will need the same second pass.
   DROPPED as `openfeature-protocol`, independently reproduced at `fern check`
   exit 1.
 
+## Round 4 — resolving the eighteen unmeasured rows
+
+Round 3 left eighteen rows reading **unmeasured**: open questions, not proven
+absences. Round 4 closes them one family at a time, and each subsection below
+records the evidence for its own rows. Every Round 4 measurement was taken on
+2026-08-22 under the pins this file already declares — Fern CLI `5.67.1`,
+generator `fernapi/fern-python-sdk:5.20.0`, `CI=true`/`GITHUB_ACTIONS=true` —
+against a workspace scaffolded exactly as `scripts/generate-fern-fixture.sh`
+builds one.
+
+Two evidence routes are in play, and they are not equally cheap. **Route 1**
+reads a committed golden: `tests/fixtures/<name>/expected/` is Fern's real
+output on a real specification, already byte-matched by the gate, so where a
+corpus row's *own source document* declares the shape under test its golden
+already shows what Fern did with it. The route is only sound when the shape is
+shown **present in the source, quantified**, before its absence from the golden
+means anything. **Route 2** is a probe — a minimal locally authored document
+isolating one shape, carried through `fern check` and a real `fern generate` —
+and is what a row gets when no committed golden's source declares its shape at
+all.
+
+### Round 4 — servers and XML
+
+Five rows, all **discards**. Nothing in this family is registrable: Fern emitted
+nothing derived from any of the five shapes, so a fixture would pin an
+unconditional default and prove nothing.
+
+#### One environment member, always — checked across the whole corpus
+
+Every claim in the two `servers` rows below rests on Fern's environment enum, so
+the enum's shape was checked exhaustively first rather than sampled. Of 105
+committed `expected/` trees, 71 contain an `environment.py`, and **every one of
+them declares exactly one member**:
+
+```console
+$ ls -d tests/fixtures/*/expected | wc -l
+105
+$ ls tests/fixtures/*/expected/src/fern/environment.py | wc -l
+71
+$ for f in tests/fixtures/*/expected/src/fern/environment.py; do
+>   grep -cE '^    [A-Z0-9_]+ = ' "$f"
+> done | sort | uniq -c
+     71 1
+$ grep -hE '^    [A-Z0-9_]+ = ' tests/fixtures/*/expected/src/fern/environment.py \
+>   | sed 's/ =.*//' | sort | uniq -c
+     66     DEFAULT
+      5     PRODUCTION
+```
+
+Two member names exist in the entire corpus and no document produces two
+members. The 34 trees with no `environment.py` are the ones with nothing to
+emit — across all 34 sources exactly one mentions `servers` at all, and it
+declares an empty array:
+
+```console
+$ for d in tests/fixtures/*/expected; do
+>   n=$(basename "$(dirname "$d")")
+>   [ -f "$d/src/fern/environment.py" ] || echo "$n"
+> done > /tmp/noenv; wc -l < /tmp/noenv
+34
+$ while read -r n; do
+>   f=$(ls tests/fixtures/$n/openapi.* .local/corpus/$n/openapi.* 2>/dev/null | head -1)
+>   printf '%s %s %s\n' "$n" "$(grep -cE '^ *"?servers"? *:' "$f")" \
+>     "$(grep -hE '^ *"?servers"? *:.*' "$f" | head -1)"
+> done < /tmp/noenv | awk '$2!=0'
+prometheus-x-edge-computing 1 servers: [ ]
+```
+
+#### `server-description-multiword` — discards
+
+**Route 1. `traccar.org`, `CORPUS.md` row 60**
+(`https://api.apis.guru/v2/specs/traccar.org/5.6/openapi.json`). Its source
+declares **six** root servers, every one of them carrying a **multi-word**
+description, and **zero** `servers` blocks below the root:
+
+```console
+$ jq -r '[.servers[].description] | length, .[]' .local/corpus/traccar.org/openapi.json
+6
+Demo Server 1
+Demo Server 2
+Demo Server 3
+Demo Server 4
+Subscription Server
+Other Server
+$ jq '[.paths[] | select(.servers)] | length' .local/corpus/traccar.org/openapi.json
+0
+$ jq '[.paths[][] | objects | select(.servers)] | length' .local/corpus/traccar.org/openapi.json
+0
+```
+
+`tests/fixtures/traccar.org/expected/src/fern/environment.py` is, in full (the
+corpus is comment-stripped, so its two leading blank lines are where Fern's
+`# This file was auto-generated…` banner was):
+
+```python
+import enum
+
+
+class FernApiEnvironment(enum.Enum):
+    DEFAULT = "https://demo.traccar.org/api"
+```
+
+Six descriptions in, one unconditional `DEFAULT` out. Censused across all 91
+fetched sources, the goldens split cleanly on word count — every multi-word
+description with a golden to read yields `DEFAULT`, every single-word one
+yields `PRODUCTION`, with no exception either way:
+
+```console
+$ uv run --no-project --quiet --with pyyaml python3 - <<'PY'
+> import glob, os, re, yaml
+> tally = {}
+> for f in sorted(glob.glob('.local/corpus/*/openapi.*')):
+>     n = os.path.basename(os.path.dirname(f))
+>     d = (yaml.safe_load(open(f)).get('servers') or [{}])[0].get('description')
+>     if not d:
+>         continue
+>     env = f'tests/fixtures/{n}/expected/src/fern/environment.py'
+>     m = re.findall(r'^    ([A-Z0-9_]+) = ', open(env).read(), re.M) \
+>         if os.path.exists(env) else []
+>     k = ('multi-word' if len(d.split()) > 1 else 'single-word',
+>          m[0] if m else 'no-golden')
+>     tally[k] = tally.get(k, 0) + 1
+> for k in sorted(tally):
+>     print(tally[k], *k)
+> PY
+18 multi-word DEFAULT
+4 multi-word no-golden
+4 single-word PRODUCTION
+```
+
+`yaml.safe_load` rather than `jq` because the 91 sources are not all JSON — a
+JSON-only census silently drops six multi-word witnesses:
+
+```console
+$ ls .local/corpus/*/openapi.* | sed 's/.*\.//' | sort | uniq -c
+     74 json
+     15 yaml
+      2 yml
+```
+
+| first root server description | words | golden's environment member |
+|---|---:|---|
+| `apideck.com-vault` — `Production server` | 2 | `DEFAULT = "https://unify.apideck.com"` |
+| `apideck.com-proxy` — `Production server` | 2 | `DEFAULT = "https://unify.apideck.com"` |
+| `apideck.com-crm` — `Production` | 1 | `PRODUCTION = "https://unify.apideck.com"` |
+| `apideck.com-lead` — `Production` | 1 | `PRODUCTION = "https://unify.apideck.com"` |
+
+The first two rows are the control the row needed: same publisher, same base
+URL, same single root server, and the *only* difference is the word `server`
+appended to the description — which costs the name. The four multi-word
+documents with no golden to read are counted separately above and excluded
+rather than assumed.
+
+`dnd5eapi.co` (row 42) is worth naming separately because it carries both shapes
+in one document — `Production` first, `Local Development` second — and its
+golden emits `PRODUCTION = "https://www.dnd5eapi.co"` and nothing else. The
+multi-word description contributes no member even when a single-word one beside
+it does.
+
+The mechanism is narrower still than "multi-word is dropped": the
+`servers-three-levels` probe below gives its root server the **single-word**
+description `Root` and gets `DEFAULT` back. So Fern does not derive an
+environment name from a description in general: `Production` is recognised, and
+other descriptions — multi-word ones and the single word `Root` alike — fall
+through to `DEFAULT`. What else the recognised set contains was not measured and
+is not claimed here; what the row asked, whether a multi-word description
+reaches a name, is answered no.
+
+#### `servers-multiple-path-or-operation` — discards
+
+**Route 1. `apideck.com-file-storage`, `CORPUS.md` row 14**
+(`https://api.apis.guru/v2/specs/apideck.com/file-storage/9.3.0/openapi.json`).
+This is the one committed golden whose source declares servers below the root at
+a **different host** from the root's, which is what makes its silence mean
+something:
+
+```console
+$ jq -c '.servers' .local/corpus/apideck.com-file-storage/openapi.json
+[{"url":"https://unify.apideck.com"}]
+$ jq -r '[.paths | to_entries[] as $p | $p.value | to_entries[]
+>   | select(.value|type=="object") | select(.value.servers)
+>   | "\($p.key) \(.key) -> \(.value.servers[].url)"] | length, .[]' \
+>   .local/corpus/apideck.com-file-storage/openapi.json
+5
+/file-storage/files post -> https://upload.apideck.com
+/file-storage/upload-sessions post -> https://upload.apideck.com
+/file-storage/upload-sessions/{id} get -> https://upload.apideck.com
+/file-storage/upload-sessions/{id} put -> https://upload.apideck.com
+/file-storage/upload-sessions/{id}/finish post -> https://upload.apideck.com
+```
+
+The golden emits `DEFAULT = "https://unify.apideck.com"` — the root — and the
+generated call site for the first of those five operations,
+`expected/src/fern/upload_sessions/raw_client.py`, carries a bare relative path
+and no base URL of its own:
+
+```python
+        _response = self._client_wrapper.httpx_client.request(
+            "file-storage/upload-sessions",
+            method="POST",
+            params={
+                "raw": raw,
+            },
+```
+
+`upload.apideck.com` does appear in the golden, and only where it cannot be a
+routing decision — three files hold it, and every occurrence is inside docstring
+prose copied verbatim from the specification's own `description`:
+
+```console
+$ grep -rl 'upload\.apideck\.com' tests/fixtures/apideck.com-file-storage/expected/ | sort
+tests/fixtures/apideck.com-file-storage/expected/reference.md
+tests/fixtures/apideck.com-file-storage/expected/src/fern/upload_sessions/client.py
+tests/fixtures/apideck.com-file-storage/expected/src/fern/upload_sessions/raw_client.py
+```
+
+— e.g. *"Note that the base URL is upload.apideck.com instead of
+unify.apideck.com."* The SDK documents the override in English and then ignores
+it, which is the sharpest possible form of the finding.
+
+No golden anywhere assigns a base URL per operation. Every `base_url=` in every
+golden's `src/` is one of four forms:
+
+```console
+$ grep -rhoE 'base_url=[A-Za-z_.]+|base_url="[^"]*"' tests/fixtures/*/expected/src/ \
+>   | sort | uniq -c | sort -rn
+    844 base_url=base_url
+    360 base_url="https://yourhost.com/path/to/api"
+    210 base_url=self.get_base_url
+    140 base_url=_get_base_url
+```
+
+`base_url=base_url` and `_get_base_url(...)` thread the constructor argument,
+falling back to `environment.value`; `self.get_base_url` reads it back inside
+the request layer; the literal is Fern's placeholder in generated docstring
+`Examples` blocks. None of the four names a host from a `servers` block below
+the root.
+
+`twilio.com-twilio_voice_v1` (row 61) is recorded here as the *weaker* witness
+it is. It declares 17 Path Item `servers` blocks — but every one of them repeats
+the root URL, so its single `DEFAULT` member cannot distinguish discarding from
+honouring:
+
+```console
+$ jq -c '.servers' .local/corpus/twilio.com-twilio_voice_v1/openapi.json
+[{"url":"https://voice.twilio.com"}]
+$ jq '[.paths[] | select(.servers)] | length' .local/corpus/twilio.com-twilio_voice_v1/openapi.json
+17
+$ jq -r '[.paths[] | select(.servers) | .servers[].url] | unique | .[]' \
+>   .local/corpus/twilio.com-twilio_voice_v1/openapi.json
+https://voice.twilio.com
+```
+
+The verdict rests on `apideck.com-file-storage`, not on this row.
+
+#### `servers-three-levels` — discards
+
+**Route 2 — a probe.** No committed golden's source declares a `servers` block
+at all three levels: `apideck.com-file-storage` has root plus Operation,
+`twilio.com-twilio_voice_v1` root plus Path Item, and nothing in the corpus has
+both below the root. So this row cannot be answered from a golden and was
+probed.
+
+The probe declares one server at each level, each on its own host, and one
+operation inheriting from each level. In full:
+
+```yaml
+openapi: 3.0.3
+info:
+  title: servers three levels probe
+  version: 1.0.0
+servers:
+  - url: https://root.example.com
+    description: Root
+paths:
+  /root-only:
+    get:
+      operationId: rootOnly
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Thing"
+  /overridden:
+    servers:
+      - url: https://path-level.example.com
+        description: PathLevel
+    get:
+      operationId: pathOverride
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Thing"
+    post:
+      operationId: operationOverride
+      servers:
+        - url: https://operation-level.example.com
+          description: OperationLevel
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Thing"
+components:
+  schemas:
+    Thing:
+      type: object
+      properties:
+        id:
+          type: string
+      required:
+        - id
+```
+
+`fern check` **exit 0**, `fern generate` **exit 0**; neither reported anything
+about the overrides. The generated `src/fern/environment.py` is, in full, as
+Fern emitted it (banner included — a probe is not comment-stripped):
+
+```python
+# This file was auto-generated by Fern from our API Definition.
+
+import enum
+
+
+class FernApiEnvironment(enum.Enum):
+    DEFAULT = "https://root.example.com"
+```
+
+and that line is the **only** occurrence of any of the three hosts anywhere in
+the generated tree (run from the probe workspace, not the repository):
+
+```console
+$ grep -rn 'root.example.com\|path-level.example.com\|operation-level.example.com' \
+>   preview/fern-python-sdk/
+preview/fern-python-sdk/src/fern/environment.py:7:    DEFAULT = "https://root.example.com"
+```
+
+Both overrides are discarded silently, and `Root` — a *single*-word description
+— still yields `DEFAULT`, which is the observation the
+`server-description-multiword` row above leans on.
+
+#### `xml-request` and `xml-response` — discards
+
+**`application/xml` is not settled by any committed golden. Decided
+explicitly.** The two AWS Query-protocol rows are the corpus's XML documents,
+and they declare `text/xml`, never `application/xml`:
+
+```console
+$ scripts/fetch-corpus.sh          # all 91 link-ok rows, into .local/corpus/
+$ ls -d .local/corpus/*/ | wc -l
+91
+$ grep -rl 'application/xml' .local/corpus | wc -l
+0
+$ ls tests/fixtures/*/openapi.* | wc -l
+31
+$ grep -l 'application/xml' tests/fixtures/*/openapi.* | wc -l
+0
+$ grep -rhoE '[a-z]+/[a-z0-9.+-]*xml[a-z0-9.+-]*' .local/corpus \
+>   | sort | uniq -c | sort -rn
+    644 text/xml
+     15 image/svg+xml
+      7 application/atom+xml
+      5 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      1 gadgets/activitystream-gadget.xml
+      1 application/gpx+xml
+```
+
+All 91 `link-ok` sources were fetched from their pinned `CORPUS.md` URLs with
+the repository's own `scripts/fetch-corpus.sh` and searched, together with all
+31 vendored fixture specs: **zero** declare `application/xml`. The XML-ish media
+types that *are* present are `text/xml` (`amazonaws.com-cloudformation`,
+`amazonaws.com-cloudfront`), `image/svg+xml` (`atlassian.com-jira`,
+`color.pizza`), `application/gpx+xml` and the XLSX type (`traccar.org`), and
+`application/atom+xml` (`github.com`, which has no golden — `CORPUS.md` records
+it DROPPED at `fern check`). The `gadgets/…` line is the deliberately loose
+pattern catching a URL path inside a description, not a media type. So Route 1
+cannot finish these two rows and **both rest on a probe**, not on the CloudFront
+reading.
+
+**Route 2 — a probe.** One document, three operations against one `Widget`
+schema that also carries an OpenAPI `xml` Object (`name`, `wrapped`,
+`attribute`, a renamed property): a JSON control, a `POST` with a **required**
+`application/xml` request body, and a `GET` with an `application/xml` response.
+In full:
+
+```yaml
+openapi: 3.0.3
+info:
+  title: xml media probe
+  version: 1.0.0
+servers:
+  - url: https://api.example.com
+paths:
+  /json-control:
+    post:
+      operationId: jsonControl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Widget"
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Widget"
+  /xml-request:
+    post:
+      operationId: xmlRequest
+      requestBody:
+        required: true
+        content:
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/Widget"
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Widget"
+  /xml-response:
+    get:
+      operationId: xmlResponse
+      responses:
+        "200":
+          description: ok
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Widget"
+components:
+  schemas:
+    Widget:
+      type: object
+      xml:
+        name: widget
+        wrapped: true
+      properties:
+        id:
+          type: string
+          xml:
+            attribute: true
+        name:
+          type: string
+          xml:
+            name: widgetName
+      required:
+        - id
+```
+
+`fern check` **exit 0**, `fern generate` **exit 0**; neither reported anything
+about the media type. The emitted `src/fern/raw_client.py` — control first, so
+the difference is legible:
+
+```python
+    def json_control(
+        self, *, id: str, name: typing.Optional[str] = OMIT, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[Widget]:
+        """
+        Parameters
+        ----------
+        id : str
+
+        name : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[Widget]
+            ok
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "json-control",
+            method="POST",
+            json={
+                "id": id,
+                "name": name,
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+```
+
+```python
+    def xml_request(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Widget]:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[Widget]
+            ok
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "xml-request",
+            method="POST",
+            request_options=request_options,
+        )
+```
+
+```python
+    def xml_response(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[None]
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "xml-response",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return HttpResponse(response=_response, data=None)
+```
+
+`xml_request` takes **no body argument at all** and sends no `json=`, `data=` or
+`content=`: the required request body is not merely unserialised, it is gone,
+and the generated method cannot send one. `xml_response` returns
+`HttpResponse[None]` and hands back `data=None` without touching the body; the
+declared `Widget` response schema reaches nothing. `reference.md` documents both
+as `client.xml_request()` and `client.xml_response()`, no arguments.
+
+The `xml` Object is discarded with the media type. Every occurrence of the
+string `xml` in the generated tree is the operationId-derived method name or the
+URL path that produced it; `widgetName`, `wrapped` and `attribute` appear
+nowhere. `Widget` itself is still emitted — but only because the JSON control
+operation references it; the XML operations contribute nothing to it.
+
+This matches, and now explains, what `amazonaws.com-cloudfront` (row 89) shows
+for `text/xml` — a source dense with XML, and a golden that reads every response
+as JSON and nothing else:
+
+```console
+$ grep -o 'text/xml' .local/corpus/amazonaws.com-cloudfront/openapi.json | wc -l
+256
+$ jq '[.. | objects | select(has("xml"))] | length' \
+>   .local/corpus/amazonaws.com-cloudfront/openapi.json
+33
+$ grep -rhoE '_response\.(json|text|content|iter_[a-z]+)\(\)' \
+>   tests/fixtures/amazonaws.com-cloudfront/expected/src/ | sort | uniq -c
+    192 _response.json()
+```
+
+The CloudFront golden is corroboration for the shape of the behaviour; it is not
+the evidence for these rows, because its source declares a different media type.
+
+#### Nothing registrable, and what that means for the rows behind this one
+
+No row in this family is **REGISTRABLE**. In each of the five, what Fern emitted
+is an unconditional default or an outright absence, and no byte of the output is
+derived from the shape under test — so a fixture would pin the default, not the
+feature, which is the `deepObject` failure mode this whole exercise exists to
+avoid. No deletion-control generation was run: this records what the measured
+output contains, not a byte comparison against a shape-stripped document.
+
+The evidence generalises along one axis, and the axis is narrower than "document
+metadata". What was measured is that **Fern's importer keeps one server URL for
+the whole client and one wire format for every body**, and that everything the
+document says beyond those two facts — a second server, a server below the root,
+a description, a non-JSON media type — is dropped without a diagnostic. That is
+a statement about the *inputs Fern's IR has a slot for*, not about metadata as a
+category.
+
+- **For `m2-links-encoding`:** the same reading predicts null. A Link object
+  describes a relationship between two operations and an Encoding object
+  describes a per-part wire format; neither has a slot in an IR that keeps one
+  base URL and assumes JSON, and the `xml-request` result is the direct
+  precedent — Fern discarded a *required* request body rather than represent a
+  body it had no wire format for. Descoping `m2` on this basis is defensible. It
+  is not proven: no Link or Encoding object was measured here, and the six `m2`
+  rows are still `unmeasured` until one is.
+- **For `m3-schema-shapes`:** this result predicts nothing. Every discard above
+  is a *routing or wire-format* input, and the one place the probe touched the
+  type system it behaved correctly — `Widget` was emitted with the right fields
+  the moment a JSON operation referenced it. The `m3` rows (`const`, multi-type
+  arrays, cycles, nesting depth, normalization collisions) feed the type
+  machinery Fern demonstrably does implement, and nothing measured here is
+  evidence about them either way. This family is **not** grounds to drop `m3`.
+
 ## What Round 3 did not register, and why
 
 The round's main result. Round 3 registers a fixture only where **both** bars are
@@ -739,15 +1342,15 @@ question a future probe could answer**, not a proven absence.
 | `range-4XX` | 5 | 6 | discards | a ranged response yields no error class at all |
 | `range-5XX` | 4 | 4 | discards | a ranged response yields no error class at all |
 | `relative-file-ref` | 2 | 2 | discards + pipeline | Fern discards a relative-file Path Item `$ref` when the document is fetched alone, and crozier's fixture pipeline cannot register the tree that would make it resolve; only 2 eligible |
-| `server-description-multiword` | 15 | 16 | **unmeasured** | no screen measured the environment member names Fern derives from a server description |
-| `servers-multiple-path-or-operation` | 2 | 5 | **unmeasured** | no screen measured what Fern derives from several servers below the root |
-| `servers-three-levels` | 1 | 5 | **unmeasured** | no screen measured what Fern derives from a server override at each level |
+| `server-description-multiword` | 15 | 16 | discards | a multi-word server description reaches no identifier: all 18 goldens whose first root server carries one emit `DEFAULT`, while the four whose description is the single word `Production` emit `PRODUCTION`. Measured in [Round 4](#round-4--servers-and-xml) |
+| `servers-multiple-path-or-operation` | 2 | 5 | discards | a Path Item or Operation `servers` block emits nothing: `apideck.com-file-storage` declares five operation-level servers on a *different* host and its golden routes every one through the single root base URL. Measured in [Round 4](#round-4--servers-and-xml) |
+| `servers-three-levels` | 1 | 5 | discards | probed directly: with a root, a Path Item and an Operation server in one document, `fern check` and `fern generate` both exit 0 and only the root URL is emitted. Measured in [Round 4](#round-4--servers-and-xml) |
 | `spaceDelimited-object` | 0 | 6 | discards + licence | Fern discards the declared style; object query parameters are flattened regardless of it; 0 eligible of 6 verified — 6× licence untiered |
 | `trace-operation` | 2 | 5 | discards + supply | Fern emits no client method for `trace`; 2 eligible of 5 verified — 3× licence tier Q |
 | `type-array-multi-nonnull` | 8 | 8 | **unmeasured** | no screen measured what Fern emits for a 3.1 multi-type array; the verdict recorded is a non-empty generation |
 | `x-fern-or-crozier-ignore` | 2 | 4 | supply | two of its four verified candidates are the AssemblyAI specification `CORPUS.md` records REJECTED, leaving two eligible |
-| `xml-request` | 18 | 20 | **unmeasured** | no screen measured any XML-specific emission; the gap was closed on documents generating a non-empty SDK |
-| `xml-response` | 20 | 24 | **unmeasured** | no screen measured any XML-specific emission; the gap was closed on documents generating a non-empty SDK |
+| `xml-request` | 18 | 20 | discards | probed directly: a **required** `application/xml` request body is dropped whole — the method takes no body argument and the call site sends none. No committed golden declares `application/xml`, so this rests on the probe. Measured in [Round 4](#round-4--servers-and-xml) |
+| `xml-response` | 20 | 24 | discards | probed directly: an `application/xml` response schema is dropped whole — the method returns `HttpResponse[None]` and never parses the body. No committed golden declares `application/xml`, so this rests on the probe. Measured in [Round 4](#round-4--servers-and-xml) |
 
 ### The eight HTTP statuses left unpinned
 
