@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.50](https://github.com/nickderobertis/crozier/compare/v0.0.49...v0.0.50) - 2026-08-22
+
+### Added
+
+- resolve $refs that name another document over HTTP ([#161](https://github.com/nickderobertis/crozier/pull/161))
+
 ## [0.0.49](https://github.com/nickderobertis/crozier/compare/v0.0.48...v0.0.49) - 2026-08-21
 
 ### Fixed
