@@ -28,6 +28,7 @@ future probe is worth running:
 
 | verdict | meaning |
 |---|---|
+| **implements** | Fern reads the shape and emits output derived from it; registration is warranted only where that behaviour is not already pinned by an existing fixture |
 | **discards** | Fern accepts the shape, emits nothing derived from it, and reports nothing |
 | **ignores** | Fern emits the node but the modifier under test (a `style`, an `explode`) changes no byte |
 | **refuses** | `fern check` exits non-zero on the shape |
@@ -1271,6 +1272,775 @@ category.
   machinery Fern demonstrably does implement, and nothing measured here is
   evidence about them either way. This family is **not** grounds to drop `m3`.
 
+### Round 4 — links and encoding
+
+Six rows. The four link rows are **discards** and behave alike. The two encoding
+rows do not, and both carry a split cell: `encoding-object` **implements**
+`contentType` and **discards** per-part `headers`, and
+`encoding-explode-or-allowReserved` is **refused** at check time in one
+configuration and **ignored** at generate time in the other six.
+
+`contentType` is the only thing Round 4 measured Fern to
+[**implement**](#how-to-read-a-verdict), and it is the first such result in this
+file — Round 3 produced no row that reached one. It still proposes no fixture, and
+no `REGISTRABLE` candidate set: `CORPUS.md` rows 73 and 76 already pin that
+behaviour, with goldens crozier byte-matches.
+
+#### No corpus document declares these fields — so five of the six rows are probes
+
+Route 1 needs the shape present in a golden's own source, quantified, before its
+absence from the golden means anything. Censused across all 91 fetched `link-ok`
+sources and all 31 vendored fixture specs, **two** documents declare a Link object
+and **two** declare an Encoding object, and between them they declare *none* of the
+five fields these six rows are about:
+
+```console
+$ scripts/fetch-corpus.sh          # all 91 link-ok rows, into .local/corpus/
+$ uv run --no-project --quiet --with pyyaml python3 - <<'PY'
+> import glob, os, yaml
+> def links(n):
+>     "every Link object: response-level, in components.responses, and components.links"
+>     out = []
+>     def take(m, where):
+>         for k, v in (m or {}).items():
+>             out.append((where, k, v if isinstance(v, dict) else {}))
+>     def walk(x):
+>         if isinstance(x, dict):
+>             if isinstance(x.get('links'), dict): take(x['links'], 'response')
+>             for v in x.values(): walk(v)
+>         elif isinstance(x, list):
+>             for v in x: walk(v)
+>     walk(n.get('paths') or {})
+>     walk((n.get('components') or {}).get('responses') or {})
+>     take((n.get('components') or {}).get('links'), 'components.links')
+>     return out
+> tot = {}
+> for f in sorted(glob.glob('.local/corpus/*/openapi.*')) + sorted(glob.glob('tests/fixtures/*/openapi.*')):
+>     name = os.path.basename(os.path.dirname(f))
+>     ls = links(yaml.safe_load(open(f)))
+>     if not ls: continue
+>     c = {'total': len(ls)}
+>     for w, k, v in ls:
+>         c[w] = c.get(w, 0) + 1
+>         for field in ('description', 'requestBody', 'server', '$ref'):
+>             if field in v: c[field] = c.get(field, 0) + 1
+>     print(name, c)
+>     for k, v in c.items(): tot[k] = tot.get(k, 0) + v
+> print('TOTAL', tot)
+> PY
+apideck.com-crm {'total': 24, 'response': 24}
+gambitcomm.local-mimic {'total': 16, 'response': 16}
+TOTAL {'total': 40, 'response': 40}
+```
+
+Forty Link objects in the whole corpus, all response-level, and the counters for
+`description`, `requestBody`, `server` and `$ref` never fire — so no key for them
+appears at all. `components.links` is likewise absent from both documents:
+
+```console
+$ jq '.components | has("links")' .local/corpus/gambitcomm.local-mimic/openapi.json
+false
+$ jq '.components | has("links")' .local/corpus/apideck.com-crm/openapi.json
+false
+```
+
+The Encoding census is the mirror image — the two fields the
+`encoding-explode-or-allowReserved` row is about are declared **zero** times, while
+`contentType`, `headers` and `style` are dense:
+
+```console
+$ uv run --no-project --quiet --with pyyaml python3 - <<'PY'
+> import glob, os, yaml
+> FIELDS = ('contentType', 'headers', 'style', 'explode', 'allowReserved')
+> tot = {}
+> for f in sorted(glob.glob('.local/corpus/*/openapi.*')) + sorted(glob.glob('tests/fixtures/*/openapi.*')):
+>     name, c = os.path.basename(os.path.dirname(f)), {}
+>     def walk(x):
+>         if isinstance(x, dict):
+>             for k, v in x.items():
+>                 if k == 'content' and isinstance(v, dict):
+>                     for mto in v.values():
+>                         for e in ((mto or {}).get('encoding') or {}).values() if isinstance(mto, dict) else []:
+>                             c['encoding'] = c.get('encoding', 0) + 1
+>                             for fld in FIELDS:
+>                                 if fld in (e or {}): c[fld] = c.get(fld, 0) + 1
+>                 walk(v)
+>         elif isinstance(x, list):
+>             for v in x: walk(v)
+>     walk(yaml.safe_load(open(f)))
+>     if not c: continue
+>     print(name, {k: c.get(k, 0) for k in ('encoding',) + FIELDS})
+>     for k, v in c.items(): tot[k] = tot.get(k, 0) + v
+> print('TOTAL', {k: tot.get(k, 0) for k in ('encoding',) + FIELDS})
+> PY
+free5gc-namf-communication {'encoding': 23, 'contentType': 23, 'headers': 14, 'style': 23, 'explode': 0, 'allowReserved': 0}
+free5gc-pdu-session {'encoding': 99, 'contentType': 99, 'headers': 58, 'style': 99, 'explode': 0, 'allowReserved': 0}
+TOTAL {'encoding': 122, 'contentType': 122, 'headers': 72, 'style': 122, 'explode': 0, 'allowReserved': 0}
+```
+
+A raw `grep` for `explode` in `free5gc-pdu-session` **does** hit, 58 times, and every
+hit is a trap: it is the `explode` of a *Header* Object nested inside
+`encoding.<part>.headers.<name>`, not the Encoding Object's own field. The census
+above reads structure rather than text for exactly that reason.
+
+So the route split is: `encoding-object` is Route 1, settled by a committed golden.
+The other five are Route 2 — the corpus cannot answer them, and every one of them
+was probed.
+
+#### The container result, and what it does *not* finish
+
+Both Link-declaring goldens discard the Link container whole, which is worth
+recording because it is what makes the probe's silence unsurprising rather than
+suspicious.
+
+**`gambitcomm.local-mimic`, `CORPUS.md` row 47**
+(`https://api.apis.guru/v2/specs/gambitcomm.local/mimic/21.00/openapi.json`) declares
+16 response-level Link objects, of the `operationRef` + `parameters` form:
+
+```console
+$ jq '[.paths[][]? | objects | .responses? // {} | .[]? | objects
+>   | select(.links) | .links[]] | length' .local/corpus/gambitcomm.local-mimic/openapi.json
+16
+$ jq -c '[.paths[][]? | objects | select(.responses) | .responses | to_entries[]
+>   | select(.value.links) | {code:.key, links:.value.links}] | .[0]' \
+>   .local/corpus/gambitcomm.local-mimic/openapi.json
+{"code":"200","links":{"address":{"operationRef":"#/mimic/agent/{agentNum}/get/start","parameters":{"agentNum":"$request.body#/agentNum"}}}}
+```
+
+In its committed golden the string `link` occurs five times, in three files, and
+every occurrence is the same word inside a docstring copied from the specification:
+
+```console
+$ grep -rl 'link' tests/fixtures/gambitcomm.local-mimic/expected/ | sort
+tests/fixtures/gambitcomm.local-mimic/expected/reference.md
+tests/fixtures/gambitcomm.local-mimic/expected/src/fern/valuespace/client.py
+tests/fixtures/gambitcomm.local-mimic/expected/src/fern/valuespace/raw_client.py
+$ grep -rho '[A-Za-z]*link[A-Za-z]*' tests/fixtures/gambitcomm.local-mimic/expected/ | sort | uniq -c
+      5 linkUp
+```
+
+— from *"the commands below will send ifIndex.2 with a value of 5 in the linkUp trap
+PDU."* Nothing in the golden derives from any of the 16 Link objects.
+
+**`apideck.com-crm`, `CORPUS.md` row 10**
+(`https://api.apis.guru/v2/specs/apideck.com/crm/9.3.0/openapi.json`) is the larger
+witness — 24 Link objects, of the `operationId` + `parameters` form, carried on six
+`components.responses` entries — and it is also a trap, because its golden emits
+`src/fern/types/links.py` and `src/fern/types/social_link.py`. Those two files come
+from schemas *named* `Links` and `SocialLink`, not from Link objects:
+
+```console
+$ jq -r '.components.schemas | keys[] | select(test("(?i)link"))' .local/corpus/apideck.com-crm/openapi.json
+Links
+SocialLink
+$ jq -r '.components.schemas.Links.description' .local/corpus/apideck.com-crm/openapi.json
+Links to navigate to previous or next pages through the API
+```
+
+`tests/fixtures/apideck.com-crm/expected/src/fern/types/links.py` opens on that
+schema's own description, not on anything a Link object could supply:
+
+```python
+class Links(UniversalBaseModel):
+    """
+    Links to navigate to previous or next pages through the API
+    """
+
+    current: typing.Optional[str] = pydantic.Field(default=None)
+```
+
+The three link *names* that cannot come from anywhere else in that document settle
+it — each is declared exactly once, as a key of a `links` map, and each reaches zero
+bytes of the golden:
+
+```console
+$ for s in parentById pipelineById primarycontact; do
+>   printf '%-16s source=%s golden=%s\n' "$s" \
+>     "$(grep -o -F "$s" .local/corpus/apideck.com-crm/openapi.json | wc -l)" \
+>     "$(grep -r -o -F "$s" tests/fixtures/apideck.com-crm/expected/ | wc -l)"
+> done
+parentById       source=1 golden=0
+pipelineById     source=1 golden=0
+primarycontact   source=1 golden=0
+```
+
+**This finishes none of the four link rows.** It establishes that Fern discards the
+Link *container*, and a field cannot survive a container that is discarded — but
+neither document declares `description`, `requestBody` or `server` on a Link, and
+neither declares `components.links` at all, so on its own this reading is silence
+about a shape that was never present. All four rows are therefore probed below, and
+this container reading is corroboration, not their evidence.
+
+#### `link-description`, `link-requestBody`, `link-server`, `components-links` — discards
+
+**Route 2 — one probe carrying all four shapes.** Two response-level links on a
+`201`: one inline, carrying `description`, `requestBody` and a `server` of its own,
+and one that is a `$ref` to a `components.links` entry carrying the same three
+fields under different, greppable values. In full:
+
+```yaml
+openapi: 3.0.3
+info:
+  title: link fields probe
+  version: 1.0.0
+servers:
+  - url: https://api.example.com
+paths:
+  /things:
+    post:
+      operationId: createThing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Thing"
+      responses:
+        "201":
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Thing"
+          links:
+            GetThingByIdInline:
+              operationId: getThing
+              description: Look the created Thing up by its identifier.
+              parameters:
+                thingId: $response.body#/id
+              requestBody: $response.body#/id
+              server:
+                url: https://inline-link.example.com
+                description: InlineLinkServer
+            GetThingByIdRef:
+              $ref: "#/components/links/GetThingById"
+  /things/{thingId}:
+    get:
+      operationId: getThing
+      parameters:
+        - name: thingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Thing"
+components:
+  links:
+    GetThingById:
+      operationId: getThing
+      description: Component level link description.
+      parameters:
+        thingId: $response.body#/id
+      requestBody: $response.body#/id
+      server:
+        url: https://component-link.example.com
+        description: ComponentLinkServer
+  schemas:
+    Thing:
+      type: object
+      properties:
+        id:
+          type: string
+      required:
+        - id
+```
+
+`fern check` **exit 0**, `fern generate` **exit 0**; neither said anything about a
+Link. The generated tree contains no occurrence of the string `link` in any case,
+anywhere — not one of the two link names, not either server URL or description, not
+either link description:
+
+```console
+$ grep -ril 'link' preview/fern-python-sdk/ | wc -l
+0
+$ for s in inline-link.example.com component-link.example.com InlineLinkServer \
+>          ComponentLinkServer GetThingByIdInline GetThingByIdRef GetThingById \
+>          'Look the created Thing up' 'Component level link description'; do
+>   printf '%-34s %s\n' "$s" "$(grep -r -o -F "$s" preview/fern-python-sdk/ | wc -l)"
+> done
+inline-link.example.com            0
+component-link.example.com         0
+InlineLinkServer                   0
+ComponentLinkServer                0
+GetThingByIdInline                 0
+GetThingByIdRef                    0
+GetThingById                       0
+Look the created Thing up          0
+Component level link description   0
+```
+
+The emitted `src/fern/raw_client.py` is the two operations the paths declare and
+nothing else — `create_thing` returns the `201` body with no trace of either link:
+
+```python
+    def create_thing(self, *, id: str, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Thing]:
+        """
+        Parameters
+        ----------
+        id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[Thing]
+            created
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "things",
+            method="POST",
+            json={
+                "id": id,
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+```
+
+`environment.py` keeps the root server alone, so neither Link `server` reached the
+environment enum either — the same one-member shape the
+[servers and XML](#round-4--servers-and-xml) family measured:
+
+```python
+class FernApiEnvironment(enum.Enum):
+    DEFAULT = "https://api.example.com"
+```
+
+and `reference.md` documents exactly `client.create_thing(...)` and
+`client.get_thing(...)`, with no follow-up relationship of any kind.
+
+That is one probe settling four rows, and each of the four is settled by its own
+marker rather than by the shared silence: `link-description` by
+`Look the created Thing up` and `Component level link description`,
+`link-requestBody` by both links carrying `requestBody: $response.body#/id` while
+the emitted `get_thing` takes only `thing_id`, `link-server` by
+`inline-link.example.com` / `component-link.example.com` reaching neither
+`environment.py` nor any call site, and `components-links` by the `$ref` form
+resolving to a component that emits nothing — `GetThingById` occurs zero times.
+
+`link-server` carries a **+ supply** qualifier and `link-requestBody` and
+`components-links` carry one too, and in all three cases the shortfall is about
+*candidate documents*, not about Fern: the screens' own counts leave 1 eligible of
+3, 2 of 3 and 2 of 4 respectively, each short of the primary-plus-two-backups bar.
+The discard is measured; the shortfall is separate and would not save the row even
+if it were made up.
+
+#### `encoding-object` — implements `contentType`, discards `headers`
+
+**Route 1. `free5gc-pdu-session`, `CORPUS.md` row 73**
+(`https://raw.githubusercontent.com/free5gc/openapi/8d0ee35bc671dd9995240c0ff73d4c75075a204a/Nsmf_PDUSession/api/openapi.yaml`).
+Its source declares 99 Encoding objects, 99 of them with a `contentType` and 58 with
+per-part `headers` (census above). Five operations carry one on a request body, and
+exactly one of the five declares `multipart/related` as its *only* request media
+type:
+
+```console
+$ uv run --no-project --quiet --with pyyaml python3 - <<'PY'
+> import yaml
+> d = yaml.safe_load(open('.local/corpus/free5gc-pdu-session/openapi.yaml'))
+> for p, item in d['paths'].items():
+>     for m, op in item.items():
+>         c = ((op or {}).get('requestBody') or {}).get('content') or {}
+>         if any(isinstance(v, dict) and v.get('encoding') for v in c.values()):
+>             print(f'{op["operationId"]:18} {list(c)}')
+> PY
+PostSmContexts     ['multipart/related']
+UpdateSmContext    ['application/json', 'multipart/related']
+ReleaseSmContext   ['application/json', 'multipart/related']
+PostPduSessions    ['application/json', 'multipart/related']
+UpdatePduSession   ['application/json', 'multipart/related']
+```
+
+For the other four Fern picks `application/json` and the multipart branch — encoding
+and all — never runs; each of their emitted call sites carries a plain `json={…}`
+and no `files=` at all. `PostSmContexts` is the one that exercises the Encoding
+objects, and its source block is:
+
+```yaml
+          multipart/related:
+            encoding:
+              jsonData:
+                contentType: application/json
+                style: form
+              binaryDataN1SmMessage:
+                contentType: application/vnd.3gpp.5gnas
+                headers:
+                  Content-Id:
+                    explode: false
+                    schema:
+                      type: string
+                    style: simple
+                style: form
+```
+
+`tests/fixtures/free5gc-pdu-session/expected/src/fern/sm_contexts_collection/raw_client.py`
+emits both `contentType` values, verbatim, into the request:
+
+```python
+        _response = self._client_wrapper.httpx_client.request(
+            "sm-contexts",
+            method="POST",
+            data={},
+            files={
+                **(
+                    {"jsonData": (None, json.dumps(jsonable_encoder(json_data)), "application/json")}
+                    if json_data is not OMIT
+                    else {}
+                ),
+                **(
+                    {
+                        "binaryDataN1SmMessage": core.with_content_type(
+                            file=binary_data_n1sm_message, default_content_type="application/vnd.3gpp.5gnas"
+                        )
+                    }
+                    if binary_data_n1sm_message is not None
+                    else {}
+                ),
+            },
+            request_options=request_options,
+            omit=OMIT,
+            force_multipart=True,
+        )
+```
+
+`application/vnd.3gpp.5gnas` is what makes this unambiguous: it is a media type no
+default could produce, and in the source it occurs 49 times and *only* under
+`encoding.<part>.contentType`:
+
+```console
+$ grep -c 'vnd.3gpp.5gnas' .local/corpus/free5gc-pdu-session/openapi.yaml
+49
+$ grep -B4 'vnd.3gpp.5gnas' .local/corpus/free5gc-pdu-session/openapi.yaml \
+>   | grep -c 'contentType: application/vnd.3gpp.5gnas'
+49
+```
+
+`free5gc-namf-communication` (row 76) is the independent second witness — a
+different repository, a different 3GPP service, 23 Encoding objects — and its golden
+emits the same construct for all three binary parts of its one multipart-only
+operation:
+
+```console
+$ grep -rn 'default_content_type=' tests/fixtures/free5gc-namf-communication/expected/src/ \
+>   | sed 's/.*default_content_type=//' | sort | uniq -c
+      2 "application/vnd.3gpp.5gnas"
+      4 "application/vnd.3gpp.ngap"
+```
+
+**The `encoding` mentions elsewhere in these two goldens are Fern's static runtime,
+not derived output.** Only two files in either tree mention the string, and both are
+byte-identical across the entire corpus — including fixtures whose source declares
+no Encoding object at all:
+
+```console
+$ grep -rl 'encoding' tests/fixtures/free5gc-pdu-session/expected/ | sort
+tests/fixtures/free5gc-pdu-session/expected/src/fern/core/force_multipart.py
+tests/fixtures/free5gc-pdu-session/expected/src/fern/core/http_client.py
+$ md5sum tests/fixtures/*/expected/src/fern/core/force_multipart.py | awk '{print $1}' | sort | uniq -c
+    104 b961c5766288e1da18883699e5227918
+$ md5sum tests/fixtures/*/expected/src/fern/core/http_client.py | awk '{print $1}' | sort | uniq -c
+    104 9f664ce11351b3f5597849f62b929542
+$ diff tests/fixtures/free5gc-pdu-session/expected/src/fern/core/force_multipart.py \
+>      tests/fixtures/apideck.com-crm/expected/src/fern/core/force_multipart.py && echo identical
+identical
+$ diff tests/fixtures/free5gc-pdu-session/expected/src/fern/core/http_client.py \
+>      tests/fixtures/apideck.com-crm/expected/src/fern/core/http_client.py && echo identical
+identical
+```
+
+`apideck.com-crm` declares no Encoding object anywhere (it does not appear in the
+census above), so those two files carry the string for every golden regardless of
+its source. One hash each across 104 trees: they are Fern's runtime, shipped
+unconditionally.
+
+**What Fern does *not* take from the Encoding object is `headers`.** The 58
+`Content-Id` per-part headers in the source reach nothing:
+
+```console
+$ grep -c 'Content-Id' .local/corpus/free5gc-pdu-session/openapi.yaml
+58
+$ grep -ric 'content-id' tests/fixtures/free5gc-pdu-session/expected/ | awk -F: '{s+=$2} END{print s+0}'
+0
+```
+
+**A probe confirms `contentType` independently, and on both part shapes.** The
+golden alone leaves one ambiguity: `jsonData`'s declared `application/json` is also
+what a JSON part would default to, so only the binary part's exotic media type
+carries the finding. A probe operation using media types no default could invent
+closes it — and reproduces the `headers` discard on a document that declares one
+header and nothing else:
+
+```yaml
+  /multipart-encoding:
+    post:
+      operationId: multipartEncoding
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                meta:
+                  $ref: "#/components/schemas/Thing"
+                attachment:
+                  type: string
+                  format: binary
+              required:
+                - attachment
+            encoding:
+              meta:
+                contentType: application/vnd.probe+json
+                explode: true
+                allowReserved: true
+              attachment:
+                contentType: application/vnd.probe-binary
+                headers:
+                  X-Probe-Header:
+                    schema:
+                      type: string
+```
+
+`fern generate` **exit 0**; `fern check` **exit 1**, caused by the `explode: true`
+this same part carries — that field is the `encoding-explode-or-allowReserved` row
+below and is isolated there, and it changes nothing about what was emitted. Both
+declared media types land verbatim, the JSON part's as the third element of the
+httpx file tuple and the binary part's as `with_content_type`'s default:
+
+```python
+        _response = self._client_wrapper.httpx_client.request(
+            "multipart-encoding",
+            method="POST",
+            data={},
+            files={
+                **(
+                    {"meta": (None, json.dumps(jsonable_encoder(meta)), "application/vnd.probe+json")}
+                    if meta is not OMIT
+                    else {}
+                ),
+                "attachment": core.with_content_type(
+                    file=attachment, default_content_type="application/vnd.probe-binary"
+                ),
+            },
+            request_options=request_options,
+            omit=OMIT,
+            force_multipart=True,
+        )
+```
+
+```console
+$ for s in 'application/vnd.probe+json' 'application/vnd.probe-binary' 'X-Probe-Header'; do
+>   printf '%-28s %s\n' "$s" "$(grep -r -o -F "$s" preview/fern-python-sdk/ | wc -l)"
+> done
+application/vnd.probe+json   2
+application/vnd.probe-binary 2
+X-Probe-Header               0
+```
+
+Two each — the sync and async client — for both `contentType` values, and zero for
+the per-part header, on a document where nothing else could have supplied any of the
+three.
+
+**No `REGISTRABLE` entry is raised for this row, and the reason is not the semantic
+bar — it is that the shape is already registered.** `CORPUS.md` rows 73 and 76 are
+exactly this shape (row 73's `shapes` column reads *"multipart `encoding` properties
+combining `contentType` and per-part `headers`"*), both are registered in
+`tests/e2e.rs`, and both byte-match. A third fixture for a shape two goldens already
+pin would add coverage of nothing.
+
+#### `encoding-explode-or-allowReserved` — refuses one configuration, ignores six
+
+**Route 2 — three probes.** Zero documents in the corpus declare either field, so
+there is nothing to read; the row is answered by measuring seven configurations of
+the two fields against controls that differ only in the field under test.
+
+*Probe 1 — `application/x-www-form-urlencoded`, control vs. modified.* Two
+operations over the same referenced schema; the second adds an `encoding` block and
+changes nothing else:
+
+```yaml
+  /form-control:
+    post:
+      operationId: formControl
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/FormBody"
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/Thing" } } } }
+  /form-modified:
+    post:
+      operationId: formModified
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/FormBody"
+            encoding:
+              tags:
+                style: form
+                explode: false
+              filter:
+                style: deepObject
+                explode: true
+              redirectUri:
+                allowReserved: true
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/Thing" } } } }
+```
+
+(`FormBody` is `{tags: array<string> (required), filter: map<string,string>,
+redirectUri: string}`.) The two emitted methods are byte-identical apart from the
+URL path — `form_modified` is:
+
+```python
+        _response = self._client_wrapper.httpx_client.request(
+            "form-modified",
+            method="POST",
+            data={
+                "tags": tags,
+                "filter": filter,
+                "redirectUri": redirect_uri,
+            },
+            headers={
+                "content-type": "application/x-www-form-urlencoded",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+```
+
+`explode: false` on `tags` still sends the array under one `data` key; `explode:
+true` + `style: deepObject` on `filter` still sends the map under one; and
+`allowReserved: true` on `redirectUri` changes nothing. Neither field's name occurs
+anywhere in the generated tree. This document also carries the `/multipart-encoding`
+operation quoted above, so its `fern check` **exits 1** — on that operation alone,
+for its `explode` — and `fern generate` **exits 0**; neither said anything about
+`formControl` or `formModified`.
+
+*Probe 2 — `multipart/form-data` on a list part, one control and three variants.*
+Four operations over one `MpBody` (`metaList: array<Thing>`, `attachment: binary`
+required), differing only in the `encoding.metaList` block: absent, `explode: true`,
+`explode: false`, `allowReserved: true`. `fern check` **exit 0**, `fern generate`
+**exit 0**, and all four emit the same method body:
+
+```console
+$ uv run --no-project --quiet python3 - <<'PY'
+> import re
+> src = open('preview/fern-python-sdk/src/fern/raw_client.py').read()
+> def body(n):
+>     m = re.search(r'\n    def %s\(.*?(?=\n    def |\nclass )' % n, src, re.S)
+>     return m.group(0).replace(n, 'OP').replace(n.replace('_', '-'), 'OP-PATH').strip('\n')
+> base = body('mp_control')
+> for n in ('mp_explode_true', 'mp_explode_false', 'mp_allow_reserved'):
+>     print(f'{n:20} {"IDENTICAL" if body(n) == base else "DIFFERS"}')
+> PY
+mp_explode_true      IDENTICAL
+mp_explode_false     IDENTICAL
+mp_allow_reserved    IDENTICAL
+```
+
+```python
+        _response = self._client_wrapper.httpx_client.request(
+            "mp-control",
+            method="POST",
+            data={
+                "metaList": json.dumps(jsonable_encoder(meta_list)) if meta_list is not OMIT else OMIT,
+            },
+            files={
+                "attachment": attachment,
+            },
+            request_options=request_options,
+            omit=OMIT,
+            force_multipart=True,
+        )
+```
+
+*Probe 3 — the one place either field changes an outcome.* Two operations over an
+`MpBody` whose `meta` part is an **object** rather than a list, differing only in
+`encoding.meta.explode: true`. `fern check` **exit 1**:
+
+```console
+$ fern check
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: __package__.yml -> service -> endpoints -> mpObjectExplode
+        issue: meta is exploded and must be a list. Did you mean list<optional<Thing>>?
+
+Found 1 error and 0 warnings in 0.001 seconds.
+```
+
+The control operation is not named; the error is caused by that one field. But it
+is a validation-only consumption, and it does not stop generation:
+`fern generate` prints the same `[error]` and still **exits 0**, and the code it
+writes for `mp_object_explode` is byte-identical to `mp_object_control` — `meta` is
+still `typing.Optional[Thing]`, not a list, and nothing is repeated:
+
+```python
+        _response = self._client_wrapper.httpx_client.request(
+            "mp-object-explode",
+            method="POST",
+            data={
+                "meta": json.dumps(jsonable_encoder(meta)) if meta is not OMIT else OMIT,
+            },
+            files={
+                "attachment": attachment,
+            },
+            request_options=request_options,
+            omit=OMIT,
+            force_multipart=True,
+        )
+```
+
+**The two fields do not behave alike, so the row records both.** `explode: true` on
+a non-list *multipart* part is **refused**: `fern check` exits 1 and names that one
+operation, and a reader deciding whether a document is usable needs that — Fern
+rejects it outright rather than quietly dropping a modifier. The other six
+configurations are **ignored** at generate time: `explode` true or false on a list
+part, `allowReserved` on either, and — note the asymmetry —
+`explode: true` on a form-urlencoded *map* part, which is an object and is *not*
+refused. Only the multipart form of the check reaches it.
+
+So `explode` is read far enough to be *validated* and never far enough to be
+*emitted*, and `allowReserved` is not even validated. Neither half is worth a
+fixture, for different reasons: a document `fern check` rejects cannot become a
+corpus row at all, and the ignored six would pin an unconditional default. The exit-1/exit-0 split is
+also a fresh instance of the
+[`fern check` / `fern generate` disagreement](#fern-check-passing-does-not-mean-the-generator-will),
+in the direction the existing note does not cover: check fails, generate succeeds.
+
+#### Nothing registrable, and what that leaves
+
+No row in this family produces a `REGISTRABLE` entry. The four link rows are
+discards; `encoding-explode-or-allowReserved` refuses in one configuration and
+ignores in six, neither of which a fixture can pin; and the one shape Fern does
+implement — `encoding.<part>.contentType` — is already pinned by two committed,
+byte-matching goldens, so proposing a third would be work with no coverage behind
+it.
+
+The family also narrows the [servers and XML](#round-4--servers-and-xml) reading
+rather than merely repeating it. That family concluded Fern's importer *"keeps one
+server URL for the whole client and one wire format for every body."* The Encoding
+result shows the second half of that is not a blanket rule: Fern does carry a
+declared per-part media type into the request when the body is multipart-only. What
+it drops is everything that is not a media type or a part's own shape — the Link
+graph entirely, the per-part `headers`, and the `explode`/`allowReserved` modifiers,
+one of which it rejects at check time rather than dropping quietly. The dividing
+line is whether the document is describing *a body Fern will send* or *a
+relationship between operations*; only the former has a slot.
+
 ## What Round 3 did not register, and why
 
 The round's main result. Round 3 registers a fixture only where **both** bars are
@@ -1299,7 +2069,7 @@ question a future probe could answer**, not a proven absence.
 | `apiKey-cookie` | 4 | 6 | discards | the importer drops the scheme outright; the client is generated from whatever other scheme the document declares |
 | `apiKey-query` | 2 | 6 | discards + supply | as `apiKey-cookie`; and only 2 eligible of 6 verified — 4× licence tier Q — short of a primary plus two backups |
 | `boolean-schema-true` | 4 | 4 | **unmeasured** | no screen measured what Fern emits for a boolean schema `true`; the verdict recorded is a non-empty generation |
-| `components-links` | 2 | 4 | **unmeasured** | no screen measured Fern emitting anything derived from a `components.links` block |
+| `components-links` | 2 | 4 | discards + supply | probed directly: a response Link that is a `$ref` to a `components.links` entry emits nothing — the component's name, description, `requestBody` and `server` all reach zero bytes, and no corpus document declares `components.links` at all. 2 eligible of 4 verified, short of a primary plus two backups. Measured in [Round 4](#round-4--links-and-encoding) |
 | `components-pathItems` | 6 | 7 | discards | `components.pathItems` reaches the SDK only through a Path Item `$ref`, which Fern discards; the one candidate that loses nothing witnesses the *declaration* alone |
 | `const-boolean` | 13 | 13 | **unmeasured** | no screen measured what Fern emits for a boolean `const`; the verdict recorded is a non-empty generation |
 | `const-integer` | 7 | 8 | **unmeasured** | no screen measured what Fern emits for an integer `const`; the verdict recorded is a non-empty generation |
@@ -1308,8 +2078,8 @@ question a future probe could answer**, not a proven absence.
 | `cookie-parameter` | 7 | 7 | discards | cookie parameters are dropped from the client entirely; the warning does not fail `fern check` |
 | `cycle-via-additionalProperties` | 3 | 3 | **unmeasured** | no screen measured what Fern emits for a map-of-self cycle; the verdict recorded is a non-empty generation |
 | `deepObject-real-object` | 5 | 5 | **coincidence** | `query_encoder.py` flattens *every* dict-valued query parameter to `key[subkey]=value` unconditionally, and `form`, `pipeDelimited` and `deepObject` objects emit byte-identical code. A golden would pin the default, not style handling |
-| `encoding-explode-or-allowReserved` | 3 | 3 | **unmeasured** | no screen measured Fern honouring `encoding.explode` or `encoding.allowReserved`; both fields measured at zero across the audited corpus and neither was probed |
-| `encoding-object` | 4 | 6 | **unmeasured** | no screen measured Fern emitting anything derived from an `Encoding` object; the gap was closed on documents generating a non-empty SDK |
+| `encoding-explode-or-allowReserved` | 3 | 3 | refuses (multipart object `explode`) / ignores (list `explode`, `allowReserved`) | probed directly, and the two fields do not behave alike. `explode: true` on a **non-list multipart part** is refused at check time: `fern check` **exit 1**, `meta is exploded and must be a list`. In the other six configurations — `explode` true and false on a list part, `allowReserved` on either, and `explode: true` on a form-urlencoded map part — the emitted method is byte-identical to a no-encoding control. `fern generate` **exits 0** even on the refused document, emitting that same identical code. Measured in [Round 4](#round-4--links-and-encoding) |
+| `encoding-object` | 4 | 6 | implements (`contentType`) / discards (`headers`) | the object's two fields differ. `free5gc-pdu-session` (row 73) declares 99 Encoding objects; its golden emits `default_content_type="application/vnd.3gpp.5gnas"` from one of them — the only shape Round 4 found Fern handles — while the 58 per-part `Content-Id` headers reach zero bytes. No fixture is proposed because the shape is already registered, at `CORPUS.md` rows 73 and 76, both byte-matching. Measured in [Round 4](#round-4--links-and-encoding) |
 | `enum-member-float` | 2 | 2 | discards + supply | Fern accepts the schema and silently strips the enum, emitting `Kind = float` with no members; and only 2 eligible, pool exhausted |
 | `enum-member-object` | 1 | 1 | discards + supply | as above, emitting `Kind = typing.Dict[str, typing.Any]`; only 1 eligible, pool exhausted |
 | `explode-true-simple-header` | 0 | 0 | refuses | `fern check` refuses the header parameter that carries it, exit 1; no candidate carried end to end at all |
@@ -1318,9 +2088,9 @@ question a future probe could answer**, not a proven absence.
 | `header-object` | 0 | 0 | crashes | `fern generate` crashes on an object-typed header parameter with an internal `KeyError`; no candidate carried end to end at all |
 | `http-digest` | 0 | 4 | discards + licence | the importer drops the scheme outright; and 0 eligible of 4 verified — 3× the specification declares CC BY-NC-SA 3.0 US, 1× licence tier Q |
 | `label-array-or-object` | 0 | 3 | discards + licence | Fern discards the `label` style and renders `str(list)` into the path segment; 0 eligible of 3 verified — 3× licence untiered |
-| `link-description` | 5 | 9 | **unmeasured** | no screen measured Fern emitting anything derived from a Link object; the verdict recorded is a non-empty SDK, not that the Link reaches the output |
-| `link-requestBody` | 2 | 3 | **unmeasured** | as `link-description`; the structure screen's own text records Link objects as absent from every audited document |
-| `link-server` | 1 | 3 | **unmeasured** | no screen measured Fern emitting anything derived from a Link object |
+| `link-description` | 5 | 9 | discards | probed directly: a Link `description` reaches no docstring, no `reference.md` entry and no byte of the SDK; the generated tree holds no occurrence of `link` in any case at all. No corpus document declares the field, so this rests on the probe. Measured in [Round 4](#round-4--links-and-encoding) |
+| `link-requestBody` | 2 | 3 | discards + supply | probed directly: a Link `requestBody` expression emits nothing — the target operation's generated method takes only its path parameter. No corpus document declares the field. 2 eligible of 3 verified, short of a primary plus two backups. Measured in [Round 4](#round-4--links-and-encoding) |
+| `link-server` | 1 | 3 | discards + supply | probed directly: a Link `server` reaches neither the environment enum — which keeps the root URL alone — nor any call site. No corpus document declares the field. 1 eligible of 3 verified, so the pool holds one real-world witness where three are needed. Measured in [Round 4](#round-4--links-and-encoding) |
 | `matrix-array` | 0 | 4 | discards + licence | Fern discards the `matrix` style and renders `str(list)` into the path segment; 0 eligible of 4 verified — 4× licence untiered |
 | `matrix-object` | 0 | 0 | discards | Fern discards the `matrix` style; no candidate carried end to end at all |
 | `mutualTLS` | 2 | 6 | discards + supply | the importer drops the scheme outright; 2 eligible of 6 verified — 2× tier Q, 2× untiered |
