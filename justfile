@@ -147,6 +147,8 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e amazonaws_com_cloudfront_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e khoainats_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e helios_verifiable_api_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e eozilla_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openepcis_dpp_ready_matches_fern_output
 
 # Format the codebase in place.
 format:
