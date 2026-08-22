@@ -718,8 +718,23 @@ $ grep -hE '^    [A-Z0-9_]+ = ' tests/fixtures/*/expected/src/fern/environment.p
 ```
 
 Two member names exist in the entire corpus and no document produces two
-members. The 34 trees with no `environment.py` declare no `servers` block at
-all.
+members. The 34 trees with no `environment.py` are the ones with nothing to
+emit — across all 34 sources exactly one mentions `servers` at all, and it
+declares an empty array:
+
+```console
+$ for d in tests/fixtures/*/expected; do
+>   n=$(basename "$(dirname "$d")")
+>   [ -f "$d/src/fern/environment.py" ] || echo "$n"
+> done > /tmp/noenv; wc -l < /tmp/noenv
+34
+$ while read -r n; do
+>   f=$(ls tests/fixtures/$n/openapi.* .local/corpus/$n/openapi.* 2>/dev/null | head -1)
+>   printf '%s %s %s\n' "$n" "$(grep -cE '^ *"?servers"? *:' "$f")" \
+>     "$(grep -hE '^ *"?servers"? *:.*' "$f" | head -1)"
+> done < /tmp/noenv | awk '$2!=0'
+prometheus-x-edge-computing 1 servers: [ ]
+```
 
 #### `server-description-multiword` — discards
 
@@ -755,12 +770,43 @@ class FernApiEnvironment(enum.Enum):
     DEFAULT = "https://demo.traccar.org/api"
 ```
 
-Six descriptions in, one unconditional `DEFAULT` out. The corpus makes the
-discriminator exact: across every fetched corpus source, **18** documents give
-their first root server a multi-word description and **4** give it the single
-word `Production`, and the goldens split cleanly on that line — all **14** of
-the multi-word documents that have a golden emit `DEFAULT`, all **4**
-single-word ones emit `PRODUCTION`.
+Six descriptions in, one unconditional `DEFAULT` out. Censused across all 91
+fetched sources, the goldens split cleanly on word count — every multi-word
+description with a golden to read yields `DEFAULT`, every single-word one
+yields `PRODUCTION`, with no exception either way:
+
+```console
+$ uv run --no-project --quiet --with pyyaml python3 - <<'PY'
+> import glob, os, re, yaml
+> tally = {}
+> for f in sorted(glob.glob('.local/corpus/*/openapi.*')):
+>     n = os.path.basename(os.path.dirname(f))
+>     d = (yaml.safe_load(open(f)).get('servers') or [{}])[0].get('description')
+>     if not d:
+>         continue
+>     env = f'tests/fixtures/{n}/expected/src/fern/environment.py'
+>     m = re.findall(r'^    ([A-Z0-9_]+) = ', open(env).read(), re.M) \
+>         if os.path.exists(env) else []
+>     k = ('multi-word' if len(d.split()) > 1 else 'single-word',
+>          m[0] if m else 'no-golden')
+>     tally[k] = tally.get(k, 0) + 1
+> for k in sorted(tally):
+>     print(tally[k], *k)
+> PY
+18 multi-word DEFAULT
+4 multi-word no-golden
+4 single-word PRODUCTION
+```
+
+`yaml.safe_load` rather than `jq` because the 91 sources are not all JSON — a
+JSON-only census silently drops six multi-word witnesses:
+
+```console
+$ ls .local/corpus/*/openapi.* | sed 's/.*\.//' | sort | uniq -c
+     74 json
+     15 yaml
+      2 yml
+```
 
 | first root server description | words | golden's environment member |
 |---|---:|---|
@@ -771,14 +817,9 @@ single-word ones emit `PRODUCTION`.
 
 The first two rows are the control the row needed: same publisher, same base
 URL, same single root server, and the *only* difference is the word `server`
-appended to the description — which costs the name. Besides `traccar.org` and
-those two, the multi-word witnesses are `amazonaws.com-cloudformation`,
-`amazonaws.com-cloudfront`, `apache.org`, `apache.org-airflow`, `buildrelay`,
-`bunq.com`, `letta`, `openfigi.com`, `redhat.com-catalog_inventory`,
-`tlon-notes` and `xero.com-xero-payroll-au` — fourteen in all. The remaining
-single-word witnesses are `apideck.com-ecosystem` and `dnd5eapi.co`. The four
-multi-word documents with no golden to read (`asana.com`, `box.com`,
-`calorieninjas.com`, `groundhog-day.com`) are excluded rather than assumed.
+appended to the description — which costs the name. The four multi-word
+documents with no golden to read are counted separately above and excluded
+rather than assumed.
 
 `dnd5eapi.co` (row 42) is worth naming separately because it carries both shapes
 in one document — `Production` first, `Local Development` second — and its
@@ -833,15 +874,37 @@ and no base URL of its own:
 ```
 
 `upload.apideck.com` does appear in the golden, and only where it cannot be a
-routing decision: three files hold it — `reference.md`,
-`src/fern/upload_sessions/client.py` and
-`src/fern/upload_sessions/raw_client.py` — and every occurrence is inside
-docstring prose copied verbatim from the specification's own `description`, e.g.
-*"Note that the base URL is upload.apideck.com instead of unify.apideck.com."*
-The SDK documents the override in English and then ignores it, which is the
-sharpest possible form of the finding. Corpus-wide there is exactly one base URL
-per client: the only `base_url=` assignments in any golden's `src/` are the
-constructor's `base_url=base_url` and `base_url=self.get_base_url`.
+routing decision — three files hold it, and every occurrence is inside docstring
+prose copied verbatim from the specification's own `description`:
+
+```console
+$ grep -rl 'upload\.apideck\.com' tests/fixtures/apideck.com-file-storage/expected/ | sort
+tests/fixtures/apideck.com-file-storage/expected/reference.md
+tests/fixtures/apideck.com-file-storage/expected/src/fern/upload_sessions/client.py
+tests/fixtures/apideck.com-file-storage/expected/src/fern/upload_sessions/raw_client.py
+```
+
+— e.g. *"Note that the base URL is upload.apideck.com instead of
+unify.apideck.com."* The SDK documents the override in English and then ignores
+it, which is the sharpest possible form of the finding.
+
+No golden anywhere assigns a base URL per operation. Every `base_url=` in every
+golden's `src/` is one of four forms:
+
+```console
+$ grep -rhoE 'base_url=[A-Za-z_.]+|base_url="[^"]*"' tests/fixtures/*/expected/src/ \
+>   | sort | uniq -c | sort -rn
+    844 base_url=base_url
+    360 base_url="https://yourhost.com/path/to/api"
+    210 base_url=self.get_base_url
+    140 base_url=_get_base_url
+```
+
+`base_url=base_url` and `_get_base_url(...)` thread the constructor argument,
+falling back to `environment.value`; `self.get_base_url` reads it back inside
+the request layer; the literal is Fern's placeholder in generated docstring
+`Examples` blocks. None of the four names a host from a `servers` block below
+the root.
 
 `twilio.com-twilio_voice_v1` (row 61) is recorded here as the *weaker* witness
 it is. It declares 17 Path Item `servers` blocks — but every one of them repeats
@@ -941,7 +1004,7 @@ class FernApiEnvironment(enum.Enum):
 ```
 
 and that line is the **only** occurrence of any of the three hosts anywhere in
-the generated tree:
+the generated tree (run from the probe workspace, not the repository):
 
 ```console
 $ grep -rn 'root.example.com\|path-level.example.com\|operation-level.example.com' \
@@ -965,6 +1028,8 @@ $ ls -d .local/corpus/*/ | wc -l
 91
 $ grep -rl 'application/xml' .local/corpus | wc -l
 0
+$ ls tests/fixtures/*/openapi.* | wc -l
+31
 $ grep -l 'application/xml' tests/fixtures/*/openapi.* | wc -l
 0
 $ grep -rhoE '[a-z]+/[a-z0-9.+-]*xml[a-z0-9.+-]*' .local/corpus \
@@ -1156,18 +1221,31 @@ nowhere. `Widget` itself is still emitted — but only because the JSON control
 operation references it; the XML operations contribute nothing to it.
 
 This matches, and now explains, what `amazonaws.com-cloudfront` (row 89) shows
-for `text/xml`: 256 `text/xml` media entries and 33 `xml` Objects in the source,
-and a golden whose `raw_client.py` parses every response with
-`_response.json()`. The CloudFront golden is corroboration for the shape of the
-behaviour; it is not the evidence for these rows, because its source declares a
-different media type.
+for `text/xml` — a source dense with XML, and a golden that reads every response
+as JSON and nothing else:
+
+```console
+$ grep -o 'text/xml' .local/corpus/amazonaws.com-cloudfront/openapi.json | wc -l
+256
+$ jq '[.. | objects | select(has("xml"))] | length' \
+>   .local/corpus/amazonaws.com-cloudfront/openapi.json
+33
+$ grep -rhoE '_response\.(json|text|content|iter_[a-z]+)\(\)' \
+>   tests/fixtures/amazonaws.com-cloudfront/expected/src/ | sort | uniq -c
+    192 _response.json()
+```
+
+The CloudFront golden is corroboration for the shape of the behaviour; it is not
+the evidence for these rows, because its source declares a different media type.
 
 #### Nothing registrable, and what that means for the rows behind this one
 
-No row in this family is **REGISTRABLE**. All five shapes produce output that is
-byte-identical to what the same document produces with the shape deleted, so a
-fixture would pin an unconditional default — the `deepObject` failure mode this
-whole exercise exists to avoid.
+No row in this family is **REGISTRABLE**. In each of the five, what Fern emitted
+is an unconditional default or an outright absence, and no byte of the output is
+derived from the shape under test — so a fixture would pin the default, not the
+feature, which is the `deepObject` failure mode this whole exercise exists to
+avoid. No deletion-control generation was run: this records what the measured
+output contains, not a byte comparison against a shape-stripped document.
 
 The evidence generalises along one axis, and the axis is narrower than "document
 metadata". What was measured is that **Fern's importer keeps one server URL for
@@ -1264,7 +1342,7 @@ question a future probe could answer**, not a proven absence.
 | `range-4XX` | 5 | 6 | discards | a ranged response yields no error class at all |
 | `range-5XX` | 4 | 4 | discards | a ranged response yields no error class at all |
 | `relative-file-ref` | 2 | 2 | discards + pipeline | Fern discards a relative-file Path Item `$ref` when the document is fetched alone, and crozier's fixture pipeline cannot register the tree that would make it resolve; only 2 eligible |
-| `server-description-multiword` | 15 | 16 | discards | a multi-word server description reaches no identifier: 14 goldens whose first root server carries one all emit `DEFAULT`, while the four whose description is the single word `Production` emit `PRODUCTION`. Measured in [Round 4](#round-4--servers-and-xml) |
+| `server-description-multiword` | 15 | 16 | discards | a multi-word server description reaches no identifier: all 18 goldens whose first root server carries one emit `DEFAULT`, while the four whose description is the single word `Production` emit `PRODUCTION`. Measured in [Round 4](#round-4--servers-and-xml) |
 | `servers-multiple-path-or-operation` | 2 | 5 | discards | a Path Item or Operation `servers` block emits nothing: `apideck.com-file-storage` declares five operation-level servers on a *different* host and its golden routes every one through the single root base URL. Measured in [Round 4](#round-4--servers-and-xml) |
 | `servers-three-levels` | 1 | 5 | discards | probed directly: with a root, a Path Item and an Operation server in one document, `fern check` and `fern generate` both exit 0 and only the root URL is emitted. Measured in [Round 4](#round-4--servers-and-xml) |
 | `spaceDelimited-object` | 0 | 6 | discards + licence | Fern discards the declared style; object query parameters are flattened regardless of it; 0 eligible of 6 verified — 6× licence untiered |
