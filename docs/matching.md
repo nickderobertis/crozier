@@ -1262,10 +1262,11 @@ four models carry `extra="forbid"` in the v2 `model_config` and
 
 Every corpus spec but one is a single self-contained document: every `$ref` is a
 local JSON pointer into the same file. `helios-verifiable-api` (CORPUS.md row 91)
-is not — 27 of its 44 component schemas are `$ref`s naming one of seven
-`ethereum/execution-apis` documents by absolute URL, and Fern's importer
-**fetches** each one and resolves it transitively. That is the only reference form Fern was
-measured to follow rather than discard ([`fern-limitations.md`](fern-limitations.md)
+is not — many of its component schemas are `$ref`s naming an
+`ethereum/execution-apis` document by absolute URL, and Fern's importer
+**fetches** each one and resolves it transitively. CORPUS.md's shapes cell for
+that row carries the counts; they are not restated here. That is the only
+reference form Fern was measured to follow rather than discard ([`fern-limitations.md`](fern-limitations.md)
 records the ones it drops), so it is the only golden that can pin whether crozier
 opens a second document at all.
 
@@ -1327,8 +1328,8 @@ reference to reach:
 The row's one standing liability is recorded in its `CORPUS.md` shapes cell: its
 golden depends on a **third-party fetch at generation time**, and the referenced
 URLs address `refs/heads/main` rather than an immutable ref, so an upstream edit
-to those seven files breaks this row's reproduction for a reason unrelated to
-crozier.
+to any of the referenced files breaks this row's reproduction for a reason
+unrelated to crozier.
 
 ## Map-of-self and multi-type arrays (issue #77)
 
