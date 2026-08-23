@@ -3127,8 +3127,8 @@ declared `format: binary` renders as the `string` it is declared as
 (`oneOf: [{type: string, format: binary}, {type: integer}]` generates
 `typing.Union[str, int]`, not `bytes`), and equal union members fold together
 where the **last** of them stood (`oneOf: [string, integer, string/uri]` generates
-`typing.Union[int, str]`). The full list is in
-[`docs/matching.md`](matching.md#map-of-self-and-multi-type-arrays-issue-77).
+`typing.Union[int, str]`). The third probe measured a member declaring nothing but
+`nullable: true` as `typing.Optional[typing.Any]`.
 
 ## What Round 3 did not register, and why
 

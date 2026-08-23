@@ -709,14 +709,6 @@ fn decl_annotation_refs(decl: &TypeDecl) -> Vec<String> {
     out
 }
 
-/// For every generated type, the subset of its own references that close a cycle
-/// back to it — the references crozier must emit as string forward references
-/// with a deferred/omitted import so the module graph loads (issue #84).
-///
-/// A reference `A → B` is a back-edge when `B` can reach `A` again through the
-/// type graph (a self-reference is the degenerate `A → A`). Fern renders exactly
-/// these as `"B"` and repairs them at class-definition time with
-/// `update_forward_refs`.
 /// A declaration's references excluding an object's base classes — what the
 /// declaration itself annotates.
 fn decl_own_refs(decl: &TypeDecl) -> Vec<String> {
@@ -741,6 +733,14 @@ fn is_union_target(t: &TypeRef) -> bool {
     }
 }
 
+/// For every generated type, the subset of its own references that close a cycle
+/// back to it — the references crozier must emit as string forward references
+/// with a deferred/omitted import so the module graph loads (issue #84).
+///
+/// A reference `A → B` is a back-edge when `B` can reach `A` again through the
+/// type graph (a self-reference is the degenerate `A → A`). Fern renders exactly
+/// these as `"B"` and repairs them at class-definition time with
+/// `update_forward_refs`.
 fn forward_ref_map(
     types: &[TypeDecl],
     tag_types: &[crate::ir::TagTypeDecl],

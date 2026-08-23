@@ -6802,9 +6802,6 @@ fn single_all_of_ref(schema: &Schema) -> Option<&str> {
     }
 }
 
-/// A property-level `allOf` that adds annotations to exactly one `$ref` without
-/// adding any shape of its own. Swagger-generated AWS specs use this form for
-/// nearly every documented property.
 /// The component a property names when its `allOf` holds one `$ref` and nothing
 /// else. EN 18222 writes `allOf: [$ref: Identifier]` beside a `description` — the
 /// 3.0 idiom for annotating a reference — and Fern reads the referenced schema's
@@ -6817,6 +6814,9 @@ fn sole_all_of_ref(schema: &Schema) -> Option<&str> {
     member.reference.as_deref()
 }
 
+/// A property-level `allOf` that adds annotations to exactly one `$ref` without
+/// adding any shape of its own. Swagger-generated AWS specs use this form for
+/// nearly every documented property.
 fn described_all_of_ref(schema: &Schema) -> Option<(&str, Option<&str>)> {
     let members = schema.all_of.as_ref()?;
     if members.len() < 2 {
