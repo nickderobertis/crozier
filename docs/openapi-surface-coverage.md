@@ -81,10 +81,10 @@ mediaType.encoding.headers    info.license.identifier       components.pathItems
 Two closed lists decide the head, and nothing else does:
 
 - **Anchor kinds head their own selector.** `openapi` (the document root),
-  `info`, `server`, `components`, `paths`' Path Item (`pathItem`), `operation`,
-  `externalDocs`, `parameter`, `header`, `requestBody`, `mediaType`, `response`,
-  `callback`, `example`, `link`, `tag`, `schema`, `securityScheme`,
-  `securityRequirement`, `reference`.
+  `info`, `server`, `components`, `pathItem`, `operation`, `externalDocs`,
+  `parameter`, `header`, `requestBody`, `mediaType`, `response`, `callback`,
+  `example`, `link`, `tag`, `schema`, `securityScheme`, `securityRequirement`,
+  `reference`.
 - **Extending kinds append to their parent's selector under the field that holds
   them.** `contact`, `license`, `serverVariable`, `paths`, `responses`,
   `encoding`, `discriminator`, `xml`, `oauthFlows`, `oauthFlow`. So a License

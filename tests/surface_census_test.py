@@ -133,6 +133,66 @@ class RecipeWiringTests(unittest.TestCase):
         self.assertIn("test-surface-census", check.split())
 
 
+class GrammarContractTests(unittest.TestCase):
+    """The doc states the selector grammar; the script implements it. Pin them together.
+
+    Six region passes classify features against
+    `docs/openapi-surface-coverage.md`'s closed lists, so a list that drifted from
+    the walk would silently invalidate their evidence. These re-derive the doc's
+    lists and compare them to the tables the census actually walks.
+    """
+
+    DOC = REPO / "docs" / "openapi-surface-coverage.md"
+
+    def backticked(self, start: str, end: str) -> set[str]:
+        text = self.DOC.read_text(encoding="utf-8")
+        self.assertIn(start, text, f"the grammar section no longer says {start!r}")
+        body = text.split(start, 1)[1].split(end, 1)[0]
+        return set(re.findall(r"`([A-Za-z][A-Za-z.]*)`", body))
+
+    def test_the_documented_anchor_kinds_are_the_ones_that_head_a_selector(self) -> None:
+        documented = self.backticked("- **Anchor kinds head their own selector.**", "- **")
+        self.assertEqual(
+            {name for name, kind in census.OBJECTS.items() if kind.anchor}, documented
+        )
+
+    def test_the_documented_extending_kinds_are_the_ones_that_extend_a_selector(self) -> None:
+        documented = self.backticked(
+            "- **Extending kinds append to their parent's selector under the field that holds",
+            "So a License",
+        )
+        self.assertEqual(
+            {name for name, kind in census.OBJECTS.items() if not kind.anchor}, documented
+        )
+
+    def test_the_documented_valued_fields_are_the_ones_that_emit_a_value(self) -> None:
+        documented = self.backticked("themselves a closed list:", "\n\nA **count**")
+        self.assertEqual(census.VALUED, documented)
+
+    def test_the_region_files_carry_the_agreed_table_header(self) -> None:
+        """Six files, one skeleton: the regions have to compose into one table."""
+        header = (
+            "| key | oas | spec location | category | evidence | crozier sites | "
+            "why bytes could move | settlement |"
+        )
+        self.assertIn(header, self.DOC.read_text(encoding="utf-8"))
+        regions = sorted(p.stem for p in (REPO / "docs" / "openapi-surface").glob("*.md"))
+        self.assertEqual(
+            ["bodies-media", "document-paths", "oas31-extensions", "parameters",
+             "schemas", "security"],
+            regions,
+        )
+        for region in regions:
+            with self.subTest(region=region):
+                text = (REPO / "docs" / "openapi-surface" / f"{region}.md").read_text(
+                    encoding="utf-8"
+                )
+                self.assertIn(header, text)
+                self.assertIn(f"openapi-surface/{region}.md", self.DOC.read_text(encoding="utf-8"))
+                for section in ("## Scope", "## Entries", "## Method notes"):
+                    self.assertIn(section, text)
+
+
 class CensusReportTests(unittest.TestCase):
     """What the instrument answers: who declares a feature, and who does not."""
 
