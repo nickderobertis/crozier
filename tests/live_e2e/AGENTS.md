@@ -45,8 +45,9 @@ required leg (`live-e2e`, aggregated into `gate`).
   (`typing.get_type_hints` + `pydantic.TypeAdapter`). A raised `ApiError` or a
   type-mismatched result records a failure; `test_live_e2e.py` asserts every
   endpoint recorded a clean round-trip, that the sweep covered *exactly* the
-  reference's endpoints (no silent drop/rename), and that real pydantic models come
-  back (no trivial all-primitive pass).
+  reference's endpoints (no silent drop/rename) for every `strict_coverage`
+  fixture, and that real pydantic models come back (no trivial all-primitive
+  pass).
 - **Mock-side failures are skipped, not failed.** A large real spec outruns Prism's
   dynamic response generator: some endpoints 5xx (json-schema-faker crashes) and some
   return a body that omits a field its *own* response schema marks `required`. Both
@@ -80,16 +81,20 @@ required leg (`live-e2e`, aggregated into `gate`).
 ## Two corpus kinds
 
 - **Vendored synthetic seeds** (`exhaustive`, …): the spec is committed at
-  `tests/fixtures/<name>/openapi.yml`. `exhaustive` (56 endpoints, 15 sub-clients)
-  is the deliberately complicated seed.
-- **`link-ok` real-world corpus** (`apideck.com-crm`, 40 endpoints across 8
-  sub-clients; `bunq.com`, 421 endpoints across 118 sub-clients — the at-scale
-  target): a real API from `tests/fixtures/CORPUS.md`. Its licence permits
-  redistribution but, per the corpus policy, **only the generated Fern golden is
-  vendored — not the spec**. The `Fixture.spec_url` points at the pinned upstream
-  URL, and the harness fetches the spec (with retries) at run time. This is the
-  proof that crozier's parameter/response `$ref` resolution and Fern-matching method
-  naming hold up on a messy real-world document, not just curated seeds.
+  `tests/fixtures/<name>/openapi.yml`. `exhaustive` is the deliberately
+  complicated seed.
+- **`link-ok` real-world corpus** (`apideck.com-crm`; `bunq.com`, the at-scale
+  target and the one fixture that sets `strict_coverage=False`): a real API from
+  `tests/fixtures/CORPUS.md`. Its licence permits redistribution but, per the
+  corpus policy, **only the generated Fern golden is vendored — not the spec**.
+  The `Fixture.spec_url` points at the pinned upstream URL, and the harness
+  fetches the spec (with retries) at run time. This is the proof that crozier's
+  parameter/response `$ref` resolution and Fern-matching method naming hold up on
+  a messy real-world document, not just curated seeds.
+
+How big a fixture is isn't written down here. `conftest.reference_methods()` reads
+the endpoint and sub-client catalog out of that fixture's committed
+`expected/reference.md` at collection time, so the golden is the count.
 
 ## Adding a fixture
 

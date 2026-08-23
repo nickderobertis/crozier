@@ -23,8 +23,9 @@ It runs under `just test-e2e` / `just check`.
   tests (a WireMock server in Docker, verified via its admin API); crozier does not
   emit that Docker/`enable_wire_tests` tree, so we assert the same behaviors
   without it. Journeys cover request/URL construction, bearer auth + SDK headers,
-  body aliasing + `OMIT` filtering, query encoding, typed deserialization, and
-  typed error raising — sync + async.
+  the unauthenticated path, body aliasing + `OMIT` filtering, query encoding,
+  typed deserialization, typed error raising, and `.with_raw_response` — sync +
+  async.
 - **The only allowed difference** is the deliberate SDK-identity branding
   (`X-Crozier-*` vs `X-Fern-*`). `_recorder._canonical_headers` folds either
   vendor prefix to a common `x-sdk-*` via one prefix rule. It also omits only
