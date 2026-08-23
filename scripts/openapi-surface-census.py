@@ -555,6 +555,7 @@ class _YamlReader:
         mapping: dict[Any, Any] = {}
         cursor = start + 1
         while True:
+            entered = cursor
             cursor = self.skip_space(text, cursor)
             if cursor >= len(text):
                 self.fail(index, "a flow collection is never closed")
@@ -562,7 +563,7 @@ class _YamlReader:
                 return (mapping if closer == "}" else items), cursor + 1
             value, cursor = self.flow_node(text, cursor, index)
             cursor = self.skip_space(text, cursor)
-            if False:
+            if cursor < len(text) and text[cursor] == ":":
                 entry, cursor = self.flow_node(text, cursor + 1, index)
                 mapping[value] = entry
             else:
@@ -570,6 +571,13 @@ class _YamlReader:
             cursor = self.skip_space(text, cursor)
             if cursor < len(text) and text[cursor] == ",":
                 cursor += 1
+            if cursor <= entered:
+                # `flow_node` stops at `,]}:` and so returns without consuming a
+                # delimiter it does not recognise here. Looping again from the
+                # same cursor would append forever and exhaust memory rather than
+                # report anything, so a round that consumed nothing is a parse
+                # error naming where it stalled.
+                self.fail(index, f"a flow collection stalls at {text[cursor:cursor + 1]!r}")
 
     @staticmethod
     def skip_space(text: str, cursor: int) -> int:

@@ -81,11 +81,17 @@ def recipe_body(name: str) -> list[str]:
 
 
 def script_under_test() -> Path:
-    """The census script as the `surface-census` recipe names it."""
+    """The census script as the `surface-census` recipe names it.
+
+    Every token is considered, not just the first: the recipe leads with the
+    interpreter `scripts/census-python.sh` resolves, so the script it runs is an
+    argument rather than the command.
+    """
     for command in recipe_body("surface-census"):
-        candidate = REPO / command.split()[0]
-        if candidate.suffix == ".py":
-            return candidate
+        for token in command.split():
+            candidate = REPO / token
+            if candidate.suffix == ".py":
+                return candidate
     raise AssertionError("the `surface-census` recipe runs no Python script")
 
 
@@ -106,10 +112,24 @@ def load_census():
 census = load_census()
 
 
+# Every census run in this file is bounded. The whole vendored corpus censuses in
+# well under a second, so this is nowhere near a timing assertion — it is the
+# difference between a failing test and a wedged gate. A one-line edit to the
+# flow-collection parser once left the cursor unable to advance, and the loop
+# appended forever: 393s of CPU and 9.6 GB of RSS before it was killed by hand,
+# with the gate reporting nothing at all. A test that can only fail by hanging
+# does not fail.
+CENSUS_TIMEOUT = 60
+
+
 def run(*args: str) -> subprocess.CompletedProcess:
     """The real script, as its own process, exactly as the recipe invokes it."""
     return subprocess.run(
-        [sys.executable, str(SCRIPT), *args], cwd=REPO, capture_output=True, text=True
+        [sys.executable, str(SCRIPT), *args],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        timeout=CENSUS_TIMEOUT,
     )
 
 
@@ -138,14 +158,18 @@ class RecipeWiringTests(unittest.TestCase):
 
     def test_the_unscoped_recipe_fetches_the_corpus_then_censuses_it(self) -> None:
         self.assertEqual(
-            ["./scripts/fetch-corpus.sh", './scripts/openapi-surface-census.py "$@"'],
+            [
+                "./scripts/fetch-corpus.sh",
+                '"$(./scripts/census-python.sh)" ./scripts/openapi-surface-census.py "$@"',
+            ],
             recipe_body("surface-census"),
         )
         self.assertTrue(SCRIPT.is_file(), SCRIPT)
 
     def test_the_gate_runs_this_file_offline(self) -> None:
         self.assertEqual(
-            [f"python3 tests/{Path(__file__).name}"], recipe_body("test-surface-census")
+            [f'"$(./scripts/census-python.sh)" tests/{Path(__file__).name}'],
+            recipe_body("test-surface-census"),
         )
         check = next(
             line for line in (REPO / "justfile").read_text(encoding="utf-8").splitlines()
@@ -800,19 +824,164 @@ class YamlSubsetTests(unittest.TestCase):
             self.assertIn("is not valid JSON", str(raised.exception))
 
 
+class FlowCollectionRegressionTests(unittest.TestCase):
+    """The flow-collection parser, pinned against the defect that wedged the gate.
+
+    A one-line edit disabled the branch that consumes the `:` of a flow *mapping*.
+    `flow_node` stops at `,]}:` without consuming what it stopped at, so the loop
+    re-entered on the same cursor and appended forever — 9.6 GB of RSS and no
+    output, on eight of the 31 vendored documents, for every selector. The three
+    properties below are what make that unrepeatable: it terminates, it terminates
+    with the *right values*, and a cursor that cannot advance is an error.
+    """
+
+    # `info: { title: Widget API, version: 1.0.0 }` is the shape that stalled.
+    FLOW_MAPPINGS = "audience-filter"
+
+    def test_the_whole_vendored_corpus_censuses_within_the_timeout(self) -> None:
+        """The unscoped vendored run — the exact invocation that never returned."""
+        completed = run("--vendored-only")
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertIn("31 vendored", completed.stderr)
+        self.assertGreater(len(rows(completed)), 100)
+
+    def test_a_flow_mapping_parses_to_its_entries_not_a_list_of_its_keys(self) -> None:
+        """Terminating is not enough: the disabled branch also built the wrong value."""
+        document = census.load_document(FIXTURES / self.FLOW_MAPPINGS / "openapi.yml")
+        self.assertEqual({"title": "Widget API", "version": "1.0.0"}, document["info"])
+        widget = document["components"]["schemas"]["Widget"]["properties"]
+        self.assertEqual({"type": "string"}, widget["id"])
+
+        counted = rows(run("--vendored-only", "--fixture", self.FLOW_MAPPINGS))
+        self.assertEqual(1, counted[("info.title", self.FLOW_MAPPINGS)])
+        self.assertEqual(1, counted[("info.version", self.FLOW_MAPPINGS)])
+
+    def test_the_recursive_callback_construct_terminates_with_its_count(self) -> None:
+        """A Callback holds a Path Item holding Operations that may declare callbacks.
+
+        The object model is recursive by construction, so the walk carries an
+        ancestor set and a `$ref` is counted as a Reference Object rather than
+        followed. This is the selector the wedged run was scoped to, so it is
+        pinned bounded and by count rather than merely by "it finished".
+        """
+        completed = run("--vendored-only", "--selector", "operation.callbacks")
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({("operation.callbacks", WEBHOOKS): 1}, rows(completed))
+
+    def test_a_flow_collection_that_cannot_advance_is_a_parse_error_not_a_hang(self) -> None:
+        """The guard that makes the failure mode a message instead of an OOM.
+
+        `{a]` balances by bracket count, so it reaches the collection loop, where
+        `flow_node` stops at the `]` the loop does not recognise and consumes
+        nothing. Without the progress check that is an infinite append.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "openapi.yml"
+            path.write_text("info: {a]\n", encoding="utf-8")
+            with self.assertRaises(census.DocumentError) as raised:
+                census.load_document(path)
+        self.assertIn("stalls", str(raised.exception))
+
+
+class CensusInterpreterTests(unittest.TestCase):
+    """Which Python the census runs under, which is a provenance question.
+
+    The census scripts are standard-library-only, so a foreign interpreter does
+    not fail — it answers, cleanly and with the wrong provenance. Both recipes ran
+    a bare `python3` for a while, and on a machine with an unrelated project's
+    virtualenv earlier on PATH the gate measured this repository under that
+    project's environment without a word. `scripts/census-python.sh` is the one
+    place that resolves it.
+    """
+
+    RESOLVER = REPO / "scripts" / "census-python.sh"
+
+    def resolve(self, path: str | None = None) -> subprocess.CompletedProcess:
+        # Resolved before PATH is replaced: these cases hand the resolver a PATH
+        # with no interpreter on it, which would otherwise hide `bash` too.
+        shell = shutil.which("bash")
+        if shell is None:
+            self.skipTest("no bash on PATH to run the resolver")
+        environment = dict(os.environ)
+        if path is not None:
+            environment["PATH"] = path
+        return subprocess.run(
+            [shell, str(self.RESOLVER)],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            env=environment,
+            timeout=CENSUS_TIMEOUT,
+        )
+
+    def test_both_census_recipes_resolve_the_interpreter_through_the_resolver(self) -> None:
+        for recipe in ("surface-census", "test-surface-census"):
+            with self.subTest(recipe=recipe):
+                body = " ".join(recipe_body(recipe))
+                self.assertIn('"$(./scripts/census-python.sh)"', body)
+                self.assertNotRegex(body, r"(?<!census-)\bpython3 ")
+
+    def test_the_resolver_names_a_real_interpreter_that_is_not_a_virtualenv(self) -> None:
+        completed = self.resolve()
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        interpreter = completed.stdout.strip()
+        self.assertTrue(Path(interpreter).is_file(), interpreter)
+        prefixes = subprocess.run(
+            [interpreter, "-c", "import sys; print(sys.prefix); print(sys.base_prefix)"],
+            capture_output=True,
+            text=True,
+            timeout=CENSUS_TIMEOUT,
+        )
+        self.assertEqual(0, prefixes.returncode, prefixes.stderr)
+        # Unless someone deliberately made one HERE, in which case that is the
+        # repository's own environment and is exactly what should be chosen.
+        if Path(interpreter) != REPO / ".venv" / "bin" / "python3":
+            first, second = prefixes.stdout.split()
+            self.assertEqual(first, second, "the resolver chose a virtualenv")
+
+    def test_a_foreign_virtualenv_is_refused_by_name_rather_than_used(self) -> None:
+        """Driven against a real virtualenv, because that is the case that happened."""
+        with tempfile.TemporaryDirectory() as directory:
+            foreign = Path(directory) / "other-project" / ".venv"
+            built = subprocess.run(
+                [sys.executable, "-m", "venv", "--without-pip", str(foreign)],
+                capture_output=True, text=True, timeout=CENSUS_TIMEOUT,
+            )
+            if built.returncode != 0:
+                self.skipTest(f"this interpreter cannot build a venv: {built.stderr}")
+
+            completed = self.resolve(path=str(foreign / "bin"))
+            self.assertEqual(1, completed.returncode, completed.stdout)
+            self.assertEqual("", completed.stdout.strip())
+            self.assertIn("another project's virtualenv", completed.stderr)
+            self.assertIn(str(foreign), completed.stderr)
+
+    def test_no_python3_at_all_is_a_named_failure_rather_than_a_fall_through(self) -> None:
+        with tempfile.TemporaryDirectory() as empty:
+            completed = self.resolve(path=empty)
+        self.assertEqual(1, completed.returncode, completed.stdout)
+        self.assertEqual("", completed.stdout.strip())
+        self.assertIn("no python3 on PATH", completed.stderr)
+
+
 class PyYamlOracleTests(unittest.TestCase):
     """Where a real YAML implementation is available, the loader must agree with it.
 
-    Skipped rather than required: the gate installs no Python packages, and this
-    file has to run on a machine that has none. When PyYAML *is* importable this
-    is the strongest available check on the loader, so it runs then.
+    **This oracle is optional by design, not required.** The gate installs no
+    Python packages and runs on the Linux/macOS/Windows matrix, so the interpreter
+    `scripts/census-python.sh` resolves may legitimately have no PyYAML — making
+    its absence an error would fail the gate on a correct host. The loader's
+    behaviour is therefore pinned unconditionally by `YamlSubsetTests` and
+    `FlowCollectionRegressionTests`, which need nothing installed; this class is a
+    bonus check that runs wherever PyYAML happens to be importable. The skip names
+    the interpreter, so a skip is always attributable rather than anonymous.
     """
 
     def test_the_census_matches_pyyaml_on_every_vendored_document(self) -> None:
         try:
             import yaml
         except ImportError:
-            self.skipTest("PyYAML is not importable on this interpreter")
+            self.skipTest(f"PyYAML is not importable on {sys.executable}")
         documents = sorted(FIXTURES.glob("*/openapi.y*ml"))
         self.assertGreater(len(documents), 20)
         for path in documents:

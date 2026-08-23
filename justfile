@@ -294,14 +294,19 @@ fixtures-coverage *args:
 # `just surface-census --selector pathItem.trace --json`.
 surface-census *args:
     ./scripts/fetch-corpus.sh
-    ./scripts/openapi-surface-census.py "$@"
+    "$(./scripts/census-python.sh)" ./scripts/openapi-surface-census.py "$@"
 
 # Boundary coverage for `surface-census`: drives the REAL script over the REAL
 # vendored source documents, offline, so the gate keeps the instrument honest
 # without the network the unscoped recipe needs. Part of `check` (the recipe
 # above is not). Same split as test-fixtures-coverage vs fixtures-coverage.
+#
+# Both census recipes resolve the interpreter through scripts/census-python.sh
+# rather than spelling `python3`: a bare `python3` is whatever PATH offers, and
+# an unrelated project's activated virtualenv wins that race and gets the gate
+# measuring this repository under someone else's environment.
 test-surface-census:
-    python3 tests/surface_census_test.py
+    "$(./scripts/census-python.sh)" tests/surface_census_test.py
 
 # Install/refresh the llmlint toolchain (oneharness + llmlint). Idempotent.
 setup-llmlint:
