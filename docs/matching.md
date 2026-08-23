@@ -870,7 +870,7 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
 ## Real-world-spec robustness (issue #40)
 
 The other corpora are hand-authored to have clean, Fern-style `group_method`
-operationIds and property names. Real vendor specs are messier, and three shapes
+operationIds and property names. Real vendor specs are messier, and four shapes
 that used to make crozier emit invalid Python or hard-error now generate legal —
 and byte-matched — output. Each has its own feature-coverage
 corpus (`digit-leading-property`, `operation-id-non-identifier`,
@@ -899,10 +899,12 @@ corpus (`digit-leading-property`, `operation-id-non-identifier`,
   its raw and high-level `widgets` clients.
 
 - **Missing `operationId`** (optional in OpenAPI). Instead of hard-erroring,
-  [`ir::endpoint_method_name`] synthesizes the method from the route:
-  [`ir::synthesized_method_name`] infers a verb from the HTTP method and whether
-  the path addresses a collection or an item (`GET /widgets` → `list_widgets`,
-  `GET /widgets/{id}` → `get_widget`), matching Fern's route-derived names.
+  [`ir::endpoint_method_name`] falls back to the operation's `summary`, run
+  through [`naming::prose_identifier`] (`List widgets` → `list_widgets`) — which
+  is what the corpus pins, byte-for-byte against Fern. With no summary either,
+  [`ir::synthesized_method_name`] joins the HTTP method and the full route,
+  brace-stripped (`GET /widgets` → `get_widgets`, `GET /widgets/{id}` →
+  `get_widgets_id`).
 
 ### Tag-based client grouping
 
@@ -922,7 +924,7 @@ unauthenticated client. [`ir::auth_model`] now returns [`ir::Auth::None`] for su
 document (rather than defaulting to an optional bearer token), and the client
 wrapper, root client, and per-tag clients drop every credential parameter and the
 `Authorization` header — byte-matching Fern's credential-free clients. The whole
-SDK-code layer of all three corpora matches: the types, the tag-grouped raw and
+SDK-code layer of all four corpora matches: the types, the tag-grouped raw and
 high-level clients, the root client, and the aggregators.
 
 ### crozier vs Fern SDK-identity headers
