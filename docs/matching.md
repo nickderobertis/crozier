@@ -231,9 +231,11 @@ Named `components.schemas` → the Python type layer:
   optionality and whether the field is documented, reserved-name aliasing via
   `typing_extensions.Annotated[T, FieldMetadata(alias="wire")]`, and class/field
   docstrings (backslash-escaped, indented).
-- **String enums** — an OpenAPI string `enum` becomes a real `enum.Enum` class
-  (`class Name(str, enum.Enum)`): a `SCREAMING_SNAKE = "value"` member per value and
-  a generated `visit(...)` dispatch method. This is Fern's opt-in `enum_type:
+- **String enums** — an OpenAPI string `enum` becomes a real enum class
+  (`class Name(enum.StrEnum)`, over the SDK's own `core/enum.py`: stdlib
+  `enum.StrEnum` on Python ≥ 3.11, a `(str, enum.Enum)` mixin below it): a
+  `SCREAMING_SNAKE = "value"` member per value and a generated `visit(...)`
+  dispatch method. This is Fern's opt-in `enum_type:
   python_enums` shape, which crozier targets and the whole golden corpus is generated
   against (issue #41 gap 2b) — *not* Fern's out-of-the-box open `Literal` union.
   Integer enums stay `Name = int` (`python_enums` does not affect them).
@@ -251,9 +253,12 @@ then everything else). `version.py` and `py.typed` are complete.
 
 **Core runtime.** The `core/` SDK runtime (HTTP client, pydantic utilities,
 serialization, SSE) is generator boilerplate, not derived from the spec — Fern
-ships identical `core/` files into every SDK. crozier vendors them under
-`assets/core/` (Apache-2.0; see `NOTICE`) and emits them verbatim, substituting
-only the SDK name/version in `client_wrapper.py`.
+ships the same `core/` files into every SDK. crozier vendors them under
+`assets/core/` (Apache-2.0; see `NOTICE`) and emits them verbatim. The one
+exception is `client_wrapper.py`, which Fern shapes from the auth model: crozier
+generates it ([`emit::client_wrapper_file`](../src/emit.rs)) from the SDK
+name/version, the auth scheme, and any promoted global headers, so it is not one
+of the vendored assets.
 
 **Line wrapping.** Fern runs `ruff format` (line length 120) over its output, so
 crozier delegates the wrapping to the same tool. The emitters build each
