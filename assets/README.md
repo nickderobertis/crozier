@@ -47,8 +47,8 @@ the worked examples, and the two conditional sections below.
   `../licenses/fern-APACHE-2.0.txt` cover it.
 - **Source:** Fern's Python generator over the exhaustive OpenAPI document, same
   version as `core/`.
-- **Change made (Apache-2.0 §4(c)):** twelve `@@...@@` placeholders replace the
-  per-SDK text, which the emitter fills in: the organization, package, and client
+- **Change made (Apache-2.0 §4(c)):** `@@...@@` placeholders replace the per-SDK
+  text, which the emitter fills in: the organization, package, and client
   names (`@@ORG@@`, `@@PKG@@`, `@@CLIENT@@`); the worked sync and async usage
   examples (`@@USAGE@@`, `@@ASYNC_EXAMPLE@@`, synthesized by crozier's own
   example-value generator); the call lines inside the exception-handling,
