@@ -16,6 +16,10 @@ with it. This folder holds the inputs; the mechanics live in
   re-bless the baseline when you do.
 - `broken.yml` — a paths fragment with no `openapi` field, so the `error` scene
   captures crozier's real boundary-validation message.
+- `crozier.yml` — the demo config the `config` scene runs against: shared
+  top-level defaults plus two named generators, so the capture shows crozier
+  resolving each field to its layer. Changing it re-renders the `config` scene.
+  (The `init` scene writes its own starter config in a clean dir instead.)
 - `fonts/JetBrainsMono-Regular.ttf` — the pinned font `freeze` embeds into every
   SVG (base64) and Pillow draws the GIF with. Vendoring it is what makes the SVG
   bytes identical on every machine and CI runner. Licensed under the SIL Open
@@ -24,7 +28,8 @@ with it. This folder holds the inputs; the mechanics live in
 ## The contract
 
 `scripts/screenshots.sh` drives the **real release binary** — the two `--help`
-screens, a real `generate` run, a `cat` of a generated file, and the real error —
+screens, a real `generate` run, a `cat` of a generated file, `config` and `init`
+against the demo config, and the real error —
 and renders each scene to a deterministic SVG. Only the `$ …` prompt lines are
 synthetic framing; everything below each one is the binary's own output. Because
 the font is embedded and the few per-machine values (temp paths) are kept out of
@@ -32,8 +37,9 @@ frame, the SVG bytes — and therefore screencomp's digests — are reproducible
 gate is: identical output ⇒ identical bytes ⇒ identical hash.
 
 Scenes → cards (see `screencomp.toml`): `help` (a `command` toggle flips between
-`main` and `generate`), `generate`, `model`, `error`. The GIF is informational
-and **not** hash-gated (a GIF isn't byte-reproducible across Pillow versions).
+`main` and `generate`), `generate`, `model`, `config`, `init`, `error`. The GIF
+is informational and **not** hash-gated (a GIF isn't byte-reproducible across
+Pillow versions).
 
 ## Workflow
 
