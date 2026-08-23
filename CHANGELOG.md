@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.52](https://github.com/nickderobertis/crozier/compare/v0.0.51...v0.0.52) - 2026-08-23
+
+### Other
+
+- correct three stale claims in README and AGENTS ([#170](https://github.com/nickderobertis/crozier/pull/170))
+
 ## [0.0.51](https://github.com/nickderobertis/crozier/compare/v0.0.50...v0.0.51) - 2026-08-23
 
 ### Fixed
