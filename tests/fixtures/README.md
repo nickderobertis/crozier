@@ -5,8 +5,8 @@ These fixtures are the golden target crozier is verified against. They are
 
 - **Source:** The legacy offline seed is vendored from
   [fern-api/fern](https://github.com/fern-api/fern), commit
-  `3a471b03d4778f291849adc03bacfcd40340fc26`. Every vendored-spec fixture's
-  `expected/` tree is generated from its own `openapi.yml` by
+  `3a471b03d4778f291849adc03bacfcd40340fc26`. Every *other* vendored-spec
+  fixture's `expected/` tree is generated from its own `openapi.yml` by
   `scripts/generate-fern-fixture.sh`; each records the exact generator in its
   provenance file. Numbered
   real-world corpus sources and refs live in [`CORPUS.md`](CORPUS.md). The
@@ -52,15 +52,11 @@ known failures, provenance, and the final green/no-change rerun.
 - **`exhaustive/`** — the broad target. `openapi.yml` (+ the source
   `generators.yml.source`, for reference) is vendored; its `expected/` tree is
   packaged Fern Python output generated from that OpenAPI document.
-- **Feature-coverage targets** — hand-authored specs pinning one shape each, all
-  matched in full (the shape-by-shape rationale is in
-  [`../../docs/matching.md`](../../docs/matching.md)): `auth-schemes`,
-  `inline-request-response`, `cookie-parameters`, `form-bodies`,
-  `discriminated-unions`, `schema-constraints`, `integer-enums`,
-  `servers-webhooks`, and the issue-#84–#86 targets `recursive-types`,
-  `nested-core-imports`, and `malformed-property-schema`. Their `FEATURE_TARGETS`
-  entries in `tests/e2e.rs` also provide compile/smoke coverage independently of
-  the byte comparison.
+- **Feature-coverage targets** — 29 hand-authored specs pinning one shape each,
+  all matched in full (the shape-by-shape rationale is in
+  [`../../docs/matching.md`](../../docs/matching.md)). `FEATURE_TARGETS` in
+  `tests/e2e.rs` is the list; those entries also provide compile/smoke coverage
+  independently of the byte comparison.
 
 Every `Corpus` in `tests/e2e.rs` carries an empty `unmatched` residual list: the
 whole corpus reproduces its Fern goldens byte-for-byte, apart from the one
