@@ -20,7 +20,7 @@ Python is the only target today; more will follow.
 One OpenAPI document in, a complete typed Python SDK out — `crozier generate`
 writes the whole package in one shot, then you can read the code it produced:
 
-![Animated demo: typing crozier generate --spec petstore.yml --output sdk, crozier reporting it wrote 35 files, then cat-ing the generated PetStatus enum as it streams in with syntax highlighting](docs/screenshots/demo.gif)
+![Animated demo: typing crozier generate python --spec petstore.yml --output sdk, crozier reporting how many files it wrote, then cat-ing the generated PetStatus enum as it streams in with syntax highlighting](docs/screenshots/demo.gif)
 
 The output is byte-for-byte Fern's. Here is the `Pet` model crozier emitted from a
 handful of lines of schema — a real generated file, not a hand-written sample:
@@ -31,7 +31,7 @@ handful of lines of schema — a real generated file, not a hand-written sample:
 writes the SDK — the models, enums, the per-endpoint client, and Fern's `core/`
 runtime — into `--output`:
 
-![Terminal: crozier generate python --spec petstore.yml --output sdk --package-name petstore, the generated 35 files into sdk summary, and a tree of the written package showing src/petstore with core, types, list_pets, client.py and pyproject.toml](docs/screenshots/generate.svg)
+![Terminal: crozier generate python --spec petstore.yml --output sdk --package-name petstore, the generated-files summary line, and a tree of the written package showing src/petstore with core, types, client.py, raw_client.py and pyproject.toml](docs/screenshots/generate.svg)
 
 Or drive one — or several — named generators from a `crozier.yml` instead of
 flags. `crozier config` shows the effective settings for every generator and the
@@ -49,7 +49,7 @@ editors complete and validate it against crozier's own config schema:
 
 ![crozier --help: the top-level usage listing the generate, init, config and schema subcommands](docs/screenshots/help-main.svg)
 
-![crozier generate --help: every flag — spec, output, package-name, project-name, client-class-name, audience, audience-strict and extra-fields](docs/screenshots/help-generate.svg)
+![crozier generate --help: every flag — spec, output, package-name, project-name, client-class-name, audience, config, audience-strict, no-config and extra-fields](docs/screenshots/help-generate.svg)
 
 </details>
 
@@ -101,13 +101,12 @@ with `sh -s -- --version v0.1.0 --to ~/.local/bin`.
 cargo install --git https://github.com/nickderobertis/crozier --locked
 ```
 
-**From a release archive (manual):** each release publishes per-platform archives
-named `crozier-<tag>-<target>.tar.gz` with a matching `.sha256` and a
-`.sigstore.json` provenance bundle, for targets `x86_64`/`aarch64` Linux,
-`x86_64`/`aarch64` macOS, and `x86_64` Windows. Download the archive for your
-platform from the
-[Releases](https://github.com/nickderobertis/crozier/releases) page, verify the
-checksum (or the attestation), and put the `crozier` binary on your `PATH`.
+**From a release archive (manual):** each release publishes per-platform archives,
+each with a matching `.sha256` and a `.sigstore.json` provenance bundle. Download
+the archive for your platform from the
+[Releases](https://github.com/nickderobertis/crozier/releases) page — it lists
+every target built — verify the checksum (or the attestation), and put the
+`crozier` binary on your `PATH`.
 
 ## Usage
 
@@ -200,7 +199,7 @@ The command surface is a small set of `just` recipes:
 
 ```sh
 just bootstrap   # set up from a clean clone (toolchain + dev tools)
-just check       # full gate: fmt, clippy -D warnings, tests + e2e + coverage, deny, machete, doc
+just check       # full gate — must pass before any commit or PR
 just test        # fast tests with coverage enforced (95%)
 just test-e2e    # drive the compiled binary and byte-compare against fixtures
 just format      # rustfmt in place
