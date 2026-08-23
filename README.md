@@ -101,13 +101,12 @@ with `sh -s -- --version v0.1.0 --to ~/.local/bin`.
 cargo install --git https://github.com/nickderobertis/crozier --locked
 ```
 
-**From a release archive (manual):** each release publishes per-platform archives
-named `crozier-<tag>-<target>.tar.gz` (`.zip` on Windows) with a matching
-`.sha256` and a `.sigstore.json` provenance bundle, for targets
-`x86_64`/`aarch64` Linux, `x86_64`/`aarch64` macOS, and `x86_64` Windows.
-Download the archive for your platform from the
-[Releases](https://github.com/nickderobertis/crozier/releases) page, verify the
-checksum (or the attestation), and put the `crozier` binary on your `PATH`.
+**From a release archive (manual):** each release publishes per-platform archives,
+each with a matching `.sha256` and a `.sigstore.json` provenance bundle. Download
+the archive for your platform from the
+[Releases](https://github.com/nickderobertis/crozier/releases) page — it lists
+every target built — verify the checksum (or the attestation), and put the
+`crozier` binary on your `PATH`.
 
 ## Usage
 
@@ -200,7 +199,7 @@ The command surface is a small set of `just` recipes:
 
 ```sh
 just bootstrap   # set up from a clean clone (toolchain + dev tools)
-just check       # full gate: fmt, clippy -D warnings, tests + e2e + coverage, golden/fixture guards, deny, machete, doc
+just check       # full gate — must pass before any commit or PR
 just test        # fast tests with coverage enforced (95%)
 just test-e2e    # drive the compiled binary and byte-compare against fixtures
 just format      # rustfmt in place

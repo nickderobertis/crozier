@@ -84,9 +84,8 @@ and surfacing the rest as follow-ups:
 Use the `just` recipes; do not hand-roll equivalents.
 
 - `just bootstrap` — set up from a clean clone.
-- `just check` — full gate (fmt check, clippy `-D warnings`, tests incl. e2e with
-  coverage, the golden/fixture-coverage guards, `cargo deny`, `cargo machete`,
-  doc). Must pass before any commit/PR.
+- `just check` — the full gate (the recipe's own dependency list is the step
+  list). Must pass before any commit/PR.
 - `just test` / `just test-e2e` / `just lint` / `just format` — individual steps.
 - `just test-live-e2e` — live runtime e2e: boot a Prism OpenAPI mock server per
   fixture and drive the generated SDK through every documented endpoint, asserting
