@@ -382,7 +382,7 @@ nullable field, with an enum rendered as its member).
 ### The `bunq.com` real-world corpus (issue #77): the at-scale target, fully matched
 
 The second real-world `link-ok` corpus, `bunq.com`, is deliberately an order of
-magnitude larger than apideck — **421 endpoints, 617 component schemas, 118 tags**.
+magnitude larger than apideck — **421 endpoints, 617 component schemas, 110 tags**.
 Fern generates it cleanly (`fern check`
 passes) and crozier's SDK round-trips live against it (`bunq.com` in
 `conftest.FIXTURES`; see the mock-side-skip note below). It is **fully
@@ -430,9 +430,9 @@ stay byte-identical — none of them exercised these paths):
 - **Path-param empty-description docstrings.** A path param whose spec declares an
   *empty* `description` (bunq's `itemId: {description: ""}`) renders a blank docstring
   slot; one that omits `description` entirely (the seeds) renders none — the two now
-  differ (`path_param_doc`/`push_path_param`). The `reference.md` param table mirrors
-  this: a declared (even empty) description gets the ` — ` separator, an omitted one
-  the bare space.
+  differ ([`ir::declared_doc`]/[`emit::push_path_param`]). The `reference.md` param
+  table mirrors this: a declared (even empty) description gets the ` — ` separator,
+  an omitted one the bare space.
 - **Untyped error-body type + hoisted `{Error}Body` model.** A `$ref`-to-
   `components.responses` error whose body is an inline object (bunq's `GenericError`)
   types the *exception* body `typing.Optional[typing.Any]`, matching Fern; separately
@@ -459,7 +459,9 @@ stay byte-identical — none of them exercised these paths):
   the PascalCase operationId group (`EndpointsContainer`) — `module_title`. The root
   `client.py` wraps a lazy sub-client import into ruff's parenthesized, trailing-comma
   form past 107 columns (ruff won't split a single-name import itself); the `README.md`
-  abbreviated calls wrap at Fern's 80-column snippet width, not the project `line-length`.
+  worked-example calls and their tag imports are laid out at Fern's 80-column example
+  width ([`emit::Example::render_at`]), not the project `line-length` of 120 — the
+  abbreviated error-handling snippets use ruff's 88 instead.
 
 **Mock-side live-e2e skips.** Driving 421 endpoints through Prism surfaced 28
 endpoints the *mock* — not the SDK — cannot honor: 20 crash Prism's json-schema-faker
@@ -485,9 +487,10 @@ under `CROZIER_REQUIRE_CORPUS` in `just test-corpus-match`.
 corpora stay byte-identical — none of them exercised these paths):
 
 1. **Operation grouping for dotted corpus APIs** (`src/ir.rs`) — operations Fern
-   groups under its `_` root subpackage (`src/fern/_/`) are now emitted there and
-   wired into the root client and `__init__` exports; crozier previously omitted the
-   `_` subpackage entirely.
+   groups under its empty `_` namespace (an operationId such as `.GetAvailableLocales`)
+   are now emitted, flattened onto the package root as `src/fern/raw_client.py` plus
+   the root `client.py` methods ([`emit`]'s `empty_endpoint_namespace`), and wired into
+   the `__init__` exports; crozier previously omitted that group entirely.
 2. **Named per-operation response types** (`src/ir.rs`, `src/emit.rs`,
    `src/openapi.rs`) — Fern synthesizes a `<OperationId>Response` type from each
    operation's inline response body (Bungie's standard
@@ -518,7 +521,7 @@ offline `check` gate skips unfetched specs while
 | `apache.org` (Airflow) | heaviest composition (`allOf`×22) + the only discriminated union; 18 tags |
 | `discourse.local` | all-inline (0 named schemas → ~113 coined types) |
 | `appwrite.io-server` | widest operation surface (95 ops); `url` format |
-| `apicurio.local-registry` | only `int64`-format corpus; `allOf` |
+| `apicurio.local-registry` | the batch's only `int64`-format corpus; `allOf` |
 
 Two rules closed the batch. An api-key header that is *both* a security scheme and
 an explicit parameter on every operation is promoted once, not twice — crozier
@@ -732,19 +735,22 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    `servers-webhooks`' `CreateSubscriptionRequest`). An *inline* (non-`$ref`)
    request/response object body is hoisted into a named model in the **tag's own
    `types/` package** (Fern's `inlined/types/`): a response becomes
-   `{Tag}{Method}Response`, a request's nested inline objects
-   `{Tag}{Method}Request{Prop}`, and nested inline objects recurse as
-   `{Parent}{Prop}` — structural names derived from the operation and property path,
-   ignoring any `title`. An [`ir::InlineHoister`] builds these tag-scoped types; a
+   `{Ctx}Response`, a request's nested inline objects `{Ctx}Request{Prop}`, and
+   nested inline objects recurse as `{Parent}{Prop}` — structural names derived from
+   the operation and property path, ignoring any `title`. `{Ctx}` is the PascalCase
+   operationId alone ([`ir::endpoint_pascal_context`]), never the tag, so
+   `inlined_search` yields `InlinedSearchResponse` and `InlinedSearchRequestFilter`.
+   An [`ir::InlineHoister`] builds these tag-scoped types; a
    location-aware import resolver (`RefLoc`) picks the right relative path from any
    file, and the tag package/`types` package/root `__init__` re-export them.
    `inline-request-response` matches in full. An **inline array body** hoists its
-   *element* the same way, as `{Tag}{Method}RequestItem`
+   *element* the same way, as `{Ctx}RequestItem`
    (`inline-array-request`'s `ItemsCreateBatchRequestItem`), so the argument is
    `Sequence[{Ctx}Item]` through the convert wrapper and the worked example
    constructs it, importing it `from <pkg>.<tag>`; the hoisted-type method segment
-   preserves the operationId's camelCase ([`ir::endpoint_type_method`]:
-   `createBatch` → `CreateBatch`, distinct from the lowercased Python method).
+   preserves the operationId's camelCase ([`ir::endpoint_pascal_context`]:
+   `items_createBatch` → `ItemsCreateBatch`, distinct from the lowercased Python
+   method).
 5. **Cookie parameters + global-header promotion (implemented).** A `cookie` param
    (`ParameterLocation::Cookie`) is dropped from the method signature entirely, and
    an **optional** operation header is promoted to a client-wrapper-level "global"
