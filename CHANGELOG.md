@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.53](https://github.com/nickderobertis/crozier/compare/v0.0.52...v0.0.53) - 2026-08-23
+
+### Other
+
+- clear the judged-tier findings on the folder and vendored guides ([#173](https://github.com/nickderobertis/crozier/pull/173))
+
 ## [0.0.52](https://github.com/nickderobertis/crozier/compare/v0.0.51...v0.0.52) - 2026-08-23
 
 ### Other
