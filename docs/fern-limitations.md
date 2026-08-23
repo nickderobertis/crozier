@@ -3289,7 +3289,9 @@ met:
 2. **Eligibility** — a verified primary and at least two verified backups, each
    with a pinned credential-free URL and a licence tier the census measured.
 
-Four gaps clear both bars. **Fifty-five do not.** That ratio is the finding, and it
+Four gaps clear both bars. **Fifty-five do not** — the fifty-five rows tabulated
+below, of which round 4 later measured two into **`REGISTRABLE`** and registered
+both, for a standing tally of six of fifty-nine. That ratio is the finding, and it
 is the opposite of what issue #148 assumed: for most of this surface Fern either
 discards the shape, ignores it, refuses it, or produces output that matches only by
 coincidence with an unconditional default — and where it does none of those, no
