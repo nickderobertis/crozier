@@ -441,9 +441,11 @@ stay byte-identical — none of them exercised these paths):
   though the exception never references it (`hoist_error_body_types`).
 - **`content-type` header rule.** Fern emits
   `headers={"content-type": "application/json"}` iff the operation has a path/header
-  param, an *undocumented* body, or a body whose fields are *all required* — so bunq's
-  parameter-less `CREATE_Avatar` (one optional field) gets none while the exhaustive
-  seed's all-required `session_server` does.
+  param, an *undocumented* body, or a body whose fields are *all required*. bunq's
+  `CREATE_Avatar` and `CREATE_SessionServer` share one header-parameter list, every
+  entry of which promotes to the client wrapper, so the body decides: `Avatar`'s four
+  properties declare no `required` and it gets no header, while `SessionServer`'s one
+  `secret` property is `required` and it does.
 - **Inline-schema hoisting + snake-case digits.** A top-level array of inline objects
   hoists its element to `{Name}Item`; a snake-cased word ending in a digit merges with
   the following segment (`Cvc2Create` → `cvc2create`, not `cvc2_create`) while a
