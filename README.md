@@ -31,7 +31,7 @@ handful of lines of schema — a real generated file, not a hand-written sample:
 writes the SDK — the models, enums, the per-endpoint client, and Fern's `core/`
 runtime — into `--output`:
 
-![Terminal: crozier generate python --spec petstore.yml --output sdk --package-name petstore, the generated 40 files into sdk summary, and a tree of the written package showing src/petstore with core, types, client.py, raw_client.py and pyproject.toml](docs/screenshots/generate.svg)
+![Terminal: crozier generate python --spec petstore.yml --output sdk --package-name petstore, the generated-files summary line, and a tree of the written package showing src/petstore with core, types, client.py, raw_client.py and pyproject.toml](docs/screenshots/generate.svg)
 
 Or drive one — or several — named generators from a `crozier.yml` instead of
 flags. `crozier config` shows the effective settings for every generator and the
