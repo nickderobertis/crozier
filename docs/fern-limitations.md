@@ -679,6 +679,24 @@ generator `fernapi/fern-python-sdk:5.20.0`, `CI=true`/`GITHUB_ACTIONS=true` —
 against a workspace scaffolded exactly as `scripts/generate-fern-fixture.sh`
 builds one.
 
+**Fourteen of the eighteen are documented limitations. Two are registrable, and
+both were registered.** The remaining two are shapes Fern *does* implement and a
+committed, byte-matching golden already pins, so they warrant no new fixture. No
+row is left unmeasured, and none of the eighteen resolved as a supply or licence
+limit dressed up as a Fern result: every verdict is a measurement of what the
+generator emitted. Three rows — `components-links`, `link-requestBody` and
+`link-server` — carry a `+ supply` qualifier, but in all three the discard is
+established by probe independently of the candidate pool, and the shortfall bears
+only on registrability. That is the round's finding, and it lands the same way
+round 3's did. Round 3 recorded four gaps of fifty-nine clearing both bars, with
+eighteen of the remainder standing as open questions rather than proven absences;
+closing all eighteen makes the standing tally **six of fifty-nine**, not four.
+The eighteen were not a hidden reservoir of gaps — issue #148 assumed this
+surface was full of them, and measured end to end it is mostly shapes Fern
+flattens, discards or refuses. But it is not empty either, which is the half of
+round 3's result that needed testing rather than repeating: two of the eighteen
+were real, and are corpus rows today.
+
 Two evidence routes are in play, and they are not equally cheap. **Route 1**
 reads a committed golden: `tests/fixtures/<name>/expected/` is Fern's real
 output on a real specification, already byte-matched by the gate, so where a
@@ -1263,7 +1281,9 @@ category.
   precedent — Fern discarded a *required* request body rather than represent a
   body it had no wire format for. Descoping `m2` on this basis is defensible. It
   is not proven: no Link or Encoding object was measured here, and the six `m2`
-  rows are still `unmeasured` until one is.
+  rows are still `unmeasured` until one is. They were not descoped — every one was
+  measured, and the prediction held: see
+  [links and encoding](#round-4--links-and-encoding).
 - **For `m3-schema-shapes`:** this result predicts nothing. Every discard above
   is a *routing or wire-format* input, and the one place the probe touched the
   type system it behaved correctly — `Widget` was emitted with the right fields
@@ -2459,11 +2479,12 @@ The row is **implements**, and **`REGISTRABLE`** — see the candidate set below
 
 #### `cycle-via-additionalProperties` — implements
 
-**Route 2.** No committed golden can answer this one, and the reason is precise:
+**Route 2.** No committed golden could answer this one, and the reason is precise:
 335 golden files call `update_forward_refs`, so recursion *through `properties` and
-`items`* is densely pinned — but **not one golden file in the corpus emits a
+`items`* is densely pinned — but **not one golden file in the corpus emitted a
 forward-referenced map**, which is the artifact a cycle through
-`additionalProperties` produces:
+`additionalProperties` produces. Measured on the 105 `expected/` trees that stood
+before this round registered one:
 
 ```console
 $ ls -d tests/fixtures/*/expected | wc -l
@@ -2473,6 +2494,11 @@ $ grep -rl 'update_forward_refs' tests/fixtures/*/expected/ | wc -l
 $ grep -rl 'typing\.Dict\[str, "' tests/fixtures/*/expected/ | wc -l
 0
 ```
+
+That last zero is the gap, and registering `eozilla` is what closed it — re-taken
+over the finished tree it now reads **2**, both files under
+`tests/fixtures/eozilla/`, and nowhere else
+([audit](#round-4--audit-of-the-eighteen)).
 
 The probe is a map of self, the shape a `Field` whose child fields are keyed by
 name:
@@ -3130,6 +3156,125 @@ where the **last** of them stood (`oneOf: [string, integer, string/uri]` generat
 `typing.Union[int, str]`). The third probe measured a member declaring nothing but
 `nullable: true` as `typing.Optional[typing.Any]`.
 
+### Round 4 — audit of the eighteen
+
+A fifth pass, reading the four measurement subsections above as a whole rather
+than row by row on their own branches. It changed no `expected/` tree, deleted no
+`.crozier-fern-golden.json` marker, and touched neither `justfile`, `tests/e2e.rs`
+nor `tests/fixtures/CORPUS.md`. Every figure below was re-measured in this
+checkout on 2026-08-22, against fetched specifications and committed goldens
+rather than against the prose.
+
+**All eighteen clear the three mechanical bars.** None still reads `unmeasured`;
+every verdict is drawn from the vocabulary
+[`How to read a verdict`](#how-to-read-a-verdict) defines (`implements`,
+`discards`, `ignores`, `refuses`, `coincidence`, joined where relevant with
+`+ supply`); and each row's table cell links to the `## Round 4` subsection that
+carries its evidence.
+
+| row | verdict | route | evidence re-taken here |
+|---|---|---|---|
+| `boolean-schema-true` | coincidence / discards | 1 + 2 | `etsi…apppkgmgmt` (row 46) declares `additionalProperties: true`, `anchore.io` (row 3) declares no such key, and both goldens emit `typing.Dict[str, typing.Any]`. `rocketmq-sre-phase02` **re-generated**: 253 schemas, 286 modules, exactly 4 `typing.Any` aliases |
+| `components-links` | discards + supply | 2 | link probe **re-run**: `GetThingById` emits 0 bytes |
+| `const-boolean` | discards | 2 | census re-run: 0 boolean `const`s in 124 documents |
+| `const-integer` | discards | 2 | census re-run: 0 integer `const`s in 124 documents |
+| `cycle-via-additionalProperties` | implements | 2 | registered row 92; `eozilla_matches_fern_output` passes |
+| `encoding-explode-or-allowReserved` | refuses / ignores | 2 | probe 3 **re-run**: `fern check` exit 1, `fern generate` exit 0, error text verbatim |
+| `encoding-object` | implements / discards | 1 | `free5gc-pdu-session` (row 73) declares 99 `contentType`, 58 `headers`; golden emits the first, none of the second |
+| `link-description` | discards | 2 | link probe **re-run**: both descriptions emit 0 bytes |
+| `link-requestBody` | discards + supply | 2 | link probe **re-run**: `get_thing` takes only `thing_id` |
+| `link-server` | discards + supply | 2 | link probe **re-run**: neither host reaches `environment.py` |
+| `nesting-depth-ge-15` | implements | 1 | `openbanking…account-info` (row 58) reaches depth 19, 91 nodes ≥ 15; the 230-character module is present |
+| `normalization-collision` | discards | 1 | row 58 declares 4 `OB_?Rate1_[01]` schemas, golden emits 2; row 51 collapses `RoleArn`/`RoleARN` |
+| `server-description-multiword` | discards | 1 | `traccar.org` (row 60) declares 6 multi-word descriptions, 0 below root; golden emits one `DEFAULT` |
+| `servers-multiple-path-or-operation` | discards | 1 | `apideck.com-file-storage` (row 14) declares 5 operation servers on `upload.apideck.com`; golden routes all through the root |
+| `servers-three-levels` | discards | 2 | probe quoted in full, both exits 0, sole host occurrence quoted |
+| `type-array-multi-nonnull` | implements | 2 | registered row 93; `openepcis_dpp_ready_matches_fern_output` passes |
+| `xml-request` | discards | 2 | probe quoted in full, both exits 0; corpus declares `application/xml` 0 times |
+| `xml-response` | discards | 2 | as `xml-request`; golden corroboration is `text/xml`, and is named as corroboration |
+
+**Every golden-derived verdict rests on a specification that does declare the
+shape, and every declared count re-measures.** This was the failure mode most
+worth hunting — a `discards` read off a golden whose own source never declared the
+shape under test, which would make Fern's silence meaningless. It does not occur.
+Each of the three measurement families ran a structural census *first* and moved
+to a probe wherever the corpus was silent, which is the guard that prevents it:
+the link census finds 40 Link objects declaring none of the four fields under
+test, the encoding census finds `explode`/`allowReserved` declared zero times, and
+the schema census finds no boolean or integer `const` and no multi-non-null `type`
+array. All three censuses re-run **byte-identically** here at 124 documents. The
+one row that could have gone wrong the cheap way — `xml-request`/`xml-response`,
+where `amazonaws.com-cloudfront` is dense with XML — explicitly declines to use it,
+records that its 256 hits are `text/xml` and not `application/xml`, and rests on a
+probe instead.
+
+**Every probe-derived verdict names its probe, both exit codes, and an emitted
+call site or a recorded absence.** Three were re-run end to end on this host,
+against the same pins (`fern check` then `fern generate --group python-sdk --local
+--preview`, CLI `5.67.1`, generator `fernapi/fern-python-sdk:5.20.0`,
+`CI=true`/`GITHUB_ACTIONS=true`):
+
+- **The link-fields probe**, chosen because four of the eighteen rest on it alone
+  and an all-zeros absence table is exactly what an unrun measurement would look
+  like. `fern check` **exit 0**, `fern generate` **exit 0**. All nine markers
+  return 0, `grep -ril link` over the generated tree returns 0, and
+  `environment.py` and `create_thing` come back byte-identical to the blocks
+  quoted above. The four rows stand.
+- **The multipart-object `explode` probe**, chosen because it carries the only
+  `refuses` verdict in the eighteen. `fern check` **exit 1** and `fern generate`
+  **exit 0**, and the diagnostic reproduces verbatim — `meta is exploded and must
+  be a list. Did you mean list<optional<Thing>>?` at `__package__.yml -> service ->
+  endpoints -> mpObjectExplode` — with `mp_object_explode`'s emitted body identical
+  to its control.
+- **`rocketmq-sre-phase02`**, the real candidate behind `boolean-schema-true`,
+  chosen because this row's draft once claimed models were missing that its own run
+  showed present. The corrected row is right in every particular: `fern check` exit
+  0 (`Found 0 errors and 2 warnings`), `fern generate` exit 0, 253 component
+  schemas, 286 emitted modules, and exactly four `typing.Any` aliases —
+  `ActionItem`, `PostmortemRevision`, `IncidentOperationResultTimelineEvent`,
+  `WhatIfSimulation` — matching name for name the four schemas that declare a
+  property whose schema is literally `true`. `WhatIfSimulation` declares 16
+  properties and emits none of them; its six `WhatIfSimulation__*` components
+  survive; and the `oneOf`-branch exception reproduces exactly, `value: typing.Any`
+  beside `storage: typing.Literal["inline"]`.
+
+**Both registrations hold.** `tests/e2e.rs` declares 108 corpora and 108
+`unmatched: &[]`, with no non-empty exclusion list anywhere in the file, and
+`CROZIER_REQUIRE_CORPUS=1 cargo test --test e2e` passes
+`eozilla_matches_fern_output` and `openepcis_dpp_ready_matches_fern_output` —
+under `CROZIER_REQUIRE_CORPUS`, so a skipped spec would have failed rather than
+passed quietly. The two `expected/` trees hold 106 and 91 files, which is the 105
+and 90 compared plus the `.crozier-fern-golden.json` the comparison walk skips.
+
+**Three corrections, all of them staleness this round created in its own record.**
+Each was a present-tense claim that was true when measured and is false in the
+finished tree, because a later node in the same round registered the fixture that
+falsified it:
+
+- `cycle-via-additionalProperties` read *"not one golden file in the corpus emits a
+  forward-referenced map"* over a 105-tree checkout. Re-taken over the 107 trees
+  that stand now, `grep -rl 'typing\.Dict\[str, "' tests/fixtures/*/expected/`
+  returns **2**, both under `tests/fixtures/eozilla/`. Scoped to the checkout it
+  described, and the closure recorded.
+- The `type-array-multi-nonnull` table cell read *"of the corpus's 498 `type`
+  arrays every one has a single non-null member."* Re-running that census at 124
+  documents returns **2 occurrences in 1 document**, `openepcis-dpp-ready` — which
+  is the row's own registered primary, and matches the 2 its candidate table
+  declares. Scoped, and the registration named. (`tests/e2e.rs` already worded this
+  correctly as *"before this row"*.)
+- The servers-and-XML family's forward-looking note said the six links-and-encoding
+  rows *"are still `unmeasured` until one is."* They were measured, in this same
+  round; a pointer now says so.
+
+Counts that moved without changing a finding are left as the transcripts they are:
+the environment census (71 of 105 → **73 of 107**, still exactly one member each,
+still only `DEFAULT` and `PRODUCTION`), the `base_url` tally (four forms, none
+naming a sub-root host, counts risen), the `force_multipart.py`/`http_client.py`
+hashes (104 → **106** trees, still one hash each), the description word-count split
+(18/4 → **20/4**, still no exception either way), and `additionalProperties: true`
+(217/30 → **219/32**, still the only boolean subschema any document declares).
+Every one of these strengthens the claim it supports rather than weakening it.
+
 ## What Round 3 did not register, and why
 
 The round's main result. Round 3 registers a fixture only where **both** bars are
@@ -3206,7 +3351,7 @@ question a future probe could answer**, not a proven absence.
 | `servers-three-levels` | 1 | 5 | discards | probed directly: with a root, a Path Item and an Operation server in one document, `fern check` and `fern generate` both exit 0 and only the root URL is emitted. Measured in [Round 4](#round-4--servers-and-xml) |
 | `spaceDelimited-object` | 0 | 6 | discards + licence | Fern discards the declared style; object query parameters are flattened regardless of it; 0 eligible of 6 verified — 6× licence untiered |
 | `trace-operation` | 2 | 5 | discards + supply | Fern emits no client method for `trace`; 2 eligible of 5 verified — 3× licence tier Q |
-| `type-array-multi-nonnull` | 8 | 8 | implements | probed directly: `type: [string, integer]` emits `typing.Union[str, int]`, and the members track the declared list — `[boolean, number]` gives `typing.Union[bool, float]`, `[string, integer, boolean]` gives `typing.Union[str, int, bool]`, so no unconditional default can account for it. Confirmed at the use sites of all three candidate specifications, which generate at exit 0 — `wildfire-robotics`'s five-member `[string, number, integer, boolean, null]` emits `typing.Dict[str, typing.Optional[ReadModelSummaryValue]]` with `ReadModelSummaryValue = typing.Union[str, float, int, bool]`, representing every declared member. The `typing.Union[...]` occurrences already in the goldens all arise from `oneOf`/`anyOf`; of the corpus's 498 `type` arrays every one has a single non-null member. **REGISTRABLE** — candidate set in [Round 4](#round-4--schema-shapes) |
+| `type-array-multi-nonnull` | 8 | 8 | implements | probed directly: `type: [string, integer]` emits `typing.Union[str, int]`, and the members track the declared list — `[boolean, number]` gives `typing.Union[bool, float]`, `[string, integer, boolean]` gives `typing.Union[str, int, bool]`, so no unconditional default can account for it. Confirmed at the use sites of all three candidate specifications, which generate at exit 0 — `wildfire-robotics`'s five-member `[string, number, integer, boolean, null]` emits `typing.Dict[str, typing.Optional[ReadModelSummaryValue]]` with `ReadModelSummaryValue = typing.Union[str, float, int, bool]`, representing every declared member. Before this round registered one, the `typing.Union[...]` occurrences in the goldens all arose from `oneOf`/`anyOf`, and every one of the corpus's 498 `type` arrays had a single non-null member. **REGISTRABLE** — candidate set in [Round 4](#round-4--schema-shapes); registered as `CORPUS.md` row 93 |
 | `x-fern-or-crozier-ignore` | 2 | 4 | supply | two of its four verified candidates are the AssemblyAI specification `CORPUS.md` records REJECTED, leaving two eligible |
 | `xml-request` | 18 | 20 | discards | probed directly: a **required** `application/xml` request body is dropped whole — the method takes no body argument and the call site sends none. No committed golden declares `application/xml`, so this rests on the probe. Measured in [Round 4](#round-4--servers-and-xml) |
 | `xml-response` | 20 | 24 | discards | probed directly: an `application/xml` response schema is dropped whole — the method returns `HttpResponse[None]` and never parses the body. No committed golden declares `application/xml`, so this rests on the probe. Measured in [Round 4](#round-4--servers-and-xml) |
