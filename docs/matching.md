@@ -1261,11 +1261,11 @@ four models carry `extra="forbid"` in the v2 `model_config` and
 ## Cross-document `$ref` resolution (issue #77)
 
 Every corpus spec but one is a single self-contained document: every `$ref` is a
-local JSON pointer into the same file. `helios-verifiable-api` (CORPUS.md row 91)
-is not — many of its component schemas are `$ref`s naming an
-`ethereum/execution-apis` document by absolute URL, and Fern's importer
-**fetches** each one and resolves it transitively. CORPUS.md's shapes cell for
-that row carries the counts; they are not restated here. That is the only
+local JSON pointer into the same file. `helios-verifiable-api` is not — many of
+its component schemas are `$ref`s naming an `ethereum/execution-apis` document
+by absolute URL, and Fern's importer **fetches** each one and resolves it
+transitively. Its CORPUS.md row is keyed by that fixture name, and its shapes
+cell carries the counts; they are not restated here. That is the only
 reference form Fern was measured to follow rather than discard ([`fern-limitations.md`](fern-limitations.md)
 records the ones it drops), so it is the only golden that can pin whether crozier
 opens a second document at all.
