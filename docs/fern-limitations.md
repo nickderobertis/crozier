@@ -3240,11 +3240,12 @@ against the same pins (`fern check` then `fern generate --group python-sdk --loc
 
 **Both registrations hold.** `tests/e2e.rs` declares 108 corpora and 108
 `unmatched: &[]`, with no non-empty exclusion list anywhere in the file, and
-`CROZIER_REQUIRE_CORPUS=1 cargo test --test e2e` passes
-`eozilla_matches_fern_output` and `openepcis_dpp_ready_matches_fern_output` —
-under `CROZIER_REQUIRE_CORPUS`, so a skipped spec would have failed rather than
-passed quietly. The two `expected/` trees hold 106 and 91 files, which is the 105
-and 90 compared plus the `.crozier-fern-golden.json` the comparison walk skips.
+`just test-corpus-match`'s `eozilla_matches_fern_output` and
+`openepcis_dpp_ready_matches_fern_output` lines both pass. That recipe sets
+`CROZIER_REQUIRE_CORPUS`, so an unfetched spec would have failed the run rather
+than skipping it quietly. The two `expected/` trees hold 106 and 91 files, which
+is the 105 and 90 compared plus the `.crozier-fern-golden.json` the comparison
+walk skips.
 
 **Three corrections, all of them staleness this round created in its own record.**
 Each was a present-tense claim that was true when measured and is false in the
