@@ -1036,8 +1036,10 @@ byte-match target like the rest of the corpus.
   ([`ir::InlineHoister::hoist_param_enum`]).
 - **Real `enum.Enum` classes (issue #41 gap 2b), the default.** Every string enum —
   a named `components.schemas` enum, a hoisted inline-property enum (`{Owner}{Prop}`),
-  or a hoisted parameter enum — renders as `class Name(str, enum.Enum)` with
-  `SCREAMING_SNAKE` members and a `visit(...)` dispatch method
+  or a hoisted parameter enum — renders as `class Name(enum.StrEnum)` over the
+  generated `core/enum.py` shim (the stdlib `enum.StrEnum` on Python >= 3.11, the
+  `(str, Enum)` mixin below it) with `SCREAMING_SNAKE` members and a `visit(...)`
+  dispatch method
   ([`ir::EnumType`]/[`emit::render_enum`]). This is Fern's `enum_type: python_enums`
   mode; the golden corpus was generated with
   `pydantic_config.enum_type: python_enums`, so exhaustive and every enum-bearing
