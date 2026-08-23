@@ -170,6 +170,47 @@ class GrammarContractTests(unittest.TestCase):
         documented = self.backticked("themselves a closed list:", "\n\nA **count**")
         self.assertEqual(census.VALUED, documented)
 
+    def test_each_region_file_repeats_the_index_s_boundary_verbatim(self) -> None:
+        """Six copies of the region boundaries; the index's table is the original."""
+        text = self.DOC.read_text(encoding="utf-8")
+        owns = {
+            cells[1].strip("`"): cells[3]
+            for line in text.splitlines()
+            if line.startswith("| `") and "openapi-surface/" in line
+            for cells in [[cell.strip() for cell in line.split("|")]]
+        }
+        self.assertEqual(6, len(owns), "the index no longer lists six regions")
+        for region, boundary in sorted(owns.items()):
+            with self.subTest(region=region):
+                body = (REPO / "docs" / "openapi-surface" / f"{region}.md").read_text(
+                    encoding="utf-8"
+                )
+                self.assertIn("\n## Scope\n", body, f"{region}.md has no ## Scope section")
+                scope = body.split("\n## Scope\n", 1)[1].split("\n## ", 1)[0]
+                self.assertEqual(
+                    " ".join(boundary.split()).rstrip("."),
+                    " ".join(scope.split()).rstrip("."),
+                    f"{region}.md's ## Scope is not the index's `owns` cell",
+                )
+
+    def test_the_stated_corpus_sizes_are_the_measured_ones(self) -> None:
+        """31 vendored / 93 link-ok / 124 registered is restated in prose; measure it."""
+        vendored = census.registered_sources(FIXTURES, REPO / ".local" / "corpus", True)
+        registered = census.registered_sources(FIXTURES, REPO / ".local" / "corpus", False)
+        counts = (len(vendored), len(registered) - len(vendored), len(registered))
+        doc = self.DOC.read_text(encoding="utf-8")
+        stated = re.search(
+            r"the (\d+) vendored\n`tests/fixtures/<name>/openapi\.\*` documents, and the (\d+) `link-ok`", doc
+        )
+        self.assertIsNotNone(stated, "the instrument section no longer states the corpus split")
+        self.assertEqual(counts[:2], (int(stated.group(1)), int(stated.group(2))))
+        script = SCRIPT.read_text(encoding="utf-8")
+        in_script = re.search(r"and (\d+) of the (\d+) registered sources are `link-ok`", script)
+        self.assertIsNotNone(in_script, "the script's docstring no longer states the corpus split")
+        self.assertEqual(
+            (counts[1], counts[2]), (int(in_script.group(1)), int(in_script.group(2)))
+        )
+
     def test_the_region_files_carry_the_agreed_table_header(self) -> None:
         """Six files, one skeleton: the regions have to compose into one table."""
         header = (
@@ -379,6 +420,46 @@ class SourceSelectionTests(unittest.TestCase):
             self.assertEqual(
                 set(), {row["fixture"] for row in payload["rows"]} & {s["fixture"] for s in corpus}
             )
+
+    def test_a_selector_the_grammar_cannot_emit_is_refused(self) -> None:
+        """An unrefused typo would manufacture the evidence a `gap` row cites."""
+        for selector, expected in (
+            ("pathitem.trace", "Did you mean: pathItem.trace"),
+            ("schema.notAKeyword", "is not a selector of the OpenAPI object model"),
+            ("operation.tags=x", "is not one of the fields that emit a valued selector"),
+            ("parameter.in=", "valued selector with no value"),
+            ("notAnObject.x-thing", "is not an object the census walks"),
+        ):
+            with self.subTest(selector=selector):
+                completed = run("--vendored-only", "--selector", selector)
+                self.assertEqual(1, completed.returncode, completed.stdout)
+                self.assertIn(expected, completed.stderr)
+                self.assertNotIn("declared by no registered source", completed.stdout)
+
+    def test_every_selector_the_census_emits_is_one_the_grammar_accepts(self) -> None:
+        """The enumeration that refuses a typo and the walk that emits must agree."""
+        emitted = {selector for selector, _ in rows(run("--vendored-only"))}
+        self.assertGreater(len(emitted), 50, "the vendored census reported almost nothing")
+        refused = {s: census.selector_error(s) for s in emitted if census.selector_error(s)}
+        self.assertEqual({}, refused, "the census emits selectors its own grammar refuses")
+
+    def test_a_source_whose_root_is_not_a_mapping_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_fixture(root, "listy", "- openapi: 3.0.3\n")
+            completed = run("--vendored-only", "--fixtures-root", str(root))
+        self.assertEqual(1, completed.returncode, completed.stdout)
+        self.assertIn("is not an OpenAPI document", completed.stderr)
+        self.assertIn("root is not a mapping", completed.stderr)
+
+    def test_a_fixtures_root_without_the_corpus_manifest_is_refused(self) -> None:
+        """The link-ok half is read out of CORPUS.md; its absence is not zero rows."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_fixture(root, "solo", "openapi: 3.0.3\ninfo: {title: solo, version: \"1\"}\n")
+            completed = run("--fixtures-root", str(root), "--corpus-root", directory)
+        self.assertEqual(1, completed.returncode, completed.stdout)
+        self.assertIn("missing corpus manifest", completed.stderr)
 
     def test_an_unknown_fixture_name_is_refused_with_what_the_names_are(self) -> None:
         completed = run("--vendored-only", "--fixture", "not-a-fixture")

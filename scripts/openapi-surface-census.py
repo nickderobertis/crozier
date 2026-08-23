@@ -40,6 +40,7 @@ below is the machine-readable half of that grammar.
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import re
 import sys
@@ -820,6 +821,61 @@ VALUED = {
 REF_TRANSPARENT = {"schema", "pathItem"}
 
 
+def grammar() -> tuple[set[str], set[str]]:
+    """Every selector the grammar allows, and every prefix that can carry an `x-`.
+
+    Enumerable because a selector is an anchor kind's name followed by a chain of
+    fields through *extending* kinds only — the chain stops at the next anchor,
+    which starts a selector of its own. That closed set is what makes a mistyped
+    `--selector` refusable instead of silently reportable as undeclared.
+    """
+    selectors: set[str] = set()
+    prefixes: set[str] = set()
+
+    def visit(kind_name: str, prefix: str) -> None:
+        if prefix in prefixes:
+            return
+        prefixes.add(prefix)
+        kind = OBJECTS[kind_name]
+        for field, child in kind.fields.items():
+            selectors.add(f"{prefix}.{field}")
+            if child is not None and not OBJECTS[child.kind].anchor:
+                visit(child.kind, f"{prefix}.{field}")
+        if kind.free_map is not None and not OBJECTS[kind.free_map.kind].anchor:
+            visit(kind.free_map.kind, prefix)
+
+    for name, kind in OBJECTS.items():
+        if kind.anchor:
+            visit(name, kind.name)
+    return selectors, prefixes
+
+
+def selector_error(text: str) -> str | None:
+    """Why this `--selector` names nothing the grammar can emit, or None."""
+    selectors, prefixes = grammar()
+    base, equals, value = text.partition("=")
+    if equals and not value:
+        return f"{text!r} is a valued selector with no value"
+    if equals and base not in VALUED:
+        return (
+            f"{base!r} is not one of the fields that emit a valued selector. "
+            f"They are: {', '.join(sorted(VALUED))}."
+        )
+    head, _, last = base.rpartition(".")
+    if last.startswith("x-"):
+        if head in prefixes:
+            return None
+        return f"{head!r} is not an object the census walks, so it declares no {last!r}"
+    if base in selectors:
+        return None
+    close = difflib.get_close_matches(base, sorted(selectors), n=3)
+    suggestion = f" Did you mean: {', '.join(close)}?" if close else ""
+    return (
+        f"{base!r} is not a selector of the OpenAPI object model.{suggestion} "
+        "The grammar is docs/openapi-surface-coverage.md."
+    )
+
+
 class Census:
     """One document's declaration-site counts, keyed by selector."""
 
@@ -1052,6 +1108,12 @@ def main(argv: list[str] | None = None) -> int:
     if not fixtures_root.is_dir():
         print(f"openapi-surface-census: missing fixtures root {fixtures_root}", file=sys.stderr)
         return 1
+
+    for selector in args.selector:
+        problem = selector_error(selector)
+        if problem is not None:
+            print(f"openapi-surface-census: {problem}", file=sys.stderr)
+            return 1
 
     sources = registered_sources(fixtures_root, corpus_root, args.vendored_only)
     if args.fixture:
