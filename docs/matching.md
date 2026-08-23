@@ -1309,6 +1309,98 @@ URLs address `refs/heads/main` rather than an immutable ref, so an upstream edit
 to those six files breaks this row's reproduction for a reason unrelated to
 crozier.
 
+## Map-of-self and multi-type arrays (issue #77)
+
+`docs/fern-limitations.md`'s round 4 measured eighteen open questions and found
+two shapes Fern reads and emits output *derived from*, with no golden pinning
+either. `eozilla` (CORPUS.md row 92) and `openepcis-dpp-ready` (row 93) are those
+two, and the rules below are what reproducing them cost. Three were probed
+directly against `fernapi/fern-python-sdk:5.20.0` because no committed golden
+could answer them; the rest were read off the two goldens.
+
+**A `type` list with more than one non-`null` member is an `anyOf`.** A single
+non-`null` member is nullability and nothing else, which is why
+`TypeField::primary` answers every other caller. Two or more are a union of those
+types, and Fern hoists a named alias for it exactly as it would for an inline
+`anyOf` — `SingleValuedDataElementValue = typing.Union[str, float, bool]` in its
+own module. [`openapi.rs`](../src/openapi.rs)'s `normalize_multi_type_schemas`
+rewrites the node at load time so the union hoisting, naming, and
+forward-reference passes need no second spelling of the shape; a `null` member
+leaves the union and sets `nullable`. The origin survives the rewrite
+(`Schema::multi_type_union`), because a *member* of another union that came from a
+`type` list is named rather than inlined
+(`MultiValuedDataElementValueItemZero`) where a hand-written `anyOf` in the same
+position is inlined.
+
+**Union members fold together where the last equal one stood.** Probed:
+`oneOf: [string, integer, string/uri]` generates `typing.Union[int, str]` — the
+surviving `str` sits at the `uri` member's index, not the bare `string`'s. Two
+more probes settle what the members themselves render as: `format: binary` in a
+union is the `string` it is declared as (`typing.Union[str, int]`, not `bytes`),
+and a member declaring nothing but `nullable: true` is
+`typing.Optional[typing.Any]`. Eozilla's twelve-member `InlineValue` is all three
+rules at once: its `binary`, `uri` and bare `string` alternatives all render `str`,
+and the ten-member union Fern emits carries one of them, after `dt.datetime`.
+
+**A discriminated union's tag is an ordinary field bar its default.** A wire name
+that does not survive Python naming carries the same alias metadata every other
+field would, so EN 18222's `objectType` renders `object_type:
+typing_extensions.Annotated[typing.Literal["…"], FieldMetadata(alias="objectType"),
+pydantic.Field(alias="objectType")]`, and `pydantic.Field(discriminator=…)` names
+the Python field. The wrapper is flat, and Fern writes the variant's *own*
+properties before the ones its `allOf` base contributes —
+`DataElement_RelatedResource` opens with `resource_title` and closes with
+`element_id`. The strip follows the `$ref` that put the tag there, but only when
+the base's declaration says nothing the tag does not: `DataElementBase.objectType`
+is an optional bare `type: string` and vanishes, while Microcks'
+`AbstractExchange.type` is required with an `enum` of the discriminant values and
+Fern keeps it, hoisting `AbstractExchangeType` for it.
+
+**`update_forward_refs` arguments are per wrapper.** Each takes the module's
+cyclic names *minus the model that wrapper flattened* — a wrapper cannot be asked
+to resolve its own source — which is why `Node_And` takes `Node=Node` and not
+`AndNode=AndNode`, and why EN 18222's two recursive wrappers each name the other's
+source. The deferred imports below the alias follow the order the calls first
+mention them, not a sort of the whole set. An alias that merely *wraps* a
+discriminated union (`ProfitAndLossRecords = Optional[List[ProfitAndLossRecordsItem]]`)
+imports it eagerly with no forward-reference machinery at all; an alias whose
+target is itself a `Union[..]` defers into the cycle like any other member. And a
+model that only *inherits* its way into a cycle — `QualifiedValue(Format)`, where
+`Format.schema` closes Eozilla's map-of-self — takes `from __future__ import
+annotations` and no repair call, because the base's own module already repaired it.
+
+**One simple name imported from two modules is aliased in both.** Eozilla declares
+a component schema called `ApiError`, which collides with crozier's core one in
+every raw client that raises from it. Python cannot hold both, and Fern does not
+pick a winner: it writes `from ..core.api_error import ApiError as
+core_api_error_ApiError` beside `from ..types.api_error import ApiError as
+types_api_error_ApiError` and uses the module-qualified alias at every occurrence,
+including the `raise` sites and the `errors/` class's base. [`emit.rs`](../src/emit.rs)
+renders each affected file twice for this: the collision is only knowable once
+every reference has been walked, and the *body* has to carry the alias too.
+
+**Response selection skips what it cannot dispatch on.** Eozilla puts
+`executeProcess`'s `200` under the media type `/*`, which names no type and no
+subtype. Fern skips that response entirely and types the operation from the next
+`2xx` — the `201` carrying `JobInfo`, description and all — rather than reading it
+as a bodyless success. Separately, a bodyless `201` **or `202`** beside a success
+body is not an empty-body case: `updateDPPById` returns
+`HttpResponse[DigitalProductPassport]` with a bodyless `202` in the document.
+
+**Two smaller rules the goldens forced.** Promoted global headers that normalize
+to one Python name emit one constructor parameter while keeping both assignments
+and both header writes — EN 18222 declares `X-API-KEY` and `API-KEY`, and crozier
+emitted `api_key` twice, which Ruff rejects as a syntax error rather than a
+redundancy. And a query value serializes by the format the document declares even
+when the emitted annotation is an alias name: `date: Timestamp` still goes onto the
+URL through `serialize_datetime`.
+
+Examples reach through a reference the same way. A property written as a
+one-member `allOf` around a `$ref` (the 3.0 idiom for annotating a reference) is
+exampled from the referenced schema, an array of such references is exampled as a
+one-element list of it, and a date/date-time field's declared example is used
+rather than the synthesized placeholder.
+
 ## Coverage note
 
 The gate measures coverage with `cargo llvm-cov --fail-under-lines 95`, which
