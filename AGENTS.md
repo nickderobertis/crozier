@@ -84,8 +84,8 @@ and surfacing the rest as follow-ups:
 Use the `just` recipes; do not hand-roll equivalents.
 
 - `just bootstrap` — set up from a clean clone.
-- `just check` — full gate (fmt check, clippy `-D warnings`, tests incl. e2e with
-  coverage, `cargo deny`, `cargo machete`, doc). Must pass before any commit/PR.
+- `just check` — the full gate (the recipe's own dependency list is the step
+  list). Must pass before any commit/PR.
 - `just test` / `just test-e2e` / `just lint` / `just format` — individual steps.
 - `just test-live-e2e` — live runtime e2e: boot a Prism OpenAPI mock server per
   fixture and drive the generated SDK through every documented endpoint, asserting
@@ -146,9 +146,9 @@ Use the `just` recipes; do not hand-roll equivalents.
   parallel: builds/attests/uploads the per-platform archives (+ `.sha256` +
   `.sigstore.json`), publishes the crate to **crates.io**, and builds +
   publishes the **PyPI** wheels + sdist. Fully automated — the only human action
-  is merging a PR. **Bump policy (pre-1.0):** `feat`/`feat!`/`BREAKING CHANGE` →
-  minor; `fix`/`perf`/`refactor`/`build` → patch; `chore`/`docs`/`ci`/`test`/
-  `style` → no release.
+  is merging a PR. **Bump policy (`0.0.z`):** every release so far is a patch
+  bump — at `0.0.z` release-plz patch-bumps `feat` too, and `docs`/`test`-only
+  ranges still cut one.
 - **Registry publishing is credential-gated and self-activating.** `release.yml`
   publishes to crates.io only when `CARGO_REGISTRY_TOKEN` is set, and to PyPI only
   when `PYPI_TOKEN` is set (both synced via `gh-secrets sync`); until then those
