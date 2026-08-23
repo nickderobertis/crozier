@@ -20,7 +20,7 @@ Python is the only target today; more will follow.
 One OpenAPI document in, a complete typed Python SDK out — `crozier generate`
 writes the whole package in one shot, then you can read the code it produced:
 
-![Animated demo: typing crozier generate --spec petstore.yml --output sdk, crozier reporting it wrote 35 files, then cat-ing the generated PetStatus enum as it streams in with syntax highlighting](docs/screenshots/demo.gif)
+![Animated demo: typing crozier generate python --spec petstore.yml --output sdk, crozier reporting how many files it wrote, then cat-ing the generated PetStatus enum as it streams in with syntax highlighting](docs/screenshots/demo.gif)
 
 The output is byte-for-byte Fern's. Here is the `Pet` model crozier emitted from a
 handful of lines of schema — a real generated file, not a hand-written sample:
