@@ -31,7 +31,7 @@ handful of lines of schema — a real generated file, not a hand-written sample:
 writes the SDK — the models, enums, the per-endpoint client, and Fern's `core/`
 runtime — into `--output`:
 
-![Terminal: crozier generate python --spec petstore.yml --output sdk --package-name petstore, the generated 35 files into sdk summary, and a tree of the written package showing src/petstore with core, types, list_pets, client.py and pyproject.toml](docs/screenshots/generate.svg)
+![Terminal: crozier generate python --spec petstore.yml --output sdk --package-name petstore, the generated 40 files into sdk summary, and a tree of the written package showing src/petstore with core, types, client.py, raw_client.py and pyproject.toml](docs/screenshots/generate.svg)
 
 Or drive one — or several — named generators from a `crozier.yml` instead of
 flags. `crozier config` shows the effective settings for every generator and the
@@ -102,10 +102,10 @@ cargo install --git https://github.com/nickderobertis/crozier --locked
 ```
 
 **From a release archive (manual):** each release publishes per-platform archives
-named `crozier-<tag>-<target>.tar.gz` with a matching `.sha256` and a
-`.sigstore.json` provenance bundle, for targets `x86_64`/`aarch64` Linux,
-`x86_64`/`aarch64` macOS, and `x86_64` Windows. Download the archive for your
-platform from the
+named `crozier-<tag>-<target>.tar.gz` (`.zip` on Windows) with a matching
+`.sha256` and a `.sigstore.json` provenance bundle, for targets
+`x86_64`/`aarch64` Linux, `x86_64`/`aarch64` macOS, and `x86_64` Windows.
+Download the archive for your platform from the
 [Releases](https://github.com/nickderobertis/crozier/releases) page, verify the
 checksum (or the attestation), and put the `crozier` binary on your `PATH`.
 
@@ -200,7 +200,7 @@ The command surface is a small set of `just` recipes:
 
 ```sh
 just bootstrap   # set up from a clean clone (toolchain + dev tools)
-just check       # full gate: fmt, clippy -D warnings, tests + e2e + coverage, deny, machete, doc
+just check       # full gate: fmt, clippy -D warnings, tests + e2e + coverage, golden/fixture guards, deny, machete, doc
 just test        # fast tests with coverage enforced (95%)
 just test-e2e    # drive the compiled binary and byte-compare against fixtures
 just format      # rustfmt in place
