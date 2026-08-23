@@ -523,11 +523,15 @@ offline `check` gate skips unfetched specs while
 | `appwrite.io-server` | widest operation surface (95 ops); `url` format |
 | `apicurio.local-registry` | the batch's only `int64`-format corpus; `allOf` |
 
-Two rules closed the batch. An api-key header that is *both* a security scheme and
-an explicit parameter on every operation is promoted once, not twice — crozier
-drops it from the ordinary header set and appends the scheme-derived field, which
-is what stopped `anchore.io` and `apache.org` coining a duplicate method
-parameter. And an `x-*` key under `paths` is a vendor extension, not a path item:
+Two rules closed the batch. Header `apiKey` security schemes past the first become
+SDK-wide constructor fields, and an api-key header that *also* rides operations as
+an explicit parameter is promoted once, not twice — crozier drops it from the
+ordinary header set and appends the scheme-derived field, preserving Fern's
+grouping of ordinary headers before security headers ([`ir::global_headers`]).
+`appwrite.io-server` is the batch corpus that pins it: its four header `apiKey`
+schemes (`X-Appwrite-JWT`, `-Key`, `-Locale`, `-Project`) yield the constructor's
+`api_key` plus `appwrite_key`/`appwrite_locale`/`appwrite_project`. And an `x-*`
+key under `paths` is a vendor extension, not a path item:
 the `paths` deserializer skips it rather than trying to parse
 `apicurio.local-registry`'s `x-codegen-contextRoot` as a route. Future fixture
 refreshes use the standard [`Fern golden lifecycle`](fern-goldens.md).
