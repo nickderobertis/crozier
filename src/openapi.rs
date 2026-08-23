@@ -650,6 +650,14 @@ pub struct Schema {
     /// by `x-crozier-ignore` when both appear (see [`Schema::ignored`]).
     #[serde(rename = "x-fern-ignore", default)]
     pub ignore_fern: Option<bool>,
+    /// Set when this node's `type` was a list with more than one non-`null` member,
+    /// which [`normalize_multi_type_schemas`] rewrote into the equivalent `anyOf`.
+    /// Not a wire field. Fern names such a union rather than inlining it — EN
+    /// 18222's `MultiValuedDataElement.value.items.anyOf[0]` generates the alias
+    /// `MultiValuedDataElementValueItemZero` where a hand-written `anyOf` in the
+    /// same position is inlined — so the origin has to outlive the rewrite.
+    #[serde(skip)]
+    pub multi_type_union: bool,
     /// Set when this node stood where a schema object was expected but the document
     /// carried a non-object value there (e.g. a JSON array, from a `required` list
     /// misplaced inside `properties`). Not a wire field — the `properties`
@@ -967,6 +975,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     crate::refs::resolve(&mut doc, &crate::refs::CurlFetcher, path)?;
 
     normalize_unresolvable_schema_refs(&mut doc);
+    normalize_multi_type_schemas(&mut doc);
     normalize_nullable_schema_refs(&mut doc);
     normalize_parameters(&mut doc);
     normalize_responses(&mut doc);
@@ -1065,6 +1074,53 @@ pub(crate) fn referenced_component_schema(reference: &str) -> Option<&str> {
     reference
         .strip_prefix("#/components/schemas/")
         .map(|pointer| pointer.split('/').next().unwrap_or(pointer))
+}
+
+/// Rewrite a `type` list with more than one non-`null` member into the `anyOf`
+/// Fern reads it as.
+///
+/// A single non-`null` member is nullability and nothing else (`type: [string,
+/// null]` is an optional string), which is why [`TypeField::primary`] answers
+/// every other caller. Two or more are a union of those types, and Fern imports
+/// them as exactly that: EN 18222's `value: {type: [string, number, boolean]}`
+/// generates the hoisted alias `SingleValuedDataElementValue = typing.Union[str,
+/// float, bool]` in its own module — the same treatment an inline `anyOf` gets,
+/// down to the name. Normalizing here rather than at the use site means the
+/// union hoisting, naming, and forward-reference passes need no second spelling
+/// of the same shape. A `null` member stays optionality: it leaves the union and
+/// sets `nullable`, matching the `typing.Optional[ReadModelSummaryValue]` Fern
+/// emits for a five-member list ending in `null`.
+fn normalize_multi_type_schemas(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            let Some(TypeField::Multiple(types)) = node.ty.as_ref() else {
+                return;
+            };
+            // A node that already composes carries its own union; the `type` list
+            // there constrains that composition rather than replacing it.
+            if node.one_of.is_some() || node.any_of.is_some() || node.all_of.is_some() {
+                return;
+            }
+            let nullable = types.iter().any(|ty| ty == "null");
+            let members: Vec<Schema> = types
+                .iter()
+                .filter(|ty| *ty != "null")
+                .map(|ty| Schema {
+                    ty: Some(TypeField::Single(ty.clone())),
+                    ..Schema::default()
+                })
+                .collect();
+            if members.len() < 2 {
+                return;
+            }
+            node.ty = None;
+            node.any_of = Some(members);
+            node.multi_type_union = true;
+            if nullable {
+                node.nullable = Some(true);
+            }
+        });
+    });
 }
 
 /// Carry a component schema's nullability to every reference to it.

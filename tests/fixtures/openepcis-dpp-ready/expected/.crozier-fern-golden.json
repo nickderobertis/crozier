@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "openepcis-dpp-ready",
+  "corpus_spec_ref": "5c1f308d350cfcc9abb80aa6c70262c87141f201",
+  "corpus_spec_url": "https://raw.githubusercontent.com/openepcis/openepcis-dpp-ready/5c1f308d350cfcc9abb80aa6c70262c87141f201/extensions/common/interop/api/en18222-dpp-api.openapi.yaml"
+}

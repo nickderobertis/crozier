@@ -118,6 +118,14 @@ struct Imports {
     /// references ahead of the additional namespace used to repair a cycle;
     /// aliases still use [`Self::deferred`]'s sorted order under `TYPE_CHECKING`.
     deferred_order: Vec<String>,
+    /// `(module, name)` → the local alias to import it under and to write at every
+    /// occurrence. Populated from [`Self::collision_aliases`] on a throwaway
+    /// first pass: two modules can supply the same simple name — Eozilla declares
+    /// a component schema called `ApiError` beside crozier's own core one — and
+    /// Python has no way to hold both, so Fern imports *both* under a
+    /// module-qualified alias (`core_api_error_ApiError`,
+    /// `types_api_error_ApiError`) rather than picking a winner.
+    aliases: BTreeMap<(String, String), String>,
 }
 
 impl Imports {
@@ -166,7 +174,7 @@ impl Imports {
     /// forward reference (issue #84) is *not* imported eagerly: a same-file
     /// reference needs no import, and a cross-module one is deferred to after the
     /// class body so its cycle does not fire at import time.
-    fn add_type(&mut self, class: &str) {
+    fn add_type(&mut self, class: &str) -> String {
         if self.forward.contains(class) {
             if naming::module_name(class) != self.cur_module {
                 let path = self.type_import_path(class);
@@ -175,10 +183,55 @@ impl Imports {
                     self.deferred_order.push(line);
                 }
             }
-            return;
+            return class.to_string();
         }
         let path = self.type_import_path(class);
         self.add_from(&path, class);
+        self.local(&path, class)
+    }
+
+    /// The name `name` is written as in this file: itself, or the alias a
+    /// same-name collision forced on it.
+    fn local(&self, module: &str, name: &str) -> String {
+        self.aliases
+            .get(&(module.to_string(), name.to_string()))
+            .cloned()
+            .unwrap_or_else(|| name.to_string())
+    }
+
+    /// Register a `core` helper and return the name to write for it.
+    fn add_core_local(&mut self, submodule: &str, name: &str) -> String {
+        self.add_core(submodule, name);
+        self.local(&format!("{}.{submodule}", self.core_prefix()), name)
+    }
+
+    /// The aliases a second pass must use: every simple name this file would
+    /// import from more than one module, aliased in *all* of them (Fern renames
+    /// both sides, not just the later one).
+    fn collision_aliases(&self) -> BTreeMap<(String, String), String> {
+        let mut modules_by_name: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+        for (module, names) in &self.from {
+            for name in names {
+                modules_by_name
+                    .entry(name.as_str())
+                    .or_default()
+                    .push(module.as_str());
+            }
+        }
+        let mut aliases = BTreeMap::new();
+        for (name, modules) in modules_by_name {
+            if modules.len() < 2 {
+                continue;
+            }
+            for module in modules {
+                let stem = module.trim_start_matches('.').replace('.', "_");
+                aliases.insert(
+                    (module.to_string(), name.to_string()),
+                    format!("{stem}_{name}"),
+                );
+            }
+        }
+        aliases
     }
 
     /// The dotted prefix that reaches the package-root `core` package from this
@@ -230,6 +283,12 @@ impl Imports {
             .insert(name.to_string());
     }
 
+    /// Register a `from module import name` and return the name to write for it.
+    fn add_from_local(&mut self, module: &str, name: &str) -> String {
+        self.add_from(module, name);
+        self.local(module, name)
+    }
+
     /// Is a module (or a `from` path's leading segment) part of the stdlib group?
     /// Relative imports (leading `.`) are never stdlib.
     fn is_stdlib(module: &str) -> bool {
@@ -262,7 +321,16 @@ impl Imports {
         let mut from: Vec<_> = self.from.iter().collect();
         from.sort_by(|(a, _), (b, _)| natural_cmp(a, b));
         for (module, names) in from {
-            let joined = names.iter().cloned().collect::<Vec<_>>().join(", ");
+            let joined = names
+                .iter()
+                .map(
+                    |name| match self.aliases.get(&(module.clone(), name.clone())) {
+                        Some(alias) => format!("{name} as {alias}"),
+                        None => name.clone(),
+                    },
+                )
+                .collect::<Vec<_>>()
+                .join(", ");
             let line = format!("from {module} import {joined}");
             if Self::is_stdlib(module) {
                 g1.push(line);
@@ -649,6 +717,30 @@ fn decl_annotation_refs(decl: &TypeDecl) -> Vec<String> {
 /// type graph (a self-reference is the degenerate `A → A`). Fern renders exactly
 /// these as `"B"` and repairs them at class-definition time with
 /// `update_forward_refs`.
+/// A declaration's references excluding an object's base classes — what the
+/// declaration itself annotates.
+fn decl_own_refs(decl: &TypeDecl) -> Vec<String> {
+    match decl {
+        TypeDecl::Object(object) => {
+            let mut out = Vec::new();
+            for field in &object.fields {
+                collect_named_refs(&field.type_ref, &mut out);
+            }
+            out
+        }
+        _ => decl_refs(decl),
+    }
+}
+
+/// Whether an alias's target is a union expression, looking through `Optional`.
+fn is_union_target(t: &TypeRef) -> bool {
+    match t {
+        TypeRef::Union(_) => true,
+        TypeRef::Optional(inner) => is_union_target(inner),
+        _ => false,
+    }
+}
+
 fn forward_ref_map(
     types: &[TypeDecl],
     tag_types: &[crate::ir::TagTypeDecl],
@@ -704,8 +796,22 @@ fn forward_ref_map(
             // cycle of its own). Importing a recursive type eagerly can trip its
             // module's own import cycle even from an acyclic referrer, so Fern defers
             // every reference *into* a cycle, not only the back-edges of one.
-            let eager_discriminated_member =
-                matches!(decl, TypeDecl::Alias(_)) && discriminated_unions.contains(r.as_str());
+            // An alias that merely *wraps* a discriminated union
+            // (`ProfitAndLossRecords = Optional[List[ProfitAndLossRecordsItem]]`)
+            // imports it eagerly even though the union's wrappers point back at
+            // the alias — Fern emits such an alias with no forward-reference
+            // machinery at all, not even `from __future__ import annotations`. An
+            // alias whose target is itself a `Union[..]` is a declaration in its
+            // own right and defers into the cycle like any other member, which is
+            // how EN 18222's `MultiValuedDataElementValueItem` quotes
+            // `DataElement`.
+            let wrapper_alias = match decl {
+                TypeDecl::Alias(alias) => !is_union_target(&alias.target),
+                _ => false,
+            };
+            let eager_discriminated_member = matches!(decl, TypeDecl::Alias(_))
+                && discriminated_unions.contains(r.as_str())
+                && wrapper_alias;
             if !eager_discriminated_member
                 && (reaches(&r, name) || (defer_recursive_target && reaches(&r, &r)))
             {
@@ -730,6 +836,12 @@ struct ForwardRepair {
     names: std::collections::HashSet<String>,
     triggers: std::collections::HashSet<String>,
     import_order: Vec<String>,
+    /// Whether the declaration reaches a cycle through its *own* annotations
+    /// rather than only through a base class. Eozilla's `QualifiedValue` extends
+    /// `Format`, whose `schema` field closes the `Schema` map-of-self cycle, and
+    /// Fern gives the subclass `from __future__ import annotations` but no
+    /// `update_forward_refs` call — the base's own module already repaired it.
+    own_reach: bool,
 }
 
 fn forward_repair_map(
@@ -799,6 +911,20 @@ fn forward_repair_map(
                 reach_stack.extend(edges.get(node).into_iter().flatten().map(String::as_str));
             }
         }
+        // The same question asked of this declaration's own annotations only: a
+        // base class is imported eagerly and repaired in its own module, so
+        // inheriting a cyclic field does not make the subclass call
+        // `update_forward_refs`.
+        let own_refs = decl_own_refs(decl);
+        let mut own_stack: Vec<&str> = own_refs.iter().map(String::as_str).collect();
+        let mut own_seen = HashSet::new();
+        let mut own_reach = false;
+        while let Some(node) = own_stack.pop() {
+            own_reach |= cyclic.contains(node);
+            if own_seen.insert(node) {
+                own_stack.extend(edges.get(node).into_iter().flatten().map(String::as_str));
+            }
+        }
 
         let closure_edges = if matches!(decl, TypeDecl::DiscriminatedUnion(_)) {
             &repair_edges
@@ -831,6 +957,18 @@ fn forward_repair_map(
         if matches!(decl, TypeDecl::Object(_)) {
             repair.remove(decl.name());
         }
+        // A union's wrapper classes flatten its variant models, so a cyclic
+        // variant is a name the module's repair calls resolve — every wrapper but
+        // the one that *is* that model, which drops it again at the call site.
+        if let TypeDecl::DiscriminatedUnion(union) = decl {
+            repair.extend(
+                union
+                    .variant_targets
+                    .iter()
+                    .filter(|target| cyclic.contains(target.as_str()))
+                    .cloned(),
+            );
+        }
         if reaches_cycle {
             let triggers = edges
                 .get(decl.name())
@@ -855,6 +993,7 @@ fn forward_repair_map(
                     names: repair,
                     triggers,
                     import_order,
+                    own_reach,
                 },
             );
         }
@@ -1207,9 +1346,18 @@ fn error_files(
     }
     let mut files = Vec::new();
     for err in errors {
+        // Register once to learn whether the body type's name collides with the
+        // core `ApiError` this module subclasses (Eozilla declares a component
+        // schema of that name), then render for real with the aliases that forces.
+        let mut probe = Imports::at(RefLoc::Errors, tag_types);
+        probe.add_plain("typing");
+        probe.add_from("..core.api_error", "ApiError");
+        raw_type_str(&err.body_type, &mut probe);
+
         let mut imports = Imports::at(RefLoc::Errors, tag_types);
+        imports.aliases = probe.collision_aliases();
         imports.add_plain("typing");
-        imports.add_from("..core.api_error", "ApiError");
+        let base = imports.add_from_local("..core.api_error", "ApiError");
         // Registers the body type's `..types.<module>` import.
         let body_type = raw_type_str(&err.body_type, &mut imports);
         let module = naming::module_name(&err.class_name);
@@ -1221,6 +1369,7 @@ fn error_files(
                 header => HEADER,
                 imports => imports.render(),
                 class_name => err.class_name,
+                base => base,
                 body_type => body_type,
                 status_code => err.status_code,
             },
@@ -2492,6 +2641,21 @@ fn auth_example_args(auth: &Auth) -> Vec<&'static str> {
     }
 }
 
+/// The subsequence of promoted global headers that carries a distinct Python
+/// parameter name, keeping the first of each. Two header apiKey schemes can
+/// normalize alike — EN 18222 declares both `X-API-KEY` and `API-KEY`, and both
+/// give `api_key` — and Fern splits them: each keeps its own assignment, header
+/// write, docstring line, and example argument, but the emitted *signatures* and
+/// call sites carry one `api_key`, because a repeated keyword there is a Python
+/// syntax error rather than a redundancy.
+fn distinct_global_header_params(global_headers: &[GlobalHeader]) -> Vec<&GlobalHeader> {
+    let mut seen = std::collections::HashSet::new();
+    global_headers
+        .iter()
+        .filter(|h| seen.insert(h.py_name.as_str()))
+        .collect()
+}
+
 /// Generate `core/client_wrapper.py`, shaped by the SDK's [`Auth`] model. The
 /// bearer-optional form is byte-identical to Fern's default wrapper; api-key and
 /// required-credential forms swap the constructor parameter, the header wiring,
@@ -2509,8 +2673,8 @@ fn client_wrapper_file(
     // the auth credential's, matching Fern's ordering. A required header is a
     // mandatory `str` set unconditionally; an optional one is `Optional[str] = None`
     // set only when provided.
-    let gh_param: String = global_headers
-        .iter()
+    let gh_param: String = distinct_global_header_params(global_headers)
+        .into_iter()
         .map(|h| {
             if h.required {
                 format!("        {}: str,\n", h.py_name)
@@ -2541,8 +2705,8 @@ fn client_wrapper_file(
             }
         })
         .collect();
-    let gh_super: String = global_headers
-        .iter()
+    let gh_super: String = distinct_global_header_params(global_headers)
+        .into_iter()
         .map(|h| format!("{0}={0}, ", h.py_name))
         .collect();
     // crozier brands its own SDK-identity headers rather than impersonating Fern;
@@ -2724,8 +2888,13 @@ fn render_type_decl(
             if !forward.is_empty() || needs_forward {
                 // A recursive model: `from __future__ import annotations` lets the
                 // string forward refs resolve lazily, and `update_forward_refs`
-                // rebuilds the model once the referenced names exist.
-                imports.add_core("pydantic_utilities", "update_forward_refs");
+                // rebuilds the model once the referenced names exist. A model that
+                // only *inherits* its way into a cycle takes the future import and
+                // nothing else.
+                let repairs = !forward.is_empty() || repair.own_reach;
+                if repairs {
+                    imports.add_core("pydantic_utilities", "update_forward_refs");
+                }
                 let body = render_class_body(env, obj.docstring.clone(), fields, extra)?;
                 let mut file = format!(
                     "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n\n\nclass {}({}):\n{}",
@@ -2734,6 +2903,10 @@ fn render_type_decl(
                     bases,
                     body.trim_end(),
                 );
+                if !repairs {
+                    file.push('\n');
+                    return Ok(file);
+                }
                 // Two blank lines, then any deferred cross-module forward-ref
                 // imports (a blank line after them), then the forward-ref repair.
                 file.push_str("\n\n\n");
@@ -2919,22 +3092,74 @@ fn render_discriminated_union(
     }
     imports.add_core("pydantic_utilities", "IS_PYDANTIC_V2");
     imports.add_core("pydantic_utilities", "UniversalBaseModel");
-    for name in &repair.import_order {
-        imports.add_type(name);
+
+    // The `update_forward_refs` calls, resolved before the imports they need. Each
+    // wrapper takes the module's cyclic names *minus the model it flattened* — a
+    // wrapper cannot be asked to resolve its own source — so the calls differ from
+    // one another, and the deferred imports follow the order the calls first name
+    // them rather than a sort of the whole set.
+    let repair_calls: Vec<(&str, Vec<String>)> = if forward.is_empty() && repair.triggers.is_empty()
+    {
+        Vec::new()
+    } else {
+        union
+            .members
+            .iter()
+            .filter(|member| {
+                member.fields.iter().any(|f| {
+                    type_uses_forward(&f.type_ref, forward)
+                        || type_uses_forward(&f.type_ref, &repair.triggers)
+                })
+            })
+            .map(|member| {
+                let mut names: Vec<String> = repair
+                    .names
+                    .iter()
+                    .filter(|name| Some(name.as_str()) != member.source.as_deref())
+                    .cloned()
+                    .collect();
+                names.sort_by(|left, right| natural_cmp(left, right));
+                (member.class_name.as_str(), names)
+            })
+            .collect()
+    };
+    if repair_calls.is_empty() {
+        for name in &repair.import_order {
+            imports.add_type(name);
+        }
+    } else {
+        let mut ordered: Vec<&str> = Vec::new();
+        for name in repair_calls.iter().flat_map(|(_, names)| names) {
+            if !ordered.contains(&name.as_str()) {
+                ordered.push(name.as_str());
+            }
+        }
+        for name in ordered {
+            imports.add_type(name);
+        }
     }
 
     let mut classes: Vec<String> = Vec::new();
     for member in &union.members {
-        // The discriminant field: `type: typing.Literal["circle"] = "circle"`.
-        let discriminant = RenderedField {
-            py_name: union.discriminant_property.clone(),
-            annotation: render_type(
-                &TypeRef::Literal(vec![member.discriminant.clone()]),
-                &mut imports,
-            ),
-            default: format!(" = \"{}\"", member.discriminant),
-            docstring: None,
-        };
+        // The discriminant field: `type: typing.Literal["circle"] = "circle"`. It is
+        // an ordinary field bar its default, so a wire name that does not survive
+        // Python naming carries the same alias metadata every other field would —
+        // EN 18222's `objectType` tag renders as `object_type: Annotated[...,
+        // FieldMetadata(alias="objectType"), pydantic.Field(alias="objectType")]`.
+        let mut discriminant = render_field(
+            &Field {
+                wire_name: union.discriminant_property.clone(),
+                py_name: naming::model_field_name(&union.discriminant_property),
+                type_ref: TypeRef::Literal(vec![member.discriminant.clone()]),
+                optional: false,
+                nullable: false,
+                spec_required: true,
+                docstring: None,
+                example: None,
+            },
+            &mut imports,
+        );
+        discriminant.default = format!(" = \"{}\"", member.discriminant);
         let mut rendered = vec![discriminant];
         rendered.extend(member.fields.iter().map(|f| render_field(f, &mut imports)));
         let fields: Vec<FieldView> = rendered
@@ -2967,7 +3192,8 @@ fn render_discriminated_union(
         let union_expr = Doc::group("typing.Union[", variants, "]").flat();
         format!(
             "{} = typing_extensions.Annotated[{union_expr}, pydantic.Field(discriminator=\"{}\")]",
-            union.name, union.discriminant_property
+            union.name,
+            naming::model_field_name(&union.discriminant_property)
         )
     };
 
@@ -2977,29 +3203,23 @@ fn render_discriminated_union(
     let mut trailer = String::new();
     if !forward.is_empty() || !repair.triggers.is_empty() {
         imports.add_core("pydantic_utilities", "update_forward_refs");
-        for member in &union.members {
-            if member.fields.iter().any(|f| {
-                type_uses_forward(&f.type_ref, forward)
-                    || type_uses_forward(&f.type_ref, &repair.triggers)
-            }) {
-                trailer.push('\n');
-                trailer.push_str(&update_forward_refs_call(&member.class_name, repair));
-            }
+        for (class_name, names) in &repair_calls {
+            let mut arguments = vec![(*class_name).to_string()];
+            arguments.extend(names.iter().map(|name| format!("{name}={name}")));
+            trailer.push('\n');
+            trailer.push_str(&format!("update_forward_refs({})", arguments.join(", ")));
         }
     }
 
-    let deferred = if imports.deferred.is_empty() {
+    // Registration order, not sorted: the union registers each name as its repair
+    // calls first mention it, and Fern's block follows the calls. EN 18222's
+    // `data_element.py` imports `MultiValuedDataElementValueItem` (named by the
+    // first call) ahead of `MultiValuedDataElement` (named only by the second),
+    // which no sort of the three puts in that order.
+    let deferred = if imports.deferred_order.is_empty() {
         String::new()
     } else {
-        format!(
-            "\n{}\n",
-            imports
-                .deferred
-                .iter()
-                .cloned()
-                .collect::<Vec<_>>()
-                .join("\n")
-        )
+        format!("\n{}\n", imports.deferred_order.join("\n"))
     };
 
     Ok(format!(
@@ -3047,10 +3267,7 @@ fn raw_type_str_ctx(t: &TypeRef, imports: &mut Imports, seq: bool) -> String {
             imports.add_plain_as("datetime", "dt");
             "dt.date".to_string()
         }
-        TypeRef::Named(class) => {
-            imports.add_type(class);
-            class.clone()
-        }
+        TypeRef::Named(class) => imports.add_type(class),
         TypeRef::Optional(inner) => {
             imports.add_plain("typing");
             format!("typing.Optional[{}]", raw_type_str_ctx(inner, imports, seq))
@@ -3517,7 +3734,7 @@ fn push_return_doc(lines: &mut Vec<String>, response_doc: Option<&str>) {
 fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -> String {
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
-    imports.add_core("api_error", "ApiError");
+    let api_error = imports.add_core_local("api_error", "ApiError");
     if !ep.path_params.is_empty() {
         imports.add_core("jsonable_encoder", "encode_path_param");
     }
@@ -3596,13 +3813,13 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     lines.extend([
         "            _response_json = _response.json()".to_string(),
         "        except JSONDecodeError:".to_string(),
-        "            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)".to_string(),
+        format!("            raise {api_error}(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)"),
     ]);
     lines.extend([
         "        except ValidationError as e:".to_string(),
         "            raise ParsingError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e)".to_string(),
     ]);
-    lines.push("        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)".to_string());
+    lines.push(format!("        raise {api_error}(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)"));
     lines.join("\n")
 }
 
@@ -3646,7 +3863,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     ")",
                 );
                 lines.push(format!("{},", call.flat()));
-            } else if type_serializes_as(&qp.type_ref, Prim::Date) {
+            } else if type_serializes_as(&qp.type_ref, Prim::Date)
+                || qp.aliased_datetime == Some(Prim::Date)
+            {
                 let value = if qp.required {
                     format!("str({})", qp.py_name)
                 } else {
@@ -3656,7 +3875,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     )
                 };
                 lines.push(format!("                \"{}\": {value},", qp.wire_name));
-            } else if type_serializes_as(&qp.type_ref, Prim::Datetime) {
+            } else if type_serializes_as(&qp.type_ref, Prim::Datetime)
+                || qp.aliased_datetime == Some(Prim::Datetime)
+            {
                 imports.add_core("datetime_utils", "serialize_datetime");
                 let value = if qp.required {
                     format!("serialize_datetime({})", qp.py_name)
@@ -4544,8 +4765,8 @@ fn root_client_class(
             format!("    {} : {ty}\n", h.py_name)
         })
         .collect();
-    let gh_ctor: String = global_headers
-        .iter()
+    let gh_ctor: String = distinct_global_header_params(global_headers)
+        .into_iter()
         .map(|h| {
             if h.required {
                 format!("        {}: str,\n", h.py_name)
@@ -4564,8 +4785,8 @@ fn root_client_class(
             )
         })
         .collect();
-    let gh_wrapper: String = global_headers
-        .iter()
+    let gh_wrapper: String = distinct_global_header_params(global_headers)
+        .into_iter()
         .map(|h| format!("            {0}={0},\n", h.py_name))
         .collect();
     let module_views: Vec<RootModuleView> = modules
@@ -6084,6 +6305,13 @@ impl<'a> ExampleCtx<'a> {
                             Some(example) if example.starts_with(['{', '[']) => self
                                 .value_from_example(&ty, &example)
                                 .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire))),
+                            // A date/date-time field's declared example is used
+                            // like any other: EN 18222's `last_updated` is typed by
+                            // the `Timestamp` alias and exampled from that alias's
+                            // own `2026-06-08T15:30:00Z`, not from the placeholder.
+                            Some(example) if self.example_is_temporal(&ty) => self
+                                .value_from_example(&ty, &example)
+                                .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire))),
                             None => self.value(&ty, Slot::Named(&wire)),
                             Some(_) => self.value(&ty, Slot::Named(&wire)),
                         };
@@ -7091,7 +7319,7 @@ fn raw_client_file(
     } else {
         RefLoc::Client(module.to_string())
     };
-    let mut imports = Imports::at(loc, tag_types);
+    let mut imports = Imports::at(loc.clone(), tag_types);
     // Imports every raw client needs regardless of operation shape.
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
@@ -7117,6 +7345,30 @@ fn raw_client_file(
     } else {
         format!("AsyncRaw{class_stem}Client")
     };
+    // A first pass registers every import the two classes need; a name arriving
+    // from two modules (a component schema called `ApiError` beside the core one)
+    // is aliased in both, and the real pass writes those aliases at every
+    // occurrence. Rendering twice is what lets the *body* carry the alias — the
+    // collision is only knowable once every reference has been walked.
+    {
+        let mut probe = Imports::at(loc, tag_types);
+        probe.from = imports.from.clone();
+        raw_client_class(
+            &sync_class,
+            "SyncClientWrapper",
+            endpoints,
+            false,
+            &mut probe,
+        );
+        raw_client_class(
+            &async_class_name,
+            "AsyncClientWrapper",
+            endpoints,
+            true,
+            &mut probe,
+        );
+        imports.aliases = probe.collision_aliases();
+    }
     let sync = raw_client_class(
         &sync_class,
         "SyncClientWrapper",
@@ -8490,6 +8742,7 @@ mod tests {
             allow_multiple: true,
             example: None,
             example_is_scalar: false,
+            aliased_datetime: None,
             docstring: None,
         }];
         let out = raw_method(&ep, false, &mut i);
@@ -8533,6 +8786,7 @@ mod tests {
             allow_multiple: false,
             example: None,
             example_is_scalar: false,
+            aliased_datetime: None,
             docstring: None,
         }];
 
@@ -8609,6 +8863,7 @@ mod tests {
                     class_name: "ModifyMessageRequestBody_SystemMessage".to_string(),
                     discriminant: "system_message".to_string(),
                     fields: Vec::new(),
+                    source: None,
                     docstring: None,
                 }],
                 variant_targets: Vec::new(),
@@ -9150,6 +9405,7 @@ mod tests {
                     model_field("radius", TypeRef::Primitive(Prim::Float), true),
                     nullable_required,
                 ],
+                source: None,
                 docstring: None,
             }],
             variant_targets: Vec::new(),
@@ -9238,6 +9494,7 @@ mod tests {
                 allow_multiple: false,
                 example: None,
                 example_is_scalar: false,
+                aliased_datetime: None,
                 docstring: Some("Tags to include.".to_string()),
             },
             QueryParam {
@@ -9250,6 +9507,7 @@ mod tests {
                 allow_multiple: false,
                 example: Some("3".to_string()),
                 example_is_scalar: true,
+                aliased_datetime: None,
                 docstring: Some("Maximum results.".to_string()),
             },
         ];
@@ -9498,6 +9756,7 @@ mod tests {
             allow_multiple: false,
             example: Some("\"active\"".to_string()),
             example_is_scalar: true,
+            aliased_datetime: None,
             docstring: Some("Optional filter.".to_string()),
         });
         let mut explicit_empty =
@@ -9543,6 +9802,7 @@ mod tests {
                 allow_multiple: false,
                 example: Some("\"active\"".to_string()),
                 example_is_scalar: true,
+                aliased_datetime: None,
                 docstring: None,
             },
             QueryParam {
@@ -9555,6 +9815,7 @@ mod tests {
                 allow_multiple: false,
                 example: Some("\"name\"".to_string()),
                 example_is_scalar: true,
+                aliased_datetime: None,
                 docstring: None,
             },
             QueryParam {
@@ -9567,6 +9828,7 @@ mod tests {
                 allow_multiple: false,
                 example: Some("1".to_string()),
                 example_is_scalar: true,
+                aliased_datetime: None,
                 docstring: None,
             },
         ];
@@ -9611,6 +9873,7 @@ mod tests {
             allow_multiple: false,
             example: None,
             example_is_scalar: true,
+            aliased_datetime: None,
             docstring: Some("Starting cursor.".to_string()),
         });
         ep.header_params.push(HeaderParam {
@@ -9724,6 +9987,7 @@ mod tests {
                 class_name: "Content_Text".to_string(),
                 discriminant: "text".to_string(),
                 fields: vec![model_field("text", TypeRef::Primitive(Prim::Str), true)],
+                source: None,
                 docstring: None,
             }],
             variant_targets: Vec::new(),

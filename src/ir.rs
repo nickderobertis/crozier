@@ -820,6 +820,12 @@ pub struct QueryParam {
     /// Whether the OpenAPI schema resolves to a scalar whose example can be used
     /// directly, including named scalar aliases.
     pub example_is_scalar: bool,
+    /// The date/date-time primitive a named scalar alias resolves to, when the
+    /// parameter is a `$ref`. Fern serializes a query value by the format the
+    /// document declares even when the emitted annotation is the alias name — EN
+    /// 18222's `date: Timestamp` still goes onto the URL through
+    /// `serialize_datetime` — and the alias name alone cannot say that.
+    pub aliased_datetime: Option<Prim>,
     /// Optional description, shown under the parameter in the docstring.
     pub docstring: Option<String>,
 }
@@ -1098,6 +1104,11 @@ pub struct UnionMember {
     pub discriminant: String,
     /// The variant's fields, with the discriminant property removed.
     pub fields: Vec<Field>,
+    /// The component schema this wrapper flattened, when the variant was a
+    /// `$ref`. It is the one cyclic name the wrapper's own `update_forward_refs`
+    /// call omits — the wrapper *is* that model, so resolving its name against
+    /// itself is what Fern leaves out.
+    pub source: Option<String>,
     /// Optional wrapper class docstring.
     pub docstring: Option<String>,
 }
@@ -1842,6 +1853,16 @@ fn build_endpoint(
                     .unwrap_or(schema);
                 schema.ty.as_ref().and_then(TypeField::primary) == Some("array")
             });
+            let aliased_datetime = p
+                .schema
+                .as_ref()
+                .and_then(|schema| schema.reference.as_deref())
+                .and_then(|reference| resolve_ref(doc, reference))
+                .map(base_type_ref)
+                .and_then(|resolved| match resolved {
+                    TypeRef::Primitive(prim @ (Prim::Date | Prim::Datetime)) => Some(prim),
+                    _ => None,
+                });
             QueryParam {
                 wire_name: p.name.clone(),
                 py_name: naming::field_name(&p.name),
@@ -1852,6 +1873,7 @@ fn build_endpoint(
                 allow_multiple,
                 example,
                 example_is_scalar,
+                aliased_datetime,
                 docstring: declared_doc(p.description.as_deref()),
             }
         })
@@ -3673,12 +3695,12 @@ impl InlineHoister<'_> {
                 ) {
                     return union;
                 }
-                let mut variants: Vec<TypeRef> = members
+                let variants: Vec<TypeRef> = members
                     .iter()
                     .enumerate()
                     .map(|(index, member)| self.hoist_union_variant(&name, index, member, members))
                     .collect();
-                variants.dedup();
+                let variants = dedupe_union_members(variants);
                 self.out.push(TypeDecl::Alias(AliasType {
                     name: name.clone(),
                     module: naming::module_name(&name),
@@ -3734,8 +3756,8 @@ impl InlineHoister<'_> {
             ) {
                 return Some(sequence_of(array, item));
             }
-            let mut variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
-            variants.dedup();
+            let variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
+            let variants = dedupe_union_members(variants);
             self.out.push(TypeDecl::Alias(AliasType {
                 name: item_name.clone(),
                 module: naming::module_name(&item_name),
@@ -3799,8 +3821,8 @@ impl InlineHoister<'_> {
                         |schemas| full_type_ref_resolved(non_null[0], schemas),
                     );
                 }
-                let mut variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
-                variants.dedup();
+                let variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
+                let variants = dedupe_union_members(variants);
                 self.out.push(TypeDecl::Alias(AliasType {
                     name: name.clone(),
                     module: naming::module_name(&name),
@@ -4245,8 +4267,13 @@ fn has_bodyless_success(op: &Operation) -> bool {
                 .any(|media| media.schema.is_some())
     });
     let codes: Vec<&str> = bodyless.map(|(code, _)| code.as_str()).collect();
+    // A bodyless `201`/`202` beside a success body is not an empty-body case: it
+    // reports that the write was accepted, and Fern still types the method by the
+    // body the primary response declares. EN 18222's `updateDPPById` returns
+    // `HttpResponse[DigitalProductPassport]` with a bodyless `202` in the document.
     !(codes.is_empty()
-        || success_response_schema(op).is_some() && codes.iter().all(|code| *code == "201"))
+        || success_response_schema(op).is_some()
+            && codes.iter().all(|code| matches!(*code, "201" | "202")))
 }
 
 /// The success (2xx) response's JSON body schema, if any. Fern treats a wildcard
@@ -4263,15 +4290,32 @@ fn success_response_schema(op: &Operation) -> Option<&Schema> {
         .as_ref()
 }
 
+/// Whether a response declares at least one media type that names both a type and
+/// a subtype (or declares no body at all). Eozilla puts `executeProcess`'s `200`
+/// under the malformed media type `/*`, which nothing can dispatch on: Fern skips
+/// that response entirely and types the operation from the next `2xx` — the `201`
+/// carrying `JobInfo`, description and all — rather than reading it as a bodyless
+/// success.
+fn has_dispatchable_media(response: &Response) -> bool {
+    response.content.is_empty()
+        || response.content.keys().any(|media| {
+            media
+                .split_once('/')
+                .is_some_and(|(ty, subtype)| !ty.is_empty() && !subtype.is_empty())
+        })
+}
+
 fn success_response_entry(op: &Operation) -> Option<&Response> {
     op.responses
         .get("200")
+        .filter(|response| has_dispatchable_media(response))
         .or_else(|| {
             op.responses
                 .iter()
-                .find(|(code, _)| {
+                .find(|(code, response)| {
                     code.parse::<u16>()
                         .is_ok_and(|status| (200..300).contains(&status))
+                        && has_dispatchable_media(response)
                 })
                 .map(|(_, response)| response)
         })
@@ -4913,7 +4957,50 @@ fn document_discriminant_strips(doc: &OpenApi) -> std::collections::HashMap<Stri
             }
         }
     }
+    propagate_strips_to_bases(&doc.components.schemas, &mut strips);
     strips
+}
+
+/// Carry a strip onto the `allOf` bases that declare the discriminant *loosely*.
+///
+/// EN 18222 declares `objectType` once, on the `DataElementBase` every variant of
+/// `DataElement` extends, as an optional bare `type: string` — and Fern's
+/// `DataElementBase` has no `object_type` field at all. Microcks declares the
+/// same shape with a required `enum: [reqRespPair, unidirEvent]` on its
+/// `AbstractExchange` base, and Fern *keeps* it, hoisting `AbstractExchangeType`
+/// for it. The base loses the property only when its own declaration says nothing
+/// the tag does not already say.
+fn propagate_strips_to_bases(
+    schemas: &IndexMap<String, Schema>,
+    strips: &mut std::collections::HashMap<String, String>,
+) {
+    let mut pending: Vec<(String, String)> = strips
+        .iter()
+        .map(|(class, property)| (class.clone(), property.clone()))
+        .collect();
+    while let Some((class, property)) = pending.pop() {
+        let Some(schema) = schemas.get(&class) else {
+            continue;
+        };
+        for base_reference in schema
+            .all_of
+            .iter()
+            .flatten()
+            .filter_map(|member| member.reference.as_deref())
+        {
+            let base_name = ref_to_class(base_reference);
+            let declares = resolve_ref_from_schemas(schemas, base_reference).is_some_and(|base| {
+                base.properties.get(&property).is_some_and(|declared| {
+                    declared.enum_values.is_none()
+                        && declared.const_value.is_none()
+                        && !base.required.contains(&property)
+                })
+            });
+            if declares && strips.insert(base_name.clone(), property.clone()).is_none() {
+                pending.push((base_name, property.clone()));
+            }
+        }
+    }
 }
 
 fn collect_discriminant_strips(
@@ -5004,27 +5091,39 @@ fn member_fields(
         .chain(schema.all_of.iter().flatten().flat_map(|m| &m.required))
         .map(String::as_str)
         .collect();
+    // A union wrapper is flat, so an `allOf` base's properties are inlined into it
+    // — and Fern writes the variant's *own* properties first and the inherited
+    // ones after, the reverse of the `allOf` order. EN 18222's
+    // `DataElement_RelatedResource` opens with `resource_title` and closes with
+    // `element_id`, which `RelatedResource` declares second and first.
     let mut fields = Vec::new();
     for member in schema.all_of.iter().flatten() {
-        if let Some(base) = member
-            .reference
-            .as_deref()
-            .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
-        {
-            let base_required: Vec<&str> = base.required.iter().map(String::as_str).collect();
-            let base_name = member.reference.as_deref().map(ref_to_class);
-            append_member_fields(
-                base,
-                discriminant,
-                &base_required,
-                base_name.as_deref(),
-                &mut fields,
-            );
-        } else {
-            append_member_fields(member, discriminant, &required, None, &mut fields);
+        if member.reference.is_none() {
+            // An inline `allOf` member's properties belong to the variant itself,
+            // so a hoisted property type is named after the variant — EN 18222's
+            // `SingleValuedDataElement.value` is `SingleValuedDataElementValue`.
+            append_member_fields(member, discriminant, &required, owner, &mut fields);
         }
     }
     append_member_fields(schema, discriminant, &required, owner, &mut fields);
+    for member in schema.all_of.iter().flatten() {
+        let Some(base) = member
+            .reference
+            .as_deref()
+            .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+        else {
+            continue;
+        };
+        let base_required: Vec<&str> = base.required.iter().map(String::as_str).collect();
+        let base_name = member.reference.as_deref().map(ref_to_class);
+        append_member_fields(
+            base,
+            discriminant,
+            &base_required,
+            base_name.as_deref(),
+            &mut fields,
+        );
+    }
     fields
 }
 
@@ -5184,13 +5283,13 @@ impl Builder<'_> {
                 // indices are the source's, so dropping one never renames the
                 // inline classes the others hoist.
                 let dropped_null = variants.iter().any(is_null_variant);
-                let mut members: Vec<TypeRef> = variants
+                let members: Vec<TypeRef> = variants
                     .iter()
                     .enumerate()
                     .filter(|(_, variant)| !is_null_variant(variant))
                     .map(|(i, v)| self.variant_ref(name, i, v, variants))
                     .collect();
-                members.dedup();
+                let mut members = dedupe_union_members(members);
                 let target = match (dropped_null, members.len()) {
                     (true, 1) => optional_type_ref(members.remove(0)),
                     (true, _) => TypeRef::Union(members),
@@ -5233,14 +5332,14 @@ impl Builder<'_> {
                 }
                 if let Some(variants) = value.one_of.as_ref().or(value.any_of.as_ref()) {
                     let value_name = format!("{name}Value");
-                    let mut members: Vec<TypeRef> = variants
+                    let members: Vec<TypeRef> = variants
                         .iter()
                         .enumerate()
                         .map(|(index, variant)| {
                             self.variant_ref(&value_name, index, variant, variants)
                         })
                         .collect();
-                    members.dedup();
+                    let members = dedupe_union_members(members);
                     self.push_alias(
                         &value_name,
                         naming::module_name(&value_name),
@@ -5597,14 +5696,38 @@ impl Builder<'_> {
                             || prop_schema.read_only == Some(true))),
                 spec_required,
                 docstring: declared_doc(property_description(prop_schema)),
-                example: schema_example_literal(prop_schema).or_else(|| {
-                    prop_schema
-                        .reference
-                        .as_deref()
-                        .and_then(|reference| reference.rsplit('/').next())
-                        .and_then(|key| self.schemas.get(key))
-                        .and_then(schema_example_literal)
-                }),
+                example: schema_example_literal(prop_schema)
+                    .or_else(|| {
+                        prop_schema
+                            .reference
+                            .as_deref()
+                            .and_then(|reference| reference.rsplit('/').next())
+                            .and_then(|key| self.schemas.get(key))
+                            .and_then(schema_example_literal)
+                    })
+                    .or_else(|| {
+                        sole_all_of_ref(prop_schema)
+                            .and_then(|reference| resolve_ref_from_schemas(self.schemas, reference))
+                            .and_then(schema_example_literal)
+                    })
+                    .or_else(|| {
+                        // An array whose element is a `$ref` to an exampled scalar
+                        // is exampled as a one-element list of it, the same
+                        // promotion `schema_example_literal` makes for an inline
+                        // `items` example.
+                        let item = prop_schema
+                            .items
+                            .as_deref()
+                            .and_then(|items| {
+                                items
+                                    .reference
+                                    .as_deref()
+                                    .or_else(|| sole_all_of_ref(items))
+                            })
+                            .and_then(|reference| resolve_ref_from_schemas(self.schemas, reference))
+                            .and_then(schema_example_literal)?;
+                        Some(format!("[{item}]"))
+                    }),
             });
         }
     }
@@ -5671,6 +5794,7 @@ impl Builder<'_> {
                         self.schemas,
                         target_name.as_deref().or(Some(variant_name.as_str())),
                     ),
+                    source: target_name.clone(),
                     docstring: variant
                         .reference
                         .is_none()
@@ -5704,6 +5828,7 @@ impl Builder<'_> {
                     self.schemas,
                     Some(&naming::class_name(target_key)),
                 ),
+                source: Some(naming::class_name(target_key)),
                 docstring: docstring.clone(),
             });
             variant_targets.push(naming::class_name(target_key));
@@ -6040,7 +6165,7 @@ impl Builder<'_> {
                     for (nested_prop, nested_schema) in &prop_schema.properties {
                         self.field_type_ref(&name, nested_prop, nested_schema);
                     }
-                    let mut variants: Vec<TypeRef> = members
+                    let variants: Vec<TypeRef> = members
                         .iter()
                         .enumerate()
                         .filter(|(_, member)| {
@@ -6110,7 +6235,7 @@ impl Builder<'_> {
                             }
                         })
                         .collect();
-                    variants.dedup();
+                    let variants = dedupe_union_members(variants);
                     let module = naming::module_name(&name);
                     self.push_alias(
                         &name,
@@ -6148,7 +6273,39 @@ impl Builder<'_> {
             );
             return TypeRef::Named(name);
         }
-        base_type_ref(variant)
+        // A member that declares nothing but `nullable: true` is Fern's
+        // unknown-and-optional. Probed at 5.20.0: `oneOf: [{nullable: true},
+        // {type: integer}]` generates
+        // `typing.Union[typing.Optional[typing.Any], int]`.
+        if variant.reference.is_none() && variant.nullable == Some(true) && is_unknown(variant) {
+            return TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)));
+        }
+        // A member that is itself a multi-member `type` list is a *named* union to
+        // Fern, not an inlined one: EN 18222's
+        // `MultiValuedDataElement.value.items.anyOf[0]` (`type: [string, number,
+        // boolean]`) generates `MultiValuedDataElementValueItemZero` and the
+        // enclosing union references it by name.
+        if variant.multi_type_union {
+            let name = variant_class_name(parent, index, variant, siblings);
+            let module = naming::module_name(&name);
+            let members = variant.any_of.iter().flatten().map(base_type_ref).collect();
+            self.push_alias(
+                &name,
+                module,
+                TypeRef::Union(members),
+                clean_doc(variant.description.as_deref()),
+            );
+            return TypeRef::Named(name);
+        }
+        // `format: binary` is a file body, not a union alternative: in a union
+        // Fern reads it as the `string` it is declared as. Probed at 5.20.0,
+        // `oneOf: [{type: string, format: binary}, {type: integer}]` generates
+        // `typing.Union[str, int]`, which is also why Eozilla's `InlineValue`
+        // carries no `bytes`.
+        match base_type_ref(variant) {
+            TypeRef::Primitive(Prim::Bytes) => TypeRef::Primitive(Prim::Str),
+            other => other,
+        }
     }
 
     fn push_alias(
@@ -6165,6 +6322,25 @@ impl Builder<'_> {
             docstring,
         }));
     }
+}
+
+/// Collapse duplicate union members, keeping the *last* occurrence's position.
+///
+/// Fern renders each alternative and then folds equal renderings together where
+/// the final one stood: probed at 5.20.0, `oneOf: [string, integer, string/uri]`
+/// generates `typing.Union[int, str]` — the surviving `str` sits at the `uri`
+/// member's index, not the bare `string`'s. Eozilla's twelve-member `InlineValue`
+/// is the same rule at scale: its `binary`, `uri` and bare `string` alternatives
+/// all render `str`, and the ten-member union Fern emits carries one `str`,
+/// after `dt.datetime`.
+fn dedupe_union_members(members: Vec<TypeRef>) -> Vec<TypeRef> {
+    let mut out = Vec::with_capacity(members.len());
+    for (index, member) in members.iter().enumerate() {
+        if !members[index + 1..].contains(member) {
+            out.push(member.clone());
+        }
+    }
+    out
 }
 
 fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[Schema]) -> String {
@@ -6629,6 +6805,18 @@ fn single_all_of_ref(schema: &Schema) -> Option<&str> {
 /// A property-level `allOf` that adds annotations to exactly one `$ref` without
 /// adding any shape of its own. Swagger-generated AWS specs use this form for
 /// nearly every documented property.
+/// The component a property names when its `allOf` holds one `$ref` and nothing
+/// else. EN 18222 writes `allOf: [$ref: Identifier]` beside a `description` — the
+/// 3.0 idiom for annotating a reference — and Fern reads the referenced schema's
+/// example straight through it, so `digitalProductPassportId` is exampled with
+/// `Identifier`'s GS1 Digital Link rather than with its own field name.
+fn sole_all_of_ref(schema: &Schema) -> Option<&str> {
+    let [member] = schema.all_of.as_ref()?.as_slice() else {
+        return None;
+    };
+    member.reference.as_deref()
+}
+
 fn described_all_of_ref(schema: &Schema) -> Option<(&str, Option<&str>)> {
     let members = schema.all_of.as_ref()?;
     if members.len() < 2 {
@@ -7091,15 +7279,18 @@ mod tests {
         assert_eq!(strips.get("Bird").map(String::as_str), Some("type"));
         assert_eq!(strips.get("Fish").map(String::as_str), Some("type"));
 
+        // A union wrapper is flat and Fern writes the variant's own properties
+        // before the ones its `allOf` base contributes, so `lives` precedes
+        // `baseValue` even though `Base` is the first `allOf` member.
         let cat = member_fields(&schemas["Cat"], "kind", &schemas, Some("Cat"));
         assert_eq!(
             cat.iter()
                 .map(|field| field.wire_name.as_str())
                 .collect::<Vec<_>>(),
-            ["baseValue", "lives"]
+            ["lives", "baseValue"]
         );
-        assert!(matches!(cat[0].type_ref, TypeRef::Named(ref name) if name == "BaseBaseValue"));
-        assert_eq!(cat[1].example.as_deref(), Some("9"));
+        assert_eq!(cat[0].example.as_deref(), Some("9"));
+        assert!(matches!(cat[1].type_ref, TypeRef::Named(ref name) if name == "BaseBaseValue"));
 
         let dog = member_fields(&schemas["Dog"], "kind", &schemas, Some("Dog"));
         assert_eq!(dog.len(), 9);
@@ -8784,12 +8975,19 @@ mod tests {
             &builder.types[0],
             TypeDecl::Object(object) if object.name == "ValuesValueCount"
         ));
+        // The two `string` alternatives render alike and fold together where the
+        // *last* one stood, so the union is `[ValuesValueCount, str]` rather than
+        // the three alternatives the document lists.
         assert!(matches!(
             &builder.types[1],
             TypeDecl::Alias(alias)
                 if alias.name == "ValuesValue"
                     && alias.docstring.as_deref() == Some("A scalar or structured value.")
-                    && matches!(&alias.target, TypeRef::Union(members) if members.len() == 3)
+                    && alias.target
+                        == TypeRef::Union(vec![
+                            TypeRef::Named("ValuesValueCount".to_string()),
+                            TypeRef::Primitive(Prim::Str),
+                        ])
         ));
         assert!(matches!(
             &builder.types[2],
