@@ -106,7 +106,7 @@ class Fixture:
 # (56 typed endpoints across 15 sub-clients); `apideck.com-crm` is a real-world
 # `link-ok` corpus API (40 endpoints across 8 sub-clients) whose spec is fetched,
 # not vendored; `bunq.com` is a much larger real-world `link-ok` corpus (421
-# endpoints across 118 sub-clients) that stresses the pipeline at scale. See
+# endpoints across 110 sub-clients) that stresses the pipeline at scale. See
 # tests/live_e2e/AGENTS.md.
 FIXTURES: list[Fixture] = [
     Fixture(name="exhaustive"),
