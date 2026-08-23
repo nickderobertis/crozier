@@ -10,8 +10,8 @@ the rest.
 ## Adding a fixture
 
 Add one numbered [`CORPUS.md`](CORPUS.md) row and source URL per feature branch,
-then wire a `Corpus { api, package_name, project_name, unmatched: &[] }` into
-`tests/e2e.rs`, plus its `#[test]` and its `just test-corpus-match` line —
+then wire a `Corpus` with `unmatched: &[]` into `tests/e2e.rs`, plus its
+`#[test]` and its `just test-corpus-match` line —
 `every_registered_corpus_is_wired_into_the_gate` fails without both, because a
 corpus nothing runs is not coverage. Generate the golden with **Route A**, the
 local Docker loop (`just fern-goldens-generate --version "$pin" --fixture
