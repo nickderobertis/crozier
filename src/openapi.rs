@@ -651,7 +651,7 @@ pub struct Schema {
     #[serde(rename = "x-fern-ignore", default)]
     pub ignore_fern: Option<bool>,
     /// Set when this node's `type` was a list with more than one non-`null` member,
-    /// which [`normalize_multi_type_schemas`] rewrote into the equivalent `anyOf`.
+    /// which `normalize_multi_type_schemas` rewrote into the equivalent `anyOf`.
     /// Not a wire field. Fern names such a union rather than inlining it — EN
     /// 18222's `MultiValuedDataElement.value.items.anyOf[0]` generates the alias
     /// `MultiValuedDataElementValueItemZero` where a hand-written `anyOf` in the
