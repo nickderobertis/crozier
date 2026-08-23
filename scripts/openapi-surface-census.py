@@ -1039,7 +1039,10 @@ def registered_sources(fixtures_root: Path, corpus_root: Path, vendored_only: bo
     aliases = corpus_aliases(fixtures_root)
     manifest = fixtures_root / "CORPUS.md"
     if not manifest.is_file():
-        raise SystemExit(f"openapi-surface-census: missing corpus manifest {manifest}")
+        raise SystemExit(
+            f"openapi-surface-census: missing corpus manifest {manifest} — run from the "
+            "repo root, or pass --vendored-only to census the offline half"
+        )
     for name in manifest_rows(manifest):
         if aliases.get(name, name) in vendored:
             continue  # a manifest row whose document is vendored beside its golden
@@ -1114,7 +1117,11 @@ def main(argv: list[str] | None = None) -> int:
     fixtures_root = args.fixtures_root or repo_root / "tests" / "fixtures"
     corpus_root = args.corpus_root or repo_root / ".local" / "corpus"
     if not fixtures_root.is_dir():
-        print(f"openapi-surface-census: missing fixtures root {fixtures_root}", file=sys.stderr)
+        print(
+            f"openapi-surface-census: missing fixtures root {fixtures_root} — run from "
+            "the repo root, or correct --fixtures-root",
+            file=sys.stderr,
+        )
         return 1
 
     for selector in args.selector:

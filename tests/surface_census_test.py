@@ -112,13 +112,9 @@ def load_census():
 census = load_census()
 
 
-# Every census run in this file is bounded. The whole vendored corpus censuses in
-# well under a second, so this is nowhere near a timing assertion — it is the
-# difference between a failing test and a wedged gate. A one-line edit to the
-# flow-collection parser once left the cursor unable to advance, and the loop
-# appended forever: 393s of CPU and 9.6 GB of RSS before it was killed by hand,
-# with the gate reporting nothing at all. A test that can only fail by hanging
-# does not fail.
+# Every census run in this file is bounded: a test that can only fail by hanging
+# does not fail, it wedges the gate. The whole vendored corpus censuses in well
+# under a second, so this is nowhere near a timing assertion.
 CENSUS_TIMEOUT = 60
 
 
@@ -933,11 +929,41 @@ class CensusInterpreterTests(unittest.TestCase):
             timeout=CENSUS_TIMEOUT,
         )
         self.assertEqual(0, prefixes.returncode, prefixes.stderr)
-        # Unless someone deliberately made one HERE, in which case that is the
-        # repository's own environment and is exactly what should be chosen.
-        if Path(interpreter) != REPO / ".venv" / "bin" / "python3":
-            first, second = prefixes.stdout.split()
-            self.assertEqual(first, second, "the resolver chose a virtualenv")
+        # This repository commits no virtualenv, so PATH's system Python is the
+        # answer here. A deliberate local `.venv` would win instead, which is the
+        # preference the next case drives.
+        self.assertFalse((REPO / ".venv").exists(), "this case assumes no local .venv")
+        first, second = prefixes.stdout.split()
+        self.assertEqual(first, second, "the resolver chose a virtualenv")
+
+    def test_a_repo_local_venv_is_preferred_over_anything_on_path(self) -> None:
+        """The first branch, driven rather than tolerated.
+
+        A `.venv` beside the resolver IS this repository's own environment, so it
+        outranks PATH — including a perfectly good system Python that would other-
+        wise be chosen. Driven by copying the real resolver into a root that has
+        one, because the resolver locates the repository from its own path.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "scripts").mkdir()
+            local = root / ".venv" / "bin"
+            local.mkdir(parents=True)
+            interpreter = local / "python3"
+            interpreter.symlink_to(Path(sys.executable).resolve())
+            copied = root / "scripts" / self.RESOLVER.name
+            shutil.copy2(self.RESOLVER, copied)
+
+            shell = shutil.which("bash")
+            if shell is None:
+                self.skipTest("no bash on PATH to run the resolver")
+            completed = subprocess.run(
+                [shell, str(copied)], capture_output=True, text=True,
+                timeout=CENSUS_TIMEOUT,
+            )
+
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(str(interpreter), completed.stdout.strip())
 
     def test_a_foreign_virtualenv_is_refused_by_name_rather_than_used(self) -> None:
         """Driven against a real virtualenv, because that is the case that happened."""

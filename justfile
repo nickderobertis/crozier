@@ -301,10 +301,8 @@ surface-census *args:
 # without the network the unscoped recipe needs. Part of `check` (the recipe
 # above is not). Same split as test-fixtures-coverage vs fixtures-coverage.
 #
-# Both census recipes resolve the interpreter through scripts/census-python.sh
-# rather than spelling `python3`: a bare `python3` is whatever PATH offers, and
-# an unrelated project's activated virtualenv wins that race and gets the gate
-# measuring this repository under someone else's environment.
+# Both census recipes take their interpreter from scripts/census-python.sh rather
+# than spelling `python3`; that script says why.
 test-surface-census:
     "$(./scripts/census-python.sh)" tests/surface_census_test.py
 
