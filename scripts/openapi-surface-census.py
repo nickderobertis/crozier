@@ -562,7 +562,7 @@ class _YamlReader:
                 return (mapping if closer == "}" else items), cursor + 1
             value, cursor = self.flow_node(text, cursor, index)
             cursor = self.skip_space(text, cursor)
-            if cursor < len(text) and text[cursor] == ":":
+            if False:
                 entry, cursor = self.flow_node(text, cursor + 1, index)
                 mapping[value] = entry
             else:
