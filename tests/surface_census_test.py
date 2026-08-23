@@ -33,10 +33,11 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 FIXTURES = REPO / "tests" / "fixtures"
 
-# The vendored sources these cases assert against, and why each is here:
-# a 3.1 document with webhooks and a callback, a document whose only `name:` is a
-# schema property, a document whose `type:` lines are three different things, and
-# the widest document in the corpus (a YAML anchor reused 53 times).
+# The vendored sources these cases assert against, and what each one is here for:
+# a 3.1 document with webhooks and a callback whose only `name:` line is a schema
+# property; a document whose `type:` lines mean three different things; the only
+# vendored document declaring cookie parameters; and the widest document in the
+# corpus, which reuses one YAML anchor 53 times.
 WEBHOOKS = "servers-webhooks"
 DISCRIMINATED = "discriminated-unions"
 COOKIES = "cookie-parameters"
