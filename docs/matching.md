@@ -870,7 +870,7 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
 ## Real-world-spec robustness (issue #40)
 
 The other corpora are hand-authored to have clean, Fern-style `group_method`
-operationIds and property names. Real vendor specs are messier, and three shapes
+operationIds and property names. Real vendor specs are messier, and four shapes
 that used to make crozier emit invalid Python or hard-error now generate legal —
 and byte-matched — output. Each has its own feature-coverage
 corpus (`digit-leading-property`, `operation-id-non-identifier`,
@@ -899,10 +899,12 @@ corpus (`digit-leading-property`, `operation-id-non-identifier`,
   its raw and high-level `widgets` clients.
 
 - **Missing `operationId`** (optional in OpenAPI). Instead of hard-erroring,
-  [`ir::endpoint_method_name`] synthesizes the method from the route:
-  [`ir::synthesized_method_name`] infers a verb from the HTTP method and whether
-  the path addresses a collection or an item (`GET /widgets` → `list_widgets`,
-  `GET /widgets/{id}` → `get_widget`), matching Fern's route-derived names.
+  [`ir::endpoint_method_name`] falls back to the operation's `summary`, run
+  through [`naming::prose_identifier`] (`List widgets` → `list_widgets`) — which
+  is what the corpus pins, byte-for-byte against Fern. With no summary either,
+  [`ir::synthesized_method_name`] joins the HTTP method and the full route,
+  brace-stripped (`GET /widgets` → `get_widgets`, `GET /widgets/{id}` →
+  `get_widgets_id`).
 
 ### Tag-based client grouping
 
@@ -922,7 +924,7 @@ unauthenticated client. [`ir::auth_model`] now returns [`ir::Auth::None`] for su
 document (rather than defaulting to an optional bearer token), and the client
 wrapper, root client, and per-tag clients drop every credential parameter and the
 `Authorization` header — byte-matching Fern's credential-free clients. The whole
-SDK-code layer of all three corpora matches: the types, the tag-grouped raw and
+SDK-code layer of all four corpora matches: the types, the tag-grouped raw and
 high-level clients, the root client, and the aggregators.
 
 ### crozier vs Fern SDK-identity headers
@@ -1034,8 +1036,10 @@ byte-match target like the rest of the corpus.
   ([`ir::InlineHoister::hoist_param_enum`]).
 - **Real `enum.Enum` classes (issue #41 gap 2b), the default.** Every string enum —
   a named `components.schemas` enum, a hoisted inline-property enum (`{Owner}{Prop}`),
-  or a hoisted parameter enum — renders as `class Name(str, enum.Enum)` with
-  `SCREAMING_SNAKE` members and a `visit(...)` dispatch method
+  or a hoisted parameter enum — renders as `class Name(enum.StrEnum)` over the
+  generated `core/enum.py` shim (the stdlib `enum.StrEnum` on Python >= 3.11, the
+  `(str, Enum)` mixin below it) with `SCREAMING_SNAKE` members and a `visit(...)`
+  dispatch method
   ([`ir::EnumType`]/[`emit::render_enum`]). This is Fern's `enum_type: python_enums`
   mode; the golden corpus was generated with
   `pydantic_config.enum_type: python_enums`, so exhaustive and every enum-bearing
@@ -1257,11 +1261,12 @@ four models carry `extra="forbid"` in the v2 `model_config` and
 ## Cross-document `$ref` resolution (issue #77)
 
 Every corpus spec but one is a single self-contained document: every `$ref` is a
-local JSON pointer into the same file. `helios-verifiable-api` (CORPUS.md row 83)
-is not — all 27 of its component schemas are `$ref`s naming a document in
-`ethereum/execution-apis` by absolute URL, and Fern's importer **fetches** each
-one and resolves it transitively. That is the only reference form Fern was
-measured to follow rather than discard ([`fern-limitations.md`](fern-limitations.md)
+local JSON pointer into the same file. `helios-verifiable-api` is not — many of
+its component schemas are `$ref`s naming an `ethereum/execution-apis` document
+by absolute URL, and Fern's importer **fetches** each one and resolves it
+transitively. Its CORPUS.md row is keyed by that fixture name, and its shapes
+cell carries the counts; they are not restated here. That is the only
+reference form Fern was measured to follow rather than discard ([`fern-limitations.md`](fern-limitations.md)
 records the ones it drops), so it is the only golden that can pin whether crozier
 opens a second document at all.
 
@@ -1323,8 +1328,8 @@ reference to reach:
 The row's one standing liability is recorded in its `CORPUS.md` shapes cell: its
 golden depends on a **third-party fetch at generation time**, and the referenced
 URLs address `refs/heads/main` rather than an immutable ref, so an upstream edit
-to those six files breaks this row's reproduction for a reason unrelated to
-crozier.
+to any of the referenced files breaks this row's reproduction for a reason
+unrelated to crozier.
 
 ## Map-of-self and multi-type arrays (issue #77)
 
@@ -1366,8 +1371,8 @@ typing_extensions.Annotated[typing.Literal["…"], FieldMetadata(alias="objectTy
 pydantic.Field(alias="objectType")]`, and `pydantic.Field(discriminator=…)` names
 the Python field. The wrapper is flat, and Fern writes the variant's *own*
 properties before the ones its `allOf` base contributes —
-`DataElement_RelatedResource` opens with `resource_title` and closes with
-`element_id`. The strip follows the `$ref` that put the tag there, but only when
+`DataElement_RelatedResource` opens with `resource_title` and closes with the
+base's `element_id`/`dictionary_reference` pair. The strip follows the `$ref` that put the tag there, but only when
 the base's declaration says nothing the tag does not: `DataElementBase.objectType`
 is an optional bare `type: string` and vanishes, while Microcks'
 `AbstractExchange.type` is required with an `enum` of the discriminant values and
