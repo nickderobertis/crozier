@@ -212,6 +212,44 @@ class GrammarContractTests(unittest.TestCase):
             (counts[1], counts[2]), (int(in_script.group(1)), int(in_script.group(2)))
         )
 
+    def test_the_verdict_vocabulary_is_the_one_fern_limitations_defines(self) -> None:
+        """A `limitations` row quotes that file's verdict; the enum is its property."""
+        ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
+        section = ledger.split("## How to read a verdict", 1)[1].split("\nA verdict is", 1)[0]
+        defined = re.findall(r"^\| \*\*(\w+)\*\* \|", section, re.M)
+        self.assertGreater(len(defined), 3, "the verdict table no longer parses")
+        quoted = self.backticked("section spells them (", ") —")
+        self.assertEqual(set(defined), quoted)
+
+    def test_the_documented_join_command_still_finds_the_limitations_keys(self) -> None:
+        """The key-extraction recipe encodes that file's column layout.
+
+        Its failure mode is an EMPTY list, not an error, so a region would join on
+        nothing and read it as "no limitations row names this feature" — the wrong
+        category. This runs the documented pattern, and where GNU grep is present
+        (the Linux gate leg) runs the command itself and requires the same answer.
+        """
+        doc = self.DOC.read_text(encoding="utf-8")
+        pattern = re.search(r"^grep -oP '(.+)' docs/fern-limitations\.md", doc, re.M)
+        self.assertIsNotNone(pattern, "the index no longer documents the join command")
+        ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
+        # The same expression with PCRE's \K — which Python's re does not have —
+        # rewritten as the capture group it is shorthand for.
+        self.assertIn("\\K", pattern.group(1), "the documented pattern lost its \\K anchor")
+        before, _, after = pattern.group(1).partition("\\K")
+        keys = set(re.findall(f"{before}({after})", ledger, re.M))
+        self.assertGreater(len(keys), 40, "the documented pattern extracts almost no keys")
+        for key in keys:
+            self.assertRegex(key, r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+
+        grep = subprocess.run(
+            ["grep", "-oP", pattern.group(1), "docs/fern-limitations.md"],
+            cwd=REPO, capture_output=True, text=True,
+        )
+        if grep.returncode != 0 and "-P" in grep.stderr:
+            self.skipTest("this grep has no PCRE support, so the command cannot run here")
+        self.assertEqual(keys, set(grep.stdout.split()))
+
     def test_the_region_files_carry_the_agreed_table_header(self) -> None:
         """Six files, one skeleton: the regions have to compose into one table."""
         header = (
@@ -271,6 +309,31 @@ class CensusReportTests(unittest.TestCase):
         self.assertGreater(anchored, 1, "the exhaustive fixture no longer reuses an anchor")
         completed = run("--vendored-only", "--fixture", EXHAUSTIVE, "--selector", "operation.security")
         self.assertEqual({("operation.security", EXHAUSTIVE): written}, rows(completed))
+
+    def test_a_vendor_extension_is_reported_under_the_object_that_carries_it(self) -> None:
+        """The `oas31-extensions` region is built on this: `x-` keys are census rows."""
+        counted = rows(run("--vendored-only", "--selector", "operation.x-fern-audiences"))
+        self.assertEqual(
+            {
+                ("operation.x-fern-audiences", "audience-filter"): 2,
+                ("operation.x-fern-audiences", "audience-filter-strict"): 2,
+            },
+            counted,
+        )
+        for fixture, count in counted.items():
+            with self.subTest(fixture=fixture[1]):
+                source = (FIXTURES / fixture[1] / "openapi.yml").read_text(encoding="utf-8")
+                self.assertEqual(count, len(re.findall(r"^ *x-fern-audiences:", source, re.M)))
+
+    def test_the_document_version_is_censused_as_its_major_minor(self) -> None:
+        """3.0-vs-3.1 is the delta a region asks about; the patch level is noise."""
+        counted = rows(run("--vendored-only", "--selector", "openapi.openapi=3.1"))
+        self.assertIn(("openapi.openapi=3.1", WEBHOOKS), counted)
+        declared = (FIXTURES / WEBHOOKS / "openapi.yml").read_text(encoding="utf-8")
+        self.assertIn("openapi: 3.1.0", declared, "the fixture no longer declares a patch level")
+        every = {selector for selector, _ in rows(run("--vendored-only"))}
+        versions = {s for s in every if s.startswith("openapi.openapi=")}
+        self.assertEqual({"openapi.openapi=3.0", "openapi.openapi=3.1"}, versions)
 
     def test_the_json_report_carries_the_sources_it_read(self) -> None:
         completed = run("--vendored-only", "--fixture", WEBHOOKS, "--json")

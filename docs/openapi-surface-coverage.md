@@ -150,7 +150,7 @@ feature:
 2. **`limitations`** — no registered golden source declares it, and
    `fern-limitations.md` carries a row for it with a verdict.
    **Evidence cell:** the `fern-limitations.md` key and its verdict, spelled the
-   way that file's *How to read a verdict* section spells it (`implements`,
+   way that file's *How to read a verdict* section spells them (`implements`,
    `discards`, `ignores`, `refuses`, `crashes`, `coincidence`, `unmeasured`) —
    never a synonym.
 3. **`gap`** — neither holds. This is the answer the whole document exists to
