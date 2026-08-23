@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "eozilla",
+  "corpus_spec_ref": "70187a1bba9fe5a77001a623322f23bb30ea49c7",
+  "corpus_spec_url": "https://raw.githubusercontent.com/eo-tools/eozilla/70187a1bba9fe5a77001a623322f23bb30ea49c7/tools/openapi.yaml"
+}

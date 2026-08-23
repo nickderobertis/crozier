@@ -3085,6 +3085,51 @@ in place of one, the second of two names that normalize alike. The dividing line
 body Fern will send; here it is whether the document is describing a **shape** or a
 **constraint on** a shape. Shapes survive. Constraints beside them do not.
 
+### Round 4 — what the round registered
+
+The measurement phase reported exactly two rows as **`REGISTRABLE`**:
+`cycle-via-additionalProperties` and `type-array-multi-nonnull`. Both are now
+corpus fixtures, and no other row is — the remaining sixteen are discards,
+coincidences, refusals, or `implements` already pinned by a registered golden.
+Round 4 therefore registers **two** rows where round 3 registered four, and where
+[servers and XML](#round-4--servers-and-xml) and
+[links and encoding](#round-4--links-and-encoding) between them registered none.
+
+`cycle-via-additionalProperties` is `CORPUS.md` row 92, `eozilla`
+(`eo-tools/eozilla@70187a1b`, `tools/openapi.yaml`);
+`type-array-multi-nonnull` is row 93, `openepcis-dpp-ready`
+(`openepcis/openepcis-dpp-ready@5c1f308d`,
+`extensions/common/interop/api/en18222-dpp-api.openapi.yaml`). Each candidate
+set's primary carried, so no backup was needed. Both licences were re-verified at
+the source repository at the pinned ref rather than inherited from the round-3
+screens: each repository's `LICENSE` opens `Apache License / Version 2.0, January
+2004`, and `eozilla`'s document repeats it in `info.license` as
+`Apache 2.0 license`. Both raw documents pass `fern check` at exit 0 with none of
+the three documented killers present — zero inline (non-`$ref`) request bodies,
+zero `format: date` fields whose example carries a time, zero unnamed integer
+enums — and both generated at `fernapi/fern-python-sdk:5.20.0` at exit 0.
+
+Both goldens carry the artifact their row predicted.
+`eozilla`'s `types/schema.py` emits
+`properties: typing.Optional[typing.Dict[str, "Schema"]] = None` under
+`from __future__ import annotations` with a trailing `update_forward_refs(`;
+`openepcis-dpp-ready` emits
+`SingleValuedDataElementValue = typing.Union[str, float, bool]` in a module of its
+own. Both rows are registered with `unmatched: &[]` — no exclusion — and their
+byte-match is proven by `just test-corpus-match`, whose
+`eozilla_matches_fern_output` and `openepcis_dpp_ready_matches_fern_output` lines
+pass over all 105 and 90 expected files respectively.
+
+Reproducing them cost eleven generator repairs and no golden edit. Two of the
+eleven are worth recording here because they are Fern *behaviours* this file had
+not measured, and both were probed directly rather than inferred: a union member
+declared `format: binary` renders as the `string` it is declared as
+(`oneOf: [{type: string, format: binary}, {type: integer}]` generates
+`typing.Union[str, int]`, not `bytes`), and equal union members fold together
+where the **last** of them stood (`oneOf: [string, integer, string/uri]` generates
+`typing.Union[int, str]`). The third probe measured a member declaring nothing but
+`nullable: true` as `typing.Optional[typing.Any]`.
+
 ## What Round 3 did not register, and why
 
 The round's main result. Round 3 registers a fixture only where **both** bars are

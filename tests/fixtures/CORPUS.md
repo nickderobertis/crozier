@@ -107,6 +107,8 @@ measured state is `tests/e2e.rs`; re-measure with `just fixtures-gaps`.
 | 89 | `amazonaws.com-cloudfront` | api-guru | https://api.apis.guru/v2/specs/amazonaws.com/cloudfront/2016-11-25/openapi.json | `2016-11-25` | Apache 2.0 License | link-ok | AWS CloudFront API whose 27 operations declare `502`, `505`, `506`, `507`, `508`, `510` and `511`, pinning Fern's `BadGatewayError`, `HttpVersionNotSupportedError`, `VariantAlsoNegotiatesError`, `InsufficientStorageError`, `LoopDetectedError`, `NotExtendedError` and `NetworkAuthenticationRequiredError` names for seven statuses no golden emitted |
 | 90 | `khoainats` | github-raw | https://raw.githubusercontent.com/cukhoaimon/khoainats/e680e29affee221e3a6c379b1e51c98ef241da7a/api/generated/.docs/api/openapi.yaml | `e680e29affee221e3a6c379b1e51c98ef241da7a` | MIT | link-ok | Khoai NATS Admin API declaring an `openIdConnect` scheme (`Roles`) beside an HTTP bearer one, with `/v1/noauth` unsecured: `openIdConnect` is the one member of its scheme family Fern imports rather than drops, and this row pins the optional bearer `token` Fern emits for such a document |
 | 91 | `helios-verifiable-api` | github-raw | https://raw.githubusercontent.com/a16z/helios/43a8c9f3cdda41a6f383c4db41d9a83f102638b1/verifiable-api/server/openapi.yaml | `43a8c9f3cdda41a6f383c4db41d9a83f102638b1` | MIT | link-ok | 27 component schemas that are remote-URL `$ref`s into six `ethereum/execution-apis` documents, which Fern fetches and resolves transitively — the only reference form Fern was measured to follow rather than discard. Unlike every other row, the golden depends on a third-party fetch at generation time, and those URLs address `refs/heads/main` rather than an immutable ref, so an upstream edit to those six files breaks this row's reproduction for a reason unrelated to crozier |
+| 92 | `eozilla` | github-raw | https://raw.githubusercontent.com/eo-tools/eozilla/70187a1bba9fe5a77001a623322f23bb30ea49c7/tools/openapi.yaml | `70187a1bba9fe5a77001a623322f23bb30ea49c7` | Apache-2.0 | link-ok | Eozilla OGC API - Processes server whose `Schema` component closes two cycles through `additionalProperties` (`Schema.properties.<k>` and `Schema.discriminator.mapping` both name `Schema`), the map-of-self form no other golden declares |
+| 93 | `openepcis-dpp-ready` | github-raw | https://raw.githubusercontent.com/openepcis/openepcis-dpp-ready/5c1f308d350cfcc9abb80aa6c70262c87141f201/extensions/common/interop/api/en18222-dpp-api.openapi.yaml | `5c1f308d350cfcc9abb80aa6c70262c87141f201` | Apache-2.0 | link-ok | EN 18222 Digital Product Passport API declaring two `type: [string, number, boolean]` arrays — two non-null members each, the multi-type form the other 498 `type` arrays in the corpus never take |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -433,3 +435,32 @@ it references address `refs/heads/main` rather than an immutable ref. An upstrea
 edit to those six `ethereum/execution-apis` files breaks its reproduction for a
 reason unrelated to crozier; regenerate the golden through the standard workflow
 if that happens, rather than treating it as a generator regression.
+
+## Batch 13 — the two shapes round 4 measured Fern to implement (issue #77)
+
+[`../../docs/fern-limitations.md`](../../docs/fern-limitations.md)'s round 4
+resolved eighteen unmeasured rows and found exactly two where Fern reads the
+shape and emits output derived from it, with no golden pinning either.
+Rows 92 and 93 are those two. Both licences were re-verified at the source
+repository at the pinned ref rather than copied from the screening notes:
+`eo-tools/eozilla` and `openepcis/openepcis-dpp-ready` each carry an `LICENSE`
+opening `Apache License / Version 2.0, January 2004`.
+
+| name | selected for | status |
+|---|---|---|
+| `eozilla` | a schema graph that closes a cycle through `additionalProperties` — `Schema.properties` and `Schema.discriminator.mapping` are both maps of `Schema` — where all 335 prior `update_forward_refs` call sites recurse through `properties` or `items` | ✅ matched |
+| `openepcis-dpp-ready` | two `type: [string, number, boolean]` schemas: multi-member type arrays with more than one **non-null** member, which the corpus's other 498 `type` arrays never are | ✅ matched |
+
+Neither backup was needed; both primaries passed `fern check`, generated at
+`fernapi/fern-python-sdk:5.20.0`, and byte-match.
+
+As in batch 9, each row paid for itself in the shapes it dragged in. Between them
+the two goldens exposed eleven divergences, all repaired in `src/*.rs`: two apiKey
+schemes whose header names normalize to one `api_key` (crozier emitted the
+parameter twice, which Ruff rejects); a camelCase discriminator, its variants'
+field order, and a discriminant declared loosely on an `allOf` base; per-wrapper
+`update_forward_refs` arguments; the import-name collision Eozilla's own
+`ApiError` component causes against crozier's core one; a `2xx` response declared
+under the malformed media type `/*`; and three union-member rules probed directly
+against Fern 5.20.0. See
+[`../../docs/matching.md`](../../docs/matching.md#map-of-self-and-multi-type-arrays-issue-77).

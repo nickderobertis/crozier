@@ -1865,6 +1865,8 @@ const CORPORA: &[&Corpus] = &[
     &AMAZONAWS_COM_CLOUDFRONT,
     &KHOAINATS,
     &HELIOS_VERIFIABLE_API,
+    &EOZILLA,
+    &OPENEPCIS_DPP_READY,
 ];
 
 #[test]
@@ -2777,6 +2779,46 @@ const HELIOS_VERIFIABLE_API: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `eozilla`: the Eozilla OGC API - Processes server is the corpus's only
+/// document whose schema graph closes a cycle through `additionalProperties`
+/// rather than through `properties` or `items`. Its `Schema` component names
+/// itself twice as a map value — `Schema.properties` and
+/// `Schema.discriminator.mapping` — and Fern reads that map-of-self rather than
+/// flattening it: the golden carries `from __future__ import annotations`, a
+/// forward-referenced `typing.Optional[typing.Dict[str, "Schema"]]`, and a
+/// trailing `update_forward_refs`. 335 golden files already call
+/// `update_forward_refs`, but none of them for a map, so this row is what pins
+/// the map arm of crozier's recursion handling against Fern rather than against
+/// crozier's own expectation.
+const EOZILLA: Corpus = Corpus {
+    api: "eozilla",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `openepcis-dpp-ready`: the EN 18222 Digital Product Passport API declares two
+/// `type: [string, number, boolean]` schemas — multi-member type arrays with more
+/// than one *non-null* member. Every one of the corpus's other 498 `type` arrays
+/// has a single non-null member, so before this row the only `typing.Union`s in
+/// any golden came from `oneOf`/`anyOf` and nothing pinned what Fern does with a
+/// multi-type array. It emits a union over the declared members, and this row
+/// holds crozier to that.
+const OPENEPCIS_DPP_READY: Corpus = Corpus {
+    api: "openepcis-dpp-ready",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -2976,6 +3018,16 @@ fn khoainats_matches_fern_output() {
 #[test]
 fn helios_verifiable_api_matches_fern_output() {
     assert_link_ok_corpus_matches(&HELIOS_VERIFIABLE_API);
+}
+
+#[test]
+fn eozilla_matches_fern_output() {
+    assert_link_ok_corpus_matches(&EOZILLA);
+}
+
+#[test]
+fn openepcis_dpp_ready_matches_fern_output() {
+    assert_link_ok_corpus_matches(&OPENEPCIS_DPP_READY);
 }
 
 #[test]

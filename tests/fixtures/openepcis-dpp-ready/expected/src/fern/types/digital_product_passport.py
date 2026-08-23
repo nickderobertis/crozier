@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .digital_product_passport_compressed import DigitalProductPassportCompressed
+from .digital_product_passport_full import DigitalProductPassportFull
+
+DigitalProductPassport = typing.Union[DigitalProductPassportCompressed, DigitalProductPassportFull]
