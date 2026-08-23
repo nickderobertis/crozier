@@ -1265,8 +1265,9 @@ fn apideck_crm_matches_fern_output() {
     assert_corpus_matches(&APIDECK_CRM);
 }
 
-/// `bunq.com`: a large real-world `link-ok` corpus API (issue #77) — 421 endpoints
-/// across 118 sub-clients (~10× apideck), the pipeline's at-scale stress target. Its
+/// `bunq.com`: a large real-world `link-ok` corpus API (issue #77) — roughly 10×
+/// apideck, the pipeline's at-scale stress target (its measured endpoint and
+/// sub-client counts are stated once, in tests/live_e2e/AGENTS.md). Its
 /// OpenAPI spec is fetched, not vendored (`corpus_spec`); its full Fern golden is
 /// committed and crozier reproduces the entire golden byte-for-byte. Its empty
 /// `unmatched` list makes any future divergence fail by default.

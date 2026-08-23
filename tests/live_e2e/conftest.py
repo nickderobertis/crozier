@@ -102,12 +102,12 @@ class Fixture:
 
 
 # The corpora driven live. Spec-driven, so this grows by one line as more fixtures
-# gain a runnable SDK. `exhaustive` is the deliberately complicated synthetic seed
-# (56 typed endpoints across 15 sub-clients); `apideck.com-crm` is a real-world
-# `link-ok` corpus API (40 endpoints across 8 sub-clients) whose spec is fetched,
-# not vendored; `bunq.com` is a much larger real-world `link-ok` corpus (421
-# endpoints across 118 sub-clients) that stresses the pipeline at scale. See
-# tests/live_e2e/AGENTS.md.
+# gain a runnable SDK. `exhaustive` is the deliberately complicated synthetic seed;
+# `apideck.com-crm` is a real-world `link-ok` corpus API whose spec is fetched, not
+# vendored; `bunq.com` is a much larger real-world `link-ok` corpus that stresses
+# the pipeline at scale. Each fixture's endpoint/sub-client counts are stated once,
+# in tests/live_e2e/AGENTS.md, and are derivable here with `reference_methods()`;
+# do not restate them, so there is nothing to drift.
 FIXTURES: list[Fixture] = [
     Fixture(name="exhaustive"),
     Fixture(
