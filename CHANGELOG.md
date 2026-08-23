@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.51](https://github.com/nickderobertis/crozier/compare/v0.0.50...v0.0.51) - 2026-08-23
+
+### Fixed
+
+- reproduce Fern on map-of-self and multi-type-array documents ([#166](https://github.com/nickderobertis/crozier/pull/166))
+
 ## [0.0.50](https://github.com/nickderobertis/crozier/compare/v0.0.49...v0.0.50) - 2026-08-22
 
 ### Added
