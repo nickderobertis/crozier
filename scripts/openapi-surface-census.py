@@ -1020,6 +1020,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def path_of(source: Source, repo_root: Path) -> str | None:
+    """A source's document path as the JSON report carries it."""
+    if source.path is None:
+        return None
+    if source.path.is_relative_to(repo_root):
+        return source.path.relative_to(repo_root).as_posix()
+    return str(source.path)
+
+
 def report(rows: dict[tuple[str, str], int], selectors: list[str]) -> str:
     """The census as one line per (selector, fixture, count)."""
     lines: list[str] = []
@@ -1102,10 +1111,9 @@ def main(argv: list[str] | None = None) -> int:
                     "fixture": source.fixture,
                     "origin": source.origin,
                     # POSIX-style inside the repo so the report reads the same on
-                    # every platform of the release matrix.
-                    "path": source.path.relative_to(repo_root).as_posix()
-                    if source.path is not None and source.path.is_relative_to(repo_root)
-                    else str(source.path),
+                    # every platform of the release matrix; null when the source is
+                    # a link-ok row nothing has fetched.
+                    "path": path_of(source, repo_root),
                 }
                 for source in sources
             ],

@@ -367,6 +367,18 @@ class SourceSelectionTests(unittest.TestCase):
             self.assertIn("is unfetched", allowed.stderr)
             self.assertIn("31 vendored, 0 fetched", allowed.stderr)
 
+            payload = json.loads(
+                run("--corpus-root", directory, "--allow-unfetched", "--json").stdout
+            )
+            corpus = [s for s in payload["sources"] if s["origin"] == "corpus"]
+            self.assertGreater(len(corpus), 50, "the link-ok half is missing from the report")
+            # Listed as registered but read as nothing: a path of null is the
+            # difference between "declares nothing" and "was never opened".
+            self.assertEqual({None}, {source["path"] for source in corpus})
+            self.assertEqual(
+                set(), {row["fixture"] for row in payload["rows"]} & {s["fixture"] for s in corpus}
+            )
+
     def test_an_unknown_fixture_name_is_refused_with_what_the_names_are(self) -> None:
         completed = run("--vendored-only", "--fixture", "not-a-fixture")
         self.assertEqual(1, completed.returncode, completed.stdout)
