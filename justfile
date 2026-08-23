@@ -290,7 +290,7 @@ fixtures-coverage *args:
 # corpus has never seen. Walks each source document's object model (never its
 # generated expected/ tree, never a text match) and prints one row per
 # (selector, fixture, count). Outside `check`: fetches the link-ok half first,
-# so it needs network. Pass the script's own flags after `--`, e.g.
+# so it needs network. The script's own flags pass straight through, e.g.
 # `just surface-census --selector pathItem.trace --json`.
 surface-census *args:
     ./scripts/fetch-corpus.sh

@@ -1,10 +1,7 @@
 # OpenAPI surface coverage — Parameters, headers and examples
 
-The `parameters` region of
-[`../openapi-surface-coverage.md`](../openapi-surface-coverage.md). Its boundary
-is `## Scope` below; the selector grammar, the category rules, the settlement
-classes and the ranking rubric are the index's, and this file carries only this
-region's entries.
+Classified entries for the `parameters` region, against the boundary in
+`## Scope` below.
 
 ## Scope
 

@@ -1,10 +1,7 @@
 # OpenAPI surface coverage — OAS 3.1 delta and vendor extensions
 
-The `oas31-extensions` region of
-[`../openapi-surface-coverage.md`](../openapi-surface-coverage.md). Its boundary
-is `## Scope` below; the selector grammar, the category rules, the settlement
-classes and the ranking rubric are the index's, and this file carries only this
-region's entries.
+Classified entries for the `oas31-extensions` region, against the boundary in
+`## Scope` below.
 
 ## Scope
 

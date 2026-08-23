@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import re
 import subprocess
 import sys
@@ -492,6 +493,45 @@ class SourceSelectionTests(unittest.TestCase):
         self.assertIn("missing fixtures root", missing.stderr)
 
 
+@unittest.skipIf(os.name == "nt", "scripts/corpus-lib.sh is a POSIX shell library")
+class CorpusManifestAgreementTests(unittest.TestCase):
+    """The census reads CORPUS.md; so does scripts/corpus-lib.sh. Pin them together.
+
+    `manifest_rows` and `corpus_aliases` are second readers of the manifest and
+    the alias file — the first is the shell library `scripts/fetch-corpus.sh`
+    uses. A row grammar that drifted would leave the census counting a different
+    set of registered sources than the fetch populates, and it would drift
+    *quietly*: a source the census never lists is one it can never report as
+    declaring anything, which is the one direction a "never seen" census must not
+    err in.
+    """
+
+    def shell(self, snippet: str) -> str:
+        return subprocess.run(
+            ["bash", "-c", f". scripts/corpus-lib.sh\n{snippet}"],
+            cwd=REPO, capture_output=True, text=True, check=True,
+        ).stdout
+
+    def test_the_census_registers_exactly_the_rows_the_fetcher_fetches(self) -> None:
+        shell_rows = [
+            line.split("\t")[0]
+            for line in self.shell("corpus_rows tests/fixtures/CORPUS.md").splitlines()
+            if line.strip()
+        ]
+        self.assertGreater(len(shell_rows), 50, "corpus-lib.sh reported almost no rows")
+        self.assertEqual(shell_rows, list(census.manifest_rows(FIXTURES / "CORPUS.md")))
+
+    def test_the_census_resolves_an_alias_the_way_the_fetcher_does(self) -> None:
+        aliases = census.corpus_aliases(FIXTURES)
+        self.assertTrue(aliases, "the alias file is empty or unreadable")
+        for name in [*aliases, "apideck.com-crm"]:
+            with self.subTest(name=name):
+                self.assertEqual(
+                    self.shell(f'corpus_fixture_for "{name}"').strip(),
+                    aliases.get(name, name),
+                )
+
+
 class YamlSubsetTests(unittest.TestCase):
     """The loader is the census's one non-obvious dependency, so it is pinned here.
 
@@ -614,6 +654,8 @@ class YamlSubsetTests(unittest.TestCase):
             ('a: "unterminated\n', "never closed"),
             ("a: [1, 2\n", "never closed"),
             ("? [a]\n: 1\n", "explicit `? ` mapping keys"),
+            (": 1\n", "an empty mapping key"),
+            ("info:\n  : 1\n", "an empty mapping key"),
             ("a: 1\nb\n", "expected a `key: value` mapping entry"),
         ):
             with self.subTest(document=document):

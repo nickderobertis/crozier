@@ -37,8 +37,8 @@ Where an object is *used* from another region, the using region owns the **field
 and the defining region owns the **object** — as the `bodies-media` row spells out
 for the `headers` field a Response and an Encoding carry.
 
-Every region file carries the same four sections, in this order: `# ...` title and
-a one-line statement of what the region owns, `## Scope` (the boundary row above,
+Every region file carries the same skeleton, in this order: a `# ...` title and
+one line saying which region it holds, `## Scope` (its row of the table above,
 verbatim), `## Entries` (the table below, and nothing else), and `## Method notes`
 (what the region measured, which census invocations it ran, and anything it could
 not settle).

@@ -179,6 +179,8 @@ class _YamlReader:
             return self.parse_sequence(line.indent)
         if line.text == "?" or line.text.startswith("? "):
             self.fail(line.index, "explicit `? ` mapping keys are not supported")
+        if line.text == ":" or line.text.startswith(": "):
+            self.fail(line.index, "an empty mapping key is not supported")
         if self.split_key(line.text) is None:
             # Not an entry: a scalar written on its own line(s) under its key, the
             # way real documents wrap a long `description:`.
@@ -199,6 +201,8 @@ class _YamlReader:
                 self.fail(line.index, "unexpected indentation inside a block mapping")
             if line.text == "-" or line.text.startswith("- "):
                 self.fail(line.index, "a sequence item where a mapping key was expected")
+            if line.text == ":" or line.text.startswith(": "):
+                self.fail(line.index, "an empty mapping key is not supported")
             split = self.split_key(line.text)
             if split is None:
                 self.fail(line.index, f"expected a `key: value` mapping entry, got {line.text!r}")
@@ -259,8 +263,8 @@ class _YamlReader:
         if text.startswith(("[", "{", "&", "*", "|", ">")):
             return None
         match = _KEY_END.search(text)
-        if match is None:
-            return None
+        if match is None or not text[: match.start()].strip():
+            return None  # no `key:` at all, or the empty key `: value`
         return text[: match.start()], text[match.end() :].lstrip(" ")
 
     def parse_key(self, line: _Line, key_text: str) -> Any:
