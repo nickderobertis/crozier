@@ -40,16 +40,22 @@ generated tests. Like `core/`, these are emitted into every generated SDK.
 
 `README.md.tmpl` is the `README.md` Fern writes into a generated SDK: static
 prose (installation, usage, exception handling, the advanced/retries/timeouts
-sections, contributing) that is identical across SDKs apart from the SDK name.
+sections, contributing), identical across SDKs apart from the substituted names,
+the worked examples, and the two conditional sections below.
 
 - **License / attribution:** Apache-2.0; the same `../NOTICE` and
   `../licenses/fern-APACHE-2.0.txt` cover it.
 - **Source:** Fern's Python generator over the exhaustive OpenAPI document, same
   version as `core/`.
-- **Change made (Apache-2.0 §4(c)):** the SDK/organization name, package, and the
-  worked usage examples are replaced with `@@ORG@@`, `@@PKG@@`, `@@CLIENT@@`,
-  `@@USAGE@@`, and `@@ASYNC_EXAMPLE@@`
-  placeholders, which the emitter fills in per SDK (the usage examples are
-  synthesized by crozier's own example-value generator). The prose is otherwise
+- **Change made (Apache-2.0 §4(c)):** twelve `@@...@@` placeholders replace the
+  per-SDK text, which the emitter fills in: the organization, package, and client
+  names (`@@ORG@@`, `@@PKG@@`, `@@CLIENT@@`); the worked sync and async usage
+  examples (`@@USAGE@@`, `@@ASYNC_EXAMPLE@@`, synthesized by crozier's own
+  example-value generator); the call lines inside the exception-handling,
+  raw-response, and retry/timeout examples (`@@ERR_CALL@@`, `@@RAW_CALL@@`,
+  `@@RETRY_CALL@@`); and the Environments and Streaming sections with their
+  table-of-contents entries (`@@ENVIRONMENTS@@`, `@@ENVIRONMENTS_TOC@@`,
+  `@@STREAMING@@`, `@@STREAMING_TOC@@`), which the emitter drops entirely for an
+  SDK with no environment or no streaming endpoint. The prose is otherwise
   Fern's output verbatim. `reference.md` is not vendored — it is spec-derived and
   assembled entirely by the emitter.
