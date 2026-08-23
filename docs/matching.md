@@ -1370,8 +1370,8 @@ typing_extensions.Annotated[typing.Literal["…"], FieldMetadata(alias="objectTy
 pydantic.Field(alias="objectType")]`, and `pydantic.Field(discriminator=…)` names
 the Python field. The wrapper is flat, and Fern writes the variant's *own*
 properties before the ones its `allOf` base contributes —
-`DataElement_RelatedResource` opens with `resource_title` and closes with
-`element_id`. The strip follows the `$ref` that put the tag there, but only when
+`DataElement_RelatedResource` opens with `resource_title` and closes with the
+base's `element_id`/`dictionary_reference` pair. The strip follows the `$ref` that put the tag there, but only when
 the base's declaration says nothing the tag does not: `DataElementBase.objectType`
 is an optional bare `type: string` and vanishes, while Microcks'
 `AbstractExchange.type` is required with an `enum` of the discriminant values and
