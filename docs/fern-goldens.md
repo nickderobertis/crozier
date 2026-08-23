@@ -153,7 +153,8 @@ Then:
 1. Expect the first run for a new fixture, a changed URL/ref, or a Fern upgrade
    branch to be red. Generation runs each selection independently. Every
    successful fixture is installed atomically. Before comparison starts, the
-   publication job makes one best-effort commit of all successful fixture trees,
+   `generate_publish` job makes one best-effort commit of all successful fixture
+   trees,
    pushes it with
    `expected/.crozier-fern-golden.json`, which records the exact generator
    version and the manifest name, ref, and URL, and uploads immutable generation

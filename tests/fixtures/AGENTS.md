@@ -10,8 +10,8 @@ the rest.
 ## Adding a fixture
 
 Add one numbered [`CORPUS.md`](CORPUS.md) row and source URL per feature branch,
-then wire a `Corpus { api, package_name, project_name, unmatched: &[] }` into
-`tests/e2e.rs`, plus its `#[test]` and its `just test-corpus-match` line —
+then wire a `Corpus` with `unmatched: &[]` into `tests/e2e.rs`, plus its
+`#[test]` and its `just test-corpus-match` line —
 `every_registered_corpus_is_wired_into_the_gate` fails without both, because a
 corpus nothing runs is not coverage. Generate the golden with **Route A**, the
 local Docker loop (`just fern-goldens-generate --version "$pin" --fixture
@@ -148,7 +148,7 @@ Read it in this order when choosing the next fixture:
    parity evidence, however large. First measured at v0.0.46: the goldens reach
    17,691 of 20,013 production regions (88.4%), all-e2e 18,815 (94.0%), non-e2e
    19,037 (95.1%), leaving 1,798 regions blind to every golden. The journeys
-   supply about a third of that (351 regions in `emit.rs`, 360 in `settings.rs`,
+   supply about half of that (351 regions in `emit.rs`, 360 in `settings.rs`,
    220 in `openapi.rs`, 15 in `ir.rs`), but a journey pins crozier against
    crozier. Only a golden moves the `golden-only` column, so don't read a rising
    `all-e2e` figure as progress toward parity.
