@@ -2131,8 +2131,8 @@ That walk visits *every* dict node in the document, including examples and vendo
 extensions, so each zero is a strict upper bound rather than a sample. It also
 settles the `frankfurter` question directly: `CORPUS.md` row 66 is registered for
 "15 nullable-via-`type`-array schemas", and — before this round registered
-`openepcis-dpp-ready` as row 93 — every one of the corpus's 498 `type` arrays had
-exactly one non-null member.
+`openepcis-dpp-ready` as row 93 — every one of the corpus's 498 `type`
+arrays had exactly one non-null member.
 
 The same census, run over the four schema-position boolean subschemas JSON Schema
 allows, finds only one of them declared anywhere:
@@ -3291,8 +3291,8 @@ met:
 
 Four gaps clear both bars. **Fifty-five do not** — the fifty-five rows tabulated
 below, of which round 4 later measured two into **`REGISTRABLE`** and registered
-both, for a standing tally of six of fifty-nine. That ratio is the finding, and it
-is the opposite of what issue #148 assumed: for most of this surface Fern either
+both, for a standing tally of six of fifty-nine. That ratio is the finding, and
+it is the opposite of what issue #148 assumed: for most of this surface Fern either
 discards the shape, ignores it, refuses it, or produces output that matches only by
 coincidence with an unconditional default — and where it does none of those, no
 screen measured what it emits.
