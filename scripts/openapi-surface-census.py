@@ -111,11 +111,9 @@ class _YamlReader:
         self.pos = 0
         self.anchors: dict[str, Any] = {}
 
-    # -- failures ----------------------------------------------------------
     def fail(self, index: int, message: str) -> None:
         raise DocumentError(self.path, index + 1, message)
 
-    # -- line handling -----------------------------------------------------
     @staticmethod
     def strip_comment(text: str) -> str:
         """Drop a trailing `#` comment, honoring quotes (`$ref: "#/x"` is not one)."""
@@ -150,7 +148,6 @@ class _YamlReader:
             return _Line(self.pos, indent, stripped[indent:])
         return None
 
-    # -- document ----------------------------------------------------------
     def load(self) -> Any:
         first = self.peek()
         if first is None:
@@ -278,7 +275,6 @@ class _YamlReader:
             return self.unquote(line, key_text[:end])
         return self.scalar(key_text.rstrip())
 
-    # -- values ------------------------------------------------------------
     def parse_value(self, rest: str, indent: int, index: int) -> Any:
         """The value of a mapping entry or sequence item declared on line `index`."""
         anchor = None
