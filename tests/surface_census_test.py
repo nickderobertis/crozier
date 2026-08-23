@@ -24,6 +24,7 @@ import importlib.util
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -43,6 +44,24 @@ WEBHOOKS = "servers-webhooks"
 DISCRIMINATED = "discriminated-unions"
 COOKIES = "cookie-parameters"
 EXHAUSTIVE = "exhaustive"
+
+
+def grep_speaks_pcre() -> bool:
+    """Whether this `grep` really does PCRE — asked by running one, not by reading prose.
+
+    A grep without PCRE refuses in its own wording, and every implementation words
+    it differently: BSD grep on macOS says `invalid option -- P`, a GNU grep built
+    without libpcre says something else again, and either could reword next
+    release. Sniffing stderr for a phrase therefore fails *open* — the guard misses,
+    the command "succeeds" with no output, and an empty join set reads as "no
+    limitations row names this feature", which is the miscategorisation this whole
+    test exists to prevent. So probe the capability instead, with the two PCRE
+    constructs the documented command actually depends on: `\\K` and a lookahead.
+    """
+    probe = subprocess.run(
+        ["grep", "-oP", r"a\Kb(?=c)"], input="abc\n", capture_output=True, text=True
+    )
+    return probe.returncode == 0 and probe.stdout.strip() == "b"
 
 
 def recipe_body(name: str) -> list[str]:
@@ -242,13 +261,59 @@ class GrammarContractTests(unittest.TestCase):
         for key in keys:
             self.assertRegex(key, r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
+        if not grep_speaks_pcre():
+            self.skipTest("this grep has no PCRE support, so the command cannot run here")
         grep = subprocess.run(
             ["grep", "-oP", pattern.group(1), "docs/fern-limitations.md"],
             cwd=REPO, capture_output=True, text=True,
         )
-        if grep.returncode != 0 and "-P" in grep.stderr:
-            self.skipTest("this grep has no PCRE support, so the command cannot run here")
+        # Fail loudly on a refusal rather than comparing against empty output:
+        # every way this command can go wrong has to be a red, not a quiet zero.
+        self.assertEqual(0, grep.returncode, grep.stderr)
         self.assertEqual(keys, set(grep.stdout.split()))
+
+    @unittest.skipUnless(os.name == "posix", "the shim is a /bin/sh script")
+    def test_the_join_command_is_skipped_not_failed_where_grep_lacks_pcre(self) -> None:
+        """The guard fires on a leg this one is not, so prove it from the leg it is.
+
+        A first cut of the guard sniffed grep's stderr for `-P`. BSD grep refuses
+        with `invalid option -- P`, which does not contain that substring, so the
+        guard fell through and compared 56 keys against empty output: the macOS
+        gate leg went red while Linux and Windows stayed green, and nothing local
+        could see it. Running the real case against a real `grep` that refuses
+        `-P` reproduces that leg wherever this file runs.
+        """
+        real = shutil.which("grep")
+        if real is None:
+            self.skipTest("no grep on PATH to fall back to")
+        case = (
+            f"{type(self).__name__}"
+            ".test_the_documented_join_command_still_finds_the_limitations_keys"
+        )
+        with tempfile.TemporaryDirectory() as shim:
+            refuser = Path(shim) / "grep"
+            refuser.write_text(
+                textwrap.dedent(
+                    f"""\
+                    #!/bin/sh
+                    for arg in "$@"; do
+                      case "$arg" in
+                        -*P*) echo "grep: invalid option -- P" >&2; exit 2;;
+                      esac
+                    done
+                    exec {real} "$@"
+                    """
+                ),
+                encoding="utf-8",
+            )
+            refuser.chmod(0o755)
+            run = subprocess.run(
+                [sys.executable, str(Path(__file__).resolve()), case],
+                cwd=REPO, capture_output=True, text=True,
+                env={**os.environ, "PATH": f"{shim}{os.pathsep}{os.environ['PATH']}"},
+            )
+        self.assertEqual(0, run.returncode, run.stderr)
+        self.assertIn("skipped=1", run.stderr)
 
     def test_the_region_files_carry_the_agreed_table_header(self) -> None:
         """Six files, one skeleton: the regions have to compose into one table."""
