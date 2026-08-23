@@ -2130,8 +2130,9 @@ documents censused: 122
 That walk visits *every* dict node in the document, including examples and vendor
 extensions, so each zero is a strict upper bound rather than a sample. It also
 settles the `frankfurter` question directly: `CORPUS.md` row 66 is registered for
-"15 nullable-via-`type`-array schemas", and every one of the corpus's 498 `type`
-arrays has exactly one non-null member.
+"15 nullable-via-`type`-array schemas", and — before this round registered
+`openepcis-dpp-ready` as row 93 — every one of the corpus's 498 `type` arrays had
+exactly one non-null member.
 
 The same census, run over the four schema-position boolean subschemas JSON Schema
 allows, finds only one of them declared anywhere:
