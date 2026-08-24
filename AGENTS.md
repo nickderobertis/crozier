@@ -112,6 +112,13 @@ Use the `just` recipes; do not hand-roll equivalents.
   the corpus instrumented); `just test-fixtures-coverage` guards it and IS in
   `check`. Reading the split:
   [`tests/fixtures/AGENTS.md`](tests/fixtures/AGENTS.md).
+- `just surface-census` — which OpenAPI shapes the registered golden **sources**
+  declare, measured off each source document's object model (never a generated
+  `expected/` tree). Outside `check` (fetches the `link-ok` half, so it needs
+  network); `just test-surface-census` drives it offline over the vendored
+  sources and IS in `check`. What the census is for, and the grammar its
+  selectors follow:
+  [`docs/openapi-surface-coverage.md`](docs/openapi-surface-coverage.md).
 - `just lint-llm` / `just lint-llm-diff` — LLM-judge tier (llmlint), separate from
   `check` and non-deterministic; config in `llmlint.yml`. `just setup-llmlint`
   installs it.

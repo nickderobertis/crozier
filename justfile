@@ -20,7 +20,7 @@ bootstrap:
     @echo "enabled .githooks (shared sccache + visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
-check: fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage supply-chain doc
+check: fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census supply-chain doc
     @echo "check: ok"
 
 # Format check (does not modify files).
@@ -284,6 +284,24 @@ fixtures-diff corpus="" file="":
 # tests/fixtures/AGENTS.md.
 fixtures-coverage *args:
     ./scripts/fixtures-coverage.sh "$@"
+
+# Census which OpenAPI shapes the registered golden sources DECLARE — the input
+# to docs/openapi-surface-coverage.md, and the only measurement of what the
+# corpus has never seen. Walks each source document's object model (never its
+# generated expected/ tree, never a text match) and prints one row per
+# (selector, fixture, count). Outside `check`: fetches the link-ok half first,
+# so it needs network. The script's own flags pass straight through, e.g.
+# `just surface-census --selector pathItem.trace --json`.
+surface-census *args:
+    ./scripts/fetch-corpus.sh
+    "$(./scripts/census-python.sh)" ./scripts/openapi-surface-census.py "$@"
+
+# Boundary coverage for `surface-census`: drives the REAL script over the REAL
+# vendored source documents, offline, so the gate keeps the instrument honest
+# without the network the unscoped recipe needs. Part of `check` (the recipe
+# above is not). Same split as test-fixtures-coverage vs fixtures-coverage.
+test-surface-census:
+    "$(./scripts/census-python.sh)" tests/surface_census_test.py
 
 # Install/refresh the llmlint toolchain (oneharness + llmlint). Idempotent.
 setup-llmlint:
