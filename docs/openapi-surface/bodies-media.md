@@ -2,11 +2,18 @@
 
 This inventory was derived from the OpenAPI 3.0.4 and 3.1.1 specification's
 fixed-field tables for the Request Body, Media Type, Encoding, Responses,
-Response, Link, and Callback Objects. For the two free-keyed maps, it also
-enumerates every form the specification defines: media types and ranges from the
-Media Type Object section, and literal, ranged, and `default` keys from the
-Responses Object section. The named media types are the additional cases in this
-region's dispatch. Repeating that walk, in that order, produces the rows below.
+Response, Link and Callback Objects: one row per fixed field, in the order the
+tables list them, plus one row per `components` map this region owns. The two
+free-keyed maps get one row per *form* their key can take, since the
+specification constrains the key rather than enumerating it — for the Media Type
+Object's content map, the media-type and media-range forms of RFC 6838 and
+RFC 7231 (a concrete `type/subtype`, a `+json` or `+xml` structured suffix, the
+`*/*` and `type/*` ranges, and a key that is neither), plus the five named types
+a generator has to dispatch on — `multipart/*`,
+`application/x-www-form-urlencoded`, `application/octet-stream`,
+`text/event-stream` and `application/xml`; for the Responses Object, a literal
+status code, each `1XX`–`5XX` range, and `default`. Repeating that walk, in that
+order, produces the rows below.
 
 ## Scope
 
@@ -28,26 +35,26 @@ and of an Encoding is this region's, while the Header Object it holds is the
 | media-type-example | both | Media Type Object.example | golden | Census `mediaType.example`: 898 declarations in `apache.org`, `apache.org-airflow`, `apideck.com-proxy`, `apideck.com-vault`, `atlassian.com-jira`, `buildrelay`, `conjur.local`, `dnd5eapi.co`, `eozilla`, `etsi.local-mec010-2_apppkgmgmt`, `frankfurter`, `letta`, `sac-backend`, `tamoss`, and `xero.com-xero-payroll-au` (15 fixtures). | | | |
 | media-type-examples | both | Media Type Object.examples | golden | Census `mediaType.examples`: 1,101 declarations in `apicurio.local-registry`, `box.com`, `buildrelay`, `canada-holidays.ca`, `electric-sql`, `eozilla`, `github.com`, `groundhog-day.com`, `microcks.local`, `portfoliooptimizer.io`, `redocly.com-museum`, `tamoss`, and `tlon-notes` (13 fixtures). The Example Object is classified in the [parameters region](parameters.md). | | | |
 | encoding-object | both | Media Type Object.encoding | golden | Census `mediaType.encoding`: 16 declarations in `free5gc-namf-communication` (7) and `free5gc-pdu-session` (9). Ledger `encoding-object`: `implements (`contentType`) / discards (`headers`)`. | | | |
-| media-type-concrete | both | Media Type Object content-map key | golden | Census object-model map-key walk: 10,042 non-wildcard declarations in 122 fixtures, every registered fixture except `query-parameters-openapi` and `calorieninjas.com`. | | | |
-| media-type-suffix-json | both | Media Type Object content-map key | golden | Census object-model map-key walk: 30 declarations in `anchore.io` (5), `apicurio.local-registry` (6), `box.com` (9), `github.com` (2), `redocly.com-museum` (3), `free5gc-pdu-session` (1), and `openepcis-dpp-ready` (4). | | | |
+| media-type-concrete | both | Media Type Object content-map key | golden | Census object-model map-key walk: 10,042 declarations that name both a type and a subtype, in 121 fixtures — every registered source except `bungie.net` (which keys its content maps `*/*` alone), `calorieninjas.com` (which declares no content map at all) and `query-parameters-openapi`, whose one `application/json` key sits under an unquoted-integer status code the instrument's walk does not read (see the method notes). | | | |
+| media-type-suffix-json | both | Media Type Object content-map key | golden | Census object-model map-key walk: 30 declarations in `anchore.io` (5), `apicurio.local-registry` (6), `box.com` (9), `github.com` (2), `redocly.com-museum` (3), `free5gc-pdu-session` (1), and `openepcis-dpp-ready` (4). The `free5gc-pdu-session` declaration is the key `application/+json`, which also witnesses `media-type-malformed-key` below. | | | |
 | media-type-suffix-xml | both | Media Type Object content-map key | golden | Census map-key walk: 16 declarations in `atlassian.com-jira` (14), `color.pizza` (1), and `traccar.org` (1). | | | |
 | xml-request | both | Request Body Object.content `application/xml` key | limitations | Census map-key walk: zero declarations across all 124 sources. Ledger `xml-request`: `discards`. | | | |
 | xml-response | both | Response Object.content `application/xml` key | limitations | Census map-key walk: zero declarations across all 124 sources. Ledger `xml-response`: `discards`. | | | |
 | media-type-wildcard | both | Media Type Object content-map key | golden | Census map-key walk for `*/*`: 179 declarations in `6-dot-authentiqio.appspot.com` (3), `apache.org-qakka` (1), `apicurio.local-registry` (7), `apideck.com-file-storage` (3), `apideck.com-proxy` (3), `atlassian.com-jira` (20), `bintable.com` (1), `bungie.net` (134), and `openfigi.com` (7). | | | |
-| media-type-range | both | Media Type Object content-map key | golden | Census map-key walk for a non-`*/*` range: one declaration in `eozilla`. | | | |
+| media-type-range | both | Media Type Object content-map key | gap | Census object-model map-key walk for a `type/*` range other than `*/*`: zero declarations across all 124 sources (the only other key holding a `*` is `eozilla`'s malformed `/*`, classified below); no `docs/fern-limitations.md` row names it. | `src/ir.rs`: 6 places — `is_binary_response` (`src/ir.rs:2606`, where an `image/*` range matches the `starts_with("image/")` test), the binary-body scan in `resolve_request_body` (`:2931`), `reference_body_example` (`:3273`), `selected_json_request_media` (`:3296`), `request_body_ignored` (`:3310`) and `has_dispatchable_media` (`:4303`); `src/emit.rs`: 1 place, the bytes-body `content-type` header (`:4051`). | A range-keyed binary request body is emitted into the raw client as `"content-type": "<range>"` verbatim, while a range-keyed JSON-ish body is dropped from the client method's signature altogether, and a range-keyed response reaches the method's return type in the types module and `reference.md` through `response_schema`'s key-agnostic first-media fallback. | FIXTURE — register a screened real-world document that declares a `type/*` range on a request body or a response, and byte-compare its Fern golden. |
 | media-type-multipart | both | Media Type Object content-map key | golden | Census object-model map-key walk for `multipart/*`: 42 declarations in `form-bodies` (1), `anchore.io` (1), `appwrite.io-client` (1), `appwrite.io-server` (2), `asana.com` (1), `atlassian.com-jira` (4), `box.com` (3), `discourse.local` (1), `microcks.local` (2), `appng-rest-api` (1), `free5gc-pdu-session` (9), `letta` (3), `free5gc-namf-communication` (7), and `livepeer-ai-runner` (6). | | | |
 | media-type-form-urlencoded | both | Media Type Object content-map key | golden | Census object-model map-key walk for `application/x-www-form-urlencoded`: 42 declarations in `bracketed-property-names` (1), `form-bodies` (1), `anchore.io` (1), `box.com` (3), `conjur.local` (10), `traccar.org` (1), `twilio.com-twilio_voice_v1` (12), and `twilio.com-twilio_messaging_v1` (13). | | | |
 | media-type-octet-stream | both | Media Type Object content-map key | golden | Census map-key walk for `application/octet-stream`: six declarations in `exhaustive`, `apache.org-qakka`, `box.com` (2), `conjur.local`, and `github.com`. | | | |
 | media-type-event-stream | both | Media Type Object content-map key | golden | Census map-key walk for `text/event-stream`: 14 declarations in `sse-streaming` (1), `maif.local-otoroshi` (1), `electric-sql` (1), `letta` (10), and `exa-gate` (1). | | | |
-| media-type-malformed-key | both | Media Type Object content-map key | gap | Census object-model map-key walk: zero declarations across all 124 sources; no `docs/fern-limitations.md` row names it. | `src/openapi.rs`: 1 place; `src/ir.rs`: 3 places | The generated client method body, response parser, or type annotation could change if Fern accepts and interprets the malformed key. | PROBE — settle it with a local malformed-content-key probe because a malformed key is not a plausible real-world fixture target. |
+| media-type-malformed-key | both | Media Type Object content-map key | golden | Census object-model map-key walk: two declarations of a key RFC 6838 does not admit — `/*` (empty type) once in `eozilla`, and `application/+json` (a subtype starting with `+`) once in `free5gc-pdu-session`. | | | |
 | encoding-content-type | both | Encoding Object.contentType | golden | Census `mediaType.encoding.contentType`: 40 reachable declarations in `free5gc-namf-communication` (18) and `free5gc-pdu-session` (22); the ledger's raw-source count for the latter is 99. Ledger `encoding-object`: `implements (`contentType`) / discards (`headers`)`. | | | |
 | encoding-headers | both | Encoding Object.headers | golden | Census `mediaType.encoding.headers`: 24 reachable declarations in `free5gc-namf-communication` (11) and `free5gc-pdu-session` (13); the ledger's raw-source count for the latter is 58. Ledger `encoding-object`: `implements (`contentType`) / discards (`headers`)`. Header Object behavior is classified in the [parameters region](parameters.md). | | | |
 | encoding-style | both | Encoding Object.style | golden | Census `mediaType.encoding.style`: 40 declarations in `free5gc-namf-communication` (18) and `free5gc-pdu-session` (22), all `form`. | | | |
 | encoding-explode | both | Encoding Object.explode | limitations | Census `mediaType.encoding.explode`: zero declarations across all 124 sources. Ledger `encoding-explode-or-allowReserved`: `refuses (multipart object `explode`) / ignores (list `explode`, `allowReserved`)`. | | | |
 | encoding-allow-reserved | both | Encoding Object.allowReserved | limitations | Census `mediaType.encoding.allowReserved`: zero declarations across all 124 sources. Ledger `encoding-explode-or-allowReserved`: `refuses (multipart object `explode`) / ignores (list `explode`, `allowReserved`)`. | | | |
-| response-status-literal | both | Responses Object status-code key | golden | Census object-model map-key walk: 15,622 literal status declarations in 117 fixtures, every registered fixture except `query-parameters-openapi`, `calorieninjas.com`, `reverb.com`, `worldcoin-signup-sequencer`, `free5gc-pdu-session`, `free5gc-namf-communication`, and `kytos-sdntrace-cp`. | | | |
+| response-status-literal | both | Responses Object status-code key | golden | Census object-model map-key walk: 15,622 literal status declarations in 116 fixtures, every registered source except `calorieninjas.com`, `free5gc-namf-communication`, `free5gc-pdu-session`, `kytos-sdntrace-cp`, `query-parameters-openapi`, `reverb.com`, `sigstore-rekor`, and `worldcoin-signup-sequencer`. Five of those eight — `free5gc-namf-communication`, `free5gc-pdu-session`, `kytos-sdntrace-cp`, `query-parameters-openapi` and `worldcoin-signup-sequencer` — do declare literal status codes, in the unquoted-integer YAML form the instrument's walk does not read (see the method notes). | | | |
 | range-1XX | both | Responses Object `1XX` key | limitations | Census map-key walk: zero declarations across all 124 sources. Ledger `range-1XX`: `discards + supply`. | | | |
-| response-range-2xx | both | Responses Object `2XX` key | golden | Census map-key walk: eight declarations, all in `sigstore-rekor`. | | | |
+| range-2XX | both | Responses Object `2XX` key | golden | Census map-key walk: eight declarations, all in `sigstore-rekor`. | | | |
 | range-3XX | both | Responses Object `3XX` key | limitations | Census map-key walk: zero declarations across all 124 sources. Ledger `range-3XX`: `discards`. | | | |
 | range-4XX | both | Responses Object `4XX` key | limitations | Census map-key walk: zero declarations across all 124 sources. Ledger `range-4XX`: `discards`. | | | |
 | range-5XX | both | Responses Object `5XX` key | limitations | Census map-key walk: zero declarations across all 124 sources. Ledger `range-5XX`: `discards`. | | | |
@@ -69,10 +76,40 @@ and of an Encoding is this region's, while the Header Object it holds is the
 
 ## Method notes
 
-The end-to-end measurement was `just surface-census --json`, over 124 registered
-sources (31 vendored and 93 fetched). Fixed fields above are direct selectors
-from that output. The same instrument's registered-source loader and object
-walk supplied the two kinds of free-map key the selector grammar intentionally
-does not emit: media-type keys and response status keys. Counts are declaration
-sites, not generated-file occurrences. Category precedence is `golden`, then
-`limitations`, then `gap`; applying it leaves one `gap` row in this region.
+The measurement is `just surface-census --json`, over the 124 registered sources
+(31 vendored, 93 fetched) it reports. Every fixed-field row's count is a
+selector taken straight from that output.
+
+The two free-keyed maps need one step more, because the selector grammar
+deliberately emits no selector for a map key: the media types keying a content
+map and the status codes keying a Responses Object are *names*, not fields. Both
+were counted by importing `scripts/openapi-surface-census.py` and subclassing its
+`Census` with two hooks over the same loader, source registry and walk — one in
+`descend` recording the keys of every `MAP` of `mediaType`, one in `walk`
+recording the keys of every `responses` node other than `default`. Nothing else
+about the walk changes, so a key the instrument never reaches is not counted
+here either.
+
+That last clause is load-bearing. The walk skips a map key that is not a string
+(`openapi-surface-census.py`: *"an unquoted status code or a numeric map key: a
+name"*), and a status code written as an unquoted YAML integer — `200:` rather
+than `"200":` — is exactly that, so the whole Response Object beneath it is
+invisible to the census. Five registered sources write their status codes that
+way: `free5gc-namf-communication`, `free5gc-pdu-session`, `kytos-sdntrace-cp`,
+`query-parameters-openapi` and `worldcoin-signup-sequencer`. Every Response-side
+count above is therefore a **floor** for those five, and the rows say so where it
+changes which fixtures a row names. The size of the gap is visible in
+[`../fern-limitations.md`](../fern-limitations.md), which counted
+`free5gc-pdu-session`'s Encoding Objects off the raw source and found 99
+`contentType` and 58 `headers` where the census reaches 22 and 13. No row's
+*category* turns on it: re-running the same walk with that skip removed moves
+counts only, and takes no selector in this region from zero declarations to any.
+
+Counts are declaration sites in the source documents, never occurrences in a
+generated tree. A `crozier sites` cell counts places that *inspect or emit* a
+document's media-type key — a comparison, a prefix or suffix test, a split, or a
+propagation of the key into generated bytes — and not the key-agnostic loops
+that copy a content map through, nor a lookup by a literal key the feature can
+never match. Category
+precedence is `golden`, then `limitations`, then `gap`; applying it leaves one
+`gap` row in this region.
