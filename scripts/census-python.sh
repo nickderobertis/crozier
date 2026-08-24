@@ -16,12 +16,19 @@
 # is honoured only if someone has deliberately made one here.
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "$0")/.." && pwd)"
+script_dir="${0%/*}"
+[ "$script_dir" != "$0" ] || script_dir=.
+repo_root="$(cd "$script_dir/.." && pwd)"
 
-if [ -x "$repo_root/.venv/bin/python3" ]; then
-  printf '%s\n' "$repo_root/.venv/bin/python3"
-  exit 0
-fi
+for local_python in \
+  "$repo_root/.venv/bin/python3" \
+  "$repo_root/.venv/Scripts/python.exe"
+do
+  if [ -x "$local_python" ]; then
+    printf '%s\n' "$local_python"
+    exit 0
+  fi
+done
 
 # Ask each candidate whether it is a virtualenv, rather than guessing from its
 # path: `sys.prefix` parting from `sys.base_prefix` is what a virtualenv IS.

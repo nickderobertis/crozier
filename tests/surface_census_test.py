@@ -874,12 +874,27 @@ class CensusInterpreterTests(unittest.TestCase):
 
     RESOLVER = REPO / "scripts" / "census-python.sh"
 
-    def resolve(self, path: str | None = None) -> subprocess.CompletedProcess:
-        # Resolved before PATH is replaced: these cases hand the resolver a PATH
-        # with no interpreter on it, which would otherwise hide `bash` too.
+    def shell(self) -> str:
         shell = shutil.which("bash")
         if shell is None:
             self.skipTest("no bash on PATH to run the resolver")
+        return shell
+
+    def shell_path(self, path: Path) -> str:
+        """Return the spelling Bash uses for a native path."""
+        completed = subprocess.run(
+            [self.shell(), "-c", 'cd "$1" && pwd -P', "census-path", str(path)],
+            capture_output=True,
+            text=True,
+            timeout=CENSUS_TIMEOUT,
+        )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        return completed.stdout.strip()
+
+    def resolve(self, path: str | None = None) -> subprocess.CompletedProcess:
+        # Resolved before PATH is replaced: these cases hand the resolver a PATH
+        # with no interpreter on it, which would otherwise hide `bash` too.
+        shell = self.shell()
         environment = dict(os.environ)
         if path is not None:
             environment["PATH"] = path
@@ -903,9 +918,16 @@ class CensusInterpreterTests(unittest.TestCase):
         completed = self.resolve()
         self.assertEqual(0, completed.returncode, completed.stderr)
         interpreter = completed.stdout.strip()
-        self.assertTrue(Path(interpreter).is_file(), interpreter)
+        exists = subprocess.run(
+            [self.shell(), "-c", 'test -f "$1"', "census-python", interpreter],
+            timeout=CENSUS_TIMEOUT,
+        )
+        self.assertEqual(0, exists.returncode, interpreter)
         prefixes = subprocess.run(
-            [interpreter, "-c", "import sys; print(sys.prefix); print(sys.base_prefix)"],
+            [
+                self.shell(), "-c", '"$1" -c "$2"', "census-python", interpreter,
+                "import sys; print(sys.prefix); print(sys.base_prefix)",
+            ],
             capture_output=True,
             text=True,
             timeout=CENSUS_TIMEOUT,
@@ -929,23 +951,21 @@ class CensusInterpreterTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "scripts").mkdir()
-            local = root / ".venv" / "bin"
+            local = root / ".venv" / ("Scripts" if os.name == "nt" else "bin")
             local.mkdir(parents=True)
-            interpreter = local / "python3"
-            interpreter.symlink_to(Path(sys.executable).resolve())
+            interpreter = local / ("python.exe" if os.name == "nt" else "python3")
+            shutil.copy2(Path(sys.executable).resolve(), interpreter)
             copied = root / "scripts" / self.RESOLVER.name
             shutil.copy2(self.RESOLVER, copied)
 
-            shell = shutil.which("bash")
-            if shell is None:
-                self.skipTest("no bash on PATH to run the resolver")
             completed = subprocess.run(
-                [shell, str(copied)], capture_output=True, text=True,
+                [self.shell(), str(copied)], capture_output=True, text=True,
                 timeout=CENSUS_TIMEOUT,
             )
+            expected = f"{self.shell_path(local)}/{interpreter.name}"
 
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertEqual(str(interpreter), completed.stdout.strip())
+        self.assertEqual(expected, completed.stdout.strip())
 
     def test_a_foreign_virtualenv_is_refused_by_name_rather_than_used(self) -> None:
         """Driven against a real virtualenv, because that is the case that happened."""
@@ -958,7 +978,8 @@ class CensusInterpreterTests(unittest.TestCase):
             if built.returncode != 0:
                 self.skipTest(f"this interpreter cannot build a venv: {built.stderr}")
 
-            completed = self.resolve(path=str(foreign / "bin"))
+            scripts = foreign / ("Scripts" if os.name == "nt" else "bin")
+            completed = self.resolve(path=str(scripts))
             self.assertEqual(1, completed.returncode, completed.stdout)
             self.assertEqual("", completed.stdout.strip())
             self.assertIn("another project's virtualenv", completed.stderr)
