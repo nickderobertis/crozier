@@ -869,6 +869,10 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         self.assertIn("stalls", str(raised.exception))
 
 
+@unittest.skipIf(
+    os.name == "nt",
+    "the POSIX shell resolver's semantics are not reproduced by MSYS",
+)
 class CensusInterpreterTests(unittest.TestCase):
     """Pin the census interpreter's repository provenance."""
 
@@ -964,8 +968,11 @@ class CensusInterpreterTests(unittest.TestCase):
             )
             expected = f"{self.shell_path(local)}/{interpreter.name}"
 
-        self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertEqual(expected, completed.stdout.strip())
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            self.assertTrue(
+                os.path.samefile(expected, completed.stdout.strip()),
+                f"{expected!r} and {completed.stdout.strip()!r} are not the same file",
+            )
 
     def test_a_foreign_virtualenv_is_refused_by_name_rather_than_used(self) -> None:
         """Driven against a real virtualenv, because that is the case that happened."""
