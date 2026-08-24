@@ -301,8 +301,7 @@ surface-census *args:
 # without the network the unscoped recipe needs. Part of `check` (the recipe
 # above is not). Same split as test-fixtures-coverage vs fixtures-coverage.
 #
-# Both census recipes take their interpreter from scripts/census-python.sh rather
-# than spelling `python3`; that script says why.
+# Both census recipes resolve their interpreter through scripts/census-python.sh.
 test-surface-census:
     "$(./scripts/census-python.sh)" tests/surface_census_test.py
 

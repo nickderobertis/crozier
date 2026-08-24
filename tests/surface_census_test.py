@@ -112,9 +112,7 @@ def load_census():
 census = load_census()
 
 
-# Every census run in this file is bounded: a test that can only fail by hanging
-# does not fail, it wedges the gate. The whole vendored corpus censuses in well
-# under a second, so this is nowhere near a timing assertion.
+# The bound turns a wedged gate into a failing test.
 CENSUS_TIMEOUT = 60
 
 
