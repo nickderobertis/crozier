@@ -20,7 +20,7 @@ semantics themselves belong to [document and paths](document-paths.md); this fil
 owns only reaching a Parameter through one.
 
 Evidence comes from `just surface-census --json`, run over every registered
-source listed by the authoritative [coverage index](../openapi-surface-coverage.md). Atomic evidence uses the selector printed in
+source. Atomic evidence uses the selector printed in
 each cell. Conjunction evidence was produced read-only from the same census
 instrument: its `registered_sources` and strict `load_document` functions loaded
 the identical source set, then declarations were counted only when `style`, `in`,
