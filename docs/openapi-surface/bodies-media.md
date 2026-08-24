@@ -16,14 +16,6 @@ objects, and `components.requestBodies`, `components.responses`,
 and of an Encoding is this region's, while the Header Object it holds is the
 `parameters` region's.
 
-## Cross-region references
-
-Schema Objects reached through a media type belong to the
-[schemas region](schemas.md), while the Operation fields which hold an inline
-request body, responses, or callbacks belong to the
-[document and paths region](document-paths.md). This file classifies the objects
-those fields contain, so it does not duplicate those fields.
-
 ## Entries
 
 | key | oas | spec location | category | evidence | crozier sites | why bytes could move | settlement |
