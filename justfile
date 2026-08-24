@@ -300,8 +300,6 @@ surface-census *args:
 # vendored source documents, offline, so the gate keeps the instrument honest
 # without the network the unscoped recipe needs. Part of `check` (the recipe
 # above is not). Same split as test-fixtures-coverage vs fixtures-coverage.
-#
-# Both census recipes resolve their interpreter through scripts/census-python.sh.
 test-surface-census:
     "$(./scripts/census-python.sh)" tests/surface_census_test.py
 

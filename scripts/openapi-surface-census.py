@@ -307,7 +307,7 @@ class _YamlReader:
         elif rest[0] in "[{":
             value = self.flow(rest, index)
         else:
-            value = self.plain(rest, indent, index)
+            value = self.scalar_value(rest, indent, index)
         if anchor is not None:
             self.anchors[anchor] = value
         return value
@@ -378,7 +378,7 @@ class _YamlReader:
             cursor += 1
         return "".join(out)
 
-    def plain(self, rest: str, indent: int, index: int) -> Any:
+    def scalar_value(self, rest: str, indent: int, index: int) -> Any:
         """A quoted or plain scalar, folding any more-indented continuation lines."""
         if rest[0] in "\"'":
             end = self.scan_quoted(rest, 0)
@@ -1050,12 +1050,6 @@ def registered_sources(fixtures_root: Path, corpus_root: Path, vendored_only: bo
             Source(fixture=name, origin="corpus", path=spec_in(corpus_root / name))
         )
     return sources
-
-
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
-
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
