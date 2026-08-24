@@ -292,15 +292,7 @@ class GrammarContractTests(unittest.TestCase):
 
     @unittest.skipUnless(os.name == "posix", "the shim is a /bin/sh script")
     def test_the_join_command_is_skipped_not_failed_where_grep_lacks_pcre(self) -> None:
-        """The guard fires on a leg this one is not, so prove it from the leg it is.
-
-        A first cut of the guard sniffed grep's stderr for `-P`. BSD grep refuses
-        with `invalid option -- P`, which does not contain that substring, so the
-        guard fell through and compared 56 keys against empty output: the macOS
-        gate leg went red while Linux and Windows stayed green, and nothing local
-        could see it. Running the real case against a real `grep` that refuses
-        `-P` reproduces that leg wherever this file runs.
-        """
+        """Exercise the join case with a real `grep` that refuses `-P`."""
         real = shutil.which("grep")
         if real is None:
             self.skipTest("no grep on PATH to fall back to")
@@ -878,15 +870,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
 
 
 class CensusInterpreterTests(unittest.TestCase):
-    """Which Python the census runs under, which is a provenance question.
-
-    The census scripts are standard-library-only, so a foreign interpreter does
-    not fail — it answers, cleanly and with the wrong provenance. Both recipes ran
-    a bare `python3` for a while, and on a machine with an unrelated project's
-    virtualenv earlier on PATH the gate measured this repository under that
-    project's environment without a word. `scripts/census-python.sh` is the one
-    place that resolves it.
-    """
+    """Pin the census interpreter's repository provenance."""
 
     RESOLVER = REPO / "scripts" / "census-python.sh"
 
