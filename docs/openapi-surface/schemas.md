@@ -1,5 +1,8 @@
 # OpenAPI surface coverage — Schemas
 
+<!-- llmlint: ignore-file[contracts_have_one_source_or_a_drift_gate] This audit
+snapshot duplicates census and limitations data by design; refresh it wholesale. -->
+
 Classified entries for the `schemas` region, against the boundary in
 `## Scope` below.
 
