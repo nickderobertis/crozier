@@ -381,6 +381,99 @@ class GrammarContractTests(unittest.TestCase):
                     self.assertIn(section, text)
 
 
+class RegionClassificationTests(unittest.TestCase):
+    """The region files' network-free contracts, gated rather than only documented.
+
+    Each region file transcribes facts it does not own — `docs/fern-limitations.md`
+    verdicts, `src/` occurrence counts — and the six files together have to hold one
+    classification per feature. None of that needs the corpus, so none of it needs the
+    network: these read the real documents and re-measure the real `src/` files, and
+    fail when a transcription goes stale. The census counts in the same tables *do*
+    need the fetched half, and stay with each region's own snapshot reconciliation.
+    """
+
+    REGIONS = REPO / "docs" / "openapi-surface"
+    LEDGER = REPO / "docs" / "fern-limitations.md"
+    CATEGORIES = {"golden", "limitations", "gap"}
+
+    def entries(self, region: Path) -> list[list[str]]:
+        """The classified rows of one region file: eight cells, a real category."""
+        rows = []
+        for line in region.read_text(encoding="utf-8").splitlines():
+            cells = [cell.strip() for cell in line.split("|")[1:-1]]
+            if len(cells) == 8 and cells[3] in self.CATEGORIES:
+                rows.append(cells)
+        self.assertTrue(rows, f"{region.name} classifies nothing")
+        return rows
+
+    def test_no_spec_location_is_classified_in_two_region_files(self) -> None:
+        """The index's contract: every feature belongs to exactly one region."""
+        owners: dict[str, set[str]] = {}
+        for region in sorted(self.REGIONS.glob("*.md")):
+            for cells in self.entries(region):
+                owners.setdefault(cells[2], set()).add(region.name)
+        self.assertEqual(
+            {},
+            {loc: sorted(names) for loc, names in owners.items() if len(names) > 1},
+            "a spec location is classified in two region files; cross-link one instead",
+        )
+
+    def test_every_cited_limitations_verdict_is_the_ledger_s_own(self) -> None:
+        """A `limitations` row joins on a real key; the ledger owns the verdict."""
+        ledger = {}
+        for line in self.LEDGER.read_text(encoding="utf-8").splitlines():
+            cells = [cell.strip().replace("**", "") for cell in line.split("|")[1:-1]]
+            if len(cells) == 5 and re.fullmatch(r"`[^`]+`", cells[0]):
+                ledger[cells[0][1:-1]] = cells[3]
+        self.assertTrue(ledger, "docs/fern-limitations.md parsed to no rows")
+        cited = 0
+        for region in sorted(self.REGIONS.glob("*.md")):
+            text = region.read_text(encoding="utf-8")
+            for key, verdict in re.findall(r"ledger `([^`]+)` — ([^;|]+?)(?= \||;)", text):
+                with self.subTest(region=region.name, key=key):
+                    self.assertIn(key, ledger, "no such docs/fern-limitations.md row")
+                    self.assertEqual(ledger[key], verdict, "verdict is not the ledger's")
+                    cited += 1
+        self.assertTrue(cited, "no region file joins to the limitations ledger")
+
+    def test_the_document_paths_gap_rows_state_the_measured_crozier_sites(self) -> None:
+        """A `gap` row's site count is a measurement of `src/`, so re-measure it."""
+        production = {
+            name: (REPO / "src" / f"{name}.rs")
+            .read_text(encoding="utf-8")
+            .split("#[cfg(test)]", 1)[0]
+            for name in ("ir", "openapi")
+        }
+
+        def places(path: str, count: int) -> str:
+            return f"{path} ({count} {'place' if count == 1 else 'places'})"
+
+        paths = places("src/ir.rs", production["ir"].count("path_param_position"))
+        expected = {
+            "templated-path-segment": paths,
+            "several-path-template-variables": paths,
+            "duplicate-normalized-paths": "none",
+            "duplicate-operation-id": "{}; {}".format(
+                places("src/openapi.rs", production["openapi"].count("pub operation_id")),
+                places("src/ir.rs", len(re.findall(r"\.operation_id\b", production["ir"]))),
+            ),
+            "multi-tagged-operation": places(
+                "src/ir.rs", production["ir"].count("op.tags.iter()")
+            ),
+        }
+        self.assertNotIn(
+            "normalize_path",
+            production["ir"] + production["openapi"],
+            "crozier now normalizes paths; duplicate-normalized-paths reads `none`",
+        )
+        gaps = {
+            cells[0]: cells[5]
+            for cells in self.entries(self.REGIONS / "document-paths.md")
+            if cells[3] == "gap"
+        }
+        self.assertEqual(expected, gaps)
+
+
 class CensusReportTests(unittest.TestCase):
     """What the instrument answers: who declares a feature, and who does not."""
 

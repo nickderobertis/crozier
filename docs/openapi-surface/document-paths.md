@@ -82,8 +82,10 @@ cross-links them instead of carrying a second row:
   `document-paths` row classifies the field's *declaration*, which is why its
   spec location reads `(declared)`.
 
-The reconciliation below gates this: it fails if one spec location is classified
-in two region files, so a future row cannot silently re-duplicate one of these.
+`just check` gates this: `RegionClassificationTests` in
+[`tests/surface_census_test.py`](../../tests/surface_census_test.py) fails when one
+spec location is classified in two region files, so a future row cannot silently
+re-duplicate one of these.
 
 ## Entries
 
@@ -168,21 +170,30 @@ field count from its sum of HTTP-method selectors. Cases that require comparing
 map keys, field values, or tag-array members remain gaps when the ledger has no
 row, because the instrument cannot claim a witness it did not measure. Source
 site counts for those gaps come from exact raw-occurrence searches over each
-`src/` file before its `#[cfg(test)]` module; the reconciliation below records
-the searched strings. No Fern command or probe was run.
+`src/` file before its `#[cfg(test)]` module; the gated test named below records
+the searched strings and re-measures them. No Fern command or probe was run.
 
 ### Snapshot reconciliation
 
-The mechanical check below reproduces the 2026-08-25 registered-source
-measurement, requires the exact snapshot digest, joins every cited key and
-verdict to the limitations ledger, and fails if any spec location is classified
-in two of the six region files. It exits 0 with
-`document-paths evidence: ok (8 ledger keys)`. If an intentional refresh
-reports drift, review the new measurement and update the affected rows,
-snapshot date and digest together.
+Three of this table's contracts need no corpus and are therefore *gated*, not
+merely documented: the join of every cited key and verdict to
+`docs/fern-limitations.md`, the one-classification-per-spec-location rule across
+all six region files, and the `crozier sites` counts re-measured against `src/`.
+`RegionClassificationTests` in [`tests/surface_census_test.py`](../../tests/surface_census_test.py)
+asserts all three over the real documents, and `just check` runs it via
+`just test-surface-census`. Editing a ledger verdict, adding a row a sibling
+region already classifies, or renaming `op.tags.iter()` fails that gate.
 
-`just lint-llm-diff origin/main` checks this documented contract semantically;
-the command below checks the snapshot data mechanically.
+What the gate cannot cover is the census evidence itself: the fetched half of the
+corpus is deliberately outside `just check`. The command below covers exactly
+that remainder — it requires the exact snapshot digest and re-derives every
+transcribed fixture count from the measurement — and is what an intentional
+refresh runs. It exits 0 with
+`document-paths census evidence: ok (56 rows)`. If a refresh reports drift,
+review the new measurement and update the affected rows, snapshot date and
+digest together.
+
+`just lint-llm-diff origin/main` checks this documented contract semantically.
 
 ```bash
 python3 - <<'PY'
@@ -202,7 +213,6 @@ assert actual_digest == expected_digest, (
     f"census drift: expected {expected_digest}, got {actual_digest}"
 )
 
-limitations = Path("docs/fern-limitations.md").read_text()
 payload = json.loads(census)
 measured = {}
 for row in payload["rows"]:
@@ -228,50 +238,19 @@ for line in region.splitlines():
     if len(cells) == 8 and cells[3] in {"golden", "limitations", "gap"}:
         entries[cells[0]] = cells
 
-locations = {}
-for path in sorted(Path("docs/openapi-surface").glob("*.md")):
-    for line in path.read_text().splitlines():
-        cells = [cell.strip() for cell in line.split("|")[1:-1]]
-        if len(cells) == 8 and cells[3] in {"golden", "limitations", "gap"}:
-            locations.setdefault(cells[2], set()).add(path.name)
-shared = {loc: sorted(names) for loc, names in locations.items() if len(names) > 1}
-assert not shared, f"spec location classified in two region files: {shared}"
-
-production = {
-    name: Path(f"src/{name}.rs").read_text().split("#[cfg(test)]", 1)[0]
-    for name in ("ir", "openapi")
-}
-def places(path, count):
-    return f"{path} ({count} {'place' if count == 1 else 'places'})"
-
-ir_path_sites = production["ir"].count("path_param_position")
-openapi_operation_id_sites = production["openapi"].count("pub operation_id")
-ir_operation_id_sites = len(re.findall(r"\.operation_id\b", production["ir"]))
-ir_tag_sites = production["ir"].count("op.tags.iter()")
-site_cells = {
-    "templated-path-segment": places("src/ir.rs", ir_path_sites),
-    "several-path-template-variables": places("src/ir.rs", ir_path_sites),
-    "duplicate-normalized-paths": "none",
-    "duplicate-operation-id": (
-        f"{places('src/openapi.rs', openapi_operation_id_sites)}; "
-        f"{places('src/ir.rs', ir_operation_id_sites)}"
-    ),
-    "multi-tagged-operation": places("src/ir.rs", ir_tag_sites),
-}
-assert "normalize_path" not in production["openapi"] + production["ir"]
-assert {key for key, cells in entries.items() if cells[3] == "gap"} == set(site_cells)
-for key, expected in site_cells.items():
-    assert entries[key][5] == expected, f"crozier-site drift: {key}"
-
 pair = re.compile(r"`([^`]+)` \((\d+)\)")
 special = {"missing-operation-id", "non-identifier-operation-id", "untagged-operation"}
+transcribed_rows = 0
 for key, cells in entries.items():
     if cells[3] != "golden" or key in special:
         continue
+    # A trailing "(qualifier)" distinguishes a row from a sibling region's row over
+    # the same field; the census selector is the unqualified spec location.
     object_name, field = re.sub(r" \([^)]*\)$", "", cells[2]).split(".", 1)
     selector = f"{prefixes[object_name]}.{field}"
     transcribed = {name: int(count) for name, count in pair.findall(cells[4])}
     assert transcribed == measured.get(selector, {}), f"census row drift: {key}"
+    transcribed_rows += 1
 
 methods = [
     "pathItem.get", "pathItem.put", "pathItem.post", "pathItem.delete",
@@ -288,30 +267,20 @@ for key, field in (("missing-operation-id", "operation.operationId"),
             expected[fixture] = absent
     actual = {name: int(count) for name, count in pair.findall(entries[key][4])}
     assert actual == expected, f"census arithmetic drift: {key}"
+    transcribed_rows += 1
 non_identifier = {name: int(count) for name, count in pair.findall(
     entries["non-identifier-operation-id"][4]
 )}
 assert non_identifier == {"operation-id-non-identifier": 2}
 assert measured["operation.operationId"]["operation-id-non-identifier"] == 2
+transcribed_rows += 1
 
-cited = dict(re.findall(r"ledger `([^`]+)` — ([^;|]+?)(?= \||;)", region))
-expected_cited = int(re.search(
-    r"document-paths evidence: ok \((\d+) ledger keys\)", region
+stated = int(re.search(
+    r"document-paths census evidence: ok \((\d+) rows\)", region
 ).group(1))
-assert len(cited) == expected_cited, (
-    f"ledger-key count drift: expected {expected_cited}, got {len(cited)}"
+assert transcribed_rows == stated, (
+    f"transcribed-row count drift: prose says {stated}, measured {transcribed_rows}"
 )
-ledger = {}
-for line in limitations.splitlines():
-    cells = [cell.strip().replace("**", "") for cell in line.split("|")[1:-1]]
-    if len(cells) == 5 and re.fullmatch(r"`[^`]+`", cells[0]):
-        ledger[cells[0][1:-1]] = cells[3]
-assert cited, "document-paths cites no limitations rows"
-for key, verdict in cited.items():
-    assert key in ledger, f"missing limitations key: {key}"
-    assert ledger[key] == verdict, (
-        f"verdict drift for {key}: region has {verdict!r}, ledger has {ledger[key]!r}"
-    )
-print(f"document-paths evidence: ok ({len(cited)} ledger keys)")
+print(f"document-paths census evidence: ok ({transcribed_rows} rows)")
 PY
 ```
