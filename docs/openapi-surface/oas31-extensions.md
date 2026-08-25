@@ -66,7 +66,9 @@ The document-level 3.0-to-3.1 delta and every `x-` prefixed extension.
 
 ## Method notes
 
-The feature list is reproducible from OAS 3.0.4 and 3.1.1. Compare the OpenAPI
+The feature list is reproducible from OAS 3.0.4 and OAS 3.1.2 — the latest
+published patch of each line, and the reason the enumerated patch spellings run
+`3.0.0`–`3.0.4` and `3.1.0`–`3.1.2`. Compare the OpenAPI
 Object fixed-field tables to obtain the document delta; then compare the named
 Object sections in specification order and record every sentence saying that the
 object may be extended with Specification Extensions. Reference Objects explicitly
