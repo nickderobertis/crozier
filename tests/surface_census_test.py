@@ -418,23 +418,26 @@ class RegionClassificationTests(unittest.TestCase):
             "a spec location is classified in two region files; cross-link one instead",
         )
 
-    def test_every_cited_limitations_verdict_is_the_ledger_s_own(self) -> None:
-        """A `limitations` row joins on a real key; the ledger owns the verdict."""
+    def test_document_paths_ledger_citations_match_the_keyed_verdicts(self) -> None:
+        """A cited verdict is the ledger's exact text, not a stale paraphrase.
+
+        Scoped to `document-paths.md`'s ``ledger `key` — verdict`` spelling, which is
+        the only file that uses it. `bodies-media.md`'s ``Ledger `key`: `verdict`.``
+        form has its own case above; a region adopting a third spelling needs a third.
+        """
         ledger = {}
         for line in self.LEDGER.read_text(encoding="utf-8").splitlines():
             cells = [cell.strip().replace("**", "") for cell in line.split("|")[1:-1]]
             if len(cells) == 5 and re.fullmatch(r"`[^`]+`", cells[0]):
                 ledger[cells[0][1:-1]] = cells[3]
         self.assertTrue(ledger, "docs/fern-limitations.md parsed to no rows")
-        cited = 0
-        for region in sorted(self.REGIONS.glob("*.md")):
-            text = region.read_text(encoding="utf-8")
-            for key, verdict in re.findall(r"ledger `([^`]+)` — ([^;|]+?)(?= \||;)", text):
-                with self.subTest(region=region.name, key=key):
-                    self.assertIn(key, ledger, "no such docs/fern-limitations.md row")
-                    self.assertEqual(ledger[key], verdict, "verdict is not the ledger's")
-                    cited += 1
-        self.assertTrue(cited, "no region file joins to the limitations ledger")
+        region = (self.REGIONS / "document-paths.md").read_text(encoding="utf-8")
+        citations = re.findall(r"ledger `([^`]+)` — ([^;|]+?)(?= \||;)", region)
+        self.assertTrue(citations, "document-paths.md joins to no limitations row")
+        for key, verdict in citations:
+            with self.subTest(key=key):
+                self.assertIn(key, ledger, "no such docs/fern-limitations.md row")
+                self.assertEqual(ledger[key], verdict, "verdict is not the ledger's")
 
     def test_the_document_paths_gap_rows_state_the_measured_crozier_sites(self) -> None:
         """A `gap` row's site count is a measurement of `src/`, so re-measure it."""

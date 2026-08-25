@@ -176,7 +176,7 @@ the searched strings and re-measures them. No Fern command or probe was run.
 ### Snapshot reconciliation
 
 Three of this table's contracts need no corpus and are therefore *gated*, not
-merely documented: the join of every cited key and verdict to
+merely documented: the join of this table's cited keys and verdicts to
 `docs/fern-limitations.md`, the one-classification-per-spec-location rule across
 all six region files, and the `crozier sites` counts re-measured against `src/`.
 `RegionClassificationTests` in [`tests/surface_census_test.py`](../../tests/surface_census_test.py)
