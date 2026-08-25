@@ -290,6 +290,38 @@ class GrammarContractTests(unittest.TestCase):
         self.assertEqual(0, grep.returncode, grep.stderr)
         self.assertEqual(keys, set(grep.stdout.split()))
 
+    def test_bodies_media_ledger_citations_match_the_keyed_verdicts(self) -> None:
+        """A cited verdict is the ledger's exact text, not a stale paraphrase."""
+        region = (
+            REPO / "docs" / "openapi-surface" / "bodies-media.md"
+        ).read_text(encoding="utf-8")
+        citations = re.findall(
+            r"Ledger `(?P<key>[A-Za-z0-9._-]+)`: `(?P<verdict>.*?)`\.", region
+        )
+        self.assertGreater(len(citations), 10, "bodies-media.md has almost no Ledger citations")
+
+        ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
+        verdicts: dict[str, str] = {}
+        for line in ledger.splitlines():
+            cells = [cell.strip() for cell in line.split("|")]
+            if len(cells) < 6 or not re.fullmatch(r"`[A-Za-z0-9._-]+`", cells[1]):
+                continue
+            if not cells[2].isdigit() or not cells[3].isdigit():
+                continue
+            verdicts[cells[1].strip("`")] = cells[4]
+
+        failures = []
+        for key, cited in citations:
+            if key not in verdicts:
+                failures.append(f"missing ledger key: {key}")
+            elif not verdicts[key]:
+                failures.append(f"missing ledger verdict for key: {key}")
+            elif cited != verdicts[key]:
+                failures.append(
+                    f"verdict mismatch for {key}: cited {cited!r}, ledger has {verdicts[key]!r}"
+                )
+        self.assertFalse(failures, "\n" + "\n".join(failures))
+
     @unittest.skipUnless(os.name == "posix", "the shim is a /bin/sh script")
     def test_the_join_command_is_skipped_not_failed_where_grep_lacks_pcre(self) -> None:
         """Exercise the join case with a real `grep` that refuses `-P`."""

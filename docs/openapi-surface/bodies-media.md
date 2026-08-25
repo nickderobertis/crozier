@@ -108,18 +108,10 @@ found several times what the census reaches there (22 `contentType`, 13
 *category* turns on it: re-running the same walk with that skip removed moves
 counts only, and takes no selector in this region from zero declarations to any.
 
-Every `Ledger <key>: <verdict>` citation above was read off, and is re-checked
-against, one command over the ledger's own verdict table:
-
-```
-grep -oP '^\| `[A-Za-z0-9._-]+` \| [0-9]+ \| [0-9]+ \| [^|]+' docs/fern-limitations.md
-```
-
-It prints one `key | eligible | pool | verdict` line per measured key; the
-lines whose key is this region's are the twelve joined above, verdict text
-included, so a re-measurement that moves a verdict shows up as a diff against
-this file rather than silently. The same output is why nothing
-here joins on `status_code`: that key carries no verdict line — it is a row
+Every `Ledger <key>: <verdict>` citation above is re-checked against the
+ledger's keyed verdict table. The canonical join command is documented and
+gated in [`../openapi-surface-coverage.md`](../openapi-surface-coverage.md).
+Nothing here joins on `status_code`: that key carries no verdict — it is a row
 label inside the ledger's 407/421 probe table, not a measured feature.
 
 Counts are declaration sites in the source documents, never occurrences in a
