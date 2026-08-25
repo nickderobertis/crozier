@@ -58,9 +58,8 @@ The document-level 3.0-to-3.1 delta and every `x-` prefixed extension.
 | `extension-security-scheme` | both | Security Scheme Object.x-* | golden | Census: amazonaws.com-cloudformation (1), amazonaws.com-cloudfront (1), appwrite.io-client (2), appwrite.io-server (3); 7 declarations. |  |  |  |
 | `extension-oauth-flows` | both | OAuth Flows Object.x-* | gap | Census: 0 declarations across 124 sources; no `fern-limitations.md` row names it. | none | No standard generated Python artifact is defined by an arbitrary OAuth Flows extension. | UNREACHABLE — record that tool-specific flow-set metadata has no language-neutral SDK meaning. |
 | `extension-oauth-flow` | both | OAuth Flow Object.x-* | gap | Census: 0 declarations across 124 sources; no `fern-limitations.md` row names it. | none | No standard generated Python artifact is defined by an arbitrary OAuth Flow extension. | UNREACHABLE — record that tool-specific flow metadata has no language-neutral SDK meaning. |
-| `dual-header-policy` | both | Operation and Schema Objects.x-fern-* / x-crozier-* | golden | Census: audience-filter and audience-filter-strict each declare `operation.x-fern-audiences` (2) and `operation.x-crozier-audiences` (2), 8 declarations total. |  |  |  |
-| `audience-extension` | both | Operation Object.x-fern-audiences / x-crozier-audiences | golden | Census: audience-filter (4) and audience-filter-strict (4), split evenly across both spellings; 8 declarations. |  |  |  |
-| `x-fern-or-crozier-ignore` | both | Operation and Schema Objects.x-fern-ignore / x-crozier-ignore | limitations | `fern-limitations.md` key `x-fern-or-crozier-ignore`: `supply` registrability qualifier; that ledger records no Fern-behavior verdict. |  |  |  |
+| `audience-dual-header-policy` | both | Operation Object.x-fern-audiences / x-crozier-audiences | golden | Census: audience-filter (4) and audience-filter-strict (4), split evenly across both spellings; 8 declarations demonstrate the dual-header policy for this supported extension. |  |  |  |
+| `x-fern-or-crozier-ignore` | both | Operation and Schema Objects.x-fern-ignore / x-crozier-ignore | gap | Census: 0 declarations across 124 sources; `fern-limitations.md` key `x-fern-or-crozier-ignore` carries only the `supply` registrability qualifier, not a Fern-behavior verdict. | `src/openapi.rs` (10 places) | Generated operation methods and model modules could be retained or removed differently. | PROBE — compare each spelling and their precedence on both an Operation and a component Schema. |
 | `codegen-request-body-name-extension` | both | Operation Object.x-codegen-request-body-name | golden | Census: portfoliooptimizer.io (83), sigstore-rekor (3), traccar.org (25); 111 declarations. |  |  |  |
 | `is-beta-extension` | both | Schema Object.x-is-beta | golden | Census: squareup.com (208); 208 declarations. |  |  |  |
 | `fern-streaming-extension` | both | Operation Object.x-fern-streaming | golden | Census: sse-streaming (1); 1 declaration. |  |  |  |
@@ -80,15 +79,40 @@ minimum-content rule. Finally, `src/openapi.rs` supplies the closed list of
 extensions crozier reads and the dual-header policy.
 
 Measurements used `just surface-census --json` over all registered sources and
-targeted `--selector` checks for every delta and extension prefix. That run reported
-407 selectors and 603,390 declaration sites across 124 sources (31 vendored, 93
-fetched). To repeat the patch-spelling rows, run the same census object-model walk
+targeted `--selector` checks for every delta and extension prefix. To repeat the
+patch-spelling rows, run the same census object-model walk
 with `Census.value_of` returning its input unchanged instead of shortening the
 version to `major.minor`, and filter the resulting rows for `3.0.0` through `3.0.4`
 and `3.1.0` through `3.1.2`. The `openapi.openapi=<patch>` labels in the table are
 exact-reporting labels, not selectors accepted by the public grammar. This
 temporary mode changes neither source discovery nor the walk; its counts sum to
-the ordinary census's 124 version sites across the same 124 sources, which is the
-reconciliation check for the one-off measurement. Source-site counts are literal distinct `doc.paths`,
+the ordinary census's version-field declaration total, which is the reconciliation
+check for the one-off measurement. Source-site counts are literal distinct `doc.paths`,
 `doc.webhooks`, `doc.openapi`, and named extension-field reads found with `rg` in
 `src/`; serde fields that are never retained are reported as `none`.
+
+The exact-reporting journey is the census implementation executed in memory with
+only its version-label normalization removed. Run it after `just surface-census`
+has fetched the registered sources; it does not alter the working tree:
+
+```sh
+"$(./scripts/census-python.sh)" - --json $(for v in 3.0.0 3.0.1 3.0.2 3.0.3 3.0.4 3.1.0 3.1.1 3.1.2; do printf '%s ' --selector "openapi.openapi=$v"; done) <<'PY'
+import importlib.util
+import sys
+
+spec = importlib.util.spec_from_file_location("c", "scripts/openapi-surface-census.py")
+c = importlib.util.module_from_spec(spec)
+sys.modules["c"] = c
+spec.loader.exec_module(c)
+
+BaseCensus = c.Census
+
+class ExactPatchCensus(BaseCensus):
+    @staticmethod
+    def value_of(selector, member):
+        return str(member) if selector == "openapi.openapi" else BaseCensus.value_of(selector, member)
+
+c.Census = ExactPatchCensus
+raise SystemExit(c.main())
+PY
+```
