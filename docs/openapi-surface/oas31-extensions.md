@@ -85,9 +85,12 @@ targeted `--selector` checks for every delta and extension prefix. To repeat the
 patch-spelling rows, run the same census object-model walk
 with `Census.value_of` returning its input unchanged instead of shortening the
 version to `major.minor`, and filter the resulting rows for `3.0.0` through `3.0.4`
-and `3.1.0` through `3.1.2`. The `openapi.openapi=<patch>` labels in the table are
-exact-reporting labels, not selectors accepted by the public grammar. This
-temporary mode changes neither source discovery nor the walk; its counts sum to
+and `3.1.0` through `3.1.2`. The grammar accepts `openapi.openapi=<patch>` as a
+`--selector` — it validates the base only — but the ordinary census never emits a
+patch-level value, because `Census.value_of` shortens the version to `major.minor`;
+those labels therefore report rows only under this exact-reporting mode, and an
+unmatched one comes back as declared by no registered source. The mode changes
+neither source discovery nor the walk; its counts sum to
 the ordinary census's version-field declaration total, which is the reconciliation
 check for the one-off measurement. Source-site counts are literal distinct `doc.paths`,
 `doc.webhooks`, `doc.openapi`, and named extension-field reads found with `rg` in
