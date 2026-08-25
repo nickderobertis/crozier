@@ -255,10 +255,10 @@ def places(path, count):
     return f"{path} ({count} {'place' if count == 1 else 'places'})"
 
 
-paths = places("src/ir.rs", production["ir"].count("path_param_position"))
+path_row_sites = places("src/ir.rs", production["ir"].count("path_param_position"))
 site_cells = {
-    "templated-path-segment": paths,
-    "several-path-template-variables": paths,
+    "templated-path-segment": path_row_sites,
+    "several-path-template-variables": path_row_sites,
     "duplicate-normalized-paths": "none",
     "duplicate-operation-id": "{}; {}".format(
         places("src/openapi.rs", production["openapi"].count("pub operation_id")),
