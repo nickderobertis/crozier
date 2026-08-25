@@ -337,7 +337,9 @@ class VariantCensus(c.Census):
                       else "schema" if isinstance(v, dict) else "other"))
         for kw in ("exclusiveMaximum", "exclusiveMinimum"):
             if kw in node:
-                self.note(f"{kw}={'boolean' if isinstance(node[kw], bool) else 'numeric'}")
+                kind = self.kind_of(node[kw])
+                self.note(f"{kw}=" + ("numeric" if kind in ("integer", "float")
+                          else kind if kind == "boolean" else "other"))
         t = node.get("type")
         if isinstance(t, list):
             self.note("type=array")
@@ -349,8 +351,12 @@ class VariantCensus(c.Census):
             self.note("type=scalar" + ("-null" if t == "null" else ""))
         if "const" in node:
             self.note("const=" + self.kind_of(node["const"]))
-        for member in node.get("enum") or []:
-            self.note("enum-member=" + self.kind_of(member))
+        members = node.get("enum")
+        if isinstance(members, list):
+            for member in members:
+                self.note("enum-member=" + self.kind_of(member))
+        elif members is not None:  # not a list: it has no members to classify
+            self.note("enum-not-a-list")
         if "$ref" in node:
             if any(k in c._SCHEMA_FIELDS for k in node if k != "$ref"):
                 self.note("ref-siblings")
