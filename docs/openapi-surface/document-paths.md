@@ -179,9 +179,11 @@ the census, the verdicts by `docs/fern-limitations.md`, the `crozier sites` coun
 by `src/`, and the one-classification-per-feature rule by the six region files
 together. The command below is this document's drift check over all four: it
 requires the exact snapshot digest, re-derives every transcribed fixture count
-from the measurement, joins each cited key and verdict to the ledger, re-measures
-each `gap` row's site count against `src/`, and fails if one spec location is
-classified in two region files. It exits 0 with
+from the measurement, joins each cited key and verdict to the ledger — running
+the canonical join command read out of
+[`openapi-surface-coverage.md`](../openapi-surface-coverage.md) rather than
+re-deriving which keys that ledger owns — re-measures each `gap` row's site count
+against `src/`, and fails if one spec location is classified in two region files. It exits 0 with
 `document-paths evidence: ok (56 census rows, 8 ledger keys, 5 gap rows)`.
 
 Run it after any change to this table, to `docs/fern-limitations.md`, or to the
@@ -230,18 +232,34 @@ assert not shared, f"spec location classified in two region files: {shared}"
 rows = entries(region)
 
 # --- every cited key and verdict is the ledger's own --------------------------
-ledger = {}
-for line in Path("docs/fern-limitations.md").read_text().splitlines():
-    cells = [cell.strip().replace("**", "") for cell in line.split("|")[1:-1]]
-    if len(cells) == 5 and re.fullmatch(r"`[^`]+`", cells[0]):
-        ledger[cells[0][1:-1]] = cells[3]
-assert ledger, "docs/fern-limitations.md parsed to no rows"
+# Which keys the ledger owns is not re-derived here: the index documents the
+# canonical join, so read that command out of the index and run it. Only the
+# verdict cell, which the canonical join does not emit, is read directly.
+index_doc = Path("docs/openapi-surface-coverage.md").read_text()
+join = re.search(r"grep -oP '([^']+)' docs/fern-limitations\.md", index_doc)
+assert join, "docs/openapi-surface-coverage.md no longer documents the canonical join"
+canonical = set(subprocess.run(
+    ["grep", "-oP", join.group(1), "docs/fern-limitations.md"],
+    check=True, stdout=subprocess.PIPE, text=True,
+).stdout.split())
+assert canonical, "the index's canonical ledger join returned no keys"
+
+ledger_text = Path("docs/fern-limitations.md").read_text()
 cited = dict(re.findall(r"ledger `([^`]+)` — ([^;|]+?)(?= \||;)", region))
 assert cited, "document-paths joins to no limitations row"
 for key, verdict in cited.items():
-    assert key in ledger, f"missing limitations key: {key}"
-    assert ledger[key] == verdict, (
-        f"verdict drift for {key}: region has {verdict!r}, ledger has {ledger[key]!r}"
+    assert key in canonical, f"missing limitations key: {key}"
+    # The ledger repeats a key on its probe-detail lines; the five-column row is
+    # the one that carries the verdict.
+    row = next(
+        (line for line in ledger_text.splitlines()
+         if line.startswith(f"| `{key}` |") and len(line.split("|")[1:-1]) == 5),
+        None,
+    )
+    assert row, f"no five-column docs/fern-limitations.md row for {key}"
+    cells = [cell.strip().replace("**", "") for cell in row.split("|")[1:-1]]
+    assert cells[3] == verdict, (
+        f"verdict drift for {key}: region has {verdict!r}, ledger has {cells[3]!r}"
     )
 
 # --- every gap row's site count is a measurement of src/ ----------------------
@@ -344,6 +362,7 @@ stated = re.search(
     r"document-paths evidence: ok \((\d+) census rows, (\d+) ledger keys, (\d+) gap rows\)",
     region,
 )
+assert stated, "document-paths no longer states the counts this check reconciles"
 assert (census_rows, len(cited), len(site_cells)) == tuple(
     int(group) for group in stated.groups()
 ), (
