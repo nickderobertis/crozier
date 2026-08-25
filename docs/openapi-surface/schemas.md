@@ -269,8 +269,13 @@ than walking documents itself: `walk` and `descend` are overridden to observe th
 schema nodes the inherited traversal already reaches and then delegate to it, so
 `$ref` transparency, the alias guard, MAP/LIST descent and `x-` skipping keep
 their single definition in `scripts/openapi-surface-census.py`. It reads the same
-sources through the same `registered_sources()` and `load_document`. Run it from
-the repo root after `just surface-census` has fetched the `link-ok` half:
+sources through the same `registered_sources()` and `load_document`, and refuses
+an unfetched or non-mapping source the way the census does, so a source that
+reports nothing is never confused with one that declares nothing. Save it to a
+scratch file and run it from the repo root, under the interpreter the census
+recipes use, after `just surface-census` has fetched the `link-ok` half:
+
+    "$(./scripts/census-python.sh)" /tmp/variant-scan.py
 
 ```python
 """Variant scan: the value kinds and graph shapes the census does not split.
@@ -278,8 +283,9 @@ the repo root after `just surface-census` has fetched the `link-ok` half:
 Subclasses the census's own `Census`, so the traversal contract — `$ref`
 transparency, the alias guard, MAP/LIST descent, `x-` skipping — keeps its single
 definition in `scripts/openapi-surface-census.py` and this scan only observes the
-nodes that walk already reaches. Run from the repo root, after
-`just surface-census` has fetched the link-ok half.
+nodes that walk already reaches. Run from the repo root under the interpreter
+`scripts/census-python.sh` names, after `just surface-census` has fetched the
+link-ok half.
 """
 import collections, importlib.util, sys
 spec = importlib.util.spec_from_file_location("c", "scripts/openapi-surface-census.py")
@@ -389,9 +395,21 @@ class VariantCensus(c.Census):
             if not colour.get(n):
                 visit(n)
 
-for s in c.registered_sources(c.Path("tests/fixtures"), c.Path(".local/corpus"), False):
+registered = c.registered_sources(c.Path("tests/fixtures"), c.Path(".local/corpus"), False)
+unfetched = [s.fixture for s in registered if s.path is None]
+if unfetched:  # a source reporting nothing and one declaring nothing are not the same answer
+    sys.exit(f"variant-scan: {len(unfetched)} registered source(s) have not been fetched, "
+             f"starting with {unfetched[0]!r}. Run 'just surface-census', which fetches first.")
+for s in registered:
+    try:
+        document = c.load_document(s.path)
+    except c.DocumentError as error:
+        sys.exit(f"variant-scan: {s.fixture}: {error}")
+    if not isinstance(document, dict):
+        sys.exit(f"variant-scan: {s.fixture}: {s.path} is not an OpenAPI document "
+                 "(its root is not a mapping)")
     scan = VariantCensus(s.fixture)
-    scan.walk(c.load_document(s.path), "openapi", "openapi", frozenset())
+    scan.walk(document, "openapi", "openapi", frozenset())
     scan.note_cycles()
 for fact, n in sorted(facts.items()):
     where = ", ".join(f"{f} ({k})" for f, k in sorted(sources[fact].items()))
@@ -424,8 +442,8 @@ the script fails the scan loudly on the next run rather than quietly counting
 something else — but the numbers in the table are still two separate runs, so the
 reconciliation is to take them again, about four minutes together:
 
-    just surface-census --json                              # the census half
-    python3 <the block above, saved to a scratch file>      # the scan half
+    just surface-census --json                             # the census half
+    "$(./scripts/census-python.sh)" /tmp/variant-scan.py   # the scan half
 
 Re-running is also how a maintainer learns that the corpus itself moved: a
 registered row added or refreshed changes both halves, and the table above is the
