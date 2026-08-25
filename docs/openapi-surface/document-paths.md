@@ -3,12 +3,13 @@
 Classified entries for the `document-paths` region, against the boundary in
 `## Scope` below.
 
-All categories, fixture counts and ledger verdicts are the immutable result of
-the registered-source and ledger state measured on **2026-08-25**. They are not
-a live view of later registrations or remeasurements. Refreshing the surface is
-an explicit new measurement that updates the rows, date and reconciliation
-digest together; a later corpus change does not rewrite what this dated snapshot
-measured.
+All categories, fixture counts, ledger verdicts and `crozier sites` counts are
+the immutable result of the registered-source, ledger and `src/` state measured
+on **2026-08-25**. The rows record historical evidence; they are not live
+mirrors of later source edits, registrations or remeasurements. Refreshing the
+surface is an explicit new measurement that updates the rows, date and
+reconciliation digest together. Later changes do not rewrite what this dated
+snapshot measured.
 
 ## Scope
 
@@ -108,13 +109,8 @@ Components `pathItems`, and Reference `summary`/`description` are classified in
 keywords are owned by [`schemas.md`](schemas.md); fields here that point into the
 parameter, body/media or security regions classify the pointer field only.
 
-Evidence was produced by one complete registered-source walk:
-
-```console
-just surface-census --json
-# openapi-surface-census: 407 selector(s), 603390 declaration site(s)
-# across 124 source(s) (31 vendored, 93 fetched)
-```
+Evidence was produced by one complete registered-source walk with `just
+surface-census --json`.
 
 The census intentionally excludes free-map names and array members. For omitted
 `operationId` and `tags`, the evidence subtracts each fixture’s corresponding
@@ -126,17 +122,19 @@ comments and tests were excluded. No Fern command or probe was run.
 
 ### Snapshot reconciliation
 
-The mechanical check below reproduces the 2026-08-25 measurement over all 124
-registered sources, requires the exact snapshot digest, and joins every cited
+The mechanical check below reproduces the 2026-08-25 registered-source
+measurement, requires the exact snapshot digest, and joins every cited
 key and verdict to the limitations ledger. It was run on that date at exit 0
 with result `document-paths evidence: ok (8 ledger keys)`. If an intentional
 refresh reports drift, review the new measurement and update the affected rows,
 snapshot date and digest together.
 
-`just lint-llm-diff origin/main` checks this documented snapshot contract
-semantically; the command independently checks its data mechanically. Run both
-after changing this file, `src/`, the registered corpus, the census instrument,
-or [`fern-limitations.md`](../fern-limitations.md).
+When invoked, `just lint-llm-diff origin/main` checks this documented snapshot
+contract semantically; the command independently checks its data mechanically.
+These checks validate a deliberate snapshot refresh; ordinary later changes to
+an upstream source do not make this historical classification false. A
+maintainer refreshing the snapshot runs the mechanical command explicitly,
+then the semantic check.
 
 ```bash
 python3 - <<'PY'
@@ -154,16 +152,6 @@ actual_census = hashlib.sha256(census).hexdigest()
 assert actual_census == expected_census, (
     f"census drift: expected {expected_census}, got {actual_census}"
 )
-
-production = {
-    name: Path(f"src/{name}.rs").read_text().split("#[cfg(test)]", 1)[0]
-    for name in ("ir", "openapi")
-}
-assert production["ir"].count("path_param_position") == 3
-assert production["openapi"].count("pub operation_id") == 1
-assert len(re.findall(r"\.operation_id\b", production["ir"])) == 6
-assert production["ir"].count("op.tags.iter()") == 1
-assert "normalize_path" not in production["openapi"] + production["ir"]
 
 region = Path("docs/openapi-surface/document-paths.md").read_text()
 limitations = Path("docs/fern-limitations.md").read_text()
@@ -191,6 +179,32 @@ for line in region.splitlines():
     cells = [cell.strip() for cell in line.split("|")[1:-1]]
     if len(cells) == 8 and cells[3] in {"golden", "limitations", "gap"}:
         entries[cells[0]] = cells
+
+production = {
+    name: Path(f"src/{name}.rs").read_text().split("#[cfg(test)]", 1)[0]
+    for name in ("ir", "openapi")
+}
+def places(path, count):
+    return f"{path} ({count} {'place' if count == 1 else 'places'})"
+
+ir_path_sites = production["ir"].count("path_param_position")
+openapi_operation_id_sites = production["openapi"].count("pub operation_id")
+ir_operation_id_sites = len(re.findall(r"\.operation_id\b", production["ir"]))
+ir_tag_sites = production["ir"].count("op.tags.iter()")
+site_cells = {
+    "templated-path-segment": places("src/ir.rs", ir_path_sites),
+    "several-path-template-variables": places("src/ir.rs", ir_path_sites),
+    "duplicate-normalized-paths": "none",
+    "duplicate-operation-id": (
+        f"{places('src/openapi.rs', openapi_operation_id_sites)}; "
+        f"{places('src/ir.rs', ir_operation_id_sites)}"
+    ),
+    "multi-tagged-operation": places("src/ir.rs", ir_tag_sites),
+}
+assert "normalize_path" not in production["openapi"] + production["ir"]
+assert {key for key, cells in entries.items() if cells[3] == "gap"} == set(site_cells)
+for key, expected in site_cells.items():
+    assert entries[key][5] == expected, f"crozier-site drift: {key}"
 
 pair = re.compile(r"`([^`]+)` \((\d+)\)")
 special = {"missing-operation-id", "non-identifier-operation-id", "untagged-operation"}
