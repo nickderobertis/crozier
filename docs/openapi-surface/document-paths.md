@@ -82,10 +82,9 @@ cross-links them instead of carrying a second row:
   `document-paths` row classifies the field's *declaration*, which is why its
   spec location reads `(declared)`.
 
-`just check` gates this: `RegionClassificationTests` in
-[`tests/surface_census_test.py`](../../tests/surface_census_test.py) fails when one
-spec location is classified in two region files, so a future row cannot silently
-re-duplicate one of these.
+The reconciliation below checks this: it fails when one spec location is
+classified in two region files, so a future row that re-duplicated one of these
+would not pass a refresh unnoticed.
 
 ## Entries
 
@@ -170,28 +169,30 @@ field count from its sum of HTTP-method selectors. Cases that require comparing
 map keys, field values, or tag-array members remain gaps when the ledger has no
 row, because the instrument cannot claim a witness it did not measure. Source
 site counts for those gaps come from exact raw-occurrence searches over each
-`src/` file before its `#[cfg(test)]` module; the gated test named below records
+`src/` file before its `#[cfg(test)]` module; the reconciliation below records
 the searched strings and re-measures them. No Fern command or probe was run.
 
 ### Snapshot reconciliation
 
-Three of this table's contracts need no corpus and are therefore *gated*, not
-merely documented: the join of this table's cited keys and verdicts to
-`docs/fern-limitations.md`, the one-classification-per-spec-location rule across
-all six region files, and the `crozier sites` counts re-measured against `src/`.
-`RegionClassificationTests` in [`tests/surface_census_test.py`](../../tests/surface_census_test.py)
-asserts all three over the real documents, and `just check` runs it via
-`just test-surface-census`. Editing a ledger verdict, adding a row a sibling
-region already classifies, or renaming `op.tags.iter()` fails that gate.
+Everything this table transcribes is owned somewhere else — the fixture counts by
+the census, the verdicts by `docs/fern-limitations.md`, the `crozier sites` counts
+by `src/`, and the one-classification-per-feature rule by the six region files
+together. The command below is this document's drift check over all four: it
+requires the exact snapshot digest, re-derives every transcribed fixture count
+from the measurement, joins each cited key and verdict to the ledger, re-measures
+each `gap` row's site count against `src/`, and fails if one spec location is
+classified in two region files. It exits 0 with
+`document-paths evidence: ok (56 census rows, 8 ledger keys, 5 gap rows)`.
 
-What the gate cannot cover is the census evidence itself: the fetched half of the
-corpus is deliberately outside `just check`. The command below covers exactly
-that remainder — it requires the exact snapshot digest and re-derives every
-transcribed fixture count from the measurement — and is what an intentional
-refresh runs. It exits 0 with
-`document-paths census evidence: ok (56 rows)`. If a refresh reports drift,
-review the new measurement and update the affected rows, snapshot date and
-digest together.
+Run it after any change to this table, to `docs/fern-limitations.md`, or to the
+`src/` symbols the `gap` rows name. It is **not** wired into `just check`: its
+census half fetches the `link-ok` corpus, which `check` deliberately keeps
+offline, and this node's scope is this file alone. Wiring the offline half — the
+ledger join, the spec-location uniqueness rule and the `src/` site counts — into
+`just test-surface-census` is the standing follow-up, and belongs to a change
+that may touch `tests/` and the `justfile`. Until then this snippet is a manual
+check, so treat a refresh that skips it as unverified: review the new
+measurement and update the affected rows, snapshot date and digest together.
 
 `just lint-llm-diff origin/main` checks this documented contract semantically.
 
@@ -203,7 +204,76 @@ import re
 import subprocess
 from pathlib import Path
 
-region = Path("docs/openapi-surface/document-paths.md").read_text()
+REGIONS = Path("docs/openapi-surface")
+region = (REGIONS / "document-paths.md").read_text()
+
+# --- the six region files hold one classification per feature -----------------
+CATEGORIES = {"golden", "limitations", "gap"}
+
+
+def entries(text):
+    rows = {}
+    for line in text.splitlines():
+        cells = [cell.strip() for cell in line.split("|")[1:-1]]
+        if len(cells) == 8 and cells[3] in CATEGORIES:
+            rows[cells[0]] = cells
+    return rows
+
+
+owners = {}
+for path in sorted(REGIONS.glob("*.md")):
+    for cells in entries(path.read_text()).values():
+        owners.setdefault(cells[2], set()).add(path.name)
+shared = {loc: sorted(names) for loc, names in owners.items() if len(names) > 1}
+assert not shared, f"spec location classified in two region files: {shared}"
+
+rows = entries(region)
+
+# --- every cited key and verdict is the ledger's own --------------------------
+ledger = {}
+for line in Path("docs/fern-limitations.md").read_text().splitlines():
+    cells = [cell.strip().replace("**", "") for cell in line.split("|")[1:-1]]
+    if len(cells) == 5 and re.fullmatch(r"`[^`]+`", cells[0]):
+        ledger[cells[0][1:-1]] = cells[3]
+assert ledger, "docs/fern-limitations.md parsed to no rows"
+cited = dict(re.findall(r"ledger `([^`]+)` — ([^;|]+?)(?= \||;)", region))
+assert cited, "document-paths joins to no limitations row"
+for key, verdict in cited.items():
+    assert key in ledger, f"missing limitations key: {key}"
+    assert ledger[key] == verdict, (
+        f"verdict drift for {key}: region has {verdict!r}, ledger has {ledger[key]!r}"
+    )
+
+# --- every gap row's site count is a measurement of src/ ----------------------
+production = {
+    name: Path(f"src/{name}.rs").read_text().split("#[cfg(test)]", 1)[0]
+    for name in ("ir", "openapi")
+}
+
+
+def places(path, count):
+    return f"{path} ({count} {'place' if count == 1 else 'places'})"
+
+
+paths = places("src/ir.rs", production["ir"].count("path_param_position"))
+site_cells = {
+    "templated-path-segment": paths,
+    "several-path-template-variables": paths,
+    "duplicate-normalized-paths": "none",
+    "duplicate-operation-id": "{}; {}".format(
+        places("src/openapi.rs", production["openapi"].count("pub operation_id")),
+        places("src/ir.rs", len(re.findall(r"\.operation_id\b", production["ir"]))),
+    ),
+    "multi-tagged-operation": places("src/ir.rs", production["ir"].count("op.tags.iter()")),
+}
+assert "normalize_path" not in production["ir"] + production["openapi"], (
+    "crozier now normalizes paths; duplicate-normalized-paths reads `none`"
+)
+assert {key for key, cells in rows.items() if cells[3] == "gap"} == set(site_cells)
+for key, expected_cell in site_cells.items():
+    assert rows[key][5] == expected_cell, f"crozier-site drift: {key}"
+
+# --- every transcribed fixture count is the census's own ---------------------
 expected_digest = "7c476c7f0dcdcbdbe8cff1dad01c144276bcb58df2681309fee44c200bcecfdb"
 census = subprocess.run(
     ["just", "surface-census", "--json"], check=True, stdout=subprocess.PIPE
@@ -232,16 +302,10 @@ prefixes = {
     "Components Object": "components",
     "Reference Object": "reference",
 }
-entries = {}
-for line in region.splitlines():
-    cells = [cell.strip() for cell in line.split("|")[1:-1]]
-    if len(cells) == 8 and cells[3] in {"golden", "limitations", "gap"}:
-        entries[cells[0]] = cells
-
 pair = re.compile(r"`([^`]+)` \((\d+)\)")
 special = {"missing-operation-id", "non-identifier-operation-id", "untagged-operation"}
-transcribed_rows = 0
-for key, cells in entries.items():
+census_rows = 0
+for key, cells in rows.items():
     if cells[3] != "golden" or key in special:
         continue
     # A trailing "(qualifier)" distinguishes a row from a sibling region's row over
@@ -250,7 +314,7 @@ for key, cells in entries.items():
     selector = f"{prefixes[object_name]}.{field}"
     transcribed = {name: int(count) for name, count in pair.findall(cells[4])}
     assert transcribed == measured.get(selector, {}), f"census row drift: {key}"
-    transcribed_rows += 1
+    census_rows += 1
 
 methods = [
     "pathItem.get", "pathItem.put", "pathItem.post", "pathItem.delete",
@@ -265,22 +329,30 @@ for key, field in (("missing-operation-id", "operation.operationId"),
         absent = total - measured.get(field, {}).get(fixture, 0)
         if absent:
             expected[fixture] = absent
-    actual = {name: int(count) for name, count in pair.findall(entries[key][4])}
+    actual = {name: int(count) for name, count in pair.findall(rows[key][4])}
     assert actual == expected, f"census arithmetic drift: {key}"
-    transcribed_rows += 1
+    census_rows += 1
 non_identifier = {name: int(count) for name, count in pair.findall(
-    entries["non-identifier-operation-id"][4]
+    rows["non-identifier-operation-id"][4]
 )}
 assert non_identifier == {"operation-id-non-identifier": 2}
 assert measured["operation.operationId"]["operation-id-non-identifier"] == 2
-transcribed_rows += 1
+census_rows += 1
 
-stated = int(re.search(
-    r"document-paths census evidence: ok \((\d+) rows\)", region
-).group(1))
-assert transcribed_rows == stated, (
-    f"transcribed-row count drift: prose says {stated}, measured {transcribed_rows}"
+# --- the counts this document states are the ones just measured --------------
+stated = re.search(
+    r"document-paths evidence: ok \((\d+) census rows, (\d+) ledger keys, (\d+) gap rows\)",
+    region,
 )
-print(f"document-paths census evidence: ok ({transcribed_rows} rows)")
+assert (census_rows, len(cited), len(site_cells)) == tuple(
+    int(group) for group in stated.groups()
+), (
+    f"count drift: prose says {stated.group(0)!r}, measured "
+    f"{census_rows} census rows, {len(cited)} ledger keys, {len(site_cells)} gap rows"
+)
+print(
+    f"document-paths evidence: ok ({census_rows} census rows, "
+    f"{len(cited)} ledger keys, {len(site_cells)} gap rows)"
+)
 PY
 ```
