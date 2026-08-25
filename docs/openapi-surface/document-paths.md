@@ -5,11 +5,8 @@ Classified entries for the `document-paths` region, against the boundary in
 
 All categories, fixture counts, ledger verdicts and `crozier sites` counts are
 the immutable result of the registered-source, ledger and `src/` state measured
-on **2026-08-25**. The rows record historical evidence; they are not live
-mirrors of later source edits, registrations or remeasurements. Refreshing the
-surface is an explicit new measurement that updates the rows, date and
-reconciliation digest together. Later changes do not rewrite what this dated
-snapshot measured.
+on **2026-08-25**. Refreshing the surface is an explicit new measurement that
+updates the affected rows, date and reconciliation digest together.
 
 ## Scope
 
@@ -117,24 +114,21 @@ The census intentionally excludes free-map names and array members. For omitted
 field count from its sum of HTTP-method selectors. Cases that require comparing
 map keys, field values, or tag-array members remain gaps when the ledger has no
 row, because the instrument cannot claim a witness it did not measure. Source
-site counts for those gaps come from exact field-handling searches over `src/`;
-comments and tests were excluded. No Fern command or probe was run.
+site counts for those gaps come from exact raw-occurrence searches over each
+`src/` file before its `#[cfg(test)]` module; the reconciliation below records
+the searched strings. No Fern command or probe was run.
 
 ### Snapshot reconciliation
 
 The mechanical check below reproduces the 2026-08-25 registered-source
 measurement, requires the exact snapshot digest, and joins every cited
-key and verdict to the limitations ledger. It was run on that date at exit 0
-with result `document-paths evidence: ok (8 ledger keys)`. If an intentional
-refresh reports drift, review the new measurement and update the affected rows,
+key and verdict to the limitations ledger. It exits 0 with
+`document-paths evidence: ok (8 ledger keys)`. If an intentional refresh
+reports drift, review the new measurement and update the affected rows,
 snapshot date and digest together.
 
-When invoked, `just lint-llm-diff origin/main` checks this documented snapshot
-contract semantically; the command independently checks its data mechanically.
-These checks validate a deliberate snapshot refresh; ordinary later changes to
-an upstream source do not make this historical classification false. A
-maintainer refreshing the snapshot runs the mechanical command explicitly,
-then the semantic check.
+`just lint-llm-diff origin/main` checks this documented contract semantically;
+the command below checks the snapshot data mechanically.
 
 ```bash
 python3 - <<'PY'
@@ -144,16 +138,16 @@ import re
 import subprocess
 from pathlib import Path
 
-expected_census = "7c476c7f0dcdcbdbe8cff1dad01c144276bcb58df2681309fee44c200bcecfdb"
+region = Path("docs/openapi-surface/document-paths.md").read_text()
+expected_digest = "7c476c7f0dcdcbdbe8cff1dad01c144276bcb58df2681309fee44c200bcecfdb"
 census = subprocess.run(
     ["just", "surface-census", "--json"], check=True, stdout=subprocess.PIPE
 ).stdout
-actual_census = hashlib.sha256(census).hexdigest()
-assert actual_census == expected_census, (
-    f"census drift: expected {expected_census}, got {actual_census}"
+actual_digest = hashlib.sha256(census).hexdigest()
+assert actual_digest == expected_digest, (
+    f"census drift: expected {expected_digest}, got {actual_digest}"
 )
 
-region = Path("docs/openapi-surface/document-paths.md").read_text()
 limitations = Path("docs/fern-limitations.md").read_text()
 payload = json.loads(census)
 measured = {}
@@ -238,6 +232,12 @@ assert non_identifier == {"operation-id-non-identifier": 2}
 assert measured["operation.operationId"]["operation-id-non-identifier"] == 2
 
 cited = dict(re.findall(r"ledger `([^`]+)` — ([^;|]+?)(?= \||;)", region))
+expected_cited = int(re.search(
+    r"document-paths evidence: ok \((\d+) ledger keys\)", region
+).group(1))
+assert len(cited) == expected_cited, (
+    f"ledger-key count drift: expected {expected_cited}, got {len(cited)}"
+)
 ledger = {}
 for line in limitations.splitlines():
     cells = [cell.strip().replace("**", "") for cell in line.split("|")[1:-1]]
