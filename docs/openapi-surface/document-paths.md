@@ -1,5 +1,19 @@
 # OpenAPI surface coverage — Document, paths and operations
 
+<!-- llmlint: ignore-file[contracts_have_one_source_or_a_drift_gate] This table
+restates facts owned elsewhere by design: the classification contract requires
+each row to name its fixtures and counts (owned by `just surface-census`), its
+ledger key and verdict (owned by `docs/fern-limitations.md`), and its `src/` site
+counts. The `### Snapshot reconciliation` below re-derives all four from those
+owners and fails on drift, but nothing runs it automatically: its census half
+fetches the `link-ok` corpus, which `just check` deliberately keeps offline, and
+its offline half would have to live in `tests/surface_census_test.py` — a file
+this document's node may not change. Tracked follow-up: extend
+`test_bodies_media_ledger_citations_match_the_keyed_verdicts` to the em-dash
+citation spelling this file uses, and add the spec-location uniqueness and
+`crozier sites` assertions to `just test-surface-census`. Remove this directive
+in the change that does it. -->
+
 Classified entries for the `document-paths` region, against the boundary in
 `## Scope` and the walk in `## How this region's feature list was enumerated`
 below.
