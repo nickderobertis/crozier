@@ -1,7 +1,8 @@
 # OpenAPI surface coverage — Document, paths and operations
 
 Classified entries for the `document-paths` region, against the boundary in
-`## Scope` below.
+`## Scope` and the walk in `## How this region's feature list was enumerated`
+below.
 
 All categories, fixture counts, ledger verdicts and `crozier sites` counts are
 the immutable result of the registered-source, ledger and `src/` state measured
@@ -12,6 +13,70 @@ updates the affected rows, date and reconciliation digest together.
 
 OpenAPI, Info, Contact, License, Server, Server Variable, Components, Paths,
 Path Item, Operation, External Documentation, Tag and Reference objects.
+
+## How this region's feature list was enumerated
+
+From the specification, not from crozier's source or from what the corpus
+happens to hold — reading the corpus would only ever classify what is already
+covered. Repeating these four steps against
+[OAS 3.0.3](https://spec.openapis.org/oas/v3.0.3) and
+[OAS 3.1.1](https://spec.openapis.org/oas/v3.1.1) reproduces the rows below:
+
+1. **Walk the object graph from its root.** Start at the OpenAPI Object's
+   *Fixed Fields* table and follow each field into the table of the object it
+   names: Info, Contact, License, Server, Server Variable, Paths, Path Item,
+   Operation, Components, Tag, External Documentation and Reference. Record
+   every field once, in the order its own table lists it.
+2. **Expand the Path Item methods.** The Path Item table lists `get`, `put`,
+   `post`, `delete`, `options`, `head`, `patch` and `trace` as separate fixed
+   fields; each gets its own row, because Fern dispatches on the method.
+3. **Add the free-keyed and value-shaped cases the tables cannot enumerate.**
+   The Paths Object constrains its keys rather than listing them, so its forms
+   get one row each (a templated segment, several template expressions in one
+   path, and two paths equal after template-name normalization). The same
+   applies where a fixed field's *value* changes generator behaviour rather
+   than its presence: `operationId` omitted, duplicated or not an identifier,
+   and `tags` omitted or carrying several members.
+4. **Drop the rows another region owns**, per the boundaries below.
+
+Over the fields this region records, the 3.0 and 3.1 tables are field-for-field
+identical, which is why every row reads `both`; the fields 3.1 adds are
+[`oas31-extensions.md`](oas31-extensions.md)'s, per the boundaries below.
+
+### Cross-region boundaries
+
+Every feature belongs to exactly one region file. This region's rows stop at the
+pointer field wherever a field's value is another region's object.
+
+- Of the nine 3.0 Components maps, `schemas` is recorded here. The Parameter,
+  Header and Example maps belong to [`parameters.md`](parameters.md); the
+  Response, Request Body, Callback and Link maps belong to
+  [`bodies-media.md`](bodies-media.md); and the Security Scheme map belongs to
+  [`security.md`](security.md).
+- The 3.1-only OpenAPI `jsonSchemaDialect` and `webhooks`, Info `summary`,
+  License `identifier`, Components `pathItems`, and Reference
+  `summary`/`description` are classified in
+  [`oas31-extensions.md`](oas31-extensions.md), as are the individual `openapi`
+  version *values* (`3.0.0` … `3.1.2`) — this region classifies only the
+  presence of the `openapi` field itself.
+- Schema-valued fields and JSON Schema keywords are owned by
+  [`schemas.md`](schemas.md), wherever they appear.
+- Fields here that point into the parameter, body/media or security regions
+  classify the pointer field only: `pathitem-parameters` and
+  `operation-parameters` classify that the array is read, while the Parameter
+  Objects inside it are [`parameters.md`](parameters.md)'s; `operation-request-body`,
+  `operation-responses` and `operation-callbacks` likewise defer to
+  [`bodies-media.md`](bodies-media.md), and `document-security` and
+  `operation-security` to [`security.md`](security.md).
+
+Two sibling files, both merged from `main` after this region was first
+classified, carry a row whose *spec location* string collides with one here:
+`openapi-version-field` in [`oas31-extensions.md`](oas31-extensions.md) and
+`path-item-parameters` in [`parameters.md`](parameters.md). Neither field is in
+those files' own `## Scope` — the `openapi` field and the Path Item Object's
+fixed fields are this region's — so this region stays authoritative for both,
+and retiring the two sibling rows is a follow-up for whoever next refreshes the
+index rather than a change this node may make to another region's file.
 
 ## Entries
 
@@ -88,23 +153,6 @@ Path Item, Operation, External Documentation, Tag and Reference objects.
 | multi-tagged-operation | both | Operation Object.tags with several members | gap | 2026-08-25 census: `operation.tags` counts the field, not its array members, so it supplies no multi-tag witness; no ledger row names it | src/ir.rs (1 place) | A disagreement could place methods under different sub-client modules and alter root-client imports and `reference.md`. | PROBE — add a limitations-ledger probe whose operation has two tags and record which tag Fern uses. |
 
 ## Method notes
-
-The feature list is reproducible from the OpenAPI 3.0.3 and 3.1.1 specification
-object tables: start at the OpenAPI Object, walk each field into the Info,
-Contact, License, Server, Server Variable, Paths, Path Item, Operation,
-Components, Tag, External Documentation and Reference Object tables, and record
-each field once. Expand the Path Item fixed fields into all eight HTTP methods;
-then add the path-key and operation-shape cases named in this region’s scope.
-Of the nine 3.0 Components maps, `schemas` is recorded here. The Parameter,
-Header and Example maps belong to [`parameters.md`](parameters.md); the Response,
-Request Body, Callback and Link maps belong to
-[`bodies-media.md`](bodies-media.md); and the Security Scheme map belongs to
-[`security.md`](security.md). The 3.1-only OpenAPI
-`jsonSchemaDialect` and `webhooks`, Info `summary`, License `identifier`,
-Components `pathItems`, and Reference `summary`/`description` are classified in
-[`oas31-extensions.md`](oas31-extensions.md). Schema-valued fields and JSON Schema
-keywords are owned by [`schemas.md`](schemas.md); fields here that point into the
-parameter, body/media or security regions classify the pointer field only.
 
 Evidence was produced by one complete registered-source walk with `just
 surface-census --json`.
