@@ -89,10 +89,10 @@ declaration whether the value is a string or an array, `schema.additionalPropert
 counts one whether the value is `true`, `false` or a schema, and no selector
 exists for a boolean schema, for a `$ref` with siblings, or for a reference cycle.
 Twenty-five of this region's rows are exactly those variants, so they are measured
-by a **supplementary variant scan** that reuses the census's own document loader
-and object-model table and splits the value kinds the census merges. Its evidence
-cells are marked `variant scan <fact>`; the scan, the command that runs it, and
-the self-check that proves it reaches the same nodes as the census are in
+by a **supplementary variant scan** — a subclass of the census's own walker that
+splits the value kinds it merges. Its evidence cells are marked
+`variant scan <fact>`; the scan, the command that runs it, and the self-check that
+proves its parts add back up to the census's totals are in
 [Method notes](#method-notes).
 
 #### What belongs to another region
@@ -264,15 +264,22 @@ reports, and each `limitations` row spells its verdict the way that file's
 
 Twenty-five of the rows above are value kinds or graph shapes the census grammar
 merges (see [above](#the-instrument-and-the-one-thing-it-cannot-see)). This scan
-splits them. It imports `scripts/openapi-surface-census.py` for the document
-loader, the `OBJECTS` object-model table and `registered_sources()`, so it reads
-exactly the sources the census reads, and walks them the same way. Run it from
+splits them, and it does that by **subclassing the census's own `Census`** rather
+than walking documents itself: `walk` and `descend` are overridden to observe the
+schema nodes the inherited traversal already reaches and then delegate to it, so
+`$ref` transparency, the alias guard, MAP/LIST descent and `x-` skipping keep
+their single definition in `scripts/openapi-surface-census.py`. It reads the same
+sources through the same `registered_sources()` and `load_document`. Run it from
 the repo root after `just surface-census` has fetched the `link-ok` half:
 
 ```python
 """Variant scan: the value kinds and graph shapes the census does not split.
 
-Run from the repo root, after `just surface-census` has fetched the link-ok half.
+Subclasses the census's own `Census`, so the traversal contract — `$ref`
+transparency, the alias guard, MAP/LIST descent, `x-` skipping — keeps its single
+definition in `scripts/openapi-surface-census.py` and this scan only observes the
+nodes that walk already reaches. Run from the repo root, after
+`just surface-census` has fetched the link-ok half.
 """
 import collections, importlib.util, sys
 spec = importlib.util.spec_from_file_location("c", "scripts/openapi-surface-census.py")
@@ -280,104 +287,112 @@ c = importlib.util.module_from_spec(spec); sys.modules["c"] = c; spec.loader.exe
 COMPOSITION = ("allOf", "anyOf", "oneOf", "not")
 facts, sources = collections.Counter(), collections.defaultdict(collections.Counter)
 
-def note(fact, fixture, n=1):
-    facts[fact] += n
-    sources[fact][fixture] += n
+class VariantCensus(c.Census):
+    """The census's walk, with the value kinds and reference edges it merges noted."""
 
-def walk(node, kind, position, seen, fixture, depth, owner, edges):
-    if isinstance(node, bool) and kind == "schema":
-        return note(f"boolean-schema={str(node).lower()}@{position}", fixture)
-    if not isinstance(node, dict) or id(node) in seen:
-        return
-    seen = seen | {id(node)}
-    if "$ref" in node and kind not in c.REF_TRANSPARENT:
-        return
-    if kind == "schema":
-        if depth >= 15:
-            note("schema-depth>=15", fixture)
-        v = node.get("additionalProperties")
+    def __init__(self, fixture):
+        super().__init__()
+        self.fixture, self.position, self.owner, self.depth = fixture, "openapi", None, 0
+        self.edges = collections.defaultdict(set)
+
+    def note(self, fact, n=1):
+        facts[fact] += n
+        sources[fact][self.fixture] += n
+
+    def walk(self, node, kind, prefix, seen):
+        """Observe a schema node, then hand it to the census's own traversal."""
+        if kind == "schema":
+            if isinstance(node, bool):
+                return self.note(f"boolean-schema={str(node).lower()}@{self.position}")
+            if isinstance(node, dict) and id(node) not in seen:
+                self.note_schema(node)
+        super().walk(node, kind, prefix, seen)
+
+    def descend(self, value, child, selector, seen):
+        """Carry the position, the schema depth and the owning component name down."""
+        position, depth, owner = self.position, self.depth, self.owner
+        self.position = selector
+        if child.kind == "schema":
+            self.depth += 1
+        if selector == "components.schemas" and isinstance(value, dict):
+            for name, entry in value.items():
+                self.owner = name
+                super().descend({name: entry}, child, selector, seen)
+        else:
+            super().descend(value, child, selector, seen)
+        self.position, self.depth, self.owner = position, depth, owner
+
+    def note_schema(self, node):
+        if self.depth >= 15:
+            self.note("schema-depth>=15")
         if "additionalProperties" in node:
-            note("additionalProperties=" + ("true" if v is True else "false" if v is False
-                 else "schema" if isinstance(v, dict) else "other"), fixture)
+            v = node["additionalProperties"]
+            self.note("additionalProperties=" + ("true" if v is True else "false" if v is False
+                      else "schema" if isinstance(v, dict) else "other"))
         for kw in ("exclusiveMaximum", "exclusiveMinimum"):
             if kw in node:
-                note(f"{kw}={'boolean' if isinstance(node[kw], bool) else 'numeric'}", fixture)
+                self.note(f"{kw}={'boolean' if isinstance(node[kw], bool) else 'numeric'}")
         t = node.get("type")
         if isinstance(t, list):
-            note("type=array", fixture)
+            self.note("type=array")
             if "null" in t:
-                note("type=array-with-null", fixture)
+                self.note("type=array-with-null")
             if len([x for x in t if x != "null"]) >= 2:
-                note("type=array-multi-nonnull", fixture)
+                self.note("type=array-multi-nonnull")
         elif isinstance(t, str):
-            note("type=scalar" + ("-null" if t == "null" else ""), fixture)
+            self.note("type=scalar" + ("-null" if t == "null" else ""))
         if "const" in node:
-            k = node["const"]
-            note("const=" + ("boolean" if isinstance(k, bool) else "integer" if isinstance(k, int)
-                 else "float" if isinstance(k, float) else "string" if isinstance(k, str)
-                 else "other"), fixture)
-        for m in node.get("enum") or []:
-            note("enum-member=" + ("boolean" if isinstance(m, bool) else "integer" if isinstance(m, int)
-                 else "float" if isinstance(m, float) else "string" if isinstance(m, str)
-                 else "null" if m is None else "object" if isinstance(m, dict)
-                 else "array" if isinstance(m, list) else "other"), fixture)
+            self.note("const=" + self.kind_of(node["const"]))
+        for member in node.get("enum") or []:
+            self.note("enum-member=" + self.kind_of(member))
         if "$ref" in node:
             if any(k in c._SCHEMA_FIELDS for k in node if k != "$ref"):
-                note("ref-siblings", fixture)
+                self.note("ref-siblings")
             target = node["$ref"]
-            if owner and isinstance(target, str) and target.startswith("#/components/schemas/"):
-                edges[owner].add((target.rsplit("/", 1)[-1],
-                                  position == "schema.additionalProperties"))
-        if position.endswith(COMPOSITION):
+            if self.owner and isinstance(target, str) and target.startswith("#/components/schemas/"):
+                self.edges[self.owner].add((target.rsplit("/", 1)[-1],
+                                            self.position == "schema.additionalProperties"))
+        if self.position.endswith(COMPOSITION):
             for kw in COMPOSITION:
                 if kw in node:
-                    note(f"{kw}-nested-in-composition", fixture)
-    for key, child in c.OBJECTS[kind].fields.items():
-        if child is None or key not in node:
-            continue
-        value, sub = node[key], f"{kind}.{key}"
-        if child.container == c.MAP:
-            entries = list(value.items()) if isinstance(value, dict) else []
-        else:
-            entries = [(None, v) for v in (value if isinstance(value, list) else [value])]
-        for name, entry in entries:
-            walk(entry, child.kind, sub, seen, fixture,
-                 depth + 1 if child.kind == "schema" else depth,
-                 name if sub == "components.schemas" else owner, edges)
-    free = c.OBJECTS[kind].free_map
-    if free is not None:
-        for key, value in node.items():
-            if isinstance(key, str) and not key.startswith("x-") \
-                    and key not in c.OBJECTS[kind].fields:
-                walk(value, free.kind, kind, seen, fixture, depth, owner, edges)
+                    self.note(f"{kw}-nested-in-composition")
 
-def note_cycles(edges, fixture):
-    colour, stack = {}, []
-    def visit(n):
-        colour[n], _ = 1, stack.append(n)
-        for target, via_ap in sorted(edges.get(n, ())):
-            if target == n:
-                note("self-recursive-schema", fixture)
-                if via_ap:
-                    note("cycle-via-additionalProperties", fixture)
-            elif colour.get(target) == 1:
-                note("mutually-recursive-schema", fixture)
-                cycle = stack[stack.index(target):]
-                if any(t == b and ap for a, b in zip(cycle, cycle[1:] + [target])
-                       for t, ap in edges.get(a, ())):
-                    note("cycle-via-additionalProperties", fixture)
-            elif not colour.get(target):
-                visit(target)
-        stack.pop(); colour[n] = 2
-    sys.setrecursionlimit(20000)
-    for n in sorted(edges):
-        if not colour.get(n):
-            visit(n)
+    @staticmethod
+    def kind_of(value):
+        for kind, test in (("boolean", bool), ("integer", int), ("float", float),
+                           ("string", str), ("object", dict), ("array", list)):
+            if isinstance(value, test):
+                return kind
+        return "null" if value is None else "other"
+
+    def note_cycles(self):
+        """Classify the `$ref` edges between component schemas into cycle facts."""
+        colour, stack = {}, []
+        def visit(n):
+            colour[n], _ = 1, stack.append(n)
+            for target, via_ap in sorted(self.edges.get(n, ())):
+                if target == n:
+                    self.note("self-recursive-schema")
+                    if via_ap:
+                        self.note("cycle-via-additionalProperties")
+                elif colour.get(target) == 1:
+                    self.note("mutually-recursive-schema")
+                    cycle = stack[stack.index(target):]
+                    if any(t == b and ap for a, b in zip(cycle, cycle[1:] + [target])
+                           for t, ap in self.edges.get(a, ())):
+                        self.note("cycle-via-additionalProperties")
+                elif not colour.get(target):
+                    visit(target)
+            stack.pop(); colour[n] = 2
+        sys.setrecursionlimit(20000)
+        for n in sorted(self.edges):
+            if not colour.get(n):
+                visit(n)
 
 for s in c.registered_sources(c.Path("tests/fixtures"), c.Path(".local/corpus"), False):
-    edges = collections.defaultdict(set)
-    walk(c.load_document(s.path), "openapi", "openapi", frozenset(), s.fixture, 0, None, edges)
-    note_cycles(edges, s.fixture)
+    scan = VariantCensus(s.fixture)
+    scan.walk(c.load_document(s.path), "openapi", "openapi", frozenset())
+    scan.note_cycles()
 for fact, n in sorted(facts.items()):
     where = ", ".join(f"{f} ({k})" for f, k in sorted(sources[fact].items()))
     k = len(sources[fact])
@@ -402,20 +417,21 @@ documents, and `nesting-depth-ge-15` at 91 nodes in
 `openbanking.org.uk-account-info-openapi`.
 
 **Nothing gates that table, so re-run it rather than trusting it.** `just check`
-runs `just test-surface-census`, which covers the census script — not the scan
-above, which lives here and is nobody's test. The reconciliation is two commands,
-about four minutes together:
+runs `just test-surface-census`, which covers the census script; the subclass
+above lives in this file and is nobody's test. Subclassing removes the way the two
+could disagree about *which nodes exist* — there is one traversal, and a rename in
+the script fails the scan loudly on the next run rather than quietly counting
+something else — but the numbers in the table are still two separate runs, so the
+reconciliation is to take them again, about four minutes together:
 
     just surface-census --json                              # the census half
     python3 <the block above, saved to a scratch file>      # the scan half
 
-The scan reaches into `scripts/openapi-surface-census.py` for the loader, the
-`OBJECTS` table, `REF_TRANSPARENT` and the private `_SCHEMA_FIELDS`, so a rename
-in that script fails the scan loudly on the next run; what it will *not* announce
-is a change to what those tables contain, which moves the census and the scan
-apart while both still run. That is the drift the follow-up in
+Re-running is also how a maintainer learns that the corpus itself moved: a
+registered row added or refreshed changes both halves, and the table above is the
+count as of the run that wrote it. The follow-up in
 [Two things a future maintainer should know](#two-things-a-future-maintainer-should-know)
-retires by teaching the script to emit these selectors itself.
+retires the split entirely by teaching the script to emit these selectors itself.
 
 ### What the classification rests on, row by row
 
