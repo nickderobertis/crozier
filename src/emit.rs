@@ -7730,10 +7730,10 @@ mod tests {
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts,
         build_documentation_example, build_example, client_method, environment, escape_py_str,
         example_from_json, example_import_cmp, field_decl, generate, natural_cmp, raw_method,
-        raw_type_str, readme_endpoint, readme_endpoint_eligible, reference_param_annotation,
-        render, render_class_body, render_enum, render_type_decl, url_arg, ClientCtx, Example,
-        ExampleCtx, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView, RenderedField,
-        RootClientView, RootModuleView, Slot,
+        raw_type_str, readme_endpoint, readme_endpoint_eligible, reference_entry,
+        reference_param_annotation, render, render_class_body, render_enum, render_type_decl,
+        url_arg, ClientCtx, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc,
+        ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -8721,6 +8721,50 @@ mod tests {
 
         assert!(!out.contains("storage_unit:"), "{out}");
         assert!(out.contains("\"storage-unit\": \"GB\","), "{out}");
+
+        let ir = ir_with(vec![]);
+        let reference = reference_entry(
+            &environment(),
+            &ir,
+            &ep,
+            &ep.module,
+            &ir.package_name,
+            &std::collections::BTreeMap::new(),
+        )
+        .expect("reference entry renders");
+        assert!(
+            reference.contains("**storage_unit:** `typing.Literal` "),
+            "{reference}"
+        );
+
+        ep.request_body = Some(RequestBody::Inline(vec![BodyField {
+            wire_name: "1st".to_string(),
+            py_name: "f_1st".to_string(),
+            type_ref: TypeRef::Primitive(Prim::Str),
+            optional: false,
+            spec_required: true,
+            docstring: None,
+            convert: false,
+            is_file: false,
+            form_json: false,
+            form_content_type: None,
+            collision_prefix: None,
+            example: None,
+            media_example: false,
+            schema_body_example: false,
+            nullable: false,
+            reference_order: 0,
+        }]));
+        let reference = reference_entry(
+            &environment(),
+            &ir,
+            &ep,
+            &ep.module,
+            &ir.package_name,
+            &std::collections::BTreeMap::new(),
+        )
+        .expect("reference entry renders");
+        assert!(reference.contains("**1st:** `str` "), "{reference}");
     }
 
     #[test]
