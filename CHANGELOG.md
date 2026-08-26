@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.54](https://github.com/nickderobertis/crozier/compare/v0.0.53...v0.0.54) - 2026-08-26
+
+### Added
+
+- *(fixtures)* register a corpus row for the top-ranked OpenAPI coverage gap ([#186](https://github.com/nickderobertis/crozier/pull/186))
+
 ## [0.0.53](https://github.com/nickderobertis/crozier/compare/v0.0.52...v0.0.53) - 2026-08-23
 
 ### Other
