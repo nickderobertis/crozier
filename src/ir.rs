@@ -2660,10 +2660,7 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
 fn has_binary_schema_response(doc: &OpenApi, op: &Operation) -> bool {
     op.responses.iter().any(|(code, resp)| {
         code.starts_with('2')
-            && resp.content.iter().any(|(media_type, media)| {
-                if media_type == "application/octet-stream" {
-                    return media.schema.is_some();
-                }
+            && resp.content.values().any(|media| {
                 media.schema.as_ref().is_some_and(|schema| {
                     let schema = schema
                         .reference
