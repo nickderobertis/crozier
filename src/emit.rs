@@ -6394,24 +6394,7 @@ impl<'a> ExampleCtx<'a> {
                     .into_iter()
                     .filter(|(_, _, _, required, _, parent_example)| *required || *parent_example)
                     .map(|(py, wire, ty, _, example, _)| {
-                        let v = match example {
-                            Some(example) if self.example_is_scalar(&ty) => self
-                                .value_from_example(&ty, &example)
-                                .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire))),
-                            Some(example) if example.starts_with(['{', '[']) => self
-                                .value_from_example(&ty, &example)
-                                .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire))),
-                            // A date/date-time field's declared example is used
-                            // like any other: EN 18222's `last_updated` is typed by
-                            // the `Timestamp` alias and exampled from that alias's
-                            // own `2026-06-08T15:30:00Z`, not from the placeholder.
-                            Some(example) if self.example_is_temporal(&ty) => self
-                                .value_from_example(&ty, &example)
-                                .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire))),
-                            None => self.value(&ty, Slot::Named(&wire)),
-                            Some(_) => self.value(&ty, Slot::Named(&wire)),
-                        };
-                        (Some(py), v)
+                        (Some(py), self.field_example(&ty, &wire, example.as_deref()))
                     })
                     .collect::<Vec<_>>();
                 Example::Call(name.to_string(), args)
@@ -6435,11 +6418,23 @@ impl<'a> ExampleCtx<'a> {
                     // The discriminant field carries a default (`= "circle"`), so
                     // Fern's example omits it and sets only the required fields.
                     let mut args = Vec::new();
-                    for f in m.fields.iter().filter(|f| f.spec_required && !f.optional) {
-                        let ty = f.type_ref.clone();
+                    for (py_name, wire_name, ty, example) in m
+                        .fields
+                        .iter()
+                        .filter(|f| f.spec_required && !f.optional)
+                        .map(|f| {
+                            (
+                                f.py_name.clone(),
+                                f.wire_name.clone(),
+                                f.type_ref.clone(),
+                                f.example.clone(),
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                    {
                         args.push((
-                            Some(f.py_name.clone()),
-                            self.value(&ty, Slot::Named(&f.wire_name)),
+                            Some(py_name),
+                            self.field_example(&ty, &wire_name, example.as_deref()),
                         ));
                     }
                     Example::Call(m.class_name.clone(), args)
@@ -6454,6 +6449,29 @@ impl<'a> ExampleCtx<'a> {
                 Example::Atom("\"value\"".to_string()),
             )]),
         }
+    }
+
+    /// One field's example value: its declared `example` where that literal is
+    /// what Fern shows for the field's type, and the synthesized placeholder
+    /// otherwise. A union wrapper's fields are exampled the same way an object's
+    /// are — NDW's `AreaRequest_Municipality` opens with the `GM0344` its
+    /// `MunicipalityAreaRequest.id` declares.
+    fn field_example(&mut self, ty: &TypeRef, wire: &str, example: Option<&str>) -> Example {
+        let literal = match example {
+            // A date/date-time field's declared example is used like any other:
+            // EN 18222's `last_updated` is typed by the `Timestamp` alias and
+            // exampled from that alias's own `2026-06-08T15:30:00Z`, not from the
+            // placeholder.
+            Some(example)
+                if self.example_is_scalar(ty)
+                    || example.starts_with(['{', '['])
+                    || self.example_is_temporal(ty) =>
+            {
+                self.value_from_example(ty, example)
+            }
+            _ => None,
+        };
+        literal.unwrap_or_else(|| self.value(ty, Slot::Named(wire)))
     }
 
     /// An object's fields including those inherited from its base classes (bases

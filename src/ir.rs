@@ -4290,13 +4290,22 @@ fn has_bodyless_success(op: &Operation) -> bool {
 /// The success (2xx) response's JSON body schema, if any. Fern treats a wildcard
 /// `*/*` response body as JSON when no explicit `application/json` media type is
 /// present; public specs such as bungie.net use that shape for standard response
-/// envelopes.
+/// envelopes. A structured-suffix media type is JSON too — NDW returns its
+/// GeoJSON under `application/geo+json` and nothing else, and Fern types the
+/// method by that body rather than as an empty success.
 fn success_response_schema(op: &Operation) -> Option<&Schema> {
     let response = success_response_entry(op)?;
     response
         .content
         .get("application/json")
-        .or_else(|| response.content.get("*/*"))?
+        .or_else(|| response.content.get("*/*"))
+        .or_else(|| {
+            response
+                .content
+                .iter()
+                .find(|(media_type, _)| is_json_like_media_type(media_type))
+                .map(|(_, media)| media)
+        })?
         .schema
         .as_ref()
 }
