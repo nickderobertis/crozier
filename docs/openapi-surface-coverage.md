@@ -230,7 +230,7 @@ The six region files, read as one body of work. Two measurements feed it:
 
 What this section takes from the six region files, `RankedBacklogTests` in
 `tests/surface_census_test.py` takes back from them — the per-region counts and
-the totals narrated from them, both backlogs' membership, each ranked row's
+the totals narrated from them, both backlogs' membership and their stated sizes, each ranked row's
 owning region, criterion 1 and the rubric order and median it produces. `just
 check` runs it offline, so a region row added, reclassified or re-measured fails
 the gate here rather than leaving this section quietly stale. Criteria 3 and 4

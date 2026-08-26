@@ -1158,6 +1158,13 @@ class RankedBacklogTests(unittest.TestCase):
             for cells in self.region_rows(path.read_text(encoding="utf-8"))
         ]
         self.assertEqual(len(keys), len(set(keys)), "a feature key appears in two rows")
+        stated = re.search(r"The (\d+) rows carry (\d+) distinct\s+keys", self.doc)
+        self.assertIsNotNone(stated, "the reconciliation no longer states the row count")
+        self.assertEqual(
+            [len(keys), len(set(keys))],
+            [int(stated.group(1)), int(stated.group(2))],
+            "the reconciliation's row count is not the walk's own",
+        )
         owners: dict[str, set[str]] = {}
         for region, cells in self.entries.values():
             owners.setdefault(cells[2], set()).add(region)
@@ -1174,6 +1181,16 @@ class RankedBacklogTests(unittest.TestCase):
             if row:
                 stated[row.group(1)] = [int(row.group(n)) for n in range(2, 9)]
         self.assertEqual(6, len(stated), "the summary table no longer lists six regions")
+        totals = re.search(
+            r"\| \*\*total\*\* \|" + r"\s*\*\*(\d+)\*\*\s*\|" * 7,
+            self.section("### What the walk enumerated", "The walk enumerated"),
+        )
+        self.assertIsNotNone(totals, "the summary table no longer carries a total row")
+        self.assertEqual(
+            [sum(column) for column in zip(*stated.values())],
+            [int(totals.group(n)) for n in range(1, 8)],
+            "the total row is not the six region rows' own column sums",
+        )
         for region, numbers in sorted(stated.items()):
             with self.subTest(region=region):
                 rows = [c for r, c in self.entries.values() if r == region]
@@ -1208,6 +1225,19 @@ class RankedBacklogTests(unittest.TestCase):
             totals[3],
             sum(len(self.gaps(s)) for s in self.SETTLEMENTS),
             "the settlement classes do not partition the gap rows",
+        )
+
+    def test_the_gap_count_paragraph_recomputes_its_own_numbers(self) -> None:
+        """What `gap` means restates the gap total twice, then its two parts."""
+        gap = sum(
+            1 for _region, cells in self.entries.values() if cells[3].strip("`") == "gap"
+        )
+        unreachable = len(self.gaps("UNREACHABLE"))
+        prose = self.section("**What the `gap` count means.**", "### Reconciliation")
+        self.assertEqual(
+            [gap, gap, unreachable, gap - unreachable],
+            [int(value) for value in re.findall(r"\b(\d+)\b", prose)],
+            "the paragraph's counts are not the walk's own gap totals",
         )
 
     def ledger_keys(self) -> set[str]:
@@ -1281,6 +1311,9 @@ class RankedBacklogTests(unittest.TestCase):
             for rank, key, (sites, blind, breadth, witnesses), _line in ranked
         ]
         self.assertEqual(sorted(sortable), sortable, "the ranked table is not in rubric order")
+        stated = re.search(r"All (\d+) `FIXTURE` gaps", self.doc)
+        self.assertIsNotNone(stated, "the ranked backlog no longer states its own size")
+        self.assertEqual(len(ranked), int(stated.group(1)))
 
     def test_the_ranked_table_names_each_keys_owning_region(self) -> None:
         """The `region` column and the per-row link, against the file the key is in."""
@@ -1465,6 +1498,9 @@ class RankedBacklogTests(unittest.TestCase):
         )
         self.assertEqual(self.gaps("PROBE"), listed)
         self.assertEqual(set(), listed & {key for _n, key, _m, _l in self.ranked_rows()})
+        stated = re.search(r"The other (\d+) `gap` rows", self.doc)
+        self.assertIsNotNone(stated, "the probe backlog no longer states its own size")
+        self.assertEqual(len(listed), int(stated.group(1)))
 
     def test_the_stated_registered_and_golden_source_counts_are_measured(self) -> None:
         """124 registered / 107 golden-bearing, measured rather than transcribed."""
