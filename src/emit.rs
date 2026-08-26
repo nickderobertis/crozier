@@ -834,6 +834,10 @@ fn forward_ref_map(
 #[derive(Default)]
 struct ForwardRepair {
     names: std::collections::HashSet<String>,
+    /// For a discriminated union, the exact `update_forward_refs` arguments each
+    /// wrapper class takes, keyed by wrapper class name. Wrappers differ: each
+    /// resolves what its own fields reach, minus the model it flattened.
+    member_names: std::collections::HashMap<String, Vec<String>>,
     triggers: std::collections::HashSet<String>,
     import_order: Vec<String>,
     /// Whether the declaration reaches a cycle through its *own* annotations
@@ -852,6 +856,7 @@ fn forward_repair_map(
 
     let mut edges: HashMap<String, Vec<String>> = HashMap::new();
     let mut repair_edges: HashMap<String, Vec<String>> = HashMap::new();
+    let mut walk_edges: HashMap<String, Vec<String>> = HashMap::new();
     for decl in types.iter().chain(tag_types.iter().map(|t| &t.decl)) {
         edges
             .entry(decl.name().to_string())
@@ -861,6 +866,13 @@ fn forward_repair_map(
             .entry(decl.name().to_string())
             .or_default()
             .extend(decl_annotation_refs(decl));
+        walk_edges
+            .entry(decl.name().to_string())
+            .or_default()
+            .extend(match decl {
+                TypeDecl::DiscriminatedUnion(union) => union.variant_targets.clone(),
+                other => decl_refs(other),
+            });
     }
     let reaches = |start: &str, target: &str| -> bool {
         let mut stack: Vec<&str> = edges
@@ -891,83 +903,128 @@ fn forward_repair_map(
         .chain(tag_types.iter().map(|tag| &tag.decl))
         .filter_map(|decl| matches!(decl, TypeDecl::Alias(_)).then_some(decl.name()))
         .collect();
+    let classes: HashSet<&str> = types
+        .iter()
+        .chain(tag_types.iter().map(|tag| &tag.decl))
+        .filter_map(|decl| matches!(decl, TypeDecl::Object(_)).then_some(decl.name()))
+        .collect();
+    // Whether a declaration needs `from __future__ import annotations` at all.
+    // Naming a cyclic type directly always does. Reaching one only through other
+    // declarations does when the cyclic type is a *class*: a class in a cycle is
+    // still incomplete when its referrer is defined, so the referrer is rebuilt
+    // too — dnd5eapi's `Monster` names `MonsterActionsItem`, which names the
+    // cyclic `Choice`. A cyclic *alias* is not: it is a finished object by the
+    // time the module that names it repairs it, so nothing beyond that module is
+    // affected — NDW's `Feature` repairs the `FeatureProperties` union and its own
+    // referrer `FeatureCollection` needs no repair of its own.
+    let reaches_repairable = |starts: &[String]| -> bool {
+        if starts.iter().any(|name| cyclic.contains(name.as_str())) {
+            return true;
+        }
+        let mut stack: Vec<&str> = starts.iter().map(String::as_str).collect();
+        let mut seen: HashSet<&str> = HashSet::new();
+        while let Some(node) = stack.pop() {
+            if cyclic.contains(node) && classes.contains(node) {
+                return true;
+            }
+            if seen.insert(node) {
+                stack.extend(edges.get(node).into_iter().flatten().map(String::as_str));
+            }
+        }
+        false
+    };
 
     let mut out = HashMap::new();
     for decl in types.iter().chain(tag_types.iter().map(|tag| &tag.decl)) {
         if matches!(decl, TypeDecl::Alias(_)) {
             continue;
         }
-        let mut reach_stack: Vec<&str> = edges
-            .get(decl.name())
-            .into_iter()
-            .flatten()
-            .map(String::as_str)
-            .collect();
-        let mut reach_seen = HashSet::new();
-        let mut reaches_cycle = false;
-        while let Some(node) = reach_stack.pop() {
-            reaches_cycle |= cyclic.contains(node);
-            if reach_seen.insert(node) {
-                reach_stack.extend(edges.get(node).into_iter().flatten().map(String::as_str));
-            }
-        }
+        let reaches_cycle =
+            reaches_repairable(edges.get(decl.name()).map_or(&[][..], Vec::as_slice));
         // The same question asked of this declaration's own annotations only: a
         // base class is imported eagerly and repaired in its own module, so
         // inheriting a cyclic field does not make the subclass call
         // `update_forward_refs`.
-        let own_refs = decl_own_refs(decl);
-        let mut own_stack: Vec<&str> = own_refs.iter().map(String::as_str).collect();
-        let mut own_seen = HashSet::new();
-        let mut own_reach = false;
-        while let Some(node) = own_stack.pop() {
-            own_reach |= cyclic.contains(node);
-            if own_seen.insert(node) {
-                own_stack.extend(edges.get(node).into_iter().flatten().map(String::as_str));
-            }
-        }
+        let own_reach = reaches_repairable(&decl_own_refs(decl));
 
-        let closure_edges = if matches!(decl, TypeDecl::DiscriminatedUnion(_)) {
-            &repair_edges
-        } else {
-            &edges
+        // The names one declaration's `update_forward_refs` call must resolve: the
+        // cyclic names its own annotations reach, walking on **through the cyclic
+        // ones only**. A non-cyclic node is a leaf — whatever it references is
+        // repaired in its own module, not here — which is why NDW's
+        // `FeatureCollection` names nothing (it annotates `Feature`, which is not
+        // cyclic) while its `Feature` names `FeatureProperties` directly.
+        //
+        // A union is walked by its *variant targets*, not by its wrappers' fields.
+        // The wrappers are flattened views of those models, so a field they
+        // flattened is only a name to resolve when the model it came from is
+        // itself cyclic — the walk reaches it through that model. EN 18222's
+        // `DataElement` reaches `MultiValuedDataElementValueItem` through the
+        // cyclic `MultiValuedDataElement`, while NDW's `FeatureProperties` does not
+        // reach `Reason`, because the only wrapper carrying it flattened the
+        // acyclic `DestinationFeatureProperties`.
+        let closure = |starts: Vec<&str>| -> HashSet<String> {
+            let mut stack: Vec<&str> = starts
+                .into_iter()
+                .filter(|name| cyclic.contains(name))
+                .collect();
+            let mut seen = HashSet::new();
+            let mut found = HashSet::new();
+            while let Some(node) = stack.pop() {
+                found.insert(node.to_string());
+                if seen.insert(node) {
+                    stack.extend(
+                        walk_edges
+                            .get(node)
+                            .into_iter()
+                            .flatten()
+                            .map(String::as_str)
+                            .filter(|name| cyclic.contains(name)),
+                    );
+                }
+            }
+            found
         };
-        let mut stack: Vec<&str> = repair_edges
-            .get(decl.name())
-            .into_iter()
-            .flatten()
-            .map(String::as_str)
-            .filter(|name| cyclic.contains(name))
-            .collect();
-        let mut seen = HashSet::new();
-        let mut repair = HashSet::new();
-        while let Some(node) = stack.pop() {
-            if cyclic.contains(node) {
-                repair.insert(node.to_string());
+        let mut member_names: HashMap<String, Vec<String>> = HashMap::new();
+        let mut repair: HashSet<String> = if let TypeDecl::DiscriminatedUnion(union) = decl {
+            // Each wrapper resolves its own reach, minus the model it flattened —
+            // a wrapper cannot be asked to resolve its own source.
+            let mut all = HashSet::new();
+            for member in &union.members {
+                let mut refs = Vec::new();
+                for field in &member.fields {
+                    collect_named_refs(&field.type_ref, &mut refs);
+                }
+                let mut names = closure(refs.iter().map(String::as_str).collect());
+                if let Some(source) = &member.source {
+                    names.remove(source);
+                }
+                let mut ordered: Vec<String> = names.iter().cloned().collect();
+                ordered.sort_by(|left, right| natural_cmp(left, right));
+                all.extend(names);
+                member_names.insert(member.class_name.clone(), ordered);
             }
-            if seen.insert(node) {
-                stack.extend(
-                    closure_edges
-                        .get(node)
-                        .into_iter()
-                        .flatten()
-                        .map(String::as_str),
-                );
-            }
-        }
-        if matches!(decl, TypeDecl::Object(_)) {
-            repair.remove(decl.name());
-        }
-        // A union's wrapper classes flatten its variant models, so a cyclic
-        // variant is a name the module's repair calls resolve — every wrapper but
-        // the one that *is* that model, which drops it again at the call site.
-        if let TypeDecl::DiscriminatedUnion(union) = decl {
-            repair.extend(
+            all.extend(
                 union
                     .variant_targets
                     .iter()
                     .filter(|target| cyclic.contains(target.as_str()))
                     .cloned(),
             );
+            all
+        } else {
+            let mut names = closure(
+                repair_edges
+                    .get(decl.name())
+                    .into_iter()
+                    .flatten()
+                    .map(String::as_str)
+                    .collect(),
+            );
+            names.remove(decl.name());
+            names
+        };
+        if matches!(decl, TypeDecl::Object(_)) {
+            repair.remove(decl.name());
         }
         if reaches_cycle {
             let triggers = edges
@@ -991,6 +1048,7 @@ fn forward_repair_map(
                 decl.name().to_string(),
                 ForwardRepair {
                     names: repair,
+                    member_names,
                     triggers,
                     import_order,
                     own_reach,
@@ -1138,9 +1196,9 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     let root_eps: Vec<&Endpoint> = ir
         .endpoints
         .iter()
-        .filter(|e| e.module.is_empty())
+        .filter(|e| e.module.is_empty() && e.emittable)
         .collect();
-    let root_emittable = !root_eps.is_empty() && root_eps.iter().all(|e| e.emittable);
+    let root_emittable = !root_eps.is_empty();
     if root_emittable {
         files.push(raw_client_file(
             &env,
@@ -1742,9 +1800,6 @@ fn select_readme_endpoint<'a>(
 /// operation from a later module leapfrog one from the first module merely
 /// because their paths were interleaved.
 fn readme_endpoint_order(ir: &Ir) -> Vec<&Endpoint> {
-    if ir.openapi_31 {
-        return ir.endpoints.iter().collect();
-    }
     let grouped: Vec<&Endpoint> = ir
         .endpoint_modules
         .iter()
@@ -2069,7 +2124,7 @@ fn reference_entry(
         documentation: false,
         reference: false,
     };
-    let example = (!ep.binary_schema_response || !module.is_empty())
+    let example = (!ep.binary_schema_response || !module.is_empty() || ep.openapi_31)
         .then(|| {
             build_documentation_example(
                 ep,
@@ -2239,7 +2294,7 @@ fn reference_entry(
         example,
         example_gap: if !endpoint_has_worked_example(ep)
             || matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
-            || ep.binary_schema_response && module.is_empty()
+            || ep.binary_schema_response && module.is_empty() && !ep.openapi_31
         {
             ""
         } else {
@@ -2775,8 +2830,9 @@ struct ClassBodyView {
     fields: Vec<FieldView>,
     /// The `pydantic.ConfigDict(...)` argument list for the v2 `model_config`.
     config_dict_args: String,
-    /// The v1 `Config`'s `pydantic.Extra.<extra_kind>` member.
-    extra_kind: &'static str,
+    /// The v1 `Config`'s `pydantic.Extra.<extra_kind>` member, or `None` for a
+    /// class whose config declares no extra-fields behaviour at all.
+    extra_kind: Option<&'static str>,
 }
 
 /// The two `extra`-fields fragments a pydantic model body needs: the v2
@@ -2807,9 +2863,17 @@ fn render_class_body(
     env: &Environment<'static>,
     docstring: Option<String>,
     fields: Vec<FieldView>,
-    extra: ExtraFields,
+    extra: Option<ExtraFields>,
 ) -> Result<String> {
-    let (config_dict_args, extra_kind) = extra_config(extra);
+    // `None` is the value-wrapper form: `frozen=True` alone under v2, and a v1
+    // `Config` that stops after `smart_union`.
+    let (config_dict_args, extra_kind) = match extra {
+        Some(extra) => {
+            let (args, kind) = extra_config(extra);
+            (args, Some(kind))
+        }
+        None => ("frozen=True".to_string(), None),
+    };
     let view = ClassBodyView {
         docstring,
         fields,
@@ -2895,7 +2959,7 @@ fn render_type_decl(
                 if repairs {
                     imports.add_core("pydantic_utilities", "update_forward_refs");
                 }
-                let body = render_class_body(env, obj.docstring.clone(), fields, extra)?;
+                let body = render_class_body(env, obj.docstring.clone(), fields, Some(extra))?;
                 let mut file = format!(
                     "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n\n\nclass {}({}):\n{}",
                     imports.render(),
@@ -3112,13 +3176,11 @@ fn render_discriminated_union(
                 })
             })
             .map(|member| {
-                let mut names: Vec<String> = repair
-                    .names
-                    .iter()
-                    .filter(|name| Some(name.as_str()) != member.source.as_deref())
+                let names = repair
+                    .member_names
+                    .get(&member.class_name)
                     .cloned()
-                    .collect();
-                names.sort_by(|left, right| natural_cmp(left, right));
+                    .unwrap_or_default();
                 (member.class_name.as_str(), names)
             })
             .collect()
@@ -3140,6 +3202,28 @@ fn render_discriminated_union(
     }
 
     let mut classes: Vec<String> = Vec::new();
+    // The shared superclass, when the union came from a base object schema that
+    // declares properties of its own. Fern spells it `Base` in every module that
+    // needs one, and every wrapper below extends it instead of `UniversalBaseModel`.
+    let base_class = if union.base_fields.is_empty() {
+        "UniversalBaseModel"
+    } else {
+        let fields: Vec<FieldView> = union
+            .base_fields
+            .iter()
+            .map(|f| render_field(f, &mut imports))
+            .map(|rf| FieldView {
+                decl: field_decl(&rf),
+                docstring: rf.docstring,
+            })
+            .collect();
+        let body = render_class_body(env, None, fields, Some(extra))?;
+        classes.push(format!(
+            "class Base(UniversalBaseModel):\n{}",
+            body.trim_end()
+        ));
+        "Base"
+    };
     for member in &union.members {
         // The discriminant field: `type: typing.Literal["circle"] = "circle"`. It is
         // an ordinary field bar its default, so a wire name that does not survive
@@ -3160,8 +3244,16 @@ fn render_discriminated_union(
             &mut imports,
         );
         discriminant.default = format!(" = \"{}\"", member.discriminant);
-        let mut rendered = vec![discriminant];
-        rendered.extend(member.fields.iter().map(|f| render_field(f, &mut imports)));
+        // A `value`-wrapped variant holds a payload rather than a flattened
+        // object, so its `value` field is written ahead of the tag and its config
+        // carries no `extra` member — the wrapper owns no open field set of its own.
+        let mut rendered: Vec<RenderedField> = member
+            .fields
+            .iter()
+            .map(|f| render_field(f, &mut imports))
+            .collect();
+        let tag_at = if member.wrapped { rendered.len() } else { 0 };
+        rendered.insert(tag_at, discriminant);
         let fields: Vec<FieldView> = rendered
             .into_iter()
             .map(|rf| FieldView {
@@ -3169,9 +3261,10 @@ fn render_discriminated_union(
                 docstring: rf.docstring,
             })
             .collect();
-        let body = render_class_body(env, member.docstring.clone(), fields, extra)?;
+        let member_extra = (!member.wrapped).then_some(extra);
+        let body = render_class_body(env, member.docstring.clone(), fields, member_extra)?;
         classes.push(format!(
-            "class {}(UniversalBaseModel):\n{}",
+            "class {}({base_class}):\n{}",
             member.class_name,
             body.trim_end()
         ));
@@ -5384,7 +5477,7 @@ fn client_binary_stream_docstring(
         documentation: false,
         reference: false,
     };
-    if let Some(ex_lines) = (!cx.module.is_empty() || !ep.binary_schema_response)
+    if let Some(ex_lines) = (!cx.module.is_empty() || !ep.binary_schema_response || ep.openapi_31)
         .then(|| {
             build_example(
                 ep,
@@ -5509,6 +5602,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
 
 /// A synthesized Python example value, formatted the way Fern's snippet formatter
 /// (ruff defaults) renders it.
+#[derive(Clone)]
 enum Example {
     /// A leaf rendered verbatim (`"string"`, `1`, `True`, `{"key": "value"}`).
     Atom(String),
@@ -6172,7 +6266,7 @@ impl<'a> ExampleCtx<'a> {
                 // empty (`children=[]`), which also terminates the walk (issue #84).
                 // The element inherits the list's slot, so a `List[str]` field's
                 // example uses the field name (`all_field=["all_field"]`).
-                if self.resolves_to_building(inner) {
+                if self.resolves_to_building(inner) || self.resolves_to_any(inner) {
                     if self.documentation {
                         Example::ReferenceList(vec![])
                     } else {
@@ -6234,6 +6328,12 @@ impl<'a> ExampleCtx<'a> {
     /// to `BlockTag`'s `"earliest"` — rendered as the plain string the union's own
     /// annotation accepts, not the enum member a `BlockTag` argument would take.
     fn union_value(&mut self, variants: &[TypeRef], slot: Slot<'_>) -> Example {
+        if let Some(TypeRef::Named(name)) = variants.first() {
+            if matches!(self.find(name), Some(TypeDecl::Enum(_))) {
+                let name = name.clone();
+                return self.named_value(&name, slot);
+            }
+        }
         if let Some(value) = variants
             .iter()
             .skip(1)
@@ -6298,24 +6398,7 @@ impl<'a> ExampleCtx<'a> {
                     .into_iter()
                     .filter(|(_, _, _, required, _, parent_example)| *required || *parent_example)
                     .map(|(py, wire, ty, _, example, _)| {
-                        let v = match example {
-                            Some(example) if self.example_is_scalar(&ty) => self
-                                .value_from_example(&ty, &example)
-                                .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire))),
-                            Some(example) if example.starts_with(['{', '[']) => self
-                                .value_from_example(&ty, &example)
-                                .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire))),
-                            // A date/date-time field's declared example is used
-                            // like any other: EN 18222's `last_updated` is typed by
-                            // the `Timestamp` alias and exampled from that alias's
-                            // own `2026-06-08T15:30:00Z`, not from the placeholder.
-                            Some(example) if self.example_is_temporal(&ty) => self
-                                .value_from_example(&ty, &example)
-                                .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire))),
-                            None => self.value(&ty, Slot::Named(&wire)),
-                            Some(_) => self.value(&ty, Slot::Named(&wire)),
-                        };
-                        (Some(py), v)
+                        (Some(py), self.field_example(&ty, &wire, example.as_deref()))
                     })
                     .collect::<Vec<_>>();
                 Example::Call(name.to_string(), args)
@@ -6339,11 +6422,23 @@ impl<'a> ExampleCtx<'a> {
                     // The discriminant field carries a default (`= "circle"`), so
                     // Fern's example omits it and sets only the required fields.
                     let mut args = Vec::new();
-                    for f in m.fields.iter().filter(|f| f.spec_required && !f.optional) {
-                        let ty = f.type_ref.clone();
+                    for (py_name, wire_name, ty, example) in m
+                        .fields
+                        .iter()
+                        .filter(|f| f.spec_required && !f.optional)
+                        .map(|f| {
+                            (
+                                f.py_name.clone(),
+                                f.wire_name.clone(),
+                                f.type_ref.clone(),
+                                f.example.clone(),
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                    {
                         args.push((
-                            Some(f.py_name.clone()),
-                            self.value(&ty, Slot::Named(&f.wire_name)),
+                            Some(py_name),
+                            self.field_example(&ty, &wire_name, example.as_deref()),
                         ));
                     }
                     Example::Call(m.class_name.clone(), args)
@@ -6358,6 +6453,29 @@ impl<'a> ExampleCtx<'a> {
                 Example::Atom("\"value\"".to_string()),
             )]),
         }
+    }
+
+    /// One field's example value: its declared `example` where that literal is
+    /// what Fern shows for the field's type, and the synthesized placeholder
+    /// otherwise. A union wrapper's fields are exampled the same way an object's
+    /// are — NDW's `AreaRequest_Municipality` opens with the `GM0344` its
+    /// `MunicipalityAreaRequest.id` declares.
+    fn field_example(&mut self, ty: &TypeRef, wire: &str, example: Option<&str>) -> Example {
+        let literal = match example {
+            // A date/date-time field's declared example is used like any other:
+            // EN 18222's `last_updated` is typed by the `Timestamp` alias and
+            // exampled from that alias's own `2026-06-08T15:30:00Z`, not from the
+            // placeholder.
+            Some(example)
+                if self.example_is_scalar(ty)
+                    || example.starts_with(['{', '['])
+                    || self.example_is_temporal(ty) =>
+            {
+                self.value_from_example(ty, example)
+            }
+            _ => None,
+        };
+        literal.unwrap_or_else(|| self.value(ty, Slot::Named(wire)))
     }
 
     /// An object's fields including those inherited from its base classes (bases
@@ -6528,6 +6646,18 @@ fn build_example_inner(
     // required query/header params, then the request body (a single `request`, or
     // each required inlined field).
     let mut args: Vec<(Option<String>, Example)> = Vec::new();
+    let header_slot = |wire: &str| {
+        if ep.text_response || ep.binary_response {
+            let mut words = naming::split_words(wire).into_iter();
+            let mut value = words.next().unwrap_or_default();
+            for word in words {
+                value.push_str(&naming::to_pascal_case(&word));
+            }
+            value
+        } else {
+            wire.to_string()
+        }
+    };
     if !ep.markdown_response && !ep.wildcard_binary_response {
         for pp in &ep.path_params {
             if reference && matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
@@ -6598,7 +6728,10 @@ fn build_example_inner(
             .as_ref()
             .filter(|_| ctx.example_is_scalar(&hp.type_ref))
             .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
-            .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+            .unwrap_or_else(|| {
+                let slot = header_slot(&hp.wire_name);
+                ctx.value(&hp.type_ref, Slot::Named(&slot))
+            });
         args.push((Some(hp.py_name.clone()), v));
     }
     if wildcard_request && !reference {
@@ -6610,7 +6743,10 @@ fn build_example_inner(
                 .as_ref()
                 .filter(|_| ctx.example_is_scalar(&hp.type_ref))
                 .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
-                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+                .unwrap_or_else(|| {
+                    let slot = header_slot(&hp.wire_name);
+                    ctx.value(&hp.type_ref, Slot::Named(&slot))
+                });
             args.push((Some(hp.py_name.clone()), value));
         }
         for qp in ep
@@ -6657,7 +6793,10 @@ fn build_example_inner(
                 .as_ref()
                 .filter(|_| ctx.example_is_scalar(&hp.type_ref))
                 .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
-                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+                .unwrap_or_else(|| {
+                    let slot = header_slot(&hp.wire_name);
+                    ctx.value(&hp.type_ref, Slot::Named(&slot))
+                });
             args.push((Some(hp.py_name.clone()), value));
         }
         for hp in ep.header_params.iter().filter(|header| {
@@ -6668,7 +6807,10 @@ fn build_example_inner(
                 .as_ref()
                 .filter(|_| ctx.example_is_scalar(&hp.type_ref))
                 .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
-                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+                .unwrap_or_else(|| {
+                    let slot = header_slot(&hp.wire_name);
+                    ctx.value(&hp.type_ref, Slot::Named(&slot))
+                });
             args.push((Some(hp.py_name.clone()), value));
         }
     }
@@ -6698,7 +6840,10 @@ fn build_example_inner(
                 .as_ref()
                 .filter(|_| ctx.example_is_scalar(&hp.type_ref))
                 .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
-                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+                .unwrap_or_else(|| {
+                    let slot = header_slot(&hp.wire_name);
+                    ctx.value(&hp.type_ref, Slot::Named(&slot))
+                });
             args.push((Some(hp.py_name.clone()), value));
         }
     }
@@ -6713,7 +6858,10 @@ fn build_example_inner(
             .as_ref()
             .filter(|_| ctx.example_is_scalar(&hp.type_ref))
             .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
-            .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+            .unwrap_or_else(|| {
+                let slot = header_slot(&hp.wire_name);
+                ctx.value(&hp.type_ref, Slot::Named(&slot))
+            });
         args.push((Some(hp.py_name.clone()), value));
     }
     match &ep.request_body {
@@ -6821,7 +6969,7 @@ fn build_example_inner(
                         }
                         example
                     });
-                let v = supplied_example
+                let mut v = supplied_example
                     .as_deref()
                     .and_then(|example| {
                         if f.schema_body_example
@@ -6845,6 +6993,24 @@ fn build_example_inner(
                         }
                     })
                     .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)));
+                let synthesized_items =
+                    ((ep.text_response || ep.binary_response) && f.spec_required).then_some(2);
+                if let Some(min_items) = synthesized_items {
+                    if let Example::List(items) | Example::ReferenceList(items) = &mut v {
+                        if let Some(first) = items.first().cloned() {
+                            items.resize(min_items, first);
+                        }
+                    }
+                }
+                if (ep.text_response || ep.binary_response)
+                    && matches!(&f.type_ref, TypeRef::Dict(_, value) if is_any_type(value))
+                {
+                    v = if reference {
+                        Example::ReferenceDict(vec![(f.wire_name.clone(), Example::Atom(v.flat()))])
+                    } else {
+                        Example::Dict(vec![(f.wire_name.clone(), v)])
+                    };
+                }
                 let example_name = if (reference
                     || ep.request_body_required
                     || ep.request_body_has_multipart_related)
@@ -7564,10 +7730,10 @@ mod tests {
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts,
         build_documentation_example, build_example, client_method, environment, escape_py_str,
         example_from_json, example_import_cmp, field_decl, generate, natural_cmp, raw_method,
-        raw_type_str, readme_endpoint, readme_endpoint_eligible, reference_param_annotation,
-        render, render_class_body, render_enum, render_type_decl, url_arg, ClientCtx, Example,
-        ExampleCtx, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView, RenderedField,
-        RootClientView, RootModuleView, Slot,
+        raw_type_str, readme_endpoint, readme_endpoint_eligible, reference_entry,
+        reference_param_annotation, render, render_class_body, render_enum, render_type_decl,
+        url_arg, ClientCtx, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc,
+        ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -7584,7 +7750,7 @@ mod tests {
             &environment(),
             docstring.map(str::to_string),
             fields,
-            crate::settings::ExtraFields::Allow,
+            Some(crate::settings::ExtraFields::Allow),
         )
         .expect("renders")
     }
@@ -7673,7 +7839,7 @@ mod tests {
                 .expect("renders")
         };
 
-        let allow = render(crate::settings::ExtraFields::Allow);
+        let allow = render(Some(crate::settings::ExtraFields::Allow));
         assert!(
             allow.contains("pydantic.ConfigDict(extra=\"allow\", frozen=True)")
                 && allow.contains("extra = pydantic.Extra.allow"),
@@ -7682,7 +7848,7 @@ mod tests {
 
         // `ignore` drops the v2 `extra=` kwarg (v2 defaults to ignore) but keeps
         // the explicit v1 member.
-        let ignore = render(crate::settings::ExtraFields::Ignore);
+        let ignore = render(Some(crate::settings::ExtraFields::Ignore));
         assert!(
             ignore.contains("pydantic.ConfigDict(frozen=True)")
                 && !ignore.contains("extra=\"ignore\"")
@@ -7690,7 +7856,7 @@ mod tests {
             "{ignore}"
         );
 
-        let forbid = render(crate::settings::ExtraFields::Forbid);
+        let forbid = render(Some(crate::settings::ExtraFields::Forbid));
         assert!(
             forbid.contains("pydantic.ConfigDict(extra=\"forbid\", frozen=True)")
                 && forbid.contains("extra = pydantic.Extra.forbid"),
@@ -8555,6 +8721,50 @@ mod tests {
 
         assert!(!out.contains("storage_unit:"), "{out}");
         assert!(out.contains("\"storage-unit\": \"GB\","), "{out}");
+
+        let ir = ir_with(vec![]);
+        let reference = reference_entry(
+            &environment(),
+            &ir,
+            &ep,
+            &ep.module,
+            &ir.package_name,
+            &std::collections::BTreeMap::new(),
+        )
+        .expect("reference entry renders");
+        assert!(
+            reference.contains("**storage_unit:** `typing.Literal` "),
+            "{reference}"
+        );
+
+        ep.request_body = Some(RequestBody::Inline(vec![BodyField {
+            wire_name: "1st".to_string(),
+            py_name: "f_1st".to_string(),
+            type_ref: TypeRef::Primitive(Prim::Str),
+            optional: false,
+            spec_required: true,
+            docstring: None,
+            convert: false,
+            is_file: false,
+            form_json: false,
+            form_content_type: None,
+            collision_prefix: None,
+            example: None,
+            media_example: false,
+            schema_body_example: false,
+            nullable: false,
+            reference_order: 0,
+        }]));
+        let reference = reference_entry(
+            &environment(),
+            &ir,
+            &ep,
+            &ep.module,
+            &ir.package_name,
+            &std::collections::BTreeMap::new(),
+        )
+        .expect("reference entry renders");
+        assert!(reference.contains("**1st:** `str` "), "{reference}");
     }
 
     #[test]
@@ -8856,10 +9066,12 @@ mod tests {
         let tag_decls = vec![TagTypeDecl {
             module: "agents".to_string(),
             decl: TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+                base_fields: Vec::new(),
                 name: "ModifyMessageRequestBody".to_string(),
                 module: "modify_message_request_body".to_string(),
                 discriminant_property: "message_type".to_string(),
                 members: vec![UnionMember {
+                    wrapped: false,
                     class_name: "ModifyMessageRequestBody_SystemMessage".to_string(),
                     discriminant: "system_message".to_string(),
                     fields: Vec::new(),
@@ -9097,6 +9309,7 @@ mod tests {
                 docstring: None,
             }),
             TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+                base_fields: Vec::new(),
                 name: "Shape".to_string(),
                 module: "shape".to_string(),
                 discriminant_property: "kind".to_string(),
@@ -9395,10 +9608,12 @@ mod tests {
         nullable_required.optional = true;
         nullable_required.nullable = true;
         let union = TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+            base_fields: Vec::new(),
             name: "Shape".to_string(),
             module: "shape".to_string(),
             discriminant_property: "kind".to_string(),
             members: vec![UnionMember {
+                wrapped: false,
                 class_name: "Shape_Circle".to_string(),
                 discriminant: "circle".to_string(),
                 fields: vec![
@@ -9412,6 +9627,7 @@ mod tests {
             docstring: None,
         });
         let empty_union = TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+            base_fields: Vec::new(),
             name: "Nothing".to_string(),
             module: "nothing".to_string(),
             discriminant_property: "kind".to_string(),
@@ -9980,10 +10196,12 @@ mod tests {
         assert!(rendered.contains("NodeList = typing.List[\"Node\"]"));
 
         let singleton = TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+            base_fields: Vec::new(),
             name: "Content".to_string(),
             module: "content".to_string(),
             discriminant_property: "type".to_string(),
             members: vec![UnionMember {
+                wrapped: false,
                 class_name: "Content_Text".to_string(),
                 discriminant: "text".to_string(),
                 fields: vec![model_field("text", TypeRef::Primitive(Prim::Str), true)],

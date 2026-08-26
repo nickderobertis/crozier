@@ -566,7 +566,7 @@ fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> 
             if !is_enum
                 && !is_union
                 && !is_map(target)
-                && (!target.properties.is_empty() || target.all_of.is_some())
+                && (target.properties.declared() || target.all_of.is_some())
             {
                 *counts.entry(ref_to_class(reference)).or_default() += 1;
             }
@@ -1091,6 +1091,12 @@ pub struct DiscriminatedUnion {
     /// `LeafNode`). Kept so the recursion analysis can see that the union can *be*
     /// one of those schemas — the edge that reveals a recursive variant (issue #84).
     pub variant_targets: Vec<String>,
+    /// The shared superclass Fern names `Base`, carrying the properties every
+    /// wrapper inherits. Only the inheritance-style form fills this: a base object
+    /// schema whose `discriminator.mapping` lists the subtypes that `allOf` it
+    /// keeps its own non-discriminant properties here rather than repeating them in
+    /// each wrapper. Empty means every wrapper extends `UniversalBaseModel`.
+    pub base_fields: Vec<Field>,
     /// Optional docstring.
     pub docstring: Option<String>,
 }
@@ -1111,6 +1117,11 @@ pub struct UnionMember {
     pub source: Option<String>,
     /// Optional wrapper class docstring.
     pub docstring: Option<String>,
+    /// A mapping entry that names the union's own schema. The payload is then the
+    /// union alias itself rather than an object, so Fern wraps it in a `value`
+    /// field written *ahead* of the discriminant and drops the `extra` member from
+    /// the wrapper's pydantic config.
+    pub wrapped: bool,
 }
 
 /// A pydantic model type.
@@ -1606,6 +1617,27 @@ fn move_inline_body_enums_to_tags(
             decl: decl.clone(),
         });
         pending.extend(dependencies.into_iter().map(|name| (module.clone(), name)));
+    }
+    // Form bodies synthesize operation-scoped field types while their component
+    // model is dropped. Remove the component model's now-orphaned nested types;
+    // unlike JSON bodies, they are not moved because the form hoister already
+    // created Fern's `Post...Request...` declaration.
+    for source in dropped_sources
+        .iter()
+        .filter(|source| !owners.contains_key(*source))
+    {
+        if let Some(object) = types.iter().find_map(|decl| match decl {
+            TypeDecl::Object(object) if object.name == *source => Some(object),
+            _ => None,
+        }) {
+            for field in &object.fields {
+                let mut names = std::collections::HashSet::new();
+                collect_named(&field.type_ref, &mut names);
+                moved.extend(names.into_iter().filter(|name| {
+                    !component_names.contains(name) && !retained_refs.contains(name)
+                }));
+            }
+        }
     }
     moved
 }
@@ -2148,11 +2180,10 @@ fn build_endpoint(
     }
 
     // Today's subset: a supported (or absent) body, path/query/header params only,
-    // at least one response, and a success response crozier knows how to render (any
-    // resolved shape but an un-hoisted inline object). Error responses never gate
-    // emittability (issue #43).
-    let emittable =
-        body_ok && !has_unsupported_params && !op.responses.is_empty() && response_supported(op);
+    // and any declared success response crozier knows how to render (any resolved
+    // shape but an un-hoisted inline object). Error responses never gate
+    // emittability (issue #43); an operation with no responses is still emitted.
+    let emittable = body_ok && !has_unsupported_params && response_supported(op);
 
     Endpoint {
         openapi_31: doc.openapi.starts_with("3.1"),
@@ -2180,6 +2211,14 @@ fn build_endpoint(
             .and_then(selected_json_request_media)
             .and_then(|(_, media)| media.schema.as_ref())
             .and_then(|schema| schema.reference.as_deref())
+            .filter(|reference| {
+                !resolve_ref(doc, reference).is_some_and(|target| {
+                    target.properties.declared()
+                        && target.properties.is_empty()
+                        && target.all_of.is_none()
+                        && target.additional_properties.is_none()
+                })
+            })
             .map(ref_to_class)
             .map(TypeRef::Named),
         request_body_doc: op
@@ -2604,6 +2643,7 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
         code.starts_with('2')
             && resp.content.iter().any(|(media_type, media)| {
                 media_type.starts_with("image/")
+                    || media_type == "application/octet-stream"
                     || media.schema.as_ref().is_some_and(|schema| {
                         let schema = schema
                             .reference
@@ -2954,6 +2994,13 @@ fn resolve_request_body(
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
         let class = ref_to_class(reference);
+        if target.properties.declared()
+            && target.properties.is_empty()
+            && target.all_of.is_none()
+            && target.additional_properties.is_none()
+        {
+            return Some(RequestBody::Inline(Vec::new()));
+        }
         // A `$ref` to an enum — string (extensible) or integer (a plain `int`
         // alias) — serializes as a plain `json=request` with the content-type
         // header.
@@ -2991,7 +3038,7 @@ fn resolve_request_body(
             return Some(single(type_ref, required, convert, false));
         }
         // A `$ref` to a plain object is inlined field-by-field.
-        if !target.properties.is_empty() || target.all_of.is_some() {
+        if target.properties.declared() || target.all_of.is_some() {
             return hoist_fields(&class, types).map(|mut fields| {
                 for field in &mut fields {
                     if field.example.is_none()
@@ -4241,7 +4288,13 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
 /// The response media types Fern reads back as one plain `str` body.
 /// `text/event-stream` is deliberately absent: an SSE response is generated as a
 /// stream of parsed events, not as a single text body.
-const TEXT_RESPONSE_MEDIA: &[&str] = &["text/plain", "text/markdown", "text/xml", "text/csv"];
+const TEXT_RESPONSE_MEDIA: &[&str] = &[
+    "text/plain",
+    "text/html",
+    "text/markdown",
+    "text/xml",
+    "text/csv",
+];
 
 fn has_text_response(op: &Operation) -> bool {
     success_response_entry(op).is_some_and(|response| {
@@ -4279,13 +4332,22 @@ fn has_bodyless_success(op: &Operation) -> bool {
 /// The success (2xx) response's JSON body schema, if any. Fern treats a wildcard
 /// `*/*` response body as JSON when no explicit `application/json` media type is
 /// present; public specs such as bungie.net use that shape for standard response
-/// envelopes.
+/// envelopes. A structured-suffix media type is JSON too — NDW returns its
+/// GeoJSON under `application/geo+json` and nothing else, and Fern types the
+/// method by that body rather than as an empty success.
 fn success_response_schema(op: &Operation) -> Option<&Schema> {
     let response = success_response_entry(op)?;
     response
         .content
         .get("application/json")
-        .or_else(|| response.content.get("*/*"))?
+        .or_else(|| response.content.get("*/*"))
+        .or_else(|| {
+            response
+                .content
+                .iter()
+                .find(|(media_type, _)| is_json_like_media_type(media_type))
+                .map(|(_, media)| media)
+        })?
         .schema
         .as_ref()
 }
@@ -4551,7 +4613,8 @@ fn synthesized_method_name(http_method: &str, url: &str) -> String {
     if path.is_empty() {
         naming::sanitize_identifier(&method)
     } else {
-        naming::sanitize_identifier(&format!("{method}_{}", naming::to_snake_case(&path)))
+        let path = naming::prose_identifier(&path);
+        naming::sanitize_identifier(&format!("{method}_{path}"))
     }
 }
 
@@ -4649,6 +4712,9 @@ fn tag_pascal(tag: &str) -> String {
 /// both rules agree, so tag-grouped corpora already matched stay byte-identical.
 fn endpoint_module(op: &Operation, url: &str) -> String {
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
+    if id.is_empty() && first_tag(op).is_none() {
+        return String::new();
+    }
     if first_tag(op).is_some_and(|tag| operation_id_matches_tag_spelling(id, tag)) {
         return String::new();
     }
@@ -5032,20 +5098,22 @@ fn collect_discriminant_strips(
                 }
             }
         }
-        if let Some(discriminator) = &schema.discriminator {
-            for reference in discriminator.mapping.values() {
-                let target = resolve_ref_from_schemas(schemas, reference);
-                let const_discriminant = target
-                    .and_then(|target| target.properties.get(&property))
-                    .is_some_and(|field| field.const_value.is_some());
-                let const_value = target
-                    .and_then(|target| target.properties.get(&property))
-                    .and_then(|field| field.const_value.as_ref())
-                    .and_then(serde_json::Value::as_str);
-                let preserve_const =
-                    const_discriminant && const_value.is_some_and(preserve_const_discriminant);
-                if !preserve_const {
-                    strips.insert(ref_to_class(reference), property.clone());
+        if schema.one_of.is_some() {
+            if let Some(discriminator) = &schema.discriminator {
+                for reference in discriminator.mapping.values() {
+                    let target = resolve_ref_from_schemas(schemas, reference);
+                    let const_discriminant = target
+                        .and_then(|target| target.properties.get(&property))
+                        .is_some_and(|field| field.const_value.is_some());
+                    let const_value = target
+                        .and_then(|target| target.properties.get(&property))
+                        .and_then(|field| field.const_value.as_ref())
+                        .and_then(serde_json::Value::as_str);
+                    let preserve_const =
+                        const_discriminant && const_value.is_some_and(preserve_const_discriminant);
+                    if !preserve_const {
+                        strips.insert(ref_to_class(reference), property.clone());
+                    }
                 }
             }
         }
@@ -5074,6 +5142,18 @@ fn preserve_const_discriminant(value: &str) -> bool {
             | "stop_reason"
             | "usage_statistics"
     )
+}
+
+/// Whether a schema is the base of an inheritance-style discriminated union: a
+/// `discriminator` with a non-empty `mapping` and no `oneOf`/`anyOf` of its own.
+/// Such a schema is emitted as a union alias rather than a class, so nothing can
+/// extend it. Mirrors the guard in [`Builder::inheritance_discriminated_union`].
+fn is_inheritance_union_base(schema: &Schema) -> bool {
+    schema.one_of.is_none()
+        && schema.any_of.is_none()
+        && schema.discriminator.as_ref().is_some_and(|discriminator| {
+            !discriminator.property_name.is_empty() && !discriminator.mapping.is_empty()
+        })
 }
 
 /// Collect a discriminated-union member's fields (the referenced model's
@@ -5580,25 +5660,30 @@ impl Builder<'_> {
             )
             .map(String::as_str)
             .collect();
-        let flatten_bases = schema.all_of.iter().flatten().any(|member| {
-            member
-                .reference
-                .as_deref()
-                .and_then(|reference| resolve_ref_from_schemas(self.schemas, reference))
-                .is_some_and(|base| {
-                    base.properties
-                        .keys()
-                        .any(|field| declared_fields.contains(field.as_str()))
-                })
+        // The `$ref` bases this model could extend. One its own
+        // `discriminator.mapping` turns into a union is not among them: it is a
+        // type alias by the time this model is emitted, so there is no class to
+        // extend and the subtype keeps only what it declares itself.
+        let base_refs: Vec<(String, &Schema)> = schema
+            .all_of
+            .iter()
+            .flatten()
+            .filter_map(|member| {
+                let reference = member.reference.as_deref()?;
+                let base = resolve_ref_from_schemas(self.schemas, reference)?;
+                (!is_inheritance_union_base(base)).then(|| (ref_to_class(reference), base))
+            })
+            .collect();
+        // A base property this model redeclares. Only the bases that have one are
+        // lowered here, so an ordinary `allOf` still hoists nothing twice.
+        let collides = base_refs.iter().any(|(_, base)| {
+            base.properties
+                .keys()
+                .any(|field| declared_fields.contains(field.as_str()))
         });
-        let mut bases = Vec::new();
         let mut fields = Vec::new();
         for member in schema.all_of.iter().flatten() {
-            if let Some(reference) = &member.reference {
-                if !flatten_bases {
-                    bases.push(ref_to_class(reference));
-                }
-            } else {
+            if member.reference.is_none() {
                 self.collect_fields(name, member, &required, &mut fields);
             }
         }
@@ -5610,18 +5695,53 @@ impl Builder<'_> {
                 }
             }
         }
-        if flatten_bases {
-            for member in schema.all_of.iter().flatten() {
-                let Some(base) = member
-                    .reference
-                    .as_deref()
-                    .and_then(|reference| resolve_ref_from_schemas(self.schemas, reference))
-                else {
-                    continue;
-                };
+        // A redeclaration that lowers to the base's own field is not an override —
+        // it says again what the base already says, so Fern drops it and keeps the
+        // base's declaration where the base put it. NDW's `AccessibilityResponseGeoJson`
+        // restates `FeatureCollection.features` unchanged and extends it with an
+        // empty body; its `MunicipalityFeature` restates `Feature.geometry`
+        // unchanged but narrows `id` and `properties`, so it flattens, writes the
+        // two narrowed properties first, and takes `type` and `geometry` from the
+        // base in the base's order.
+        //
+        // The inherited fields are lowered under the *base's* name, so an inline
+        // enum the base declares stays the base's own type (`FeatureCollectionType`)
+        // rather than being coined again for each subtype.
+        let mut inherited_by_base: Vec<Vec<Field>> = Vec::new();
+        let mut overridden = false;
+        if collides {
+            let mut restated = std::collections::HashSet::new();
+            for (base_name, base) in &base_refs {
                 let mut inherited = Vec::new();
                 let base_required: Vec<&str> = base.required.iter().map(String::as_str).collect();
-                self.collect_fields(name, base, &base_required, &mut inherited);
+                self.collect_fields(base_name, base, &base_required, &mut inherited);
+                for field in &inherited {
+                    let Some(local) = fields
+                        .iter()
+                        .find(|local| local.wire_name == field.wire_name)
+                    else {
+                        continue;
+                    };
+                    if local.type_ref == field.type_ref
+                        && local.optional == field.optional
+                        && local.nullable == field.nullable
+                        && local.spec_required == field.spec_required
+                        && local.docstring == field.docstring
+                    {
+                        restated.insert(field.wire_name.clone());
+                    } else {
+                        overridden = true;
+                    }
+                }
+                inherited_by_base.push(inherited);
+            }
+            fields.retain(|field| !restated.contains(&field.wire_name));
+        }
+        let mut bases = Vec::new();
+        if !overridden {
+            bases.extend(base_refs.iter().map(|(base_name, _)| base_name.clone()));
+        } else {
+            for mut inherited in inherited_by_base {
                 inherited.retain(|field| {
                     if let Some(existing) = fields
                         .iter_mut()
@@ -5743,6 +5863,15 @@ impl Builder<'_> {
         schema: &Schema,
         docstring: Option<String>,
     ) -> Option<DiscriminatedUnion> {
+        if schema.one_of.is_none() && schema.any_of.is_none() {
+            return self.inheritance_discriminated_union(name, module, schema, docstring);
+        }
+        // Fern applies an explicit OpenAPI discriminator to `oneOf`, but treats
+        // `anyOf` as an ordinary union even when generators such as FastAPI emit
+        // a sibling discriminator block (Marimo's `KnownUnions` properties).
+        if schema.discriminator.is_some() && schema.one_of.is_none() {
+            return None;
+        }
         let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
         let property_name = schema
             .discriminator
@@ -5800,6 +5929,7 @@ impl Builder<'_> {
                         .is_none()
                         .then(|| docstring.clone())
                         .flatten(),
+                    wrapped: false,
                 });
             }
             return Some(DiscriminatedUnion {
@@ -5808,6 +5938,7 @@ impl Builder<'_> {
                 discriminant_property: property_name,
                 members,
                 variant_targets,
+                base_fields: Vec::new(),
                 docstring,
             });
         }
@@ -5830,6 +5961,7 @@ impl Builder<'_> {
                 ),
                 source: Some(naming::class_name(target_key)),
                 docstring: docstring.clone(),
+                wrapped: false,
             });
             variant_targets.push(naming::class_name(target_key));
         }
@@ -5839,8 +5971,131 @@ impl Builder<'_> {
             discriminant_property: property_name,
             members,
             variant_targets,
+            base_fields: Vec::new(),
             docstring,
         })
+    }
+
+    /// The inheritance-style discriminated union: a base object schema whose
+    /// `discriminator.mapping` names the subtypes that `allOf` it, with no
+    /// `oneOf`/`anyOf` of its own. OpenAPI's other polymorphism spelling, and Fern
+    /// reads the mapping as the variant list exactly as it reads a `oneOf`'s.
+    ///
+    /// Three things differ from the `oneOf` form. The base's own non-discriminant
+    /// properties are not repeated in every wrapper — they become the shared
+    /// `Base` superclass. A variant contributes only the properties it declares
+    /// beyond the base, because the base's are already on `Base`. And a mapping
+    /// entry naming the base *itself* (NDW's `unknown: "#/components/schemas/
+    /// Reason"`) has no object to flatten: the payload is the union alias, so the
+    /// wrapper holds it in a `value` field instead.
+    ///
+    /// An empty mapping is not this shape — there is no variant list to read, so
+    /// the schema stays an ordinary model.
+    fn inheritance_discriminated_union(
+        &mut self,
+        name: &str,
+        module: &str,
+        schema: &Schema,
+        docstring: Option<String>,
+    ) -> Option<DiscriminatedUnion> {
+        let discriminator = schema.discriminator.as_ref()?;
+        let property_name =
+            Some(discriminator.property_name.clone()).filter(|property| !property.is_empty())?;
+        if discriminator.mapping.is_empty() {
+            return None;
+        }
+        // The base's discriminant is carried by each wrapper's `Literal` field, so
+        // it leaves the `Base` class — and registering the strip before collecting
+        // is also what keeps the property's inline `enum` from being hoisted into a
+        // `{Name}Type` module Fern never emits.
+        self.strip_discriminant
+            .insert(name.to_string(), property_name.clone());
+        let required: Vec<&str> = schema.required.iter().map(String::as_str).collect();
+        let mut base_fields = Vec::new();
+        self.collect_fields(name, schema, &required, &mut base_fields);
+
+        let mut members = Vec::new();
+        let mut variant_targets = Vec::new();
+        for (value, reference) in &discriminator.mapping {
+            let target_class = ref_to_class(reference);
+            let class_name = format!("{name}_{}", naming::class_name(value));
+            if target_class == name {
+                members.push(UnionMember {
+                    class_name,
+                    discriminant: value.clone(),
+                    fields: vec![Field {
+                        wire_name: "value".to_string(),
+                        py_name: "value".to_string(),
+                        type_ref: TypeRef::Named(name.to_string()),
+                        optional: false,
+                        nullable: false,
+                        spec_required: true,
+                        docstring: None,
+                        example: None,
+                    }],
+                    source: None,
+                    docstring: None,
+                    wrapped: true,
+                });
+                variant_targets.push(target_class);
+                continue;
+            }
+            let target = resolve_ref_from_schemas(self.schemas, reference)?.clone();
+            members.push(UnionMember {
+                class_name,
+                discriminant: value.clone(),
+                fields: self.variant_own_fields(&target_class, &target),
+                source: Some(target_class.clone()),
+                docstring: docstring.clone(),
+                wrapped: false,
+            });
+            variant_targets.push(target_class);
+        }
+        Some(DiscriminatedUnion {
+            name: name.to_string(),
+            module: module.to_string(),
+            discriminant_property: property_name,
+            members,
+            variant_targets,
+            base_fields,
+            docstring,
+        })
+    }
+
+    /// A subtype's own fields: everything its inline `allOf` members and its own
+    /// `properties` declare, and nothing its `$ref` base does — the base's
+    /// properties reach the wrapper through `Base` instead. Collected through
+    /// [`Self::collect_fields`] under the subtype's own name, so descriptions,
+    /// `readOnly` optionality and inline hoisting come out the way they do when
+    /// the subtype is emitted as a standalone model.
+    fn variant_own_fields(&mut self, owner: &str, target: &Schema) -> Vec<Field> {
+        let required: Vec<&str> = target
+            .required
+            .iter()
+            .chain(
+                target
+                    .all_of
+                    .iter()
+                    .flatten()
+                    .flat_map(|member| &member.required),
+            )
+            .map(String::as_str)
+            .collect();
+        let mut fields = Vec::new();
+        for member in target.all_of.iter().flatten() {
+            if member.reference.is_none() {
+                self.collect_fields(owner, member, &required, &mut fields);
+            }
+        }
+        self.collect_fields(owner, target, &required, &mut fields);
+        // A wrapper is a tagged view of the model, not the model: Fern writes no
+        // property descriptions on it, the way it writes none on a `oneOf`
+        // wrapper's flattened fields either. `Base` keeps its own, because it *is*
+        // where the base schema's properties are declared.
+        for field in &mut fields {
+            field.docstring = None;
+        }
+        fields
     }
 
     /// The type of a schema that only hangs annotations off one `$ref` — the
@@ -5908,6 +6163,20 @@ impl Builder<'_> {
             return type_ref;
         }
         if prop_schema.reference.is_none() {
+            if let Some(AdditionalProperties::Schema(value)) = &prop_schema.additional_properties {
+                if let Some(values) = string_enum_values(value) {
+                    let value_name = format!("{owner_prop}Value");
+                    self.types.push(TypeDecl::Enum(build_enum(
+                        &value_name,
+                        values,
+                        clean_doc(value.description.as_deref()),
+                    )));
+                    return TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Named(value_name)),
+                    );
+                }
+            }
             if let Some(values) = string_enum_values(prop_schema) {
                 let hoisted = format!("{owner}{}", naming::class_name(prop));
                 self.types.push(TypeDecl::Enum(build_enum(
@@ -5973,6 +6242,36 @@ impl Builder<'_> {
                         }
                     }
                     let items = resolved_items.unwrap_or(items);
+                    if items.ty.as_ref().and_then(TypeField::primary) == Some("array") {
+                        if let Some((nested_items, members)) =
+                            items.items.as_deref().and_then(|nested_items| {
+                                nested_items
+                                    .one_of
+                                    .as_ref()
+                                    .or(nested_items.any_of.as_ref())
+                                    .map(|members| (nested_items, members))
+                            })
+                        {
+                            let name = format!("{owner}{}ItemItem", naming::class_name(prop));
+                            let variants = members
+                                .iter()
+                                .enumerate()
+                                .map(|(index, variant)| {
+                                    self.variant_ref(&name, index, variant, members)
+                                })
+                                .collect();
+                            self.push_alias(
+                                &name,
+                                naming::module_name(&name),
+                                TypeRef::Union(variants),
+                                clean_doc(nested_items.description.as_deref()),
+                            );
+                            return sequence_of(
+                                prop_schema,
+                                sequence_of(items, TypeRef::Named(name)),
+                            );
+                        }
+                    }
                     if let Some(values) = string_enum_values(items) {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
                         self.types.push(TypeDecl::Enum(build_enum(
@@ -6059,7 +6358,7 @@ impl Builder<'_> {
                         return TypeRef::Named(name);
                     }
                 }
-                if prop_schema.discriminator.is_none() {
+                if prop_schema.discriminator.is_none() || prop_schema.one_of.is_none() {
                     let non_null: Vec<&Schema> = members
                         .iter()
                         .filter(|member| {
@@ -6175,6 +6474,9 @@ impl Builder<'_> {
                             if is_inline_object(m) {
                                 return self.variant_ref(&name, index, m, members);
                             }
+                            if string_enum_values(m).is_some() {
+                                return self.variant_ref(&name, index, m, members);
+                            }
                             if m.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
                                 if let Some(item_members) = m.items.as_deref().and_then(|items| {
                                     items.any_of.as_ref().or(items.one_of.as_ref())
@@ -6261,6 +6563,15 @@ impl Builder<'_> {
     ) -> TypeRef {
         if let Some(reference) = &variant.reference {
             return TypeRef::Named(ref_to_class(reference));
+        }
+        if let Some(values) = string_enum_values(variant) {
+            let name = variant_class_name(parent, index, variant, siblings);
+            self.types.push(TypeDecl::Enum(build_enum(
+                &name,
+                values,
+                clean_doc(variant.description.as_deref()),
+            )));
+            return TypeRef::Named(name);
         }
         if is_inline_object(variant) {
             let name = variant_class_name(parent, index, variant, siblings);

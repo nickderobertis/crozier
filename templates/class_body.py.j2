@@ -21,4 +21,6 @@
         class Config:
             frozen = True
             smart_union = True
+{% if extra_kind is not none %}
             extra = pydantic.Extra.{{ extra_kind }}
+{% endif %}

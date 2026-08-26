@@ -1868,6 +1868,8 @@ const CORPORA: &[&Corpus] = &[
     &HELIOS_VERIFIABLE_API,
     &EOZILLA,
     &OPENEPCIS_DPP_READY,
+    &NDW_ACCESSIBILITY_MAP,
+    &MARIMO,
 ];
 
 #[test]
@@ -2820,6 +2822,39 @@ const OPENEPCIS_DPP_READY: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `ndw-accessibility-map`: the NDW Location Services accessibility-map API is the
+/// corpus's only source whose `components.headers` entries declare
+/// `allowEmptyValue`. Both Header Objects (`Accept-encoding`, `Content-encoding`)
+/// carry it, and `Content-encoding` is referenced from a response, so the field is
+/// declared where a generator would read it rather than in an orphaned component.
+/// Crozier models no Header Object at all, so nothing it emits derives from the
+/// field; this row is what holds that silence to Fern's rather than to crozier's
+/// own expectation.
+const NDW_ACCESSIBILITY_MAP: Corpus = Corpus {
+    api: "ndw-accessibility-map",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `marimo`: the Marimo API's `Base64String` component declares
+/// `contentEncoding: base64`. No prior golden source declares this JSON Schema
+/// 2020-12 keyword, so this row holds Crozier's treatment to Fern's output.
+const MARIMO: Corpus = Corpus {
+    api: "marimo",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3029,6 +3064,16 @@ fn eozilla_matches_fern_output() {
 #[test]
 fn openepcis_dpp_ready_matches_fern_output() {
     assert_link_ok_corpus_matches(&OPENEPCIS_DPP_READY);
+}
+
+#[test]
+fn ndw_accessibility_map_matches_fern_output() {
+    assert_link_ok_corpus_matches(&NDW_ACCESSIBILITY_MAP);
+}
+
+#[test]
+fn marimo_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MARIMO);
 }
 
 #[test]

@@ -577,7 +577,7 @@ pub struct Schema {
     #[serde(default)]
     pub required: Vec<String>,
     /// Array item schema.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "de_items")]
     pub items: Option<Box<Schema>>,
     /// `uniqueItems` is accepted at the boundary; Fern's OpenAPI importer still
     /// emits a list, so generation does not change collection type for this flag.
@@ -790,6 +790,18 @@ where
         values: raw.into_iter().map(|(k, v)| (k, v.0)).collect(),
         declared: true,
     })
+}
+
+/// Deserialize array `items` through the same tolerant schema boundary as object
+/// properties. OpenAPI 3.1 admits boolean JSON Schemas here (`items: false`),
+/// which Fern accepts; Crozier degrades that non-object constraint to its unknown
+/// item type instead of rejecting the entire otherwise valid document.
+fn de_items<'de, D>(deserializer: D) -> std::result::Result<Option<Box<Schema>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Option::<MaybeSchema>::deserialize(deserializer)
+        .map(|value| value.map(|schema| Box::new(schema.0)))
 }
 
 /// A property value that is either a real schema object or — when the document put
@@ -1692,6 +1704,25 @@ fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<Str
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn null_schema_nodes_degrade_to_malformed_unknowns() {
+        let parsed: MaybeSchema = serde_json::from_str("null").expect("null degrades");
+        assert!(parsed.0.malformed);
+        for value in ["1", "-1", "1.5", "true", "[]", "\"text\""] {
+            assert!(
+                serde_json::from_str::<MaybeSchema>(value)
+                    .unwrap()
+                    .0
+                    .malformed
+            );
+        }
+        let error = <serde::de::value::Error as serde::de::Error>::invalid_type(
+            serde::de::Unexpected::Unit,
+            &MaybeSchemaVisitor,
+        );
+        assert!(error.to_string().contains("schema object"));
+    }
 
     /// Parse a YAML spec string into an [`OpenApi`] for the pure-filter unit tests.
     fn parse(spec: &str) -> OpenApi {
