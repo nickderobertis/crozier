@@ -149,6 +149,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e helios_verifiable_api_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e eozilla_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openepcis_dpp_ready_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e ndw_accessibility_map_matches_fern_output
 
 # Format the codebase in place.
 format:
