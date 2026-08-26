@@ -59,7 +59,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 31 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 93 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 94 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -218,8 +218,8 @@ The six region files, read as one body of work. Two measurements feed it:
   snapshot is the one every region file's evidence was taken from, pinned by
   digest in
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
-  rather than restated here. It reads **124** registered sources, of which
-  **107** carry a committed golden.
+  rather than restated here. It reads **125** registered sources, of which
+  **108** carry a committed golden.
 - **`just fixtures-coverage`**, for criterion 2 alone. That recipe is outside
   `just check` — it needs network and runs the corpus instrumented — so its
   per-file counts are a dated snapshot (2026-08-25), stated once, in the join
@@ -349,7 +349,7 @@ checked rather than trusted.
 
 | # | key | region | 1. crozier sites | 2. blind spots | 3. artifacts | 4. witnesses |
 |---|---|---|---|---|---|---|
-| 1 | [`header-allow-empty-value`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **3** (client.py, raw_client.py, reference.md) | **0** |
+| 1 | [`header-allow-empty-value`](openapi-surface/parameters.md) — **PINNED by corpus row 94, `ndw-accessibility-map`** | `parameters` | **0** (none) | **0** (no `src/` file) | **3** (client.py, raw_client.py, reference.md) | **0** |
 | 2 | [`header-allow-reserved`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **3** (client.py, raw_client.py, reference.md) | **0** |
 | 3 | [`header-content`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **3** (client.py, raw_client.py, reference.md) | **0** |
 | 4 | [`header-deprecated`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **3** (client.py, raw_client.py, reference.md) | **0** |
