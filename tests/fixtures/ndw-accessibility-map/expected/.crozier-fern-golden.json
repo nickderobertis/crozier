@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "ndw-accessibility-map",
+  "corpus_spec_ref": "46fde7c8b36ac8776eba78079bb53bf42ae17c2b",
+  "corpus_spec_url": "https://raw.githubusercontent.com/ndwnu/nls-accessibility-map/46fde7c8b36ac8776eba78079bb53bf42ae17c2b/specification/src/main/resources/nu/ndw/nls/accessibilitymap/specification/v2.yaml"
+}

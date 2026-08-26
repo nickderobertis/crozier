@@ -834,6 +834,10 @@ fn forward_ref_map(
 #[derive(Default)]
 struct ForwardRepair {
     names: std::collections::HashSet<String>,
+    /// For a discriminated union, the exact `update_forward_refs` arguments each
+    /// wrapper class takes, keyed by wrapper class name. Wrappers differ: each
+    /// resolves what its own fields reach, minus the model it flattened.
+    member_names: std::collections::HashMap<String, Vec<String>>,
     triggers: std::collections::HashSet<String>,
     import_order: Vec<String>,
     /// Whether the declaration reaches a cycle through its *own* annotations
@@ -852,6 +856,7 @@ fn forward_repair_map(
 
     let mut edges: HashMap<String, Vec<String>> = HashMap::new();
     let mut repair_edges: HashMap<String, Vec<String>> = HashMap::new();
+    let mut walk_edges: HashMap<String, Vec<String>> = HashMap::new();
     for decl in types.iter().chain(tag_types.iter().map(|t| &t.decl)) {
         edges
             .entry(decl.name().to_string())
@@ -861,6 +866,13 @@ fn forward_repair_map(
             .entry(decl.name().to_string())
             .or_default()
             .extend(decl_annotation_refs(decl));
+        walk_edges
+            .entry(decl.name().to_string())
+            .or_default()
+            .extend(match decl {
+                TypeDecl::DiscriminatedUnion(union) => union.variant_targets.clone(),
+                other => decl_refs(other),
+            });
     }
     let reaches = |start: &str, target: &str| -> bool {
         let mut stack: Vec<&str> = edges
@@ -891,83 +903,128 @@ fn forward_repair_map(
         .chain(tag_types.iter().map(|tag| &tag.decl))
         .filter_map(|decl| matches!(decl, TypeDecl::Alias(_)).then_some(decl.name()))
         .collect();
+    let classes: HashSet<&str> = types
+        .iter()
+        .chain(tag_types.iter().map(|tag| &tag.decl))
+        .filter_map(|decl| matches!(decl, TypeDecl::Object(_)).then_some(decl.name()))
+        .collect();
+    // Whether a declaration needs `from __future__ import annotations` at all.
+    // Naming a cyclic type directly always does. Reaching one only through other
+    // declarations does when the cyclic type is a *class*: a class in a cycle is
+    // still incomplete when its referrer is defined, so the referrer is rebuilt
+    // too — dnd5eapi's `Monster` names `MonsterActionsItem`, which names the
+    // cyclic `Choice`. A cyclic *alias* is not: it is a finished object by the
+    // time the module that names it repairs it, so nothing beyond that module is
+    // affected — NDW's `Feature` repairs the `FeatureProperties` union and its own
+    // referrer `FeatureCollection` needs no repair of its own.
+    let reaches_repairable = |starts: &[String]| -> bool {
+        if starts.iter().any(|name| cyclic.contains(name.as_str())) {
+            return true;
+        }
+        let mut stack: Vec<&str> = starts.iter().map(String::as_str).collect();
+        let mut seen: HashSet<&str> = HashSet::new();
+        while let Some(node) = stack.pop() {
+            if cyclic.contains(node) && classes.contains(node) {
+                return true;
+            }
+            if seen.insert(node) {
+                stack.extend(edges.get(node).into_iter().flatten().map(String::as_str));
+            }
+        }
+        false
+    };
 
     let mut out = HashMap::new();
     for decl in types.iter().chain(tag_types.iter().map(|tag| &tag.decl)) {
         if matches!(decl, TypeDecl::Alias(_)) {
             continue;
         }
-        let mut reach_stack: Vec<&str> = edges
-            .get(decl.name())
-            .into_iter()
-            .flatten()
-            .map(String::as_str)
-            .collect();
-        let mut reach_seen = HashSet::new();
-        let mut reaches_cycle = false;
-        while let Some(node) = reach_stack.pop() {
-            reaches_cycle |= cyclic.contains(node);
-            if reach_seen.insert(node) {
-                reach_stack.extend(edges.get(node).into_iter().flatten().map(String::as_str));
-            }
-        }
+        let reaches_cycle =
+            reaches_repairable(edges.get(decl.name()).map_or(&[][..], Vec::as_slice));
         // The same question asked of this declaration's own annotations only: a
         // base class is imported eagerly and repaired in its own module, so
         // inheriting a cyclic field does not make the subclass call
         // `update_forward_refs`.
-        let own_refs = decl_own_refs(decl);
-        let mut own_stack: Vec<&str> = own_refs.iter().map(String::as_str).collect();
-        let mut own_seen = HashSet::new();
-        let mut own_reach = false;
-        while let Some(node) = own_stack.pop() {
-            own_reach |= cyclic.contains(node);
-            if own_seen.insert(node) {
-                own_stack.extend(edges.get(node).into_iter().flatten().map(String::as_str));
-            }
-        }
+        let own_reach = reaches_repairable(&decl_own_refs(decl));
 
-        let closure_edges = if matches!(decl, TypeDecl::DiscriminatedUnion(_)) {
-            &repair_edges
-        } else {
-            &edges
+        // The names one declaration's `update_forward_refs` call must resolve: the
+        // cyclic names its own annotations reach, walking on **through the cyclic
+        // ones only**. A non-cyclic node is a leaf — whatever it references is
+        // repaired in its own module, not here — which is why NDW's
+        // `FeatureCollection` names nothing (it annotates `Feature`, which is not
+        // cyclic) while its `Feature` names `FeatureProperties` directly.
+        //
+        // A union is walked by its *variant targets*, not by its wrappers' fields.
+        // The wrappers are flattened views of those models, so a field they
+        // flattened is only a name to resolve when the model it came from is
+        // itself cyclic — the walk reaches it through that model. EN 18222's
+        // `DataElement` reaches `MultiValuedDataElementValueItem` through the
+        // cyclic `MultiValuedDataElement`, while NDW's `FeatureProperties` does not
+        // reach `Reason`, because the only wrapper carrying it flattened the
+        // acyclic `DestinationFeatureProperties`.
+        let closure = |starts: Vec<&str>| -> HashSet<String> {
+            let mut stack: Vec<&str> = starts
+                .into_iter()
+                .filter(|name| cyclic.contains(name))
+                .collect();
+            let mut seen = HashSet::new();
+            let mut found = HashSet::new();
+            while let Some(node) = stack.pop() {
+                found.insert(node.to_string());
+                if seen.insert(node) {
+                    stack.extend(
+                        walk_edges
+                            .get(node)
+                            .into_iter()
+                            .flatten()
+                            .map(String::as_str)
+                            .filter(|name| cyclic.contains(name)),
+                    );
+                }
+            }
+            found
         };
-        let mut stack: Vec<&str> = repair_edges
-            .get(decl.name())
-            .into_iter()
-            .flatten()
-            .map(String::as_str)
-            .filter(|name| cyclic.contains(name))
-            .collect();
-        let mut seen = HashSet::new();
-        let mut repair = HashSet::new();
-        while let Some(node) = stack.pop() {
-            if cyclic.contains(node) {
-                repair.insert(node.to_string());
+        let mut member_names: HashMap<String, Vec<String>> = HashMap::new();
+        let mut repair: HashSet<String> = if let TypeDecl::DiscriminatedUnion(union) = decl {
+            // Each wrapper resolves its own reach, minus the model it flattened —
+            // a wrapper cannot be asked to resolve its own source.
+            let mut all = HashSet::new();
+            for member in &union.members {
+                let mut refs = Vec::new();
+                for field in &member.fields {
+                    collect_named_refs(&field.type_ref, &mut refs);
+                }
+                let mut names = closure(refs.iter().map(String::as_str).collect());
+                if let Some(source) = &member.source {
+                    names.remove(source);
+                }
+                let mut ordered: Vec<String> = names.iter().cloned().collect();
+                ordered.sort_by(|left, right| natural_cmp(left, right));
+                all.extend(names);
+                member_names.insert(member.class_name.clone(), ordered);
             }
-            if seen.insert(node) {
-                stack.extend(
-                    closure_edges
-                        .get(node)
-                        .into_iter()
-                        .flatten()
-                        .map(String::as_str),
-                );
-            }
-        }
-        if matches!(decl, TypeDecl::Object(_)) {
-            repair.remove(decl.name());
-        }
-        // A union's wrapper classes flatten its variant models, so a cyclic
-        // variant is a name the module's repair calls resolve — every wrapper but
-        // the one that *is* that model, which drops it again at the call site.
-        if let TypeDecl::DiscriminatedUnion(union) = decl {
-            repair.extend(
+            all.extend(
                 union
                     .variant_targets
                     .iter()
                     .filter(|target| cyclic.contains(target.as_str()))
                     .cloned(),
             );
+            all
+        } else {
+            let mut names = closure(
+                repair_edges
+                    .get(decl.name())
+                    .into_iter()
+                    .flatten()
+                    .map(String::as_str)
+                    .collect(),
+            );
+            names.remove(decl.name());
+            names
+        };
+        if matches!(decl, TypeDecl::Object(_)) {
+            repair.remove(decl.name());
         }
         if reaches_cycle {
             let triggers = edges
@@ -991,6 +1048,7 @@ fn forward_repair_map(
                 decl.name().to_string(),
                 ForwardRepair {
                     names: repair,
+                    member_names,
                     triggers,
                     import_order,
                     own_reach,
@@ -2775,8 +2833,9 @@ struct ClassBodyView {
     fields: Vec<FieldView>,
     /// The `pydantic.ConfigDict(...)` argument list for the v2 `model_config`.
     config_dict_args: String,
-    /// The v1 `Config`'s `pydantic.Extra.<extra_kind>` member.
-    extra_kind: &'static str,
+    /// The v1 `Config`'s `pydantic.Extra.<extra_kind>` member, or `None` for a
+    /// class whose config declares no extra-fields behaviour at all.
+    extra_kind: Option<&'static str>,
 }
 
 /// The two `extra`-fields fragments a pydantic model body needs: the v2
@@ -2807,9 +2866,17 @@ fn render_class_body(
     env: &Environment<'static>,
     docstring: Option<String>,
     fields: Vec<FieldView>,
-    extra: ExtraFields,
+    extra: Option<ExtraFields>,
 ) -> Result<String> {
-    let (config_dict_args, extra_kind) = extra_config(extra);
+    // `None` is the value-wrapper form: `frozen=True` alone under v2, and a v1
+    // `Config` that stops after `smart_union`.
+    let (config_dict_args, extra_kind) = match extra {
+        Some(extra) => {
+            let (args, kind) = extra_config(extra);
+            (args, Some(kind))
+        }
+        None => ("frozen=True".to_string(), None),
+    };
     let view = ClassBodyView {
         docstring,
         fields,
@@ -2895,7 +2962,7 @@ fn render_type_decl(
                 if repairs {
                     imports.add_core("pydantic_utilities", "update_forward_refs");
                 }
-                let body = render_class_body(env, obj.docstring.clone(), fields, extra)?;
+                let body = render_class_body(env, obj.docstring.clone(), fields, Some(extra))?;
                 let mut file = format!(
                     "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n\n\nclass {}({}):\n{}",
                     imports.render(),
@@ -3112,13 +3179,11 @@ fn render_discriminated_union(
                 })
             })
             .map(|member| {
-                let mut names: Vec<String> = repair
-                    .names
-                    .iter()
-                    .filter(|name| Some(name.as_str()) != member.source.as_deref())
+                let names = repair
+                    .member_names
+                    .get(&member.class_name)
                     .cloned()
-                    .collect();
-                names.sort_by(|left, right| natural_cmp(left, right));
+                    .unwrap_or_default();
                 (member.class_name.as_str(), names)
             })
             .collect()
@@ -3140,6 +3205,28 @@ fn render_discriminated_union(
     }
 
     let mut classes: Vec<String> = Vec::new();
+    // The shared superclass, when the union came from a base object schema that
+    // declares properties of its own. Fern spells it `Base` in every module that
+    // needs one, and every wrapper below extends it instead of `UniversalBaseModel`.
+    let base_class = if union.base_fields.is_empty() {
+        "UniversalBaseModel"
+    } else {
+        let fields: Vec<FieldView> = union
+            .base_fields
+            .iter()
+            .map(|f| render_field(f, &mut imports))
+            .map(|rf| FieldView {
+                decl: field_decl(&rf),
+                docstring: rf.docstring,
+            })
+            .collect();
+        let body = render_class_body(env, None, fields, Some(extra))?;
+        classes.push(format!(
+            "class Base(UniversalBaseModel):\n{}",
+            body.trim_end()
+        ));
+        "Base"
+    };
     for member in &union.members {
         // The discriminant field: `type: typing.Literal["circle"] = "circle"`. It is
         // an ordinary field bar its default, so a wire name that does not survive
@@ -3160,8 +3247,16 @@ fn render_discriminated_union(
             &mut imports,
         );
         discriminant.default = format!(" = \"{}\"", member.discriminant);
-        let mut rendered = vec![discriminant];
-        rendered.extend(member.fields.iter().map(|f| render_field(f, &mut imports)));
+        // A `value`-wrapped variant holds a payload rather than a flattened
+        // object, so its `value` field is written ahead of the tag and its config
+        // carries no `extra` member — the wrapper owns no open field set of its own.
+        let mut rendered: Vec<RenderedField> = member
+            .fields
+            .iter()
+            .map(|f| render_field(f, &mut imports))
+            .collect();
+        let tag_at = if member.wrapped { rendered.len() } else { 0 };
+        rendered.insert(tag_at, discriminant);
         let fields: Vec<FieldView> = rendered
             .into_iter()
             .map(|rf| FieldView {
@@ -3169,9 +3264,10 @@ fn render_discriminated_union(
                 docstring: rf.docstring,
             })
             .collect();
-        let body = render_class_body(env, member.docstring.clone(), fields, extra)?;
+        let member_extra = (!member.wrapped).then_some(extra);
+        let body = render_class_body(env, member.docstring.clone(), fields, member_extra)?;
         classes.push(format!(
-            "class {}(UniversalBaseModel):\n{}",
+            "class {}({base_class}):\n{}",
             member.class_name,
             body.trim_end()
         ));
@@ -7584,7 +7680,7 @@ mod tests {
             &environment(),
             docstring.map(str::to_string),
             fields,
-            crate::settings::ExtraFields::Allow,
+            Some(crate::settings::ExtraFields::Allow),
         )
         .expect("renders")
     }
@@ -7673,7 +7769,7 @@ mod tests {
                 .expect("renders")
         };
 
-        let allow = render(crate::settings::ExtraFields::Allow);
+        let allow = render(Some(crate::settings::ExtraFields::Allow));
         assert!(
             allow.contains("pydantic.ConfigDict(extra=\"allow\", frozen=True)")
                 && allow.contains("extra = pydantic.Extra.allow"),
@@ -7682,7 +7778,7 @@ mod tests {
 
         // `ignore` drops the v2 `extra=` kwarg (v2 defaults to ignore) but keeps
         // the explicit v1 member.
-        let ignore = render(crate::settings::ExtraFields::Ignore);
+        let ignore = render(Some(crate::settings::ExtraFields::Ignore));
         assert!(
             ignore.contains("pydantic.ConfigDict(frozen=True)")
                 && !ignore.contains("extra=\"ignore\"")
@@ -7690,7 +7786,7 @@ mod tests {
             "{ignore}"
         );
 
-        let forbid = render(crate::settings::ExtraFields::Forbid);
+        let forbid = render(Some(crate::settings::ExtraFields::Forbid));
         assert!(
             forbid.contains("pydantic.ConfigDict(extra=\"forbid\", frozen=True)")
                 && forbid.contains("extra = pydantic.Extra.forbid"),
@@ -8856,10 +8952,12 @@ mod tests {
         let tag_decls = vec![TagTypeDecl {
             module: "agents".to_string(),
             decl: TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+                base_fields: Vec::new(),
                 name: "ModifyMessageRequestBody".to_string(),
                 module: "modify_message_request_body".to_string(),
                 discriminant_property: "message_type".to_string(),
                 members: vec![UnionMember {
+                    wrapped: false,
                     class_name: "ModifyMessageRequestBody_SystemMessage".to_string(),
                     discriminant: "system_message".to_string(),
                     fields: Vec::new(),
@@ -9097,6 +9195,7 @@ mod tests {
                 docstring: None,
             }),
             TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+                base_fields: Vec::new(),
                 name: "Shape".to_string(),
                 module: "shape".to_string(),
                 discriminant_property: "kind".to_string(),
@@ -9395,10 +9494,12 @@ mod tests {
         nullable_required.optional = true;
         nullable_required.nullable = true;
         let union = TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+            base_fields: Vec::new(),
             name: "Shape".to_string(),
             module: "shape".to_string(),
             discriminant_property: "kind".to_string(),
             members: vec![UnionMember {
+                wrapped: false,
                 class_name: "Shape_Circle".to_string(),
                 discriminant: "circle".to_string(),
                 fields: vec![
@@ -9412,6 +9513,7 @@ mod tests {
             docstring: None,
         });
         let empty_union = TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+            base_fields: Vec::new(),
             name: "Nothing".to_string(),
             module: "nothing".to_string(),
             discriminant_property: "kind".to_string(),
@@ -9980,10 +10082,12 @@ mod tests {
         assert!(rendered.contains("NodeList = typing.List[\"Node\"]"));
 
         let singleton = TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+            base_fields: Vec::new(),
             name: "Content".to_string(),
             module: "content".to_string(),
             discriminant_property: "type".to_string(),
             members: vec![UnionMember {
+                wrapped: false,
                 class_name: "Content_Text".to_string(),
                 discriminant: "text".to_string(),
                 fields: vec![model_field("text", TypeRef::Primitive(Prim::Str), true)],
