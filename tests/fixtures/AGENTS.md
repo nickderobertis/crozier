@@ -99,6 +99,7 @@ these is built from a spec with Fern overrides applied, not the raw document.
 | `asana` (api-guru `asana.com/1.0`) | already attempted by a prior agent too | 17 errors: inline request-body collisions (`AddFollowersRequest`, `RemoveFollowersRequest`, `ProjectSaveAsTemplateRequest`) and `date` fields with datetime examples |
 | `xtrf.eu` (api-guru `xtrf.eu/2.0`) | `https://api.apis.guru/v2/specs/xtrf.eu/2.0/openapi.json` | Python 5.20.0 generator rejects seven response-example fields across `getJobFiles` and `getTaskFiles`, despite `fern check` passing |
 | `github.com-ghes-3.8` (api-guru `github.com/ghes-3.8/1.1.4`) | `https://api.apis.guru/v2/specs/github.com/ghes-3.8/1.1.4/openapi.json` | Python 5.20.0 generator rejects 29 request collisions, examples, duplicate declarations, and enum names, despite `fern check` passing |
+| `apache-iceberg-rest-catalog` | `apache/iceberg@ebebc345624a8f51c2e9caf4bb5624c79fb2656b/open-api/rest-catalog-open-api.yaml` | Python 5.20.0 generator rejects the `NotAcceptableError` example: required `message`, `type`, and `code` are missing and `error` is unexpected |
 
 Accepted and matched corpus status lives in [`CORPUS.md`](CORPUS.md); do not
 duplicate its batch ledger here.

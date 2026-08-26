@@ -52,6 +52,157 @@ fn render_package(spec: &str, package: &str) -> HashMap<String, String> {
 }
 
 #[test]
+fn openapi_31_marimo_shapes_drive_fern_520_generation_paths() {
+    let files = render(
+        r#"openapi: 3.1.0
+info: { title: Marimo shapes, version: 1.0.0 }
+paths:
+  /@file/{filename_and_length}:
+    get:
+      parameters:
+        - { in: path, name: filename_and_length, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: file
+          content: { application/octet-stream: { schema: { type: string } } }
+  /chat:
+    post:
+      parameters:
+        - { in: header, name: Marimo-Session-Id, required: true, schema: { type: string } }
+      requestBody:
+        content: { application/json: { schema: { $ref: '#/components/schemas/ChatRequest' } } }
+  /empty:
+    post:
+      requestBody:
+        content: { application/json: { schema: { $ref: '#/components/schemas/EmptyRequest' } } }
+      responses: { '204': { description: cleared } }
+  /save:
+    post:
+      parameters:
+        - { in: header, name: Marimo-Session-Id, required: true, schema: { type: string } }
+      requestBody:
+        content: { application/json: { schema: { $ref: '#/components/schemas/SaveRequest' } } }
+      responses:
+        '200':
+          description: saved
+          content: { text/plain: { schema: { type: string } } }
+  /upload:
+    post:
+      requestBody:
+        content: { multipart/form-data: { schema: { $ref: '#/components/schemas/UploadRequest' } } }
+      responses: { '204': { description: uploaded } }
+  /tutorial:
+    post:
+      requestBody:
+        content: { application/json: { schema: { $ref: '#/components/schemas/TutorialRequest' } } }
+      responses:
+        '200':
+          description: tuple map
+          content: { application/json: { schema: { $ref: '#/components/schemas/TupleMap' } } }
+  /wild:
+    post:
+      parameters:
+        - { in: header, name: X-Required, required: true, schema: { type: string } }
+        - { in: header, name: X-Optional, schema: { type: string }, example: optional }
+        - { in: query, name: requiredQuery, required: true, schema: { type: string } }
+      requestBody:
+        content: { '*/*': { schema: { type: string } } }
+      responses:
+        '200':
+          description: text
+          content: { text/html: { schema: { type: string } } }
+  /binary-query:
+    get:
+      parameters:
+        - { in: header, name: Download-Token, required: true, schema: { type: string } }
+        - { in: query, name: ids, required: true, schema: { type: array, items: { type: string } } }
+      responses:
+        '200':
+          description: bytes
+          content: { application/octet-stream: { schema: { type: string } } }
+  /known:
+    get:
+      responses:
+        '200':
+          description: known union
+          content: { application/json: { schema: { $ref: '#/components/schemas/KnownUnion' } } }
+components:
+  schemas:
+    EmptyRequest: { type: object, properties: {}, required: [] }
+    Base64String: { type: string, contentEncoding: base64 }
+    ChatRequest:
+      type: object
+      required: [values]
+      properties: { values: { type: array } }
+    SaveRequest:
+      type: object
+      required: [config, names]
+      properties:
+        config: { type: object }
+        names: { type: array, items: { type: string } }
+    UploadRequest:
+      type: object
+      required: [type, name]
+      properties:
+        type: { type: string, enum: [file, directory] }
+        name: { type: string }
+        file: { type: [string, 'null'], format: binary }
+    KnownUnion:
+      anyOf:
+        - type: object
+          required: [kind]
+          properties: { kind: { const: first }, value: { type: string } }
+        - type: object
+          required: [kind]
+          properties: { kind: { const: second }, count: { type: integer } }
+      discriminator: { propertyName: kind }
+    TutorialRequest:
+      type: object
+      required: [tutorialId]
+      properties:
+        tutorialId:
+          anyOf:
+            - { type: string, enum: [dataflow, intro] }
+            - { type: string, enum: [markdown-format] }
+    TupleMap:
+      type: object
+      properties:
+        values:
+          type: object
+          additionalProperties:
+            type: array
+            items: false
+            prefixItems: [{ type: string }, {}]
+    MalformedProperty:
+      type: object
+      properties: { value: null }
+"#,
+    );
+
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("filename_and_length=\"filename_and_length\""),
+        "{client}"
+    );
+    assert!(
+        client.contains("marimo_session_id=\"marimoSessionId\""),
+        "{client}"
+    );
+    assert!(client.contains("names=[\"names\", \"names\"]"), "{client}");
+    assert!(
+        client.contains("config={\"config\": {\"key\": \"value\"}}"),
+        "{client}"
+    );
+    assert!(
+        client.contains("TutorialRequestTutorialIdZero.DATAFLOW"),
+        "{client}"
+    );
+    assert!(!client.contains("request: EmptyRequest"), "{client}");
+    assert!(!files["src/acme/types/__init__.py"].contains("from .upload_request_type"));
+    assert!(files["src/acme/types/__init__.py"].contains("Base64String"));
+}
+
+#[test]
 fn referenced_examples_cover_multipart_aliases_and_digit_leading_fields() {
     let files = render(
         r##"

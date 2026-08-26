@@ -566,7 +566,7 @@ fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> 
             if !is_enum
                 && !is_union
                 && !is_map(target)
-                && (!target.properties.is_empty() || target.all_of.is_some())
+                && (target.properties.declared() || target.all_of.is_some())
             {
                 *counts.entry(ref_to_class(reference)).or_default() += 1;
             }
@@ -1618,6 +1618,27 @@ fn move_inline_body_enums_to_tags(
         });
         pending.extend(dependencies.into_iter().map(|name| (module.clone(), name)));
     }
+    // Form bodies synthesize operation-scoped field types while their component
+    // model is dropped. Remove the component model's now-orphaned nested types;
+    // unlike JSON bodies, they are not moved because the form hoister already
+    // created Fern's `Post...Request...` declaration.
+    for source in dropped_sources
+        .iter()
+        .filter(|source| !owners.contains_key(*source))
+    {
+        if let Some(object) = types.iter().find_map(|decl| match decl {
+            TypeDecl::Object(object) if object.name == *source => Some(object),
+            _ => None,
+        }) {
+            for field in &object.fields {
+                let mut names = std::collections::HashSet::new();
+                collect_named(&field.type_ref, &mut names);
+                moved.extend(names.into_iter().filter(|name| {
+                    !component_names.contains(name) && !retained_refs.contains(name)
+                }));
+            }
+        }
+    }
     moved
 }
 
@@ -2162,8 +2183,7 @@ fn build_endpoint(
     // at least one response, and a success response crozier knows how to render (any
     // resolved shape but an un-hoisted inline object). Error responses never gate
     // emittability (issue #43).
-    let emittable =
-        body_ok && !has_unsupported_params && !op.responses.is_empty() && response_supported(op);
+    let emittable = body_ok && !has_unsupported_params && response_supported(op);
 
     Endpoint {
         openapi_31: doc.openapi.starts_with("3.1"),
@@ -2191,6 +2211,14 @@ fn build_endpoint(
             .and_then(selected_json_request_media)
             .and_then(|(_, media)| media.schema.as_ref())
             .and_then(|schema| schema.reference.as_deref())
+            .filter(|reference| {
+                !resolve_ref(doc, reference).is_some_and(|target| {
+                    target.properties.declared()
+                        && target.properties.is_empty()
+                        && target.all_of.is_none()
+                        && target.additional_properties.is_none()
+                })
+            })
             .map(ref_to_class)
             .map(TypeRef::Named),
         request_body_doc: op
@@ -2615,6 +2643,7 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
         code.starts_with('2')
             && resp.content.iter().any(|(media_type, media)| {
                 media_type.starts_with("image/")
+                    || media_type == "application/octet-stream"
                     || media.schema.as_ref().is_some_and(|schema| {
                         let schema = schema
                             .reference
@@ -2631,7 +2660,10 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
 fn has_binary_schema_response(doc: &OpenApi, op: &Operation) -> bool {
     op.responses.iter().any(|(code, resp)| {
         code.starts_with('2')
-            && resp.content.values().any(|media| {
+            && resp.content.iter().any(|(media_type, media)| {
+                if media_type == "application/octet-stream" {
+                    return media.schema.is_some();
+                }
                 media.schema.as_ref().is_some_and(|schema| {
                     let schema = schema
                         .reference
@@ -2965,6 +2997,13 @@ fn resolve_request_body(
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
         let class = ref_to_class(reference);
+        if target.properties.declared()
+            && target.properties.is_empty()
+            && target.all_of.is_none()
+            && target.additional_properties.is_none()
+        {
+            return Some(RequestBody::Inline(Vec::new()));
+        }
         // A `$ref` to an enum — string (extensible) or integer (a plain `int`
         // alias) — serializes as a plain `json=request` with the content-type
         // header.
@@ -3002,7 +3041,7 @@ fn resolve_request_body(
             return Some(single(type_ref, required, convert, false));
         }
         // A `$ref` to a plain object is inlined field-by-field.
-        if !target.properties.is_empty() || target.all_of.is_some() {
+        if target.properties.declared() || target.all_of.is_some() {
             return hoist_fields(&class, types).map(|mut fields| {
                 for field in &mut fields {
                     if field.example.is_none()
@@ -4252,7 +4291,13 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
 /// The response media types Fern reads back as one plain `str` body.
 /// `text/event-stream` is deliberately absent: an SSE response is generated as a
 /// stream of parsed events, not as a single text body.
-const TEXT_RESPONSE_MEDIA: &[&str] = &["text/plain", "text/markdown", "text/xml", "text/csv"];
+const TEXT_RESPONSE_MEDIA: &[&str] = &[
+    "text/plain",
+    "text/html",
+    "text/markdown",
+    "text/xml",
+    "text/csv",
+];
 
 fn has_text_response(op: &Operation) -> bool {
     success_response_entry(op).is_some_and(|response| {
@@ -4571,7 +4616,8 @@ fn synthesized_method_name(http_method: &str, url: &str) -> String {
     if path.is_empty() {
         naming::sanitize_identifier(&method)
     } else {
-        naming::sanitize_identifier(&format!("{method}_{}", naming::to_snake_case(&path)))
+        let path = naming::prose_identifier(&path);
+        naming::sanitize_identifier(&format!("{method}_{path}"))
     }
 }
 
@@ -4669,6 +4715,9 @@ fn tag_pascal(tag: &str) -> String {
 /// both rules agree, so tag-grouped corpora already matched stay byte-identical.
 fn endpoint_module(op: &Operation, url: &str) -> String {
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
+    if id.is_empty() && first_tag(op).is_none() {
+        return String::new();
+    }
     if first_tag(op).is_some_and(|tag| operation_id_matches_tag_spelling(id, tag)) {
         return String::new();
     }
@@ -5052,20 +5101,22 @@ fn collect_discriminant_strips(
                 }
             }
         }
-        if let Some(discriminator) = &schema.discriminator {
-            for reference in discriminator.mapping.values() {
-                let target = resolve_ref_from_schemas(schemas, reference);
-                let const_discriminant = target
-                    .and_then(|target| target.properties.get(&property))
-                    .is_some_and(|field| field.const_value.is_some());
-                let const_value = target
-                    .and_then(|target| target.properties.get(&property))
-                    .and_then(|field| field.const_value.as_ref())
-                    .and_then(serde_json::Value::as_str);
-                let preserve_const =
-                    const_discriminant && const_value.is_some_and(preserve_const_discriminant);
-                if !preserve_const {
-                    strips.insert(ref_to_class(reference), property.clone());
+        if schema.one_of.is_some() {
+            if let Some(discriminator) = &schema.discriminator {
+                for reference in discriminator.mapping.values() {
+                    let target = resolve_ref_from_schemas(schemas, reference);
+                    let const_discriminant = target
+                        .and_then(|target| target.properties.get(&property))
+                        .is_some_and(|field| field.const_value.is_some());
+                    let const_value = target
+                        .and_then(|target| target.properties.get(&property))
+                        .and_then(|field| field.const_value.as_ref())
+                        .and_then(serde_json::Value::as_str);
+                    let preserve_const =
+                        const_discriminant && const_value.is_some_and(preserve_const_discriminant);
+                    if !preserve_const {
+                        strips.insert(ref_to_class(reference), property.clone());
+                    }
                 }
             }
         }
@@ -5818,6 +5869,12 @@ impl Builder<'_> {
         if schema.one_of.is_none() && schema.any_of.is_none() {
             return self.inheritance_discriminated_union(name, module, schema, docstring);
         }
+        // Fern applies an explicit OpenAPI discriminator to `oneOf`, but treats
+        // `anyOf` as an ordinary union even when generators such as FastAPI emit
+        // a sibling discriminator block (Marimo's `KnownUnions` properties).
+        if schema.discriminator.is_some() && schema.one_of.is_none() {
+            return None;
+        }
         let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
         let property_name = schema
             .discriminator
@@ -6109,6 +6166,20 @@ impl Builder<'_> {
             return type_ref;
         }
         if prop_schema.reference.is_none() {
+            if let Some(AdditionalProperties::Schema(value)) = &prop_schema.additional_properties {
+                if let Some(values) = string_enum_values(value) {
+                    let value_name = format!("{owner_prop}Value");
+                    self.types.push(TypeDecl::Enum(build_enum(
+                        &value_name,
+                        values,
+                        clean_doc(value.description.as_deref()),
+                    )));
+                    return TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Named(value_name)),
+                    );
+                }
+            }
             if let Some(values) = string_enum_values(prop_schema) {
                 let hoisted = format!("{owner}{}", naming::class_name(prop));
                 self.types.push(TypeDecl::Enum(build_enum(
@@ -6174,6 +6245,36 @@ impl Builder<'_> {
                         }
                     }
                     let items = resolved_items.unwrap_or(items);
+                    if items.ty.as_ref().and_then(TypeField::primary) == Some("array") {
+                        if let Some((nested_items, members)) =
+                            items.items.as_deref().and_then(|nested_items| {
+                                nested_items
+                                    .one_of
+                                    .as_ref()
+                                    .or(nested_items.any_of.as_ref())
+                                    .map(|members| (nested_items, members))
+                            })
+                        {
+                            let name = format!("{owner}{}ItemItem", naming::class_name(prop));
+                            let variants = members
+                                .iter()
+                                .enumerate()
+                                .map(|(index, variant)| {
+                                    self.variant_ref(&name, index, variant, members)
+                                })
+                                .collect();
+                            self.push_alias(
+                                &name,
+                                naming::module_name(&name),
+                                TypeRef::Union(variants),
+                                clean_doc(nested_items.description.as_deref()),
+                            );
+                            return sequence_of(
+                                prop_schema,
+                                sequence_of(items, TypeRef::Named(name)),
+                            );
+                        }
+                    }
                     if let Some(values) = string_enum_values(items) {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
                         self.types.push(TypeDecl::Enum(build_enum(
@@ -6260,7 +6361,7 @@ impl Builder<'_> {
                         return TypeRef::Named(name);
                     }
                 }
-                if prop_schema.discriminator.is_none() {
+                if prop_schema.discriminator.is_none() || prop_schema.one_of.is_none() {
                     let non_null: Vec<&Schema> = members
                         .iter()
                         .filter(|member| {
@@ -6376,6 +6477,9 @@ impl Builder<'_> {
                             if is_inline_object(m) {
                                 return self.variant_ref(&name, index, m, members);
                             }
+                            if string_enum_values(m).is_some() {
+                                return self.variant_ref(&name, index, m, members);
+                            }
                             if m.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
                                 if let Some(item_members) = m.items.as_deref().and_then(|items| {
                                     items.any_of.as_ref().or(items.one_of.as_ref())
@@ -6462,6 +6566,15 @@ impl Builder<'_> {
     ) -> TypeRef {
         if let Some(reference) = &variant.reference {
             return TypeRef::Named(ref_to_class(reference));
+        }
+        if let Some(values) = string_enum_values(variant) {
+            let name = variant_class_name(parent, index, variant, siblings);
+            self.types.push(TypeDecl::Enum(build_enum(
+                &name,
+                values,
+                clean_doc(variant.description.as_deref()),
+            )));
+            return TypeRef::Named(name);
         }
         if is_inline_object(variant) {
             let name = variant_class_name(parent, index, variant, siblings);

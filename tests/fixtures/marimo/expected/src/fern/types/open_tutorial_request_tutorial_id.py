@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .open_tutorial_request_tutorial_id_one import OpenTutorialRequestTutorialIdOne
+from .open_tutorial_request_tutorial_id_zero import OpenTutorialRequestTutorialIdZero
+
+OpenTutorialRequestTutorialId = typing.Union[OpenTutorialRequestTutorialIdZero, OpenTutorialRequestTutorialIdOne]

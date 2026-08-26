@@ -1196,9 +1196,9 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     let root_eps: Vec<&Endpoint> = ir
         .endpoints
         .iter()
-        .filter(|e| e.module.is_empty())
+        .filter(|e| e.module.is_empty() && e.emittable)
         .collect();
-    let root_emittable = !root_eps.is_empty() && root_eps.iter().all(|e| e.emittable);
+    let root_emittable = !root_eps.is_empty();
     if root_emittable {
         files.push(raw_client_file(
             &env,
@@ -1800,9 +1800,6 @@ fn select_readme_endpoint<'a>(
 /// operation from a later module leapfrog one from the first module merely
 /// because their paths were interleaved.
 fn readme_endpoint_order(ir: &Ir) -> Vec<&Endpoint> {
-    if ir.openapi_31 {
-        return ir.endpoints.iter().collect();
-    }
     let grouped: Vec<&Endpoint> = ir
         .endpoint_modules
         .iter()
@@ -2127,30 +2124,26 @@ fn reference_entry(
         documentation: false,
         reference: false,
     };
-    let example = (!ep.binary_schema_response || !module.is_empty())
-        .then(|| {
-            build_documentation_example(
-                ep,
-                false,
-                module,
-                pkg,
-                &ir.client_name,
-                &mut ctx,
-                ir.environment.as_ref(),
-                true,
-            )
-        })
-        .flatten()
-        .map_or_else(
-            || {
-                if has_args {
-                    format!("{}(...)", client_call_prefix(ep))
-                } else {
-                    format!("{}()", client_call_prefix(ep))
-                }
-            },
-            |lines| lines.join("\n"),
-        );
+    let example = build_documentation_example(
+        ep,
+        false,
+        module,
+        pkg,
+        &ir.client_name,
+        &mut ctx,
+        ir.environment.as_ref(),
+        true,
+    )
+    .map_or_else(
+        || {
+            if has_args {
+                format!("{}(...)", client_call_prefix(ep))
+            } else {
+                format!("{}()", client_call_prefix(ep))
+            }
+        },
+        |lines| lines.join("\n"),
+    );
 
     // The parameter rows, in signature order, then `request_options`.
     let mut params: Vec<ParamRow> = Vec::new();
@@ -2297,7 +2290,6 @@ fn reference_entry(
         example,
         example_gap: if !endpoint_has_worked_example(ep)
             || matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
-            || ep.binary_schema_response && module.is_empty()
         {
             ""
         } else {
@@ -5480,20 +5472,15 @@ fn client_binary_stream_docstring(
         documentation: false,
         reference: false,
     };
-    if let Some(ex_lines) = (!cx.module.is_empty() || !ep.binary_schema_response)
-        .then(|| {
-            build_example(
-                ep,
-                is_async,
-                cx.module,
-                cx.pkg,
-                cx.client_name,
-                &mut ctx,
-                cx.empty_namespace,
-            )
-        })
-        .flatten()
-    {
+    if let Some(ex_lines) = build_example(
+        ep,
+        is_async,
+        cx.module,
+        cx.pkg,
+        cx.client_name,
+        &mut ctx,
+        cx.empty_namespace,
+    ) {
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
@@ -5605,6 +5592,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
 
 /// A synthesized Python example value, formatted the way Fern's snippet formatter
 /// (ruff defaults) renders it.
+#[derive(Clone)]
 enum Example {
     /// A leaf rendered verbatim (`"string"`, `1`, `True`, `{"key": "value"}`).
     Atom(String),
@@ -6268,7 +6256,7 @@ impl<'a> ExampleCtx<'a> {
                 // empty (`children=[]`), which also terminates the walk (issue #84).
                 // The element inherits the list's slot, so a `List[str]` field's
                 // example uses the field name (`all_field=["all_field"]`).
-                if self.resolves_to_building(inner) {
+                if self.resolves_to_building(inner) || self.resolves_to_any(inner) {
                     if self.documentation {
                         Example::ReferenceList(vec![])
                     } else {
@@ -6330,6 +6318,12 @@ impl<'a> ExampleCtx<'a> {
     /// to `BlockTag`'s `"earliest"` — rendered as the plain string the union's own
     /// annotation accepts, not the enum member a `BlockTag` argument would take.
     fn union_value(&mut self, variants: &[TypeRef], slot: Slot<'_>) -> Example {
+        if let Some(TypeRef::Named(name)) = variants.first() {
+            if matches!(self.find(name), Some(TypeDecl::Enum(_))) {
+                let name = name.clone();
+                return self.named_value(&name, slot);
+            }
+        }
         if let Some(value) = variants
             .iter()
             .skip(1)
@@ -6642,6 +6636,18 @@ fn build_example_inner(
     // required query/header params, then the request body (a single `request`, or
     // each required inlined field).
     let mut args: Vec<(Option<String>, Example)> = Vec::new();
+    let header_slot = |wire: &str| {
+        if ep.text_response || ep.binary_response {
+            let mut words = naming::split_words(wire).into_iter();
+            let mut value = words.next().unwrap_or_default();
+            for word in words {
+                value.push_str(&naming::to_pascal_case(&word));
+            }
+            value
+        } else {
+            wire.to_string()
+        }
+    };
     if !ep.markdown_response && !ep.wildcard_binary_response {
         for pp in &ep.path_params {
             if reference && matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
@@ -6712,7 +6718,10 @@ fn build_example_inner(
             .as_ref()
             .filter(|_| ctx.example_is_scalar(&hp.type_ref))
             .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
-            .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+            .unwrap_or_else(|| {
+                let slot = header_slot(&hp.wire_name);
+                ctx.value(&hp.type_ref, Slot::Named(&slot))
+            });
         args.push((Some(hp.py_name.clone()), v));
     }
     if wildcard_request && !reference {
@@ -6724,7 +6733,10 @@ fn build_example_inner(
                 .as_ref()
                 .filter(|_| ctx.example_is_scalar(&hp.type_ref))
                 .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
-                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+                .unwrap_or_else(|| {
+                    let slot = header_slot(&hp.wire_name);
+                    ctx.value(&hp.type_ref, Slot::Named(&slot))
+                });
             args.push((Some(hp.py_name.clone()), value));
         }
         for qp in ep
@@ -6771,7 +6783,10 @@ fn build_example_inner(
                 .as_ref()
                 .filter(|_| ctx.example_is_scalar(&hp.type_ref))
                 .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
-                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+                .unwrap_or_else(|| {
+                    let slot = header_slot(&hp.wire_name);
+                    ctx.value(&hp.type_ref, Slot::Named(&slot))
+                });
             args.push((Some(hp.py_name.clone()), value));
         }
         for hp in ep.header_params.iter().filter(|header| {
@@ -6782,7 +6797,10 @@ fn build_example_inner(
                 .as_ref()
                 .filter(|_| ctx.example_is_scalar(&hp.type_ref))
                 .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
-                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+                .unwrap_or_else(|| {
+                    let slot = header_slot(&hp.wire_name);
+                    ctx.value(&hp.type_ref, Slot::Named(&slot))
+                });
             args.push((Some(hp.py_name.clone()), value));
         }
     }
@@ -6812,7 +6830,10 @@ fn build_example_inner(
                 .as_ref()
                 .filter(|_| ctx.example_is_scalar(&hp.type_ref))
                 .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
-                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+                .unwrap_or_else(|| {
+                    let slot = header_slot(&hp.wire_name);
+                    ctx.value(&hp.type_ref, Slot::Named(&slot))
+                });
             args.push((Some(hp.py_name.clone()), value));
         }
     }
@@ -6827,7 +6848,10 @@ fn build_example_inner(
             .as_ref()
             .filter(|_| ctx.example_is_scalar(&hp.type_ref))
             .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
-            .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+            .unwrap_or_else(|| {
+                let slot = header_slot(&hp.wire_name);
+                ctx.value(&hp.type_ref, Slot::Named(&slot))
+            });
         args.push((Some(hp.py_name.clone()), value));
     }
     match &ep.request_body {
@@ -6935,7 +6959,7 @@ fn build_example_inner(
                         }
                         example
                     });
-                let v = supplied_example
+                let mut v = supplied_example
                     .as_deref()
                     .and_then(|example| {
                         if f.schema_body_example
@@ -6959,6 +6983,24 @@ fn build_example_inner(
                         }
                     })
                     .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)));
+                let synthesized_items =
+                    ((ep.text_response || ep.binary_response) && f.spec_required).then_some(2);
+                if let Some(min_items) = synthesized_items {
+                    if let Example::List(items) | Example::ReferenceList(items) = &mut v {
+                        if let Some(first) = items.first().cloned() {
+                            items.resize(min_items, first);
+                        }
+                    }
+                }
+                if (ep.text_response || ep.binary_response)
+                    && matches!(&f.type_ref, TypeRef::Dict(_, value) if is_any_type(value))
+                {
+                    v = if reference {
+                        Example::ReferenceDict(vec![(f.wire_name.clone(), Example::Atom(v.flat()))])
+                    } else {
+                        Example::Dict(vec![(f.wire_name.clone(), v)])
+                    };
+                }
                 let example_name = if (reference
                     || ep.request_body_required
                     || ep.request_body_has_multipart_related)

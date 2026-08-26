@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .datasources_config_auto_discover_schemas_one import DatasourcesConfigAutoDiscoverSchemasOne
+
+DatasourcesConfigAutoDiscoverSchemas = typing.Union[bool, DatasourcesConfigAutoDiscoverSchemasOne]

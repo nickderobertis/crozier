@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "marimo",
+  "corpus_spec_ref": "257ea7a983e2dbe4627f0168072fdcd538c93c5c",
+  "corpus_spec_url": "https://raw.githubusercontent.com/marimo-team/marimo/257ea7a983e2dbe4627f0168072fdcd538c93c5c/packages/openapi/api.yaml"
+}

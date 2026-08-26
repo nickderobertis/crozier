@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .datasources_config_auto_discover_tables_one import DatasourcesConfigAutoDiscoverTablesOne
+
+DatasourcesConfigAutoDiscoverTables = typing.Union[bool, DatasourcesConfigAutoDiscoverTablesOne]

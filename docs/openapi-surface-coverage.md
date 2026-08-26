@@ -59,7 +59,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 31 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 94 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 95 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -218,8 +218,8 @@ The six region files, read as one body of work. Two measurements feed it:
   snapshot is the one every region file's evidence was taken from, pinned by
   digest in
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
-  rather than restated here. It reads **125** registered sources, of which
-  **108** carry a committed golden.
+  rather than restated here. It reads **126** registered sources, of which
+  **109** carry a committed golden.
 - **`just fixtures-coverage`**, for criterion 2 alone. That recipe is outside
   `just check` — it needs network and runs the corpus instrumented — so its
   per-file counts are a dated snapshot (2026-08-25), stated once, in the join
@@ -324,6 +324,16 @@ ledger join and the site counts it ranks on, and found no row whose `category` o
 **Pinned from this backlog:** [`header-allow-empty-value`](openapi-surface/parameters.md)
 is pinned by corpus row 94, `ndw-accessibility-map`; its two Header Objects declare
 the field and its Fern 5.20.0 golden byte-matches with no exclusions.
+
+The three highest-ranked entries were passed over after a GitHub
+code search of real OpenAPI 3 documents: `header-allow-reserved` has only
+conformance-fixture Header Object witnesses because `allowReserved` is defined
+for query parameters; `header-content` and `header-deprecated` likewise yielded
+only meta-schema or conformance examples, not a redistributable real-world API.
+
+[`content-encoding`](openapi-surface/schemas.md) is pinned by corpus row 95,
+`marimo`; its `Base64String` component declares `contentEncoding: base64` and
+its Fern 5.20.0 golden byte-matches with no exclusions.
 
 All 38 `FIXTURE` gaps remaining across the six regions, in one total order, by [the ranking
 rubric](#the-ranking-rubric) — crozier sites ascending, then blind-spot reach
