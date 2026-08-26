@@ -1059,5 +1059,466 @@ class PyYamlOracleTests(unittest.TestCase):
                 self.assertEqual(theirs, mine)
 
 
+
+class RankedBacklogTests(unittest.TestCase):
+    """The index's synthesis restates the six region files; recompute it from them.
+
+    `## Ranked gap backlog` is an aggregate — per-region category counts, one
+    ranked `FIXTURE` list, one `PROBE` list, and a per-`src/`-file join against
+    `just fixtures-coverage`. Every number in it is owned somewhere else, so
+    without these the section goes stale silently the first time a region row is
+    added or reclassified. The coverage figures are the one input no offline gate
+    can re-derive; what is checked here is that the two tables carrying them agree
+    with each other, which is what the ranking's second criterion rests on.
+    """
+
+    DOC = REPO / "docs" / "openapi-surface-coverage.md"
+    REGIONS = REPO / "docs" / "openapi-surface"
+    CATEGORIES = ("golden", "limitations", "gap")
+    SETTLEMENTS = ("FIXTURE", "PROBE", "UNREACHABLE")
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.doc = cls.DOC.read_text(encoding="utf-8")
+        cls.entries = {}
+        for path in sorted(cls.REGIONS.glob("*.md")):
+            for cells in cls.region_rows(path.read_text(encoding="utf-8")):
+                cls.entries[cells[0].strip("`")] = (path.stem, cells)
+
+    @staticmethod
+    def region_rows(text: str) -> list[list[str]]:
+        """Every entry-table row of one region file, as its eight cells.
+
+        `\\|` inside a cell is an escaped pipe, not a column break — one row's
+        `crozier sites` cell holds a Rust `match` pattern that uses it.
+        """
+        rows = []
+        for line in text.splitlines():
+            if not line.startswith("| "):
+                continue
+            cells = [
+                cell.replace("\x00", "\\|").strip()
+                for cell in line.replace("\\|", "\x00").strip().strip("|").split("|")
+            ]
+            if len(cells) == 8 and cells[3].strip("`") in RankedBacklogTests.CATEGORIES:
+                rows.append(cells)
+        return rows
+
+    def section(self, start: str, end: str | None = None) -> str:
+        self.assertIn(start, self.doc, f"the index no longer carries {start!r}")
+        body = self.doc.split(start, 1)[1]
+        return body if end is None else body.split(end, 1)[0]
+
+    def settlement_of(self, cells: list[str]) -> str:
+        first = cells[7].lstrip("`*").split(" ", 1)[0].strip("`*—")
+        self.assertIn(first, self.SETTLEMENTS, f"unknown settlement class in {cells[0]}")
+        return first
+
+    def gaps(self, settlement: str) -> set[str]:
+        return {
+            key
+            for key, (_region, cells) in self.entries.items()
+            if cells[3].strip("`") == "gap" and self.settlement_of(cells) == settlement
+        }
+
+    def ranked_rows(self) -> list[tuple[int, str, tuple[int, int, int, int], str]]:
+        """(rank, key, the four published criteria, the whole line)."""
+        out = []
+        for line in self.section(
+            "### The ranked `FIXTURE` backlog", "### The ranked list against"
+        ).splitlines():
+            row = re.match(r"\| (\d+) \| \[`([^`]+)`\]", line)
+            if not row:
+                continue
+            measured = [int(value) for value in re.findall(r"\*\*(\d+)\*\*", line)]
+            self.assertEqual(
+                4, len(measured), f"{row.group(2)} does not publish four measured criteria"
+            )
+            out.append((int(row.group(1)), row.group(2), tuple(measured), line))
+        self.assertTrue(out, "the ranked backlog table no longer parses")
+        return out
+
+    def blind_spot_table(self) -> dict[str, tuple[int, str, str]]:
+        """`src/` file -> (printed count, per-tier breakdown, the ranked-gaps cell)."""
+        found = {}
+        for line in self.section("| `src/` file | printed |", "**Where the two").splitlines():
+            row = re.match(r"\| `(src/[a-z_]+\.rs)` \| (\d+) \| ([^|]+) \| ([^|]+) \|", line)
+            if row:
+                found[row.group(1)] = (
+                    int(row.group(2)), row.group(3).strip(), row.group(4).strip()
+                )
+        self.assertTrue(found, "the golden blind spots join table no longer parses")
+        return found
+
+    def test_every_enumerated_feature_is_classified_exactly_once(self) -> None:
+        """One key per feature, and no spec location owned by two regions."""
+        keys = [
+            cells[0].strip("`")
+            for path in sorted(self.REGIONS.glob("*.md"))
+            for cells in self.region_rows(path.read_text(encoding="utf-8"))
+        ]
+        self.assertEqual(len(keys), len(set(keys)), "a feature key appears in two rows")
+        stated = re.search(r"The (\d+) rows carry (\d+) distinct\s+keys", self.doc)
+        self.assertIsNotNone(stated, "the reconciliation no longer states the row count")
+        self.assertEqual(
+            [len(keys), len(set(keys))],
+            [int(stated.group(1)), int(stated.group(2))],
+            "the reconciliation's row count is not the walk's own",
+        )
+        owners: dict[str, set[str]] = {}
+        for region, cells in self.entries.values():
+            owners.setdefault(cells[2], set()).add(region)
+        shared = {loc: sorted(names) for loc, names in owners.items() if len(names) > 1}
+        self.assertEqual({}, shared, "a spec location is classified in two region files")
+
+    def test_the_summary_table_is_the_six_region_files_own_row_counts(self) -> None:
+        """Per-region totals, recomputed from the tables they aggregate."""
+        stated = {}
+        for line in self.section("### What the walk enumerated", "The walk enumerated").splitlines():
+            row = re.match(
+                r"\| \[`([a-z0-9-]+)`\][^|]*\|" + r"\s*(\d+)\s*\|" * 7, line
+            )
+            if row:
+                stated[row.group(1)] = [int(row.group(n)) for n in range(2, 9)]
+        self.assertEqual(6, len(stated), "the summary table no longer lists six regions")
+        totals = re.search(
+            r"\| \*\*total\*\* \|" + r"\s*\*\*(\d+)\*\*\s*\|" * 7,
+            self.section("### What the walk enumerated", "The walk enumerated"),
+        )
+        self.assertIsNotNone(totals, "the summary table no longer carries a total row")
+        self.assertEqual(
+            [sum(column) for column in zip(*stated.values())],
+            [int(totals.group(n)) for n in range(1, 8)],
+            "the total row is not the six region rows' own column sums",
+        )
+        for region, numbers in sorted(stated.items()):
+            with self.subTest(region=region):
+                rows = [c for r, c in self.entries.values() if r == region]
+                counts = [len(rows)]
+                counts += [
+                    sum(1 for cells in rows if cells[3].strip("`") == category)
+                    for category in self.CATEGORIES
+                ]
+                counts += [
+                    sum(
+                        1
+                        for cells in rows
+                        if cells[3].strip("`") == "gap"
+                        and self.settlement_of(cells) == settlement
+                    )
+                    for settlement in self.SETTLEMENTS
+                ]
+                self.assertEqual(counts, numbers)
+
+    def test_the_prose_totals_are_the_summary_tables_own_column_sums(self) -> None:
+        """The narrated 402/271/42/89 and 39/30/20 are the table's totals."""
+        rows = list(self.entries.values())
+        totals = [len(rows)]
+        totals += [
+            sum(1 for _r, cells in rows if cells[3].strip("`") == category)
+            for category in self.CATEGORIES
+        ]
+        prose = self.section("The walk enumerated", "**What the `gap` count means.**")
+        narrated = [int(value.replace(",", "")) for value in re.findall(r"\*\*([\d,]+)\*\*", prose)]
+        self.assertEqual(totals + [len(self.gaps(s)) for s in self.SETTLEMENTS], narrated)
+        self.assertEqual(
+            totals[3],
+            sum(len(self.gaps(s)) for s in self.SETTLEMENTS),
+            "the settlement classes do not partition the gap rows",
+        )
+
+    def test_the_gap_count_paragraph_recomputes_its_own_numbers(self) -> None:
+        """What `gap` means restates the gap total twice, then its two parts."""
+        gap = sum(
+            1 for _region, cells in self.entries.values() if cells[3].strip("`") == "gap"
+        )
+        unreachable = len(self.gaps("UNREACHABLE"))
+        prose = self.section("**What the `gap` count means.**", "### Reconciliation")
+        self.assertEqual(
+            [gap, gap, unreachable, gap - unreachable],
+            [int(value) for value in re.findall(r"\b(\d+)\b", prose)],
+            "the paragraph's counts are not the walk's own gap totals",
+        )
+
+    def ledger_keys(self) -> set[str]:
+        """The keys the index's own documented join reports, run here."""
+        pattern = re.search(
+            r"^grep -oP '(.+)' docs/fern-limitations\.md", self.doc, re.M
+        )
+        self.assertIsNotNone(pattern, "the index no longer documents the join command")
+        before, _, after = pattern.group(1).partition("\\K")
+        ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
+        return set(re.findall(f"{before}({after})", ledger, re.M))
+
+    def test_the_reconciliation_counts_the_rows_it_narrates(self) -> None:
+        """How many spec locations carry several rows, and the three named by size."""
+        owners: dict[str, int] = {}
+        for _region, cells in self.entries.values():
+            owners[cells[2]] = owners.get(cells[2], 0) + 1
+        shared = {loc: count for loc, count in owners.items() if count > 1}
+        flat = " ".join(
+            self.section(
+                "**Each feature is classified exactly once.**", "**Nothing is left"
+            ).split()
+        )
+        stated = re.search(r"(\w+) spec locations carry more than one row", flat)
+        self.assertIsNotNone(stated, "the reconciliation no longer counts the shared locations")
+        self.assertEqual(len(shared), {"Thirteen": 13}.get(stated.group(1)))
+        named = 0
+        for location, count in sorted(shared.items()):
+            if f"`{location}`" not in flat:
+                continue
+            named += 1
+            with self.subTest(location=location):
+                follows = re.search(
+                    rf"`{re.escape(location)}`(?: heads)? (\d+)", flat
+                )
+                self.assertIsNotNone(follows, f"{location} is named without its row count")
+                self.assertEqual(count, int(follows.group(1)))
+        self.assertEqual(3, named, "the reconciliation no longer names three locations by size")
+
+    def test_the_ledger_join_counts_the_keys_it_reports(self) -> None:
+        """56 reported, 51 spelled by a region row, 55 that are feature keys."""
+        keys = self.ledger_keys()
+        verbatim = keys & set(self.entries)
+        text = self.section("**Every ledger key is accounted for.**", "**The one correction")
+        stated = re.search(
+            r"canonical join reports (\d+) keys, of\nwhich (\d+) are a region row's key verbatim", text
+        )
+        self.assertIsNotNone(stated, "the reconciliation no longer counts the join")
+        self.assertEqual((len(keys), len(verbatim)), (int(stated.group(1)), int(stated.group(2))))
+        unaccounted = sorted(keys - verbatim)
+        self.assertEqual(
+            len(unaccounted),
+            len(re.findall(r"^\| `([^`]+)` \|", text, re.M)),
+            "the table of unaccounted keys is not the join's own remainder",
+        )
+        for key in unaccounted:
+            self.assertIn(f"| `{key}` |", text, f"{key} has no row saying how it is accounted for")
+        yielded = re.search(r"The join's real yield is (\d+)\.", text)
+        self.assertIsNotNone(yielded, "the reconciliation no longer states the join's real yield")
+        self.assertEqual(len(keys) - 1, int(yielded.group(1)), "one key is the non-feature label")
+
+    def test_the_ranked_backlog_is_every_fixture_gap_in_rubric_order(self) -> None:
+        """One total order over every `FIXTURE` row, by the four published numbers."""
+        ranked = self.ranked_rows()
+        self.assertEqual(self.gaps("FIXTURE"), {key for _n, key, _m, _line in ranked})
+        self.assertEqual(
+            list(range(1, len(ranked) + 1)), [n for n, _key, _m, _line in ranked]
+        )
+        sortable = [
+            ((sites, -blind, -breadth, -witnesses, key), rank)
+            for rank, key, (sites, blind, breadth, witnesses), _line in ranked
+        ]
+        self.assertEqual(sorted(sortable), sortable, "the ranked table is not in rubric order")
+        stated = re.search(r"All (\d+) `FIXTURE` gaps", self.doc)
+        self.assertIsNotNone(stated, "the ranked backlog no longer states its own size")
+        self.assertEqual(len(ranked), int(stated.group(1)))
+
+    def test_the_ranked_table_names_each_keys_owning_region(self) -> None:
+        """The `region` column and the per-row link, against the file the key is in."""
+        for _rank, key, _measured, line in self.ranked_rows():
+            with self.subTest(key=key):
+                region = self.entries[key][0]
+                self.assertIn(f"](openapi-surface/{region}.md)", line)
+                self.assertIn(f"| `{region}` |", line)
+
+    def test_criterion_one_is_the_region_rows_own_crozier_sites_count(self) -> None:
+        """Criterion 1 is the `crozier sites` cell's own integer, not a second copy.
+
+        A cell spells its count several ways — ``` `src/ir.rs`: 6 places ```,
+        `src/ir.rs (3 places)`, ``` `src/ir.rs` — 1 ``` — so the count is every
+        integer that follows a `src/` file name, and a `src/ir.rs:627` line
+        reference is excluded by the digit that follows its colon.
+        """
+        for _rank, key, measured, _line in self.ranked_rows():
+            with self.subTest(key=key):
+                cell = self.entries[key][1][5]
+                if cell.lstrip("`").startswith("none"):
+                    self.assertEqual(0, measured[0], "a `none` cell scores zero sites")
+                    continue
+                counted = re.findall(r"src/[a-z_]+\.rs`?(?!:\d)[^0-9A-Za-z]{0,14}(\d+)", cell)
+                self.assertTrue(counted, f"{key}'s `crozier sites` cell states no count")
+                self.assertEqual(sum(int(n) for n in counted), measured[0])
+
+    def test_criterion_three_counts_the_artifact_kinds_its_own_cell_lists(self) -> None:
+        """Criterion 3 is a reading of the region row's prose, so it is stated once.
+
+        The region files name the artifacts in prose and publish no breadth
+        number; this column normalizes that prose over the vocabulary the criteria
+        list defines. What is checkable is that the number is the list beside it
+        and that every name in the list is one of the six.
+        """
+        vocabulary = set(
+            re.findall(
+                r"`([a-z_./]+)`",
+                self.section("**Criterion 3**, artifact breadth", "- **Criterion 4**"),
+            )
+        )
+        self.assertEqual(6, len(vocabulary), "the criteria list no longer names six kinds")
+        for _rank, key, measured, line in self.ranked_rows():
+            with self.subTest(key=key):
+                listed = line.split("|")[6].split("(", 1)[1].rsplit(")", 1)[0].split(", ")
+                self.assertEqual(measured[2], len(listed))
+                self.assertEqual(set(), set(listed) - vocabulary, "an artifact kind is not one of the six")
+
+    def test_the_ranked_backlog_publishes_its_own_median_blind_spot_count(self) -> None:
+        """The number the extension rule is stated in, recomputed from the rows."""
+        blind = sorted(measured[1] for _n, _key, measured, _line in self.ranked_rows())
+        median = blind[len(blind) // 2] if len(blind) % 2 else (
+            blind[len(blind) // 2 - 1] + blind[len(blind) // 2]
+        ) // 2
+        stated = re.search(
+            r"\*\*The median blind-spot count of this list is (\d+)\*\*", self.doc
+        )
+        self.assertIsNotNone(stated, "the ranked backlog no longer publishes its median")
+        self.assertEqual(median, int(stated.group(1)))
+
+    def test_each_ranked_row_reads_its_blind_spot_count_off_the_join_table(self) -> None:
+        """Criterion 2 is the join table's own `printed` column, summed per row."""
+        blind_spots = self.blind_spot_table()
+        for _rank, key, measured, line in self.ranked_rows():
+            with self.subTest(key=key):
+                named = re.findall(r"`(src/[a-z_]+\.rs)` \d+", line)
+                sites_named, blind_named = named[: len(named) // 2], named[len(named) // 2 :]
+                self.assertEqual(
+                    sites_named,
+                    blind_named,
+                    "criterion 2 does not score the files criterion 1 names",
+                )
+                self.assertEqual(
+                    sum(blind_spots[name][0] for name in blind_named),
+                    measured[1],
+                    "criterion 2 is not the join table's printed count",
+                )
+                if not named:
+                    self.assertEqual(
+                        (0, 0), (measured[0], measured[1]), "a `none` row must score zero twice"
+                    )
+
+    def test_the_join_table_names_the_ranked_gaps_that_point_at_each_file(self) -> None:
+        """The `ranked gaps pointing at it` cells are the ranked table's own counts."""
+        pointing: dict[str, int] = {}
+        for _rank, _key, _measured, line in self.ranked_rows():
+            for name in set(re.findall(r"`(src/[a-z_]+\.rs)` \d+", line)):
+                pointing[name] = pointing.get(name, 0) + 1
+        for name, (_printed, _by_tier, cell) in sorted(self.blind_spot_table().items()):
+            with self.subTest(file=name):
+                stated = 0 if cell.startswith("none") else int(re.match(r"(\d+)", cell).group(1))
+                self.assertEqual(pointing.get(name, 0), stated)
+
+    def test_the_join_table_is_the_coverage_reports_own_blind_spot_block(self) -> None:
+        """The one input outside `just check`, reconciled whenever its export exists.
+
+        `just fixtures-coverage` needs network and an instrumented corpus run, so
+        the gate cannot produce the measurement — but it can refuse a table that
+        disagrees with the last one produced. The recipe's own
+        `blind_spots()` renders the comparison, and the export paths and tier
+        names are read out of `scripts/fixtures-coverage.sh`, so renaming either
+        fails this case rather than turning it into a permanent silent skip. It
+        skips, named, when the exports are absent, the way the corpus byte-diffs
+        skip an unfetched spec.
+        """
+        recipe = (REPO / "scripts" / "fixtures-coverage.sh").read_text(encoding="utf-8")
+        out_dir = re.search(r'^out_dir="\$repo_root/([^"]+)"', recipe, re.M)
+        golden = re.search(r"^  --golden-tier (\S+)", recipe, re.M)
+        self.assertTrue(out_dir and golden, "fixtures-coverage.sh no longer names its exports")
+        exports = REPO / out_dir.group(1)
+        names = re.findall(r'--output-path "\$out_dir/([a-z0-9-]+)\.json"', recipe)
+        self.assertIn(golden.group(1), names, "the golden tier has no export in the recipe")
+        order = [golden.group(1)] + sorted(name for name in names if name != golden.group(1))
+        missing = sorted(name for name in order if not (exports / f"{name}.json").is_file())
+        if missing:
+            self.skipTest(
+                f"no {', '.join(missing)} export in {exports}; run `just fixtures-coverage`"
+            )
+        spec = importlib.util.spec_from_file_location(
+            "fixtures_coverage_report", REPO / "scripts" / "fixtures-coverage-report.py"
+        )
+        report = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(report)
+        tiers = {name: report.load_tier(exports / f"{name}.json", REPO) for name in order}
+        report.drop_test_regions(tiers, REPO)
+        measured, total = {}, None
+        for line in report.blind_spots(tiers, golden.group(1), order):
+            row = re.match(r"  (src/\S+)\s+(\d+)\s+\((.+)\)$", line)
+            if row:
+                measured[row.group(1)] = (int(row.group(2)), row.group(3))
+            elif line.startswith("  total "):
+                total = line.strip()
+        self.assertTrue(measured, "the report's blind-spot block no longer parses")
+        self.assertEqual(
+            measured,
+            {name: cells[:2] for name, cells in self.blind_spot_table().items()},
+            "the join table is not the last `just fixtures-coverage` run's blind spots",
+        )
+        self.assertIn(
+            f"`{total}`", self.doc, "the join table does not quote the report's own total line"
+        )
+
+    def test_the_ranked_backlog_counts_its_own_populations(self) -> None:
+        """The "N of the 39" figures the criteria list and the join narrate."""
+        ranked = self.ranked_rows()
+        zero_witness = sum(1 for _n, _key, measured, _line in ranked if measured[3] == 0)
+        no_file = sum(1 for _n, _key, measured, _line in ranked if measured[0] == 0)
+        flat = " ".join(self.doc.split())
+        for population, total in re.findall(r"(\d+) of the (\d+)(?= ranked| entries| score)", flat):
+            self.assertEqual(len(ranked), int(total), "a population is stated against the wrong total")
+            self.assertIn(
+                int(population), (zero_witness, no_file), "a stated population is neither count"
+            )
+        self.assertIn(f"{zero_witness} of the {len(ranked)} score zero", flat)
+        self.assertIn(f"{no_file} of the {len(ranked)} entries name no", flat)
+        self.assertIn(f"{no_file} of the {len(ranked)} ranked entries reach no", flat)
+
+    def test_the_two_largest_unranked_files_sum_as_the_join_narrates(self) -> None:
+        """The share of the block the two files no ranked gap points at hold."""
+        table = self.blind_spot_table()
+        unranked = sorted(
+            (count, name)
+            for name, (count, _tier, cell) in table.items()
+            if cell.startswith("none")
+        )
+        largest = sum(count for count, _name in unranked[-2:])
+        flat = " ".join(self.doc.split())
+        stated = re.search(r"together ([\d,]+) of the block's ([\d,]+) printed regions", flat)
+        self.assertIsNotNone(stated, "the join no longer states the two largest files' share")
+        self.assertEqual(
+            (largest, sum(count for count, _tier, _cell in table.values())),
+            tuple(int(value.replace(",", "")) for value in stated.groups()),
+        )
+        paragraph = flat[: stated.start()][-200:]
+        for _count, name in unranked[-2:]:
+            self.assertIn(f"`{name}`", paragraph, f"{name} is not one of the two named")
+
+    def test_the_probe_backlog_is_every_probe_gap_and_nothing_else(self) -> None:
+        """The other backlog: probe work, listed apart from the fixture work."""
+        listed = set(
+            re.findall(r"^\| \[`([^`]+)`\]", self.section("## The probe backlog"), re.M)
+        )
+        self.assertEqual(self.gaps("PROBE"), listed)
+        self.assertEqual(set(), listed & {key for _n, key, _m, _l in self.ranked_rows()})
+        stated = re.search(r"The other (\d+) `gap` rows", self.doc)
+        self.assertIsNotNone(stated, "the probe backlog no longer states its own size")
+        self.assertEqual(len(listed), int(stated.group(1)))
+
+    def test_the_stated_registered_and_golden_source_counts_are_measured(self) -> None:
+        """124 registered / 107 golden-bearing, measured rather than transcribed."""
+        sources = census.registered_sources(FIXTURES, REPO / ".local" / "corpus", False)
+        aliases = census.corpus_aliases(FIXTURES)
+        golden = sum(
+            1
+            for source in sources
+            if (FIXTURES / aliases.get(source.fixture, source.fixture) / "expected").is_dir()
+        )
+        stated = re.search(
+            r"It reads \*\*(\d+)\*\* registered sources, of which\n\s*\*\*(\d+)\*\* carry a committed golden",
+            self.doc,
+        )
+        self.assertIsNotNone(stated, "the section no longer states the source counts")
+        self.assertEqual(
+            (len(sources), golden), (int(stated.group(1)), int(stated.group(2)))
+        )
+
 if __name__ == "__main__":
     unittest.main(verbosity=1, buffer=False, argv=[sys.argv[0], *sys.argv[1:]])
