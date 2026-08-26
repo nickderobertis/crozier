@@ -2180,9 +2180,9 @@ fn build_endpoint(
     }
 
     // Today's subset: a supported (or absent) body, path/query/header params only,
-    // at least one response, and a success response crozier knows how to render (any
-    // resolved shape but an un-hoisted inline object). Error responses never gate
-    // emittability (issue #43).
+    // and any declared success response crozier knows how to render (any resolved
+    // shape but an un-hoisted inline object). Error responses never gate
+    // emittability (issue #43); an operation with no responses is still emitted.
     let emittable = body_ok && !has_unsupported_params && response_supported(op);
 
     Endpoint {
