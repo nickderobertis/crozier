@@ -1438,15 +1438,15 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertIn(f"{no_file} of the {len(ranked)} entries name no", flat)
         self.assertIn(f"{no_file} of the {len(ranked)} ranked entries reach no", flat)
 
-    def test_the_two_largest_blind_files_sum_as_the_join_narrates(self) -> None:
-        """The share of the block those two files hold, off the `printed` column."""
+    def test_the_two_largest_unranked_files_sum_as_the_join_narrates(self) -> None:
+        """The share of the block the two files no ranked gap points at hold."""
         table = self.blind_spot_table()
-        printed = sorted(
+        unranked = sorted(
             (count, name)
             for name, (count, _tier, cell) in table.items()
             if cell.startswith("none")
         )
-        largest = sum(count for count, _name in printed[-2:])
+        largest = sum(count for count, _name in unranked[-2:])
         flat = " ".join(self.doc.split())
         stated = re.search(r"together ([\d,]+) of the block's ([\d,]+) printed regions", flat)
         self.assertIsNotNone(stated, "the join no longer states the two largest files' share")
@@ -1455,7 +1455,7 @@ class RankedBacklogTests(unittest.TestCase):
             tuple(int(value.replace(",", "")) for value in stated.groups()),
         )
         paragraph = flat[: stated.start()][-200:]
-        for _count, name in printed[-2:]:
+        for _count, name in unranked[-2:]:
             self.assertIn(f"`{name}`", paragraph, f"{name} is not one of the two named")
 
     def test_the_probe_backlog_is_every_probe_gap_and_nothing_else(self) -> None:
