@@ -4,7 +4,9 @@ Which OpenAPI features the registered golden corpus has **never seen** and
 [`fern-limitations.md`](fern-limitations.md) has **never ruled on**. Each one is
 generator behaviour only crozier vouches for: no golden pins it, no measurement of
 Fern contradicts it, and `just check` stays green whatever crozier does with it.
-This file is the index; the classified entries live in the six region files below.
+This file is the index; the classified entries live in the six region files
+below, and the two backlogs they add up to are
+[at the bottom](#ranked-gap-backlog).
 
 **What this is.** A structural census of the OpenAPI 3.0/3.1 object model against
 the registered sources, feature by feature, with each feature landed in exactly
@@ -210,5 +212,298 @@ deciding and the last being a total tiebreak:
 
 ## Ranked gap backlog
 
-<!-- Filled by the synthesis pass from the six region files: the FIXTURE-class
-     gap rows of every region, ranked by the rubric above. -->
+The six region files, read as one body of work. Two measurements feed it:
+
+- **`just surface-census`**, for the classifications and for criterion 4. The
+  snapshot is the one every region file's evidence was taken from, pinned by
+  digest in
+  [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
+  rather than restated here. It reads **124** registered sources, of which
+  **107** carry a committed golden.
+- **`just fixtures-coverage`**, for criterion 2 alone. That recipe is outside
+  `just check` — it needs network and runs the corpus instrumented — so its
+  per-file counts are a dated snapshot (2026-08-25), stated once, in the join
+  table under
+  [The ranked list against `golden blind spots`](#the-ranked-list-against-golden-blind-spots).
+  The gate cannot produce that measurement, but it does reconcile against it:
+  see [Refreshing the coverage snapshot](#refreshing-the-coverage-snapshot).
+
+What this section takes from the six region files, `RankedBacklogTests` in
+`tests/surface_census_test.py` takes back from them — the per-region counts and
+the totals narrated from them, both backlogs' membership, each ranked row's
+owning region, criterion 1 and the rubric order and median it produces. `just
+check` runs it offline, so a region row added, reclassified or re-measured fails
+the gate here rather than leaving this section quietly stale. Criteria 3 and 4
+are the two the gate cannot take back, because the region files publish no number
+for either; each bullet below says where its number comes from.
+
+### What the walk enumerated
+
+| region | features | `golden` | `limitations` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| [`parameters`](openapi-surface/parameters.md) | 70 | 41 | 14 | 15 | 14 | 1 | 0 |
+| [`schemas`](openapi-surface/schemas.md) | 116 | 82 | 5 | 29 | 20 | 6 | 3 |
+| [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 35 | 11 | 1 | 1 | 0 | 0 |
+| [`security`](openapi-surface/security.md) | 50 | 32 | 5 | 13 | 2 | 11 | 0 |
+| [`document-paths`](openapi-surface/document-paths.md) | 67 | 56 | 6 | 5 | 2 | 3 | 0 |
+| [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 25 | 1 | 26 | 0 | 9 | 17 |
+| **total** | **402** | **271** | **42** | **89** | **39** | **30** | **20** |
+
+The walk enumerated **402** features and landed each in exactly one category:
+**271** `golden`, **42** `limitations`, **89** `gap`. The `gap` column splits by
+settlement class into **39** `FIXTURE`, **30** `PROBE` and **20** `UNREACHABLE`.
+
+**What the `gap` count means.** 89 is the number of OpenAPI shapes for which
+crozier's behaviour is vouched for by nothing but crozier: no committed golden's
+source declares the shape, so no byte comparison against Fern touches it, and
+[`fern-limitations.md`](fern-limitations.md) has never measured Fern on it, so
+nothing contradicts whatever crozier does. `just check` is green over all 89
+either way. It is not a defect count — 20 of them (`UNREACHABLE`) have no
+position in a generated Python SDK at all, and saying so is their settlement.
+The two backlogs below are the other 69.
+
+### Reconciliation
+
+**Each feature is classified exactly once.** The 402 rows carry 402 distinct
+keys, and no `spec location` string appears in two region files — the assertion
+[`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
+already runs over all six files, re-run here and passing. Thirteen spec
+locations carry more than one row, every one of them inside a single region and
+every one of them the grammar's field-versus-value split: `Schema Object.format`
+heads 28 rows (the field, plus one per registered format value), `Media Type
+Object content-map key` 11, `Schema Object.additionalProperties` 4. A field row
+and a valued row are two features, not one feature counted twice — the census
+emits `schema.format` and `schema.format=uuid` as two selectors.
+
+**Nothing is left unclassified.** Every row's `category` cell holds one of
+`golden`, `limitations`, `gap`, and every `gap` row's `settlement` cell holds one
+of `FIXTURE`, `PROBE`, `UNREACHABLE`.
+
+**Every ledger key is accounted for.** The canonical join reports 56 keys, of
+which 51 are a region row's key verbatim. The other five:
+
+| ledger key | how it is accounted for |
+|---|---|
+| `status_code` | **Not a feature key.** It is a row label inside the ledger's 407/421 probe table, which the join's `\| key \| N \|` shape matches by accident — the `bodies-media` region's method notes say the same. The join's real yield is 55. |
+| `encoding-explode-or-allowReserved` | One ledger row covering two fields; `bodies-media` splits it into `encoding-explode` and `encoding-allow-reserved`, both `limitations`, both citing that verdict. |
+| `servers-multiple-path-or-operation` | One ledger row covering two levels; `document-paths` splits it into `pathitem-servers` and `operation-servers`, both `golden`. |
+| `relative-file-ref` | A *target form* of `Path Item Object.$ref`, which `document-paths` classifies once as `pathitem-ref` (`limitations`, verdict `discards`). The walk enumerates the field; the ledger additionally rules on one form of what it points at. |
+| `normalization-collision` | **The walk's one enumeration hole** — see below. |
+
+**The one correction this node records.** `normalization-collision` is the shape
+of two `components.schemas` names that collide after identifier normalization
+(`OBRate1_0` beside `OB_Rate1_0`). No region row carries it, because the selector
+grammar excludes map keys that are *names* by design, so no selector can reach
+it. That is a defensible limit of the instrument but an inconsistency between two
+regions all the same: the path-side counterpart **is** enumerated —
+`document-paths`'s `duplicate-normalized-paths` — measured off the object model
+by hand rather than by a selector, which is exactly what the `schemas` region
+would have had to do. Were the row written it would be `limitations`, citing
+ledger `normalization-collision`, verdict `discards`, with two byte-matching
+golden witnesses (`openbanking.org.uk-account-info-openapi`,
+`amazonaws.com-cloudformation`), so it moves no count in either backlog below.
+Writing it belongs to a change that owns [`schemas.md`](openapi-surface/schemas.md);
+recording it is this node's part, and no region file is edited here.
+
+**One scope boundary is read two ways, and no row is lost to it.** The index's
+rule is that the *containing* object's region owns a field while the *held*
+object's region owns the object. `document-paths` applies it to `Operation
+Object.parameters` and owns that row; `parameters` applies the opposite reading
+to `Path Item Object.parameters` and owns that one. Both rows are `golden`, each
+field is classified exactly once, and the uniqueness check above passes — so the
+partition holds. It is recorded rather than corrected because a later scope edit
+should know the two regions disagreed about which side of that line the
+`parameters` field falls on.
+
+**No region's category is overturned.** This node re-derived the census join, the
+ledger join and the site counts it ranks on, and found no row whose `category` or
+`settlement` cell it would change.
+
+### The ranked `FIXTURE` backlog
+
+All 39 `FIXTURE` gaps across the six regions, in one total order, by [the ranking
+rubric](#the-ranking-rubric) — crozier sites ascending, then blind-spot reach
+descending, then artifact breadth descending, then witness supply descending,
+then key. Each row publishes the measured value of all four, so the order can be
+checked rather than trusted.
+
+- **Criterion 1**, `crozier sites`: the integer in the row's own `crozier sites`
+  cell, re-measured against `src/`.
+- **Criterion 2**, blind-spot reach: the `golden blind spots` count
+  `just fixtures-coverage` prints for each `src/` file that cell names, summed
+  when it names more than one. A `none` cell scores **0**, as the rubric says.
+- **Criterion 3**, artifact breadth: a reading, made here and stated once. The
+  region files name the artifacts at risk in prose and publish no count, so this
+  column normalizes that prose over the rubric's six kinds — `types/`,
+  `client.py`, `raw_client.py`, `errors/`, `reference.md`, `core/` — and lists
+  the ones it counted beside the number. Re-read the row's `why bytes could move`
+  cell after rewording it.
+- **Criterion 4**, witness supply: registered sources the census reports
+  declaring the shape, read off the row's own `evidence` cell. A `FIXTURE` gap
+  can only score above zero here from a source with no committed golden, which is
+  what makes it a gap — 37 of the 39 score zero, and the two that do not name
+  their one source in that cell.
+
+**The median blind-spot count of this list is 0** — 27 of the 39 entries name no
+`src/` file at all, which is also why they win criterion 1 outright.
+
+| # | key | region | 1. crozier sites | 2. blind spots | 3. artifacts | 4. witnesses |
+|---|---|---|---|---|---|---|
+| 1 | [`header-allow-empty-value`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **3** (client.py, raw_client.py, reference.md) | **0** |
+| 2 | [`header-allow-reserved`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **3** (client.py, raw_client.py, reference.md) | **0** |
+| 3 | [`header-content`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **3** (client.py, raw_client.py, reference.md) | **0** |
+| 4 | [`header-deprecated`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **3** (client.py, raw_client.py, reference.md) | **0** |
+| 5 | [`content-encoding`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **2** (types/, raw_client.py) | **0** |
+| 6 | [`parameter-style-simple-header-scalar`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **2** (client.py, raw_client.py) | **0** |
+| 7 | [`contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 8 | [`content-media-type`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 9 | [`content-schema`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 10 | [`dependent-required`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 11 | [`dependent-schemas`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 12 | [`dollar-defs`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 13 | [`exclusive-maximum-numeric`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 14 | [`format-duration`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 15 | [`format-idn-email`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 16 | [`format-idn-hostname`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 17 | [`format-ipv6`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 18 | [`format-iri`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 19 | [`format-iri-reference`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 20 | [`format-json-pointer`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 21 | [`max-contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 22 | [`min-contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 23 | [`multiple-of`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 24 | [`parameter-style-simple-path-array`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **1** (raw_client.py) | **0** |
+| 25 | [`parameter-style-simple-path-object`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **1** (raw_client.py) | **0** |
+| 26 | [`property-names`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 27 | [`unevaluated-items`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 28 | [`operation-overrides-path-item-parameter`](openapi-surface/parameters.md) | `parameters` | **1** (`src/openapi.rs` 1) | **511** (`src/openapi.rs` 511) | **3** (client.py, raw_client.py, reference.md) | **1** |
+| 29 | [`oauth2-multiple-flows`](openapi-surface/security.md) | `security` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (types/, reference.md) | **0** |
+| 30 | [`parameter-style-deepobject-query-array`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 31 | [`parameter-style-deepobject-query-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 32 | [`parameter-style-form-cookie-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 33 | [`parameter-style-form-query-object`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 34 | [`parameter-style-pipedelimited-query-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 35 | [`parameter-style-spacedelimited-query-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 36 | [`security-optional-requirement-operation`](openapi-surface/security.md) | `security` | **3** (`src/ir.rs` 3) | **201** (`src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **1** |
+| 37 | [`templated-path-segment`](openapi-surface/document-paths.md) | `document-paths` | **3** (`src/ir.rs` 3) | **201** (`src/ir.rs` 201) | **3** (client.py, raw_client.py, reference.md) | **0** |
+| 38 | [`several-path-template-variables`](openapi-surface/document-paths.md) | `document-paths` | **3** (`src/ir.rs` 3) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 39 | [`media-type-range`](openapi-surface/bodies-media.md) | `bodies-media` | **7** (`src/emit.rs` 1, `src/ir.rs` 6) | **462** (`src/emit.rs` 261 + `src/ir.rs` 201) | **4** (types/, client.py, raw_client.py, reference.md) | **0** |
+
+### The ranked list against `golden blind spots`
+
+[`tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md#where-the-goldens-are-blind--just-fixtures-coverage)
+calls the `golden blind spots` block "the fixture backlog", and it is — the same
+backlog as the table above, expressed per `src/` file instead of per feature. The
+two are joined below, in the report's own columns: **printed** is the count
+`just fixtures-coverage` prints for the file and the one criterion 2 ranks on,
+and **by tier** is the breakdown it prints beside it. Printed sums the two
+non-golden tiers, so a region both tiers reach counts twice — the report's own
+`total 1510 region(s) across 12 file(s)` line is the de-duplicated union, and the
+functions named in each verdict are counted from that union.
+
+| `src/` file | printed | by tier | ranked gaps pointing at it | verdict |
+|---|---:|---:|---|---|
+| `src/settings.rs` | 864 | all-e2e 434, non-e2e 430 | none | **Neither.** `explain` 148, `resolve` 44, `merge` 37, `merge_generator` 28, `load` 21, `read_config` 20: the CLI > env > `crozier.yml` layering behind `crozier config`. No OpenAPI shape reaches it and no Fern golden can — Fern reads a different config format — so neither a corpus row nor a Fern probe is the instrument. The journeys are, and they already reach 434 of the 448. |
+| `src/openapi.rs` | 511 | all-e2e 221, non-e2e 290 | 1 — #28 `operation-overrides-path-item-parameter` | **Agrees, and the walk found the rest as probes.** #28 is `normalize_parameters`, 3 regions. The largest block, `filter_ignored` 72, is the walk's `x-fern-or-crozier-ignore` — `PROBE`, because no registered source declares either spelling. `filter_by_audience` 47 + `audiences` 8 belong to `audience-dual-header-policy`, classified `golden`: golden-classified is not golden-*exhausted*, since the two audience goldens declare 8 sites between them and leave the rest of the branch space to unit tests. `collect_schema_refs` 46 + `expand_schema_closure` 32 + `operation_schema_seed` 24 is `$ref`-closure pruning under `reference-ref` (`golden`); `load` 26 + `visit_seq` 7 + `de_composition` 5 are malformed-document deserialization paths the corpus excludes by taking only documents Fern generates. |
+| `src/cli.rs` | 292 | all-e2e 133, non-e2e 159 | none | **Neither**, as `src/settings.rs`: `do_config` 60, `run` 43, `do_init` 26, `do_generate` 12 are the command surface, not document behaviour. |
+| `src/emit.rs` | 261 | all-e2e 29, non-e2e 232 | 1 — #39 `media-type-range` | **A shape the walk missed.** #39 names `append_request_call_args`, which is not among the blind regions at all. Those are example rendering — `raw_type_str_ctx` 40, `example_matches_type` 24, `build_example_inner` 23, `named_value_inner` 13, `value_from_example` 12, `example_from_json` 6 — and streaming docstrings, `client_stream_docstring` 11 + `raw_stream_docstring` 10. Every `example`/`examples` field is classified `golden`, but the walk enumerates the *field*; those branches switch on the JSON value *kind* an example holds, and example values are not in the grammar's closed list of valued selectors, so no `gap` row could have named them. |
+| `src/ir.rs` | 201 | all-e2e 9, non-e2e 192 | 11 — #29–#39 | **Agrees on the file, misses the shapes.** The blind regions are type-lowering conjunctions: `resolve_schema_pointer` 25, `nested_array_element` 25, `hoist_union_variant` 24, `ref_to_class` 22, `prop_type_ref` 20, `path_group` 15. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own; it is their *combinations* that no golden reaches, and the census emits one selector per field and none per conjunction. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); nobody ran one over schema-composition combinations. |
+| `src/refs.rs` | 74 | all-e2e 17, non-e2e 57 | none | **Only a probe can settle it.** `resolve_reference` 16, `document` 10, `pointer` 9, `error` 7, `curl_fetch` 7 are the cross-document `$ref` path. The corpus is single-document by construction ([`matching.md`](matching.md#cross-document-ref-resolution-issue-77)), and the ledger's `relative-file-ref` row is already `discards + pipeline` — its own note being that crozier's fixture pipeline cannot register the tree that would make the reference resolve. No corpus row is in reach. |
+| `src/schema.rs` | 46 | all-e2e 23, non-e2e 23 | none | **Neither.** `build` 20 emits crozier's own config JSON Schema. |
+| `src/lib.rs` | 33 | all-e2e 1, non-e2e 32 | none | **Neither.** `render_files` 29 is the filesystem write path. |
+| `src/naming.rs` | 31 | all-e2e 8, non-e2e 23 | none | **A shape the walk missed — and the same hole as `normalization-collision` above.** `digit_word` 10, `enum_words` 7, `numeric_enum_identifier` 2, `finalize_enum_ident` 2, `sanitize_identifier` 1 are driven by OpenAPI *names* — schema names, enum member spellings — which the grammar excludes as map keys that are names, so no selector reaches them. |
+| `src/config.rs` | 31 | all-e2e 13, non-e2e 18 | none | **Neither.** `default_package_name` 10 and `new` 8 are generator-config defaults. |
+| `src/pyfmt.rs` | 24 | all-e2e 0, non-e2e 24 | none | **Neither.** `format_source` 24 is the `ruff format` shell-out and its failure paths. |
+| `src/main.rs` | 6 | all-e2e 6, non-e2e 0 | none | **Neither.** The binary entry point; `just test-fixtures-coverage` asserts it is reachable at all. |
+
+**Where the two backlogs agree.** Both name `src/ir.rs`, `src/openapi.rs` and
+`src/emit.rs` — every `src/` file any ranked gap points at is one the blind-spot
+block also lists, and in the same order of size (`openapi.rs` 511 > `emit.rs` 261
+> `ir.rs` 201). Ranking on criterion 2 therefore does not fight the repository's
+own measurement; it refines it, because 27 of the 39 ranked entries reach no
+`src/` file at all and so are invisible to a per-file view.
+
+**Where they do not.** The two largest files no ranked gap points at,
+`src/settings.rs` and `src/cli.rs`, together 1,156 of the block's 2,374 printed
+regions — almost half of it — hold no OpenAPI-derived code, so the fixture
+backlog can never shorten
+them and a reader taking the block at face value as "the fixture backlog" will
+mis-prioritise. Nine of the twelve files have no ranked gap pointing at them: one
+(`src/refs.rs`) is a region only a probe can settle, one (`src/naming.rs`) is a
+shape the walk missed, and the remaining seven are outside the walk's subject
+entirely — they carry no OpenAPI-derived code, so neither a fixture nor a probe
+is their instrument.
+
+### Refreshing the coverage snapshot
+
+`just fixtures-coverage` is not in `just check` — it needs network and runs the
+corpus instrumented — so the gate cannot *produce* the join table's `printed` and
+`by tier` columns. It does refuse a table that disagrees with them: the recipe
+leaves its per-tier `llvm-cov` exports in `.local/fixtures-coverage/`, and
+`RankedBacklogTests` reads them back through the recipe's own report module and
+recomputes both columns from them. With no export present that one case skips by
+name, the way the corpus byte-diffs skip an unfetched spec; once anyone has run
+the recipe, a stale table fails the gate.
+
+So refreshing is: run the recipe, then bring the table to what it printed.
+
+```sh
+just fixtures-coverage | sed -n '/golden blind spots/,/^  total/p'
+```
+
+Refresh both columns and every ranked row's criterion-2 cell together — criterion
+2 is checked against the `printed` column, the quoted `total ... region(s)` line
+against the report's own, each file's ranked-gap count against the ranked table,
+and the two-largest-files figure below against the `printed` column it sums, so
+updating one alone fails rather than passing silently.
+
+Everything else — the rubric order, the published median, the two backlogs
+against the six region files, and the two tables' agreement with each other — is
+`RankedBacklogTests` in `tests/surface_census_test.py`. Run it with
+`just test-surface-census`, which `just check` already does.
+
+## The probe backlog
+
+The other 30 `gap` rows whose settlement is not a fixture. **These are probe
+work, not fixture work.** Each asks what Fern does with a shape no real-world
+document can isolate, so no corpus row could pin it — the corpus takes real-world
+specifications only, and a probe is never proposed as a fixture
+([`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md)). When one is
+measured, the result belongs in [`fern-limitations.md`](fern-limitations.md) as a
+row with a verdict, at which point the feature's category here becomes
+`limitations` and it leaves this list. Nothing below is ranked: a probe costs one
+Fern run, so the order to do them in is whichever the next Fern session has
+loaded.
+
+| key | region | spec location | the Fern measurement that settles it |
+|---|---|---|---|
+| [`duplicate-normalized-paths`](openapi-surface/document-paths.md) | `document-paths` | `Paths Object paths equal after template-name normalization` | Generate two path templates that normalize to one name and record which endpoints Fern emits. |
+| [`duplicate-operation-id`](openapi-surface/document-paths.md) | `document-paths` | `Operation Object.operationId duplicated` | Generate two operations sharing one `operationId` and record which method survives. |
+| [`multi-tagged-operation`](openapi-surface/document-paths.md) | `document-paths` | `Operation Object.tags with several members` | Generate an operation carrying two tags and record which tag Fern groups it under. |
+| [`json-schema-dialect`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | `OpenAPI Object.jsonSchemaDialect` | Generate a dialect-sensitive Schema Object under an explicit `jsonSchemaDialect` and against a no-dialect control. |
+| [`openapi-version-3.0.4`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | OpenAPI Object.openapi (`3.0.4`) | Generate otherwise identical `3.0.3` and `3.0.4` documents and diff the trees. |
+| [`openapi-version-3.1.1`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | OpenAPI Object.openapi (`3.1.1`) | Generate otherwise identical `3.1.0` and `3.1.1` documents and diff the trees. |
+| [`paths-absent`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | `OpenAPI Object.paths` | Generate valid 3.1 documents carrying only `components`, and only `webhooks`, each omitting `paths`. |
+| [`paths-empty`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | `Paths Object (empty)` | Generate an otherwise minimal document carrying `paths: {}`. |
+| [`reference-description`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | `Reference Object.description` | Generate a non-Schema Reference Object carrying `description` and the same reference without it, and diff. |
+| [`reference-summary`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | `Reference Object.summary` | Generate a non-Schema Reference Object carrying `summary` and the same reference without it, and diff. |
+| [`webhooks-without-paths`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | `OpenAPI Object.webhooks without paths` | Generate a valid 3.1 document whose only API surface is one webhook and compare the complete trees. |
+| [`x-fern-or-crozier-ignore`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | `Operation and Schema Objects.x-fern-ignore / x-crozier-ignore` | Generate each spelling, and both together, on an Operation and on a component Schema, and record the precedence. |
+| [`parameter-style-matrix-path-scalar`](openapi-surface/parameters.md) | `parameters` | Parameter Object.style (`matrix`, `in: path`, scalar schema) | Generate a `matrix` path parameter with a scalar schema, beside the ledger's `matrix-array`/`matrix-object` rows. |
+| [`dollar-anchor`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$anchor` | Generate `$anchor` paired with a plain-name `$ref` and record what Fern resolves. |
+| [`dollar-comment`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$comment` | Generate a schema carrying `$comment` and diff against the same schema without it. |
+| [`dollar-dynamic-anchor`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$dynamicAnchor` | Generate a `$dynamicAnchor`/`$dynamicRef` recursion and record what Fern emits. |
+| [`dollar-dynamic-ref`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$dynamicRef` | As `dollar-dynamic-anchor`: the pair is only exercisable together. |
+| [`dollar-vocabulary`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$vocabulary` | Generate a schema under a custom dialect declaring `$vocabulary`. |
+| [`format-relative-json-pointer`](openapi-surface/schemas.md) | `schemas` | `Schema Object.format` | Generate `format: relative-json-pointer` and record the Python type Fern annotates. |
+| [`http-concealed`](openapi-surface/security.md) | `security` | `Security Scheme Object.scheme` = `concealed` (RFC 9729) | Run `fern check` and `fern generate` on a document declaring `scheme: concealed` alone, and again beside a supported scheme, and record both outcomes. |
+| [`http-dpop`](openapi-surface/security.md) | `security` | `Security Scheme Object.scheme` = `dpop` (RFC 9449) | Run `fern check` and `fern generate` on a document declaring `scheme: dpop` alone, and again beside a supported scheme, and record both outcomes. |
+| [`http-gnap`](openapi-surface/security.md) | `security` | `Security Scheme Object.scheme` = `gnap` (RFC 9635) | Run `fern check` and `fern generate` on a document declaring `scheme: gnap` alone, and again beside a supported scheme, and record both outcomes. |
+| [`http-hoba`](openapi-surface/security.md) | `security` | `Security Scheme Object.scheme` = `hoba` (RFC 7486) | Run `fern check` and `fern generate` on a document declaring `scheme: hoba` alone, and again beside a supported scheme, and record both outcomes. |
+| [`http-mutual`](openapi-surface/security.md) | `security` | `Security Scheme Object.scheme` = `mutual` (RFC 8120) | Run `fern check` and `fern generate` on a document declaring `scheme: mutual` alone, and again beside a supported scheme, and record both outcomes. |
+| [`http-oauth`](openapi-surface/security.md) | `security` | `Security Scheme Object.scheme` = `oauth` (RFC 5849) | Run `fern check` and `fern generate` on a document declaring `scheme: oauth` alone, and again beside a supported scheme, and record both outcomes. |
+| [`http-privatetoken`](openapi-surface/security.md) | `security` | `Security Scheme Object.scheme` = `privatetoken` (RFC 9577) | Run `fern check` and `fern generate` on a document declaring `scheme: privatetoken` alone, and again beside a supported scheme, and record both outcomes. |
+| [`http-scram-sha-1`](openapi-surface/security.md) | `security` | `Security Scheme Object.scheme` = `scram-sha-1` (RFC 7804) | Run `fern check` and `fern generate` on a document declaring `scheme: scram-sha-1` alone, and again beside a supported scheme, and record both outcomes. |
+| [`http-scram-sha-256`](openapi-surface/security.md) | `security` | `Security Scheme Object.scheme` = `scram-sha-256` (RFC 7804) | Run `fern check` and `fern generate` on a document declaring `scheme: scram-sha-256` alone, and again beside a supported scheme, and record both outcomes. |
+| [`http-vapid`](openapi-surface/security.md) | `security` | `Security Scheme Object.scheme` = `vapid` (RFC 8292) | Run `fern check` and `fern generate` on a document declaring `scheme: vapid` alone, and again beside a supported scheme, and record both outcomes. |
+| [`securityscheme-ref`](openapi-surface/security.md) | `security` | `Components Object.securitySchemes` holding a Reference Object instead of a Security Scheme Object | Generate one `$ref`-valued `components.securitySchemes` entry beside a supported scheme and record whether Fern resolves it. |
