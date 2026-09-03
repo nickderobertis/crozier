@@ -274,22 +274,22 @@ for either; each bullet below says where its number comes from.
 | [`schemas`](openapi-surface/schemas.md) | 116 | 83 | 5 | 28 | 19 | 6 | 3 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 35 | 11 | 1 | 1 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 32 | 5 | 13 | 2 | 11 | 0 |
-| [`document-paths`](openapi-surface/document-paths.md) | 67 | 56 | 6 | 5 | 2 | 3 | 0 |
+| [`document-paths`](openapi-surface/document-paths.md) | 67 | 57 | 6 | 4 | 2 | 2 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 25 | 1 | 26 | 0 | 9 | 17 |
-| **total** | **402** | **273** | **42** | **87** | **37** | **30** | **20** |
+| **total** | **402** | **274** | **42** | **86** | **37** | **29** | **20** |
 
 The walk enumerated **402** features and landed each in exactly one category:
-**273** `golden`, **42** `limitations`, **87** `gap`. The `gap` column splits by
-settlement class into **37** `FIXTURE`, **30** `PROBE` and **20** `UNREACHABLE`.
+**274** `golden`, **42** `limitations`, **86** `gap`. The `gap` column splits by
+settlement class into **37** `FIXTURE`, **29** `PROBE` and **20** `UNREACHABLE`.
 
-**What the `gap` count means.** 87 is the number of OpenAPI shapes for which
+**What the `gap` count means.** 86 is the number of OpenAPI shapes for which
 crozier's behaviour is vouched for by nothing but crozier: no committed golden's
 source declares the shape, so no byte comparison against Fern touches it, and
 [`fern-limitations.md`](fern-limitations.md) has never measured Fern on it, so
-nothing contradicts whatever crozier does. `just check` is green over all 87
+nothing contradicts whatever crozier does. `just check` is green over all 86
 either way. It is not a defect count — 20 of them (`UNREACHABLE`) have no
 position in a generated Python SDK at all, and saying so is their settlement.
-The two backlogs below are the other 67.
+The two backlogs below are the other 66.
 
 ### Reconciliation
 
@@ -323,11 +323,14 @@ which 51 are a region row's key verbatim. The other five:
 of two `components.schemas` names that collide after identifier normalization
 (`OBRate1_0` beside `OB_Rate1_0`). No region row carries it, because the selector
 grammar excludes map keys that are *names* by design, so no selector can reach
-it. That is a defensible limit of the instrument but an inconsistency between two
-regions all the same: the path-side counterpart **is** enumerated —
-`document-paths`'s `duplicate-normalized-paths` — measured off the object model
-by hand rather than by a selector, which is exactly what the `schemas` region
-would have had to do. Were the row written it would be `limitations`, citing
+it. The path-side counterpart, `document-paths`'s `duplicate-normalized-paths`,
+is both enumerated **and** measured — by the `openapi.paths:normalized-collision`
+predicate selector, which normalizes each path key's template expressions and
+reports zero across all 126 registered sources. So the inconsistency between the
+two regions is now only that the schema-name side has no counterpart predicate:
+what the `schemas` region needs is a selector over `components.schemas` keys under
+`naming::class_name`, not a hand measurement. Were the row written it would be
+`limitations`, citing
 ledger `normalization-collision`, verdict `discards`, with two byte-matching
 golden witnesses (`openbanking.org.uk-account-info-openapi`,
 `amazonaws.com-cloudformation`), so it moves no count in either backlog below.
@@ -505,7 +508,7 @@ against the six region files, and the two tables' agreement with each other — 
 
 ## The probe backlog
 
-The other 30 `gap` rows whose settlement is not a fixture. **These are probe
+The other 29 `gap` rows whose settlement is not a fixture. **These are probe
 work, not fixture work.** Each asks what Fern does with a shape no real-world
 document can isolate, so no corpus row could pin it — the corpus takes real-world
 specifications only, and a probe is never proposed as a fixture
@@ -520,7 +523,6 @@ loaded.
 |---|---|---|---|
 | [`duplicate-normalized-paths`](openapi-surface/document-paths.md) | `document-paths` | `Paths Object paths equal after template-name normalization` | Generate two path templates that normalize to one name and record which endpoints Fern emits. |
 | [`duplicate-operation-id`](openapi-surface/document-paths.md) | `document-paths` | `Operation Object.operationId duplicated` | Generate two operations sharing one `operationId` and record which method survives. |
-| [`multi-tagged-operation`](openapi-surface/document-paths.md) | `document-paths` | `Operation Object.tags with several members` | Generate an operation carrying two tags and record which tag Fern groups it under. |
 | [`json-schema-dialect`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | `OpenAPI Object.jsonSchemaDialect` | Generate a dialect-sensitive Schema Object under an explicit `jsonSchemaDialect` and against a no-dialect control. |
 | [`openapi-version-3.0.4`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | OpenAPI Object.openapi (`3.0.4`) | Generate otherwise identical `3.0.3` and `3.0.4` documents and diff the trees. |
 | [`openapi-version-3.1.1`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | OpenAPI Object.openapi (`3.1.1`) | Generate otherwise identical `3.1.0` and `3.1.1` documents and diff the trees. |
