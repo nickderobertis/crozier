@@ -1,0 +1,45 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+from .post_linked_authenticate_v2response_response_consent_action import (
+    PostLinkedAuthenticateV2ResponseResponseConsentAction,
+)
+
+
+class PostLinkedAuthenticateV2ResponseResponse(UniversalBaseModel):
+    linked_transaction_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="linkedTransactionId"),
+        pydantic.Field(
+            alias="linkedTransactionId",
+            description="This is the same transactionId sent in the oauth-details response.",
+        ),
+    ] = None
+    """
+    This is the same transactionId sent in the oauth-details response.
+    """
+
+    consent_action: typing_extensions.Annotated[
+        typing.Optional[PostLinkedAuthenticateV2ResponseResponseConsentAction],
+        FieldMetadata(alias="consentAction"),
+        pydantic.Field(
+            alias="consentAction", description="This field indicates the need to capture user consent or not"
+        ),
+    ] = None
+    """
+    This field indicates the need to capture user consent or not
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

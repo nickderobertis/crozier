@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .patch_client_client_id_request_request_enc_public_key_crv import PatchClientClientIdRequestRequestEncPublicKeyCrv
+from .patch_client_client_id_request_request_enc_public_key_e import PatchClientClientIdRequestRequestEncPublicKeyE
+
+PatchClientClientIdRequestRequestEncPublicKey = typing.Union[
+    PatchClientClientIdRequestRequestEncPublicKeyE, PatchClientClientIdRequestRequestEncPublicKeyCrv
+]

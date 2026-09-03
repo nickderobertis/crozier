@@ -126,6 +126,15 @@ pub fn class_name(schema_key: &str) -> String {
     sanitize_identifier(&expanded)
 }
 
+/// Join a parent class name and a child segment the way Fern's namer does: the
+/// concatenation is re-cased as one identifier, so a parent ending in a capital
+/// absorbs a single-letter segment into one word — the `e` property of
+/// `…EncPublicKeyE` names `…EncPublicKeyEe`, not `…EncPublicKeyEE`.
+#[must_use]
+pub fn child_class_name(parent: &str, segment: &str) -> String {
+    to_pascal_case(&format!("{parent}{}", class_name(segment)))
+}
+
 /// The module (file stem) name for a generated type.
 #[must_use]
 pub fn module_name(class_name: &str) -> String {

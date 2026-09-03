@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "mosip-esignet",
+  "corpus_spec_ref": "201264c86e98113762451f4a306163233fa79e24",
+  "corpus_spec_url": "https://raw.githubusercontent.com/mosip/esignet/201264c86e98113762451f4a306163233fa79e24/docs/esignet-openapi.yaml"
+}
