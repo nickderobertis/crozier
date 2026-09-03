@@ -18,10 +18,15 @@ Classified entries for the `document-paths` region, against the boundary in
 `## Scope` and the walk in `## How this region's feature list was enumerated`
 below.
 
-All categories, fixture counts, ledger verdicts and `crozier sites` counts are
-the immutable result of the registered-source, ledger and `src/` state measured
-on **2026-08-25**. Refreshing the surface is an explicit new measurement that
-updates the affected rows, date and reconciliation digest together.
+Two measurements are dated in this file, and nothing here is dated by a
+measurement it did not come from. The categories and the fixture counts every
+evidence cell transcribes are the immutable result of the registered-source
+state measured on **2026-08-25** — the date each of those cells names for
+itself — carried forward unchanged; refreshing them is an explicit new
+measurement that updates the affected rows and that date together. The census
+digest, the ledger verdicts and the `crozier sites` counts that
+`### Snapshot reconciliation` re-derives are the ledger and `src/` state
+measured on **2026-09-03**, and move with that section's own date.
 
 ## Scope
 
@@ -208,11 +213,17 @@ ledger join, the spec-location uniqueness rule and the `src/` site counts — in
 `just test-surface-census` is the standing follow-up, and belongs to a change
 that may touch `tests/` and the `justfile`. Until then this snippet is a manual
 check, so treat a refresh that skips it as unverified: review the new
-measurement and update the affected rows, snapshot date and digest together.
+measurement and update the affected rows and the census date they name, together
+with this section's digest and its own date below.
 
-**What the digest above pins, and what the previous one did.** The digest was
-re-derived on **2026-09-03**, over the measurement the census produces now that it
-emits the three predicate selectors of
+**This section's measurement is dated 2026-09-03.** The digest below, the
+ledger verdicts it joins and the `crozier sites` counts it re-measures are that
+state, and they move together with this date. It is not the date the table above
+carries: those evidence cells name their own **2026-08-25** census, and this
+section re-derives none of them.
+
+**What the digest pins, and what the previous one did.** The 2026-09-03 census
+is the one the script produces now that it emits the three predicate selectors of
 [`openapi-surface-coverage.md`](../openapi-surface-coverage.md)'s
 `### The selector grammar`. Adding them changes the JSON this check hashes: the
 report gains `operation.tags:multiple` (69 declaration sites across 11 registered
@@ -228,19 +239,23 @@ are ref-pinned and fetch byte-stably. What moved is the registered set — #186
 registered rows 94 (`ndw-accessibility-map`) and 95 (`marimo`) without re-pinning
 the digest, taking it from 124 sources to 126.
 
-That leaves one drift this change does not repair. Those two sources declare
-fields 20 of the `golden` rows above transcribe counts for — `document-info`,
-`document-servers`, `document-paths`, `document-components`, `info-title`,
-`info-description`, `info-version`, `server-url`, `get-operation`,
+**The one drift this change does not repair, and why it is not rot.** Those two
+sources push the fixture-count half of the check below into failing for 22 of the
+56 census rows it reconciles. Twenty fail its `census row drift` assertion —
+`document-info`, `document-servers`, `document-paths`, `document-components`,
+`info-title`, `info-description`, `info-version`, `server-url`, `get-operation`,
 `post-operation`, `operation-tags`, `operation-summary`, `operation-id`,
 `operation-parameters`, `operation-request-body`, `operation-responses`,
 `external-docs-description`, `external-docs-url`, `components-schemas` and
-`reference-ref` — so the fixture-count half of the check below reports a `census
-row drift` for each of them. Those cells are the 2026-08-25 measurement this
-file's header calls immutable, and refreshing them is the explicit new
-measurement that paragraph describes: it moves 20 evidence cells and the date,
-which is a change of its own rather than a side effect of teaching the census a
-new selector.
+`reference-ref` — and two more, `missing-operation-id` and `untagged-operation`,
+fail its `census arithmetic drift` assertion, which derives their counts by
+subtraction from the same measurement. **Every one of the 22 is additive:** each
+drifting cell is missing an entry for `marimo`, for `ndw-accessibility-map`, or
+for both, and no count any of those cells already transcribes changes value.
+Those cells are the 2026-08-25 census they name, and refreshing them is the
+explicit new measurement this file's header describes: it moves 22 evidence cells
+and their date, which is a change of its own rather than a side effect of
+teaching the census a new selector.
 
 `just lint-llm-diff origin/main` checks this documented contract semantically.
 
