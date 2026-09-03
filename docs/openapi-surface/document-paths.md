@@ -210,6 +210,38 @@ that may touch `tests/` and the `justfile`. Until then this snippet is a manual
 check, so treat a refresh that skips it as unverified: review the new
 measurement and update the affected rows, snapshot date and digest together.
 
+**What the digest above pins, and what the previous one did.** The digest was
+re-derived on **2026-09-03**, over the measurement the census produces now that it
+emits the three predicate selectors of
+[`openapi-surface-coverage.md`](../openapi-surface-coverage.md)'s
+`### The selector grammar`. Adding them changes the JSON this check hashes: the
+report gains `operation.tags:multiple` (69 declaration sites across 11 registered
+sources) and gains no other row, and every count every other selector reports is
+unchanged, which is why no row of the table above moves with the digest.
+
+The previous digest, `7c476c7f…`, does **not** reproduce against this tree, and
+did not before this change either — the measurement it pinned no longer exists.
+It is stale rather than unreproducible: re-running the census with
+[`CORPUS.md`](../../tests/fixtures/CORPUS.md) restored to its state at the change
+that pinned it (#184) reproduces `7c476c7f…` exactly, so the `link-ok` sources
+are ref-pinned and fetch byte-stably. What moved is the registered set — #186
+registered rows 94 (`ndw-accessibility-map`) and 95 (`marimo`) without re-pinning
+the digest, taking it from 124 sources to 126.
+
+That leaves one drift this change does not repair. Those two sources declare
+fields 20 of the `golden` rows above transcribe counts for — `document-info`,
+`document-servers`, `document-paths`, `document-components`, `info-title`,
+`info-description`, `info-version`, `server-url`, `get-operation`,
+`post-operation`, `operation-tags`, `operation-summary`, `operation-id`,
+`operation-parameters`, `operation-request-body`, `operation-responses`,
+`external-docs-description`, `external-docs-url`, `components-schemas` and
+`reference-ref` — so the fixture-count half of the check below reports a `census
+row drift` for each of them. Those cells are the 2026-08-25 measurement this
+file's header calls immutable, and refreshing them is the explicit new
+measurement that paragraph describes: it moves 20 evidence cells and the date,
+which is a change of its own rather than a side effect of teaching the census a
+new selector.
+
 `just lint-llm-diff origin/main` checks this documented contract semantically.
 
 ```bash
@@ -306,7 +338,7 @@ for key, expected_cell in site_cells.items():
     assert rows[key][5] == expected_cell, f"crozier-site drift: {key}"
 
 # --- every transcribed fixture count is the census's own ---------------------
-expected_digest = "7c476c7f0dcdcbdbe8cff1dad01c144276bcb58df2681309fee44c200bcecfdb"
+expected_digest = "acb1b0ebfe105c59efff09cd6897174a11d5639c2e7686380c0ac7043e90aabc"
 census = subprocess.run(
     ["just", "surface-census", "--json"], check=True, stdout=subprocess.PIPE
 ).stdout
