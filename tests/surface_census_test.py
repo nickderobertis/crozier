@@ -1792,7 +1792,15 @@ class NamingMirrorTests(unittest.TestCase):
                 self.assertEqual(expected, census.field_name(wire))
 
     def test_the_reserved_set_is_croziers_own(self) -> None:
-        """The trailing-`_` rule is only right if the reserved set is the same one."""
+        """The trailing-`_` rule is only right if the reserved set is the same one.
+
+        Both directions, because both are collisions the census would invent. A
+        name crozier reserves and the port does not leaves `/x/{list}` and
+        `/x/{list_}` apart, which crozier renders as one URL; a name the port
+        reserves and crozier does not brings `/x/{id}` and `/x/{id_}` together,
+        which crozier renders as two. The `field_name` cases above cannot catch
+        the second — they only exercise the words `src/naming.rs` happens to pin.
+        """
         source = self.NAMING.read_text(encoding="utf-8")
         listed = set()
         for marker in ("const RESERVED_BUILTINS: &[&str] =", "const PYTHON_KEYWORDS: &[&str] = &["):
@@ -1801,9 +1809,12 @@ class NamingMirrorTests(unittest.TestCase):
             listed |= set(re.findall(r'"([^"]+)"', body))
         self.assertEqual(
             listed,
-            {name for name in listed if census.is_reserved(name)},
+            set(census._PYTHON_KEYWORDS) | set(census._RESERVED_BUILTINS),
             "the port's reserved set is not crozier's",
         )
+        for name in listed:
+            with self.subTest(name=name):
+                self.assertTrue(census.is_reserved(name))
         self.assertFalse(census.is_reserved("widget"))
 
     def test_a_path_template_normalizes_only_its_expressions(self) -> None:
