@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "blackadi-oauth2",
+  "corpus_spec_ref": "b6e4cfa1fb060ca5ca3e32185f4a5d88c27163e3",
+  "corpus_spec_url": "https://raw.githubusercontent.com/blackadi/OAUTH2.0/b6e4cfa1fb060ca5ca3e32185f4a5d88c27163e3/server/src/routes/openapi.json"
+}

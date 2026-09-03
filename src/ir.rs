@@ -686,8 +686,9 @@ pub struct Endpoint {
     /// of `application/json` (for example `application/ndjson`).
     pub body_content_type_override: Option<String>,
     /// Whether the operation uses HTTP Basic authentication. Fern leaves the
-    /// ordinary JSON content type to httpx for undocumented Basic-auth bodies
-    /// without a path/header parameter.
+    /// ordinary JSON content type to httpx for an undocumented Basic-auth body
+    /// without a path/header parameter, unless that body's schema is written
+    /// inline and flattened field by field (see [`crate::emit`]).
     pub basic_auth: bool,
     /// Whether the selected request media schema was declared by component `$ref`.
     pub body_schema_ref: bool,
@@ -3201,12 +3202,17 @@ fn resolve_request_body(
             doc.openapi.starts_with("3.1") && items.reference.is_some(),
         ));
     }
+    // An inline bare object (`type: object` with no declared structure) is a
+    // free-form `Dict` argument. Unlike the `$ref` form above it carries the
+    // content-type header only when the schema is documented: blackadi-oauth2
+    // declares both, and Fern emits the header for its described SSF and
+    // federation-registration bodies and not for its bare `client/dcr/*` ones.
     if is_bare_object(schema) {
         return Some(single_with_override(
             base_type_ref(schema),
             required,
             false,
-            true,
+            clean_doc(schema.description.as_deref()).is_some(),
             content_type_override,
         ));
     }

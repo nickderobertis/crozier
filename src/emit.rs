@@ -4162,6 +4162,11 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         // (`CREATE_SessionServer`) keeps it. A `components.requestBodies` body drops
         // it only while its schema survives in the public type layer; one whose
         // schema exists solely to be flattened here (exa-gate's `KeyBatch`) keeps it.
+        // The Basic-auth drop is narrower than the scheme: it applies to a body whose
+        // schema is a component `$ref` (otoroshi's `Group`) or that rides as a single
+        // argument (its inline `oneOf`, hoisted to `CreateGlobalAuthModuleRequest`),
+        // not to one whose inline schema is flattened field by field
+        // (blackadi-oauth2's `backchannel_logout/issue`), which keeps the header.
         Some(body)
             if !body.is_wildcard_media()
                 && (ep.body_media_has_example && ep.body_schema_dropped && ep.body_schema_ref
@@ -4171,7 +4176,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     || !ep.header_params.is_empty()
                     || !ep.path_params.is_empty()
                     || (body.content_type_header()
-                        && (!ep.basic_auth || !ep.body_description_missing)
+                        && (!ep.basic_auth
+                            || !ep.body_description_missing
+                            || !ep.body_schema_ref && matches!(body, RequestBody::Inline(_)))
                         && !ep.body_codegen_named
                         && (!ep.body_component_ref || ep.body_schema_dropped)
                         && !(matches!(body, RequestBody::Inline(_))
