@@ -1871,6 +1871,8 @@ const CORPORA: &[&Corpus] = &[
     &NDW_ACCESSIBILITY_MAP,
     &MARIMO,
     &BLACKADI_OAUTH2,
+    &MOSIP_ESIGNET,
+    &OPENBANKINGPROJECT_CH_KUNDENBEZIEHUNG,
 ];
 
 #[test]
@@ -2873,6 +2875,40 @@ const BLACKADI_OAUTH2: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `mosip-esignet`: the MOSIP eSignet API is the corpus's second `scheme: dpop`
+/// witness and the one that declares the IANA registry's own mixed-case spelling
+/// — `Authorization-DPoP` carries `scheme: DPoP` beside four `bearer` schemes,
+/// where `blackadi-oauth2` declares the lowercase form. Fern imports a supported
+/// scheme and drops the DPoP one whatever its case, so this row holds crozier's
+/// identical silence to Fern's output on the spelling the registry publishes.
+const MOSIP_ESIGNET: Corpus = Corpus {
+    api: "mosip-esignet",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `openbankingproject-ch-kundenbeziehung`: the Swiss Open Banking
+/// customer-relationship API declares `scheme: DPoP` beside `bearer`, and is the
+/// corpus's first source declaring `type: mutualTLS` — the Security Scheme type
+/// 3.1 added, which Fern's importer drops as it drops DPoP. Its document-level
+/// `security` pairs the dropped `mTLS` scheme with a supported `bearer` one, so
+/// this row pins that crozier drops both in exactly the places Fern does.
+const OPENBANKINGPROJECT_CH_KUNDENBEZIEHUNG: Corpus = Corpus {
+    api: "openbankingproject-ch-kundenbeziehung",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3097,6 +3133,16 @@ fn marimo_matches_fern_output() {
 #[test]
 fn blackadi_oauth2_matches_fern_output() {
     assert_link_ok_corpus_matches(&BLACKADI_OAUTH2);
+}
+
+#[test]
+fn mosip_esignet_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MOSIP_ESIGNET);
+}
+
+#[test]
+fn openbankingproject_ch_kundenbeziehung_matches_fern_output() {
+    assert_link_ok_corpus_matches(&OPENBANKINGPROJECT_CH_KUNDENBEZIEHUNG);
 }
 
 #[test]
