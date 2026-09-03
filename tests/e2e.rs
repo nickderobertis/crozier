@@ -1870,6 +1870,7 @@ const CORPORA: &[&Corpus] = &[
     &OPENEPCIS_DPP_READY,
     &NDW_ACCESSIBILITY_MAP,
     &MARIMO,
+    &BLACKADI_OAUTH2,
 ];
 
 #[test]
@@ -2855,6 +2856,23 @@ const MARIMO: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `blackadi-oauth2`: the OAuth 2.0 authorization-server API is the corpus's only
+/// source declaring an IANA HTTP authentication scheme Fern's importer does not
+/// support — `dpopAuth` carries `scheme: dpop` (RFC 9449) beside a `bearer` and a
+/// `basic` scheme. Fern imports the supported scheme and drops the DPoP one
+/// without a trace in the SDK, so this row is what holds crozier's identical
+/// silence to Fern's output rather than to crozier's own expectation.
+const BLACKADI_OAUTH2: Corpus = Corpus {
+    api: "blackadi-oauth2",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3074,6 +3092,11 @@ fn ndw_accessibility_map_matches_fern_output() {
 #[test]
 fn marimo_matches_fern_output() {
     assert_link_ok_corpus_matches(&MARIMO);
+}
+
+#[test]
+fn blackadi_oauth2_matches_fern_output() {
+    assert_link_ok_corpus_matches(&BLACKADI_OAUTH2);
 }
 
 #[test]
