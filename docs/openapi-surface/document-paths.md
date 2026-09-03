@@ -458,13 +458,25 @@ stated = re.search(
     rows["multi-tagged-operation"][4],
 )
 assert stated, "multi-tagged-operation no longer states the split its category rests on"
-assert (int(stated.group(1)), int(stated.group(2))) == (sum(multi.values()), len(multi))
-assert {n: int(c) for n, c in pair.findall(stated.group(3))} == bearing
-assert int(stated.group(4)) == sum(bearing.values())
-assert {n: int(c) for n, c in pair.findall(stated.group(5))} == unbacked
-assert int(stated.group(6)) == sum(unbacked.values())
+assert (int(stated.group(1)), int(stated.group(2))) == (sum(multi.values()), len(multi)), (
+    "multi-tagged-operation totals drift: the cell's sites/sources are not the measurement's"
+)
+assert {n: int(c) for n, c in pair.findall(stated.group(3))} == bearing, (
+    "multi-tagged-operation names golden-bearing sources the corpus does not back that way"
+)
+assert int(stated.group(4)) == sum(bearing.values()), (
+    "multi-tagged-operation's golden-bearing subtotal is not those sources' own counts"
+)
+assert {n: int(c) for n, c in pair.findall(stated.group(5))} == unbacked, (
+    "multi-tagged-operation names the wrong source as the one carrying no golden"
+)
+assert int(stated.group(6)) == sum(unbacked.values()), (
+    "multi-tagged-operation's no-golden subtotal is not that source's own count"
+)
 assert bearing, "multi-tagged-operation is `golden` on no golden-bearing witness"
-assert rows["multi-tagged-operation"][3] == "golden"
+assert rows["multi-tagged-operation"][3] == "golden", (
+    "a golden-bearing witness no longer makes multi-tagged-operation `golden`"
+)
 census_rows += 1
 
 for key, selector in (
