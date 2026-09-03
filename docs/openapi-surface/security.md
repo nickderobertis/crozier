@@ -141,14 +141,20 @@ just surface-census $(for n in Concealed DPoP GNAP HOBA Mutual OAuth PrivateToke
 done)
 ```
 
-Every one of those twenty prints `(declared by no registered source)` except
-`securityScheme.scheme=mutual`, which prints `conjur.local 1` — a DROPPED row, so
-`http-mutual` is a `gap` all the same. Across all 124 registered sources the field
-takes exactly four values, all lowercase: `basic`, `bearer`, `mutual`,
-`negotiate`. Ten of the fourteen registry names are therefore `gap` rows, and each
-carries its own site, artifact and settlement cells rather than sharing a
-catch-all — a catch-all would have read `golden` off `negotiate` alone and hidden
-nine unmeasured schemes behind it.
+Every one of those twenty printed `(declared by no registered source)` on the
+124-source walk except `securityScheme.scheme=mutual`, which prints
+`conjur.local 1` — a DROPPED row, so `http-mutual` is a `gap` all the same. **One
+of the twenty has since moved**: on the 127-source walk
+[`document-paths.md`](document-paths.md#snapshot-reconciliation) now pins,
+`securityScheme.scheme=dpop` prints `blackadi-oauth2 1`, the corpus row 96 the
+`http-dpop` entry is `golden` on, while `securityScheme.scheme=DPoP` still prints
+an absence. So the field takes five values across the registered sources, all
+lowercase — `basic`, `bearer`, `dpop`, `mutual`, `negotiate` — and nine of the
+fourteen registry names are `gap` rows rather than ten. Each carries its own site,
+artifact and settlement cells rather than sharing a catch-all — a catch-all would
+have read `golden` off `negotiate` alone and hidden eight unmeasured schemes
+behind it. Every other count in this file is the 124-source walk's, which is what
+each cell says; refreshing them whole is a separate measurement.
 
 **The census imported, for the shapes the grammar cannot name.** A Security
 Requirement Object's keys are *scheme names*, so the grammar stops at
@@ -327,8 +333,12 @@ not do.
 
 ### Witness search (issue #188)
 
-Ten of this region's eleven `PROBE` rows are IANA `scheme` members whose
-`settlement` cells rest on the ledger's four-dropped-schemes finding. That
+This table was written when ten of this region's eleven `PROBE` rows were IANA
+`scheme` members whose `settlement` cells rested on the ledger's
+four-dropped-schemes finding. Eight of the region's nine `PROBE` rows are that
+today: `http-dpop` is `golden` and `http-hoba` a `FIXTURE` gap, both settled on
+the evidence below and recorded in **What this table's first four rows became**
+after the table. That
 finding is a claim about **Fern** — an importer-unsupported scheme cannot be
 isolated, because alone Fern refuses the document and paired with a supported
 scheme it leaves no trace in the output. It is not a claim about whether any
