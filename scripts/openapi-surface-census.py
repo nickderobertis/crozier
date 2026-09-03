@@ -33,8 +33,8 @@ Three rules make the number honest; none of them a `grep` obeys.
 
 The selector grammar, the region boundaries and how a census result becomes a
 classified row are `docs/openapi-surface-coverage.md`; they are not restated
-here. What only this file knows is the object-model table itself — `OBJECTS`
-below is the machine-readable half of that grammar.
+here. What only this file knows is the object-model table itself — `OBJECTS` and
+`PREDICATES` below are the machine-readable half of that grammar.
 """
 
 from __future__ import annotations
@@ -828,6 +828,207 @@ VALUED = {
 # Reference Object, which is counted as one and not descended into.
 REF_TRANSPARENT = {"schema", "pathItem"}
 
+# The closed list of *predicate* selectors, `<selector>:<predicate>` — the third
+# kind of selector, and the only place that list is declared. A field selector
+# says a field was written and a valued selector says which member of a closed set
+# it was written with; neither can express a property of a field's array members,
+# a comparison between two documents' worth of one field's values, or anything at
+# all about the map keys the grammar deliberately excludes as *names*. The three
+# below are exactly those shapes. `docs/openapi-surface-coverage.md`'s
+# `### The selector grammar` restates them for a reader, and
+# `tests/surface_census_test.py` reconciles the two lists the way it already
+# reconciles `VALUED`.
+PREDICATES = {
+    "operation.tags:multiple": (
+        "one per Operation Object whose `tags` array holds more than one member"
+    ),
+    "operation.operationId:duplicate": (
+        "one per Operation Object whose `operationId` value is declared by more than "
+        "one Operation Object of the same document, so a value written twice counts two"
+    ),
+    "openapi.paths:normalized-collision": (
+        "one per Paths Object key that collides with at least one other key of the "
+        "same document after path-template-name normalization, so a two-key collision "
+        "counts two"
+    ),
+}
+
+
+# ---------------------------------------------------------------------------
+# crozier's own path-template-name normalization
+# ---------------------------------------------------------------------------
+#
+# `openapi.paths:normalized-collision` asks which Paths Object keys crozier would
+# render as one request URL, so the normalization below is not invented here: it
+# is `naming::field_name` of `src/naming.rs`, the transform `src/ir.rs` gives a
+# path parameter's `py_name` and `src/emit.rs`'s `url_arg` interpolates back into
+# the URL — `/users/{userId}` and `/users/{user_id}` both emit
+# `f"users/{encode_path_param(user_id)}"`. What is mirrored is that function and
+# the four helpers it calls, case for case, including the cases it treats
+# specially: a reserved name takes a trailing `_`, a digit-leading one takes an
+# `f_` prefix, a non-identifier character is a word boundary, whitespace is a hard
+# boundary, and a digit-bearing word joins its neighbour without an underscore.
+# `tests/surface_census_test.py` reconciles this port against the `field_name`
+# expectations `src/naming.rs`'s own unit tests pin, so crozier's casing cannot
+# change without failing a check here.
+
+_PYTHON_KEYWORDS = frozenset({
+    "False", "None", "True", "and", "as", "assert", "async", "await", "break",
+    "class", "continue", "def", "del", "elif", "else", "except", "finally",
+    "for", "from", "global", "if", "import", "in", "is", "lambda", "nonlocal",
+    "not", "or", "pass", "raise", "return", "try", "while", "with", "yield",
+})
+# Builtins Fern munges in field contexts; `naming::is_reserved` is the two sets.
+_RESERVED_BUILTINS = frozenset({"all", "bool", "int", "list", "long", "map", "set", "uuid"})
+# A path template expression: `{userId}` in `/users/{userId}/roles`.
+_TEMPLATE_EXPRESSION = re.compile(r"\{([^{}]*)\}")
+
+
+def _is_digit(char: str) -> bool:
+    return "0" <= char <= "9"
+
+
+def _is_lower(char: str) -> bool:
+    return "a" <= char <= "z"
+
+
+def _is_upper(char: str) -> bool:
+    return "A" <= char <= "Z"
+
+
+def _is_alpha(char: str) -> bool:
+    return _is_lower(char) or _is_upper(char)
+
+
+def split_words(text: str) -> list[str]:
+    """`naming::split_words`: lowercase words across camel, Pascal, snake and kebab."""
+    words: list[str] = []
+    current = ""
+    chars = list(text)
+    for index, char in enumerate(chars):
+        if char in "_- .":
+            if current:
+                words.append(current)
+                current = ""
+            continue
+        previous = chars[index - 1] if index else None
+        following = chars[index + 1] if index + 1 < len(chars) else None
+        boundary = (
+            _is_upper(char)
+            and bool(current)
+            and (
+                (previous is not None and (_is_lower(previous) or _is_digit(previous)))
+                or (
+                    previous is not None
+                    and _is_upper(previous)
+                    and following is not None
+                    and _is_lower(following)
+                )
+            )
+        )
+        if boundary:
+            words.append(current)
+            current = ""
+        # `to_ascii_lowercase` in Rust: a non-ASCII letter passes through unchanged.
+        current += char.lower() if _is_upper(char) else char
+    if current:
+        words.append(current)
+    return words
+
+
+def to_snake_case(text: str) -> str:
+    """`naming::to_snake_case`: a word after a digit-bearing word joins it."""
+    out = ""
+    for word in split_words(text):
+        last = out.rsplit("_", 1)[-1]
+        after_digit_word = (
+            bool(out)
+            and _is_digit(out[-1])
+            and bool(last)
+            and _is_digit(last[-1])
+            and any(_is_alpha(char) for char in last)
+        )
+        if out and not after_digit_word:
+            out += "_"
+        out += word
+    return out
+
+
+def _fold_non_identifier(name: str) -> str:
+    """`naming::fold_non_identifier`: every non-ASCII-alphanumeric is a boundary."""
+    return "".join(
+        char if (_is_alpha(char) or _is_digit(char)) else " " for char in name
+    )
+
+
+def _digit_suffix_absorbs_following(chars: list[str], digit_index: int) -> bool:
+    """`naming::digit_suffix_absorbs_following`."""
+    start = digit_index
+    while start > 0 and _is_digit(chars[start - 1]):
+        start -= 1
+    if start > 0 and chars[start - 1] == "_":
+        return True
+    for char in reversed(chars[:start]):
+        if char == "_":
+            break
+        if _is_alpha(char):
+            return True
+    return False
+
+
+def _collapse_field_digit_boundaries(name: str) -> str:
+    """`naming::collapse_field_digit_boundaries`: drop a digit-adjacent `_`."""
+    chars = list(name)
+    kept: list[str] = []
+    for index, char in enumerate(chars):
+        if char == "_" and (
+            (
+                index > 0
+                and _is_digit(chars[index - 1])
+                and _digit_suffix_absorbs_following(chars, index - 1)
+            )
+            or (index + 1 < len(chars) and _is_digit(chars[index + 1]))
+        ):
+            continue
+        kept.append(char)
+    return "".join(kept)
+
+
+def _field_snake_case(wire_name: str) -> str:
+    """`naming::field_snake_case`: whitespace chunks fold independently."""
+    chunks = (
+        _collapse_field_digit_boundaries(to_snake_case(_fold_non_identifier(chunk)))
+        for chunk in wire_name.split()
+    )
+    return "_".join(chunk for chunk in chunks if chunk)
+
+
+def is_reserved(name: str) -> bool:
+    """`naming::is_reserved`: a Python keyword or a builtin Fern munges in fields."""
+    return name in _PYTHON_KEYWORDS or name in _RESERVED_BUILTINS
+
+
+def field_name(wire_name: str) -> str:
+    """`naming::field_name`: the Python identifier crozier gives a wire name."""
+    snake = _field_snake_case(wire_name)
+    if snake and _is_digit(snake[0]):
+        return f"f_{snake}"
+    if is_reserved(snake):
+        return f"{snake}_"
+    return snake
+
+
+def normalized_path(template: str) -> str:
+    """One Paths Object key with every template expression's name normalized.
+
+    Only the names inside `{}` move: the literal segments, their order and their
+    count are what distinguish two routes, so `/users/{userId}` normalizes to
+    `/users/{user_id}` while `/{id}/users` and `/users/{id}` stay apart.
+    """
+    return _TEMPLATE_EXPRESSION.sub(
+        lambda match: "{" + field_name(match.group(1)) + "}", template
+    )
+
 
 def grammar() -> tuple[set[str], set[str]]:
     """Every selector the grammar allows, and every prefix that can carry an `x-`.
@@ -862,6 +1063,15 @@ def selector_error(text: str) -> str | None:
     """Why this `--selector` names nothing the grammar can emit, or None."""
     selectors, prefixes = grammar()
     base, equals, value = text.partition("=")
+    if not equals and ":" in base:
+        if base in PREDICATES:
+            return None
+        close = difflib.get_close_matches(base, sorted(PREDICATES), n=3)
+        suggestion = f" Did you mean: {', '.join(close)}?" if close else ""
+        return (
+            f"{base!r} is not one of the predicate selectors the census emits."
+            f"{suggestion} They are: {', '.join(sorted(PREDICATES))}."
+        )
     if equals and not value:
         return f"{text!r} is a valued selector with no value"
     if equals and base not in VALUED:
@@ -889,6 +1099,10 @@ class Census:
 
     def __init__(self) -> None:
         self.counts: dict[str, int] = defaultdict(int)
+        # `operation.operationId:duplicate` compares one document's values against
+        # each other, so it cannot be decided at the declaration site the way every
+        # other selector is; the values are gathered here and counted by `finish`.
+        self.operation_ids: list[str] = []
 
     def record(self, selector: str) -> None:
         self.counts[selector] += 1
@@ -900,6 +1114,8 @@ class Census:
             return
         seen = seen | {id(node)}
         kind = OBJECTS[kind_name]
+        if kind_name == "paths":
+            self.record_normalized_collisions(node)
         if "$ref" in node and kind_name not in REF_TRANSPARENT:
             reference = OBJECTS["reference"]
             for key in node:
@@ -922,6 +1138,8 @@ class Census:
                 continue
             selector = f"{prefix}.{key}"
             self.record(selector)
+            if kind_name == "operation":
+                self.note_operation(key, value)
             if selector in VALUED:
                 for member in value if isinstance(value, list) else [value]:
                     if isinstance(member, (str, int, float)) and not isinstance(member, bool):
@@ -929,6 +1147,43 @@ class Census:
             child = kind.fields[key]
             if child is not None:
                 self.descend(value, child, selector, seen)
+
+    def note_operation(self, key: str, value: Any) -> None:
+        """The predicate selectors one Operation Object's own fields decide."""
+        if key == "tags" and isinstance(value, list) and len(value) > 1:
+            self.record("operation.tags:multiple")
+        elif key == "operationId" and isinstance(value, (str, int, float)) and not isinstance(
+            value, bool
+        ):
+            # Compared as written: a document that spells one id `1` and another
+            # `"1"` has written the same value twice, and Fern reads both as a name.
+            self.operation_ids.append(str(value))
+
+    def record_normalized_collisions(self, node: dict[Any, Any]) -> None:
+        """`openapi.paths:normalized-collision`: keys crozier would render as one URL.
+
+        One per colliding key rather than one per collision, so a document that
+        writes the same normalized route twice contributes two and one that writes
+        it three times contributes three. `x-` keys are extensions, not routes.
+        """
+        keys = [
+            key for key in node if isinstance(key, str) and not key.startswith("x-")
+        ]
+        collisions: dict[str, int] = defaultdict(int)
+        for key in keys:
+            collisions[normalized_path(key)] += 1
+        for key in keys:
+            if collisions[normalized_path(key)] > 1:
+                self.record("openapi.paths:normalized-collision")
+
+    def finish(self) -> None:
+        """Record the predicates only the whole document decides."""
+        written: dict[str, int] = defaultdict(int)
+        for value in self.operation_ids:
+            written[value] += 1
+        for count in written.values():
+            if count > 1:
+                self.counts["operation.operationId:duplicate"] += count
 
     @staticmethod
     def value_of(selector: str, member: str | int | float) -> str:
@@ -964,6 +1219,7 @@ def census_document(document: Any) -> dict[str, int]:
     """Every `(selector, count)` one parsed source document declares."""
     census = Census()
     census.walk(document, "openapi", "openapi", frozenset())
+    census.finish()
     return dict(census.counts)
 
 

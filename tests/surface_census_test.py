@@ -208,6 +208,20 @@ class GrammarContractTests(unittest.TestCase):
         documented = self.backticked("themselves a closed list:", "\n\nA **count**")
         self.assertEqual(census.VALUED, documented)
 
+    def test_the_documented_predicate_selectors_are_the_ones_the_script_declares(self) -> None:
+        """The third kind of selector: `<selector>:<predicate>`.
+
+        The list lives in the script and is restated in the grammar section, so a
+        member added to one and not the other has to fail here — the way the
+        valued-field list above is already reconciled.
+        """
+        text = self.DOC.read_text(encoding="utf-8")
+        start = "A shape the two kinds above cannot express emits a **predicate selector**,"
+        self.assertIn(start, text, "the grammar section documents no predicate selector")
+        body = text.split(start, 1)[1].split("A predicate selector is a selector", 1)[0]
+        documented = set(re.findall(r"`([A-Za-z][A-Za-z.]*:[a-z-]+)`", body))
+        self.assertEqual(set(census.PREDICATES), documented)
+
     def test_each_region_file_repeats_the_index_s_boundary_verbatim(self) -> None:
         """Six copies of the region boundaries; the index's table is the original."""
         text = self.DOC.read_text(encoding="utf-8")
@@ -600,6 +614,8 @@ class SourceSelectionTests(unittest.TestCase):
             ("operation.tags=x", "is not one of the fields that emit a valued selector"),
             ("parameter.in=", "valued selector with no value"),
             ("notAnObject.x-thing", "is not an object the census walks"),
+            ("operation.tags:mutliple", "Did you mean: operation.tags:multiple"),
+            ("openapi.paths:collision", "is not one of the predicate selectors"),
         ):
             with self.subTest(selector=selector):
                 completed = run("--vendored-only", "--selector", selector)
@@ -1519,6 +1535,296 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(
             (len(sources), golden), (int(stated.group(1)), int(stated.group(2)))
         )
+
+
+DOCUMENT = """openapi: 3.0.3
+info: {{title: {name}, version: "1"}}
+paths:
+{paths}
+"""
+
+OPERATION = """    {method}:
+{fields}
+      responses:
+        "200":
+          description: ok"""
+
+
+def document(name: str, routes: list[tuple[str, list[str]]]) -> str:
+    """One source document declaring `routes`: a path key and its operations' fields."""
+    paths = []
+    for path, operations in routes:
+        paths.append(f"  {json.dumps(path)}:")
+        for index, fields in enumerate(operations):
+            method = ("get", "post", "put", "delete")[index]
+            body = "\n".join(f"      {line}" for line in fields.splitlines())
+            paths.append(OPERATION.format(method=method, fields=body))
+    return DOCUMENT.format(name=name, paths="\n".join(paths))
+
+
+class PredicateSelectorTests(unittest.TestCase):
+    """The third kind of selector: a shape the field selector cannot express.
+
+    `operation.tags` counts the field and not its members, `operation.operationId`
+    records declarations and not values, and a Paths Object key is a *name* the
+    grammar excludes — so three real shapes were invisible to the instrument that
+    is supposed to say whether the corpus has ever seen them. These drive the real
+    script over real documents on the real filesystem, once for a document that
+    declares each shape and once for one that does not.
+    """
+
+    def census(self, sources: dict[str, str], *selectors: str) -> subprocess.CompletedProcess:
+        """Run the real script over a fixtures root holding `sources`."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, body in sources.items():
+                write_fixture(root, name, body)
+            arguments = ["--vendored-only", "--fixtures-root", str(root)]
+            for selector in selectors:
+                arguments += ["--selector", selector]
+            completed = run(*arguments)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        return completed
+
+    def counts(self, sources: dict[str, str], selector: str) -> dict[str, int]:
+        """The reported count per source for one selector; absent sources are 0."""
+        completed = self.census(sources, selector)
+        return {fixture: count for (_selector, fixture), count in rows(completed).items()}
+
+    def test_a_multi_tag_operation_is_counted_once_per_operation(self) -> None:
+        """`operation.tags:multiple`: the array's members, which the field cannot show."""
+        sources = {
+            "two-tagged": document("two-tagged", [
+                ("/widgets", ["tags: [alpha, beta]", "tags: [alpha, beta, gamma]"]),
+                ("/gadgets", ["tags: [alpha]"]),
+            ]),
+            "single-tagged": document("single-tagged", [
+                ("/widgets", ["tags: [alpha]", "tags: []"]),
+            ]),
+        }
+        self.assertEqual({"two-tagged": 2}, self.counts(sources, "operation.tags:multiple"))
+        # The field selector still counts every declaration, multiple or not: the
+        # predicate adds a reading of `tags`, it does not replace one.
+        self.assertEqual(
+            {"two-tagged": 3, "single-tagged": 2},
+            self.counts(sources, "operation.tags"),
+        )
+
+    def test_a_duplicated_operation_id_counts_every_operation_that_writes_it(self) -> None:
+        """`operation.operationId:duplicate`: two values compared, not two declarations."""
+        sources = {
+            "repeated-id": document("repeated-id", [
+                ("/widgets", ["operationId: listWidgets", "operationId: listWidgets"]),
+                ("/gadgets", ["operationId: listGadgets"]),
+            ]),
+            "thrice-repeated-id": document("thrice-repeated-id", [
+                ("/widgets", ["operationId: one", "operationId: one", "operationId: one"]),
+            ]),
+            "distinct-ids": document("distinct-ids", [
+                ("/widgets", ["operationId: listWidgets", "operationId: createWidget"]),
+            ]),
+        }
+        self.assertEqual(
+            {"repeated-id": 2, "thrice-repeated-id": 3},
+            self.counts(sources, "operation.operationId:duplicate"),
+        )
+
+    def test_a_link_objects_operation_id_is_not_an_operations(self) -> None:
+        """The object-model rule holds for the predicate too.
+
+        `apideck.com-crm` writes `"operationId": "usersOne"` seven times and
+        declares no duplicate: six of the seven are Link Objects naming the
+        operation they follow. A text match over that document reports six
+        duplicates that no Operation Object declares.
+        """
+        source = """\
+            openapi: 3.0.3
+            info: {title: linked, version: "1"}
+            paths:
+              /widgets:
+                get:
+                  operationId: listWidgets
+                  responses:
+                    "200":
+                      description: ok
+                      links:
+                        next:
+                          operationId: listWidgets
+            """
+        counted = self.counts({"linked": source}, "operation.operationId:duplicate")
+        self.assertEqual({}, counted)
+        self.assertEqual({"linked": 1}, self.counts({"linked": source}, "link.operationId"))
+
+    def test_a_normalized_path_collision_counts_every_colliding_key(self) -> None:
+        """`openapi.paths:normalized-collision`: the map keys the grammar excludes."""
+        sources = {
+            "colliding-paths": document("colliding-paths", [
+                ("/users/{userId}", ["operationId: a"]),
+                ("/users/{user_id}", ["operationId: b"]),
+                ("/gadgets", ["operationId: c"]),
+            ]),
+            "three-colliding-paths": document("three-colliding-paths", [
+                ("/z/{itemId}", ["operationId: a"]),
+                ("/z/{item_id}", ["operationId: b"]),
+                ("/z/{itemID}", ["operationId: c"]),
+            ]),
+            "distinct-paths": document("distinct-paths", [
+                ("/users/{userId}", ["operationId: a"]),
+                ("/users/{ownerId}", ["operationId: b"]),
+            ]),
+        }
+        self.assertEqual(
+            {"colliding-paths": 2, "three-colliding-paths": 3},
+            self.counts(sources, "openapi.paths:normalized-collision"),
+        )
+
+    # Templates spanning what crozier's normalization distinguishes: the variable
+    # name alone, where the variable sits, how many segments there are, literals
+    # mixed with variables, and every case `naming::field_name` treats specially —
+    # camel and acronym boundaries, a reserved name, a digit-leading name, a
+    # digit-bearing word joining its neighbour, a digit-adjacent underscore
+    # collapsing, and a non-identifier character folding to a boundary. The
+    # expectation on each line is what crozier's own transform implies, not what
+    # this script happens to compute: `NamingMirrorTests` below pins the transform
+    # against `src/naming.rs`'s own expectations.
+    NORMALIZATION_CASES: tuple[tuple[str, list[str], int], ...] = (
+        ("camel-and-snake", ["/users/{userId}", "/users/{user_id}"], 2),
+        ("acronym-boundary", ["/users/{userID}", "/users/{user_id}"], 2),
+        ("distinct-variable-names", ["/users/{userId}", "/users/{ownerId}"], 0),
+        ("variable-position", ["/{id}/users", "/users/{id}"], 0),
+        ("segment-count", ["/users/{id}", "/users/{id}/roles"], 0),
+        ("literal-not-a-variable", ["/users/{id}", "/users/id"], 0),
+        ("literals-and-two-variables",
+         ["/a/{fooBar}/b/{baz-qux}", "/a/{foo_bar}/b/{bazQux}"], 2),
+        ("literal-segment-differs",
+         ["/a/{fooBar}/b/{bazQux}", "/a/{fooBar}/c/{bazQux}"], 0),
+        ("one-variable-differs",
+         ["/a/{fooBar}/b/{bazQux}", "/a/{fooBar}/b/{quxBaz}"], 0),
+        ("reserved-name", ["/x/{list}", "/x/{list_}"], 2),
+        ("reserved-name-control", ["/x/{list}", "/x/{lists}"], 0),
+        ("digit-leading-name", ["/x/{2fa-enabled}", "/x/{2fa_enabled}"], 2),
+        ("digit-leading-control", ["/x/{2fa}", "/x/{2Fa}"], 0),
+        ("digit-word-joins", ["/x/{user2FA}", "/x/{user2fa}"], 2),
+        ("digit-boundary-collapses", ["/x/{address_line_1}", "/x/{addressLine1}"], 2),
+        ("non-identifier-folds", ["/x/{filter[name]}", "/x/{filterName}"], 2),
+        ("no-variables-at-all", ["/a", "/b"], 0),
+    )
+
+    def test_the_path_normalization_is_croziers_own(self) -> None:
+        """Every case crozier's `naming::field_name` distinguishes, in one run."""
+        sources = {
+            name: document(name, [(path, ["operationId: op"]) for path in paths])
+            for name, paths, _expected in self.NORMALIZATION_CASES
+        }
+        counted = self.counts(sources, "openapi.paths:normalized-collision")
+        self.assertEqual(
+            {name: expected for name, _paths, expected in self.NORMALIZATION_CASES if expected},
+            counted,
+        )
+
+    def test_a_document_declaring_none_of_them_reports_each_as_absent(self) -> None:
+        """Absent, not missing: the phrase a `gap` row cites as its evidence."""
+        plain = {"plain": document("plain", [
+            ("/widgets/{id}", ["tags: [alpha]\noperationId: listWidgets"]),
+            ("/gadgets", ["operationId: listGadgets"]),
+        ])}
+        completed = self.census(plain, *sorted(census.PREDICATES))
+        self.assertEqual({}, rows(completed))
+        for selector in census.PREDICATES:
+            with self.subTest(selector=selector):
+                self.assertIn(selector, completed.stdout)
+        self.assertEqual(
+            len(census.PREDICATES),
+            completed.stdout.count("(declared by no registered source)"),
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_fixture(root, "plain", plain["plain"])
+            arguments = ["--vendored-only", "--fixtures-root", str(root), "--json"]
+            for selector in sorted(census.PREDICATES):
+                arguments += ["--selector", selector]
+            payload = json.loads(run(*arguments).stdout)
+        self.assertEqual([], payload["rows"])
+        self.assertEqual(sorted(census.PREDICATES), payload["absent_selectors"])
+
+    def test_each_predicate_selector_is_accepted_by_name(self) -> None:
+        """The refusal that guards a typo must not refuse the three real ones."""
+        for selector in sorted(census.PREDICATES):
+            with self.subTest(selector=selector):
+                self.assertIsNone(census.selector_error(selector))
+
+
+class NamingMirrorTests(unittest.TestCase):
+    """`openapi.paths:normalized-collision` normalizes the way crozier does.
+
+    The census is Python and crozier is Rust, so the transform is mirrored rather
+    than shared. What keeps the mirror honest is that `src/naming.rs`'s own unit
+    tests already pin `field_name` case by case, against Fern's measured output —
+    so those expectations are read out of the Rust source here and re-asserted
+    against the port. A change to crozier's casing fails this test.
+    """
+
+    NAMING = REPO / "src" / "naming.rs"
+    CASE = re.compile(
+        r'assert_eq!\(\s*field_name\("((?:[^"\\]|\\.)*)"\),\s*"((?:[^"\\]|\\.)*)"\s*,?\s*\)'
+    )
+
+    @staticmethod
+    def unescape(literal: str) -> str:
+        return literal.replace('\\"', '"').replace("\\\\", "\\")
+
+    def cases(self) -> list[tuple[str, str]]:
+        found = [
+            (self.unescape(wire), self.unescape(expected))
+            for wire, expected in self.CASE.findall(
+                self.NAMING.read_text(encoding="utf-8")
+            )
+        ]
+        self.assertGreater(
+            len(found), 25, "src/naming.rs no longer pins field_name case by case"
+        )
+        return found
+
+    def test_the_port_reproduces_croziers_own_field_name_expectations(self) -> None:
+        for wire, expected in self.cases():
+            with self.subTest(wire=wire):
+                self.assertEqual(expected, census.field_name(wire))
+
+    def test_the_reserved_set_is_croziers_own(self) -> None:
+        """The trailing-`_` rule is only right if the reserved set is the same one.
+
+        Both directions, because both are collisions the census would invent. A
+        name crozier reserves and the port does not leaves `/x/{list}` and
+        `/x/{list_}` apart, which crozier renders as one URL; a name the port
+        reserves and crozier does not brings `/x/{id}` and `/x/{id_}` together,
+        which crozier renders as two. The `field_name` cases above cannot catch
+        the second — they only exercise the words `src/naming.rs` happens to pin.
+        """
+        source = self.NAMING.read_text(encoding="utf-8")
+        listed = set()
+        for marker in ("const RESERVED_BUILTINS: &[&str] =", "const PYTHON_KEYWORDS: &[&str] = &["):
+            self.assertIn(marker, source, f"src/naming.rs no longer declares {marker!r}")
+            body = source.split(marker, 1)[1].split("];", 1)[0]
+            listed |= set(re.findall(r'"([^"]+)"', body))
+        self.assertEqual(
+            listed,
+            set(census._PYTHON_KEYWORDS) | set(census._RESERVED_BUILTINS),
+            "the port's reserved set is not crozier's",
+        )
+        for name in listed:
+            with self.subTest(name=name):
+                self.assertTrue(census.is_reserved(name))
+        self.assertFalse(census.is_reserved("widget"))
+
+    def test_a_path_template_normalizes_only_its_expressions(self) -> None:
+        """The literal text is what distinguishes two routes; it must not move."""
+        self.assertEqual(
+            "/users/{user_id}/roles/{role_id}",
+            census.normalized_path("/users/{userId}/roles/{roleID}"),
+        )
+        self.assertEqual("/users/userId", census.normalized_path("/users/userId"))
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=1, buffer=False, argv=[sys.argv[0], *sys.argv[1:]])

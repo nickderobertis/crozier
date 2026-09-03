@@ -109,6 +109,35 @@ are never selectors; that is the whole difference between this census and a naiv
 one, and it is why a schema property called `trace` cannot score a `pathItem.trace`
 and a property called `name` cannot score a `parameter.name`.
 
+A shape the two kinds above cannot express emits a **predicate selector**,
+`<selector>:<predicate>` — the notation
+[`security.md`](openapi-surface/security.md)'s method notes already use for a
+shape the field selector cannot read (`securityScheme:$ref`). A field selector says a
+field was written and a valued selector says which member of a closed set it was
+written with; neither can say anything about a field's *array members*, about two
+declarations' values *compared*, or about the map keys the count rule above
+deliberately excludes as names. The predicates are themselves a closed list of
+three, declared in `scripts/openapi-surface-census.py` and restated here, with a
+drift gate over the pair:
+
+- `operation.tags:multiple` — one per Operation Object whose `tags` array holds
+  more than one member.
+- `operation.operationId:duplicate` — one per Operation Object whose
+  `operationId` value is declared by more than one Operation Object of the same
+  document, so a value written twice counts two.
+- `openapi.paths:normalized-collision` — one per Paths Object key that collides
+  with at least one other key of the same document after path-template-name
+  normalization, so a two-key collision counts two. The normalization is
+  crozier's own — `naming::field_name` of `src/naming.rs`, the transform that
+  gives a path parameter its Python name and so decides which routes
+  `src/emit.rs` renders as one URL — applied to each `{expression}` and to
+  nothing else, so `/users/{userId}` and `/users/{user_id}` collide while
+  `/{id}/users` and `/users/{id}` do not.
+
+A predicate selector is a selector like any other everywhere else: `--selector`
+accepts one, refuses a misspelling of one by name, and reports an undeclared one
+as absent.
+
 **A selector absent from the census output for every registered source is a
 feature no registered source declares.** That absence is the evidence a `gap` row
 cites, and `--selector` prints it as such rather than printing nothing.
