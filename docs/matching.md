@@ -837,17 +837,28 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    siblings under `tests/fixtures/tamoss/expected/src/fern/types/`. **`callbacks`**
    remain genuinely absent from the serde model and are ignored. `servers-webhooks`
    matches in full regardless.
-   The three documents 3.1's minimum-content rule allows but 3.0 does not are each
-   pinned by a corpus row, and all three generate an **endpoint-free** SDK: a
+   The document shapes 3.1's minimum-content rule allows but 3.0 does not are each
+   pinned by a corpus row, and every one generates an **endpoint-free** SDK: a
    client with no methods over whatever component types the document names.
    `adyen-report-notification` (row 100) omits `paths` outright and declares one
    webhook; `adyen-managed-risk-notification` (row 101) omits it and declares
-   eight, the webhook-only shape standing alone; `go-kratos-casbin-admin`
-   (row 102) declares `paths: {}` beside `components.schemas: {}` and an empty
-   `info.title`, which Fern packages as `default_package_name` with no types at
-   all. A webhook's *component* schemas still become types — Fern imports the
-   `$ref`ed models even though no method sends them — which is why the two Adyen
-   goldens carry a populated `types/` module and the go-kratos one carries none.
+   eight, the webhook-only shape standing alone. A webhook's *component* schemas
+   still become types — Fern imports the `$ref`ed models even though no method
+   sends them — which is why both Adyen goldens carry a populated `types/` module.
+   The *empty* Paths Object is a different shape from an omitted one and carries
+   two independent witnesses, `go-kratos-casbin-admin` (row 102) and
+   `descope-authzcache` (row 103): two `protoc-gen-openapi` documents from
+   unrelated projects, each declaring `paths: {}` beside `components.schemas: {}`
+   and an empty `info.title`, which Fern packages as `default_package_name` with
+   no `types/` module at all. Their two generated trees are byte-identical apart
+   from `expected/.crozier-fern-golden.json`, which records each row's own spec
+   name, ref and URL — which is the point: the shape generates from the document
+   rather than from the project.
+   A relative-file `$ref` under `components.schemas` is what that shape must *not*
+   carry: `Checkmarx/kics`' otherwise-identical `paths: {}` document is rejected by
+   `fern check` (`Type name must begin with a letter`), because Fern coins an empty
+   type name from the reference the direct spec URL cannot resolve — see
+   [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md#specs-already-tried-and-rejected-do-not-re-attempt-without-a-fix-upstream).
 5. **The endpoint layer (implemented — kept as a reference of the covered
    shapes).** `paths` are read into an operation IR
    ([`ir::Endpoint`]): module, method name, HTTP method, URL, path params, and
