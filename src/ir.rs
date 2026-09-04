@@ -776,6 +776,10 @@ pub struct Endpoint {
     /// The request-body field a stream condition fixes to a literal and hides from
     /// the signature: its wire name and the value this variant sends.
     pub stream_condition: Option<(String, bool)>,
+    /// The method name `reference.md`'s worked call uses, where it differs from
+    /// the emitted one — a `stream-condition` split shows the streaming half's
+    /// call under both halves.
+    pub reference_method_name: Option<String>,
     /// The pagination contract the operation declares, resolved against its
     /// response model. A paginated operation returns a `SyncPager`/`AsyncPager`
     /// over the response's item list rather than the buffered response itself.
@@ -1440,10 +1444,14 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     }
     let inline_sources = inline_body_source_names(doc);
     let form_sources = form_body_source_names(doc);
+    // A `stream-condition` operation sends its body from two methods, and Fern
+    // keeps the request model rather than flattening it away into one of them.
+    let stream_condition_sources = stream_condition_body_source_names(doc);
     let dropped_sources: std::collections::HashSet<String> = inline_sources
         .iter()
         .filter(|name| {
             !referenced.contains(*name)
+                && !stream_condition_sources.contains(name.as_str())
                 && !doc.components.schemas.keys().any(|key| {
                     key.starts_with("Body_")
                         && naming::class_name(key) == name.as_str()
@@ -1798,6 +1806,11 @@ fn endpoints(
                         method_name: split.method_name.clone(),
                         stream_condition: Some((split.condition.clone(), split.streaming)),
                         response_doc: None,
+                        // Fern's reference writer documents both halves as the
+                        // flattened body they send, and shows the streaming half's
+                        // worked call under each of them.
+                        reference_body_type: None,
+                        reference_method_name: Some(split.stream_method_name.clone()),
                         ..endpoint
                     },
                     None => endpoint,
@@ -1830,12 +1843,41 @@ fn endpoint_method_name_for(op: &Operation) -> String {
     )
 }
 
+/// The component schemas that back the request body of an operation declaring a
+/// `stream-condition`. Fern keeps such a model in the public type layer even
+/// though both generated methods flatten its fields.
+fn stream_condition_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
+    let mut names = std::collections::HashSet::new();
+    for item in doc.paths.values().chain(doc.webhooks.values()) {
+        for (_, op) in item.operations() {
+            if op
+                .streaming()
+                .and_then(crate::openapi::Streaming::condition_property)
+                .is_none()
+            {
+                continue;
+            }
+            let reference = op
+                .request_body
+                .as_ref()
+                .and_then(|body| body.content.values().find_map(|media| media.schema.as_ref()))
+                .and_then(|schema| schema.reference.as_deref());
+            if let Some(reference) = reference {
+                names.insert(ref_to_class(reference));
+            }
+        }
+    }
+    names
+}
+
 /// One half of a `stream-condition` split: the operation as that half sees it,
 /// the method name it takes, the body field the condition fixes, and whether this
 /// half streams.
 struct StreamSplit {
     operation: Operation,
     method_name: String,
+    /// The streaming half's name, which `reference.md` shows under both halves.
+    stream_method_name: String,
     condition: String,
     streaming: bool,
 }
@@ -1880,6 +1922,7 @@ fn stream_condition_variants(op: &Operation) -> Vec<Option<StreamSplit>> {
             } else {
                 base.clone()
             },
+            stream_method_name: format!("{base}_stream"),
             condition: condition.to_string(),
             streaming: stream,
         }));
@@ -2343,6 +2386,7 @@ fn build_endpoint(
         path: path.to_string(),
         path_params,
         stream_condition: None,
+        reference_method_name: None,
         pagination: endpoint_pagination(doc, op, &query_params),
         query_params,
         header_params,
@@ -5025,6 +5069,31 @@ fn endpoint_module_titles(doc: &OpenApi) -> std::collections::BTreeMap<String, S
 /// (`attachment-public`, `content`). An untagged group falls back to the PascalCase
 /// operationId/path prefix (`EndpointsContainer`).
 fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
+    // An explicitly grouped operation names its own section. Fern titles it with
+    // the *tag* when the tag says the same thing as the group path — TrueForge's
+    // `mcpServers` under the tag `MCP Servers` keeps the tag's spacing and its
+    // acronym — and otherwise with the group segments themselves, each PascalCased
+    // and joined by a space: `sessions` under `Agent Sessions` is `Sessions`,
+    // `server` under `Capabilities` is `Server`, and
+    // `["catalogs", "mcpServers"]` is `Catalogs McpServers`.
+    if let Some(segments) = op.sdk_group_name() {
+        let letters = |value: &str| {
+            value
+                .chars()
+                .filter(char::is_ascii_alphanumeric)
+                .flat_map(char::to_lowercase)
+                .collect::<String>()
+        };
+        let group = letters(&segments.concat());
+        if let Some(tag) = first_tag(op).filter(|tag| letters(tag) == group) {
+            return tag.to_string();
+        }
+        return segments
+            .iter()
+            .map(|segment| naming::to_pascal_case(segment))
+            .collect::<Vec<_>>()
+            .join(" ");
+    }
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
     if id.is_empty() {
         if let Some(tag) = first_tag(op) {

@@ -1485,7 +1485,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         path: PathBuf::from("README.md"),
         contents: String::new(),
     }));
-    files.push(reference_file(&env, ir, &emittable_modules, &tag_map)?);
+    files.push(reference_file(&env, ir, &client_tree_modules(ir), &tag_map)?);
 
     // Project-root scaffolding (pyproject.toml, requirements.txt, metadata).
     files.extend(scaffolding_files(pkg, &ir.project_name));
@@ -1955,16 +1955,83 @@ fn select_readme_endpoint<'a>(
         })
 }
 
+/// Just the call block of an endpoint's worked documentation example — the lines
+/// after the client constructor. The README's streaming section writes its own
+/// imports and constructor, so it needs the call alone.
+fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
+    let mut ctx = ExampleCtx {
+        types: &ir.types,
+        tag_decls: &ir.tag_types,
+        referenced: BTreeSet::new(),
+        referenced_doc_order: Vec::new(),
+        referenced_tag: BTreeSet::new(),
+        referenced_tag_doc_order: Vec::new(),
+        uses_datetime: false,
+        datetime_precedes_tag_import: false,
+        auth: &ir.auth,
+        has_environment: ir.environment.is_some(),
+        global_headers: &ir.global_headers,
+        building: Default::default(),
+        documentation: false,
+        reference: false,
+    };
+    let lines = build_documentation_example(
+        ep,
+        false,
+        &ep.module,
+        pkg,
+        &ir.client_name,
+        &mut ctx,
+        None,
+        false,
+    )?;
+    let start = lines.iter().position(|line| line.starts_with("client."))?;
+    Some(lines[start..].join("\n"))
+}
+
+/// The client modules in the order the generated package nests them: each
+/// package before its own children, siblings in the order
+/// [`module_children`] yields. A flat SDK's order is unchanged by this; a nested
+/// one (`catalogs/mcp_servers`) is walked through its parent rather than in the
+/// document order its paths happened to appear in.
+fn client_tree_modules(ir: &Ir) -> Vec<&str> {
+    let children = module_children(&ir.endpoint_modules);
+    let mut out: Vec<&str> = Vec::new();
+    let mut stack: Vec<String> = children
+        .get("")
+        .map(|names| names.iter().rev().cloned().collect())
+        .unwrap_or_default();
+    while let Some(module) = stack.pop() {
+        if let Some(name) = ir
+            .endpoint_modules
+            .iter()
+            .find(|known| **known == module)
+            .map(String::as_str)
+        {
+            out.push(name);
+        }
+        if let Some(names) = children.get(&module) {
+            for child in names.iter().rev() {
+                stack.push(child.clone());
+            }
+        }
+    }
+    out
+}
+
 /// The order the README walks endpoints in. Fern builds client modules in
 /// first-seen module order and reads the README's endpoints from that grouped
 /// view. Keep operations within each module in source order, but do not let an
 /// operation from a later module leapfrog one from the first module merely
 /// because their paths were interleaved.
 fn readme_endpoint_order(ir: &Ir) -> Vec<&Endpoint> {
-    let grouped: Vec<&Endpoint> = ir
-        .endpoint_modules
-        .iter()
-        .flat_map(|module| ir.endpoints.iter().filter(move |ep| &ep.module == module))
+    let grouped: Vec<&Endpoint> = client_tree_modules(ir)
+        .into_iter()
+        .flat_map(|module| {
+            ir.endpoints
+                .iter()
+                .filter(move |ep| ep.module.as_str() == module)
+        })
         .collect();
     if grouped.is_empty() {
         ir.endpoints
@@ -2111,23 +2178,47 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     }
     let stream_ep = readme_streaming_endpoint(ir);
     let streaming = stream_ep.map_or_else(String::new, |ep| {
+        // The call carries its worked arguments here, exactly as the usage example
+        // does; an argument-free streaming endpoint renders the same empty parens
+        // it always did.
+        let call = readme_call_lines(ir, ep, pkg)
+            .unwrap_or_else(|| format!("{}()", client_call_prefix(ep)));
         format!(
-            "## Streaming\n\nThe SDK supports streaming responses, as well, the response will be a generator that you can loop over.\n\n```python\nfrom {pkg} import {}\n\nclient = {}(\n{streaming_args})\n\n{}()\n```\n\n",
-            ir.client_name,
-            ir.client_name,
-            client_call_prefix(ep)
+            "## Streaming\n\nThe SDK supports streaming responses, as well, the response will be a generator that you can loop over.\n\n```python\nfrom {pkg} import {}\n\nclient = {}(\n{streaming_args})\n\n{call}\n```\n\n",
+            ir.client_name, ir.client_name,
+        )
+    });
+    // The pager section, on the first paginated endpoint in client order. Fern
+    // shows the plain call and then the page-by-page form.
+    let pager_ep = readme_endpoint_order(ir)
+        .into_iter()
+        .find(|ep| ep.emittable && ep.pagination.is_some());
+    let pagination = pager_ep.map_or_else(String::new, |ep| {
+        let prefix = client_call_prefix(ep);
+        format!(
+            "## Pagination\n\nPaginated requests will return a `SyncPager` or `AsyncPager`, which can be used as generators for the underlying object.\n\n```python\nfrom {pkg} import {}\n\nclient = {}(\n{streaming_args})\n\n{prefix}()\n```\n\n```python\n# You can also iterate through pages and access the typed response per page\npager = {prefix}(...)\nfor page in pager.iter_pages():\n    print(page.response)  # access the typed response for each page\n    for item in page:\n        print(item)\n```\n\n",
+            ir.client_name, ir.client_name,
         )
     });
     let contents = include_str!("../assets/scaffolding/README.md.tmpl")
         .replace(
-            "@@STREAMING_TOC@@\n",
+            "@@STREAMING_TOC@@",
             if stream_ep.is_some() {
                 "- [Streaming](#streaming)\n"
             } else {
                 ""
             },
         )
-        .replace("@@STREAMING@@\n", &streaming)
+        .replace("@@STREAMING@@", &streaming)
+        .replace(
+            "@@PAGINATION_TOC@@\n",
+            if pager_ep.is_some() {
+                "- [Pagination](#pagination)\n"
+            } else {
+                ""
+            },
+        )
+        .replace("@@PAGINATION@@\n", &pagination)
         .replace(
             "@@ENVIRONMENTS_TOC@@\n",
             if ir.environment.is_some() {
@@ -2176,7 +2267,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
 fn reference_file(
     env: &Environment<'static>,
     ir: &Ir,
-    modules: &[&String],
+    modules: &[&str],
     tag_types: &BTreeMap<String, String>,
 ) -> Result<GeneratedFile> {
     let pkg = &ir.package_name;
@@ -2196,7 +2287,7 @@ fn reference_file(
         let eps: Vec<&Endpoint> = ir
             .endpoints
             .iter()
-            .filter(|e| &e.module == *module && e.emittable)
+            .filter(|e| e.module.as_str() == *module && e.emittable)
             .collect();
         let title = ir
             .endpoint_module_titles
@@ -2352,6 +2443,21 @@ fn reference_entry(
                 .find(|field| field.py_name == param.name)
                 .map_or(usize::MAX, |field| field.reference_order)
         });
+        // The field a stream condition fixes is not a method argument, but the
+        // reference documents it — as a bare `typing.Literal`, ahead of the rest.
+        if let Some((wire, _)) = ep.stream_condition.as_ref() {
+            if let Some(field) = fields.iter().find(|field| field.wire_name == *wire) {
+                reference_body.insert(
+                    0,
+                    DocParam {
+                        name: field.py_name.clone(),
+                        annotation: "typing.Literal".to_string(),
+                        default: None,
+                        description: field.docstring.clone(),
+                    },
+                );
+            }
+        }
     }
     for dp in ordered_keyword_params(&mp.query, &mp.header, &reference_body) {
         let is_body = reference_body.iter().any(|body| body.name == dp.name);
@@ -7635,24 +7741,31 @@ fn build_example_inner(
     };
     // The call, rendered at logical indent 0 (sync) or 4 (inside `main`, async).
     let call_indent = if is_async { 4 } else { 0 };
+    // A `stream-condition` split shows the streaming half's call in `reference.md`
+    // under both halves; every other writer uses the method's own name.
+    let method_name = if reference {
+        ep.reference_method_name.as_deref().unwrap_or(&ep.method_name)
+    } else {
+        &ep.method_name
+    };
     let receiver = if empty_namespace {
         format!(
             "{}client..{}",
             if is_async { "await " } else { "" },
-            ep.method_name
+            method_name
         )
     } else if module.is_empty() {
         format!(
             "{}client.{}",
             if is_async { "await " } else { "" },
-            ep.method_name
+            method_name
         )
     } else {
         format!(
             "{}client.{}.{}",
             if is_async { "await " } else { "" },
             module_path(module),
-            ep.method_name
+            method_name
         )
     };
     // `render` positions continuation lines but leaves the first line for the
