@@ -1873,6 +1873,7 @@ const CORPORA: &[&Corpus] = &[
     &BLACKADI_OAUTH2,
     &MOSIP_ESIGNET,
     &OPENBANKINGPROJECT_CH_KUNDENBEZIEHUNG,
+    &CYBERARK_CONJUR_API,
 ];
 
 #[test]
@@ -2909,6 +2910,27 @@ const OPENBANKINGPROJECT_CH_KUNDENBEZIEHUNG: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `cyberark-conjur-api`: the CyberArk Conjur 5.3.2 bundle is the corpus's only
+/// source declaring `scheme: mutual` (RFC 8120) — `conjurKubernetesMutualTls`
+/// carries it beside a `basic` scheme and an `apiKey` one, and the document-level
+/// `security` names all three. Fern imports the two it supports and drops the
+/// mutual one without a trace, so this row holds crozier's identical silence to
+/// Fern's output. Its `paths` are relative-file `$ref`s into sibling documents the
+/// pinned URL does not carry, which Fern discards without diagnosing, so the
+/// golden is the endpoint-free client that pairing leaves behind: required
+/// `authorization`, `username` and `password` arguments over eight component
+/// types and no methods.
+const CYBERARK_CONJUR_API: Corpus = Corpus {
+    api: "cyberark-conjur-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3143,6 +3165,11 @@ fn mosip_esignet_matches_fern_output() {
 #[test]
 fn openbankingproject_ch_kundenbeziehung_matches_fern_output() {
     assert_link_ok_corpus_matches(&OPENBANKINGPROJECT_CH_KUNDENBEZIEHUNG);
+}
+
+#[test]
+fn cyberark_conjur_api_matches_fern_output() {
+    assert_link_ok_corpus_matches(&CYBERARK_CONJUR_API);
 }
 
 #[test]
