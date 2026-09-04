@@ -2990,10 +2990,10 @@ const GO_KRATOS_CASBIN_ADMIN: Corpus = Corpus {
 /// `descope-authzcache`: a second, independent witness of the empty Paths Object
 /// from another project — the `protoc-gen-openapi` document Descope's authzcache
 /// service ships declares the same `paths: {}` beside `components.schemas: {}`
-/// and an empty `info.title` that row 102 does, from a different repository under
-/// a different license. Two witnesses is what tells an empty Paths Object apart
-/// from one project's quirk, the way rows 83 and 84 pin the accent-dropping
-/// property rule.
+/// and an empty `info.title` that row 102 does, out of a separately maintained
+/// repository (both are MIT). Two witnesses from unrelated projects is what tells
+/// an empty Paths Object apart from one project's quirk, the way rows 83 and 84
+/// pin the accent-dropping property rule.
 const DESCOPE_AUTHZCACHE: Corpus = Corpus {
     api: "descope-authzcache",
     package_name: "fern",
