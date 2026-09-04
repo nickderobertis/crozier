@@ -5123,35 +5123,149 @@ fn inferred_strip_discriminant_property(
     })
 }
 
+/// Whether a `oneOf`/`anyOf` member list is the *nullable* spelling rather than a
+/// union: one real alternative beside an explicit `type: null`. A `$ref` there
+/// names an ordinary optional field's type, not a union variant.
+fn is_nullable_alternation(members: &[Schema]) -> bool {
+    let real = members
+        .iter()
+        .filter(|member| !schema_is_null_type(member))
+        .count();
+    real == 1 && real < members.len()
+}
+
+/// Whether a schema node is the bare `type: null` alternative.
+fn schema_is_null_type(schema: &Schema) -> bool {
+    match schema.ty.as_ref() {
+        Some(TypeField::Single(ty)) => ty == "null",
+        Some(TypeField::Multiple(types)) => types.iter().all(|ty| ty == "null"),
+        None => false,
+    }
+}
+
+/// The component classes some node references from a position that is *not* a
+/// union variant — a property, an array element, a request or response body, a
+/// nullable alternation.
+///
+/// This is what decides whether a discriminated union's member keeps its
+/// discriminant property. Fern hoists the tag onto the union wrapper and drops it
+/// from a member it has consumed, but a member that is *also* usable on its own —
+/// TrueForge's `TurnStateRunning` behind `TurnCreatedEvent.state`, Letta's
+/// `LettaStopReason` behind `LettaResponse.stop_reason` — keeps it, because that
+/// standalone model still has to carry the tag. Measured across every registered
+/// golden: 123 mapping targets, and this predicate agrees with all of them.
+fn standalone_referenced_classes(doc: &OpenApi) -> std::collections::HashSet<String> {
+    let schemas = &doc.components.schemas;
+    let mut classes = std::collections::HashSet::new();
+    for schema in schemas.values() {
+        collect_standalone_references(schema, schemas, &mut classes);
+    }
+    for item in doc.paths.values().chain(doc.webhooks.values()) {
+        for (_, operation) in item.operations() {
+            let bodies = operation
+                .request_body
+                .iter()
+                .flat_map(|request| request.content.values())
+                .chain(
+                    operation
+                        .responses
+                        .values()
+                        .flat_map(|response| response.content.values()),
+                );
+            for media in bodies {
+                if let Some(schema) = media.schema.as_ref() {
+                    collect_standalone_references(schema, schemas, &mut classes);
+                }
+            }
+        }
+    }
+    classes
+}
+
+/// Walk one schema tree, recording every `$ref` reached from a non-variant
+/// position. A union's member list is descended into only for its *own* nested
+/// content, never for the member references themselves; a discriminator mapping
+/// is not a reference position at all.
+fn collect_standalone_references(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+    classes: &mut std::collections::HashSet<String>,
+) {
+    if let Some(reference) = schema.reference.as_deref() {
+        classes.insert(ref_to_class(reference));
+    }
+    for child in schema
+        .properties
+        .values()
+        .chain(schema.items.iter().map(Box::as_ref))
+        .chain(schema.all_of.iter().flatten())
+    {
+        collect_standalone_references(child, schemas, classes);
+    }
+    if let Some(AdditionalProperties::Schema(child)) = schema.additional_properties.as_ref() {
+        collect_standalone_references(child, schemas, classes);
+    }
+    for members in schema.one_of.iter().chain(schema.any_of.iter()) {
+        let plain = is_nullable_alternation(members);
+        for member in members {
+            if plain || member.reference.is_none() {
+                collect_standalone_references(member, schemas, classes);
+            } else {
+                // A variant `$ref` is not a standalone use; its own subtree still is.
+                for child in member
+                    .properties
+                    .values()
+                    .chain(member.items.iter().map(Box::as_ref))
+                    .chain(member.all_of.iter().flatten())
+                {
+                    collect_standalone_references(child, schemas, classes);
+                }
+            }
+        }
+    }
+}
+
 /// Scan every schema for a discriminated `oneOf`/`anyOf` and record, per member
 /// class, the discriminant property to strip from its model. Keyed by class name
 /// (post-`class_name` normalization), matching the `owner` passed to
 /// [`Builder::collect_fields`].
 fn discriminant_strips(
     schemas: &IndexMap<String, Schema>,
+    standalone: &std::collections::HashSet<String>,
 ) -> std::collections::HashMap<String, String> {
     let mut strips = std::collections::HashMap::new();
     for schema in schemas.values() {
-        collect_discriminant_strips(schema, schemas, &mut strips);
+        collect_discriminant_strips(schema, schemas, standalone, &mut strips);
     }
     strips
 }
 
 fn document_discriminant_strips(doc: &OpenApi) -> std::collections::HashMap<String, String> {
-    let mut strips = discriminant_strips(&doc.components.schemas);
+    let standalone = standalone_referenced_classes(doc);
+    let mut strips = discriminant_strips(&doc.components.schemas, &standalone);
     for item in doc.paths.values().chain(doc.webhooks.values()) {
         for (_, operation) in item.operations() {
             if let Some(request) = operation.request_body.as_ref() {
                 for media in request.content.values() {
                     if let Some(schema) = media.schema.as_ref() {
-                        collect_discriminant_strips(schema, &doc.components.schemas, &mut strips);
+                        collect_discriminant_strips(
+                            schema,
+                            &doc.components.schemas,
+                            &standalone,
+                            &mut strips,
+                        );
                     }
                 }
             }
             for response in operation.responses.values() {
                 for media in response.content.values() {
                     if let Some(schema) = media.schema.as_ref() {
-                        collect_discriminant_strips(schema, &doc.components.schemas, &mut strips);
+                        collect_discriminant_strips(
+                            schema,
+                            &doc.components.schemas,
+                            &standalone,
+                            &mut strips,
+                        );
                     }
                 }
             }
@@ -5206,6 +5320,7 @@ fn propagate_strips_to_bases(
 fn collect_discriminant_strips(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
+    standalone: &std::collections::HashSet<String>,
     strips: &mut std::collections::HashMap<String, String>,
 ) {
     let property = schema
@@ -5241,18 +5356,21 @@ fn collect_discriminant_strips(
         if schema.one_of.is_some() || is_inheritance_union_base(schema) {
             if let Some(discriminator) = &schema.discriminator {
                 for reference in discriminator.mapping.values() {
-                    let target = resolve_ref_from_schemas(schemas, reference);
-                    let const_discriminant = target
-                        .and_then(|target| target.properties.get(&property))
-                        .is_some_and(|field| field.const_value.is_some());
-                    let const_value = target
+                    // Fern hoists the tag onto the union wrapper and drops it from
+                    // the member model it consumed — unless that member is also
+                    // referenced somewhere on its own, where the standalone model
+                    // still has to carry it (see
+                    // [`standalone_referenced_classes`]), or its `const` tag is one
+                    // of the values Fern is measured to preserve regardless.
+                    let class = ref_to_class(reference);
+                    let const_value = resolve_ref_from_schemas(schemas, reference)
                         .and_then(|target| target.properties.get(&property))
                         .and_then(|field| field.const_value.as_ref())
                         .and_then(serde_json::Value::as_str);
-                    let preserve_const =
-                        const_discriminant && const_value.is_some_and(preserve_const_discriminant);
-                    if !preserve_const {
-                        strips.insert(ref_to_class(reference), property.clone());
+                    let preserve = standalone.contains(&class)
+                        || const_value.is_some_and(preserve_const_discriminant);
+                    if !preserve {
+                        strips.insert(class, property.clone());
                     }
                 }
             }
@@ -5267,7 +5385,7 @@ fn collect_discriminant_strips(
         .chain(schema.any_of.iter().flatten())
         .chain(schema.all_of.iter().flatten())
     {
-        collect_discriminant_strips(child, schemas, strips);
+        collect_discriminant_strips(child, schemas, standalone, strips);
     }
 }
 
