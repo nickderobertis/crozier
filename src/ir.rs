@@ -5219,15 +5219,25 @@ fn inferred_strip_discriminant_property(
         let values: Option<Vec<String>> = targets
             .iter()
             .map(|(_, target)| {
-                target
+                // A single-valued tag is a `const` or a one-member `enum`; both
+                // spell the same thing, and TrueForge's content parts use the
+                // second (`type: {enum: ["text"]}`).
+                let field = target
                     .required
                     .iter()
                     .any(|required| required == "type")
                     .then(|| target.properties.get("type"))
-                    .flatten()
-                    .and_then(|field| field.const_value.as_ref())
+                    .flatten()?;
+                field
+                    .const_value
+                    .as_ref()
                     .and_then(serde_json::Value::as_str)
                     .map(str::to_string)
+                    .or_else(|| {
+                        string_enum_values(field)
+                            .filter(|values| values.len() == 1)
+                            .map(|values| values[0].clone())
+                    })
             })
             .collect();
         let values = values?;
