@@ -1882,6 +1882,7 @@ const CORPORA: &[&Corpus] = &[
     &CYCLONEDX_TRANSPARENCY_EXCHANGE,
     &ADYEN_CAPITAL,
     &APIVIDEO_ANDROID_UPLOADER,
+    &TRUEFOUNDRY_TRUEFORGE,
 ];
 
 #[test]
@@ -3075,6 +3076,25 @@ const APIVIDEO_ANDROID_UPLOADER: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `truefoundry-trueforge`: the TrueForge API is the corpus's only source
+/// declaring `x-fern-ignore`, on four Operation Objects, and the only one
+/// declaring Fern's SDK-shaping extensions beside it — `x-fern-sdk-group-name`
+/// (54 sites, eight of them two-level nested groups), `x-fern-sdk-method-name`
+/// (54), `x-fern-pagination` (7) and `x-fern-streaming` (2). It therefore pins
+/// nested sub-clients, cursor pagination and the dual-header ignore policy at
+/// once, over 40 paths and 218 component schemas that carry no `operationId` at
+/// all, so every method name comes from an extension or from the path.
+const TRUEFOUNDRY_TRUEFORGE: Corpus = Corpus {
+    api: "truefoundry-trueforge",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3354,6 +3374,11 @@ fn adyen_capital_matches_fern_output() {
 #[test]
 fn apivideo_android_uploader_matches_fern_output() {
     assert_link_ok_corpus_matches(&APIVIDEO_ANDROID_UPLOADER);
+}
+
+#[test]
+fn truefoundry_trueforge_matches_fern_output() {
+    assert_link_ok_corpus_matches(&TRUEFOUNDRY_TRUEFORGE);
 }
 
 #[test]
