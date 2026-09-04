@@ -210,10 +210,14 @@ Every `gap` row carries exactly one:
 - **`FIXTURE`** — a real-world, redistributable OpenAPI 3 document at an immutable
   ref plausibly declares the feature *and* Fern plausibly emits bytes derived from
   it, so a corpus row can pin it.
-- **`PROBE`** — what Fern does with the feature is unknown and no corpus row could
-  settle it, so the settlement is a locally authored probe recorded in
+- **`PROBE`** — what Fern does with the feature is unknown and no corpus row
+  settles it *today*, so the settlement is a locally authored probe recorded in
   [`fern-limitations.md`](fern-limitations.md). The corpus takes real-world
-  specifications only; a probe is never proposed as a fixture.
+  specifications only; a probe is never proposed as a fixture. Two distinct
+  things put a row in this class — a measurement no single specification can
+  hold, and a shape with no registrable witness — and only the first is
+  permanent; [The probe backlog](#the-probe-backlog) draws that line, and each
+  row's own `settlement` cell says which side it is on.
 - **`UNREACHABLE`** — the shape has no position in a generated Python SDK at all,
   and saying so is the settlement.
 
@@ -520,15 +524,51 @@ against the six region files, and the two tables' agreement with each other — 
 ## The probe backlog
 
 The other 12 `gap` rows whose settlement is not a fixture. **These are probe
-work, not fixture work.** Each asks what Fern does with a shape no real-world
-document can isolate, so no corpus row could pin it — the corpus takes real-world
-specifications only, and a probe is never proposed as a fixture
+work, not fixture work** — the corpus takes real-world specifications only, and a
+probe is never proposed as a fixture
 ([`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md)). When one is
 measured, the result belongs in [`fern-limitations.md`](fern-limitations.md) as a
 row with a verdict, at which point the feature's category here becomes
 `limitations` and it leaves this list. Nothing below is ranked: a probe costs one
 Fern run, so the order to do them in is whichever the next Fern session has
 loaded.
+
+**Two different reasons put a row here, and they are not equally durable.** This
+section used to state one — that each row asks what Fern does with a shape *no
+real-world document can isolate* — and that is now false of part of the list, so
+the distinction is drawn here rather than left to be inferred:
+
+- A **structural** probe is one the rewritten claim still fits. The measurement
+  is a differential or a collision that no single specification can hold: the
+  same schema with and without a keyword, or two declarations a real document
+  would not carry at once. No corpus row could ever pin it, so the row is here
+  permanently — a probe is genuinely its only instrument.
+- A **witness-supply** probe is one where the shape is perfectly isolable in a
+  single document and the issue #188 search simply found no *registrable*
+  declarer of it — none at all, or only ones blocked on redistribution, on an
+  immutable ref, or on Fern's own acceptance. Nothing about the shape prevents a
+  corpus row; the supply of documents does. Such a row leaves this list the day a
+  registrable declarer turns up, and it leaves as a `FIXTURE` rather than as a
+  measured probe.
+
+**Which kind a row is, is its own region row's business, not this section's.**
+Each `settlement` cell in the six region files states the reason its own row
+rests on, in the terms the row's evidence supports, and that cell is the
+authority; this index does not re-adjudicate the twelve. Six of them say
+*witness supply* in those words today — `http-concealed`, `http-gnap`,
+`http-privatetoken` and `http-vapid` in [`security.md`](openapi-surface/security.md),
+and `dollar-dynamic-anchor` and `dollar-dynamic-ref` in
+[`schemas.md`](openapi-surface/schemas.md), each naming every source searched and
+the exact query put to it. Read the rest the same way: a settlement cell that
+names a differential measurement is structural, and one that reports a measured
+zero or a blocked candidate is supply.
+
+**So this backlog's membership is provisional in a way the fixture backlog's is
+not.** A row can leave it without any Fern run at all — `dollar-anchor` did,
+moving to `FIXTURE` on a publisher-owned witness Fern accepts that the corpus may
+not redistribute — so a reader taking the twelve as a fixed body of Fern
+measurements will over-count the probe work by however many of them are waiting
+on a document rather than on a probe.
 
 | key | region | spec location | the Fern measurement that settles it |
 |---|---|---|---|
