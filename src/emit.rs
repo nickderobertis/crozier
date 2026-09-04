@@ -6250,8 +6250,6 @@ impl<'a> ExampleCtx<'a> {
         })
     }
 
-    /// Record a referenced constructor: a tag-scoped type is tracked with its tag
-    /// module (imported separately), a package-root type in the main import set.
     /// Record the first datetime value, and whether it preceded every tag import.
     fn note_datetime(&mut self) {
         if !self.uses_datetime {
@@ -6260,6 +6258,8 @@ impl<'a> ExampleCtx<'a> {
         self.uses_datetime = true;
     }
 
+    /// Record a referenced constructor: a tag-scoped type is tracked with its tag
+    /// module (imported separately), a package-root type in the main import set.
     fn record_ref(&mut self, name: &str) {
         if let Some(tt) = self.tag_decls.iter().find(|tt| {
             tt.decl.name() == name
