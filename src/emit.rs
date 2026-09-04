@@ -1258,9 +1258,11 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // `/widgets` is declared first, not alphabetically). The root `__init__.py`
     // re-sorts its own dynamic-import/`__all__` maps, so its output is unaffected.
 
-    // Root client: `FernApi`/`AsyncFernApi` aggregating the tag clients. Emitted
-    // only when there is at least one tag client to aggregate.
-    if root_emittable || !emittable_modules.is_empty() {
+    // Root client: `FernApi`/`AsyncFernApi` aggregating the tag clients. Fern emits
+    // it unconditionally — an API whose operations it all discarded still gets a
+    // client carrying the credential constructor and no methods
+    // (`cyberark-conjur-api`) — so there is no emptiness guard here.
+    {
         files.push(root_client_file(
             &env,
             RootClientFileCtx {
@@ -1290,9 +1292,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     if !ir.types.is_empty() || !root_tag_types.is_empty() {
         files.push(types_init_file(&env, pkg, &ir.types, root_tag_types)?);
     }
-    if root_emittable || !emittable_modules.is_empty() {
-        files.push(root_init_file(&env, pkg, ir, &emittable_modules)?);
-    }
+    files.push(root_init_file(&env, pkg, ir, &emittable_modules)?);
 
     // Fern treats a leading-dot operationId (`.GetThing`) as an explicit empty
     // endpoint namespace. Its empty tag package lands at the package root and is
@@ -1347,12 +1347,14 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
 
     // Generated `README.md` (usage examples from the first endpoint) and the
     // per-endpoint `reference.md`.
-    if let Some(readme) = readme_file(ir) {
-        files.push(readme);
-    }
-    if let Some(reference) = reference_file(&env, ir, &emittable_modules, &tag_map)? {
-        files.push(reference);
-    }
+    // Fern writes `README.md` whether or not it has a call to demonstrate: an API
+    // whose every operation it discarded gets the file empty
+    // (`cyberark-conjur-api`), never no file at all.
+    files.push(readme_file(ir).unwrap_or_else(|| GeneratedFile {
+        path: PathBuf::from("README.md"),
+        contents: String::new(),
+    }));
+    files.push(reference_file(&env, ir, &emittable_modules, &tag_map)?);
 
     // Project-root scaffolding (pyproject.toml, requirements.txt, metadata).
     files.extend(scaffolding_files(pkg, &ir.project_name));
@@ -1849,7 +1851,8 @@ fn raw_client_call_prefix(ep: &Endpoint) -> String {
 /// The generated `README.md`: mostly static prose with the SDK name/package
 /// substituted and a worked usage example (sync + async) synthesized from the
 /// first endpoint. Compared verbatim (README is not comment-stripped). Emitted
-/// only when there is an endpoint to demonstrate.
+/// only when there is an endpoint to demonstrate; the caller writes the empty file
+/// Fern leaves behind when there is not (`cyberark-conjur-api`).
 fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // Fern demonstrates the first emittable endpoint that has a request body (the
     // most illustrative call). APIs with no body-bearing operations use the first
@@ -2005,16 +2008,17 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
 /// The generated `reference.md`: a per-endpoint reference grouped by tag, each
 /// entry a collapsible `<details>` with an optional description, a worked sync
 /// usage example, and a parameter table. Endpoints without an example (a raw
-/// bytes body) are omitted, exactly as Fern does. Compared verbatim.
+/// bytes body) are omitted, exactly as Fern does; an API with no entry at all still
+/// gets the bare `# Reference` heading Fern writes (`cyberark-conjur-api`).
+/// Compared verbatim.
 fn reference_file(
     env: &Environment<'static>,
     ir: &Ir,
     modules: &[&String],
     tag_types: &BTreeMap<String, String>,
-) -> Result<Option<GeneratedFile>> {
+) -> Result<GeneratedFile> {
     let pkg = &ir.package_name;
     let mut blocks: Vec<String> = vec!["# Reference".to_string()];
-    let mut any = false;
 
     let root_eps: Vec<&Endpoint> = ir
         .endpoints
@@ -2022,7 +2026,6 @@ fn reference_file(
         .filter(|e| e.module.is_empty() && e.emittable)
         .collect();
     for ep in root_eps {
-        any = true;
         blocks.push(reference_entry(env, ir, ep, &ep.module, pkg, tag_types)?);
         blocks.push(String::new());
     }
@@ -2033,7 +2036,6 @@ fn reference_file(
             .iter()
             .filter(|e| &e.module == *module && e.emittable)
             .collect();
-        any = true;
         let title = ir
             .endpoint_module_titles
             .get(*module)
@@ -2045,14 +2047,11 @@ fn reference_file(
             blocks.push(String::new());
         }
     }
-    if !any {
-        return Ok(None);
-    }
     // The last entry's trailing blank line is kept: Fern ends the file with one.
-    Ok(Some(GeneratedFile {
+    Ok(GeneratedFile {
         path: PathBuf::from("reference.md"),
         contents: format!("{}\n", blocks.join("\n")),
-    }))
+    })
 }
 
 /// One parameter row in the `reference.md` table: name, annotation, and the
@@ -2785,8 +2784,21 @@ fn client_wrapper_file(
     c.push_str(&gh_assign);
     c.push_str(&a.assign);
     c.push_str(&get_headers_head);
+    // Fern applies the credential after the global headers for every scheme but
+    // basic, which it applies before them: `squareup.com`, `exa-gate` and
+    // `openepcis-dpp-ready` each write their api-key global headers ahead of a
+    // bearer block declared before those schemes, while `cyberark-conjur-api`
+    // writes its basic block ahead of the `Authorization` api-key header. No
+    // golden pairs basic auth with an *ordinary* promoted header, so this places
+    // it ahead of both kinds — the only ordering the corpus measures.
+    let basic_auth = matches!(auth, Auth::Basic { .. });
+    if basic_auth {
+        c.push_str(&a.header_block);
+    }
     c.push_str(&gh_header);
-    c.push_str(&a.header_block);
+    if !basic_auth {
+        c.push_str(&a.header_block);
+    }
     c.push_str("        return headers\n\n");
     c.push_str(&a.token_method);
     c.push_str("    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:\n        return self._headers\n\n    def get_base_url(self) -> str:\n        return self._base_url\n\n    def get_timeout(self) -> typing.Optional[float]:\n        return self._timeout\n\n    def get_max_retries(self) -> int:\n        return self._max_retries\n\n    def get_stream_reconnection_enabled(self) -> bool:\n        return self._stream_reconnection_enabled if self._stream_reconnection_enabled is not None else True\n\n    def get_max_stream_reconnection_attempts(self) -> typing.Optional[int]:\n        return self._max_stream_reconnection_attempts\n\n\nclass SyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");

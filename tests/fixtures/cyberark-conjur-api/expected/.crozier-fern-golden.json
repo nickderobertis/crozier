@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "cyberark-conjur-api",
+  "corpus_spec_ref": "9d36c7e3808ebe65d69e81d3c3250598927a575c",
+  "corpus_spec_url": "https://raw.githubusercontent.com/jentic/jentic-public-apis/9d36c7e3808ebe65d69e81d3c3250598927a575c/apis/openapi/cyberark.com/conjur-api/5.3.2/openapi.json"
+}

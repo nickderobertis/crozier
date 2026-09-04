@@ -618,7 +618,8 @@ fn form_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
 
 /// Whether every operation carries a non-empty security requirement (its own, or
 /// the document default). An SDK with any unauthenticated operation makes the
-/// credential optional. Returns `false` for a spec with no operations.
+/// credential optional. A spec with no operations falls back to the
+/// document-level `security`, the only declaration it has left.
 fn all_operations_authenticated(doc: &OpenApi) -> bool {
     let mut any = false;
     for item in doc.paths.values() {
@@ -631,7 +632,17 @@ fn all_operations_authenticated(doc: &OpenApi) -> bool {
             }
         }
     }
-    any
+    if !any {
+        // No operation to read: the document-level `security` is then the only
+        // declaration of whether the API is authenticated, and Fern reads it there
+        // — `cyberark-conjur-api`, whose path items Fern discards, still gets the
+        // required credential its root `security` asks for.
+        return doc
+            .security
+            .as_ref()
+            .is_some_and(|reqs| reqs.iter().any(|r| !r.is_empty()));
+    }
+    true
 }
 
 /// One API operation, resolved into the shape the raw client needs.
