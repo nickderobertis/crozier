@@ -210,10 +210,15 @@ Every `gap` row carries exactly one:
 - **`FIXTURE`** — a real-world, redistributable OpenAPI 3 document at an immutable
   ref plausibly declares the feature *and* Fern plausibly emits bytes derived from
   it, so a corpus row can pin it.
-- **`PROBE`** — what Fern does with the feature is unknown and no corpus row could
-  settle it, so the settlement is a locally authored probe recorded in
+- **`PROBE`** — what Fern does with the feature is unknown and no corpus row
+  settles it *today*, so the settlement is a locally authored probe recorded in
   [`fern-limitations.md`](fern-limitations.md). The corpus takes real-world
-  specifications only; a probe is never proposed as a fixture.
+  specifications only; a probe is never proposed as a fixture. Two distinct
+  things put a row in this class — a measurement no single specification can
+  hold, and a shape for which no witness has been found at all — and only the
+  first is
+  permanent; [The probe backlog](#the-probe-backlog) draws that line, and each
+  row's own `settlement` cell says which side it is on.
 - **`UNREACHABLE`** — the shape has no position in a generated Python SDK at all,
   and saying so is the settlement.
 
@@ -271,16 +276,16 @@ for either; each bullet below says where its number comes from.
 | region | features | `golden` | `limitations` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 70 | 42 | 14 | 14 | 13 | 1 | 0 |
-| [`schemas`](openapi-surface/schemas.md) | 116 | 84 | 5 | 27 | 18 | 6 | 3 |
+| [`schemas`](openapi-surface/schemas.md) | 116 | 84 | 5 | 27 | 19 | 5 | 3 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 35 | 11 | 1 | 1 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 35 | 4 | 11 | 7 | 4 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 67 | 58 | 5 | 4 | 2 | 2 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 33 | 1 | 18 | 1 | 0 | 17 |
-| **total** | **402** | **287** | **40** | **75** | **42** | **13** | **20** |
+| **total** | **402** | **287** | **40** | **75** | **43** | **12** | **20** |
 
 The walk enumerated **402** features and landed each in exactly one category:
 **287** `golden`, **40** `limitations`, **75** `gap`. The `gap` column splits by
-settlement class into **42** `FIXTURE`, **13** `PROBE` and **20** `UNREACHABLE`.
+settlement class into **43** `FIXTURE`, **12** `PROBE` and **20** `UNREACHABLE`.
 
 **What the `gap` count means.** 75 is the number of OpenAPI shapes for which
 crozier's behaviour is vouched for by nothing but crozier: no committed golden's
@@ -372,7 +377,7 @@ its Fern 5.20.0 golden byte-matches with no exclusions.
 schemas declare `format: duration` and its Fern 5.20.0 golden byte-matches with
 no exclusions.
 
-All 42 `FIXTURE` gaps remaining across the six regions, in one total order, by [the ranking
+All 43 `FIXTURE` gaps remaining across the six regions, in one total order, by [the ranking
 rubric](#the-ranking-rubric) — crozier sites ascending, then blind-spot reach
 descending, then artifact breadth descending, then witness supply descending,
 then key. Each row publishes the measured value of all four, so the order can be
@@ -392,10 +397,10 @@ checked rather than trusted.
 - **Criterion 4**, witness supply: registered sources the census reports
   declaring the shape, read off the row's own `evidence` cell. A `FIXTURE` gap
   can only score above zero here from a source with no committed golden, which is
-what makes it a gap — 40 of the 42 score zero, and the two that do not name
+what makes it a gap — 41 of the 43 score zero, and the two that do not name
   their one source in that cell.
 
-**The median blind-spot count of this list is 0** — 26 of the 42 entries name no
+**The median blind-spot count of this list is 0** — 27 of the 43 entries name no
 `src/` file at all, which is also why they win criterion 1 outright.
 
 | # | key | region | 1. crozier sites | 2. blind spots | 3. artifacts | 4. witnesses |
@@ -411,37 +416,38 @@ what makes it a gap — 40 of the 42 score zero, and the two that do not name
 | 9 | [`content-schema`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
 | 10 | [`dependent-required`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
 | 11 | [`dependent-schemas`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 12 | [`dollar-defs`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 13 | [`exclusive-maximum-numeric`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 14 | [`format-idn-email`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 15 | [`format-idn-hostname`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 16 | [`format-ipv6`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 17 | [`format-iri`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 18 | [`format-iri-reference`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 19 | [`format-json-pointer`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 20 | [`max-contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 21 | [`min-contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 22 | [`multiple-of`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 23 | [`parameter-style-simple-path-array`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **1** (raw_client.py) | **0** |
-| 24 | [`parameter-style-simple-path-object`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **1** (raw_client.py) | **0** |
-| 25 | [`property-names`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 26 | [`unevaluated-items`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 27 | [`operation-overrides-path-item-parameter`](openapi-surface/parameters.md) | `parameters` | **1** (`src/openapi.rs` 1) | **511** (`src/openapi.rs` 511) | **3** (client.py, raw_client.py, reference.md) | **1** |
-| 28 | [`oauth2-multiple-flows`](openapi-surface/security.md) | `security` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (types/, reference.md) | **0** |
-| 29 | [`parameter-style-deepobject-query-array`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
-| 30 | [`parameter-style-deepobject-query-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
-| 31 | [`parameter-style-form-cookie-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
-| 32 | [`parameter-style-form-query-object`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
-| 33 | [`parameter-style-pipedelimited-query-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
-| 34 | [`parameter-style-spacedelimited-query-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
-| 35 | [`http-hoba`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
-| 36 | [`http-oauth`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
-| 37 | [`http-scram-sha-1`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
-| 38 | [`http-scram-sha-256`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
-| 39 | [`security-optional-requirement-operation`](openapi-surface/security.md) | `security` | **3** (`src/ir.rs` 3) | **201** (`src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **1** |
-| 40 | [`templated-path-segment`](openapi-surface/document-paths.md) | `document-paths` | **3** (`src/ir.rs` 3) | **201** (`src/ir.rs` 201) | **3** (client.py, raw_client.py, reference.md) | **0** |
-| 41 | [`several-path-template-variables`](openapi-surface/document-paths.md) | `document-paths` | **3** (`src/ir.rs` 3) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
-| 42 | [`media-type-range`](openapi-surface/bodies-media.md) | `bodies-media` | **7** (`src/emit.rs` 1, `src/ir.rs` 6) | **462** (`src/emit.rs` 261 + `src/ir.rs` 201) | **4** (types/, client.py, raw_client.py, reference.md) | **0** |
+| 12 | [`dollar-anchor`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 13 | [`dollar-defs`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 14 | [`exclusive-maximum-numeric`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 15 | [`format-idn-email`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 16 | [`format-idn-hostname`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 17 | [`format-ipv6`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 18 | [`format-iri`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 19 | [`format-iri-reference`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 20 | [`format-json-pointer`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 21 | [`max-contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 22 | [`min-contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 23 | [`multiple-of`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 24 | [`parameter-style-simple-path-array`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **1** (raw_client.py) | **0** |
+| 25 | [`parameter-style-simple-path-object`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **1** (raw_client.py) | **0** |
+| 26 | [`property-names`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 27 | [`unevaluated-items`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 28 | [`operation-overrides-path-item-parameter`](openapi-surface/parameters.md) | `parameters` | **1** (`src/openapi.rs` 1) | **511** (`src/openapi.rs` 511) | **3** (client.py, raw_client.py, reference.md) | **1** |
+| 29 | [`oauth2-multiple-flows`](openapi-surface/security.md) | `security` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (types/, reference.md) | **0** |
+| 30 | [`parameter-style-deepobject-query-array`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 31 | [`parameter-style-deepobject-query-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 32 | [`parameter-style-form-cookie-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 33 | [`parameter-style-form-query-object`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 34 | [`parameter-style-pipedelimited-query-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 35 | [`parameter-style-spacedelimited-query-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 36 | [`http-hoba`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
+| 37 | [`http-oauth`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
+| 38 | [`http-scram-sha-1`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
+| 39 | [`http-scram-sha-256`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
+| 40 | [`security-optional-requirement-operation`](openapi-surface/security.md) | `security` | **3** (`src/ir.rs` 3) | **201** (`src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **1** |
+| 41 | [`templated-path-segment`](openapi-surface/document-paths.md) | `document-paths` | **3** (`src/ir.rs` 3) | **201** (`src/ir.rs` 201) | **3** (client.py, raw_client.py, reference.md) | **0** |
+| 42 | [`several-path-template-variables`](openapi-surface/document-paths.md) | `document-paths` | **3** (`src/ir.rs` 3) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 43 | [`media-type-range`](openapi-surface/bodies-media.md) | `bodies-media` | **7** (`src/emit.rs` 1, `src/ir.rs` 6) | **462** (`src/emit.rs` 261 + `src/ir.rs` 201) | **4** (types/, client.py, raw_client.py, reference.md) | **0** |
 
 ### The ranked list against `golden blind spots`
 
@@ -474,7 +480,7 @@ functions named in each verdict are counted from that union.
 `src/emit.rs` — every `src/` file any ranked gap points at is one the blind-spot
 block also lists, and in the same order of size (`openapi.rs` 511 > `emit.rs` 261
 > `ir.rs` 201). Ranking on criterion 2 therefore does not fight the repository's
-own measurement; it refines it, because 26 of the 42 ranked entries reach no
+own measurement; it refines it, because 27 of the 43 ranked entries reach no
 `src/` file at all and so are invisible to a per-file view.
 
 **Where they do not.** The two largest files no ranked gap points at,
@@ -518,10 +524,9 @@ against the six region files, and the two tables' agreement with each other — 
 
 ## The probe backlog
 
-The other 13 `gap` rows whose settlement is not a fixture. **These are probe
-work, not fixture work.** Each asks what Fern does with a shape no real-world
-document can isolate, so no corpus row could pin it — the corpus takes real-world
-specifications only, and a probe is never proposed as a fixture
+The other 12 `gap` rows whose settlement is not a fixture. **These are probe
+work, not fixture work** — the corpus takes real-world specifications only, and a
+probe is never proposed as a fixture
 ([`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md)). When one is
 measured, the result belongs in [`fern-limitations.md`](fern-limitations.md) as a
 row with a verdict, at which point the feature's category here becomes
@@ -529,12 +534,75 @@ row with a verdict, at which point the feature's category here becomes
 Fern run, so the order to do them in is whichever the next Fern session has
 loaded.
 
+**Two different reasons put a row here, and they are not equally durable.** This
+section used to state one — that each row asks what Fern does with a shape *no
+real-world document can isolate* — and that is now false of part of the list, so
+the distinction is drawn here rather than left to be inferred:
+
+- A **structural** probe is one the rewritten claim still fits. The measurement
+  is a differential or a collision that no single specification can hold: the
+  same schema with and without a keyword, or two declarations a real document
+  would not carry at once. No corpus row could ever pin it, so the row is here
+  permanently — a probe is genuinely its only instrument.
+- A **witness-supply** probe is one where the shape is perfectly isolable in a
+  single document and the authoritative issue #188 search found **no witness at
+  all**. Nothing about the shape prevents a corpus row; the supply of documents
+  does. That bar is the whole of it, and it is narrower than it first reads:
+  a witness the search *did* find does not leave a row here, however unusable
+  that document turns out to be. One blocked on redistribution, reachable at no
+  immutable ref, or refused by `fern check` is a screening failure of that
+  candidate rather than evidence the feature has no witness, so it moves the row
+  to `FIXTURE` at once — which is what `dollar-anchor` records. A witness-supply
+  probe therefore leaves this list the day any witness turns up, blocked or not,
+  and it leaves as a `FIXTURE` rather than as a measured probe.
+
+**Which kind a row is, is its own region row's business, not this section's.**
+Each `settlement` cell in the six region files states the reason its own row
+rests on, in the terms the row's evidence supports, and that cell is the
+authority; this index does not re-adjudicate the twelve, and it transcribes no
+per-row verdict here that would go stale when one of those cells is reworded.
+The rows saying *witness supply* in those words come out as a list with
+
+```
+grep -h 'witness.supply' docs/openapi-surface/*.md | grep -oP '^\| `?\K[a-z0-9-]+'
+```
+
+the same way the ledger keys do above. Each row that command returns names every
+source searched and the exact query put to it. How many there are is deliberately
+not written down here: this section states the rule and the derivation, and a
+count beside a command that prints it is the transcription the paragraph above
+promises not to make.
+
+Read the rest the same way: a settlement cell that names a differential
+measurement is structural, and one that reports a search finding no witness at
+all is supply. A cell naming a candidate the search
+*did* find is neither — under the rule above that row belongs in the fixture
+backlog, so a cell like that is a row still to be moved rather than a third kind
+of probe.
+
+**A row can sit here without yet satisfying the rule above, and the gate will not
+say so.** `RankedBacklogTests` reconciles this list's membership and its stated
+size against the region files' `settlement` cells, so a cell that has not caught
+up with the rule reconciles perfectly. Which rows those are is not named here —
+that is each region file's own business, recorded beside its own witness-search
+outcomes, where it is a statement about that file's rows rather than a copy of
+them. The reason the obvious check is not simply written is that it would have to
+be written green: a rule failing when a `witness-blocked` or `witness-found` row
+settles `PROBE` needs every such row moved first, so it belongs to the change
+that moves the last of them.
+
+**So this backlog's membership is provisional in a way the fixture backlog's is
+not.** A row can leave it without any Fern run at all — `dollar-anchor` did,
+moving to `FIXTURE` on a publisher-owned witness Fern accepts that the corpus may
+not redistribute — so a reader taking the twelve as a fixed body of Fern
+measurements will over-count the probe work by however many of them are waiting
+on a document rather than on a probe.
+
 | key | region | spec location | the Fern measurement that settles it |
 |---|---|---|---|
 | [`duplicate-normalized-paths`](openapi-surface/document-paths.md) | `document-paths` | `Paths Object paths equal after template-name normalization` | Generate two path templates that normalize to one name and record which endpoints Fern emits. |
 | [`duplicate-operation-id`](openapi-surface/document-paths.md) | `document-paths` | `Operation Object.operationId duplicated` | Generate two operations sharing one `operationId` and record which method survives. |
 | [`parameter-style-matrix-path-scalar`](openapi-surface/parameters.md) | `parameters` | Parameter Object.style (`matrix`, `in: path`, scalar schema) | Generate a `matrix` path parameter with a scalar schema, beside the ledger's `matrix-array`/`matrix-object` rows. |
-| [`dollar-anchor`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$anchor` | Generate `$anchor` paired with a plain-name `$ref` and record what Fern resolves. |
 | [`dollar-comment`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$comment` | Generate a schema carrying `$comment` and diff against the same schema without it. |
 | [`dollar-dynamic-anchor`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$dynamicAnchor` | Generate a `$dynamicAnchor`/`$dynamicRef` recursion and record what Fern emits. |
 | [`dollar-dynamic-ref`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$dynamicRef` | As `dollar-dynamic-anchor`: the pair is only exercisable together. |

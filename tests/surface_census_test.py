@@ -1518,6 +1518,50 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertIsNotNone(stated, "the probe backlog no longer states its own size")
         self.assertEqual(len(listed), int(stated.group(1)))
 
+    def test_the_documented_witness_supply_derivation_is_the_region_files_own(self) -> None:
+        """The probe backlog derives its witness-supply set; run the command it prints.
+
+        The index deliberately publishes no count beside that command — a number
+        there would be the transcription the section promises not to make — so the
+        command *is* the contract, and an untested one silently returns a shorter
+        list the day a settlement cell is reworded. This runs it, and holds it to
+        the two things that make its answer meaningful: it agrees with the same
+        derivation done here, and every key it names is really a `PROBE` gap row.
+        That last clause is the one with teeth. A row keeping the marker phrase
+        while moving to `FIXTURE` — which is what `dollar-anchor` did — reads as a
+        probe in this list and as fixture work everywhere else, and nothing but
+        this assertion would say so.
+        """
+        command = re.search(
+            r"^grep -h '[^']+' docs/openapi-surface/\*\.md \| grep -oP '[^']+'$",
+            self.doc,
+            re.M,
+        )
+        self.assertIsNotNone(command, "the probe backlog no longer documents its derivation")
+
+        marker = re.search(r"grep -h '([^']+)'", command.group(0)).group(1)
+        derived = {
+            key
+            for key, (_region, cells) in self.entries.items()
+            if re.search(marker, cells[7])
+        }
+        self.assertTrue(derived, "the documented marker matches no settlement cell")
+
+        if not grep_speaks_pcre():
+            self.skipTest("this grep has no PCRE support, so the command cannot run here")
+        run = subprocess.run(
+            ["bash", "-c", command.group(0)], cwd=REPO, capture_output=True, text=True
+        )
+        # A pipeline's exit status is its last command's, and `grep` exits 1 on no
+        # match, so an empty answer has to be a red rather than a quiet zero.
+        self.assertEqual(0, run.returncode, run.stderr)
+        self.assertEqual(derived, set(run.stdout.split()))
+        self.assertEqual(
+            set(),
+            derived - self.gaps("PROBE"),
+            "a row keeps the witness-supply marker but no longer settles PROBE",
+        )
+
     def test_the_stated_registered_and_golden_source_counts_are_measured(self) -> None:
         """124 registered / 107 golden-bearing, measured rather than transcribed."""
         sources = census.registered_sources(FIXTURES, REPO / ".local" / "corpus", False)
