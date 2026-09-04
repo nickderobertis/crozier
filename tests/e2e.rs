@@ -1880,6 +1880,7 @@ const CORPORA: &[&Corpus] = &[
     &DESCOPE_AUTHZCACHE,
     &SWAGGER_PETSTORE,
     &CYCLONEDX_TRANSPARENCY_EXCHANGE,
+    &ADYEN_CAPITAL,
 ];
 
 #[test]
@@ -3039,6 +3040,23 @@ const CYCLONEDX_TRANSPARENCY_EXCHANGE: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `adyen-capital`: the Adyen Capital API is the document the `json-schema-dialect`
+/// witness search named, and the corpus's third source declaring
+/// `jsonSchemaDialect`. Rows 101 and 105 declare it over a webhook-only document
+/// and a `3.1.1` one; this row pins the dialect beside an ordinary populated
+/// Paths Object, so the declaration is measured where endpoints, models and auth
+/// are all generated from schemas the dialect nominally governs.
+const ADYEN_CAPITAL: Corpus = Corpus {
+    api: "adyen-capital",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3308,6 +3326,11 @@ fn swagger_petstore_matches_fern_output() {
 #[test]
 fn cyclonedx_transparency_exchange_matches_fern_output() {
     assert_link_ok_corpus_matches(&CYCLONEDX_TRANSPARENCY_EXCHANGE);
+}
+
+#[test]
+fn adyen_capital_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ADYEN_CAPITAL);
 }
 
 #[test]

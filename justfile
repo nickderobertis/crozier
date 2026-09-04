@@ -161,6 +161,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e descope_authzcache_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e swagger_petstore_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e cyclonedx_transparency_exchange_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e adyen_capital_matches_fern_output
 
 # Format the codebase in place.
 format:
