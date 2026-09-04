@@ -560,6 +560,14 @@ two as "nobody writes this" and the cost is exact and permanent: a `PROBE` close
 by recording Fern's behaviour in prose and never produces a golden, so the shape
 is never byte-compared against Fern again.
 
+Two of the three survive as grounds for a row staying here, and they are what the
+list splits on. The one that does not is *the census cannot detect it*: a
+selector that cannot express a shape has measured nothing about it, so a row
+resting on one is a row whose search has not been done rather than a row with an
+answer. A shortfall in the registered sample becomes grounds only once a search
+of the *world* has been run and found nothing — that is the witness-supply part —
+and a difference no single document can carry is the structural part.
+
 So the list splits in two below, and no row's kind is adjudicated here. Each
 row's own `settlement` cell in its region file states which kind it is, in the
 terms that row's own evidence supports; the two tables are derived from those
