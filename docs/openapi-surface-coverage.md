@@ -575,6 +575,14 @@ cells rather than decided beside them, and `RankedBacklogTests` in
 `tests/surface_census_test.py` reconciles the derivation both ways, so a reworded
 cell fails the gate rather than leaving a table here quietly wrong.
 
+**No row in either part rests on a census selector, and the gate refuses one
+that does.** A selector reporting zero is `gap` evidence — the census's own
+statement that no registered source declares the shape — and it is never on its
+own why a row settles `PROBE`. `RankedBacklogTests` refuses a `PROBE` settlement
+cell that names a selector as its reason, refuses a witness-supply row with no
+line of its region file's witness-search table, and refuses a line there that
+omits a required source or names one with no query against it.
+
 ### Structural probes
 
 **2 rows.** A structural probe's settling measurement is a *difference between
@@ -615,15 +623,6 @@ grep -h 'witness.supply' docs/openapi-surface/*.md | grep -oP '^\| `?\K[a-z0-9-]
 
 the same way the ledger keys do above, and that command is what the table below
 is built from.
-
-**No row here rests on a census selector, and the gate refuses one that does.** A
-selector reporting zero is `gap` evidence — the census's own statement that no
-registered source declares the shape — and it is never on its own why a row
-settles `PROBE`; a census that cannot express a shape has measured nothing about
-it. `RankedBacklogTests` refuses a `PROBE` settlement cell that names a selector
-as its reason, refuses a witness-supply row with no line of its region file's
-witness-search table, and refuses a line there that omits a required source or
-names one with no query against it.
 
 **So this backlog's membership is provisional in a way the fixture backlog's is
 not.** A row can leave it without any Fern run at all — `dollar-anchor` did,
