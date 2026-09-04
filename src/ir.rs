@@ -2572,10 +2572,21 @@ fn query_parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter)
         // `minLength: 1` beside a `pattern` and gets `"x"`, and its
         // `SchemaHandlerPackage` declares one beside a `maxLength` and gets the
         // same, so either of those two keywords is what turns the synthesis on.
+        //
+        // And only for a *bare* constrained string. Both witnesses above declare
+        // nothing on the schema but the type and its keywords, carrying their prose
+        // on the Parameter Object; TrueForge's `agent_id` declares `minLength: 1`
+        // and `maxLength: 64` beside a schema-level `description`, and Fern's worked
+        // call passes the parameter's own name there. (That document is also the
+        // corpus's only OpenAPI 3.1 witness of a constrained query parameter, so the
+        // corpus cannot separate "a described schema" from "a 3.1 document" as the
+        // cause; the narrower reading is taken, and a 3.0 witness with a described
+        // constrained parameter would settle it.)
         let schema = parameter
             .schema
             .as_ref()
             .filter(|schema| schema.ty.as_ref().and_then(TypeField::primary) == Some("string"))
+            .filter(|schema| schema.description.is_none())
             .filter(|schema| schema.max_length.is_some() || schema.pattern.is_some())?;
         let minimum = schema.min_length?;
         Some(if minimum > 1 {
