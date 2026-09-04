@@ -567,10 +567,15 @@ The rows saying *witness supply* in those words come out as a list with
 grep -h 'witness.supply' docs/openapi-surface/*.md | grep -oP '^\| `?\K[a-z0-9-]+'
 ```
 
-the same way the ledger keys do above — six today, each naming every source
-searched and the exact query put to it. Read the rest the same way: a settlement
-cell that names a differential measurement is structural, and one that reports a
-search finding no witness at all is supply. A cell naming a candidate the search
+the same way the ledger keys do above. Each row that command returns names every
+source searched and the exact query put to it. How many there are is deliberately
+not written down here: this section states the rule and the derivation, and a
+count beside a command that prints it is the transcription the paragraph above
+promises not to make.
+
+Read the rest the same way: a settlement cell that names a differential
+measurement is structural, and one that reports a search finding no witness at
+all is supply. A cell naming a candidate the search
 *did* find is neither — under the rule above that row belongs in the fixture
 backlog, so a cell like that is a row still to be moved rather than a third kind
 of probe.
