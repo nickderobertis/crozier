@@ -4527,6 +4527,15 @@ fn first_tag(op: &Operation) -> Option<&str> {
 ///   [`synthesized_method_name`] joins the HTTP method and full route
 ///   (`GET /widgets/{id}` → `get_widgets_id`).
 fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String {
+    // An explicit `x-crozier-sdk-method-name` / `x-fern-sdk-method-name` is the
+    // method name, ahead of every derivation below. It is still snake-cased and
+    // keyword-escaped, so a camelCase override lands as the Python spelling Fern
+    // emits for it.
+    if let Some(name) = op.sdk_method_name() {
+        return naming::escape_python_keyword(naming::sanitize_identifier(
+            &naming::to_snake_case(name),
+        ));
+    }
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
     let method = if op
         .operation_id
@@ -4823,6 +4832,19 @@ fn tag_pascal(tag: &str) -> String {
 /// operationId prefix *does* equal the tag (`widgets_getWidget` under `Widgets`),
 /// both rules agree, so tag-grouped corpora already matched stay byte-identical.
 fn endpoint_module(op: &Operation, url: &str) -> String {
+    // An explicit `x-crozier-sdk-group-name` / `x-fern-sdk-group-name` names the
+    // sub-client outright and outranks every derivation below: it is the author
+    // saying where the method goes, so neither the tag nor the `operationId` is
+    // consulted. A list names a *nested* path, which becomes a `/`-joined module
+    // (`["catalogs", "mcpServers"]` -> `catalogs/mcp_servers`) — the one place a
+    // module holds more than one directory segment.
+    if let Some(segments) = op.sdk_group_name() {
+        return segments
+            .iter()
+            .map(|segment| snake_module(segment))
+            .collect::<Vec<_>>()
+            .join("/");
+    }
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
     if id.is_empty() && first_tag(op).is_none() {
         return String::new();

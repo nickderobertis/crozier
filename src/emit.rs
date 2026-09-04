@@ -87,6 +87,68 @@ enum RefLoc {
     Errors,
 }
 
+/// How many directory segments a client module name holds. A module is normally
+/// one (`videos`), but an `x-crozier-sdk-group-name` list nests it
+/// (`catalogs/mcp_servers`), and the package root is zero.
+fn module_depth(module: &str) -> usize {
+    if module.is_empty() {
+        0
+    } else {
+        module.split('/').count()
+    }
+}
+
+/// A module name as a dotted Python path (`catalogs/mcp_servers` ->
+/// `catalogs.mcp_servers`).
+fn module_path(module: &str) -> String {
+    module.replace('/', ".")
+}
+
+/// The last directory segment of a client module — the one its class names are
+/// built from. Fern names a nested client after its own segment
+/// (`catalogs/mcp_servers` -> `McpServersClient`), not after the whole path.
+fn module_stem(module: &str) -> &str {
+    module.rsplit('/').next().unwrap_or(module)
+}
+
+/// Every client package the module list implies, child lists included: the modules
+/// that own endpoints plus the *intermediate* packages a nested
+/// `x-crozier-sdk-group-name` creates, which own none but still carry a client
+/// exposing their children.
+///
+/// A package's children are ordered the way Fern writes them: those that own
+/// endpoints first, in the order the document declares them, then the pure parents
+/// sorted by name. `catalogs`, `internal` and `settings` land after `agents` …
+/// `skills` in TrueForge's root client for exactly that reason.
+fn module_children(endpoint_modules: &[String]) -> BTreeMap<String, Vec<String>> {
+    let owns_endpoints: BTreeSet<&str> = endpoint_modules.iter().map(String::as_str).collect();
+    let mut owning: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    let mut parents: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    for module in endpoint_modules {
+        let mut path = String::new();
+        for segment in module.split('/') {
+            let parent = path.clone();
+            if !path.is_empty() {
+                path.push('/');
+            }
+            path.push_str(segment);
+            if owns_endpoints.contains(path.as_str()) {
+                let siblings = owning.entry(parent).or_default();
+                if !siblings.contains(&path) {
+                    siblings.push(path.clone());
+                }
+            } else {
+                parents.entry(parent).or_default().insert(path.clone());
+            }
+        }
+    }
+    let mut children: BTreeMap<String, Vec<String>> = owning;
+    for (parent, pure) in parents {
+        children.entry(parent).or_default().extend(pure);
+    }
+    children
+}
+
 /// Collects imports and renders them in Fern's order: group 1 is stdlib
 /// (`import`s then `from`s), group 2 is everything else (`import`s then `from`s),
 /// separated by a blank line. Names within a `from` and the statements within a
@@ -139,33 +201,48 @@ impl Imports {
         }
     }
 
+    /// The dotted prefix that reaches the generated package root from this file.
+    /// A module name may be a *nested* client path (`catalogs/mcp_servers`, from an
+    /// `x-crozier-sdk-group-name` list), so the dot count is measured from the
+    /// module's own depth rather than assumed to be one.
+    fn root_prefix(&self) -> String {
+        let depth = match &self.loc {
+            RefLoc::PackageRoot => 0,
+            RefLoc::RootTypes | RefLoc::Errors => 1,
+            // Fern's explicit empty dotted namespace writes its client files at the
+            // package root but imports `core` as though they sat in a tag package,
+            // so a nameless client module still counts as one level deep.
+            RefLoc::Client(module) => module_depth(module).max(1),
+            RefLoc::TagTypes(module) => module_depth(module) + 1,
+        };
+        ".".repeat(depth + 1)
+    }
+
     /// The relative module path a referenced generated type is imported from,
     /// chosen from this file's [`RefLoc`] and whether the type is tag-scoped.
     fn type_import_path(&self, class: &str) -> String {
         let m = naming::module_name(class);
+        let root = self.root_prefix();
         match self.tag_types.get(class) {
+            // A package-root type lives at `{pkg}.types.{m}`; so does a tag type
+            // whose owning tag is the package root itself. The empty dotted
+            // namespace reads that one from where its files actually sit, at the
+            // package root, rather than from the tag depth its `core` imports use.
             Some(tag) if tag.is_empty() => match &self.loc {
                 RefLoc::RootTypes => format!(".{m}"),
-                RefLoc::TagTypes(_) => format!("...types.{m}"),
                 RefLoc::Client(module) if module.is_empty() => format!(".types.{m}"),
-                RefLoc::Client(_) | RefLoc::Errors => format!("..types.{m}"),
-                RefLoc::PackageRoot => format!(".types.{m}"),
+                _ => format!("{root}types.{m}"),
             },
             // A tag-scoped type lives at `{pkg}.{tag}.types.{m}`.
             Some(tag) => match &self.loc {
                 RefLoc::TagTypes(cur) if cur == tag => format!(".{m}"),
                 RefLoc::Client(cur) if cur == tag => format!(".types.{m}"),
-                RefLoc::TagTypes(_) | RefLoc::Client(_) | RefLoc::Errors => {
-                    format!("..{tag}.types.{m}")
-                }
-                RefLoc::PackageRoot | RefLoc::RootTypes => format!(".{tag}.types.{m}"),
+                _ => format!("{root}{}.types.{m}", module_path(tag)),
             },
             // A package-root type lives at `{pkg}.types.{m}`.
             None => match &self.loc {
                 RefLoc::RootTypes => format!(".{m}"),
-                RefLoc::TagTypes(_) => format!("...types.{m}"),
-                RefLoc::Client(_) | RefLoc::Errors => format!("..types.{m}"),
-                RefLoc::PackageRoot => format!(".types.{m}"),
+                _ => format!("{root}types.{m}"),
             },
         }
     }
@@ -235,22 +312,16 @@ impl Imports {
     }
 
     /// The dotted prefix that reaches the package-root `core` package from this
-    /// file's location. Every generated file sits one package below the root
-    /// (`{pkg}/types/`, `{pkg}/{tag}/`, `{pkg}/errors/`) except a tag's `types/`
-    /// (`{pkg}/{tag}/types/`), which is two deep and needs the extra dot.
-    fn core_prefix(&self) -> &'static str {
-        match self.loc {
-            RefLoc::TagTypes(_) => "...core",
-            RefLoc::RootTypes | RefLoc::Client(_) | RefLoc::Errors => "..core",
-            RefLoc::PackageRoot => ".core",
-        }
+    /// file's location. Most generated files sit one package below the root
+    /// (`{pkg}/types/`, `{pkg}/{tag}/`, `{pkg}/errors/`); a tag's `types/` is two
+    /// deep, and a nested client path (`{pkg}/catalogs/mcp_servers/`) is as deep as
+    /// its own segments, so the count comes from [`Imports::root_prefix`].
+    fn core_prefix(&self) -> String {
+        format!("{}core", self.root_prefix())
     }
 
     fn error_import_path(&self, module: &str) -> String {
-        match self.loc {
-            RefLoc::PackageRoot => format!(".errors.{module}"),
-            _ => format!("..errors.{module}"),
-        }
+        format!("{}errors.{module}", self.root_prefix())
     }
 
     /// Register a `from {..}core.{submodule} import {name}` at the depth this
@@ -263,7 +334,8 @@ impl Imports {
     }
 
     fn add_core_package(&mut self) {
-        let parent = self.core_prefix().trim_end_matches("core");
+        let prefix = self.core_prefix();
+        let parent = prefix.trim_end_matches("core");
         self.add_from(parent, "core");
     }
 
@@ -1096,6 +1168,17 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         contents: String::new(),
     });
 
+    // The client package tree the module names imply. A module is normally one
+    // directory (`videos`); an `x-crozier-sdk-group-name` list nests it
+    // (`catalogs/mcp_servers`), which adds intermediate packages that own no
+    // endpoints and exist only to carry their children.
+    let children = module_children(&ir.endpoint_modules);
+    let parent_modules: Vec<String> = children
+        .keys()
+        .filter(|module| !module.is_empty() && !ir.endpoint_modules.contains(module))
+        .cloned()
+        .collect();
+
     // One file per generated type.
     for decl in &ir.types {
         let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
@@ -1178,13 +1261,16 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
 
     // One package marker per endpoint client module. Fern's `__init__.py` here is
     // a comment-only header (four blank lines once stripped) — unless the tag owns
-    // hoisted inline types, in which case it is a lazy loader re-exporting them.
-    for module in &ir.endpoint_modules {
+    // hoisted inline types, in which case it is a lazy loader re-exporting them,
+    // or it has nested sub-packages, in which case it is a lazy loader over those.
+    for module in ir.endpoint_modules.iter().chain(parent_modules.iter()) {
         if ir.empty_endpoint_namespace && module == "_" {
             continue;
         }
         if let Some(decls) = tag_type_modules.get(module.as_str()) {
             files.push(tag_pkg_init_file(&env, pkg, module, decls)?);
+        } else if let Some(names) = children.get(module.as_str()) {
+            files.push(module_pkg_init_file(&env, pkg, module, names)?);
         } else {
             files.push(GeneratedFile {
                 path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
@@ -1247,11 +1333,52 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 tag_types: &tag_map,
                 global_headers: &ir.global_headers,
                 empty_namespace: false,
+                children: children.get(module.as_str()).map_or(&[][..], Vec::as_slice),
             };
             files.push(client_file(&env, &cx, &eps)?);
             emittable_modules.push(module);
         }
     }
+    // A nested `x-crozier-sdk-group-name` creates *intermediate* packages that own
+    // no operation of their own (`catalogs` over `catalogs/mcp_servers`). Fern
+    // still emits a client for each: an empty raw client, and a high-level one
+    // whose whole body is the lazy sub-client properties.
+    for module in &parent_modules {
+        files.push(raw_client_file(
+            &env,
+            pkg,
+            &ir.client_name,
+            module,
+            &[],
+            &tag_map,
+            false,
+        )?);
+        let cx = ClientCtx {
+            pkg,
+            client_name: &ir.client_name,
+            module,
+            types: &ir.types,
+            tag_decls: &ir.tag_types,
+            auth: &ir.auth,
+            has_environment: ir.environment.is_some(),
+            tag_types: &tag_map,
+            global_headers: &ir.global_headers,
+            empty_namespace: false,
+            children: children.get(module.as_str()).map_or(&[][..], Vec::as_slice),
+        };
+        files.push(client_file(&env, &cx, &[])?);
+    }
+    // The root client aggregates only the *top-level* packages; a nested one is
+    // reached through its parent's property instead.
+    let root_modules: Vec<&String> = children.get("").map_or(Vec::new(), |names| {
+        names
+            .iter()
+            .filter(|name| {
+                emittable_modules.iter().any(|module| *module == *name)
+                    || parent_modules.iter().any(|module| module == *name)
+            })
+            .collect()
+    });
     // `emittable_modules` stays in first-appearance (declaration) order — the order
     // `ir.endpoint_modules` yields — because that is the order Fern lists sub-clients
     // in the root client and `reference.md` (e.g. `widgets` before `gadgets` when
@@ -1268,7 +1395,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             RootClientFileCtx {
                 pkg,
                 client_name: &ir.client_name,
-                modules: &emittable_modules,
+                modules: &root_modules,
                 root_endpoints: if root_emittable { &root_eps } else { &[] },
                 types: &ir.types,
                 tag_decls: &ir.tag_types,
@@ -1292,7 +1419,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     if !ir.types.is_empty() || !root_tag_types.is_empty() {
         files.push(types_init_file(&env, pkg, &ir.types, root_tag_types)?);
     }
-    files.push(root_init_file(&env, pkg, ir, &emittable_modules)?);
+    files.push(root_init_file(&env, pkg, ir, &root_modules)?);
 
     // Fern treats a leading-dot operationId (`.GetThing`) as an explicit empty
     // endpoint namespace. Its empty tag package lands at the package root and is
@@ -1334,6 +1461,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             tag_types: &empty_namespace_tag_map,
             global_headers: &ir.global_headers,
             empty_namespace: true,
+            children: &[],
         };
         files.push(client_file(&env, &cx, &empty_namespace_eps)?);
         let empty_namespace_types: Vec<&TypeDecl> = ir
@@ -1606,6 +1734,30 @@ fn tag_types_init_file(
     })
 }
 
+/// A client package's `__init__.py` when it holds nested sub-packages: the lazy
+/// loader over those sub-packages, the way the package-root `__init__.py` lists
+/// the top-level ones. `catalogs/` over `catalogs/mcp_servers/` is the shape.
+fn module_pkg_init_file(
+    env: &Environment<'static>,
+    pkg: &str,
+    module: &str,
+    children: &[String],
+) -> Result<GeneratedFile> {
+    let names: Vec<String> = children
+        .iter()
+        .map(|child| module_stem(child).to_string())
+        .collect();
+    let type_checking = from_import_block(".", &names, 4);
+    let pairs: Vec<(String, String)> = names
+        .iter()
+        .map(|name| (name.clone(), format!(".{name}")))
+        .collect();
+    Ok(GeneratedFile {
+        path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
+        contents: render_lazy_loader(env, &type_checking, &pairs, &names)?,
+    })
+}
+
 /// The tag package's `__init__.py` when it owns hoisted types: a lazy loader
 /// re-exporting them from the tag's `.types` subpackage. A tag with no hoisted
 /// types keeps the plain comment-only marker instead.
@@ -1698,7 +1850,11 @@ fn root_init_file(
         ));
     }
     for (tag, names) in &hoisted_by_tag {
-        tc.push_str(&from_import_block(&format!(".{tag}"), names, 4));
+        tc.push_str(&from_import_block(
+            &format!(".{}", module_path(tag)),
+            names,
+            4,
+        ));
     }
     tc.push_str(&from_import_block(
         ".version",
@@ -1732,7 +1888,7 @@ fn root_init_file(
     }
     for (tag, names) in &hoisted_by_tag {
         for n in names {
-            pairs.push((n.clone(), format!(".{tag}")));
+            pairs.push((n.clone(), format!(".{}", module_path(tag))));
         }
     }
     pairs.push(("__version__".to_string(), ".version".to_string()));
@@ -1835,7 +1991,7 @@ fn client_call_prefix(ep: &Endpoint) -> String {
     if ep.module.is_empty() {
         format!("client.{method}")
     } else {
-        format!("client.{}.{method}", ep.module)
+        format!("client.{}.{method}", module_path(&ep.module))
     }
 }
 
@@ -1844,7 +2000,10 @@ fn raw_client_call_prefix(ep: &Endpoint) -> String {
     if ep.module.is_empty() {
         format!("response = client.with_raw_response.{method}")
     } else {
-        format!("response = client.{}.with_raw_response.{method}", ep.module)
+        format!(
+            "response = client.{}.with_raw_response.{method}",
+            module_path(&ep.module)
+        )
     }
 }
 
@@ -2278,7 +2437,7 @@ fn reference_entry(
         client_prefix: if module.is_empty() {
             "client.".to_string()
         } else {
-            format!("client.{module}.")
+            format!("client.{}.", module_path(module))
         },
         href: if module.is_empty() {
             format!("src/{pkg}/client.py")
@@ -4823,6 +4982,7 @@ fn root_client_methods(
         tag_types: tag_map,
         global_headers,
         empty_namespace: false,
+        children: &[],
     };
     let mut method_imports = Imports::at(RefLoc::PackageRoot, tag_map);
     let methods = endpoints
@@ -5156,7 +5316,7 @@ impl EnvClientParts {
 /// The tag client class name for a module (`endpoints_put` → `EndpointsPutClient`,
 /// or `AsyncEndpointsPutClient`).
 fn tag_client_name(module: &str, is_async: bool) -> String {
-    let pascal = naming::to_pascal_case(module);
+    let pascal = naming::to_pascal_case(module_stem(module));
     if is_async {
         format!("Async{pascal}Client")
     } else {
@@ -5180,6 +5340,9 @@ struct ClientCtx<'a> {
     global_headers: &'a [GlobalHeader],
     /// Whether this tag client is Fern's explicit empty dotted namespace.
     empty_namespace: bool,
+    /// Nested sub-client modules this client exposes as lazy properties, in the
+    /// order Fern writes them (see [`module_children`]). Empty for a leaf client.
+    children: &'a [String],
 }
 
 /// Assemble a per-tag `client.py`: the sync and async high-level clients that
@@ -5190,12 +5353,16 @@ fn client_file(
     cx: &ClientCtx,
     endpoints: &[&Endpoint],
 ) -> Result<GeneratedFile> {
-    let stem = naming::to_pascal_case(cx.module);
+    let stem = naming::to_pascal_case(module_stem(cx.module));
     let mut imports = Imports::at(RefLoc::Client(cx.module.to_string()), cx.tag_types);
     imports.add_plain("typing");
-    imports.add_from("..core.client_wrapper", "AsyncClientWrapper");
-    imports.add_from("..core.client_wrapper", "SyncClientWrapper");
-    imports.add_from("..core.request_options", "RequestOptions");
+    imports.add_core("client_wrapper", "AsyncClientWrapper");
+    imports.add_core("client_wrapper", "SyncClientWrapper");
+    // A parent client carries no methods of its own, so nothing there takes a
+    // `request_options` argument and Fern does not import the type.
+    if !endpoints.is_empty() {
+        imports.add_core("request_options", "RequestOptions");
+    }
     imports.add_from(".raw_client", &format!("Raw{stem}Client"));
     imports.add_from(".raw_client", &format!("AsyncRaw{stem}Client"));
 
@@ -5208,12 +5375,40 @@ fn client_file(
     } else {
         ""
     };
+    // A client that exposes nested sub-clients annotates them with postponed
+    // annotations and imports their classes under `TYPE_CHECKING` only, the way
+    // the root client already does — the runtime import lives inside each
+    // property so the package's import graph stays acyclic.
+    let mut type_checking = String::new();
+    if !cx.children.is_empty() {
+        type_checking.push_str("\n\nif typing.TYPE_CHECKING:");
+        let mut sorted: Vec<&String> = cx.children.iter().collect();
+        sorted.sort();
+        for child in sorted {
+            let attr = module_stem(child);
+            let mut names = [tag_client_name(child, true), tag_client_name(child, false)];
+            names.sort();
+            type_checking.push_str(&format!(
+                "\n    from .{attr}.client import {}, {}",
+                names[0], names[1]
+            ));
+        }
+    }
+    let future = if cx.children.is_empty() {
+        ""
+    } else {
+        "from __future__ import annotations\n\n"
+    };
     let body = format!("{omit}{sync}\n\n\n{async_class}");
     let contents = render(
         env,
         "raw_client.py",
         cx.module,
-        context! { header => HEADER, imports => imports.render(), body => body },
+        context! {
+            header => HEADER,
+            imports => format!("{future}{}{type_checking}", imports.render()),
+            body => body,
+        },
     )?;
     Ok(GeneratedFile {
         path: PathBuf::from(format!("src/{}/{}/client.py", cx.pkg, cx.module)),
@@ -5231,7 +5426,7 @@ fn client_class(
     is_async: bool,
     imports: &mut Imports,
 ) -> Result<String> {
-    let stem = naming::to_pascal_case(cx.module);
+    let stem = naming::to_pascal_case(module_stem(cx.module));
     let (class_name, wrapper, raw_client_cls) = if is_async {
         (
             format!("Async{stem}Client"),
@@ -5251,11 +5446,23 @@ fn client_class(
         .iter()
         .map(|ep| client_method(cx, ep, is_async, imports))
         .collect();
+    let children: Vec<_> = cx
+        .children
+        .iter()
+        .map(|child| {
+            let attr = module_stem(child);
+            context! {
+                attr => attr,
+                cls => tag_client_name(child, is_async),
+            }
+        })
+        .collect();
     let view = context! {
         class_name => class_name,
         wrapper => wrapper,
         raw_client_cls => raw_client_cls,
         methods => methods,
+        children => children,
     };
     let rendered = render(env, "client_class.py", &class_name, view)?;
     Ok(rendered.trim_end_matches('\n').to_string())
@@ -7235,8 +7442,9 @@ fn build_example_inner(
         )
     } else {
         format!(
-            "{}client.{module}.{}",
+            "{}client.{}.{}",
             if is_async { "await " } else { "" },
+            module_path(module),
             ep.method_name
         )
     };
@@ -7643,20 +7851,24 @@ fn raw_client_file(
         RefLoc::Client(module.to_string())
     };
     let mut imports = Imports::at(loc.clone(), tag_types);
-    // Imports every raw client needs regardless of operation shape.
-    imports.add_plain("typing");
-    imports.add_from("json.decoder", "JSONDecodeError");
-    imports.add_core("api_error", "ApiError");
+    // Imports every raw client needs regardless of operation shape — except for a
+    // parent client, whose two classes hold nothing but the wrapper they were
+    // constructed with, so only the wrapper types are imported.
     imports.add_core("client_wrapper", "AsyncClientWrapper");
     imports.add_core("client_wrapper", "SyncClientWrapper");
-    imports.add_core("http_response", "AsyncHttpResponse");
-    imports.add_core("http_response", "HttpResponse");
-    imports.add_core("request_options", "RequestOptions");
+    if !endpoints.is_empty() {
+        imports.add_plain("typing");
+        imports.add_from("json.decoder", "JSONDecodeError");
+        imports.add_core("api_error", "ApiError");
+        imports.add_core("http_response", "AsyncHttpResponse");
+        imports.add_core("http_response", "HttpResponse");
+        imports.add_core("request_options", "RequestOptions");
+    }
 
     let class_stem = if module.is_empty() && !empty_namespace {
         root_client_name.to_string()
     } else {
-        naming::to_pascal_case(module)
+        naming::to_pascal_case(module_stem(module))
     };
     let sync_class = if module.is_empty() && !empty_namespace {
         format!("Raw{class_stem}")

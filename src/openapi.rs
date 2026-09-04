@@ -314,6 +314,41 @@ pub struct Operation {
     /// `x-crozier-ignore` when both appear (see [`Operation::ignored`]).
     #[serde(rename = "x-fern-ignore", default)]
     ignore_fern: Option<bool>,
+    /// `x-crozier-sdk-group-name`: the sub-client this operation belongs to,
+    /// overriding the tag/`operationId` grouping (canonical spelling). One name, or
+    /// a list naming a nested path (`["catalogs", "mcpServers"]`). Read via
+    /// [`Operation::sdk_group_name`], which also honours the
+    /// `x-fern-sdk-group-name` variant per the
+    /// [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-sdk-group-name", default)]
+    sdk_group_name_crozier: Option<SdkGroupName>,
+    /// `x-fern-sdk-group-name`: the Fern spelling of the group override. Superseded
+    /// by `x-crozier-sdk-group-name` when both appear (see
+    /// [`Operation::sdk_group_name`]).
+    #[serde(rename = "x-fern-sdk-group-name", default)]
+    sdk_group_name_fern: Option<SdkGroupName>,
+    /// `x-crozier-sdk-method-name`: the generated method's name, overriding the one
+    /// derived from `operationId`/summary/route (canonical spelling). Read via
+    /// [`Operation::sdk_method_name`], which also honours the
+    /// `x-fern-sdk-method-name` variant per the
+    /// [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-sdk-method-name", default)]
+    sdk_method_name_crozier: Option<String>,
+    /// `x-fern-sdk-method-name`: the Fern spelling of the method-name override.
+    /// Superseded by `x-crozier-sdk-method-name` when both appear (see
+    /// [`Operation::sdk_method_name`]).
+    #[serde(rename = "x-fern-sdk-method-name", default)]
+    sdk_method_name_fern: Option<String>,
+    /// `x-crozier-pagination`: the cursor/offset pagination contract this operation
+    /// implements (canonical spelling). Read via [`Operation::pagination`], which
+    /// also honours the `x-fern-pagination` variant per the
+    /// [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-pagination", default)]
+    pagination_crozier: Option<Pagination>,
+    /// `x-fern-pagination`: the Fern spelling of the pagination contract. Superseded
+    /// by `x-crozier-pagination` when both appear (see [`Operation::pagination`]).
+    #[serde(rename = "x-fern-pagination", default)]
+    pagination_fern: Option<Pagination>,
     /// A human description; becomes the method docstring's summary line.
     #[serde(default)]
     pub description: Option<String>,
@@ -363,6 +398,107 @@ impl Operation {
     pub fn ignored(&self) -> bool {
         self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
     }
+
+    /// The sub-client path this operation is grouped into, canonicalizing on the
+    /// `x-crozier-sdk-group-name` spelling (see the [dual-header
+    /// policy](self#fern-compatible-extensions)). A bare string is a one-segment
+    /// path; a list names a nested one. Empty segments are dropped, so a group that
+    /// is only whitespace reads as no override at all.
+    #[must_use]
+    pub fn sdk_group_name(&self) -> Option<Vec<&str>> {
+        let declared = self
+            .sdk_group_name_crozier
+            .as_ref()
+            .or(self.sdk_group_name_fern.as_ref())?;
+        let segments: Vec<&str> = match declared {
+            SdkGroupName::One(name) => vec![name.trim()],
+            SdkGroupName::Nested(names) => names.iter().map(|name| name.trim()).collect(),
+        };
+        let segments: Vec<&str> = segments
+            .into_iter()
+            .filter(|segment| !segment.is_empty())
+            .collect();
+        (!segments.is_empty()).then_some(segments)
+    }
+
+    /// The declared method-name override, canonicalizing on the
+    /// `x-crozier-sdk-method-name` spelling (see the [dual-header
+    /// policy](self#fern-compatible-extensions)). A blank value is no override.
+    #[must_use]
+    pub fn sdk_method_name(&self) -> Option<&str> {
+        self.sdk_method_name_crozier
+            .as_deref()
+            .or(self.sdk_method_name_fern.as_deref())
+            .map(str::trim)
+            .filter(|name| !name.is_empty())
+    }
+
+    /// The declared pagination contract, canonicalizing on the
+    /// `x-crozier-pagination` spelling (see the [dual-header
+    /// policy](self#fern-compatible-extensions)).
+    #[must_use]
+    pub fn pagination(&self) -> Option<&Pagination> {
+        self.pagination_crozier
+            .as_ref()
+            .or(self.pagination_fern.as_ref())
+    }
+}
+
+/// The value of `x-crozier-sdk-group-name` / `x-fern-sdk-group-name`: one group
+/// name, or a list naming a nested path of them.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+pub enum SdkGroupName {
+    /// A single group name (`sessions`).
+    One(String),
+    /// A nested path of group names (`["catalogs", "mcpServers"]`).
+    Nested(Vec<String>),
+}
+
+/// The value of `x-crozier-pagination` / `x-fern-pagination`: the response and
+/// request members that drive a generated pager. Only the cursor form is modelled,
+/// which is the one Fern's Python generator emits a `SyncPager`/`AsyncPager` for.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct Pagination {
+    /// The request property holding the cursor, as a dotted path
+    /// (`$request.starting_after`).
+    #[serde(default)]
+    pub cursor: Option<String>,
+    /// The response property holding the next cursor
+    /// (`$response.next_cursor`).
+    #[serde(default)]
+    pub next_cursor: Option<String>,
+    /// The response property holding the page's items (`$response.data`).
+    #[serde(default)]
+    pub results: Option<String>,
+    /// The request property holding the page offset, for the offset form.
+    #[serde(default)]
+    pub offset: Option<String>,
+}
+
+impl Pagination {
+    /// The request-side cursor property name, with the `$request.` prefix stripped.
+    #[must_use]
+    pub fn cursor_property(&self) -> Option<&str> {
+        self.cursor.as_deref().map(strip_pagination_prefix)
+    }
+
+    /// The response-side next-cursor property name, with `$response.` stripped.
+    #[must_use]
+    pub fn next_cursor_property(&self) -> Option<&str> {
+        self.next_cursor.as_deref().map(strip_pagination_prefix)
+    }
+
+    /// The response-side results property name, with `$response.` stripped.
+    #[must_use]
+    pub fn results_property(&self) -> Option<&str> {
+        self.results.as_deref().map(strip_pagination_prefix)
+    }
+}
+
+/// Strip the `$request.` / `$response.` selector prefix a pagination path carries.
+fn strip_pagination_prefix(path: &str) -> &str {
+    path.split_once('.').map_or(path, |(_, rest)| rest)
 }
 
 /// An operation parameter (path/query/header/cookie). A `$ref` parameter carries
