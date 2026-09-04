@@ -559,17 +559,21 @@ the distinction is drawn here rather than left to be inferred:
 **Which kind a row is, is its own region row's business, not this section's.**
 Each `settlement` cell in the six region files states the reason its own row
 rests on, in the terms the row's evidence supports, and that cell is the
-authority; this index does not re-adjudicate the twelve. Six of them say
-*witness supply* in those words today — `http-concealed`, `http-gnap`,
-`http-privatetoken` and `http-vapid` in [`security.md`](openapi-surface/security.md),
-and `dollar-dynamic-anchor` and `dollar-dynamic-ref` in
-[`schemas.md`](openapi-surface/schemas.md), each naming every source searched and
-the exact query put to it. Read the rest the same way: a settlement cell that
-names a differential measurement is structural, and one that reports a search
-finding no witness at all is supply. A cell naming a candidate the search *did*
-find is neither — under the rule above that row belongs in the fixture backlog,
-so a cell like that is a row still to be moved rather than a third kind of
-probe.
+authority; this index does not re-adjudicate the twelve, and it transcribes no
+per-row verdict here that would go stale when one of those cells is reworded.
+The rows saying *witness supply* in those words come out as a list with
+
+```
+grep -h 'witness.supply' docs/openapi-surface/*.md | grep -oP '^\| `?\K[a-z0-9-]+'
+```
+
+the same way the ledger keys do above — six today, each naming every source
+searched and the exact query put to it. Read the rest the same way: a settlement
+cell that names a differential measurement is structural, and one that reports a
+search finding no witness at all is supply. A cell naming a candidate the search
+*did* find is neither — under the rule above that row belongs in the fixture
+backlog, so a cell like that is a row still to be moved rather than a third kind
+of probe.
 
 **So this backlog's membership is provisional in a way the fixture backlog's is
 not.** A row can leave it without any Fern run at all — `dollar-anchor` did,

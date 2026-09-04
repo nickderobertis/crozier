@@ -599,20 +599,23 @@ wired the way `scripts/generate-fern-fixture.sh` wires one; the launcher on PATH
 is `fern` 5.113.1 and `fern.config.json` pins the CLI it actually runs at 5.67.1,
 the same `FERN_CLI_VERSION` that script defaults to.
 
-**A `witness-found` row beside a `settlement` of `PROBE` is the expected
-intermediate state, not an inconsistency.** This subsection records what is true
-of the world; the `settlement` cell records what is true of the corpus. Only the
-change that registers the witness as a corpus row moves the settlement, so
-between that change and this one the two disagree on purpose.
+**An `outcome` here and a `settlement` in the entry table are two different
+statements, and they are allowed to disagree.** This subsection records what is
+true of the world; the `settlement` cell records what class of work the row
+needs. What each outcome implies for that cell is
+[`openapi-surface-coverage.md`](../openapi-surface-coverage.md#the-probe-backlog)'s
+rule, not this file's, and this file follows it rather than restating it. Two of
+its consequences are worth naming where a reader meets the outcomes:
 
-**A `witness-blocked` row is the one exception, and `dollar-anchor` is it.** Its
-settlement moved to `FIXTURE` with no corpus row registered, because what the
-search found is a document Fern accepts that the corpus may not vendor. The
-`settlement` cell names the class of work a row needs, and finding a real-world
-declarer — even one this repository cannot redistribute — is what tells a reader
-the work is finding a second document rather than authoring a probe. The
-blocked document's own bar is unchanged: nothing registers until a declarer
-arrives under a redistribution-compatible licence.
+- `dollar-anchor` reads `witness-blocked` and settles `FIXTURE`. Its settlement
+  moved with no corpus row registered, because a witness found and then blocked
+  is a screening failure of that document rather than evidence the feature has
+  none. The blocked document's own bar is untouched by that: nothing registers
+  until a declarer arrives under a redistribution-compatible licence.
+- `dollar-comment` reads `witness-found` and still settles `PROBE`. That is the
+  transient case — the witness is redistributable and Fern accepts it, so the
+  row is waiting on the change that registers it as a corpus row, which is what
+  moves the settlement.
 
 | key | outcome | witness | immutable ref | license | fern check | sources searched and the exact query used against each |
 |---|---|---|---|---|---|---|
