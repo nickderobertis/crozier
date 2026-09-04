@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "descope-authzcache",
+  "corpus_spec_ref": "0a333ee3b1152b869c3b41061e43aa0b63ed68a0",
+  "corpus_spec_url": "https://raw.githubusercontent.com/descope/authzcache/0a333ee3b1152b869c3b41061e43aa0b63ed68a0/pkg/authzcache/proto/v1/doc/authz.openapi.yaml"
+}

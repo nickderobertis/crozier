@@ -1874,6 +1874,10 @@ const CORPORA: &[&Corpus] = &[
     &MOSIP_ESIGNET,
     &OPENBANKINGPROJECT_CH_KUNDENBEZIEHUNG,
     &CYBERARK_CONJUR_API,
+    &ADYEN_REPORT_NOTIFICATION,
+    &ADYEN_MANAGED_RISK_NOTIFICATION,
+    &GO_KRATOS_CASBIN_ADMIN,
+    &DESCOPE_AUTHZCACHE,
 ];
 
 #[test]
@@ -2931,6 +2935,76 @@ const CYBERARK_CONJUR_API: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `adyen-report-notification`: Adyen's "Report webhooks" document is the
+/// corpus's first source that omits `paths` altogether — a valid OpenAPI 3.1
+/// document whose only API surface is one webhook
+/// (`balancePlatform.report.created`) over five component schemas. Every other
+/// registered source declares a Paths Object, so this row pins what crozier
+/// generates when the field the whole endpoint pipeline reads is absent.
+const ADYEN_REPORT_NOTIFICATION: Corpus = Corpus {
+    api: "adyen-report-notification",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `adyen-managed-risk-notification`: Adyen's "Managed risk webhooks" document
+/// declares eight top-level `webhooks` and no `paths` at all, the webhook-only
+/// shape 3.1 added. Row 69 (`tamoss`) declares webhooks beside paths; this row
+/// is the first registered source where the webhooks stand alone, so its golden
+/// pins that Fern emits no webhook payload model and crozier emits the same
+/// endpoint-free client. It also declares `jsonSchemaDialect`.
+const ADYEN_MANAGED_RISK_NOTIFICATION: Corpus = Corpus {
+    api: "adyen-managed-risk-notification",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `go-kratos-casbin-admin`: the protoc-gen-openapi document the go-kratos
+/// Casbin example ships is one of the corpus's two independent witnesses of an
+/// *empty* Paths Object — `paths: {}` beside `components.schemas: {}` and an
+/// empty `info.title` — which is a different shape from omitting `paths`
+/// entirely (rows 100 and 101). `descope-authzcache` (row 103) is the other.
+/// Its golden pins the empty client and documentation scaffolding Fern leaves
+/// behind.
+const GO_KRATOS_CASBIN_ADMIN: Corpus = Corpus {
+    api: "go-kratos-casbin-admin",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `descope-authzcache`: a second, independent witness of the empty Paths Object
+/// from another project — the `protoc-gen-openapi` document Descope's authzcache
+/// service ships declares the same `paths: {}` beside `components.schemas: {}`
+/// and an empty `info.title` that row 102 does, out of a separately maintained
+/// repository (both are MIT). Two witnesses from unrelated projects is what tells
+/// an empty Paths Object apart from one project's quirk, the way rows 83 and 84
+/// pin the accent-dropping property rule.
+const DESCOPE_AUTHZCACHE: Corpus = Corpus {
+    api: "descope-authzcache",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3170,6 +3244,26 @@ fn openbankingproject_ch_kundenbeziehung_matches_fern_output() {
 #[test]
 fn cyberark_conjur_api_matches_fern_output() {
     assert_link_ok_corpus_matches(&CYBERARK_CONJUR_API);
+}
+
+#[test]
+fn adyen_report_notification_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ADYEN_REPORT_NOTIFICATION);
+}
+
+#[test]
+fn adyen_managed_risk_notification_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ADYEN_MANAGED_RISK_NOTIFICATION);
+}
+
+#[test]
+fn go_kratos_casbin_admin_matches_fern_output() {
+    assert_link_ok_corpus_matches(&GO_KRATOS_CASBIN_ADMIN);
+}
+
+#[test]
+fn descope_authzcache_matches_fern_output() {
+    assert_link_ok_corpus_matches(&DESCOPE_AUTHZCACHE);
 }
 
 #[test]

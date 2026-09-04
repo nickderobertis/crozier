@@ -59,7 +59,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 31 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 99 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 103 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -247,8 +247,8 @@ The six region files, read as one body of work. Two measurements feed it:
   snapshot is the one every region file's evidence was taken from, pinned by
   digest in
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
-  rather than restated here. It reads **130** registered sources, of which
-  **113** carry a committed golden.
+  rather than restated here. It reads **134** registered sources, of which
+  **117** carry a committed golden.
 - **`just fixtures-coverage`**, for criterion 2 alone. That recipe is outside
   `just check` — it needs network and runs the corpus instrumented — so its
   per-file counts are a dated snapshot (2026-08-25), stated once, in the join
@@ -275,21 +275,21 @@ for either; each bullet below says where its number comes from.
 | [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 35 | 11 | 1 | 1 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 35 | 4 | 11 | 7 | 4 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 67 | 58 | 5 | 4 | 2 | 2 | 0 |
-| [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 25 | 1 | 26 | 0 | 9 | 17 |
-| **total** | **402** | **279** | **40** | **83** | **41** | **22** | **20** |
+| [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 28 | 1 | 23 | 0 | 6 | 17 |
+| **total** | **402** | **282** | **40** | **80** | **41** | **19** | **20** |
 
 The walk enumerated **402** features and landed each in exactly one category:
-**279** `golden`, **40** `limitations`, **83** `gap`. The `gap` column splits by
-settlement class into **41** `FIXTURE`, **22** `PROBE` and **20** `UNREACHABLE`.
+**282** `golden`, **40** `limitations`, **80** `gap`. The `gap` column splits by
+settlement class into **41** `FIXTURE`, **19** `PROBE` and **20** `UNREACHABLE`.
 
-**What the `gap` count means.** 83 is the number of OpenAPI shapes for which
+**What the `gap` count means.** 80 is the number of OpenAPI shapes for which
 crozier's behaviour is vouched for by nothing but crozier: no committed golden's
 source declares the shape, so no byte comparison against Fern touches it, and
 [`fern-limitations.md`](fern-limitations.md) has never measured Fern on it, so
-nothing contradicts whatever crozier does. `just check` is green over all 83
+nothing contradicts whatever crozier does. `just check` is green over all 80
 either way. It is not a defect count — 20 of them (`UNREACHABLE`) have no
 position in a generated Python SDK at all, and saying so is their settlement.
-The two backlogs below are the other 63.
+The two backlogs below are the other 60.
 
 ### Reconciliation
 
@@ -326,7 +326,7 @@ grammar excludes map keys that are *names* by design, so no selector can reach
 it. The path-side counterpart, `document-paths`'s `duplicate-normalized-paths`,
 is both enumerated **and** measured — by the `openapi.paths:normalized-collision`
 predicate selector, which normalizes each path key's template expressions and
-reports zero across all 129 registered sources. So the inconsistency between the
+reports zero across all 134 registered sources. So the inconsistency between the
 two regions is now only that the schema-name side has no counterpart predicate:
 what the `schemas` region needs is a selector over `components.schemas` keys under
 `naming::class_name`, not a hand measurement. Were the row written it would be
@@ -517,7 +517,7 @@ against the six region files, and the two tables' agreement with each other — 
 
 ## The probe backlog
 
-The other 22 `gap` rows whose settlement is not a fixture. **These are probe
+The other 19 `gap` rows whose settlement is not a fixture. **These are probe
 work, not fixture work.** Each asks what Fern does with a shape no real-world
 document can isolate, so no corpus row could pin it — the corpus takes real-world
 specifications only, and a probe is never proposed as a fixture
@@ -535,11 +535,8 @@ loaded.
 | [`json-schema-dialect`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | `OpenAPI Object.jsonSchemaDialect` | Generate a dialect-sensitive Schema Object under an explicit `jsonSchemaDialect` and against a no-dialect control. |
 | [`openapi-version-3.0.4`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | OpenAPI Object.openapi (`3.0.4`) | Generate otherwise identical `3.0.3` and `3.0.4` documents and diff the trees. |
 | [`openapi-version-3.1.1`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | OpenAPI Object.openapi (`3.1.1`) | Generate otherwise identical `3.1.0` and `3.1.1` documents and diff the trees. |
-| [`paths-absent`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | `OpenAPI Object.paths` | Generate valid 3.1 documents carrying only `components`, and only `webhooks`, each omitting `paths`. |
-| [`paths-empty`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | `Paths Object (empty)` | Generate an otherwise minimal document carrying `paths: {}`. |
 | [`reference-description`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | `Reference Object.description` | Generate a non-Schema Reference Object carrying `description` and the same reference without it, and diff. |
 | [`reference-summary`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | `Reference Object.summary` | Generate a non-Schema Reference Object carrying `summary` and the same reference without it, and diff. |
-| [`webhooks-without-paths`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | `OpenAPI Object.webhooks without paths` | Generate a valid 3.1 document whose only API surface is one webhook and compare the complete trees. |
 | [`x-fern-or-crozier-ignore`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | `Operation and Schema Objects.x-fern-ignore / x-crozier-ignore` | Generate each spelling, and both together, on an Operation and on a component Schema, and record the precedence. |
 | [`parameter-style-matrix-path-scalar`](openapi-surface/parameters.md) | `parameters` | Parameter Object.style (`matrix`, `in: path`, scalar schema) | Generate a `matrix` path parameter with a scalar schema, beside the ledger's `matrix-array`/`matrix-object` rows. |
 | [`dollar-anchor`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$anchor` | Generate `$anchor` paired with a plain-name `$ref` and record what Fern resolves. |

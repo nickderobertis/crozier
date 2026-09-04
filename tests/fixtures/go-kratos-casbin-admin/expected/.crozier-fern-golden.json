@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "go-kratos-casbin-admin",
+  "corpus_spec_ref": "61daed1ec4d5a94d689bc8fab9bc960c6af73ead",
+  "corpus_spec_url": "https://raw.githubusercontent.com/go-kratos/examples/61daed1ec4d5a94d689bc8fab9bc960c6af73ead/casbin/app/admin/openapi.yaml"
+}
