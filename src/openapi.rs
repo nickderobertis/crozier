@@ -344,12 +344,16 @@ pub struct Operation {
     /// and buffered forms. Read via [`Operation::streaming`], which also honours
     /// the `x-fern-streaming` variant per the
     /// [dual-header policy](self#fern-compatible-extensions).
+    ///
+    /// Boxed: `Streaming` embeds two inline `Option<Schema>` and is rarely present,
+    /// while `PathItem` holds an `Option<Operation>` per method — see
+    /// [`path_item_stays_small_enough_for_a_1mib_windows_stack`](self::tests).
     #[serde(rename = "x-crozier-streaming", default)]
-    streaming_crozier: Option<Streaming>,
+    streaming_crozier: Option<Box<Streaming>>,
     /// `x-fern-streaming`: the Fern spelling of the streaming contract. Superseded
     /// by `x-crozier-streaming` when both appear (see [`Operation::streaming`]).
     #[serde(rename = "x-fern-streaming", default)]
-    streaming_fern: Option<Streaming>,
+    streaming_fern: Option<Box<Streaming>>,
     /// `x-crozier-pagination`: the cursor/offset pagination contract this operation
     /// implements (canonical spelling). Read via [`Operation::pagination`], which
     /// also honours the `x-fern-pagination` variant per the
@@ -460,8 +464,8 @@ impl Operation {
     #[must_use]
     pub fn streaming(&self) -> Option<&Streaming> {
         self.streaming_crozier
-            .as_ref()
-            .or(self.streaming_fern.as_ref())
+            .as_deref()
+            .or(self.streaming_fern.as_deref())
     }
 }
 
@@ -2443,5 +2447,27 @@ paths:
         let op = doc.paths["/x/{id}"].get.as_ref().unwrap();
         assert_eq!(op.parameters.len(), 1);
         assert_eq!(op.parameters[0].description.as_deref(), Some("overridden"));
+    }
+
+    /// `PathItem` holds one `Option<Operation>` per HTTP method, and serde's derived
+    /// `visit_map` keeps a separate stack local for every field it may fill — so the
+    /// deserializer's frame grows with `size_of::<PathItem>()`, not with document
+    /// depth. Windows gives `main` a 1 MiB stack (Linux 8 MiB), so a `PathItem` that
+    /// is merely large overflows there while passing everywhere else: two unboxed
+    /// `Option<Streaming>` extension fields once took `Operation` to 4_696 bytes and
+    /// `PathItem` to 28_200, and a debug build blew the Windows stack parsing an
+    /// ordinary fixture. Keep large, rarely-present payloads behind a `Box`. This
+    /// ceiling is a headroom check rather than an exact size — widen it only with a
+    /// deliberate reason, and never by un-boxing.
+    #[test]
+    fn path_item_stays_small_enough_for_a_1mib_windows_stack() {
+        let path_item = std::mem::size_of::<PathItem>();
+        assert!(
+            path_item <= 8_192,
+            "PathItem grew to {path_item} bytes (Operation {}); serde's visit_map \
+             frame scales with it and overflows the 1 MiB Windows main stack. Box a \
+             large rarely-present field rather than raising this ceiling.",
+            std::mem::size_of::<Operation>()
+        );
     }
 }
