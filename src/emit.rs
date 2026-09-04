@@ -18,7 +18,7 @@ use serde::Serialize;
 use crate::error::{Error, Result};
 use crate::ir::{
     Auth, BodyField, Endpoint, EndpointPagination, ErrorClass, Field, GlobalHeader, Ir, ObjectType,
-    Prim, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
+    Prim, QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::ExtraFields;
@@ -7266,6 +7266,23 @@ fn build_documentation_example(
     )
 }
 
+/// The rendered value of a required query parameter in a header-first worked
+/// example — the ordering a wildcard or form request body takes. The value is the
+/// one the ordinary ordering renders: a literal the type cannot hold is not an
+/// example Fern shows, so an enum parameter whose example names no member falls
+/// back to the enum's own synthesized value rather than to the raw literal.
+fn header_first_query_example(ctx: &mut ExampleCtx, qp: &QueryParam) -> Example {
+    if let Some(example) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
+        return ctx
+            .value_from_example(&qp.type_ref, example)
+            .unwrap_or_else(|| ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name)));
+    }
+    if let TypeRef::List(inner) = &qp.type_ref {
+        return Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))]);
+    }
+    ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
+}
+
 #[allow(
     clippy::too_many_arguments,
     reason = "example emission needs endpoint, client, value context, and documentation-mode inputs"
@@ -7415,16 +7432,10 @@ fn build_example_inner(
             .iter()
             .filter(|qp| !ep.wildcard_binary_response && qp.required)
         {
-            let value = if let Some(example) = qp.example.as_ref().filter(|_| qp.example_is_scalar)
-            {
-                ctx.value_from_example(&qp.type_ref, example)
-                    .unwrap_or_else(|| Example::Atom(example.clone()))
-            } else if let TypeRef::List(inner) = &qp.type_ref {
-                Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
-            } else {
-                ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
-            };
-            args.push((Some(qp.py_name.clone()), value));
+            args.push((
+                Some(qp.py_name.clone()),
+                header_first_query_example(ctx, qp),
+            ));
         }
     }
     if header_first_request && reference {
@@ -7433,16 +7444,10 @@ fn build_example_inner(
             .iter()
             .filter(|qp| !ep.wildcard_binary_response && qp.required)
         {
-            let value = if let Some(example) = qp.example.as_ref().filter(|_| qp.example_is_scalar)
-            {
-                ctx.value_from_example(&qp.type_ref, example)
-                    .unwrap_or_else(|| Example::Atom(example.clone()))
-            } else if let TypeRef::List(inner) = &qp.type_ref {
-                Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
-            } else {
-                ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
-            };
-            args.push((Some(qp.py_name.clone()), value));
+            args.push((
+                Some(qp.py_name.clone()),
+                header_first_query_example(ctx, qp),
+            ));
         }
         for hp in ep
             .header_params
