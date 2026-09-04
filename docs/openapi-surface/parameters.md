@@ -202,8 +202,13 @@ row's answer belongs in [`../fern-limitations.md`](../fern-limitations.md).
 
 ### Witness search (issue #188)
 
-This region has one `PROBE` row, `parameter-style-matrix-path-scalar`, and it
-reached that class for a reason no other row of this file rests on: a real-world
+This subsection was written when `parameter-style-matrix-path-scalar` was this
+region's one `PROBE` row. **It is not one now:** the same change settles it as a
+`FIXTURE` gap on the evidence below, so the region carries no `PROBE` row at all
+and the index publishes zero for it. Which class the row is in is its own
+`settlement` cell in the entry table above, not a count restated here.
+
+It reached `PROBE` for a reason no other row of this file rests on: a real-world
 document declaring the shape is already **registered here** — `appng-rest-api`,
 [`CORPUS.md`](../../tests/fixtures/CORPUS.md) row 70 — and carries no committed
 golden, so the census sees the declaration while no byte comparison does. The
