@@ -214,11 +214,11 @@ Every `gap` row carries exactly one:
   settles it *today*, so the settlement is a locally authored probe recorded in
   [`fern-limitations.md`](fern-limitations.md). The corpus takes real-world
   specifications only; a probe is never proposed as a fixture. Two distinct
-  things put a row in this class — a measurement no single specification can
-  hold, and a shape for which no witness has been found at all — and only the
-  first is
-  permanent; [The probe backlog](#the-probe-backlog) draws that line, and each
-  row's own `settlement` cell says which side it is on.
+  things put a row in this class — a **structural** measurement no single
+  specification can hold, and a **witness-supply** shortfall, a shape for which
+  no witness has been found at all — and only the first is
+  permanent; [The probe backlog](#the-probe-backlog) draws that line and names
+  the two kinds, and each row's own `settlement` cell says which it is.
 - **`UNREACHABLE`** — the shape has no position in a generated Python SDK at all,
   and saying so is the settlement.
 
@@ -476,7 +476,7 @@ functions named in each verdict are counted from that union.
 | `src/` file | printed | by tier | ranked gaps pointing at it | verdict |
 |---|---:|---:|---|---|
 | `src/settings.rs` | 864 | all-e2e 434, non-e2e 430 | none | **Neither.** `explain` 148, `resolve` 44, `merge` 37, `merge_generator` 28, `load` 21, `read_config` 20: the CLI > env > `crozier.yml` layering behind `crozier config`. No OpenAPI shape reaches it and no Fern golden can — Fern reads a different config format — so neither a corpus row nor a Fern probe is the instrument. The journeys are, and they already reach 434 of the 448. |
-| `src/openapi.rs` | 511 | all-e2e 221, non-e2e 290 | 5 — #30 `operation-overrides-path-item-parameter`, #38 `http-hoba`, #39 `http-oauth`, #40 `http-scram-sha-1`, #41 `http-scram-sha-256` | **Agrees, and the walk found the rest as probes.** #30 is `normalize_parameters`, 3 regions, and #38–#41 — `http-hoba`, `http-oauth`, `http-scram-sha-1` and `http-scram-sha-256` — are the one `#[serde(other)]` scheme fallback beside it, four IANA scheme members that collapse through the same arm. The largest block, `filter_ignored` 72, is the walk's `x-fern-or-crozier-ignore` — now `golden`, on corpus row 108's four `x-fern-ignore` operations, though golden-classified is not golden-*exhausted*: one witness reaches the Operation-Object arm and leaves the schema arm and the `x-crozier-*` precedence to unit tests. `filter_by_audience` 47 + `audiences` 8 belong to `audience-dual-header-policy`, classified `golden`: golden-classified is not golden-*exhausted*, since the two audience goldens declare 8 sites between them and leave the rest of the branch space to unit tests. `collect_schema_refs` 46 + `expand_schema_closure` 32 + `operation_schema_seed` 24 is `$ref`-closure pruning under `reference-ref` (`golden`); `load` 26 + `visit_seq` 7 + `de_composition` 5 are malformed-document deserialization paths the corpus excludes by taking only documents Fern generates. |
+| `src/openapi.rs` | 511 | all-e2e 221, non-e2e 290 | 5 — #30 `operation-overrides-path-item-parameter`, #38 `http-hoba`, #39 `http-oauth`, #40 `http-scram-sha-1`, #41 `http-scram-sha-256` | **Agrees, and accounts for the rest.** #30 is `normalize_parameters`, 3 regions, and #38–#41 — `http-hoba`, `http-oauth`, `http-scram-sha-1` and `http-scram-sha-256` — are the one `#[serde(other)]` scheme fallback beside it, four IANA scheme members that collapse through the same arm. The largest block, `filter_ignored` 72, is the walk's `x-fern-or-crozier-ignore` — now `golden`, on corpus row 108's four `x-fern-ignore` operations, though golden-classified is not golden-*exhausted*: one witness reaches the Operation-Object arm and leaves the schema arm and the `x-crozier-*` precedence to unit tests. `filter_by_audience` 47 + `audiences` 8 belong to `audience-dual-header-policy`, classified `golden`: golden-classified is not golden-*exhausted*, since the two audience goldens declare 8 sites between them and leave the rest of the branch space to unit tests. `collect_schema_refs` 46 + `expand_schema_closure` 32 + `operation_schema_seed` 24 is `$ref`-closure pruning under `reference-ref` (`golden`); `load` 26 + `visit_seq` 7 + `de_composition` 5 are malformed-document deserialization paths the corpus excludes by taking only documents Fern generates. |
 | `src/cli.rs` | 292 | all-e2e 133, non-e2e 159 | none | **Neither**, as `src/settings.rs`: `do_config` 60, `run` 43, `do_init` 26, `do_generate` 12 are the command surface, not document behaviour. |
 | `src/emit.rs` | 261 | all-e2e 29, non-e2e 232 | 1 — #45 `media-type-range` | **A shape the walk missed.** #45 names `append_request_call_args`, which is not among the blind regions at all. Those are example rendering — `raw_type_str_ctx` 40, `example_matches_type` 24, `build_example_inner` 23, `named_value_inner` 13, `value_from_example` 12, `example_from_json` 6 — and streaming docstrings, `client_stream_docstring` 11 + `raw_stream_docstring` 10. Every `example`/`examples` field is classified `golden`, but the walk enumerates the *field*; those branches switch on the JSON value *kind* an example holds, and example values are not in the grammar's closed list of valued selectors, so no `gap` row could have named them. |
 | `src/ir.rs` | 201 | all-e2e 9, non-e2e 192 | 15 — #31–#45 | **Agrees on the file, misses the shapes.** The blind regions are type-lowering conjunctions: `resolve_schema_pointer` 25, `nested_array_element` 25, `hoist_union_variant` 24, `ref_to_class` 22, `prop_type_ref` 20, `path_group` 15. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own; it is their *combinations* that no golden reaches, and the census emits one selector per field and none per conjunction. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); nobody ran one over schema-composition combinations. |
@@ -546,78 +546,90 @@ row with a verdict, at which point the feature's category here becomes
 Fern run, so the order to do them in is whichever the next Fern session has
 loaded.
 
-**Two different reasons put a row here, and they are not equally durable.** This
-section used to state one — that each row asks what Fern does with a shape *no
-real-world document can isolate* — and that is now false of part of the list, so
-the distinction is drawn here rather than left to be inferred:
+**What a row here records, and what it does not.** This section used to justify
+the whole list in one sentence — that each row asks what Fern does with a shape
+*no real-world document can isolate*. That was always a stronger claim than the
+evidence under it, and the reclassifications this document has since absorbed
+have made it false of most of what remains. What the rows actually record is one
+of three weaker things: that **no registered source supplies a witness**, that
+**the census cannot detect one**, or that **the measurement is a difference no
+single document can carry**. Only the third is a statement about the world; the
+first is a statement about this repository's own sample of registered sources,
+and the second about the reach of its own instrument. Read either of those first
+two as "nobody writes this" and the cost is exact and permanent: a `PROBE` closes
+by recording Fern's behaviour in prose and never produces a golden, so the shape
+is never byte-compared against Fern again.
 
-- A **structural** probe is one the rewritten claim still fits. The measurement
-  is a differential or a collision that no single specification can hold: the
-  same schema with and without a keyword, or two declarations a real document
-  would not carry at once. No corpus row could ever pin it, so the row is here
-  permanently — a probe is genuinely its only instrument.
-- A **witness-supply** probe is one where the shape is perfectly isolable in a
-  single document and the authoritative issue #188 search found **no witness at
-  all**. Nothing about the shape prevents a corpus row; the supply of documents
-  does. That bar is the whole of it, and it is narrower than it first reads:
-  a witness the search *did* find does not leave a row here, however unusable
-  that document turns out to be. One blocked on redistribution, reachable at no
-  immutable ref, or refused by `fern check` is a screening failure of that
-  candidate rather than evidence the feature has no witness, so it moves the row
-  to `FIXTURE` at once — which is what `dollar-anchor` records. A witness-supply
-  probe therefore leaves this list the day any witness turns up, blocked or not,
-  and it leaves as a `FIXTURE` rather than as a measured probe.
+So the list splits in two below, and no row's kind is adjudicated here. Each
+row's own `settlement` cell in its region file states which kind it is, in the
+terms that row's own evidence supports; the two tables are derived from those
+cells rather than decided beside them, and `RankedBacklogTests` in
+`tests/surface_census_test.py` reconciles the derivation both ways, so a reworded
+cell fails the gate rather than leaving a table here quietly wrong.
 
-**Which kind a row is, is its own region row's business, not this section's.**
-Each `settlement` cell in the six region files states the reason its own row
-rests on, in the terms the row's evidence supports, and that cell is the
-authority; this index does not re-adjudicate the twelve, and it transcribes no
-per-row verdict here that would go stale when one of those cells is reworded.
-The rows saying *witness supply* in those words come out as a list with
+### Structural probes
 
-```
-grep -h 'witness.supply' docs/openapi-surface/*.md | grep -oP '^\| `?\K[a-z0-9-]+'
-```
-
-the same way the ledger keys do above. Each row that command returns names every
-source searched and the exact query put to it. How many there are is deliberately
-not written down here: this section states the rule and the derivation, and a
-count beside a command that prints it is the transcription the paragraph above
-promises not to make.
-
-Read the rest the same way: a settlement cell that names a differential
-measurement is structural, and one that reports a search finding no witness at
-all is supply. A cell naming a candidate the search
-*did* find is neither — under the rule above that row belongs in the fixture
-backlog, so a cell like that is a row still to be moved rather than a third kind
-of probe.
-
-**A row can sit here without yet satisfying the rule above, and the gate will not
-say so.** `RankedBacklogTests` reconciles this list's membership and its stated
-size against the region files' `settlement` cells, so a cell that has not caught
-up with the rule reconciles perfectly. Which rows those are is not named here —
-that is each region file's own business, recorded beside its own witness-search
-outcomes, where it is a statement about that file's rows rather than a copy of
-them. The reason the obvious check is not simply written is that it would have to
-be written green: a rule failing when a `witness-blocked` or `witness-found` row
-settles `PROBE` needs every such row moved first, so it belongs to the change
-that moves the last of them.
-
-**So this backlog's membership is provisional in a way the fixture backlog's is
-not.** A row can leave it without any Fern run at all — `dollar-anchor` did,
-moving to `FIXTURE` on a publisher-owned witness Fern accepts that the corpus may
-not redistribute, and `format-relative-json-pointer` has since left the same way —
-so a reader taking the remaining rows as a fixed body of Fern measurements will
-over-count the probe work by however many of them are waiting on a document rather
-than on a probe. A row can also leave it *straight to `golden`*, which
-`dollar-comment` did: its witness was redistributable, Fern accepted it, and
-registering it as corpus row 109 settled the shape with a byte-matching golden
-rather than with a probe.
+**2 rows.** A structural probe's settling measurement is a *difference between
+two documents, or a collision inside one*: the same schema with and without a
+keyword, two path templates that normalize to a single name, two declarations a
+document written to be served has no occasion to carry at once. No single
+specification can hold it, so no corpus row could pin it however many documents
+were searched, and these rows are here permanently — a probe is genuinely their
+only instrument. This is the subset the withdrawn sentence really described, and
+it is much smaller than that sentence implied.
 
 | key | region | spec location | the Fern measurement that settles it |
 |---|---|---|---|
 | [`duplicate-normalized-paths`](openapi-surface/document-paths.md) | `document-paths` | `Paths Object paths equal after template-name normalization` | Generate two path templates that normalize to one name and record which endpoints Fern emits. |
 | [`duplicate-operation-id`](openapi-surface/document-paths.md) | `document-paths` | `Operation Object.operationId duplicated` | Generate two operations sharing one `operationId` and record which method survives. |
+
+### Witness-supply probes
+
+**7 rows.** A witness-supply probe's shape is perfectly isolable in a single
+document. Nothing about the shape prevents a corpus row; the supply of documents
+does — the authoritative issue #188 search found **no witness at all**, and the
+row's own region file records that search as a line of its `### Witness search
+(issue #188)` table naming every source put to it and the exact query used
+against each. That bar is narrower than it first reads: a witness the search
+*did* find does not leave a row here, however unusable that document turns out to
+be. One blocked on redistribution, reachable at no immutable ref, or refused by
+`fern check` is a screening failure of that candidate rather than evidence the
+feature has no witness, so it moves the row to `FIXTURE` at once — which is what
+`dollar-anchor` records. A witness-supply probe therefore leaves this list the
+day any witness turns up, blocked or not, and it leaves as a `FIXTURE` rather
+than as a measured probe.
+
+The rows come out of the six region files with
+
+```
+grep -h 'witness.supply' docs/openapi-surface/*.md | grep -oP '^\| `?\K[a-z0-9-]+'
+```
+
+the same way the ledger keys do above, and that command is what the table below
+is built from.
+
+**No row here rests on a census selector, and the gate refuses one that does.** A
+selector reporting zero is `gap` evidence — the census's own statement that no
+registered source declares the shape — and it is never on its own why a row
+settles `PROBE`; a census that cannot express a shape has measured nothing about
+it. `RankedBacklogTests` refuses a `PROBE` settlement cell that names a selector
+as its reason, refuses a witness-supply row with no line of its region file's
+witness-search table, and refuses a line there that omits a required source or
+names one with no query against it.
+
+**So this backlog's membership is provisional in a way the fixture backlog's is
+not.** A row can leave it without any Fern run at all — `dollar-anchor` did,
+moving to `FIXTURE` on a publisher-owned witness Fern accepts that the corpus may
+not redistribute, and `format-relative-json-pointer` has since left the same way —
+so a reader taking these rows as a fixed body of Fern measurements will
+over-count the probe work by however many are waiting on a document rather than
+on a probe. A row can also leave it *straight to `golden`*, which `dollar-comment`
+did: its witness was redistributable, Fern accepted it, and registering it as
+corpus row 109 settled the shape with a byte-matching golden rather than with a
+probe.
+
+| key | region | spec location | the Fern measurement that settles it |
+|---|---|---|---|
 | [`dollar-dynamic-anchor`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$dynamicAnchor` | Generate a `$dynamicAnchor`/`$dynamicRef` recursion and record what Fern emits. |
 | [`dollar-dynamic-ref`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$dynamicRef` | As `dollar-dynamic-anchor`: the pair is only exercisable together. |
 | [`dollar-vocabulary`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$vocabulary` | Generate a schema under a custom dialect declaring `$vocabulary`. |
