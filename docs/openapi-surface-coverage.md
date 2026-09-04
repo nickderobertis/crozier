@@ -326,7 +326,7 @@ grammar excludes map keys that are *names* by design, so no selector can reach
 it. The path-side counterpart, `document-paths`'s `duplicate-normalized-paths`,
 is both enumerated **and** measured — by the `openapi.paths:normalized-collision`
 predicate selector, which normalizes each path key's template expressions and
-reports zero across all 127 registered sources. So the inconsistency between the
+reports zero across all 129 registered sources. So the inconsistency between the
 two regions is now only that the schema-name side has no counterpart predicate:
 what the `schemas` region needs is a selector over `components.schemas` keys under
 `naming::class_name`, not a hand measurement. Were the row written it would be
