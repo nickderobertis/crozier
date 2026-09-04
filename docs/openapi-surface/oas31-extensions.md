@@ -124,15 +124,23 @@ PY
 
 ### Witness search (issue #188)
 
-Nine of this region's `PROBE` rows rest on "0 declarations across 124 registered
-sources" — a statement about a 124-document sample, not about the world. This
-subsection records what searching the world for each of them actually found, so a
-reader can check the search rather than take its conclusion. It changes no
-`category`, no `settlement` and no count: the search records what is true of the
-world, and reclassification records what is true of the corpus. **A row below
-reading `witness-found` while its `settlement` above still reads `PROBE` is the
-expected intermediate state until that reclassification lands, not an
-inconsistency.**
+This table was written when nine of this region's `PROBE` rows rested on "0
+declarations across 124 registered sources" — a statement about a 124-document
+sample, not about the world. It records what searching the world for each of them
+actually found, so a reader can check the search rather than take its conclusion.
+The search itself changes no `category`, no `settlement` and no count: the search
+records what is true of the world, and reclassification records what is true of
+the corpus. **A row below reading `witness-found` while its `settlement` above
+still reads `PROBE` is the expected intermediate state until that reclassification
+lands, not an inconsistency.**
+
+**Three of the nine have since been reclassified.** `paths-absent`,
+`paths-empty` and `webhooks-without-paths` are `golden` above, each on a witness
+this table names that is now a registered
+[`CORPUS.md`](../../tests/fixtures/CORPUS.md) row carrying a committed golden —
+rows 100, 102 and 101. The other six remain `PROBE` pending their own
+reclassification; nothing in this table changed to make those three move, only
+what the corpus holds.
 
 `outcome` is one of four words. `witness-found` — a named real-world document
 declares the feature, at a credential-free HTTPS URL ending `.json`, `.yaml` or
