@@ -5888,3 +5888,125 @@ components:
         files["src/acme/types/maybe_hash.py"]
     );
 }
+
+#[test]
+fn consent_shapes_drive_the_form_convert_and_documentation_dict_paths() {
+    // The shapes the `mosip-esignet` and `openbankingproject-ch-kundenbeziehung`
+    // goldens pin, in one operation: a urlencoded field that is a `$ref` to a named
+    // model, an enum query parameter whose example names no member, and a body
+    // example carrying an empty array, an empty object, and a map wide enough to
+    // wrap.
+    let files = render(
+        r#"openapi: 3.0.1
+info: { title: Consent, version: 1.0.0 }
+paths:
+  /token:
+    post:
+      operationId: token
+      tags: [oidc]
+      parameters:
+        - in: query
+          name: scope
+          required: true
+          example: openid profile
+          schema: { type: string, enum: [openid, profile] }
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema: { $ref: '#/components/schemas/TokenRequest' }
+            example:
+              grant_type: authorization_code
+              claims:
+                permittedAuthorizeScopes: []
+                userClaims: {}
+                labels:
+                  aVeryLongLabelKeyThatForcesWrapping: a rather long label value string
+                  second: value
+      responses:
+        '200':
+          description: ok
+          content: { application/json: { schema: { $ref: '#/components/schemas/Consent' } } }
+components:
+  schemas:
+    UserClaim:
+      type: object
+      properties:
+        essential: { type: boolean }
+    Claim:
+      type: object
+      required: [permittedAuthorizeScopes, labels]
+      properties:
+        permittedAuthorizeScopes: { type: array, items: { type: string } }
+        userClaims: { $ref: '#/components/schemas/UserClaim' }
+        labels: { type: object, additionalProperties: { type: string } }
+    TokenRequest:
+      type: object
+      required: [grant_type, claims, metadata]
+      properties:
+        grant_type: { type: string }
+        claims: { $ref: '#/components/schemas/Claim' }
+        metadata: { type: object, additionalProperties: { type: string } }
+        subject: { allOf: [{ $ref: '#/components/schemas/UserClaim' }], nullable: true }
+    Consent:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string }
+"#,
+    );
+
+    // The urlencoded `claims` field is a `$ref` to `Claim`, so it serializes
+    // through the annotation converter exactly as a JSON body field would, while
+    // the scalar `grant_type` beside it goes onto the wire raw.
+    let raw = &files["src/acme/oidc/raw_client.py"];
+    assert!(
+        raw.contains(
+            "\"claims\": convert_and_respect_annotation_metadata(object_=claims, annotation=Claim, direction=\"write\"),"
+        ),
+        "{raw}"
+    );
+    assert!(raw.contains("\"grant_type\": grant_type,"), "{raw}");
+    // A nullable model field carries the `Optional` wrapper into the annotation.
+    assert!(
+        raw.contains(
+            "object_=subject, annotation=typing.Optional[TokenRequestSubject], direction=\"write\""
+        ),
+        "{raw}"
+    );
+
+    let readme = &files["README.md"];
+    // An enum query parameter whose example (`openid profile`) names no member
+    // takes the enum's own synthesized value rather than the raw literal.
+    assert!(
+        readme.contains("    scope=TokenRequestScope.OPENID,\n"),
+        "{readme}"
+    );
+    assert!(!readme.contains("openid profile"), "{readme}");
+    // An empty array carries no value, so the example is synthesized from the
+    // field name; an empty object selects nothing, so `user_claims` is absent.
+    assert!(
+        readme.contains("        permitted_authorize_scopes=[\n            \"permittedAuthorizeScopes\"\n        ],\n"),
+        "{readme}"
+    );
+    assert!(!readme.contains("user_claims"), "{readme}");
+    // The markdown writers end a length-wrapped dict without Python's magic
+    // trailing comma.
+    assert!(
+        readme.contains(concat!(
+            "        labels={\n",
+            "            \"aVeryLongLabelKeyThatForcesWrapping\": \"a rather long label value string\",\n",
+            "            \"second\": \"value\"\n",
+            "        },\n",
+        )),
+        "{readme}"
+    );
+
+    // The reference writer expands a map example even where it would fit on one
+    // line, and that flavor survives the markdown dict conversion.
+    let reference = &files["reference.md"];
+    assert!(
+        reference.contains("    metadata={\n        \"key\": \"value\"\n    },\n"),
+        "{reference}"
+    );
+}
