@@ -164,6 +164,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e adyen_capital_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apivideo_android_uploader_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e truefoundry_trueforge_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e volview_backend_contract_matches_fern_output
 
 # Format the codebase in place.
 format:

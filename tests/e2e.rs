@@ -1900,6 +1900,7 @@ const CORPORA: &[&Corpus] = &[
     &ADYEN_CAPITAL,
     &APIVIDEO_ANDROID_UPLOADER,
     &TRUEFOUNDRY_TRUEFORGE,
+    &VOLVIEW_BACKEND_CONTRACT,
 ];
 
 #[test]
@@ -3112,6 +3113,25 @@ const TRUEFOUNDRY_TRUEFORGE: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `volview-backend-contract`: the neutral backend contract VolView's own client
+/// calls is the corpus's only source declaring `$comment`, the JSON Schema
+/// 2020-12 annotation keyword — `components.schemas.TaskSpec` and
+/// `components.schemas.AnnotationsFile` each carry one. It is also the only
+/// registered source whose `jsonSchemaDialect` names the JSON Schema 2020-12
+/// meta-schema rather than the OAS 3.1 dialect rows 101, 105 and 106 name, so
+/// this row pins that crozier ignores an annotation-only schema keyword exactly
+/// where Fern does, over nine paths and 15 component schemas.
+const VOLVIEW_BACKEND_CONTRACT: Corpus = Corpus {
+    api: "volview-backend-contract",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3396,6 +3416,11 @@ fn apivideo_android_uploader_matches_fern_output() {
 #[test]
 fn truefoundry_trueforge_matches_fern_output() {
     assert_link_ok_corpus_matches(&TRUEFOUNDRY_TRUEFORGE);
+}
+
+#[test]
+fn volview_backend_contract_matches_fern_output() {
+    assert_link_ok_corpus_matches(&VOLVIEW_BACKEND_CONTRACT);
 }
 
 #[test]
