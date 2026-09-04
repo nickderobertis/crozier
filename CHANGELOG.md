@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.59](https://github.com/nickderobertis/crozier/compare/v0.0.58...v0.0.59) - 2026-09-04
+
+### Added
+
+- *(fixtures)* settle the Reference and vendor-extension probe rows against real-world witnesses ([#203](https://github.com/nickderobertis/crozier/pull/203))
+
 ## [0.0.58](https://github.com/nickderobertis/crozier/compare/v0.0.57...v0.0.58) - 2026-09-04
 
 ### Added
