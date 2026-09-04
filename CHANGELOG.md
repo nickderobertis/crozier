@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.55](https://github.com/nickderobertis/crozier/compare/v0.0.54...v0.0.55) - 2026-09-04
+
+### Added
+
+- *(fixtures)* settle the concealed, dpop, gnap and hoba scheme probe rows against witnesses ([#194](https://github.com/nickderobertis/crozier/pull/194))
+
 ## [0.0.54](https://github.com/nickderobertis/crozier/compare/v0.0.53...v0.0.54) - 2026-08-26
 
 ### Added
