@@ -783,6 +783,17 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    with `force_multipart=True`; `application/x-www-form-urlencoded` sends all fields
    via `data={...}` with the form content-type header. `form-bodies` matches in full
    (the reference table reproduces Fern's `core.File` `from __future__` artifact).
+   **A urlencoded body loses to a JSON one offered beside it**, the way
+   `multipart/related` already does: `swagger-petstore` (row 104) declares
+   `application/json`, `application/xml` and `application/x-www-form-urlencoded` on
+   five request bodies, every one of them a `$ref` to a single component schema, and
+   Fern's golden sends `json=` with no content-type override. Selecting the form
+   spelling there costs more than the transport: flattening the body into fields
+   loses the component's identity, so an inline `status` enum coins a
+   request-scoped `AddPetRequestStatus` where Fern reuses the component's own
+   `PetStatus`. `multipart/form-data` keeps its priority over JSON — no registered
+   source offers the two together, so nothing measures Fern there
+   ([`ir::resolve_request_body`]).
 7. **Discriminated unions (implemented).** A `oneOf`/`anyOf` with a `discriminator`
    (`propertyName` + `mapping`) becomes Fern's `{Union}_{Variant}` wrapper models —
    each carrying the discriminant as a `typing.Literal[..]` field plus the referenced
