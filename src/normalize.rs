@@ -167,6 +167,13 @@ mod tests {
     }
 
     #[test]
+    fn keeps_hash_inside_apostrophe_quoted_string() {
+        // Apostrophe-quoted Python appears in the goldens (a docstring example
+        // whose own literal is double-quoted), so the scan opens on `'` too.
+        assert_eq!(strip_python_comments("a = '#nope'  # c\n"), "a = '#nope'\n");
+    }
+
+    #[test]
     fn keeps_hash_inside_docstring() {
         let src = "def f():\n    \"\"\"\n    a # b\n    \"\"\"\n    return 1\n";
         assert_eq!(strip_python_comments(src), src);
