@@ -493,7 +493,7 @@ impl Streaming {
     pub fn condition_property(&self) -> Option<&str> {
         self.stream_condition
             .as_deref()
-            .map(strip_pagination_prefix)
+            .map(strip_selector_prefix)
             .filter(|property| !property.is_empty())
     }
 }
@@ -543,24 +543,26 @@ impl Pagination {
     /// The request-side cursor property name, with the `$request.` prefix stripped.
     #[must_use]
     pub fn cursor_property(&self) -> Option<&str> {
-        self.cursor.as_deref().map(strip_pagination_prefix)
+        self.cursor.as_deref().map(strip_selector_prefix)
     }
 
     /// The response-side next-cursor property name, with `$response.` stripped.
     #[must_use]
     pub fn next_cursor_property(&self) -> Option<&str> {
-        self.next_cursor.as_deref().map(strip_pagination_prefix)
+        self.next_cursor.as_deref().map(strip_selector_prefix)
     }
 
     /// The response-side results property name, with `$response.` stripped.
     #[must_use]
     pub fn results_property(&self) -> Option<&str> {
-        self.results.as_deref().map(strip_pagination_prefix)
+        self.results.as_deref().map(strip_selector_prefix)
     }
 }
 
-/// Strip the `$request.` / `$response.` selector prefix a pagination path carries.
-fn strip_pagination_prefix(path: &str) -> &str {
+/// Strip the `$request.` / `$response.` prefix a selector path carries — the
+/// spelling both `x-crozier-pagination`'s cursor paths and
+/// `x-crozier-streaming`'s `stream-condition` use.
+fn strip_selector_prefix(path: &str) -> &str {
     path.split_once('.').map_or(path, |(_, rest)| rest)
 }
 

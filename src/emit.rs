@@ -4473,13 +4473,13 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(RequestBody::Inline(fields)) => {
             lines.push("            json={".to_string());
             for f in fields {
-                if let Some((wire, value)) = ep
+                // The field a stream condition fixes is written last, whatever
+                // position the schema declares it in.
+                if ep
                     .stream_condition
                     .as_ref()
-                    .filter(|(wire, _)| *wire == f.wire_name)
+                    .is_some_and(|(wire, _)| *wire == f.wire_name)
                 {
-                    let literal = if *value { "True" } else { "False" };
-                    lines.push(format!("                \"{wire}\": {literal},"));
                     continue;
                 }
                 let value_name = body_field_value_name(f);
@@ -4510,6 +4510,10 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         f.wire_name
                     ));
                 }
+            }
+            if let Some((wire, value)) = ep.stream_condition.as_ref() {
+                let literal = if *value { "True" } else { "False" };
+                lines.push(format!("                \"{wire}\": {literal},"));
             }
             lines.push("            },".to_string());
         }
@@ -8198,8 +8202,12 @@ fn raw_client_file(
         imports.add_plain("typing");
         imports.add_from("json.decoder", "JSONDecodeError");
         imports.add_core("api_error", "ApiError");
-        imports.add_core("http_response", "AsyncHttpResponse");
-        imports.add_core("http_response", "HttpResponse");
+        // A client every one of whose methods returns a pager never names the
+        // buffered response wrapper, so Fern does not import it.
+        if endpoints.iter().any(|ep| ep.pagination.is_none()) {
+            imports.add_core("http_response", "AsyncHttpResponse");
+            imports.add_core("http_response", "HttpResponse");
+        }
         imports.add_core("request_options", "RequestOptions");
     }
 

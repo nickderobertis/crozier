@@ -1,0 +1,109 @@
+# Every SDK-shaping extension here is declared TWICE, in the Fern spelling and in
+# crozier's own, holding identical values: Fern reads `x-fern-*` to produce the
+# golden tree, crozier reads the canonical `x-crozier-*` that outranks it, and the
+# two trees agree. That is the whole dual-header policy
+# (`../../docs/matching.md#fern-compatible-extension-policy`), and it is why the
+# canonical spelling is byte-checked rather than only unit-tested — a fixture
+# cannot pin the *disagreeing* case, because Fern would emit the other tree; the
+# accessors' precedence is covered by `src/openapi.rs`'s own tests.
+openapi: 3.1.0
+info: { title: Widget API, version: 1.0.0 }
+paths:
+  /widgets:
+    get:
+      summary: List widgets
+      x-fern-sdk-group-name: [catalog, widgets]
+      x-crozier-sdk-group-name: [catalog, widgets]
+      x-fern-sdk-method-name: list
+      x-crozier-sdk-method-name: list
+      x-fern-pagination:
+        cursor: $request.page_token
+        next_cursor: $response.pagination.next_page_token
+        results: $response.data
+      x-crozier-pagination:
+        cursor: $request.page_token
+        next_cursor: $response.pagination.next_page_token
+        results: $response.data
+      parameters:
+        - name: page_token
+          in: query
+          description: Opaque cursor from a previous page.
+          schema: { type: string }
+      responses:
+        '200':
+          description: A page of widgets.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WidgetPage' }
+  /widgets/watch:
+    post:
+      summary: Watch widget events
+      x-fern-sdk-group-name: widgets
+      x-crozier-sdk-group-name: widgets
+      x-fern-sdk-method-name: watch
+      x-crozier-sdk-method-name: watch
+      x-fern-streaming:
+        format: sse
+        response: { $ref: '#/components/schemas/WidgetEvent' }
+        response-stream: { $ref: '#/components/schemas/WidgetEvent' }
+        stream-condition: $request.stream
+      x-crozier-streaming:
+        format: sse
+        response: { $ref: '#/components/schemas/WidgetEvent' }
+        response-stream: { $ref: '#/components/schemas/WidgetEvent' }
+        stream-condition: $request.stream
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WatchRequest' }
+      responses:
+        '200':
+          description: One event, or a stream of them.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WidgetEvent' }
+            text/event-stream:
+              schema: { $ref: '#/components/schemas/WidgetEvent' }
+components:
+  schemas:
+    WidgetPage:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Widget' }
+        pagination: { $ref: '#/components/schemas/PageInfo' }
+    PageInfo:
+      type: object
+      properties:
+        next_page_token:
+          type: string
+    Widget:
+      type: object
+      required: [id]
+      properties:
+        id: { type: string }
+        price: { $ref: '#/components/schemas/PriceUnit' }
+    PriceUnit:
+      type: string
+      enum: [count, '$', ms]
+      x-fern-enum:
+        '$': { name: USD }
+      x-crozier-enum:
+        '$': { name: USD }
+    WatchRequest:
+      type: object
+      properties:
+        stream:
+          type: boolean
+          description: When true, stream events instead of returning one.
+        note:
+          type: string
+    WidgetEvent:
+      type: object
+      required: [id]
+      properties:
+        id: { type: string }
+        widget: { $ref: '#/components/schemas/Widget' }

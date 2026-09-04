@@ -180,6 +180,23 @@ const EXHAUSTIVE: Corpus = Corpus {
 /// so the corpora drive crozier with the same naming. Every `unmatched` list is
 /// empty: each target reproduces its whole golden byte-for-byte.
 const FEATURE_TARGETS: &[Corpus] = &[
+    // Every SDK-shaping extension declared in both spellings at once: the Fern one
+    // Fern reads to produce the golden, and the canonical `x-crozier-*` one crozier
+    // prefers over it. Matching the golden is what proves crozier read the
+    // canonical spelling — the same dual-vocabulary check `audience-filter` makes
+    // for `x-crozier-audiences`, here over the group and method names, the
+    // pagination contract, the streaming `stream-condition` split and the enum
+    // member names.
+    Corpus {
+        api: "crozier-sdk-extensions",
+        package_name: "fern",
+        project_name: "default_package_name",
+        audiences: &[],
+        audience_strict: false,
+        client_class_name: None,
+        extra_fields: None,
+        unmatched: &[],
+    },
     Corpus {
         api: "auth-schemes",
         package_name: "fern",
