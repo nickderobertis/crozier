@@ -6814,15 +6814,12 @@ fn build_example_inner(
             // A literal the type cannot hold is not an example Fern renders: an
             // enum parameter whose example names no member takes the enum's own
             // synthesized value (`mosip-esignet`'s `scope: openid profile`, which
-            // is two members' values in one string), and only a plain scalar falls
-            // back to the literal itself.
-            ctx.value_from_example(&qp.type_ref, ex).unwrap_or_else(|| {
-                if example_scalar(&qp.type_ref) {
-                    Example::Atom(ex.clone())
-                } else {
-                    ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
-                }
-            })
+            // is two members' values in one string). Every type that *can* hold a
+            // literal is scalar, and [`ExampleCtx::value_from_example`] renders
+            // one for each of those, so the fallback is only ever the synthesized
+            // value.
+            ctx.value_from_example(&qp.type_ref, ex)
+                .unwrap_or_else(|| ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name)))
         } else if let TypeRef::List(inner) = &qp.type_ref {
             Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
         } else if let TypeRef::Dict(_, value) = &qp.type_ref {
