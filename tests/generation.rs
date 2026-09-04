@@ -6082,6 +6082,7 @@ paths:
             schema: { $ref: '#/components/schemas/Entity' }
             example:
               scopes: ["openid", null]
+              roles: ["ADMIN", null]
               labels: { roles: ["admin"] }
       responses: { '204': { description: created } }
 components:
@@ -6089,13 +6090,17 @@ components:
     basicAuth: { type: http, scheme: basic }
   schemas:
     Scope: { type: string }
+    Role: { type: string, enum: [ADMIN, USER] }
     Entity:
       type: object
-      required: [scopes, labels]
+      required: [scopes, roles, labels]
       properties:
         scopes:
           type: array
           items: { $ref: '#/components/schemas/Scope' }
+        roles:
+          type: array
+          items: { $ref: '#/components/schemas/Role' }
         labels:
           type: object
           additionalProperties: { type: array, items: { type: string } }
@@ -6161,7 +6166,9 @@ components:
     );
 
     // A `null` in a list whose items are a string alias is filled from the field
-    // name; a map example whose value is a JSON array keeps that array.
+    // name; the same `null` in a list of an enum is not — it takes the enum's own
+    // synthesized member. A map example whose value is a JSON array keeps that
+    // array.
     let reference = &files["reference.md"];
     assert!(
         reference.contains(concat!(
@@ -6169,6 +6176,10 @@ components:
             "    scopes=[\n",
             "        \"openid\",\n",
             "        \"scopes\"\n",
+            "    ],\n",
+            "    roles=[\n",
+            "        Role.ADMIN,\n",
+            "        Role.ADMIN\n",
             "    ],\n",
             "    labels={\n",
             "        \"roles\": [\"admin\"]\n",
