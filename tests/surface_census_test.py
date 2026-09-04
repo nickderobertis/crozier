@@ -402,7 +402,7 @@ class CensusReportTests(unittest.TestCase):
         completed = run("--vendored-only", "--selector", "operation.callbacks")
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({("operation.callbacks", WEBHOOKS): 1}, rows(completed))
-        self.assertIn("31 vendored", completed.stderr)
+        self.assertIn("32 vendored", completed.stderr)
 
     def test_a_valued_selector_reports_one_member_of_a_closed_set(self) -> None:
         completed = run("--vendored-only", "--selector", "parameter.in=cookie")
@@ -592,7 +592,7 @@ class SourceSelectionTests(unittest.TestCase):
             allowed = run("--corpus-root", directory, "--allow-unfetched", "--selector", "openapi.info")
             self.assertEqual(0, allowed.returncode, allowed.stderr)
             self.assertIn("is unfetched", allowed.stderr)
-            self.assertIn("31 vendored, 0 fetched", allowed.stderr)
+            self.assertIn("32 vendored, 0 fetched", allowed.stderr)
 
             payload = json.loads(
                 run("--corpus-root", directory, "--allow-unfetched", "--json").stdout
@@ -864,7 +864,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
     A one-line edit disabled the branch that consumes the `:` of a flow *mapping*.
     `flow_node` stops at `,]}:` without consuming what it stopped at, so the loop
     re-entered on the same cursor and appended forever — 9.6 GB of RSS and no
-    output, on eight of the 31 vendored documents, for every selector. The three
+    output, on eight of the vendored documents, for every selector. The three
     properties below are what make that unrepeatable: it terminates, it terminates
     with the *right values*, and a cursor that cannot advance is an error.
     """
@@ -876,7 +876,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         """The unscoped vendored run — the exact invocation that never returned."""
         completed = run("--vendored-only")
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertIn("31 vendored", completed.stderr)
+        self.assertIn("32 vendored", completed.stderr)
         self.assertGreater(len(rows(completed)), 100)
 
     def test_a_flow_mapping_parses_to_its_entries_not_a_list_of_its_keys(self) -> None:

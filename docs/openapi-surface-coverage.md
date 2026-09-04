@@ -58,7 +58,7 @@ just surface-census --selector pathItem.trace      # one feature: who declares i
 just surface-census --fixture apideck.com-crm --json
 ```
 
-The registered sources are both halves of the corpus: the 31 vendored
+The registered sources are both halves of the corpus: the 32 vendored
 `tests/fixtures/<name>/openapi.*` documents, and the 108 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
@@ -247,8 +247,8 @@ The six region files, read as one body of work. Two measurements feed it:
   snapshot is the one every region file's evidence was taken from, pinned by
   digest in
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
-  rather than restated here. It reads **139** registered sources, of which
-  **122** carry a committed golden.
+  rather than restated here. It reads **140** registered sources, of which
+  **123** carry a committed golden.
 - **`just fixtures-coverage`**, for criterion 2 alone. That recipe is outside
   `just check` — it needs network and runs the corpus instrumented — so its
   per-file counts are a dated snapshot (2026-08-25), stated once, in the join
@@ -326,7 +326,7 @@ grammar excludes map keys that are *names* by design, so no selector can reach
 it. The path-side counterpart, `document-paths`'s `duplicate-normalized-paths`,
 is both enumerated **and** measured — by the `openapi.paths:normalized-collision`
 predicate selector, which normalizes each path key's template expressions and
-reports zero across all 139 registered sources. So the inconsistency between the
+reports zero across all 140 registered sources. So the inconsistency between the
 two regions is now only that the schema-name side has no counterpart predicate:
 what the `schemas` region needs is a selector over `components.schemas` keys under
 `naming::class_name`, not a hand measurement. Were the row written it would be
