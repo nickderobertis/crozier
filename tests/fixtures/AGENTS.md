@@ -106,6 +106,26 @@ these is built from a spec with Fern overrides applied, not the raw document.
 | `apify-api` | `apify/apify-docs@522de71b25a299e348ba1da8f12b2608093b5712/apify-api/openapi/openapi.yaml` | The same refusal one reference along: `[api]: Failed to parse openapi document Apify API` and `Failed to resolve components/securitySchemes/httpBearer.yaml` out of `resolveSecuritySchemeReference`, then `All checks passed` at exit 0. Two of its `components.securitySchemes` entries are Reference Objects. Screened while settling `securityscheme-ref` |
 | `gravitino-idp` | `apache/gravitino@dad9a08dcdf397ed9558e4c36d57bdd49b75f3bf/docs/open-api/idp/openapi.yaml` | The same refusal again: `[api]: Failed to parse openapi document Gravitino Local Users and Groups REST API` and `Failed to resolve ../openapi.yaml#/components/securitySchemes/BasicAuth` out of `resolveSecuritySchemeReference`, then `All checks passed` at exit 0. Screened while settling `securityscheme-ref`, which has no registrable witness: all three documents the search found are Apache-2.0 at immutable refs, and Fern parses none of them |
 | `checkmarx-kics-compare-payload` | `Checkmarx/kics@ef44a59e26c6a7766ba6f485d0b47986cf5d6f9e/e2e/fixtures/samples/compare-openapi-payload-json-yaml/openAPIYaml/openAPI.yaml` | `fern check` exits 1 with one error — `[sdk] 1 error`, `path: __package__.yml -> types -> `, `issue: Type name must begin with a letter`, `Found 1 error and 0 warnings`. Both its `components.schemas` entries are relative-file `$ref`s (`./components/schemas/Author.yaml`, `./components/schemas/Book.yaml`) into sibling documents the direct spec URL does not carry, and the empty name Fern coins from the unresolved reference is what it refuses — the *type*-side counterpart of the path-side `$ref` discard corpus row 99 records. Screened while settling `paths-empty`, whose registered witnesses are corpus rows 102 and 103; both declare `paths: {}` with no `$ref` beside it |
+| `lomiafrica-pi-spi-sdk` | `lomiafrica/pi-spi-sdk@3ccbc43d6788b721581389b809fda2c8e852722a/openapi.json` | `fern check` exits 1 with `Found 23 errors and 2 warnings`: two `Unexpected property "instance"`, one `Unexpected property "dateLimitePaiement"`, one `"401" is not a valid example for this enum`, and nineteen `Expected example to be a date` — `format: date` fields whose examples carry a time (`"2023-02-22T15:32:01.250Z"`, `"2023-12-31T23:59:59.999Z"`), the second of the two failure modes this file's screening section names. Screened while settling `reference-summary`: it is the **only** document declaring `reference.summary` that the issue #188 witness search found anywhere — 1 of 1,698 GitHub documents, 0 of APIs.guru's 4,138 — so that row has no other candidate and stays `FIXTURE` on this refusal |
+
+### Screened, Fern-clean, and still unregistered — the generator, not the spec
+
+A candidate can pass every screen above and still not be registrable *yet*, and
+that is a third outcome the table above cannot hold: it is not a Fern rejection.
+Record one here so the next agent does not spend a generate rediscovering it.
+
+- **`truefoundry/trueforge`** — `docs/openapi.json` at commit
+  `284762ff19269da458790531304fbaee16c6b6ee`, MIT, `fern check` exit 0 (`Found 0
+  errors and 2 warnings`). It is the issue #188 witness for
+  `x-fern-or-crozier-ignore` (four `x-fern-ignore` sites on Operation Objects),
+  and its Fern 5.20.0 golden was generated and measured: **75 of 350 files
+  diverge**. The cause is not the ignore extension. The same document declares
+  four Fern SDK-shaping extensions crozier does not implement —
+  `x-fern-sdk-group-name` (54 sites, 8 of them two-level nested groups),
+  `x-fern-sdk-method-name` (54), `x-fern-pagination` (7) and `x-fern-streaming`
+  (2) — and no registered source declares any of them, so no committed golden has
+  a nested sub-client directory or a `core/pagination.py` to repair against.
+  Register it in the change that implements those four, not before.
 
 Accepted and matched corpus status lives in [`CORPUS.md`](CORPUS.md); do not
 duplicate its batch ledger here.
