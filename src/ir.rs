@@ -145,6 +145,13 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
 /// constructor's own `base_url`, so Fern names it `server_url_base_url` — and
 /// leaves every other variable as plain snake_case (`apiRoot` → `api_root`,
 /// `basePath` → `base_path`, `region` → `region`).
+///
+/// The list restates names `src/emit.rs` renders as literals, so the two are
+/// reconciled rather than trusted:
+/// `root_client_parameters_are_the_emitted_constructors_own_keywords` below
+/// reads the keyword names back out of a rendered root client and compares them
+/// to this list, so renaming, adding or dropping a constructor parameter in the
+/// emitter fails there rather than silently rotting this list.
 const ROOT_CLIENT_PARAMETERS: [&str; 10] = [
     "base_url",
     "environment",
@@ -12145,6 +12152,60 @@ mod tests {
                 "/widgets"
             ),
             "search"
+        );
+    }
+
+    /// The drift gate for [`ROOT_CLIENT_PARAMETERS`], which restates keyword names
+    /// `src/emit.rs` renders as literals. Rendering an unauthenticated document
+    /// with one plain server gives a root client carrying neither auth parameters
+    /// nor server-variable ones, so its keyword-only constructor parameters are
+    /// exactly the reserved set — read back out here and compared to the list.
+    #[test]
+    fn root_client_parameters_are_the_emitted_constructors_own_keywords() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let spec = dir.path().join("api.yml");
+        std::fs::write(
+            &spec,
+            "openapi: 3.1.0\ninfo:\n  title: Plain\n  version: 1.0.0\nservers:\n  - url: https://api.example.com\npaths:\n  /ping:\n    get:\n      operationId: health_ping\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n",
+        )
+        .unwrap();
+        let files = crate::render_files(crate::GenerateArgs {
+            spec,
+            output: std::path::PathBuf::from("unused"),
+            package_name: Some("acme".to_string()),
+            project_name: Some("acme".to_string()),
+            client_class_name: None,
+            audiences: Vec::new(),
+            audience_strict: false,
+            extra_fields: crate::settings::ExtraFields::Allow,
+        })
+        .expect("render succeeds");
+        let client = files
+            .iter()
+            .find(|file| file.path == std::path::Path::new("src/acme/client.py"))
+            .expect("the root client is emitted");
+        let signature = client
+            .contents
+            .split_once("    def __init__(\n        self,\n        *,\n")
+            .expect("the root client has a keyword-only constructor")
+            .1
+            .split_once("\n    ):")
+            .expect("the constructor signature is terminated")
+            .0;
+        let emitted: Vec<&str> = signature
+            .lines()
+            .map(|line| {
+                line.trim()
+                    .split_once(':')
+                    .expect("every parameter is annotated")
+                    .0
+            })
+            .collect();
+        assert_eq!(
+            emitted,
+            super::ROOT_CLIENT_PARAMETERS,
+            "{}",
+            client.contents
         );
     }
 }
