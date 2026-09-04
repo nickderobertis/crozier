@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "adyen-report-notification",
+  "corpus_spec_ref": "4265e8ffe6cc4c35fe6804d5a395598621d3da53",
+  "corpus_spec_url": "https://raw.githubusercontent.com/Adyen/adyen-openapi/4265e8ffe6cc4c35fe6804d5a395598621d3da53/json/BalancePlatformReportNotification-v1.json"
+}
