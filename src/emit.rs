@@ -17,8 +17,8 @@ use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
-    Auth, BodyField, Endpoint, ErrorClass, Field, GlobalHeader, Ir, ObjectType, Prim, RequestBody,
-    TagTypeDecl, TypeDecl, TypeRef,
+    Auth, BodyField, Endpoint, EndpointPagination, ErrorClass, Field, GlobalHeader, Ir, ObjectType,
+    Prim, QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::ExtraFields;
@@ -87,6 +87,68 @@ enum RefLoc {
     Errors,
 }
 
+/// How many directory segments a client module name holds. A module is normally
+/// one (`videos`), but an `x-crozier-sdk-group-name` list nests it
+/// (`catalogs/mcp_servers`), and the package root is zero.
+fn module_depth(module: &str) -> usize {
+    if module.is_empty() {
+        0
+    } else {
+        module.split('/').count()
+    }
+}
+
+/// A module name as a dotted Python path (`catalogs/mcp_servers` ->
+/// `catalogs.mcp_servers`).
+fn module_path(module: &str) -> String {
+    module.replace('/', ".")
+}
+
+/// The last directory segment of a client module — the one its class names are
+/// built from. Fern names a nested client after its own segment
+/// (`catalogs/mcp_servers` -> `McpServersClient`), not after the whole path.
+fn module_stem(module: &str) -> &str {
+    module.rsplit('/').next().unwrap_or(module)
+}
+
+/// Every client package the module list implies, child lists included: the modules
+/// that own endpoints plus the *intermediate* packages a nested
+/// `x-crozier-sdk-group-name` creates, which own none but still carry a client
+/// exposing their children.
+///
+/// A package's children are ordered the way Fern writes them: those that own
+/// endpoints first, in the order the document declares them, then the pure parents
+/// sorted by name. `catalogs`, `internal` and `settings` land after `agents` …
+/// `skills` in TrueForge's root client for exactly that reason.
+fn module_children(endpoint_modules: &[String]) -> BTreeMap<String, Vec<String>> {
+    let owns_endpoints: BTreeSet<&str> = endpoint_modules.iter().map(String::as_str).collect();
+    let mut owning: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    let mut parents: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    for module in endpoint_modules {
+        let mut path = String::new();
+        for segment in module.split('/') {
+            let parent = path.clone();
+            if !path.is_empty() {
+                path.push('/');
+            }
+            path.push_str(segment);
+            if owns_endpoints.contains(path.as_str()) {
+                let siblings = owning.entry(parent).or_default();
+                if !siblings.contains(&path) {
+                    siblings.push(path.clone());
+                }
+            } else {
+                parents.entry(parent).or_default().insert(path.clone());
+            }
+        }
+    }
+    let mut children: BTreeMap<String, Vec<String>> = owning;
+    for (parent, pure) in parents {
+        children.entry(parent).or_default().extend(pure);
+    }
+    children
+}
+
 /// Collects imports and renders them in Fern's order: group 1 is stdlib
 /// (`import`s then `from`s), group 2 is everything else (`import`s then `from`s),
 /// separated by a blank line. Names within a `from` and the statements within a
@@ -139,33 +201,48 @@ impl Imports {
         }
     }
 
+    /// The dotted prefix that reaches the generated package root from this file.
+    /// A module name may be a *nested* client path (`catalogs/mcp_servers`, from an
+    /// `x-crozier-sdk-group-name` list), so the dot count is measured from the
+    /// module's own depth rather than assumed to be one.
+    fn root_prefix(&self) -> String {
+        let depth = match &self.loc {
+            RefLoc::PackageRoot => 0,
+            RefLoc::RootTypes | RefLoc::Errors => 1,
+            // Fern's explicit empty dotted namespace writes its client files at the
+            // package root but imports `core` as though they sat in a tag package,
+            // so a nameless client module still counts as one level deep.
+            RefLoc::Client(module) => module_depth(module).max(1),
+            RefLoc::TagTypes(module) => module_depth(module) + 1,
+        };
+        ".".repeat(depth + 1)
+    }
+
     /// The relative module path a referenced generated type is imported from,
     /// chosen from this file's [`RefLoc`] and whether the type is tag-scoped.
     fn type_import_path(&self, class: &str) -> String {
         let m = naming::module_name(class);
+        let root = self.root_prefix();
         match self.tag_types.get(class) {
+            // A package-root type lives at `{pkg}.types.{m}`; so does a tag type
+            // whose owning tag is the package root itself. The empty dotted
+            // namespace reads that one from where its files actually sit, at the
+            // package root, rather than from the tag depth its `core` imports use.
             Some(tag) if tag.is_empty() => match &self.loc {
                 RefLoc::RootTypes => format!(".{m}"),
-                RefLoc::TagTypes(_) => format!("...types.{m}"),
                 RefLoc::Client(module) if module.is_empty() => format!(".types.{m}"),
-                RefLoc::Client(_) | RefLoc::Errors => format!("..types.{m}"),
-                RefLoc::PackageRoot => format!(".types.{m}"),
+                _ => format!("{root}types.{m}"),
             },
             // A tag-scoped type lives at `{pkg}.{tag}.types.{m}`.
             Some(tag) => match &self.loc {
                 RefLoc::TagTypes(cur) if cur == tag => format!(".{m}"),
                 RefLoc::Client(cur) if cur == tag => format!(".types.{m}"),
-                RefLoc::TagTypes(_) | RefLoc::Client(_) | RefLoc::Errors => {
-                    format!("..{tag}.types.{m}")
-                }
-                RefLoc::PackageRoot | RefLoc::RootTypes => format!(".{tag}.types.{m}"),
+                _ => format!("{root}{}.types.{m}", module_path(tag)),
             },
             // A package-root type lives at `{pkg}.types.{m}`.
             None => match &self.loc {
                 RefLoc::RootTypes => format!(".{m}"),
-                RefLoc::TagTypes(_) => format!("...types.{m}"),
-                RefLoc::Client(_) | RefLoc::Errors => format!("..types.{m}"),
-                RefLoc::PackageRoot => format!(".types.{m}"),
+                _ => format!("{root}types.{m}"),
             },
         }
     }
@@ -235,22 +312,16 @@ impl Imports {
     }
 
     /// The dotted prefix that reaches the package-root `core` package from this
-    /// file's location. Every generated file sits one package below the root
-    /// (`{pkg}/types/`, `{pkg}/{tag}/`, `{pkg}/errors/`) except a tag's `types/`
-    /// (`{pkg}/{tag}/types/`), which is two deep and needs the extra dot.
-    fn core_prefix(&self) -> &'static str {
-        match self.loc {
-            RefLoc::TagTypes(_) => "...core",
-            RefLoc::RootTypes | RefLoc::Client(_) | RefLoc::Errors => "..core",
-            RefLoc::PackageRoot => ".core",
-        }
+    /// file's location. Most generated files sit one package below the root
+    /// (`{pkg}/types/`, `{pkg}/{tag}/`, `{pkg}/errors/`); a tag's `types/` is two
+    /// deep, and a nested client path (`{pkg}/catalogs/mcp_servers/`) is as deep as
+    /// its own segments, so the count comes from [`Imports::root_prefix`].
+    fn core_prefix(&self) -> String {
+        format!("{}core", self.root_prefix())
     }
 
     fn error_import_path(&self, module: &str) -> String {
-        match self.loc {
-            RefLoc::PackageRoot => format!(".errors.{module}"),
-            _ => format!("..errors.{module}"),
-        }
+        format!("{}errors.{module}", self.root_prefix())
     }
 
     /// Register a `from {..}core.{submodule} import {name}` at the depth this
@@ -263,7 +334,8 @@ impl Imports {
     }
 
     fn add_core_package(&mut self) {
-        let parent = self.core_prefix().trim_end_matches("core");
+        let prefix = self.core_prefix();
+        let parent = prefix.trim_end_matches("core");
         self.add_from(parent, "core");
     }
 
@@ -1096,6 +1168,17 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         contents: String::new(),
     });
 
+    // The client package tree the module names imply. A module is normally one
+    // directory (`videos`); an `x-crozier-sdk-group-name` list nests it
+    // (`catalogs/mcp_servers`), which adds intermediate packages that own no
+    // endpoints and exist only to carry their children.
+    let children = module_children(&ir.endpoint_modules);
+    let parent_modules: Vec<String> = children
+        .keys()
+        .filter(|module| !module.is_empty() && !ir.endpoint_modules.contains(module))
+        .cloned()
+        .collect();
+
     // One file per generated type.
     for decl in &ir.types {
         let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
@@ -1162,7 +1245,12 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
 
     // Fern's static core runtime, emitted verbatim (see assets/README.md), plus
     // the auth-shaped `client_wrapper.py`.
-    files.extend(core_files(pkg));
+    files.extend(core_files(
+        pkg,
+        ir.endpoints
+            .iter()
+            .any(|endpoint| endpoint.pagination.is_some()),
+    ));
     files.push(client_wrapper_file(
         pkg,
         &ir.project_name,
@@ -1178,13 +1266,16 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
 
     // One package marker per endpoint client module. Fern's `__init__.py` here is
     // a comment-only header (four blank lines once stripped) — unless the tag owns
-    // hoisted inline types, in which case it is a lazy loader re-exporting them.
-    for module in &ir.endpoint_modules {
+    // hoisted inline types, in which case it is a lazy loader re-exporting them,
+    // or it has nested sub-packages, in which case it is a lazy loader over those.
+    for module in ir.endpoint_modules.iter().chain(parent_modules.iter()) {
         if ir.empty_endpoint_namespace && module == "_" {
             continue;
         }
         if let Some(decls) = tag_type_modules.get(module.as_str()) {
             files.push(tag_pkg_init_file(&env, pkg, module, decls)?);
+        } else if let Some(names) = children.get(module.as_str()) {
+            files.push(module_pkg_init_file(&env, pkg, module, names)?);
         } else {
             files.push(GeneratedFile {
                 path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
@@ -1247,11 +1338,49 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 tag_types: &tag_map,
                 global_headers: &ir.global_headers,
                 empty_namespace: false,
+                children: children.get(module.as_str()).map_or(&[][..], Vec::as_slice),
             };
             files.push(client_file(&env, &cx, &eps)?);
             emittable_modules.push(module);
         }
     }
+    // A nested `x-crozier-sdk-group-name` creates *intermediate* packages that own
+    // no operation of their own (`catalogs` over `catalogs/mcp_servers`). Fern
+    // still emits a client for each: an empty raw client, and a high-level one
+    // whose whole body is the lazy sub-client properties.
+    for module in &parent_modules {
+        files.push(raw_client_file(
+            &env,
+            pkg,
+            &ir.client_name,
+            module,
+            &[],
+            &tag_map,
+            false,
+        )?);
+        let cx = ClientCtx {
+            pkg,
+            client_name: &ir.client_name,
+            module,
+            types: &ir.types,
+            tag_decls: &ir.tag_types,
+            auth: &ir.auth,
+            has_environment: ir.environment.is_some(),
+            tag_types: &tag_map,
+            global_headers: &ir.global_headers,
+            empty_namespace: false,
+            children: children.get(module.as_str()).map_or(&[][..], Vec::as_slice),
+        };
+        files.push(client_file(&env, &cx, &[])?);
+    }
+    // The root client aggregates only the *top-level* packages; a nested one is
+    // reached through its parent's property instead.
+    let root_modules: Vec<&String> = children.get("").map_or(Vec::new(), |names| {
+        names
+            .iter()
+            .filter(|name| emittable_modules.contains(name) || parent_modules.contains(*name))
+            .collect()
+    });
     // `emittable_modules` stays in first-appearance (declaration) order — the order
     // `ir.endpoint_modules` yields — because that is the order Fern lists sub-clients
     // in the root client and `reference.md` (e.g. `widgets` before `gadgets` when
@@ -1268,7 +1397,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             RootClientFileCtx {
                 pkg,
                 client_name: &ir.client_name,
-                modules: &emittable_modules,
+                modules: &root_modules,
                 root_endpoints: if root_emittable { &root_eps } else { &[] },
                 types: &ir.types,
                 tag_decls: &ir.tag_types,
@@ -1292,7 +1421,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     if !ir.types.is_empty() || !root_tag_types.is_empty() {
         files.push(types_init_file(&env, pkg, &ir.types, root_tag_types)?);
     }
-    files.push(root_init_file(&env, pkg, ir, &emittable_modules)?);
+    files.push(root_init_file(&env, pkg, ir, &root_modules)?);
 
     // Fern treats a leading-dot operationId (`.GetThing`) as an explicit empty
     // endpoint namespace. Its empty tag package lands at the package root and is
@@ -1334,6 +1463,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             tag_types: &empty_namespace_tag_map,
             global_headers: &ir.global_headers,
             empty_namespace: true,
+            children: &[],
         };
         files.push(client_file(&env, &cx, &empty_namespace_eps)?);
         let empty_namespace_types: Vec<&TypeDecl> = ir
@@ -1354,7 +1484,12 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         path: PathBuf::from("README.md"),
         contents: String::new(),
     }));
-    files.push(reference_file(&env, ir, &emittable_modules, &tag_map)?);
+    files.push(reference_file(
+        &env,
+        ir,
+        &client_tree_modules(ir),
+        &tag_map,
+    )?);
 
     // Project-root scaffolding (pyproject.toml, requirements.txt, metadata).
     files.extend(scaffolding_files(pkg, &ir.project_name));
@@ -1606,6 +1741,30 @@ fn tag_types_init_file(
     })
 }
 
+/// A client package's `__init__.py` when it holds nested sub-packages: the lazy
+/// loader over those sub-packages, the way the package-root `__init__.py` lists
+/// the top-level ones. `catalogs/` over `catalogs/mcp_servers/` is the shape.
+fn module_pkg_init_file(
+    env: &Environment<'static>,
+    pkg: &str,
+    module: &str,
+    children: &[String],
+) -> Result<GeneratedFile> {
+    let names: Vec<String> = children
+        .iter()
+        .map(|child| module_stem(child).to_string())
+        .collect();
+    let type_checking = from_import_block(".", &names, 4);
+    let pairs: Vec<(String, String)> = names
+        .iter()
+        .map(|name| (name.clone(), format!(".{name}")))
+        .collect();
+    Ok(GeneratedFile {
+        path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
+        contents: render_lazy_loader(env, &type_checking, &pairs, &names)?,
+    })
+}
+
 /// The tag package's `__init__.py` when it owns hoisted types: a lazy loader
 /// re-exporting them from the tag's `.types` subpackage. A tag with no hoisted
 /// types keeps the plain comment-only marker instead.
@@ -1698,7 +1857,11 @@ fn root_init_file(
         ));
     }
     for (tag, names) in &hoisted_by_tag {
-        tc.push_str(&from_import_block(&format!(".{tag}"), names, 4));
+        tc.push_str(&from_import_block(
+            &format!(".{}", module_path(tag)),
+            names,
+            4,
+        ));
     }
     tc.push_str(&from_import_block(
         ".version",
@@ -1732,7 +1895,7 @@ fn root_init_file(
     }
     for (tag, names) in &hoisted_by_tag {
         for n in names {
-            pairs.push((n.clone(), format!(".{tag}")));
+            pairs.push((n.clone(), format!(".{}", module_path(tag))));
         }
     }
     pairs.push(("__version__".to_string(), ".version".to_string()));
@@ -1796,16 +1959,83 @@ fn select_readme_endpoint<'a>(
         })
 }
 
+/// Just the call block of an endpoint's worked documentation example — the lines
+/// after the client constructor. The README's streaming section writes its own
+/// imports and constructor, so it needs the call alone.
+fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
+    let mut ctx = ExampleCtx {
+        types: &ir.types,
+        tag_decls: &ir.tag_types,
+        referenced: BTreeSet::new(),
+        referenced_doc_order: Vec::new(),
+        referenced_tag: BTreeSet::new(),
+        referenced_tag_doc_order: Vec::new(),
+        uses_datetime: false,
+        datetime_precedes_tag_import: false,
+        auth: &ir.auth,
+        has_environment: ir.environment.is_some(),
+        global_headers: &ir.global_headers,
+        building: Default::default(),
+        documentation: false,
+        reference: false,
+    };
+    let lines = build_documentation_example(
+        ep,
+        false,
+        &ep.module,
+        pkg,
+        &ir.client_name,
+        &mut ctx,
+        None,
+        false,
+    )?;
+    let start = lines.iter().position(|line| line.starts_with("client."))?;
+    Some(lines[start..].join("\n"))
+}
+
+/// The client modules in the order the generated package nests them: each
+/// package before its own children, siblings in the order
+/// [`module_children`] yields. A flat SDK's order is unchanged by this; a nested
+/// one (`catalogs/mcp_servers`) is walked through its parent rather than in the
+/// document order its paths happened to appear in.
+fn client_tree_modules(ir: &Ir) -> Vec<&str> {
+    let children = module_children(&ir.endpoint_modules);
+    let mut out: Vec<&str> = Vec::new();
+    let mut stack: Vec<String> = children
+        .get("")
+        .map(|names| names.iter().rev().cloned().collect())
+        .unwrap_or_default();
+    while let Some(module) = stack.pop() {
+        if let Some(name) = ir
+            .endpoint_modules
+            .iter()
+            .find(|known| **known == module)
+            .map(String::as_str)
+        {
+            out.push(name);
+        }
+        if let Some(names) = children.get(&module) {
+            for child in names.iter().rev() {
+                stack.push(child.clone());
+            }
+        }
+    }
+    out
+}
+
 /// The order the README walks endpoints in. Fern builds client modules in
 /// first-seen module order and reads the README's endpoints from that grouped
 /// view. Keep operations within each module in source order, but do not let an
 /// operation from a later module leapfrog one from the first module merely
 /// because their paths were interleaved.
 fn readme_endpoint_order(ir: &Ir) -> Vec<&Endpoint> {
-    let grouped: Vec<&Endpoint> = ir
-        .endpoint_modules
-        .iter()
-        .flat_map(|module| ir.endpoints.iter().filter(move |ep| &ep.module == module))
+    let grouped: Vec<&Endpoint> = client_tree_modules(ir)
+        .into_iter()
+        .flat_map(|module| {
+            ir.endpoints
+                .iter()
+                .filter(move |ep| ep.module.as_str() == module)
+        })
         .collect();
     if grouped.is_empty() {
         ir.endpoints
@@ -1835,7 +2065,7 @@ fn client_call_prefix(ep: &Endpoint) -> String {
     if ep.module.is_empty() {
         format!("client.{method}")
     } else {
-        format!("client.{}.{method}", ep.module)
+        format!("client.{}.{method}", module_path(&ep.module))
     }
 }
 
@@ -1844,7 +2074,10 @@ fn raw_client_call_prefix(ep: &Endpoint) -> String {
     if ep.module.is_empty() {
         format!("response = client.with_raw_response.{method}")
     } else {
-        format!("response = client.{}.with_raw_response.{method}", ep.module)
+        format!(
+            "response = client.{}.with_raw_response.{method}",
+            module_path(&ep.module)
+        )
     }
 }
 
@@ -1949,23 +2182,47 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     }
     let stream_ep = readme_streaming_endpoint(ir);
     let streaming = stream_ep.map_or_else(String::new, |ep| {
+        // The call carries its worked arguments here, exactly as the usage example
+        // does; an argument-free streaming endpoint renders the same empty parens
+        // it always did.
+        let call = readme_call_lines(ir, ep, pkg)
+            .unwrap_or_else(|| format!("{}()", client_call_prefix(ep)));
         format!(
-            "## Streaming\n\nThe SDK supports streaming responses, as well, the response will be a generator that you can loop over.\n\n```python\nfrom {pkg} import {}\n\nclient = {}(\n{streaming_args})\n\n{}()\n```\n\n",
-            ir.client_name,
-            ir.client_name,
-            client_call_prefix(ep)
+            "## Streaming\n\nThe SDK supports streaming responses, as well, the response will be a generator that you can loop over.\n\n```python\nfrom {pkg} import {}\n\nclient = {}(\n{streaming_args})\n\n{call}\n```\n\n",
+            ir.client_name, ir.client_name,
+        )
+    });
+    // The pager section, on the first paginated endpoint in client order. Fern
+    // shows the plain call and then the page-by-page form.
+    let pager_ep = readme_endpoint_order(ir)
+        .into_iter()
+        .find(|ep| ep.emittable && ep.pagination.is_some());
+    let pagination = pager_ep.map_or_else(String::new, |ep| {
+        let prefix = client_call_prefix(ep);
+        format!(
+            "## Pagination\n\nPaginated requests will return a `SyncPager` or `AsyncPager`, which can be used as generators for the underlying object.\n\n```python\nfrom {pkg} import {}\n\nclient = {}(\n{streaming_args})\n\n{prefix}()\n```\n\n```python\n# You can also iterate through pages and access the typed response per page\npager = {prefix}(...)\nfor page in pager.iter_pages():\n    print(page.response)  # access the typed response for each page\n    for item in page:\n        print(item)\n```\n\n",
+            ir.client_name, ir.client_name,
         )
     });
     let contents = include_str!("../assets/scaffolding/README.md.tmpl")
         .replace(
-            "@@STREAMING_TOC@@\n",
+            "@@STREAMING_TOC@@",
             if stream_ep.is_some() {
                 "- [Streaming](#streaming)\n"
             } else {
                 ""
             },
         )
-        .replace("@@STREAMING@@\n", &streaming)
+        .replace("@@STREAMING@@", &streaming)
+        .replace(
+            "@@PAGINATION_TOC@@\n",
+            if pager_ep.is_some() {
+                "- [Pagination](#pagination)\n"
+            } else {
+                ""
+            },
+        )
+        .replace("@@PAGINATION@@\n", &pagination)
         .replace(
             "@@ENVIRONMENTS_TOC@@\n",
             if ir.environment.is_some() {
@@ -2014,7 +2271,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
 fn reference_file(
     env: &Environment<'static>,
     ir: &Ir,
-    modules: &[&String],
+    modules: &[&str],
     tag_types: &BTreeMap<String, String>,
 ) -> Result<GeneratedFile> {
     let pkg = &ir.package_name;
@@ -2034,7 +2291,7 @@ fn reference_file(
         let eps: Vec<&Endpoint> = ir
             .endpoints
             .iter()
-            .filter(|e| &e.module == *module && e.emittable)
+            .filter(|e| e.module.as_str() == *module && e.emittable)
             .collect();
         let title = ir
             .endpoint_module_titles
@@ -2190,6 +2447,21 @@ fn reference_entry(
                 .find(|field| field.py_name == param.name)
                 .map_or(usize::MAX, |field| field.reference_order)
         });
+        // The field a stream condition fixes is not a method argument, but the
+        // reference documents it — as a bare `typing.Literal`, ahead of the rest.
+        if let Some((wire, _)) = ep.stream_condition.as_ref() {
+            if let Some(field) = fields.iter().find(|field| field.wire_name == *wire) {
+                reference_body.insert(
+                    0,
+                    DocParam {
+                        name: field.py_name.clone(),
+                        annotation: "typing.Literal".to_string(),
+                        default: None,
+                        description: field.docstring.clone(),
+                    },
+                );
+            }
+        }
     }
     for dp in ordered_keyword_params(&mp.query, &mp.header, &reference_body) {
         let is_body = reference_body.iter().any(|body| body.name == dp.name);
@@ -2278,7 +2550,7 @@ fn reference_entry(
         client_prefix: if module.is_empty() {
             "client.".to_string()
         } else {
-            format!("client.{module}.")
+            format!("client.{}.", module_path(module))
         },
         href: if module.is_empty() {
             format!("src/{pkg}/client.py")
@@ -2512,14 +2784,58 @@ fn scaffolding_files(pkg: &str, project_name: &str) -> Vec<GeneratedFile> {
 /// Emit the vendored core runtime for a package. The runtime assets are emitted
 /// verbatim; `client_wrapper.py` is generated separately (see
 /// [`client_wrapper_file`]) because Fern shapes it from the auth model.
-fn core_files(pkg: &str) -> Vec<GeneratedFile> {
-    CORE_ASSETS
+fn core_files(pkg: &str, paginated: bool) -> Vec<GeneratedFile> {
+    let mut files: Vec<GeneratedFile> = CORE_ASSETS
         .iter()
         .map(|(rel, content)| GeneratedFile {
             path: PathBuf::from(format!("src/{pkg}/core/{rel}")),
-            contents: (*content).to_string(),
+            contents: if paginated && *rel == "__init__.py" {
+                core_init_with_pagination(content)
+            } else {
+                (*content).to_string()
+            },
         })
-        .collect()
+        .collect();
+    // The pager runtime ships only with an SDK that has a paginated endpoint —
+    // Fern emits `core/pagination.py` and exports its two classes from `core`
+    // exactly then, and leaves both out otherwise.
+    if paginated {
+        files.push(GeneratedFile {
+            path: PathBuf::from(format!("src/{pkg}/core/pagination.py")),
+            contents: include_str!("../assets/core/pagination.py").to_string(),
+        });
+    }
+    files
+}
+
+/// `core/__init__.py` with the two pager names spliced into its three sorted
+/// blocks. The asset is verbatim Fern output, so the splices are anchored on the
+/// neighbours the sort puts them beside rather than re-rendering the file.
+fn core_init_with_pagination(asset: &str) -> String {
+    let mut out = asset.to_string();
+    for (anchor, inserted) in [
+        (
+            "    from .parse_error import ParsingError\n",
+            "    from .pagination import AsyncPager, SyncPager\n",
+        ),
+        (
+            "    \"BaseClientWrapper\": \".client_wrapper\",\n",
+            "    \"AsyncPager\": \".pagination\",\n",
+        ),
+        (
+            "    \"UniversalBaseModel\": \".pydantic_utilities\",\n",
+            "    \"SyncPager\": \".pagination\",\n",
+        ),
+        ("    \"BaseClientWrapper\",\n", "    \"AsyncPager\",\n"),
+        ("    \"UniversalBaseModel\",\n", "    \"SyncPager\",\n"),
+    ] {
+        debug_assert!(
+            out.contains(anchor),
+            "core/__init__.py asset no longer carries {anchor:?}"
+        );
+        out = out.replacen(anchor, &format!("{inserted}{anchor}"), 1);
+    }
+    out
 }
 
 /// The auth-varying fragments of `client_wrapper.py`: the credential constructor
@@ -3562,6 +3878,13 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
         Some(RequestBody::Inline(fields)) => {
             let mut params: Vec<DocParam> = fields
                 .iter()
+                // The field a stream condition fixes is not an argument: this
+                // method's whole identity is the value it sends there.
+                .filter(|f| {
+                    ep.stream_condition
+                        .as_ref()
+                        .is_none_or(|(wire, _)| *wire != f.wire_name)
+                })
                 .map(|f| {
                     let base = raw_type_str_ctx(&f.type_ref, imports, true);
                     if f.optional {
@@ -3699,11 +4022,124 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
         "HttpResponse"
     };
     let mp = method_params(ep, imports);
-    let return_type = format!("{wrapper}[{}]", mp.inner);
+    let return_type = pager_return_type(ep, &mp.inner, is_async, imports)
+        .unwrap_or_else(|| format!("{wrapper}[{}]", mp.inner));
     let signature = signature(ep, &mp, &return_type, is_async);
     let docstring = raw_docstring(ep, &mp.path, &mp.query, &mp.header, &mp.body, &return_type);
     let body = raw_body(ep, is_async, &mp.inner, imports);
     format!("{signature}\n{docstring}\n{body}")
+}
+
+/// The success branch of a paginated raw method: parse the page, read its items
+/// and next cursor, and return a pager whose `get_next` calls this same method
+/// with the cursor advanced. The sync form binds a `lambda`; the async form needs
+/// a nested `async def`, because a coroutine cannot be produced by a lambda.
+fn pager_success_branch(
+    ep: &Endpoint,
+    pagination: &EndpointPagination,
+    inner: &str,
+    is_async: bool,
+) -> Vec<String> {
+    let pager = if is_async { "AsyncPager" } else { "SyncPager" };
+    let mut lines = vec![
+        "                _parsed_response = typing.cast(".to_string(),
+        format!("                    {inner},"),
+        "                    parse_obj_as(".to_string(),
+        format!("                        type_={inner},"),
+        "                        object_=_response.json(),".to_string(),
+        "                    ),".to_string(),
+        "                )".to_string(),
+        format!(
+            "                _items = _parsed_response.{}",
+            pagination.results
+        ),
+        "                _has_next = False".to_string(),
+        "                _get_next = None".to_string(),
+    ];
+    // The cursor's container is optional on the response model, so the whole
+    // advance is guarded on it; a cursor declared at the top level needs no guard.
+    let container = &pagination.next_cursor_container;
+    let (indent, holder) = if container.is_empty() {
+        ("                ", "_parsed_response".to_string())
+    } else {
+        let holder = format!("_parsed_response.{}", container.join("."));
+        lines.push(format!("                if {holder} is not None:"));
+        ("                    ", holder)
+    };
+    lines.push(format!(
+        "{indent}_parsed_next = {holder}.{}",
+        pagination.next_cursor_leaf
+    ));
+    lines.push(format!(
+        "{indent}_has_next = _parsed_next is not None and _parsed_next != \"\""
+    ));
+    // The recursive call: every argument the method took, with the cursor replaced
+    // by the one just parsed.
+    let mut args: Vec<String> = Vec::new();
+    for param in &ep.path_params {
+        args.push(param.py_name.clone());
+    }
+    for param in &ep.query_params {
+        let value = if param.py_name == pagination.cursor_param {
+            "_parsed_next"
+        } else {
+            param.py_name.as_str()
+        };
+        args.push(format!("{}={value}", param.py_name));
+    }
+    for param in &ep.header_params {
+        args.push(format!("{}={}", param.py_name, param.py_name));
+    }
+    args.push("request_options=request_options".to_string());
+    if is_async {
+        lines.push(String::new());
+        lines.push(format!("{indent}async def _get_next():"));
+        lines.push(format!("{indent}    return await self.{}(", ep.method_name));
+        for arg in &args {
+            lines.push(format!("{indent}        {arg},"));
+        }
+        lines.push(format!("{indent}    )"));
+        lines.push(String::new());
+    } else {
+        lines.push(format!(
+            "{indent}_get_next = lambda: self.{}(",
+            ep.method_name
+        ));
+        for arg in &args {
+            lines.push(format!("{indent}    {arg},"));
+        }
+        lines.push(format!("{indent})"));
+    }
+    lines.push(format!(
+        "                return {pager}(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)"
+    ));
+    lines
+}
+
+/// The pager type as written in a docstring, where no import is registered — the
+/// signature that names it has already registered one.
+fn pager_doc_type(pagination: &EndpointPagination, inner: &str, is_async: bool) -> String {
+    let pager = if is_async { "AsyncPager" } else { "SyncPager" };
+    let TypeRef::Named(item) = &pagination.item_type else {
+        return inner.to_string();
+    };
+    format!("{pager}[{item}, {inner}]")
+}
+
+/// The `SyncPager[Item, Response]` / `AsyncPager[Item, Response]` a paginated
+/// operation returns in place of the buffered `HttpResponse[Response]`, or `None`
+/// when the operation declares no pagination contract.
+fn pager_return_type(
+    ep: &Endpoint,
+    inner: &str,
+    is_async: bool,
+    imports: &mut Imports,
+) -> Option<String> {
+    let pagination = ep.pagination.as_ref()?;
+    let pager = if is_async { "AsyncPager" } else { "SyncPager" };
+    imports.add_core("pagination", pager);
+    let item = raw_type_str(&pagination.item_type, imports);
+    Some(format!("{pager}[{item}, {inner}]"))
 }
 
 /// A parameter as it appears in a method docstring / signature: its Python name,
@@ -3877,6 +4313,9 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         lines.push(format!(
             "                return {wrapper}(response=_response, data=_response.text)"
         ));
+    } else if let Some(pagination) = ep.pagination.as_ref() {
+        imports.add_core("pydantic_utilities", "parse_obj_as");
+        lines.extend(pager_success_branch(ep, pagination, inner, is_async));
     } else if ep.response.is_some() {
         imports.add_core("pydantic_utilities", "parse_obj_as");
         lines.extend([
@@ -4034,6 +4473,15 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(RequestBody::Inline(fields)) => {
             lines.push("            json={".to_string());
             for f in fields {
+                // The field a stream condition fixes is written last, whatever
+                // position the schema declares it in.
+                if ep
+                    .stream_condition
+                    .as_ref()
+                    .is_some_and(|(wire, _)| *wire == f.wire_name)
+                {
+                    continue;
+                }
                 let value_name = body_field_value_name(f);
                 if f.convert {
                     imports.add_core("serialization", "convert_and_respect_annotation_metadata");
@@ -4062,6 +4510,10 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         f.wire_name
                     ));
                 }
+            }
+            if let Some((wire, value)) = ep.stream_condition.as_ref() {
+                let literal = if *value { "True" } else { "False" };
+                lines.push(format!("                \"{wire}\": {literal},"));
             }
             lines.push("            },".to_string());
         }
@@ -4434,6 +4886,14 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
 /// return type and the response description.
 fn raw_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> String {
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
+    if let Some(summary) = &ep.docstring {
+        // A multi-line summary carries the 8-space docstring indent on every line,
+        // as in the buffered raw method.
+        for line in summary.split('\n') {
+            lines.push(format!("        {}", python_doc_line(line)));
+        }
+        lines.push(String::new());
+    }
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
     for (name, ty, desc) in &mp.path {
@@ -4823,6 +5283,7 @@ fn root_client_methods(
         tag_types: tag_map,
         global_headers,
         empty_namespace: false,
+        children: &[],
     };
     let mut method_imports = Imports::at(RefLoc::PackageRoot, tag_map);
     let methods = endpoints
@@ -5156,7 +5617,7 @@ impl EnvClientParts {
 /// The tag client class name for a module (`endpoints_put` → `EndpointsPutClient`,
 /// or `AsyncEndpointsPutClient`).
 fn tag_client_name(module: &str, is_async: bool) -> String {
-    let pascal = naming::to_pascal_case(module);
+    let pascal = naming::to_pascal_case(module_stem(module));
     if is_async {
         format!("Async{pascal}Client")
     } else {
@@ -5180,6 +5641,9 @@ struct ClientCtx<'a> {
     global_headers: &'a [GlobalHeader],
     /// Whether this tag client is Fern's explicit empty dotted namespace.
     empty_namespace: bool,
+    /// Nested sub-client modules this client exposes as lazy properties, in the
+    /// order Fern writes them (see [`module_children`]). Empty for a leaf client.
+    children: &'a [String],
 }
 
 /// Assemble a per-tag `client.py`: the sync and async high-level clients that
@@ -5190,12 +5654,16 @@ fn client_file(
     cx: &ClientCtx,
     endpoints: &[&Endpoint],
 ) -> Result<GeneratedFile> {
-    let stem = naming::to_pascal_case(cx.module);
+    let stem = naming::to_pascal_case(module_stem(cx.module));
     let mut imports = Imports::at(RefLoc::Client(cx.module.to_string()), cx.tag_types);
     imports.add_plain("typing");
-    imports.add_from("..core.client_wrapper", "AsyncClientWrapper");
-    imports.add_from("..core.client_wrapper", "SyncClientWrapper");
-    imports.add_from("..core.request_options", "RequestOptions");
+    imports.add_core("client_wrapper", "AsyncClientWrapper");
+    imports.add_core("client_wrapper", "SyncClientWrapper");
+    // A parent client carries no methods of its own, so nothing there takes a
+    // `request_options` argument and Fern does not import the type.
+    if !endpoints.is_empty() {
+        imports.add_core("request_options", "RequestOptions");
+    }
     imports.add_from(".raw_client", &format!("Raw{stem}Client"));
     imports.add_from(".raw_client", &format!("AsyncRaw{stem}Client"));
 
@@ -5208,12 +5676,40 @@ fn client_file(
     } else {
         ""
     };
+    // A client that exposes nested sub-clients annotates them with postponed
+    // annotations and imports their classes under `TYPE_CHECKING` only, the way
+    // the root client already does — the runtime import lives inside each
+    // property so the package's import graph stays acyclic.
+    let mut type_checking = String::new();
+    if !cx.children.is_empty() {
+        type_checking.push_str("\n\nif typing.TYPE_CHECKING:");
+        let mut sorted: Vec<&String> = cx.children.iter().collect();
+        sorted.sort();
+        for child in sorted {
+            let attr = module_stem(child);
+            let mut names = [tag_client_name(child, true), tag_client_name(child, false)];
+            names.sort();
+            type_checking.push_str(&format!(
+                "\n    from .{attr}.client import {}, {}",
+                names[0], names[1]
+            ));
+        }
+    }
+    let future = if cx.children.is_empty() {
+        ""
+    } else {
+        "from __future__ import annotations\n\n"
+    };
     let body = format!("{omit}{sync}\n\n\n{async_class}");
     let contents = render(
         env,
         "raw_client.py",
         cx.module,
-        context! { header => HEADER, imports => imports.render(), body => body },
+        context! {
+            header => HEADER,
+            imports => format!("{future}{}{type_checking}", imports.render()),
+            body => body,
+        },
     )?;
     Ok(GeneratedFile {
         path: PathBuf::from(format!("src/{}/{}/client.py", cx.pkg, cx.module)),
@@ -5231,7 +5727,7 @@ fn client_class(
     is_async: bool,
     imports: &mut Imports,
 ) -> Result<String> {
-    let stem = naming::to_pascal_case(cx.module);
+    let stem = naming::to_pascal_case(module_stem(cx.module));
     let (class_name, wrapper, raw_client_cls) = if is_async {
         (
             format!("Async{stem}Client"),
@@ -5251,11 +5747,23 @@ fn client_class(
         .iter()
         .map(|ep| client_method(cx, ep, is_async, imports))
         .collect();
+    let children: Vec<_> = cx
+        .children
+        .iter()
+        .map(|child| {
+            let attr = module_stem(child);
+            context! {
+                attr => attr,
+                cls => tag_client_name(child, is_async),
+            }
+        })
+        .collect();
     let view = context! {
         class_name => class_name,
         wrapper => wrapper,
         raw_client_cls => raw_client_cls,
         methods => methods,
+        children => children,
     };
     let rendered = render(env, "client_class.py", &class_name, view)?;
     Ok(rendered.trim_end_matches('\n').to_string())
@@ -5275,7 +5783,7 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
     let return_type = if ep.http_method == "HEAD" {
         "typing.Dict[str, str]".to_string()
     } else {
-        mp.inner.clone()
+        pager_return_type(ep, &mp.inner, is_async, imports).unwrap_or_else(|| mp.inner.clone())
     };
     let sig = signature(ep, &mp, &return_type, is_async);
     let docstring = client_docstring(cx, ep, &mp, is_async);
@@ -5292,6 +5800,12 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
     }
     call_args.push(Doc::atom("request_options=request_options"));
     let open = format!("{await_}self._raw_client.{}(", ep.method_name);
+    // A paginated raw method already returns the pager, so the high-level one
+    // returns it straight through rather than unwrapping a buffered response.
+    if ep.pagination.is_some() {
+        let call = format!("        return {}", Doc::group(open, call_args, ")").flat());
+        return format!("{sig}\n{docstring}\n{call}");
+    }
     let call = format!(
         "        _response = {}",
         Doc::group(open, call_args, ")").flat()
@@ -5362,6 +5876,13 @@ fn client_stream_docstring(
         "typing.Iterator"
     };
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
+    if let Some(summary) = &ep.docstring {
+        // The summary block every other high-level method carries.
+        for line in summary.split('\n') {
+            lines.push(format!("        {}", python_doc_line(line)));
+        }
+        lines.push(String::new());
+    }
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
     for (name, ty, desc) in &mp.path {
@@ -5587,12 +6108,16 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     lines.push(String::new());
     lines.push("        Returns".to_string());
     lines.push("        -------".to_string());
+    let pager = ep
+        .pagination
+        .as_ref()
+        .map(|pagination| pager_doc_type(pagination, &mp.inner, is_async));
     lines.push(format!(
         "        {}",
         if ep.http_method == "HEAD" && ep.response.is_some() {
             "typing.Dict[str, str]"
         } else {
-            &mp.inner
+            pager.as_deref().unwrap_or(&mp.inner)
         }
     ));
     // A concrete response carries its description (indented, blank when the spec
@@ -6741,6 +7266,23 @@ fn build_documentation_example(
     )
 }
 
+/// The rendered value of a required query parameter in a header-first worked
+/// example — the ordering a wildcard or form request body takes. The value is the
+/// one the ordinary ordering renders: a literal the type cannot hold is not an
+/// example Fern shows, so an enum parameter whose example names no member falls
+/// back to the enum's own synthesized value rather than to the raw literal.
+fn header_first_query_example(ctx: &mut ExampleCtx, qp: &QueryParam) -> Example {
+    if let Some(example) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
+        return ctx
+            .value_from_example(&qp.type_ref, example)
+            .unwrap_or_else(|| ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name)));
+    }
+    if let TypeRef::List(inner) = &qp.type_ref {
+        return Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))]);
+    }
+    ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
+}
+
 #[allow(
     clippy::too_many_arguments,
     reason = "example emission needs endpoint, client, value context, and documentation-mode inputs"
@@ -6801,16 +7343,21 @@ fn build_example_inner(
             args.push((Some(pp.py_name.clone()), v));
         }
     }
-    // Fern normally follows required/optional grouping for parameters. Wildcard
-    // binary requests are imported with header examples before query examples.
-    let wildcard_request = ep
+    // Fern normally follows required/optional grouping for parameters. Two request
+    // bodies are imported with header examples before query examples instead: a
+    // wildcard (`*/*`) body, and a form body (`multipart/form-data` or
+    // urlencoded) — api.video's `POST /upload` shows its optional `Content-Range`
+    // header ahead of its required `token` query parameter. Both keep the ordinary
+    // query-then-header order in the Markdown writers, so the flag is read
+    // alongside `reference` rather than on its own.
+    let header_first_request = ep
         .request_body
         .as_ref()
-        .is_some_and(RequestBody::is_wildcard_media);
+        .is_some_and(|body| body.is_wildcard_media() || matches!(body, RequestBody::Form(_)));
     for qp in ep
         .query_params
         .iter()
-        .filter(|qp| !ep.wildcard_binary_response && !wildcard_request && qp.required)
+        .filter(|qp| !ep.wildcard_binary_response && !header_first_request && qp.required)
     {
         // Fern omits required collections of referenced shapes from worked
         // examples; their query encoding has no inline scalar placeholder.
@@ -6865,7 +7412,7 @@ fn build_example_inner(
             });
         args.push((Some(hp.py_name.clone()), v));
     }
-    if wildcard_request && !reference {
+    if header_first_request && !reference {
         for hp in ep.header_params.iter().filter(|header| {
             !ep.wildcard_binary_response && !header.required && header.example.is_some()
         }) {
@@ -6885,34 +7432,22 @@ fn build_example_inner(
             .iter()
             .filter(|qp| !ep.wildcard_binary_response && qp.required)
         {
-            let value = if let Some(example) = qp.example.as_ref().filter(|_| qp.example_is_scalar)
-            {
-                ctx.value_from_example(&qp.type_ref, example)
-                    .unwrap_or_else(|| Example::Atom(example.clone()))
-            } else if let TypeRef::List(inner) = &qp.type_ref {
-                Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
-            } else {
-                ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
-            };
-            args.push((Some(qp.py_name.clone()), value));
+            args.push((
+                Some(qp.py_name.clone()),
+                header_first_query_example(ctx, qp),
+            ));
         }
     }
-    if wildcard_request && reference {
+    if header_first_request && reference {
         for qp in ep
             .query_params
             .iter()
             .filter(|qp| !ep.wildcard_binary_response && qp.required)
         {
-            let value = if let Some(example) = qp.example.as_ref().filter(|_| qp.example_is_scalar)
-            {
-                ctx.value_from_example(&qp.type_ref, example)
-                    .unwrap_or_else(|| Example::Atom(example.clone()))
-            } else if let TypeRef::List(inner) = &qp.type_ref {
-                Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
-            } else {
-                ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
-            };
-            args.push((Some(qp.py_name.clone()), value));
+            args.push((
+                Some(qp.py_name.clone()),
+                header_first_query_example(ctx, qp),
+            ));
         }
         for hp in ep
             .header_params
@@ -6960,7 +7495,7 @@ fn build_example_inner(
                 .unwrap_or_else(|| Example::Atom(example.to_string())),
         ));
     }
-    if reference && !wildcard_request {
+    if reference && !header_first_request {
         for hp in ep
             .header_params
             .iter()
@@ -6980,7 +7515,7 @@ fn build_example_inner(
     }
     for hp in ep.header_params.iter().filter(|header| {
         !ep.wildcard_binary_response
-            && !wildcard_request
+            && !header_first_request
             && !header.required
             && header.example.is_some()
     }) {
@@ -7216,23 +7751,33 @@ fn build_example_inner(
     };
     // The call, rendered at logical indent 0 (sync) or 4 (inside `main`, async).
     let call_indent = if is_async { 4 } else { 0 };
+    // A `stream-condition` split shows the streaming half's call in `reference.md`
+    // under both halves; every other writer uses the method's own name.
+    let method_name = if reference {
+        ep.reference_method_name
+            .as_deref()
+            .unwrap_or(&ep.method_name)
+    } else {
+        &ep.method_name
+    };
     let receiver = if empty_namespace {
         format!(
             "{}client..{}",
             if is_async { "await " } else { "" },
-            ep.method_name
+            method_name
         )
     } else if module.is_empty() {
         format!(
             "{}client.{}",
             if is_async { "await " } else { "" },
-            ep.method_name
+            method_name
         )
     } else {
         format!(
-            "{}client.{module}.{}",
+            "{}client.{}.{}",
             if is_async { "await " } else { "" },
-            ep.method_name
+            module_path(module),
+            method_name
         )
     };
     // `render` positions continuation lines but leaves the first line for the
@@ -7255,6 +7800,21 @@ fn build_example_inner(
             format!(
                 "{pad}response = {rendered}\n{pad}{for_kw} chunk in response:\n{pad}    yield chunk"
             )
+        } else if ep.pagination.is_some() && !documentation {
+            // A pager's worked example shows both ways of consuming it: item by
+            // item, and page by page. The async form separates the two with a
+            // blank line; the sync form does not.
+            let for_kw = if is_async { "async for" } else { "for" };
+            let gap = if is_async { "\n" } else { "" };
+            [
+                format!("{pad}response = {rendered}"),
+                format!("{pad}{for_kw} item in response:"),
+                format!("{pad}    yield item"),
+                format!("{gap}{pad}# alternatively, you can paginate page-by-page"),
+                format!("{pad}{for_kw} page in response.iter_pages():"),
+                format!("{pad}    yield page"),
+            ]
+            .join("\n")
         } else {
             format!("{pad}{rendered}")
         }
@@ -7638,20 +8198,28 @@ fn raw_client_file(
         RefLoc::Client(module.to_string())
     };
     let mut imports = Imports::at(loc.clone(), tag_types);
-    // Imports every raw client needs regardless of operation shape.
-    imports.add_plain("typing");
-    imports.add_from("json.decoder", "JSONDecodeError");
-    imports.add_core("api_error", "ApiError");
+    // Imports every raw client needs regardless of operation shape — except for a
+    // parent client, whose two classes hold nothing but the wrapper they were
+    // constructed with, so only the wrapper types are imported.
     imports.add_core("client_wrapper", "AsyncClientWrapper");
     imports.add_core("client_wrapper", "SyncClientWrapper");
-    imports.add_core("http_response", "AsyncHttpResponse");
-    imports.add_core("http_response", "HttpResponse");
-    imports.add_core("request_options", "RequestOptions");
+    if !endpoints.is_empty() {
+        imports.add_plain("typing");
+        imports.add_from("json.decoder", "JSONDecodeError");
+        imports.add_core("api_error", "ApiError");
+        // A client every one of whose methods returns a pager never names the
+        // buffered response wrapper, so Fern does not import it.
+        if endpoints.iter().any(|ep| ep.pagination.is_none()) {
+            imports.add_core("http_response", "AsyncHttpResponse");
+            imports.add_core("http_response", "HttpResponse");
+        }
+        imports.add_core("request_options", "RequestOptions");
+    }
 
     let class_stem = if module.is_empty() && !empty_namespace {
         root_client_name.to_string()
     } else {
-        naming::to_pascal_case(module)
+        naming::to_pascal_case(module_stem(module))
     };
     let sync_class = if module.is_empty() && !empty_namespace {
         format!("Raw{class_stem}")
@@ -8399,6 +8967,9 @@ mod tests {
             openapi_31: false,
             module: "m".to_string(),
             method_name: "op".to_string(),
+            stream_condition: None,
+            reference_method_name: None,
+            pagination: None,
             http_method: "GET",
             path: path.to_string(),
             path_params: params,
@@ -10295,6 +10866,7 @@ mod tests {
             tag_types: &tags,
             global_headers: &[],
             empty_namespace: false,
+            children: &[],
         };
         let mut imports = Imports::at(RefLoc::Client("events".to_string()), &tags);
         let raw_sync = raw_method(&ep, false, &mut imports);

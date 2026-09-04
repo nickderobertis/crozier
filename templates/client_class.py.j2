@@ -1,7 +1,9 @@
 class {{ class_name }}:
     def __init__(self, *, client_wrapper: {{ wrapper }}):
         self._raw_client = {{ raw_client_cls }}(client_wrapper=client_wrapper)
-
+{% if children %}        self._client_wrapper = client_wrapper
+{% for c in children %}        self._{{ c.attr }}: typing.Optional[{{ c.cls }}] = None
+{% endfor %}{% endif %}
     @property
     def with_raw_response(self) -> {{ raw_client_cls }}:
         """
@@ -15,4 +17,13 @@ class {{ class_name }}:
 {% for m in methods %}
 
 {{ m }}
+{% endfor %}{% for c in children %}
+
+    @property
+    def {{ c.attr }}(self):
+        if self._{{ c.attr }} is None:
+            from .{{ c.attr }}.client import {{ c.cls }}
+
+            self._{{ c.attr }} = {{ c.cls }}(client_wrapper=self._client_wrapper)
+        return self._{{ c.attr }}
 {% endfor %}

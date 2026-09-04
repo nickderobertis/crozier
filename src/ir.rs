@@ -773,6 +773,17 @@ pub struct Endpoint {
     /// Whitespace from the end of the source description that Fern preserves in
     /// reference documentation after trimming method docstrings.
     pub reference_description_suffix: String,
+    /// The request-body field a stream condition fixes to a literal and hides from
+    /// the signature: its wire name and the value this variant sends.
+    pub stream_condition: Option<(String, bool)>,
+    /// The method name `reference.md`'s worked call uses, where it differs from
+    /// the emitted one — a `stream-condition` split shows the streaming half's
+    /// call under both halves.
+    pub reference_method_name: Option<String>,
+    /// The pagination contract the operation declares, resolved against its
+    /// response model. A paginated operation returns a `SyncPager`/`AsyncPager`
+    /// over the response's item list rather than the buffered response itself.
+    pub pagination: Option<EndpointPagination>,
     /// Whether the success response is a Server-Sent-Events stream
     /// (`text/event-stream`). A streaming operation is emitted as a
     /// context-managed iterator of chunks rather than a buffered response.
@@ -1253,7 +1264,12 @@ fn dedupe(ident: String, seen: &mut std::collections::HashMap<String, usize>) ->
 
 /// Build an [`EnumType`] from a schema's string-enum values, deriving each
 /// member's Python name and `visit` parameter from its wire value.
-fn build_enum(name: &str, values: Vec<String>, docstring: Option<String>) -> EnumType {
+fn build_enum(
+    schema: &Schema,
+    name: &str,
+    values: Vec<String>,
+    docstring: Option<String>,
+) -> EnumType {
     // Fern derives the member name and `visit` parameter from each wire value,
     // sanitizing both into legal Python identifiers (issue #50): `global` →
     // `GLOBAL`/`global_`, `0: Active` → `ZERO_ACTIVE`/`zero_active`. Exact duplicate
@@ -1264,14 +1280,29 @@ fn build_enum(name: &str, values: Vec<String>, docstring: Option<String>) -> Enu
     let mut seen_params: std::collections::HashMap<String, usize> =
         std::collections::HashMap::new();
     let mut seen_values = std::collections::HashSet::new();
+    // `x-crozier-enum` / `x-fern-enum` names a member outright, which is the only
+    // way a value with no identifier characters of its own gets a readable one
+    // (TrueForge's `MetricsUnit` names `$` as `USD`, where the derived identifier
+    // would be the placeholder `_`).
+    let declared: std::collections::HashMap<&str, &str> = schema.enum_member_names().collect();
     let members = values
         .into_iter()
         .filter(|value| seen_values.insert(value.clone()))
-        .map(|value| EnumMember {
-            name: dedupe(naming::enum_member_name(&value), &mut seen_members),
-            visit_param: dedupe(naming::enum_visit_param(&value), &mut seen_params),
-            value,
-            docstring: None,
+        .map(|value| {
+            let name = declared.get(value.as_str()).map_or_else(
+                || naming::enum_member_name(&value),
+                |name| naming::enum_member_name(name),
+            );
+            let visit = declared.get(value.as_str()).map_or_else(
+                || naming::enum_visit_param(&value),
+                |name| naming::enum_visit_param(name),
+            );
+            EnumMember {
+                name: dedupe(name, &mut seen_members),
+                visit_param: dedupe(visit, &mut seen_params),
+                value,
+                docstring: None,
+            }
         })
         .collect();
     EnumType {
@@ -1413,10 +1444,14 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     }
     let inline_sources = inline_body_source_names(doc);
     let form_sources = form_body_source_names(doc);
+    // A `stream-condition` operation sends its body from two methods, and Fern
+    // keeps the request model rather than flattening it away into one of them.
+    let stream_condition_sources = stream_condition_body_source_names(doc);
     let dropped_sources: std::collections::HashSet<String> = inline_sources
         .iter()
         .filter(|name| {
             !referenced.contains(*name)
+                && !stream_condition_sources.contains(name.as_str())
                 && !doc.components.schemas.keys().any(|key| {
                     key.starts_with("Body_")
                         && naming::class_name(key) == name.as_str()
@@ -1749,29 +1784,158 @@ fn endpoints(
     let mut tag_types = Vec::new();
     for (path, item) in &doc.paths {
         for (http_method, op) in item.operations() {
-            let endpoint = build_endpoint(
-                doc,
-                types,
-                path,
-                http_method,
-                op,
-                &mut tag_types,
-                &global_names,
-            );
-            // Fern exposes one method for duplicate synthesized/declared names in
-            // the same client, with the later operation replacing the earlier one's
-            // contents while retaining its first-seen position. Keep all
-            // already-hoisted response types, but only the winning endpoint.
-            if let Some(index) = out.iter().position(|existing: &Endpoint| {
-                existing.module == endpoint.module && existing.method_name == endpoint.method_name
-            }) {
-                out[index] = endpoint;
-            } else {
-                out.push(endpoint);
+            // A `stream-condition` makes one operation two methods: `<name>_stream`
+            // with the condition set, and `<name>` with it cleared. Each is built
+            // from its own view of the operation, so the response type, the chunk
+            // type and the fixed body field all follow from the document rather
+            // than from a special case downstream.
+            let variants = stream_condition_variants(op);
+            for variant in &variants {
+                let view = variant.as_ref().map_or(op, |split| &split.operation);
+                let endpoint = build_endpoint(
+                    doc,
+                    types,
+                    path,
+                    http_method,
+                    view,
+                    &mut tag_types,
+                    &global_names,
+                );
+                let endpoint = match variant {
+                    Some(split) => Endpoint {
+                        method_name: split.method_name.clone(),
+                        stream_condition: Some((split.condition.clone(), split.streaming)),
+                        response_doc: None,
+                        // Fern's reference writer documents both halves as the
+                        // flattened body they send, and shows the streaming half's
+                        // worked call under each of them.
+                        reference_body_type: None,
+                        reference_method_name: Some(split.stream_method_name.clone()),
+                        ..endpoint
+                    },
+                    None => endpoint,
+                };
+                // Fern exposes one method for duplicate synthesized/declared names in
+                // the same client, with the later operation replacing the earlier one's
+                // contents while retaining its first-seen position. Keep all
+                // already-hoisted response types, but only the winning endpoint.
+                if let Some(index) = out.iter().position(|existing: &Endpoint| {
+                    existing.module == endpoint.module
+                        && existing.method_name == endpoint.method_name
+                }) {
+                    out[index] = endpoint;
+                } else {
+                    out.push(endpoint);
+                }
             }
         }
     }
     (out, tag_types)
+}
+
+/// The base method name a `stream-condition` operation splits from — *not* the
+/// general per-operation derivation, which is [`endpoint_method_name`]. Only the
+/// extension-declared name is consulted, because a document that declares a
+/// stream condition declares the method name too; the `"stream"` fallback is
+/// meaningful only inside that split.
+fn stream_condition_base_method_name(op: &Operation) -> String {
+    op.sdk_method_name().map_or_else(
+        || "stream".to_string(),
+        |name| {
+            naming::escape_python_keyword(naming::sanitize_identifier(&naming::to_snake_case(name)))
+        },
+    )
+}
+
+/// The component schemas that back the request body of an operation declaring a
+/// `stream-condition`. Fern keeps such a model in the public type layer even
+/// though both generated methods flatten its fields.
+fn stream_condition_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
+    let mut names = std::collections::HashSet::new();
+    for item in doc.paths.values().chain(doc.webhooks.values()) {
+        for (_, op) in item.operations() {
+            if op
+                .streaming()
+                .and_then(crate::openapi::Streaming::condition_property)
+                .is_none()
+            {
+                continue;
+            }
+            let reference = op
+                .request_body
+                .as_ref()
+                .and_then(|body| {
+                    body.content
+                        .values()
+                        .find_map(|media| media.schema.as_ref())
+                })
+                .and_then(|schema| schema.reference.as_deref());
+            if let Some(reference) = reference {
+                names.insert(ref_to_class(reference));
+            }
+        }
+    }
+    names
+}
+
+/// One half of a `stream-condition` split: the operation as that half sees it,
+/// the method name it takes, the body field the condition fixes, and whether this
+/// half streams.
+struct StreamSplit {
+    operation: Operation,
+    method_name: String,
+    /// The streaming half's name, which `reference.md` shows under both halves.
+    stream_method_name: String,
+    condition: String,
+    streaming: bool,
+}
+
+/// The variants an operation generates. One `None` for the ordinary case; a
+/// streaming and a buffered `Some` when a `stream-condition` is declared.
+fn stream_condition_variants(op: &Operation) -> Vec<Option<StreamSplit>> {
+    let Some(streaming) = op.streaming() else {
+        return vec![None];
+    };
+    let Some(condition) = streaming.condition_property() else {
+        return vec![None];
+    };
+    let base = stream_condition_base_method_name(op);
+    let mut variants = Vec::new();
+    for stream in [true, false] {
+        let mut operation = op.clone();
+        // Each half sees only its own success media type, which is what makes the
+        // ordinary streaming/buffered resolution downstream pick the right one.
+        if let Some(response) = success_response_entry_mut(&mut operation) {
+            let media = if stream {
+                "text/event-stream"
+            } else {
+                "application/json"
+            };
+            response.content.retain(|name, _| name == media);
+            if let Some(entry) = response.content.get_mut(media) {
+                let schema = if stream {
+                    streaming.response_stream.clone()
+                } else {
+                    streaming.response.clone()
+                };
+                if let Some(schema) = schema {
+                    entry.schema = Some(schema);
+                }
+            }
+        }
+        variants.push(Some(StreamSplit {
+            operation,
+            method_name: if stream {
+                format!("{base}_stream")
+            } else {
+                base.clone()
+            },
+            stream_method_name: format!("{base}_stream"),
+            condition: condition.to_string(),
+            streaming: stream,
+        }));
+    }
+    variants
 }
 
 /// Resolve one operation, deciding whether it is within the subset crozier can
@@ -1864,8 +2028,15 @@ fn build_endpoint(
             let convert = hoister.needs_convert(&type_ref) && !hoister.is_scalar(&type_ref);
             // The parameter's declared example, where Fern keeps it at all.
             let without_declared_example = parameter_example_value(doc, p).is_none();
+            // A synthesized sample needs a *body* on the success response, not a
+            // response crozier can type: CloudFormation's `SignalResource` declares
+            // `200` with no content at all and passes parameter names, while
+            // TrueForge's `download_sandbox_file` returns
+            // `application/octet-stream` and still takes the sample.
             let omit_synthesized_example = without_declared_example
-                && (p.required != Some(true) || success_response(op).is_none());
+                && (p.required != Some(true)
+                    || success_response_entry(op)
+                        .is_none_or(|response| response.content.is_empty()));
             // Fern leaves an optional enum-typed query parameter out of a worked
             // call however its enum and its example are declared: measured on Fern
             // 5.20.0, an inline `enum` carrying a schema example, the same enum
@@ -2222,6 +2393,9 @@ fn build_endpoint(
         http_method,
         path: path.to_string(),
         path_params,
+        stream_condition: None,
+        reference_method_name: None,
+        pagination: endpoint_pagination(doc, op, &query_params),
         query_params,
         header_params,
         constant_headers,
@@ -2466,6 +2640,76 @@ fn build_endpoint(
     }
 }
 
+/// A resolved `x-crozier-pagination` / `x-fern-pagination` contract: everything
+/// the pager emission needs, read off the response model rather than off the
+/// selector strings.
+#[derive(Debug, Clone)]
+pub struct EndpointPagination {
+    /// The Python attribute on the parsed response holding the page's items.
+    pub results: String,
+    /// The attribute chain up to (but excluding) the cursor itself — the optional
+    /// container the emitted `if … is not None` guards on. Empty when the cursor
+    /// sits at the top level of the response model.
+    pub next_cursor_container: Vec<String>,
+    /// The cursor attribute itself, e.g. the `next_page_token` of
+    /// `["pagination", "next_page_token"]`. Split from its container at
+    /// construction so the pair cannot represent a chain with no cursor.
+    pub next_cursor_leaf: String,
+    /// The Python name of the request parameter carrying the cursor.
+    pub cursor_param: String,
+    /// The element type of the item list, which parameterizes the pager.
+    pub item_type: TypeRef,
+}
+
+/// Resolve the declared pagination contract against the operation's own response
+/// schema and query parameters. Returns `None` when the operation declares none,
+/// or when a selector names something the document does not carry — a contract
+/// that cannot be resolved is not one crozier can emit a pager for.
+fn endpoint_pagination(
+    doc: &OpenApi,
+    op: &Operation,
+    query_params: &[QueryParam],
+) -> Option<EndpointPagination> {
+    let declared = op.pagination()?;
+    let results = declared.results_property()?;
+    let next_cursor = declared.next_cursor_property()?;
+    let cursor = declared.cursor_property()?;
+    let cursor_param = query_params
+        .iter()
+        .find(|param| param.wire_name == cursor)?
+        .py_name
+        .clone();
+    let response = success_response_schema(op)?;
+    let response = response
+        .reference
+        .as_deref()
+        .and_then(|reference| resolve_ref(doc, reference))
+        .unwrap_or(response);
+    let items = response
+        .properties
+        .get(results)
+        .and_then(|list| list.items.as_deref())?;
+    let item_type = items
+        .reference
+        .as_deref()
+        .map(|reference| TypeRef::Named(ref_to_class(reference)))?;
+    // `str::split` always yields at least one segment, so the chain always has a
+    // cursor to pop; splitting it here is what keeps a cursor-less chain
+    // unrepresentable downstream.
+    let mut next_cursor_container: Vec<String> = next_cursor
+        .split('.')
+        .map(naming::model_field_name)
+        .collect();
+    let next_cursor_leaf = next_cursor_container.pop()?;
+    Some(EndpointPagination {
+        results: naming::model_field_name(results),
+        next_cursor_container,
+        next_cursor_leaf,
+        cursor_param,
+        item_type,
+    })
+}
+
 fn schema_property_is_read_only(doc: &OpenApi, schema: &Schema, property: &str) -> bool {
     schema.properties.get(property).is_some_and(|property| {
         property
@@ -2552,11 +2796,27 @@ fn query_parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter)
         // `minLength: 1` beside a `pattern` and gets `"x"`, and its
         // `SchemaHandlerPackage` declares one beside a `maxLength` and gets the
         // same, so either of those two keywords is what turns the synthesis on.
+        // Whether a schema carries a `description` of its own turns the rule around,
+        // which is a table rather than a principle — these are the four shapes the
+        // corpus witnesses, each on a *required* query parameter:
+        //
+        // | schema `description` | `maxLength`/`pattern` | sample | witness |
+        // |---|---|---|---|
+        // | absent | present | synthesized | CloudFormation `StackDriftDetectionId`, `StackName` |
+        // | absent | absent | parameter name | Adyen Capital `accountHolderId` |
+        // | present | absent | synthesized | TrueForge `path` |
+        // | present | present | parameter name | TrueForge `agent_id` |
+        //
+        // No registered source declares a described schema beside a `pattern`, so
+        // that corner is taken with the `maxLength` one it shares a column with.
         let schema = parameter
             .schema
             .as_ref()
             .filter(|schema| schema.ty.as_ref().and_then(TypeField::primary) == Some("string"))
-            .filter(|schema| schema.max_length.is_some() || schema.pattern.is_some())?;
+            .filter(|schema| {
+                let constrained = schema.max_length.is_some() || schema.pattern.is_some();
+                constrained != schema.description.is_some()
+            })?;
         let minimum = schema.min_length?;
         Some(if minimum > 1 {
             "\"strawberry\"".to_string()
@@ -3742,6 +4002,7 @@ impl InlineHoister<'_> {
                 let name = naming::child_class_name(parent, prop);
                 if let Some(values) = string_enum_values(&target) {
                     self.out.push(TypeDecl::Enum(build_enum(
+                        &target,
                         &name,
                         values,
                         clean_doc(description),
@@ -3764,6 +4025,7 @@ impl InlineHoister<'_> {
             if let Some(values) = string_enum_values(prop_schema) {
                 let name = naming::child_class_name(parent, prop);
                 self.out.push(TypeDecl::Enum(build_enum(
+                    prop_schema,
                     &name,
                     values,
                     clean_doc(prop_schema.description.as_deref()),
@@ -3789,7 +4051,7 @@ impl InlineHoister<'_> {
                     let member = non_null[0];
                     if let Some(values) = string_enum_values(member) {
                         self.out
-                            .push(TypeDecl::Enum(build_enum(&name, values, None)));
+                            .push(TypeDecl::Enum(build_enum(member, &name, values, None)));
                         return TypeRef::Named(name);
                     }
                     if let Some(reference) = member.reference.as_deref() {
@@ -3930,6 +4192,7 @@ impl InlineHoister<'_> {
             if let Some(values) = string_enum_values(schema) {
                 let name = format!("{request_ctx}{}", naming::class_name(param));
                 self.out.push(TypeDecl::Enum(build_enum(
+                    schema,
                     &name,
                     values,
                     clean_doc(schema.description.as_deref()),
@@ -3947,7 +4210,7 @@ impl InlineHoister<'_> {
                 if non_null.len() == 1 {
                     if let Some(values) = string_enum_values(non_null[0]) {
                         self.out
-                            .push(TypeDecl::Enum(build_enum(&name, values, None)));
+                            .push(TypeDecl::Enum(build_enum(non_null[0], &name, values, None)));
                         return TypeRef::Named(name);
                     }
                     if let Some(reference) = non_null[0].reference.as_deref() {
@@ -4007,6 +4270,7 @@ impl InlineHoister<'_> {
         let values = string_enum_values(item)?;
         let name = format!("{ctx}Item");
         self.out.push(TypeDecl::Enum(build_enum(
+            item,
             &name,
             values,
             clean_doc(item.description.as_deref()),
@@ -4489,6 +4753,33 @@ fn success_response_entry(op: &Operation) -> Option<&Response> {
         })
 }
 
+/// The same success entry as [`success_response_entry`], for mutation: the
+/// `stream-condition` split narrows each half's media map to its own type.
+fn success_response_entry_mut(op: &mut Operation) -> Option<&mut Response> {
+    let key = success_response_key(op)?;
+    op.responses.get_mut(&key)
+}
+
+/// The response key [`success_response_entry`] selects.
+fn success_response_key(op: &Operation) -> Option<String> {
+    if op.responses.get("200").is_some_and(has_dispatchable_media) {
+        return Some("200".to_string());
+    }
+    op.responses
+        .iter()
+        .find(|(code, response)| {
+            code.parse::<u16>()
+                .is_ok_and(|status| (200..300).contains(&status))
+                && has_dispatchable_media(response)
+        })
+        .or_else(|| {
+            op.responses
+                .iter()
+                .find(|(code, _)| code.as_str() == "default")
+        })
+        .map(|(code, _)| code.clone())
+}
+
 fn response_schema(response: &Response) -> Option<&Schema> {
     response
         .content
@@ -4527,6 +4818,15 @@ fn first_tag(op: &Operation) -> Option<&str> {
 ///   [`synthesized_method_name`] joins the HTTP method and full route
 ///   (`GET /widgets/{id}` → `get_widgets_id`).
 fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String {
+    // An explicit `x-crozier-sdk-method-name` / `x-fern-sdk-method-name` is the
+    // method name, ahead of every derivation below. It is still snake-cased and
+    // keyword-escaped, so a camelCase override lands as the Python spelling Fern
+    // emits for it.
+    if let Some(name) = op.sdk_method_name() {
+        return naming::escape_python_keyword(naming::sanitize_identifier(&naming::to_snake_case(
+            name,
+        )));
+    }
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
     let method = if op
         .operation_id
@@ -4770,6 +5070,31 @@ fn endpoint_module_titles(doc: &OpenApi) -> std::collections::BTreeMap<String, S
 /// (`attachment-public`, `content`). An untagged group falls back to the PascalCase
 /// operationId/path prefix (`EndpointsContainer`).
 fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
+    // An explicitly grouped operation names its own section. Fern titles it with
+    // the *tag* when the tag says the same thing as the group path — TrueForge's
+    // `mcpServers` under the tag `MCP Servers` keeps the tag's spacing and its
+    // acronym — and otherwise with the group segments themselves, each PascalCased
+    // and joined by a space: `sessions` under `Agent Sessions` is `Sessions`,
+    // `server` under `Capabilities` is `Server`, and
+    // `["catalogs", "mcpServers"]` is `Catalogs McpServers`.
+    if let Some(segments) = op.sdk_group_name() {
+        let letters = |value: &str| {
+            value
+                .chars()
+                .filter(char::is_ascii_alphanumeric)
+                .flat_map(char::to_lowercase)
+                .collect::<String>()
+        };
+        let group = letters(&segments.concat());
+        if let Some(tag) = first_tag(op).filter(|tag| letters(tag) == group) {
+            return tag.to_string();
+        }
+        return segments
+            .iter()
+            .map(|segment| naming::to_pascal_case(segment))
+            .collect::<Vec<_>>()
+            .join(" ");
+    }
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
     if id.is_empty() {
         if let Some(tag) = first_tag(op) {
@@ -4823,6 +5148,19 @@ fn tag_pascal(tag: &str) -> String {
 /// operationId prefix *does* equal the tag (`widgets_getWidget` under `Widgets`),
 /// both rules agree, so tag-grouped corpora already matched stay byte-identical.
 fn endpoint_module(op: &Operation, url: &str) -> String {
+    // An explicit `x-crozier-sdk-group-name` / `x-fern-sdk-group-name` names the
+    // sub-client outright and outranks every derivation below: it is the author
+    // saying where the method goes, so neither the tag nor the `operationId` is
+    // consulted. A list names a *nested* path, which becomes a `/`-joined module
+    // (`["catalogs", "mcpServers"]` -> `catalogs/mcp_servers`) — the one place a
+    // module holds more than one directory segment.
+    if let Some(segments) = op.sdk_group_name() {
+        return segments
+            .iter()
+            .map(|segment| snake_module(segment))
+            .collect::<Vec<_>>()
+            .join("/");
+    }
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
     if id.is_empty() && first_tag(op).is_none() {
         return String::new();
@@ -5084,15 +5422,25 @@ fn inferred_strip_discriminant_property(
         let values: Option<Vec<String>> = targets
             .iter()
             .map(|(_, target)| {
-                target
+                // A single-valued tag is a `const` or a one-member `enum`; both
+                // spell the same thing, and TrueForge's content parts use the
+                // second (`type: {enum: ["text"]}`).
+                let field = target
                     .required
                     .iter()
                     .any(|required| required == "type")
                     .then(|| target.properties.get("type"))
-                    .flatten()
-                    .and_then(|field| field.const_value.as_ref())
+                    .flatten()?;
+                field
+                    .const_value
+                    .as_ref()
                     .and_then(serde_json::Value::as_str)
                     .map(str::to_string)
+                    .or_else(|| {
+                        string_enum_values(field)
+                            .filter(|values| values.len() == 1)
+                            .map(|values| values[0].clone())
+                    })
             })
             .collect();
         let values = values?;
@@ -5101,35 +5449,144 @@ fn inferred_strip_discriminant_property(
     })
 }
 
+/// Whether a `oneOf`/`anyOf` member list is the *nullable* spelling rather than a
+/// union: one real alternative beside an explicit `type: null`. A `$ref` there
+/// names an ordinary optional field's type, not a union variant.
+fn is_nullable_alternation(members: &[Schema]) -> bool {
+    let real = members
+        .iter()
+        .filter(|member| !schema_is_null_type(member))
+        .count();
+    real == 1 && real < members.len()
+}
+
+/// Whether a schema node is the bare `type: null` alternative.
+fn schema_is_null_type(schema: &Schema) -> bool {
+    match schema.ty.as_ref() {
+        Some(TypeField::Single(ty)) => ty == "null",
+        Some(TypeField::Multiple(types)) => types.iter().all(|ty| ty == "null"),
+        None => false,
+    }
+}
+
+/// The component classes some node references from a position that is *not* a
+/// union variant — a property, an array element, a request or response body, a
+/// nullable alternation.
+///
+/// This is what decides whether a discriminated union's member keeps its
+/// discriminant property. Fern hoists the tag onto the union wrapper and drops it
+/// from a member it has consumed, but a member that is *also* usable on its own —
+/// TrueForge's `TurnStateRunning` behind `TurnCreatedEvent.state`, Letta's
+/// `LettaStopReason` behind `LettaResponse.stop_reason` — keeps it, because that
+/// standalone model still has to carry the tag. Measured across every registered
+/// golden: 123 mapping targets, and this predicate agrees with all of them.
+fn standalone_referenced_classes(doc: &OpenApi) -> std::collections::HashSet<String> {
+    let mut classes = std::collections::HashSet::new();
+    for schema in doc.components.schemas.values() {
+        collect_standalone_references(schema, &mut classes);
+    }
+    for item in doc.paths.values().chain(doc.webhooks.values()) {
+        for (_, operation) in item.operations() {
+            let bodies = operation
+                .request_body
+                .iter()
+                .flat_map(|request| request.content.values())
+                .chain(
+                    operation
+                        .responses
+                        .values()
+                        .flat_map(|response| response.content.values()),
+                );
+            for media in bodies {
+                if let Some(schema) = media.schema.as_ref() {
+                    collect_standalone_references(schema, &mut classes);
+                }
+            }
+        }
+    }
+    classes
+}
+
+/// Walk one schema tree, recording every `$ref` reached from a non-variant
+/// position. A union's member list is descended into only for its *own* nested
+/// content, never for the member references themselves; a discriminator mapping
+/// is not a reference position at all.
+fn collect_standalone_references(schema: &Schema, classes: &mut std::collections::HashSet<String>) {
+    if let Some(reference) = schema.reference.as_deref() {
+        classes.insert(ref_to_class(reference));
+    }
+    for child in schema
+        .properties
+        .values()
+        .chain(schema.items.iter().map(Box::as_ref))
+        .chain(schema.all_of.iter().flatten())
+    {
+        collect_standalone_references(child, classes);
+    }
+    if let Some(AdditionalProperties::Schema(child)) = schema.additional_properties.as_ref() {
+        collect_standalone_references(child, classes);
+    }
+    for members in schema.one_of.iter().chain(schema.any_of.iter()) {
+        let plain = is_nullable_alternation(members);
+        for member in members {
+            if plain || member.reference.is_none() {
+                collect_standalone_references(member, classes);
+            } else {
+                // A variant `$ref` is not a standalone use; its own subtree still is.
+                for child in member
+                    .properties
+                    .values()
+                    .chain(member.items.iter().map(Box::as_ref))
+                    .chain(member.all_of.iter().flatten())
+                {
+                    collect_standalone_references(child, classes);
+                }
+            }
+        }
+    }
+}
+
 /// Scan every schema for a discriminated `oneOf`/`anyOf` and record, per member
 /// class, the discriminant property to strip from its model. Keyed by class name
 /// (post-`class_name` normalization), matching the `owner` passed to
 /// [`Builder::collect_fields`].
 fn discriminant_strips(
     schemas: &IndexMap<String, Schema>,
+    standalone: &std::collections::HashSet<String>,
 ) -> std::collections::HashMap<String, String> {
     let mut strips = std::collections::HashMap::new();
     for schema in schemas.values() {
-        collect_discriminant_strips(schema, schemas, &mut strips);
+        collect_discriminant_strips(schema, schemas, standalone, &mut strips);
     }
     strips
 }
 
 fn document_discriminant_strips(doc: &OpenApi) -> std::collections::HashMap<String, String> {
-    let mut strips = discriminant_strips(&doc.components.schemas);
+    let standalone = standalone_referenced_classes(doc);
+    let mut strips = discriminant_strips(&doc.components.schemas, &standalone);
     for item in doc.paths.values().chain(doc.webhooks.values()) {
         for (_, operation) in item.operations() {
             if let Some(request) = operation.request_body.as_ref() {
                 for media in request.content.values() {
                     if let Some(schema) = media.schema.as_ref() {
-                        collect_discriminant_strips(schema, &doc.components.schemas, &mut strips);
+                        collect_discriminant_strips(
+                            schema,
+                            &doc.components.schemas,
+                            &standalone,
+                            &mut strips,
+                        );
                     }
                 }
             }
             for response in operation.responses.values() {
                 for media in response.content.values() {
                     if let Some(schema) = media.schema.as_ref() {
-                        collect_discriminant_strips(schema, &doc.components.schemas, &mut strips);
+                        collect_discriminant_strips(
+                            schema,
+                            &doc.components.schemas,
+                            &standalone,
+                            &mut strips,
+                        );
                     }
                 }
             }
@@ -5184,6 +5641,7 @@ fn propagate_strips_to_bases(
 fn collect_discriminant_strips(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
+    standalone: &std::collections::HashSet<String>,
     strips: &mut std::collections::HashMap<String, String>,
 ) {
     let property = schema
@@ -5219,18 +5677,21 @@ fn collect_discriminant_strips(
         if schema.one_of.is_some() || is_inheritance_union_base(schema) {
             if let Some(discriminator) = &schema.discriminator {
                 for reference in discriminator.mapping.values() {
-                    let target = resolve_ref_from_schemas(schemas, reference);
-                    let const_discriminant = target
-                        .and_then(|target| target.properties.get(&property))
-                        .is_some_and(|field| field.const_value.is_some());
-                    let const_value = target
+                    // Fern hoists the tag onto the union wrapper and drops it from
+                    // the member model it consumed — unless that member is also
+                    // referenced somewhere on its own, where the standalone model
+                    // still has to carry it (see
+                    // [`standalone_referenced_classes`]), or its `const` tag is one
+                    // of the values Fern is measured to preserve regardless.
+                    let class = ref_to_class(reference);
+                    let const_value = resolve_ref_from_schemas(schemas, reference)
                         .and_then(|target| target.properties.get(&property))
                         .and_then(|field| field.const_value.as_ref())
                         .and_then(serde_json::Value::as_str);
-                    let preserve_const =
-                        const_discriminant && const_value.is_some_and(preserve_const_discriminant);
-                    if !preserve_const {
-                        strips.insert(ref_to_class(reference), property.clone());
+                    let preserve = standalone.contains(&class)
+                        || const_value.is_some_and(preserve_const_discriminant);
+                    if !preserve {
+                        strips.insert(class, property.clone());
                     }
                 }
             }
@@ -5245,7 +5706,7 @@ fn collect_discriminant_strips(
         .chain(schema.any_of.iter().flatten())
         .chain(schema.all_of.iter().flatten())
     {
-        collect_discriminant_strips(child, schemas, strips);
+        collect_discriminant_strips(child, schemas, standalone, strips);
     }
 }
 
@@ -5564,7 +6025,7 @@ impl Builder<'_> {
         // stay `Name = int` — see [`base_type_ref`] — and fall through to the alias).
         if let Some(values) = string_enum_values(schema) {
             self.types
-                .push(TypeDecl::Enum(build_enum(name, values, docstring)));
+                .push(TypeDecl::Enum(build_enum(schema, name, values, docstring)));
             return;
         }
 
@@ -6243,7 +6704,7 @@ impl Builder<'_> {
         let docstring = clean_doc(description.or(target.description.as_deref()));
         if let Some(values) = string_enum_values(target) {
             self.types
-                .push(TypeDecl::Enum(build_enum(ctx, values, docstring)));
+                .push(TypeDecl::Enum(build_enum(target, ctx, values, docstring)));
             return TypeRef::Named(ctx.to_string());
         }
         if !is_map(target)
@@ -6285,6 +6746,7 @@ impl Builder<'_> {
                 if let Some(values) = string_enum_values(value) {
                     let value_name = format!("{owner_prop}Value");
                     self.types.push(TypeDecl::Enum(build_enum(
+                        value,
                         &value_name,
                         values,
                         clean_doc(value.description.as_deref()),
@@ -6298,6 +6760,7 @@ impl Builder<'_> {
             if let Some(values) = string_enum_values(prop_schema) {
                 let hoisted = format!("{owner}{}", naming::class_name(prop));
                 self.types.push(TypeDecl::Enum(build_enum(
+                    prop_schema,
                     &hoisted,
                     values,
                     clean_doc(prop_schema.description.as_deref()),
@@ -6393,6 +6856,7 @@ impl Builder<'_> {
                     if let Some(values) = string_enum_values(items) {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
                         self.types.push(TypeDecl::Enum(build_enum(
+                            items,
                             &name,
                             values,
                             clean_doc(items.description.as_deref()),
@@ -6494,8 +6958,12 @@ impl Builder<'_> {
                             return TypeRef::Named(name);
                         }
                         if let Some(values) = string_enum_values(non_null[0]) {
-                            self.types
-                                .push(TypeDecl::Enum(build_enum(&name, values, None)));
+                            self.types.push(TypeDecl::Enum(build_enum(
+                                non_null[0],
+                                &name,
+                                values,
+                                None,
+                            )));
                             return TypeRef::Named(name);
                         }
                         if non_null[0].ty.as_ref().and_then(TypeField::primary) == Some("array") {
@@ -6515,6 +6983,7 @@ impl Builder<'_> {
                                 if let Some(values) = string_enum_values(resolved_items) {
                                     let item_name = format!("{name}Item");
                                     self.types.push(TypeDecl::Enum(build_enum(
+                                        resolved_items,
                                         &item_name,
                                         values,
                                         clean_doc(items.description.as_deref()),
@@ -6685,6 +7154,7 @@ impl Builder<'_> {
         if let Some(values) = string_enum_values(variant) {
             let name = variant_class_name(parent, index, variant, siblings);
             self.types.push(TypeDecl::Enum(build_enum(
+                variant,
                 &name,
                 values,
                 clean_doc(variant.description.as_deref()),
@@ -7711,7 +8181,7 @@ mod tests {
             }))
             .expect("schemas deserialize");
 
-        let strips = discriminant_strips(&schemas);
+        let strips = discriminant_strips(&schemas, &std::collections::HashSet::new());
         assert_eq!(strips.get("Cat").map(String::as_str), Some("kind"));
         assert_eq!(strips.get("Dog").map(String::as_str), Some("kind"));
         assert_eq!(strips.get("Bird").map(String::as_str), Some("type"));
@@ -7907,6 +8377,7 @@ mod tests {
         // Fern omits exact duplicate wire values. Distinct values that sanitize to
         // the same identifier still need unique members/`visit` params.
         let e = build_enum(
+            &Schema::default(),
             "Color",
             vec![
                 "a-b".to_string(),
@@ -9682,7 +10153,12 @@ mod tests {
             .discriminated_union("Content", "content", &content, None)
             .is_some());
         let mut strips = std::collections::HashMap::new();
-        super::collect_discriminant_strips(&content, &components.components.schemas, &mut strips);
+        super::collect_discriminant_strips(
+            &content,
+            &components.components.schemas,
+            &std::collections::HashSet::new(),
+            &mut strips,
+        );
         assert!(!strips.contains_key("ChatCompletionContentPartTextParam"));
         assert_eq!(
             strips

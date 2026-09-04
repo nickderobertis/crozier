@@ -180,6 +180,23 @@ const EXHAUSTIVE: Corpus = Corpus {
 /// so the corpora drive crozier with the same naming. Every `unmatched` list is
 /// empty: each target reproduces its whole golden byte-for-byte.
 const FEATURE_TARGETS: &[Corpus] = &[
+    // Every SDK-shaping extension declared in both spellings at once: the Fern one
+    // Fern reads to produce the golden, and the canonical `x-crozier-*` one crozier
+    // prefers over it. Matching the golden is what proves crozier read the
+    // canonical spelling — the same dual-vocabulary check `audience-filter` makes
+    // for `x-crozier-audiences`, here over the group and method names, the
+    // pagination contract, the streaming `stream-condition` split and the enum
+    // member names.
+    Corpus {
+        api: "crozier-sdk-extensions",
+        package_name: "fern",
+        project_name: "default_package_name",
+        audiences: &[],
+        audience_strict: false,
+        client_class_name: None,
+        extra_fields: None,
+        unmatched: &[],
+    },
     Corpus {
         api: "auth-schemes",
         package_name: "fern",
@@ -1881,6 +1898,8 @@ const CORPORA: &[&Corpus] = &[
     &SWAGGER_PETSTORE,
     &CYCLONEDX_TRANSPARENCY_EXCHANGE,
     &ADYEN_CAPITAL,
+    &APIVIDEO_ANDROID_UPLOADER,
+    &TRUEFOUNDRY_TRUEFORGE,
 ];
 
 #[test]
@@ -3057,6 +3076,42 @@ const ADYEN_CAPITAL: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `apivideo-android-uploader`: the api.video document is the corpus's only
+/// source declaring a Reference Object `description` sibling — its
+/// `components.parameters.filterBy` is a `$ref` to `filterBy_2` carrying its own
+/// `description`. Every other registered source writes `$ref` alone, so this row
+/// is what pins that crozier reads a reference with a sibling the way Fern does
+/// rather than tripping over the extra key.
+const APIVIDEO_ANDROID_UPLOADER: Corpus = Corpus {
+    api: "apivideo-android-uploader",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `truefoundry-trueforge`: the TrueForge API is the corpus's only source
+/// declaring `x-fern-ignore`, on four Operation Objects, and the only one
+/// declaring Fern's SDK-shaping extensions beside it — `x-fern-sdk-group-name`
+/// (54 sites, eight of them two-level nested groups), `x-fern-sdk-method-name`
+/// (54), `x-fern-pagination` (7) and `x-fern-streaming` (2). It therefore pins
+/// nested sub-clients, cursor pagination and the dual-header ignore policy at
+/// once, over 40 paths and 218 component schemas that carry no `operationId` at
+/// all, so every method name comes from an extension or from the path.
+const TRUEFOUNDRY_TRUEFORGE: Corpus = Corpus {
+    api: "truefoundry-trueforge",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3331,6 +3386,16 @@ fn cyclonedx_transparency_exchange_matches_fern_output() {
 #[test]
 fn adyen_capital_matches_fern_output() {
     assert_link_ok_corpus_matches(&ADYEN_CAPITAL);
+}
+
+#[test]
+fn apivideo_android_uploader_matches_fern_output() {
+    assert_link_ok_corpus_matches(&APIVIDEO_ANDROID_UPLOADER);
+}
+
+#[test]
+fn truefoundry_trueforge_matches_fern_output() {
+    assert_link_ok_corpus_matches(&TRUEFOUNDRY_TRUEFORGE);
 }
 
 #[test]

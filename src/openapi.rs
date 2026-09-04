@@ -282,7 +282,7 @@ impl PathItem {
 }
 
 /// A single API operation.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Operation {
     /// Whether path-item parameters were merged into this operation.
     #[serde(skip)]
@@ -314,6 +314,56 @@ pub struct Operation {
     /// `x-crozier-ignore` when both appear (see [`Operation::ignored`]).
     #[serde(rename = "x-fern-ignore", default)]
     ignore_fern: Option<bool>,
+    /// `x-crozier-sdk-group-name`: the sub-client this operation belongs to,
+    /// overriding the tag/`operationId` grouping (canonical spelling). One name, or
+    /// a list naming a nested path (`["catalogs", "mcpServers"]`). Read via
+    /// [`Operation::sdk_group_name`], which also honours the
+    /// `x-fern-sdk-group-name` variant per the
+    /// [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-sdk-group-name", default)]
+    sdk_group_name_crozier: Option<SdkGroupName>,
+    /// `x-fern-sdk-group-name`: the Fern spelling of the group override. Superseded
+    /// by `x-crozier-sdk-group-name` when both appear (see
+    /// [`Operation::sdk_group_name`]).
+    #[serde(rename = "x-fern-sdk-group-name", default)]
+    sdk_group_name_fern: Option<SdkGroupName>,
+    /// `x-crozier-sdk-method-name`: the generated method's name, overriding the one
+    /// derived from `operationId`/summary/route (canonical spelling). Read via
+    /// [`Operation::sdk_method_name`], which also honours the
+    /// `x-fern-sdk-method-name` variant per the
+    /// [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-sdk-method-name", default)]
+    sdk_method_name_crozier: Option<String>,
+    /// `x-fern-sdk-method-name`: the Fern spelling of the method-name override.
+    /// Superseded by `x-crozier-sdk-method-name` when both appear (see
+    /// [`Operation::sdk_method_name`]).
+    #[serde(rename = "x-fern-sdk-method-name", default)]
+    sdk_method_name_fern: Option<String>,
+    /// `x-crozier-streaming`: how this operation streams, and (when it declares a
+    /// `stream-condition`) the request property that selects between the streaming
+    /// and buffered forms. Read via [`Operation::streaming`], which also honours
+    /// the `x-fern-streaming` variant per the
+    /// [dual-header policy](self#fern-compatible-extensions).
+    ///
+    /// Boxed: `Streaming` embeds two inline `Option<Schema>` and is rarely present,
+    /// while `PathItem` holds an `Option<Operation>` per method — see
+    /// [`path_item_stays_small_enough_for_a_1mib_windows_stack`](self::tests).
+    #[serde(rename = "x-crozier-streaming", default)]
+    streaming_crozier: Option<Box<Streaming>>,
+    /// `x-fern-streaming`: the Fern spelling of the streaming contract. Superseded
+    /// by `x-crozier-streaming` when both appear (see [`Operation::streaming`]).
+    #[serde(rename = "x-fern-streaming", default)]
+    streaming_fern: Option<Box<Streaming>>,
+    /// `x-crozier-pagination`: the cursor/offset pagination contract this operation
+    /// implements (canonical spelling). Read via [`Operation::pagination`], which
+    /// also honours the `x-fern-pagination` variant per the
+    /// [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-pagination", default)]
+    pagination_crozier: Option<Pagination>,
+    /// `x-fern-pagination`: the Fern spelling of the pagination contract. Superseded
+    /// by `x-crozier-pagination` when both appear (see [`Operation::pagination`]).
+    #[serde(rename = "x-fern-pagination", default)]
+    pagination_fern: Option<Pagination>,
     /// A human description; becomes the method docstring's summary line.
     #[serde(default)]
     pub description: Option<String>,
@@ -363,6 +413,161 @@ impl Operation {
     pub fn ignored(&self) -> bool {
         self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
     }
+
+    /// The sub-client path this operation is grouped into, canonicalizing on the
+    /// `x-crozier-sdk-group-name` spelling (see the [dual-header
+    /// policy](self#fern-compatible-extensions)). A bare string is a one-segment
+    /// path; a list names a nested one. Empty segments are dropped, so a group that
+    /// is only whitespace reads as no override at all.
+    #[must_use]
+    pub fn sdk_group_name(&self) -> Option<Vec<&str>> {
+        let declared = self
+            .sdk_group_name_crozier
+            .as_ref()
+            .or(self.sdk_group_name_fern.as_ref())?;
+        let segments: Vec<&str> = match declared {
+            SdkGroupName::One(name) => vec![name.trim()],
+            SdkGroupName::Nested(names) => names.iter().map(|name| name.trim()).collect(),
+        };
+        let segments: Vec<&str> = segments
+            .into_iter()
+            .filter(|segment| !segment.is_empty())
+            .collect();
+        (!segments.is_empty()).then_some(segments)
+    }
+
+    /// The declared method-name override, canonicalizing on the
+    /// `x-crozier-sdk-method-name` spelling (see the [dual-header
+    /// policy](self#fern-compatible-extensions)). A blank value is no override.
+    #[must_use]
+    pub fn sdk_method_name(&self) -> Option<&str> {
+        self.sdk_method_name_crozier
+            .as_deref()
+            .or(self.sdk_method_name_fern.as_deref())
+            .map(str::trim)
+            .filter(|name| !name.is_empty())
+    }
+
+    /// The declared pagination contract, canonicalizing on the
+    /// `x-crozier-pagination` spelling (see the [dual-header
+    /// policy](self#fern-compatible-extensions)).
+    #[must_use]
+    pub fn pagination(&self) -> Option<&Pagination> {
+        self.pagination_crozier
+            .as_ref()
+            .or(self.pagination_fern.as_ref())
+    }
+
+    /// The declared streaming contract, canonicalizing on the
+    /// `x-crozier-streaming` spelling (see the [dual-header
+    /// policy](self#fern-compatible-extensions)).
+    #[must_use]
+    pub fn streaming(&self) -> Option<&Streaming> {
+        self.streaming_crozier
+            .as_deref()
+            .or(self.streaming_fern.as_deref())
+    }
+}
+
+/// The value of `x-crozier-streaming` / `x-fern-streaming`: how an operation
+/// streams. An operation that declares a `stream-condition` generates *two*
+/// methods — one that sets the condition and streams, one that clears it and
+/// returns the buffered response.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct Streaming {
+    /// The stream encoding (`sse`).
+    #[serde(default)]
+    pub format: Option<String>,
+    /// The buffered response schema, used when the condition is cleared.
+    #[serde(default)]
+    pub response: Option<Schema>,
+    /// The streamed chunk schema, used when the condition is set.
+    #[serde(rename = "response-stream", default)]
+    pub response_stream: Option<Schema>,
+    /// The request property that selects between the two forms
+    /// (`$request.stream`).
+    #[serde(rename = "stream-condition", default)]
+    pub stream_condition: Option<String>,
+}
+
+impl Streaming {
+    /// The request property the condition names, with its `$request.` prefix
+    /// stripped. `None` when the operation streams unconditionally.
+    #[must_use]
+    pub fn condition_property(&self) -> Option<&str> {
+        self.stream_condition
+            .as_deref()
+            .map(strip_selector_prefix)
+            .filter(|property| !property.is_empty())
+    }
+}
+
+/// The value of `x-crozier-sdk-group-name` / `x-fern-sdk-group-name`: one group
+/// name, or a list naming a nested path of them.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+pub enum SdkGroupName {
+    /// A single group name (`sessions`).
+    One(String),
+    /// A nested path of group names (`["catalogs", "mcpServers"]`).
+    Nested(Vec<String>),
+}
+
+/// One entry of `x-crozier-enum` / `x-fern-enum`: the Python member name a wire
+/// value is given, in place of the identifier derived from the value itself.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct EnumValueName {
+    /// The member name (`USD` for the value `$`).
+    #[serde(default)]
+    pub name: Option<String>,
+}
+
+/// The value of `x-crozier-pagination` / `x-fern-pagination`: the response and
+/// request members that drive a generated pager. Only the cursor form is modelled,
+/// which is the one Fern's Python generator emits a `SyncPager`/`AsyncPager` for.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct Pagination {
+    /// The request property holding the cursor, as a dotted path
+    /// (`$request.starting_after`).
+    #[serde(default)]
+    pub cursor: Option<String>,
+    /// The response property holding the next cursor
+    /// (`$response.next_cursor`).
+    #[serde(default)]
+    pub next_cursor: Option<String>,
+    /// The response property holding the page's items (`$response.data`).
+    #[serde(default)]
+    pub results: Option<String>,
+    /// The request property holding the page offset, for the offset form.
+    #[serde(default)]
+    pub offset: Option<String>,
+}
+
+impl Pagination {
+    /// The request-side cursor property name, with the `$request.` prefix stripped.
+    #[must_use]
+    pub fn cursor_property(&self) -> Option<&str> {
+        self.cursor.as_deref().map(strip_selector_prefix)
+    }
+
+    /// The response-side next-cursor property name, with `$response.` stripped.
+    #[must_use]
+    pub fn next_cursor_property(&self) -> Option<&str> {
+        self.next_cursor.as_deref().map(strip_selector_prefix)
+    }
+
+    /// The response-side results property name, with `$response.` stripped.
+    #[must_use]
+    pub fn results_property(&self) -> Option<&str> {
+        self.results.as_deref().map(strip_selector_prefix)
+    }
+}
+
+/// Strip the `$request.` / `$response.` prefix a selector path carries — the
+/// spelling both `x-crozier-pagination`'s cursor paths and
+/// `x-crozier-streaming`'s `stream-condition` use.
+fn strip_selector_prefix(path: &str) -> &str {
+    path.split_once('.').map_or(path, |(_, rest)| rest)
 }
 
 /// An operation parameter (path/query/header/cookie). A `$ref` parameter carries
@@ -655,6 +860,16 @@ pub struct Schema {
     /// by `x-crozier-ignore` when both appear (see [`Schema::ignored`]).
     #[serde(rename = "x-fern-ignore", default)]
     pub ignore_fern: Option<bool>,
+    /// `x-crozier-enum`: per-value member names for a string enum, keyed by wire
+    /// value (canonical spelling). Read via [`Schema::enum_member_names`], which
+    /// also honours the `x-fern-enum` variant per the
+    /// [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-enum", default)]
+    pub(crate) enum_names_crozier: Option<IndexMap<String, EnumValueName>>,
+    /// `x-fern-enum`: the Fern spelling of the per-value member names. Superseded by
+    /// `x-crozier-enum` when both appear (see [`Schema::enum_member_names`]).
+    #[serde(rename = "x-fern-enum", default)]
+    pub(crate) enum_names_fern: Option<IndexMap<String, EnumValueName>>,
     /// Set when this node's `type` was a list with more than one non-`null` member,
     /// which `normalize_multi_type_schemas` rewrote into the equivalent `anyOf`.
     /// Not a wire field. Fern names such a union rather than inlining it — EN
@@ -681,6 +896,22 @@ impl Schema {
     #[must_use]
     pub fn ignored(&self) -> bool {
         self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
+    }
+
+    /// The declared Python member name for each enum value, canonicalizing on the
+    /// `x-crozier-enum` spelling (see the [dual-header
+    /// policy](self#fern-compatible-extensions)). A value the map does not name, or
+    /// names blankly, keeps the identifier derived from the value itself.
+    pub fn enum_member_names(&self) -> impl Iterator<Item = (&str, &str)> {
+        self.enum_names_crozier
+            .as_ref()
+            .or(self.enum_names_fern.as_ref())
+            .into_iter()
+            .flatten()
+            .filter_map(|(value, declared)| {
+                let name = declared.name.as_deref()?.trim();
+                (!name.is_empty()).then_some((value.as_str(), name))
+            })
     }
 
     /// Whether the document says this schema admits `null`: the 3.0 `nullable`
@@ -2216,5 +2447,27 @@ paths:
         let op = doc.paths["/x/{id}"].get.as_ref().unwrap();
         assert_eq!(op.parameters.len(), 1);
         assert_eq!(op.parameters[0].description.as_deref(), Some("overridden"));
+    }
+
+    /// `PathItem` holds one `Option<Operation>` per HTTP method, and serde's derived
+    /// `visit_map` keeps a separate stack local for every field it may fill — so the
+    /// deserializer's frame grows with `size_of::<PathItem>()`, not with document
+    /// depth. Windows gives `main` a 1 MiB stack (Linux 8 MiB), so a `PathItem` that
+    /// is merely large overflows there while passing everywhere else: two unboxed
+    /// `Option<Streaming>` extension fields once took `Operation` to 4_696 bytes and
+    /// `PathItem` to 28_200, and a debug build blew the Windows stack parsing an
+    /// ordinary fixture. Keep large, rarely-present payloads behind a `Box`. This
+    /// ceiling is a headroom check rather than an exact size — widen it only with a
+    /// deliberate reason, and never by un-boxing.
+    #[test]
+    fn path_item_stays_small_enough_for_a_1mib_windows_stack() {
+        let path_item = std::mem::size_of::<PathItem>();
+        assert!(
+            path_item <= 8_192,
+            "PathItem grew to {path_item} bytes (Operation {}); serde's visit_map \
+             frame scales with it and overflows the 1 MiB Windows main stack. Box a \
+             large rarely-present field rather than raising this ceiling.",
+            std::mem::size_of::<Operation>()
+        );
     }
 }

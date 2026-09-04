@@ -1,0 +1,44 @@
+
+
+from __future__ import annotations
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .model_message_event import ModelMessageEvent
+
+
+class ThreadState_Done(UniversalBaseModel):
+    status: typing.Literal["done"] = "done"
+    output: ModelMessageEvent
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+class ThreadState_Error(UniversalBaseModel):
+    status: typing.Literal["error"] = "error"
+    error: str
+    output: typing.Optional[ModelMessageEvent] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+ThreadState = typing_extensions.Annotated[
+    typing.Union[ThreadState_Done, ThreadState_Error], pydantic.Field(discriminator="status")
+]
