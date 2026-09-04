@@ -6947,7 +6947,12 @@ impl<'a> ExampleCtx<'a> {
                     } else {
                         Example::Dict(pairs)
                     }
-                } else if self.resolves_to_any(v) {
+                } else if self.resolves_to_any(v) || matches!(v.as_ref(), TypeRef::Optional(_)) {
+                    // An *optional* map value has no value to show — VolView's
+                    // `values: Dict[str, Optional[RunTaskRequestValuesValue]]`
+                    // (its `oneOf` carries a `null` member) is exampled `{}` —
+                    // where a required one takes the `{"key": ...}` pair
+                    // `squareup.com`'s `team_members` shows.
                     if self.reference {
                         Example::ReferenceDict(vec![])
                     } else {
@@ -7706,7 +7711,11 @@ fn build_example_inner(
         // from the example). The example's reach is what adds the optional
         // `code`/`redirect_uri`/`code_verifier` of
         // `openbankingproject-ch-kundenbeziehung`'s `/token` beside its two
-        // required fields.
+        // required fields. A *related* multipart body — one whose `encoding`
+        // gives a part its own content type — additionally shows every file part
+        // in the documentation writers, which is the whole example for
+        // `free5gc-pdu-session` (no part is declared required there) and one
+        // argument beside the required `descriptor` for VolView's `/stage`.
         Some(RequestBody::Form(form)) => {
             let related = form
                 .fields
@@ -7716,11 +7725,8 @@ fn build_example_inner(
                 .fields
                 .iter()
                 .filter(|f| {
-                    if documentation && related {
-                        f.is_file
-                    } else {
-                        (f.spec_required || f.media_example) && (documentation || !f.is_file)
-                    }
+                    (f.spec_required || f.media_example || (related && f.is_file))
+                        && (documentation || !f.is_file)
                 })
                 .collect();
             // Fern's reference writer lists required multipart file inputs before
@@ -7844,7 +7850,11 @@ fn build_example_inner(
         names.insert(0, example_name.clone());
     } else {
         names.push(example_name.clone());
-        names.sort();
+        // The same discriminated-union ordering the tag-scoped imports below use:
+        // Fern writes `StageInputDescriptor_Labelmap` before
+        // `StageInputDescriptorLabelmapReferenceImage`, where a plain sort puts
+        // the underscore last.
+        names.sort_by(|left, right| example_import_cmp(left, right));
     }
     let import_flat = format!("from {pkg} import {}", names.join(", "));
     let import_width = if documentation && !is_async {

@@ -132,11 +132,40 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
             .iter()
             .map(|(name, variable)| ServerUrlVariable {
                 wire_name: name.clone(),
-                py_name: naming::to_snake_case(name),
+                py_name: server_variable_py_name(name),
                 default: variable.default.clone(),
             })
             .collect(),
     })
+}
+
+/// The root client's own keyword parameters, which a server URL variable cannot
+/// shadow. Fern prefixes a colliding variable with `server_url_` — VolView's
+/// server template is `{baseUrl}`, whose `baseUrl` would snake-case onto the
+/// constructor's own `base_url`, so Fern names it `server_url_base_url` — and
+/// leaves every other variable as plain snake_case (`apiRoot` → `api_root`,
+/// `basePath` → `base_path`, `region` → `region`).
+const ROOT_CLIENT_PARAMETERS: [&str; 10] = [
+    "base_url",
+    "environment",
+    "headers",
+    "timeout",
+    "max_retries",
+    "stream_reconnection_enabled",
+    "max_stream_reconnection_attempts",
+    "follow_redirects",
+    "httpx_client",
+    "logging",
+];
+
+/// The generated constructor parameter spelling for one server URL variable.
+fn server_variable_py_name(wire_name: &str) -> String {
+    let snake = naming::to_snake_case(wire_name);
+    if ROOT_CLIENT_PARAMETERS.contains(&snake.as_str()) {
+        format!("server_url_{snake}")
+    } else {
+        snake
+    }
 }
 
 /// Substitute a server URL's `{var}` placeholders with each percent-encoded
@@ -6757,6 +6786,61 @@ impl Builder<'_> {
                     );
                 }
             }
+            // A map whose value schema declares its own structure hoists that value
+            // to `{Owner}{Prop}Value`, the way a map of string enums does above:
+            // VolView's `AnnotationsFileLabels.rulers` is a map of an inline
+            // object and generates `AnnotationsFileLabelsRulersValue`, and its
+            // `RunTaskRequest.values` is a map of a `oneOf` and generates a
+            // `RunTaskRequestValuesValue` union alias. A `null` member of that
+            // union leaves the alias, exactly as it does at a property, and makes
+            // the map's value type `Optional`.
+            if let Some(AdditionalProperties::Schema(value)) = &prop_schema.additional_properties {
+                if prop_schema.properties.is_empty() && value.reference.is_none() {
+                    let value_name = format!("{owner_prop}Value");
+                    if let Some(members) = value.one_of.as_ref().or(value.any_of.as_ref()) {
+                        let nullable = members.iter().any(|member| {
+                            member.ty.as_ref().and_then(TypeField::primary) == Some("null")
+                        });
+                        let variants = members
+                            .iter()
+                            .enumerate()
+                            .filter(|(_, member)| {
+                                member.ty.as_ref().and_then(TypeField::primary) != Some("null")
+                            })
+                            .map(|(index, member)| {
+                                self.variant_ref(&value_name, index, member, members)
+                            })
+                            .collect();
+                        self.push_alias(
+                            &value_name,
+                            naming::module_name(&value_name),
+                            TypeRef::Union(dedupe_union_members(variants)),
+                            clean_doc(value.description.as_deref()),
+                        );
+                        let named = TypeRef::Named(value_name);
+                        return TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(if nullable {
+                                TypeRef::Optional(Box::new(named))
+                            } else {
+                                named
+                            }),
+                        );
+                    }
+                    if is_inline_struct(value) {
+                        self.add_object(
+                            &value_name,
+                            naming::module_name(&value_name),
+                            value,
+                            clean_doc(value.description.as_deref()),
+                        );
+                        return TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(TypeRef::Named(value_name)),
+                        );
+                    }
+                }
+            }
             if let Some(values) = string_enum_values(prop_schema) {
                 let hoisted = format!("{owner}{}", naming::class_name(prop));
                 self.types.push(TypeDecl::Enum(build_enum(
@@ -7196,6 +7280,38 @@ impl Builder<'_> {
             );
             return TypeRef::Named(name);
         }
+        // A variant that is itself an inline composition is a *named* union to
+        // Fern rather than an inlined one: VolView's `ResultIntent.anyOf[0]` is a
+        // `oneOf` of five `intent`-const objects, and Fern generates the
+        // discriminated union `ResultIntentZero` for it, which the enclosing
+        // `ResultIntent` alias then references by name.
+        if variant.reference.is_none() {
+            if let Some(members) = variant.one_of.as_ref().or(variant.any_of.as_ref()) {
+                let name = variant_class_name(parent, index, variant, siblings);
+                let module = naming::module_name(&name);
+                let docstring = clean_doc(variant.description.as_deref());
+                if let Some(decl) =
+                    self.discriminated_union(&name, &module, variant, docstring.clone())
+                {
+                    self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                    return TypeRef::Named(name);
+                }
+                let nested = members
+                    .iter()
+                    .enumerate()
+                    .map(|(nested_index, member)| {
+                        self.variant_ref(&name, nested_index, member, members)
+                    })
+                    .collect();
+                self.push_alias(
+                    &name,
+                    module,
+                    TypeRef::Union(dedupe_union_members(nested)),
+                    docstring,
+                );
+                return TypeRef::Named(name);
+            }
+        }
         // `format: binary` is a file body, not a union alternative: in a union
         // Fern reads it as the `string` it is declared as. Probed at 5.20.0,
         // `oneOf: [{type: string, format: binary}, {type: integer}]` generates
@@ -7455,6 +7571,7 @@ fn example_is_schema_definition(example: &serde_json::Value) -> bool {
 /// hoisting an inline request/response body into a named type.
 fn is_inline_struct(schema: &Schema) -> bool {
     schema.reference.is_none()
+        && !declares_scalar_type(schema)
         && (!schema.properties.is_empty()
             || schema.all_of.is_some()
             || (is_object_type(schema)
@@ -7465,6 +7582,18 @@ fn is_inline_struct(schema: &Schema) -> bool {
                     schema.additional_properties,
                     Some(AdditionalProperties::Bool(false))
                 )))
+}
+
+/// Whether the schema declares a non-composite scalar `type` of its own. Such a
+/// schema is not object-shaped however it is decorated, so it never hoists to a
+/// model: VolView's `TaskSpec.id` is `type: string` with an `allOf` of two
+/// `pattern`-only constraint subschemas, and Fern types it `str` rather than
+/// coining a `TaskSpecId` for the composition.
+fn declares_scalar_type(schema: &Schema) -> bool {
+    matches!(
+        schema.ty.as_ref().and_then(TypeField::primary),
+        Some("string" | "number" | "integer" | "boolean")
+    )
 }
 
 /// The English word for a small ordinal, used to name hoisted union variants
