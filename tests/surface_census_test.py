@@ -1662,12 +1662,16 @@ class RankedBacklogTests(unittest.TestCase):
             _region, cells = self.entries[key]
             with self.subTest(key=key):
                 self.probe_kind(key, cells)
-                self.assertEqual(
-                    [],
-                    self.census_selectors_cited(cells[7]),
+                cited = self.census_selectors_cited(cells[7])
+                # `assertFalse`, not `assertEqual([], …)`: the diff would push the
+                # message that names the row below the list it is about.
+                self.assertFalse(
+                    cited,
                     f"{key}: its PROBE settlement cell names a census selector as "
-                    f"its reason; a selector reporting zero belongs in the "
-                    f"`evidence` cell as `gap` evidence, not in the settlement",
+                    f"its reason ({', '.join(cited)}); a selector reporting zero "
+                    f"belongs in the `evidence` cell as `gap` evidence, and a "
+                    f"selector that cannot express the shape has measured nothing "
+                    f"about it",
                 )
 
     def test_every_witness_supply_probe_names_its_sources_and_their_queries(self) -> None:
