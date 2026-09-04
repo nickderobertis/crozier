@@ -2544,11 +2544,20 @@ fn query_parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter)
     parameter_example(doc, parameter).or_else(|| {
         // Fern synthesizes constrained query-string placeholders from the
         // minimum length: its short `"x"` sample or a ten-character sample.
-        let minimum = parameter
+        //
+        // Only for a string it considers constrained, though, and `minLength`
+        // alone does not make it one: Adyen's required `accountHolderId` declares
+        // `minLength: 1` and nothing else, and Fern's worked call passes the
+        // parameter's own name. CloudFormation's `StackName` declares
+        // `minLength: 1` beside a `pattern` and gets `"x"`, and its
+        // `SchemaHandlerPackage` declares one beside a `maxLength` and gets the
+        // same, so either of those two keywords is what turns the synthesis on.
+        let schema = parameter
             .schema
             .as_ref()
             .filter(|schema| schema.ty.as_ref().and_then(TypeField::primary) == Some("string"))
-            .and_then(|schema| schema.min_length)?;
+            .filter(|schema| schema.max_length.is_some() || schema.pattern.is_some())?;
+        let minimum = schema.min_length?;
         Some(if minimum > 1 {
             "\"strawberry\"".to_string()
         } else {
@@ -3005,10 +3014,23 @@ fn resolve_request_body(
     }
     // A form body: `multipart/form-data` (file uploads via `files=`) or
     // `application/x-www-form-urlencoded` (all fields via `data=`).
+    //
+    // The urlencoded spelling loses to a JSON representation offered beside it,
+    // the same way `multipart/related` does above: `swagger-petstore` offers
+    // `application/json`, `application/xml` and
+    // `application/x-www-form-urlencoded` on five request bodies, all three
+    // `$ref`ing one component schema, and Fern's golden sends `json=` with no
+    // content-type header override — so the whole body stays the named component
+    // rather than being flattened into form fields. `multipart/form-data` keeps
+    // priority: no registered source offers it beside JSON, so nothing measures
+    // Fern there and this preference is not extended to it on a guess.
     for (media_type, multipart) in [
         ("multipart/form-data", true),
         ("application/x-www-form-urlencoded", false),
     ] {
+        if !multipart && selected_json_request_media(rb).is_some() {
+            continue;
+        }
         if let Some(media) = rb.content.get(media_type) {
             let schema = media.schema.as_ref()?;
             let obj = schema
@@ -5188,7 +5210,13 @@ fn collect_discriminant_strips(
                 }
             }
         }
-        if schema.one_of.is_some() {
+        // An inheritance-style base carries the same strip as a `oneOf` one: its
+        // subtypes redeclare the tag in their own `allOf`, and Fern writes it as
+        // the wrapper's `Literal` rather than as a field on either the wrapper or
+        // the subtype's standalone model (Adyen's `BankAccountIdentification`
+        // maps 16 `*LocalAccountIdentification` schemas that each redeclare
+        // `type`, and Fern's `UsLocalAccountIdentification` has no `type` field).
+        if schema.one_of.is_some() || is_inheritance_union_base(schema) {
             if let Some(discriminator) = &schema.discriminator {
                 for reference in discriminator.mapping.values() {
                     let target = resolve_ref_from_schemas(schemas, reference);
@@ -8099,6 +8127,16 @@ mod tests {
         parameter.example = None;
         parameter.schema.as_mut().expect("schema").min_length = Some(1);
         assert_eq!(parameter_example(&doc, &parameter), None);
+        // `minLength` on its own is not a constraint Fern synthesizes for: the
+        // worked call falls back to the parameter's own name.
+        assert_eq!(query_parameter_example(&doc, &parameter), None);
+        parameter.schema.as_mut().expect("schema").max_length = Some(64);
+        assert_eq!(
+            query_parameter_example(&doc, &parameter).as_deref(),
+            Some("\"x\"")
+        );
+        parameter.schema.as_mut().expect("schema").max_length = None;
+        parameter.schema.as_mut().expect("schema").pattern = Some("[a-z]+".to_string());
         assert_eq!(
             query_parameter_example(&doc, &parameter).as_deref(),
             Some("\"x\"")

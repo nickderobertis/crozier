@@ -1878,6 +1878,9 @@ const CORPORA: &[&Corpus] = &[
     &ADYEN_MANAGED_RISK_NOTIFICATION,
     &GO_KRATOS_CASBIN_ADMIN,
     &DESCOPE_AUTHZCACHE,
+    &SWAGGER_PETSTORE,
+    &CYCLONEDX_TRANSPARENCY_EXCHANGE,
+    &ADYEN_CAPITAL,
 ];
 
 #[test]
@@ -3005,6 +3008,55 @@ const DESCOPE_AUTHZCACHE: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `swagger-petstore`: the Swagger Petstore reference document is the corpus's
+/// only source declaring `openapi: 3.0.4`, the patch level OpenAPI's 3.0
+/// maintenance release added. Every other registered source stops at `3.0.3` or
+/// jumps to 3.1, so this row is what pins that crozier reads the newer 3.0 patch
+/// spelling the way Fern does rather than refusing it at the boundary.
+const SWAGGER_PETSTORE: Corpus = Corpus {
+    api: "swagger-petstore",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `cyclonedx-transparency-exchange`: the OWASP Transparency Exchange API
+/// specification is the corpus's only source declaring `openapi: 3.1.1`, and its
+/// second declaring `jsonSchemaDialect` after row 101, this one beside a
+/// populated Paths Object. It pins both document-level 3.1 declarations at once:
+/// the newer patch spelling, and the dialect field, over 23 real endpoints.
+const CYCLONEDX_TRANSPARENCY_EXCHANGE: Corpus = Corpus {
+    api: "cyclonedx-transparency-exchange",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `adyen-capital`: the Adyen Capital API is the document the `json-schema-dialect`
+/// witness search named, and the corpus's third source declaring
+/// `jsonSchemaDialect`. Rows 101 and 105 declare it over a webhook-only document
+/// and a `3.1.1` one; this row pins the dialect beside an ordinary populated
+/// Paths Object, so the declaration is measured where endpoints, models and auth
+/// are all generated from schemas the dialect nominally governs.
+const ADYEN_CAPITAL: Corpus = Corpus {
+    api: "adyen-capital",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3264,6 +3316,21 @@ fn go_kratos_casbin_admin_matches_fern_output() {
 #[test]
 fn descope_authzcache_matches_fern_output() {
     assert_link_ok_corpus_matches(&DESCOPE_AUTHZCACHE);
+}
+
+#[test]
+fn swagger_petstore_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SWAGGER_PETSTORE);
+}
+
+#[test]
+fn cyclonedx_transparency_exchange_matches_fern_output() {
+    assert_link_ok_corpus_matches(&CYCLONEDX_TRANSPARENCY_EXCHANGE);
+}
+
+#[test]
+fn adyen_capital_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ADYEN_CAPITAL);
 }
 
 #[test]

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "cyclonedx-transparency-exchange",
+  "corpus_spec_ref": "26c944ec226850ca0bbe0de5a18137ced1ca7c9d",
+  "corpus_spec_url": "https://raw.githubusercontent.com/CycloneDX/transparency-exchange-api/26c944ec226850ca0bbe0de5a18137ced1ca7c9d/spec/openapi.yaml"
+}

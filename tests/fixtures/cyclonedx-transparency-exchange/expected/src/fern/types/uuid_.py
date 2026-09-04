@@ -1,0 +1,6 @@
+
+
+Uuid = str
+"""
+A UUID
+"""
