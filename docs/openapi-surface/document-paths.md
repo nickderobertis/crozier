@@ -290,6 +290,22 @@ reclassifications this change makes are all
 registered here that carries a committed golden, while `reference-summary` stays
 `gap` and moves from `PROBE` to `FIXTURE` — it has a real-world witness that Fern
 refuses, which is a fixture backlog rather than a probe.
+**The change that settled the schema anchor and dynamic-reference probe rows
+re-derived this pin and it reproduced.** That change registers no source — its
+three rows (`dollar-anchor`, `dollar-dynamic-anchor`, `dollar-dynamic-ref`) settle
+on a witness the corpus may not redistribute and on two the search found no
+witness for at all — so the census input is unchanged, and running `just
+surface-census --json` over its finished tree on **2026-09-04** hashes to
+`82e6e736…` again. The pin below therefore stands as measured rather than as
+transcribed, and no count this table carries moves with it. The one
+reclassification that change makes is
+[`schemas.md`](schemas.md)'s `dollar-anchor`, which stays `gap` and moves from
+`PROBE` to `FIXTURE`: it has a publisher-owned real-world witness Fern accepts,
+blocked only because that document's repository declares no licence, and a
+witness blocked on redistribution is fixture backlog rather than probe work. Its
+two sibling rows stay `PROBE` on witness supply, each naming every source searched
+and the query run against it.
+
 `duplicate-operation-id` and `duplicate-normalized-paths` stay `PROBE` on a
 measured zero: their selectors exist, they are declared in the script's own
 `PREDICATES`, and they report no witness across all 140 sources. The check below
