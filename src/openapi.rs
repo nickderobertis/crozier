@@ -282,7 +282,7 @@ impl PathItem {
 }
 
 /// A single API operation.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Operation {
     /// Whether path-item parameters were merged into this operation.
     #[serde(skip)]
@@ -339,6 +339,17 @@ pub struct Operation {
     /// [`Operation::sdk_method_name`]).
     #[serde(rename = "x-fern-sdk-method-name", default)]
     sdk_method_name_fern: Option<String>,
+    /// `x-crozier-streaming`: how this operation streams, and (when it declares a
+    /// `stream-condition`) the request property that selects between the streaming
+    /// and buffered forms. Read via [`Operation::streaming`], which also honours
+    /// the `x-fern-streaming` variant per the
+    /// [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-streaming", default)]
+    streaming_crozier: Option<Streaming>,
+    /// `x-fern-streaming`: the Fern spelling of the streaming contract. Superseded
+    /// by `x-crozier-streaming` when both appear (see [`Operation::streaming`]).
+    #[serde(rename = "x-fern-streaming", default)]
+    streaming_fern: Option<Streaming>,
     /// `x-crozier-pagination`: the cursor/offset pagination contract this operation
     /// implements (canonical spelling). Read via [`Operation::pagination`], which
     /// also honours the `x-fern-pagination` variant per the
@@ -441,6 +452,49 @@ impl Operation {
         self.pagination_crozier
             .as_ref()
             .or(self.pagination_fern.as_ref())
+    }
+
+    /// The declared streaming contract, canonicalizing on the
+    /// `x-crozier-streaming` spelling (see the [dual-header
+    /// policy](self#fern-compatible-extensions)).
+    #[must_use]
+    pub fn streaming(&self) -> Option<&Streaming> {
+        self.streaming_crozier
+            .as_ref()
+            .or(self.streaming_fern.as_ref())
+    }
+}
+
+/// The value of `x-crozier-streaming` / `x-fern-streaming`: how an operation
+/// streams. An operation that declares a `stream-condition` generates *two*
+/// methods — one that sets the condition and streams, one that clears it and
+/// returns the buffered response.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct Streaming {
+    /// The stream encoding (`sse`).
+    #[serde(default)]
+    pub format: Option<String>,
+    /// The buffered response schema, used when the condition is cleared.
+    #[serde(default)]
+    pub response: Option<Schema>,
+    /// The streamed chunk schema, used when the condition is set.
+    #[serde(rename = "response-stream", default)]
+    pub response_stream: Option<Schema>,
+    /// The request property that selects between the two forms
+    /// (`$request.stream`).
+    #[serde(rename = "stream-condition", default)]
+    pub stream_condition: Option<String>,
+}
+
+impl Streaming {
+    /// The request property the condition names, with its `$request.` prefix
+    /// stripped. `None` when the operation streams unconditionally.
+    #[must_use]
+    pub fn condition_property(&self) -> Option<&str> {
+        self.stream_condition
+            .as_deref()
+            .map(strip_pagination_prefix)
+            .filter(|property| !property.is_empty())
     }
 }
 

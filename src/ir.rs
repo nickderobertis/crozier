@@ -773,6 +773,9 @@ pub struct Endpoint {
     /// Whitespace from the end of the source description that Fern preserves in
     /// reference documentation after trimming method docstrings.
     pub reference_description_suffix: String,
+    /// The request-body field a stream condition fixes to a literal and hides from
+    /// the signature: its wire name and the value this variant sends.
+    pub stream_condition: Option<(String, bool)>,
     /// The pagination contract the operation declares, resolved against its
     /// response model. A paginated operation returns a `SyncPager`/`AsyncPager`
     /// over the response's item list rather than the buffered response itself.
@@ -1773,29 +1776,115 @@ fn endpoints(
     let mut tag_types = Vec::new();
     for (path, item) in &doc.paths {
         for (http_method, op) in item.operations() {
-            let endpoint = build_endpoint(
-                doc,
-                types,
-                path,
-                http_method,
-                op,
-                &mut tag_types,
-                &global_names,
-            );
+            // A `stream-condition` makes one operation two methods: `<name>_stream`
+            // with the condition set, and `<name>` with it cleared. Each is built
+            // from its own view of the operation, so the response type, the chunk
+            // type and the fixed body field all follow from the document rather
+            // than from a special case downstream.
+            let variants = stream_condition_variants(op);
+            for variant in &variants {
+                let view = variant.as_ref().map_or(op, |split| &split.operation);
+                let endpoint = build_endpoint(
+                    doc,
+                    types,
+                    path,
+                    http_method,
+                    view,
+                    &mut tag_types,
+                    &global_names,
+                );
+                let endpoint = match variant {
+                    Some(split) => Endpoint {
+                        method_name: split.method_name.clone(),
+                        stream_condition: Some((split.condition.clone(), split.streaming)),
+                        response_doc: None,
+                        ..endpoint
+                    },
+                    None => endpoint,
+                };
             // Fern exposes one method for duplicate synthesized/declared names in
             // the same client, with the later operation replacing the earlier one's
             // contents while retaining its first-seen position. Keep all
             // already-hoisted response types, but only the winning endpoint.
-            if let Some(index) = out.iter().position(|existing: &Endpoint| {
-                existing.module == endpoint.module && existing.method_name == endpoint.method_name
-            }) {
-                out[index] = endpoint;
-            } else {
-                out.push(endpoint);
+                if let Some(index) = out.iter().position(|existing: &Endpoint| {
+                    existing.module == endpoint.module
+                        && existing.method_name == endpoint.method_name
+                }) {
+                    out[index] = endpoint;
+                } else {
+                    out.push(endpoint);
+                }
             }
         }
     }
     (out, tag_types)
+}
+
+/// The method name an operation takes before a `stream-condition` split renames
+/// its streaming half. Only the extension-declared name is consulted, because a
+/// document that declares a stream condition declares the method name too.
+fn endpoint_method_name_for(op: &Operation) -> String {
+    op.sdk_method_name().map_or_else(
+        || "stream".to_string(),
+        |name| naming::escape_python_keyword(naming::sanitize_identifier(&naming::to_snake_case(name))),
+    )
+}
+
+/// One half of a `stream-condition` split: the operation as that half sees it,
+/// the method name it takes, the body field the condition fixes, and whether this
+/// half streams.
+struct StreamSplit {
+    operation: Operation,
+    method_name: String,
+    condition: String,
+    streaming: bool,
+}
+
+/// The variants an operation generates. One `None` for the ordinary case; a
+/// streaming and a buffered `Some` when a `stream-condition` is declared.
+fn stream_condition_variants(op: &Operation) -> Vec<Option<StreamSplit>> {
+    let Some(streaming) = op.streaming() else {
+        return vec![None];
+    };
+    let Some(condition) = streaming.condition_property() else {
+        return vec![None];
+    };
+    let base = endpoint_method_name_for(op);
+    let mut variants = Vec::new();
+    for stream in [true, false] {
+        let mut operation = op.clone();
+        // Each half sees only its own success media type, which is what makes the
+        // ordinary streaming/buffered resolution downstream pick the right one.
+        if let Some(response) = success_response_entry_mut(&mut operation) {
+            let media = if stream {
+                "text/event-stream"
+            } else {
+                "application/json"
+            };
+            response.content.retain(|name, _| name == media);
+            if let Some(entry) = response.content.get_mut(media) {
+                let schema = if stream {
+                    streaming.response_stream.clone()
+                } else {
+                    streaming.response.clone()
+                };
+                if let Some(schema) = schema {
+                    entry.schema = Some(schema);
+                }
+            }
+        }
+        variants.push(Some(StreamSplit {
+            operation,
+            method_name: if stream {
+                format!("{base}_stream")
+            } else {
+                base.clone()
+            },
+            condition: condition.to_string(),
+            streaming: stream,
+        }));
+    }
+    variants
 }
 
 /// Resolve one operation, deciding whether it is within the subset crozier can
@@ -2246,6 +2335,7 @@ fn build_endpoint(
         http_method,
         path: path.to_string(),
         path_params,
+        stream_condition: None,
         pagination: endpoint_pagination(doc, op, &query_params),
         query_params,
         header_params,
@@ -4600,6 +4690,37 @@ fn success_response_entry(op: &Operation) -> Option<&Response> {
                 .find(|(code, _)| code.as_str() == "default")
                 .map(|(_, response)| response)
         })
+}
+
+/// The same success entry as [`success_response_entry`], for mutation: the
+/// `stream-condition` split narrows each half's media map to its own type.
+fn success_response_entry_mut(op: &mut Operation) -> Option<&mut Response> {
+    let key = success_response_key(op)?;
+    op.responses.get_mut(&key)
+}
+
+/// The response key [`success_response_entry`] selects.
+fn success_response_key(op: &Operation) -> Option<String> {
+    if op
+        .responses
+        .get("200")
+        .is_some_and(has_dispatchable_media)
+    {
+        return Some("200".to_string());
+    }
+    op.responses
+        .iter()
+        .find(|(code, response)| {
+            code.parse::<u16>()
+                .is_ok_and(|status| (200..300).contains(&status))
+                && has_dispatchable_media(response)
+        })
+        .or_else(|| {
+            op.responses
+                .iter()
+                .find(|(code, _)| code.as_str() == "default")
+        })
+        .map(|(code, _)| code.clone())
 }
 
 fn response_schema(response: &Response) -> Option<&Schema> {

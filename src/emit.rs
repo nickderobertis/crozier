@@ -3768,6 +3768,13 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
         Some(RequestBody::Inline(fields)) => {
             let mut params: Vec<DocParam> = fields
                 .iter()
+                // The field a stream condition fixes is not an argument: this
+                // method's whole identity is the value it sends there.
+                .filter(|f| {
+                    ep.stream_condition
+                        .as_ref()
+                        .is_none_or(|(wire, _)| *wire != f.wire_name)
+                })
                 .map(|f| {
                     let base = raw_type_str_ctx(&f.type_ref, imports, true);
                     if f.optional {
@@ -4359,6 +4366,15 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(RequestBody::Inline(fields)) => {
             lines.push("            json={".to_string());
             for f in fields {
+                if let Some((wire, value)) = ep
+                    .stream_condition
+                    .as_ref()
+                    .filter(|(wire, _)| *wire == f.wire_name)
+                {
+                    let literal = if *value { "True" } else { "False" };
+                    lines.push(format!("                \"{wire}\": {literal},"));
+                    continue;
+                }
                 let value_name = body_field_value_name(f);
                 if f.convert {
                     imports.add_core("serialization", "convert_and_respect_annotation_metadata");
@@ -4759,6 +4775,14 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
 /// return type and the response description.
 fn raw_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> String {
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
+    if let Some(summary) = &ep.docstring {
+        // A multi-line summary carries the 8-space docstring indent on every line,
+        // as in the buffered raw method.
+        for line in summary.split('\n') {
+            lines.push(format!("        {}", python_doc_line(line)));
+        }
+        lines.push(String::new());
+    }
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
     for (name, ty, desc) in &mp.path {
