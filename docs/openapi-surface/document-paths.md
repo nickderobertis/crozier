@@ -330,6 +330,20 @@ the source registered here, `format-relative-json-pointer` stays `gap` and moves
 from `PROBE` to `FIXTURE` on a witness the corpus may not redistribute, and
 `dollar-vocabulary` stays `PROBE` on witness supply.
 
+**The change that settles the matrix path-parameter probe row re-derived this pin
+and it reproduced.** That change registers no source — its one row,
+[`parameters.md`](parameters.md)'s `parameter-style-matrix-path-scalar`, is
+settled on a witness the corpus already registers and Fern refuses — so the census
+input is unchanged, and running `just surface-census --json` over its own base on
+**2026-09-04** hashes to `17b7125f…` again: **141** registered sources, **124**
+golden-bearing, the same numbers the pin was taken on. Its one reclassification
+stays inside `parameters.md`: the row stays `gap` and moves from `PROBE` to
+`FIXTURE`, because the corpus's own `appng-rest-api` (row 70) declares the
+conjunction three times and Fern refuses it — the generator at exit 1 and, at Fern
+CLI 5.114.0, `fern check` too — which is a screening failure of that document
+rather than a shape no corpus row could pin. That takes the `parameters` region to
+zero `PROBE` rows.
+
 `duplicate-operation-id` and `duplicate-normalized-paths` stay `PROBE` on a
 measured zero: their selectors exist, they are declared in the script's own
 `PREDICATES`, and they report no witness across all 140 sources. The check below
