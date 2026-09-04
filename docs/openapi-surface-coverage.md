@@ -215,7 +215,8 @@ Every `gap` row carries exactly one:
   [`fern-limitations.md`](fern-limitations.md). The corpus takes real-world
   specifications only; a probe is never proposed as a fixture. Two distinct
   things put a row in this class — a measurement no single specification can
-  hold, and a shape with no registrable witness — and only the first is
+  hold, and a shape for which no witness has been found at all — and only the
+  first is
   permanent; [The probe backlog](#the-probe-backlog) draws that line, and each
   row's own `settlement` cell says which side it is on.
 - **`UNREACHABLE`** — the shape has no position in a generated Python SDK at all,
@@ -544,12 +545,16 @@ the distinction is drawn here rather than left to be inferred:
   would not carry at once. No corpus row could ever pin it, so the row is here
   permanently — a probe is genuinely its only instrument.
 - A **witness-supply** probe is one where the shape is perfectly isolable in a
-  single document and the issue #188 search simply found no *registrable*
-  declarer of it — none at all, or only ones blocked on redistribution, on an
-  immutable ref, or on Fern's own acceptance. Nothing about the shape prevents a
-  corpus row; the supply of documents does. Such a row leaves this list the day a
-  registrable declarer turns up, and it leaves as a `FIXTURE` rather than as a
-  measured probe.
+  single document and the authoritative issue #188 search found **no witness at
+  all**. Nothing about the shape prevents a corpus row; the supply of documents
+  does. That bar is the whole of it, and it is narrower than it first reads:
+  a witness the search *did* find does not leave a row here, however unusable
+  that document turns out to be. One blocked on redistribution, reachable at no
+  immutable ref, or refused by `fern check` is a screening failure of that
+  candidate rather than evidence the feature has no witness, so it moves the row
+  to `FIXTURE` at once — which is what `dollar-anchor` records. A witness-supply
+  probe therefore leaves this list the day any witness turns up, blocked or not,
+  and it leaves as a `FIXTURE` rather than as a measured probe.
 
 **Which kind a row is, is its own region row's business, not this section's.**
 Each `settlement` cell in the six region files states the reason its own row
@@ -560,8 +565,11 @@ authority; this index does not re-adjudicate the twelve. Six of them say
 and `dollar-dynamic-anchor` and `dollar-dynamic-ref` in
 [`schemas.md`](openapi-surface/schemas.md), each naming every source searched and
 the exact query put to it. Read the rest the same way: a settlement cell that
-names a differential measurement is structural, and one that reports a measured
-zero or a blocked candidate is supply.
+names a differential measurement is structural, and one that reports a search
+finding no witness at all is supply. A cell naming a candidate the search *did*
+find is neither — under the rule above that row belongs in the fixture backlog,
+so a cell like that is a row still to be moved rather than a third kind of
+probe.
 
 **So this backlog's membership is provisional in a way the fixture backlog's is
 not.** A row can leave it without any Fern run at all — `dollar-anchor` did,
