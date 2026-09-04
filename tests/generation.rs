@@ -5888,3 +5888,304 @@ components:
         files["src/acme/types/maybe_hash.py"]
     );
 }
+
+#[test]
+fn consent_shapes_drive_the_form_convert_and_documentation_dict_paths() {
+    // The shapes the `mosip-esignet` and `openbankingproject-ch-kundenbeziehung`
+    // goldens pin, in one operation: a urlencoded field that is a `$ref` to a named
+    // model, an enum query parameter whose example names no member, and a body
+    // example carrying an empty array, an empty object, and a map wide enough to
+    // wrap.
+    let files = render(
+        r#"openapi: 3.0.1
+info: { title: Consent, version: 1.0.0 }
+paths:
+  /token:
+    post:
+      operationId: token
+      tags: [oidc]
+      parameters:
+        - in: query
+          name: scope
+          required: true
+          example: openid profile
+          schema: { type: string, enum: [openid, profile] }
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema: { $ref: '#/components/schemas/TokenRequest' }
+            example:
+              grant_type: authorization_code
+              claims:
+                permittedAuthorizeScopes: []
+                userClaims: {}
+                labels:
+                  aVeryLongLabelKeyThatForcesWrapping: a rather long label value string
+                  second: value
+      responses:
+        '200':
+          description: ok
+          content: { application/json: { schema: { $ref: '#/components/schemas/Consent' } } }
+components:
+  schemas:
+    UserClaim:
+      type: object
+      properties:
+        essential: { type: boolean }
+    Claim:
+      type: object
+      required: [permittedAuthorizeScopes, labels]
+      properties:
+        permittedAuthorizeScopes: { type: array, items: { type: string } }
+        userClaims: { $ref: '#/components/schemas/UserClaim' }
+        labels: { type: object, additionalProperties: { type: string } }
+    TokenRequest:
+      type: object
+      required: [grant_type, claims, metadata]
+      properties:
+        grant_type: { type: string }
+        claims: { $ref: '#/components/schemas/Claim' }
+        metadata: { type: object, additionalProperties: { type: string } }
+        subject: { allOf: [{ $ref: '#/components/schemas/UserClaim' }], nullable: true }
+    Consent:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string }
+"#,
+    );
+
+    // The urlencoded `claims` field is a `$ref` to `Claim`, so it serializes
+    // through the annotation converter exactly as a JSON body field would, while
+    // the scalar `grant_type` beside it goes onto the wire raw.
+    let raw = &files["src/acme/oidc/raw_client.py"];
+    assert!(
+        raw.contains(
+            "\"claims\": convert_and_respect_annotation_metadata(object_=claims, annotation=Claim, direction=\"write\"),"
+        ),
+        "{raw}"
+    );
+    assert!(raw.contains("\"grant_type\": grant_type,"), "{raw}");
+    // A nullable model field carries the `Optional` wrapper into the annotation.
+    assert!(
+        raw.contains(
+            "object_=subject, annotation=typing.Optional[TokenRequestSubject], direction=\"write\""
+        ),
+        "{raw}"
+    );
+
+    let readme = &files["README.md"];
+    // An enum query parameter whose example (`openid profile`) names no member
+    // takes the enum's own synthesized value rather than the raw literal.
+    assert!(
+        readme.contains("    scope=TokenRequestScope.OPENID,\n"),
+        "{readme}"
+    );
+    assert!(!readme.contains("openid profile"), "{readme}");
+    // An empty array carries no value, so the example is synthesized from the
+    // field name; an empty object selects nothing, so `user_claims` is absent.
+    assert!(
+        readme.contains("        permitted_authorize_scopes=[\n            \"permittedAuthorizeScopes\"\n        ],\n"),
+        "{readme}"
+    );
+    assert!(!readme.contains("user_claims"), "{readme}");
+    // The markdown writers end a length-wrapped dict without Python's magic
+    // trailing comma.
+    assert!(
+        readme.contains(concat!(
+            "        labels={\n",
+            "            \"aVeryLongLabelKeyThatForcesWrapping\": \"a rather long label value string\",\n",
+            "            \"second\": \"value\"\n",
+            "        },\n",
+        )),
+        "{readme}"
+    );
+
+    // The reference writer expands a map example even where it would fit on one
+    // line, and that flavor survives the markdown dict conversion.
+    let reference = &files["reference.md"];
+    assert!(
+        reference.contains("    metadata={\n        \"key\": \"value\"\n    },\n"),
+        "{reference}"
+    );
+}
+
+#[test]
+fn oauth_admin_shapes_pin_the_basic_auth_header_and_documentation_list_paths() {
+    // The `blackadi-oauth2` golden's own shapes, which no other registered source
+    // carries: a Basic-auth operation whose undocumented body is written inline
+    // and flattened field by field keeps the JSON content-type header, while a
+    // bare `type: object` body carries it only where the schema is documented,
+    // and a status two operations both declare downgrades its error class to
+    // `typing.Any` while the merged body model keeps both operations' fields.
+    // Beside them the example writer's two list paths: a map example whose value
+    // is a JSON array, and a list of a string alias whose example carries `null`.
+    let files = render(
+        r#"openapi: 3.0.1
+info: { title: Admin, version: 1.0.0 }
+paths:
+  /backchannel_logout/issue:
+    post:
+      operationId: issueBackchannelLogoutToken
+      security: [{ basicAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [clientIdentifier]
+              properties:
+                clientIdentifier: { type: string }
+                sessionId: { type: string }
+      responses:
+        '204': { description: issued }
+        '400':
+          description: bad
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+  /client/dcr/register:
+    post:
+      operationId: registerClient
+      security: [{ basicAuth: [] }]
+      requestBody:
+        content: { application/json: { schema: { type: object } } }
+      responses:
+        '204': { description: registered }
+        '400':
+          description: bad
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [errorDescription]
+                properties:
+                  errorDescription: { type: string }
+  /federation/registration:
+    post:
+      operationId: registerFederationEntity
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, description: Federation registration request }
+      responses: { '204': { description: registered } }
+  /entities:
+    post:
+      operationId: createEntity
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Entity' }
+            example:
+              scopes: ["openid", null]
+              roles: ["ADMIN", null]
+              labels: { roles: ["admin"] }
+      responses: { '204': { description: created } }
+components:
+  securitySchemes:
+    basicAuth: { type: http, scheme: basic }
+  schemas:
+    Scope: { type: string }
+    Role: { type: string, enum: [ADMIN, USER] }
+    Entity:
+      type: object
+      required: [scopes, roles, labels]
+      properties:
+        scopes:
+          type: array
+          items: { $ref: '#/components/schemas/Scope' }
+        roles:
+          type: array
+          items: { $ref: '#/components/schemas/Role' }
+        labels:
+          type: object
+          additionalProperties: { type: array, items: { type: string } }
+"#,
+    );
+
+    let raw = &files["src/acme/raw_client.py"];
+    // The Basic-auth body written inline and flattened field by field keeps the
+    // header; the bare `type: object` body beside it, undocumented, does not.
+    let issue = raw.split("\"backchannel_logout/issue\",").nth(1).unwrap();
+    assert!(
+        issue.starts_with(concat!(
+            "\n            method=\"POST\",\n",
+            "            json={\n",
+            "                \"clientIdentifier\": client_identifier,\n",
+            "                \"sessionId\": session_id,\n",
+            "            },\n",
+            "            headers={\n",
+            "                \"content-type\": \"application/json\",\n",
+            "            },\n",
+        )),
+        "{issue}"
+    );
+    let register = raw.split("\"client/dcr/register\",").nth(1).unwrap();
+    assert!(
+        register.starts_with(concat!(
+            "\n            method=\"POST\",\n",
+            "            json=request,\n",
+            "            request_options=request_options,\n",
+        )),
+        "{register}"
+    );
+    // The same bare object, documented, does carry it.
+    let federation = raw.split("\"federation/registration\",").nth(1).unwrap();
+    assert!(
+        federation.starts_with(concat!(
+            "\n            method=\"POST\",\n",
+            "            json=request,\n",
+            "            headers={\n",
+            "                \"content-type\": \"application/json\",\n",
+            "            },\n",
+        )),
+        "{federation}"
+    );
+
+    // Two operations declare `400`, so the error class's body is `typing.Any`
+    // while the merged `BadRequestErrorBody` still carries both their fields.
+    assert!(
+        raw.contains("                        type_=typing.Any,\n"),
+        "{raw}"
+    );
+    let body = &files["src/acme/types/bad_request_error_body.py"];
+    // The second operation's `required` merges in, so `error_description` is the
+    // one non-optional field on the shared model.
+    assert!(
+        body.contains(concat!(
+            "    error: typing.Optional[str] = None\n",
+            "    error_description: typing_extensions.Annotated[\n",
+            "        str, FieldMetadata(alias=\"errorDescription\"), pydantic.Field(alias=\"errorDescription\")\n",
+            "    ]\n",
+        )),
+        "{body}"
+    );
+
+    // A `null` in a list whose items are a string alias is filled from the field
+    // name; the same `null` in a list of an enum is not — it takes the enum's own
+    // synthesized member. A map example whose value is a JSON array keeps that
+    // array.
+    let reference = &files["reference.md"];
+    assert!(
+        reference.contains(concat!(
+            "client.create_entity(\n",
+            "    scopes=[\n",
+            "        \"openid\",\n",
+            "        \"scopes\"\n",
+            "    ],\n",
+            "    roles=[\n",
+            "        Role.ADMIN,\n",
+            "        Role.ADMIN\n",
+            "    ],\n",
+            "    labels={\n",
+            "        \"roles\": [\"admin\"]\n",
+            "    },\n",
+            ")\n",
+        )),
+        "{reference}"
+    );
+}

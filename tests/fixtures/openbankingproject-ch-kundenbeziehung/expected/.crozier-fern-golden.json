@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "openbankingproject-ch-kundenbeziehung",
+  "corpus_spec_ref": "c7439ba67f5790d901d1d20943cae5cb48e8e7fc",
+  "corpus_spec_url": "https://raw.githubusercontent.com/openbankingproject-ch/Open-API-Kundenbeziehung-Legacy/c7439ba67f5790d901d1d20943cae5cb48e8e7fc/api/openapi.yaml"
+}

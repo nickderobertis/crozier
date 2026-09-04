@@ -1,0 +1,27 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+from .post_linked_consent_v2response_errors_item import PostLinkedConsentV2ResponseErrorsItem
+from .post_linked_consent_v2response_response import PostLinkedConsentV2ResponseResponse
+
+
+class PostLinkedConsentV2Response(UniversalBaseModel):
+    response_time: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="responseTime"), pydantic.Field(alias="responseTime")
+    ] = None
+    response: typing.Optional[PostLinkedConsentV2ResponseResponse] = None
+    errors: typing.Optional[typing.List[PostLinkedConsentV2ResponseErrorsItem]] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

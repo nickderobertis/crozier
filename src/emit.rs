@@ -1887,6 +1887,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             referenced_tag: BTreeSet::new(),
             referenced_tag_doc_order: Vec::new(),
             uses_datetime: false,
+            datetime_precedes_tag_import: false,
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
@@ -1915,6 +1916,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             referenced_tag: BTreeSet::new(),
             referenced_tag_doc_order: Vec::new(),
             uses_datetime: false,
+            datetime_precedes_tag_import: false,
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
@@ -2117,6 +2119,7 @@ fn reference_entry(
         referenced_tag: BTreeSet::new(),
         referenced_tag_doc_order: Vec::new(),
         uses_datetime: false,
+        datetime_precedes_tag_import: false,
         auth: &ir.auth,
         has_environment: ir.environment.is_some(),
         global_headers: &ir.global_headers,
@@ -4108,7 +4111,33 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 } else {
                     f.py_name.clone()
                 };
-                let entry = format!("                \"{}\": {value},\n", f.wire_name);
+                // A form field whose type is a named model serializes through the
+                // annotation converter, exactly as the same field would in a JSON
+                // body (`mosip-esignet`'s urlencoded `claims`, a `$ref` to `Claim`).
+                let entry = if f.convert && !f.is_file && !f.form_json {
+                    imports.add_core("serialization", "convert_and_respect_annotation_metadata");
+                    let annotation_type = if f.nullable {
+                        TypeRef::Optional(Box::new(f.type_ref.clone()))
+                    } else {
+                        f.type_ref.clone()
+                    };
+                    let annotation = raw_type_str_ctx(&annotation_type, imports, true);
+                    let call = Doc::group(
+                        format!(
+                            "                \"{}\": convert_and_respect_annotation_metadata(",
+                            f.wire_name
+                        ),
+                        vec![
+                            Doc::atom(format!("object_={value}")),
+                            Doc::atom(format!("annotation={annotation}")),
+                            Doc::atom("direction=\"write\""),
+                        ],
+                        ")",
+                    );
+                    format!("{},\n", call.flat())
+                } else {
+                    format!("                \"{}\": {value},\n", f.wire_name)
+                };
                 if f.is_file {
                     files.push_str(&entry);
                 } else {
@@ -4162,6 +4191,11 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         // (`CREATE_SessionServer`) keeps it. A `components.requestBodies` body drops
         // it only while its schema survives in the public type layer; one whose
         // schema exists solely to be flattened here (exa-gate's `KeyBatch`) keeps it.
+        // The Basic-auth drop is narrower than the scheme: it applies to a body whose
+        // schema is a component `$ref` (otoroshi's `Group`) or that rides as a single
+        // argument (its inline `oneOf`, hoisted to `CreateGlobalAuthModuleRequest`),
+        // not to one whose inline schema is flattened field by field
+        // (blackadi-oauth2's `backchannel_logout/issue`), which keeps the header.
         Some(body)
             if !body.is_wildcard_media()
                 && (ep.body_media_has_example && ep.body_schema_dropped && ep.body_schema_ref
@@ -4171,7 +4205,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     || !ep.header_params.is_empty()
                     || !ep.path_params.is_empty()
                     || (body.content_type_header()
-                        && (!ep.basic_auth || !ep.body_description_missing)
+                        && (!ep.basic_auth
+                            || !ep.body_description_missing
+                            || !ep.body_schema_ref && matches!(body, RequestBody::Inline(_)))
                         && !ep.body_codegen_named
                         && (!ep.body_component_ref || ep.body_schema_dropped)
                         && !(matches!(body, RequestBody::Inline(_))
@@ -5345,6 +5381,7 @@ fn client_stream_docstring(
         referenced_tag: BTreeSet::new(),
         referenced_tag_doc_order: Vec::new(),
         uses_datetime: false,
+        datetime_precedes_tag_import: false,
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
@@ -5470,6 +5507,7 @@ fn client_binary_stream_docstring(
         referenced_tag: BTreeSet::new(),
         referenced_tag_doc_order: Vec::new(),
         uses_datetime: false,
+        datetime_precedes_tag_import: false,
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
@@ -5559,6 +5597,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         referenced_tag: BTreeSet::new(),
         referenced_tag_doc_order: Vec::new(),
         uses_datetime: false,
+        datetime_precedes_tag_import: false,
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
@@ -5619,6 +5658,11 @@ enum Example {
     ReferenceList(Vec<Example>),
     /// A dict with fixed string keys — explodes only when a value does.
     Dict(Vec<(String, Example)>),
+    /// The same dict as written into `README.md`/`reference.md`. Fern's markdown
+    /// writer ends a length-wrapped dict without Python's magic trailing comma
+    /// (`mosip-esignet`'s `public_key`), while the docstring writer keeps it
+    /// (`free5gc-pdu-session`'s `global_ngenb_id`), so the flavor is the variant.
+    DocDict(Vec<(String, Example)>),
     /// A reference-documentation dict. Fern's reference writer expands map
     /// examples even when every value would fit on one line.
     ReferenceDict(Vec<(String, Example)>),
@@ -5636,8 +5680,42 @@ impl Example {
                 items.iter().any(Example::forces_multiline)
             }
             Example::ReferenceList(items) => !items.is_empty(),
-            Example::Dict(pairs) => pairs.iter().any(|(_, v)| v.forces_multiline()),
+            Example::Dict(pairs) | Example::DocDict(pairs) => {
+                pairs.iter().any(|(_, v)| v.forces_multiline())
+            }
             Example::ReferenceDict(pairs) => !pairs.is_empty(),
+        }
+    }
+
+    /// The same tree with every `Dict` in the markdown writers' flavor.
+    fn into_documentation_dicts(self) -> Example {
+        let convert_pairs = |pairs: Vec<(String, Example)>| {
+            pairs
+                .into_iter()
+                .map(|(key, value)| (key, value.into_documentation_dicts()))
+                .collect::<Vec<_>>()
+        };
+        let convert_items = |items: Vec<Example>| {
+            items
+                .into_iter()
+                .map(Example::into_documentation_dicts)
+                .collect::<Vec<_>>()
+        };
+        match self {
+            Example::Atom(value) => Example::Atom(value),
+            Example::Call(name, args) => Example::Call(
+                name,
+                args.into_iter()
+                    .map(|(kw, value)| (kw, value.into_documentation_dicts()))
+                    .collect(),
+            ),
+            Example::List(items) => Example::List(convert_items(items)),
+            Example::ExplicitList(items) => Example::ExplicitList(convert_items(items)),
+            Example::ReferenceList(items) => Example::ReferenceList(convert_items(items)),
+            Example::Dict(pairs) | Example::DocDict(pairs) => {
+                Example::DocDict(convert_pairs(pairs))
+            }
+            Example::ReferenceDict(pairs) => Example::ReferenceDict(convert_pairs(pairs)),
         }
     }
 
@@ -5666,7 +5744,7 @@ impl Example {
                         .join(", ")
                 )
             }
-            Example::Dict(pairs) | Example::ReferenceDict(pairs) => {
+            Example::Dict(pairs) | Example::DocDict(pairs) | Example::ReferenceDict(pairs) => {
                 if pairs.is_empty() {
                     return "{}".to_string();
                 }
@@ -5743,11 +5821,11 @@ impl Example {
                 }
                 let pad = " ".repeat(indent);
                 let inner_pad = " ".repeat(indent + 4);
-                let trailing_comma = if matches!(items.as_slice(), [Example::Call(_, _)]) {
-                    ""
-                } else {
-                    ","
-                };
+                // A one-item list that has to wrap carries no trailing comma —
+                // `mosip-esignet`'s single-member `client_auth_methods` and
+                // `grant_types` examples wrap exactly that way — while a list of
+                // several keeps Python's magic trailing comma.
+                let trailing_comma = if items.len() == 1 { "" } else { "," };
                 let body = items
                     .iter()
                     .map(|it| {
@@ -5786,20 +5864,26 @@ impl Example {
                     .join("\n");
                 format!("[\n{body}\n{pad}]")
             }
-            Example::Dict(pairs) => {
+            Example::Dict(pairs) | Example::DocDict(pairs) => {
                 let wraps_for_length = !self.forces_multiline() && column + self.flat().len() > 80;
                 if !self.forces_multiline() && !wraps_for_length {
                     return self.flat();
                 }
                 let pad = " ".repeat(indent);
                 let inner_pad = " ".repeat(indent + 4);
+                let last_comma = !matches!(self, Example::DocDict(_));
                 let body = pairs
                     .iter()
-                    .map(|(k, v)| {
+                    .enumerate()
+                    .map(|(index, (k, v))| {
+                        let comma = if wraps_for_length && (last_comma || index + 1 < pairs.len()) {
+                            ","
+                        } else {
+                            ""
+                        };
                         format!(
-                            "{inner_pad}\"{k}\": {}{}",
+                            "{inner_pad}\"{k}\": {}{comma}",
                             v.render_at(indent + 4, indent + k.len() + 8),
-                            if wraps_for_length { "," } else { "" }
                         )
                     })
                     .collect::<Vec<_>>()
@@ -5848,6 +5932,13 @@ struct ExampleCtx<'a> {
     referenced_tag_doc_order: Vec<(String, String)>,
     /// Whether any value is a datetime/date (drives an `import datetime`).
     uses_datetime: bool,
+    /// Whether that first datetime value was rendered before the first tag-scoped
+    /// type. Fern's Markdown writer lists imports in first-use order, so the
+    /// stdlib line sits above the tag import in `mosip-esignet`'s snippets (whose
+    /// `request_time` precedes the request model) and below it in
+    /// `openbankingproject-ch-kundenbeziehung`'s (whose `purpose` enum precedes
+    /// the `expiry_date`).
+    datetime_precedes_tag_import: bool,
     /// The auth model, for the credential argument in the client instantiation.
     auth: &'a Auth,
     /// Whether the SDK has server environments — with them, the client
@@ -5936,7 +6027,7 @@ impl<'a> ExampleCtx<'a> {
         }
         if matches!(t, TypeRef::Primitive(Prim::Datetime | Prim::Date)) {
             let mut value: String = serde_json::from_str(example).ok()?;
-            self.uses_datetime = true;
+            self.note_datetime();
             let constructor = if matches!(t, TypeRef::Primitive(Prim::Datetime)) {
                 if !self.documentation {
                     value = value.replacen('T', " ", 1);
@@ -6041,8 +6132,14 @@ impl<'a> ExampleCtx<'a> {
                 self.record_ref(name);
                 let args = fields
                     .into_iter()
+                    // An example value of `{}` selects nothing: Fern renders no
+                    // argument for an optional model field the example leaves
+                    // empty (`mosip-esignet`'s `claims.id_token: {}`).
                     .filter(|(_, wire_name, _, required, _, _)| {
-                        *required || values.contains_key(wire_name)
+                        *required
+                            || values.get(wire_name).is_some_and(|value| {
+                                !value.as_object().is_some_and(serde_json::Map::is_empty)
+                            })
                     })
                     .map(|(py_name, wire_name, type_ref, _, _, _)| {
                         let rendered = match values.get(&wire_name) {
@@ -6050,6 +6147,13 @@ impl<'a> ExampleCtx<'a> {
                                 if self.example_is_temporal(&type_ref)
                                     && value.starts_with("2000-01-23T04:56:07") =>
                             {
+                                self.value(&type_ref, Slot::Named(&wire_name))
+                            }
+                            // An empty array carries no example value, so Fern
+                            // synthesizes one from the field name rather than
+                            // rendering `[]` (`mosip-esignet`'s
+                            // `permittedAuthorizeScopes: []`).
+                            Some(serde_json::Value::Array(items)) if items.is_empty() => {
                                 self.value(&type_ref, Slot::Named(&wire_name))
                             }
                             Some(value) => {
@@ -6146,6 +6250,14 @@ impl<'a> ExampleCtx<'a> {
         })
     }
 
+    /// Record the first datetime value, and whether it preceded every tag import.
+    fn note_datetime(&mut self) {
+        if !self.uses_datetime {
+            self.datetime_precedes_tag_import = self.referenced_tag_doc_order.is_empty();
+        }
+        self.uses_datetime = true;
+    }
+
     /// Record a referenced constructor: a tag-scoped type is tracked with its tag
     /// module (imported separately), a package-root type in the main import set.
     fn record_ref(&mut self, name: &str) {
@@ -6232,7 +6344,7 @@ impl<'a> ExampleCtx<'a> {
             TypeRef::Primitive(Prim::Float) => Example::Atom("1.1".to_string()),
             TypeRef::Primitive(Prim::Bool) => Example::Atom("True".to_string()),
             TypeRef::Primitive(Prim::Datetime) => {
-                self.uses_datetime = true;
+                self.note_datetime();
                 Example::Call(
                     "datetime.datetime.fromisoformat".to_string(),
                     vec![(
@@ -6249,7 +6361,7 @@ impl<'a> ExampleCtx<'a> {
                 )
             }
             TypeRef::Primitive(Prim::Date) => {
-                self.uses_datetime = true;
+                self.note_datetime();
                 Example::Call(
                     "datetime.date.fromisoformat".to_string(),
                     vec![(None, Example::Atom("\"2023-01-15\"".to_string()))],
@@ -6699,8 +6811,15 @@ fn build_example_inner(
             continue;
         }
         let v = if let Some(ex) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
+            // A literal the type cannot hold is not an example Fern renders: an
+            // enum parameter whose example names no member takes the enum's own
+            // synthesized value (`mosip-esignet`'s `scope: openid profile`, which
+            // is two members' values in one string). Every type that *can* hold a
+            // literal is scalar, and [`ExampleCtx::value_from_example`] renders
+            // one for each of those, so the fallback is only ever the synthesized
+            // value.
             ctx.value_from_example(&qp.type_ref, ex)
-                .unwrap_or_else(|| Example::Atom(ex.clone()))
+                .unwrap_or_else(|| ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name)))
         } else if let TypeRef::List(inner) = &qp.type_ref {
             Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
         } else if let TypeRef::Dict(_, value) = &qp.type_ref {
@@ -7035,8 +7154,12 @@ fn build_example_inner(
                 args.push((Some(example_name), v));
             }
         }
-        // A form body: required non-file fields only (a file cannot be shown as a
-        // literal, so Fern omits it from the example).
+        // A form body: required non-file fields, plus any field the media type's
+        // own example names (a file cannot be shown as a literal, so Fern omits it
+        // from the example). The example's reach is what adds the optional
+        // `code`/`redirect_uri`/`code_verifier` of
+        // `openbankingproject-ch-kundenbeziehung`'s `/token` beside its two
+        // required fields.
         Some(RequestBody::Form(form)) => {
             let related = form
                 .fields
@@ -7049,7 +7172,7 @@ fn build_example_inner(
                     if documentation && related {
                         f.is_file
                     } else {
-                        f.spec_required && (documentation || !f.is_file)
+                        (f.spec_required || f.media_example) && (documentation || !f.is_file)
                     }
                 })
                 .collect();
@@ -7104,6 +7227,16 @@ fn build_example_inner(
     // caller to place, so prepend the base indent to it.
     let pad = " ".repeat(call_indent);
     let call = {
+        // The markdown writers render a length-wrapped dict without its magic
+        // trailing comma, so the whole argument tree switches dict flavor here
+        // rather than at each site that builds one.
+        let args = if documentation {
+            args.into_iter()
+                .map(|(kw, value)| (kw, value.into_documentation_dicts()))
+                .collect()
+        } else {
+            args
+        };
         let rendered = Example::Call(receiver, args).render(call_indent);
         if ep.streaming && !documentation {
             let for_kw = if is_async { "async for" } else { "for" };
@@ -7275,6 +7408,7 @@ fn build_example_inner(
             pkg,
             environment,
             reference,
+            ctx.datetime_precedes_tag_import,
         ))
     } else {
         Some(out)
@@ -7313,6 +7447,7 @@ fn format_documentation_example(
     pkg: &str,
     environment: Option<&crate::ir::Environment>,
     reference: bool,
+    datetime_first: bool,
 ) -> Vec<String> {
     let client_index = lines
         .iter()
@@ -7346,21 +7481,26 @@ fn format_documentation_example(
                 environment.enum_name
             ));
         }
-        out.extend(
-            imports
-                .iter()
-                .enumerate()
-                .filter(|(index, line)| {
-                    (*index < main_start || *index > main_end) && !line.starts_with("import ")
-                })
-                .map(|(_, line)| line.clone()),
-        );
-        out.extend(
-            imports
-                .iter()
-                .filter(|line| line.starts_with("import "))
-                .cloned(),
-        );
+        // The package import leads; the stdlib line and the tag imports follow in
+        // the order the snippet first uses them.
+        let stdlib = imports
+            .iter()
+            .filter(|line| line.starts_with("import "))
+            .cloned();
+        let from_imports = imports
+            .iter()
+            .enumerate()
+            .filter(|(index, line)| {
+                (*index < main_start || *index > main_end) && !line.starts_with("import ")
+            })
+            .map(|(_, line)| line.clone());
+        if datetime_first {
+            out.extend(stdlib);
+            out.extend(from_imports);
+        } else {
+            out.extend(from_imports);
+            out.extend(stdlib);
+        }
         out.push(String::new());
     }
     let mut body = lines[client_index..].to_vec();
@@ -9039,6 +9179,7 @@ mod tests {
             referenced_tag: Default::default(),
             referenced_tag_doc_order: Default::default(),
             uses_datetime: false,
+            datetime_precedes_tag_import: false,
             auth,
             has_environment: false,
             global_headers: &[],
@@ -9120,7 +9261,13 @@ mod tests {
         );
         let long = Example::ExplicitList(vec![Example::Atom(format!("\"{}\"", "x".repeat(90)))]);
         assert!(long.render(0).starts_with("[\n    \"xxx"));
-        assert!(long.render(0).ends_with(",\n]"));
+        // One item, so no trailing comma; two of them carry one.
+        assert!(long.render(0).ends_with("\"\n]"));
+        let long_pair = Example::ExplicitList(vec![
+            Example::Atom(format!("\"{}\"", "x".repeat(90))),
+            Example::Atom("\"y\"".to_string()),
+        ]);
+        assert!(long_pair.render(0).ends_with("\"y\",\n]"));
         let long_inferred = Example::List(vec![Example::Atom(
             "VeryLongGeneratedEnumName::MEMBER".repeat(3),
         )]);

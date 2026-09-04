@@ -686,8 +686,9 @@ pub struct Endpoint {
     /// of `application/json` (for example `application/ndjson`).
     pub body_content_type_override: Option<String>,
     /// Whether the operation uses HTTP Basic authentication. Fern leaves the
-    /// ordinary JSON content type to httpx for undocumented Basic-auth bodies
-    /// without a path/header parameter.
+    /// ordinary JSON content type to httpx for an undocumented Basic-auth body
+    /// without a path/header parameter, unless that body's schema is written
+    /// inline and flattened field by field (see [`crate::emit`]).
     pub basic_auth: bool,
     /// Whether the selected request media schema was declared by component `$ref`.
     pub body_schema_ref: bool,
@@ -1366,7 +1367,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         .map(|tag_type| tag_type.decl)
         .collect();
     builder.types.extend(root_tag_types);
-    normalize_error_body_types(&mut endpoints);
+    normalize_error_body_types(doc, &mut endpoints);
     let errors = error_classes(&endpoints);
 
     // Fern does not emit a standalone type for a schema used *only* as an inlined
@@ -1673,7 +1674,8 @@ fn error_classes(endpoints: &[Endpoint]) -> Vec<ErrorClass> {
     classes
 }
 
-fn normalize_error_body_types(endpoints: &mut [Endpoint]) {
+fn normalize_error_body_types(doc: &OpenApi, endpoints: &mut [Endpoint]) {
+    let multiply_declared = multiply_declared_error_statuses(doc);
     let mut downgrade = std::collections::HashSet::new();
     let mut first_by_class: std::collections::HashMap<String, TypeRef> =
         std::collections::HashMap::new();
@@ -1698,7 +1700,14 @@ fn normalize_error_body_types(endpoints: &mut [Endpoint]) {
     }
     for ep in endpoints {
         for err in &mut ep.errors {
-            if downgrade.contains(&err.class_name) {
+            // The multiply-declared rule reaches only the body type this module
+            // *coins* from an inline schema. A `$ref` body keeps its named type
+            // however many operations declare the status (`exhaustive`'s three
+            // `400`s all resolve to `BadObjectRequestInfo`).
+            let coined = TypeRef::Named(format!("{}Body", err.class_name));
+            if downgrade.contains(&err.class_name)
+                || err.body_type == coined && multiply_declared.contains(&err.class_name)
+            {
                 err.body_type = TypeRef::Primitive(Prim::Any);
             }
         }
@@ -2775,13 +2784,7 @@ fn error_body_type(resp: &Response, class: &str) -> TypeRef {
         {
             TypeRef::List(Box::new(TypeRef::Named(format!("{class}BodyItem"))))
         }
-        Some(schema)
-            if resp.reference.is_none()
-                && is_inline_struct(schema)
-                && (schema.required.is_empty()
-                    || schema_example(schema).is_some()
-                    || class == "ConflictError") =>
-        {
+        Some(schema) if resp.reference.is_none() && is_inline_struct(schema) => {
             TypeRef::Named(format!("{class}Body"))
         }
         // A named `$ref`, scalar, or container keeps its resolved type. An inline
@@ -2865,6 +2868,37 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
     for (name, schema) in bodies {
         builder.add_named(&name, &schema);
     }
+}
+
+/// The error classes whose status is declared by more than one operation in the
+/// document. Fern types an error class's `body` with its `{Class}Body` model only
+/// where exactly one response in the whole document declares that status —
+/// `mosip-esignet`'s single `405`, letta's single `409`. A second declaration
+/// downgrades the class to `typing.Any` however alike the two are: letta's four
+/// `500`s share one shape and its two `402`s share one shape, and both classes are
+/// `typing.Any` in the golden, while `mosip-esignet`'s five `401`s (one with a
+/// body, four without) are the same rule seen from the other side. The merged
+/// `{Class}Body` model is still emitted either way — only the class's annotation
+/// moves.
+fn multiply_declared_error_statuses(doc: &OpenApi) -> std::collections::HashSet<String> {
+    let mut seen: IndexMap<String, usize> = IndexMap::new();
+    for (_, item) in &doc.paths {
+        for (_, op) in item.operations() {
+            for code in op.responses.keys() {
+                if code.starts_with('2') {
+                    continue;
+                }
+                let Some(class) = code.parse::<u16>().ok().and_then(error_class_name) else {
+                    continue;
+                };
+                *seen.entry(class.to_string()).or_default() += 1;
+            }
+        }
+    }
+    seen.into_iter()
+        .filter(|(_, count)| *count > 1)
+        .map(|(class, _)| class)
+        .collect()
 }
 
 /// Resolve an operation's declared error (non-2xx) responses into `raise` branches.
@@ -2961,10 +2995,15 @@ fn resolve_request_body(
                 .as_deref()
                 .and_then(|r| resolve_ref(doc, r))
                 .unwrap_or(schema);
-            return Some(RequestBody::Form(FormBody {
-                fields: hoist_form_object(obj, &media.encoding, hoister, request_ctx, multipart),
-                multipart,
-            }));
+            // A form body reads the media type's own `example`/`examples` exactly
+            // like a JSON one: the values name the fields the rendered example
+            // carries, optional ones included
+            // (`openbankingproject-ch-kundenbeziehung`'s `/token`, whose
+            // `authorization_code` example supplies four of the eight fields).
+            let mut fields =
+                hoist_form_object(obj, &media.encoding, hoister, request_ctx, multipart);
+            apply_body_example(&mut fields, media_example(doc, media), true);
+            return Some(RequestBody::Form(FormBody { fields, multipart }));
         }
     }
     if let Some((media_type, _)) = rb.content.iter().find(|(media_type, media)| {
@@ -3201,12 +3240,17 @@ fn resolve_request_body(
             doc.openapi.starts_with("3.1") && items.reference.is_some(),
         ));
     }
+    // An inline bare object (`type: object` with no declared structure) is a
+    // free-form `Dict` argument. Unlike the `$ref` form above it carries the
+    // content-type header only when the schema is documented: blackadi-oauth2
+    // declares both, and Fern emits the header for its described SSF and
+    // federation-registration bodies and not for its bare `client/dcr/*` ones.
     if is_bare_object(schema) {
         return Some(single_with_override(
             base_type_ref(schema),
             required,
             false,
-            true,
+            clean_doc(schema.description.as_deref()).is_some(),
             content_type_override,
         ));
     }
@@ -3652,7 +3696,7 @@ impl InlineHoister<'_> {
             (self.schemas, described_all_of_ref(prop_schema))
         {
             if let Some(target) = resolve_ref_from_schemas(schemas, reference).cloned() {
-                let name = format!("{parent}{}", naming::class_name(prop));
+                let name = naming::child_class_name(parent, prop);
                 if let Some(values) = string_enum_values(&target) {
                     self.out.push(TypeDecl::Enum(build_enum(
                         &name,
@@ -3675,7 +3719,7 @@ impl InlineHoister<'_> {
         }
         if prop_schema.reference.is_none() {
             if let Some(values) = string_enum_values(prop_schema) {
-                let name = format!("{parent}{}", naming::class_name(prop));
+                let name = naming::child_class_name(parent, prop);
                 self.out.push(TypeDecl::Enum(build_enum(
                     &name,
                     values,
@@ -3685,13 +3729,13 @@ impl InlineHoister<'_> {
             }
         }
         if prop_schema.reference.is_none() && is_inline_struct(prop_schema) {
-            let nested = format!("{parent}{}", naming::class_name(prop));
+            let nested = naming::child_class_name(parent, prop);
             self.hoist_object(&nested, prop_schema);
             return TypeRef::Named(nested);
         }
         if prop_schema.reference.is_none() {
             if let Some(members) = prop_schema.one_of.as_ref().or(prop_schema.any_of.as_ref()) {
-                let name = format!("{parent}{}", naming::class_name(prop));
+                let name = naming::child_class_name(parent, prop);
                 let non_null: Vec<&Schema> = members
                     .iter()
                     .filter(|member| {
@@ -3742,10 +3786,19 @@ impl InlineHoister<'_> {
                 ) {
                     return union;
                 }
+                // A `null` alternative states the field's nullability rather than
+                // a member of the union, so Fern's union holds only the others
+                // (`mosip-esignet`'s `encPublicKey` pairs `type: 'null'` with an
+                // RSA and an EC object and is typed by those two alone).
+                let members: Vec<Schema> = members
+                    .iter()
+                    .filter(|member| !is_null_variant(member))
+                    .cloned()
+                    .collect();
                 let variants: Vec<TypeRef> = members
                     .iter()
                     .enumerate()
-                    .map(|(index, member)| self.hoist_union_variant(&name, index, member, members))
+                    .map(|(index, member)| self.hoist_union_variant(&name, index, member, &members))
                     .collect();
                 let variants = dedupe_union_members(variants);
                 self.out.push(TypeDecl::Alias(AliasType {
@@ -3758,7 +3811,7 @@ impl InlineHoister<'_> {
             }
         }
         if prop_schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
-            let item_context = format!("{parent}{}", naming::class_name(prop));
+            let item_context = naming::child_class_name(parent, prop);
             if let Some(array) = self.hoist_array_item_type(&item_context, prop_schema) {
                 return array;
             }
@@ -3937,8 +3990,10 @@ impl InlineHoister<'_> {
 }
 
 /// Hoist a form body's properties into [`BodyField`]s, marking `format: binary`
-/// fields as file uploads. Unlike a JSON object body these carry no convert
-/// wrapper (they serialize into `data=`/`files=`, not `json=`).
+/// fields as file uploads. A file part never carries the convert wrapper, but a
+/// field whose schema is a named model does, exactly as a JSON body's would:
+/// `mosip-esignet`'s urlencoded `claims` is a `$ref` to `Claim` and serializes
+/// through `convert_and_respect_annotation_metadata`.
 fn hoist_form_object(
     schema: &Schema,
     encoding: &IndexMap<String, crate::openapi::Encoding>,
@@ -3971,21 +4026,23 @@ fn hoist_form_object(
                     || resolved.one_of.is_some()
                     || resolved.any_of.is_some()
                     || resolved.all_of.is_some());
+            let type_ref = if is_unknown(prop_schema) && !prop_schema.malformed {
+                TypeRef::Primitive(Prim::Any)
+            } else if is_file {
+                base_type_ref(prop_schema)
+            } else {
+                hoister.prop_type_ref(request_ctx, prop, prop_schema)
+            };
+            let convert = !is_file && hoister.needs_convert(&type_ref);
             BodyField {
                 wire_name: prop.clone(),
                 py_name: naming::request_field_name(prop),
-                type_ref: if is_unknown(prop_schema) && !prop_schema.malformed {
-                    TypeRef::Primitive(Prim::Any)
-                } else if is_file {
-                    base_type_ref(prop_schema)
-                } else {
-                    hoister.prop_type_ref(request_ctx, prop, prop_schema)
-                },
+                type_ref,
                 optional: is_optional(prop_schema) || !spec_required,
                 nullable: is_optional(prop_schema),
                 spec_required,
                 docstring: clean_doc(prop_schema.description.as_deref()),
-                convert: false,
+                convert,
                 is_file,
                 form_json,
                 form_content_type: encoding
@@ -4442,7 +4499,7 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
                 || synthesized_method_name(http_method, url),
                 naming::prose_identifier,
             )
-    } else if id.contains('.') {
+    } else if id.contains('.') && dotted_id_names_a_group(id) {
         let group = id.split_once('.').map_or(id, |(group, _)| group);
         if group.starts_with(|c: char| c.is_ascii_lowercase())
             && group.chars().any(|c| c.is_ascii_uppercase())
@@ -4483,6 +4540,18 @@ fn method_from_grouped_id(id: &str) -> String {
         rest.to_lowercase()
     };
     naming::sanitize_identifier(&name)
+}
+
+/// Whether a dotted operationId is the `Group.Method` form at all. Fern reads the
+/// prefix before the first `.` as a group name only when it *is* a name: letters
+/// and digits, or nothing at all (`App.GetUsage`, and `bungie.net`'s four
+/// group-less `.GetAvailableLocales`). A dot used as punctuation inside a
+/// hyphenated id is not that — `mosip-esignet`'s `get-.well-known-openid-configuration`
+/// snake-cases whole (`get_well_known_openid_configuration`) rather than taking
+/// `well-known-openid-configuration` as a method under a `get-` group.
+fn dotted_id_names_a_group(id: &str) -> bool {
+    let group = id.split_once('.').map_or(id, |(group, _)| group);
+    group.chars().all(|c| c.is_ascii_alphanumeric())
 }
 
 /// The method name for a dotted operationId (`Group.Method`). Fern treats the
@@ -6669,43 +6738,48 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
             .iter()
             .all(|sibling| sibling.properties.contains_key(*candidate))
     });
-    let unique = variant
+    // A property that names this variant: one no sibling declares. Fern takes the
+    // alphabetically first of them — `mosip-esignet`'s RSA encryption key declares
+    // `n` before `e` and is named `…EncPublicKeyE`, while its EC sibling's `crv`,
+    // `x` and `y` yield `…EncPublicKeyCrv` — except on the recursive all-required
+    // shape, which takes the last in declaration order.
+    let names_this_variant = |candidate: &&String| {
+        candidate.as_str() != "resource_list"
+            && candidate.as_str() != "metadata"
+            && candidate.as_str() != "url"
+            && siblings
+                .iter()
+                .filter(|sibling| sibling.properties.contains_key(*candidate))
+                .count()
+                == 1
+    };
+    let distinguishing_name = variant
         .properties
-        .values()
-        .find_map(|property| {
-            string_enum_values(property)
-                .filter(|values| values.len() == 1)
-                .and_then(|values| values.into_iter().next())
-        })
+        .keys()
+        .rfind(names_this_variant)
+        .filter(|_| required_recursive_inline_union)
         .or_else(|| {
             variant
                 .properties
                 .keys()
-                .rfind(|candidate| {
-                    candidate.as_str() != "resource_list"
-                        && candidate.as_str() != "metadata"
-                        && candidate.as_str() != "url"
-                        && siblings
-                            .iter()
-                            .filter(|sibling| sibling.properties.contains_key(*candidate))
-                            .count()
-                            == 1
-                })
-                .filter(|_| required_recursive_inline_union)
-                .or_else(|| {
-                    variant.properties.keys().find(|candidate| {
-                        candidate.as_str() != "resource_list"
-                            && candidate.as_str() != "metadata"
-                            && candidate.as_str() != "url"
-                            && siblings
-                                .iter()
-                                .filter(|sibling| sibling.properties.contains_key(*candidate))
-                                .count()
-                                == 1
-                    })
-                })
-                .cloned()
-        });
+                .filter(names_this_variant)
+                .min_by(|left, right| left.as_str().cmp(right.as_str()))
+        })
+        .cloned();
+    // A variant no property distinguishes is named by its discriminant value,
+    // where one property carries a single-member enum.
+    let discriminant_value = variant.properties.values().find_map(|property| {
+        string_enum_values(property)
+            .filter(|values| values.len() == 1)
+            .and_then(|values| values.into_iter().next())
+    });
+    // A property only distinguishes a variant when there is a sibling to
+    // distinguish it from; a one-member union takes the discriminant value.
+    let unique = if siblings.len() > 1 {
+        distinguishing_name.or(discriminant_value)
+    } else {
+        discriminant_value.or(distinguishing_name)
+    };
     let unique = if siblings.len() > 2
         && index + 1 == siblings.len()
         && shared_first.map(String::as_str) == Some("assets")
@@ -7174,7 +7248,10 @@ fn is_explicitly_nullable(schema: &Schema) -> bool {
 }
 
 /// A schema that carries nothing to determine a type — Fern treats it as an
-/// unknown value (`Any`).
+/// unknown value (`Any`). A bare `const` is not that: Fern reads it as the
+/// single-member enum `string_enum_values` already lowers it to, which is how
+/// `mosip-esignet`'s type-less `grant_type: {const: authorization_code}` becomes
+/// `PostTokenRequestGrantType` rather than `typing.Any`.
 fn is_unknown(schema: &Schema) -> bool {
     schema.reference.is_none()
         && schema.ty.as_ref().is_none_or(|ty| ty.primary().is_none())
@@ -7182,6 +7259,7 @@ fn is_unknown(schema: &Schema) -> bool {
         && schema.any_of.is_none()
         && schema.all_of.is_none()
         && schema.enum_values.is_none()
+        && schema.const_value.is_none()
         && schema.properties.is_empty()
         && schema.additional_properties.is_none()
         && schema.items.is_none()
