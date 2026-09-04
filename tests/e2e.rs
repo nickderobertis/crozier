@@ -1874,6 +1874,9 @@ const CORPORA: &[&Corpus] = &[
     &MOSIP_ESIGNET,
     &OPENBANKINGPROJECT_CH_KUNDENBEZIEHUNG,
     &CYBERARK_CONJUR_API,
+    &ADYEN_REPORT_NOTIFICATION,
+    &ADYEN_MANAGED_RISK_NOTIFICATION,
+    &GO_KRATOS_CASBIN_ADMIN,
 ];
 
 #[test]
@@ -2931,6 +2934,57 @@ const CYBERARK_CONJUR_API: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `adyen-report-notification`: Adyen's "Report webhooks" document is the
+/// corpus's first source that omits `paths` altogether — a valid OpenAPI 3.1
+/// document whose only API surface is one webhook
+/// (`balancePlatform.report.created`) over five component schemas. Every other
+/// registered source declares a Paths Object, so this row pins what crozier
+/// generates when the field the whole endpoint pipeline reads is absent.
+const ADYEN_REPORT_NOTIFICATION: Corpus = Corpus {
+    api: "adyen-report-notification",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `adyen-managed-risk-notification`: Adyen's "Managed risk webhooks" document
+/// declares eight top-level `webhooks` and no `paths` at all, the webhook-only
+/// shape 3.1 added. Row 69 (`tamoss`) declares webhooks beside paths; this row
+/// is the first registered source where the webhooks stand alone, so its golden
+/// pins that Fern emits no webhook payload model and crozier emits the same
+/// endpoint-free client. It also declares `jsonSchemaDialect`.
+const ADYEN_MANAGED_RISK_NOTIFICATION: Corpus = Corpus {
+    api: "adyen-managed-risk-notification",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `go-kratos-casbin-admin`: the protoc-gen-openapi document the go-kratos
+/// Casbin example ships is the corpus's only source carrying an *empty* Paths
+/// Object — `paths: {}` beside `components.schemas: {}` and an empty
+/// `info.title` — which is a different shape from omitting `paths` entirely
+/// (rows 100 and 101). Its golden pins the empty client and documentation
+/// scaffolding Fern leaves behind.
+const GO_KRATOS_CASBIN_ADMIN: Corpus = Corpus {
+    api: "go-kratos-casbin-admin",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3170,6 +3224,21 @@ fn openbankingproject_ch_kundenbeziehung_matches_fern_output() {
 #[test]
 fn cyberark_conjur_api_matches_fern_output() {
     assert_link_ok_corpus_matches(&CYBERARK_CONJUR_API);
+}
+
+#[test]
+fn adyen_report_notification_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ADYEN_REPORT_NOTIFICATION);
+}
+
+#[test]
+fn adyen_managed_risk_notification_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ADYEN_MANAGED_RISK_NOTIFICATION);
+}
+
+#[test]
+fn go_kratos_casbin_admin_matches_fern_output() {
+    assert_link_ok_corpus_matches(&GO_KRATOS_CASBIN_ADMIN);
 }
 
 #[test]

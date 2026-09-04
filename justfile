@@ -155,6 +155,9 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e mosip_esignet_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openbankingproject_ch_kundenbeziehung_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e cyberark_conjur_api_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e adyen_report_notification_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e adyen_managed_risk_notification_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e go_kratos_casbin_admin_matches_fern_output
 
 # Format the codebase in place.
 format:
