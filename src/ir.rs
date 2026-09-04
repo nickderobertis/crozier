@@ -773,6 +773,10 @@ pub struct Endpoint {
     /// Whitespace from the end of the source description that Fern preserves in
     /// reference documentation after trimming method docstrings.
     pub reference_description_suffix: String,
+    /// The pagination contract the operation declares, resolved against its
+    /// response model. A paginated operation returns a `SyncPager`/`AsyncPager`
+    /// over the response's item list rather than the buffered response itself.
+    pub pagination: Option<EndpointPagination>,
     /// Whether the success response is a Server-Sent-Events stream
     /// (`text/event-stream`). A streaming operation is emitted as a
     /// context-managed iterator of chunks rather than a buffered response.
@@ -2242,6 +2246,7 @@ fn build_endpoint(
         http_method,
         path: path.to_string(),
         path_params,
+        pagination: endpoint_pagination(doc, op, &query_params),
         query_params,
         header_params,
         constant_headers,
@@ -2484,6 +2489,83 @@ fn build_endpoint(
         wildcard_binary_response: has_wildcard_binary_response(doc, op),
         emittable,
     }
+}
+
+/// A resolved `x-crozier-pagination` / `x-fern-pagination` contract: everything
+/// the pager emission needs, read off the response model rather than off the
+/// selector strings.
+#[derive(Debug, Clone)]
+pub struct EndpointPagination {
+    /// The Python attribute on the parsed response holding the page's items.
+    pub results: String,
+    /// The attribute chain to the next cursor, e.g. `["pagination",
+    /// "next_page_token"]`. Everything but the last segment is the optional
+    /// container the emitted code guards on.
+    pub next_cursor: Vec<String>,
+    /// The Python name of the request parameter carrying the cursor.
+    pub cursor_param: String,
+    /// The element type of the item list, which parameterizes the pager.
+    pub item_type: TypeRef,
+}
+
+impl EndpointPagination {
+    /// The attribute chain up to (but excluding) the cursor itself — the optional
+    /// container the emitted `if … is not None` guards on.
+    #[must_use]
+    pub fn next_cursor_container(&self) -> &[String] {
+        &self.next_cursor[..self.next_cursor.len() - 1]
+    }
+
+    /// The cursor attribute itself.
+    #[must_use]
+    pub fn next_cursor_leaf(&self) -> &str {
+        self.next_cursor
+            .last()
+            .map_or("", std::string::String::as_str)
+    }
+}
+
+/// Resolve the declared pagination contract against the operation's own response
+/// schema and query parameters. Returns `None` when the operation declares none,
+/// or when a selector names something the document does not carry — a contract
+/// that cannot be resolved is not one crozier can emit a pager for.
+fn endpoint_pagination(
+    doc: &OpenApi,
+    op: &Operation,
+    query_params: &[QueryParam],
+) -> Option<EndpointPagination> {
+    let declared = op.pagination()?;
+    let results = declared.results_property()?;
+    let next_cursor = declared.next_cursor_property()?;
+    let cursor = declared.cursor_property()?;
+    let cursor_param = query_params
+        .iter()
+        .find(|param| param.wire_name == cursor)?
+        .py_name
+        .clone();
+    let response = success_response_schema(op)?;
+    let response = response
+        .reference
+        .as_deref()
+        .and_then(|reference| resolve_ref(doc, reference))
+        .unwrap_or(response);
+    let items = response
+        .properties
+        .get(results)
+        .and_then(|list| list.items.as_deref())?;
+    let item_type = items
+        .reference
+        .as_deref()
+        .map(|reference| TypeRef::Named(ref_to_class(reference)))?;
+    Some(EndpointPagination {
+        results: naming::model_field_name(results),
+        next_cursor: next_cursor
+            .split('.')
+            .map(naming::model_field_name)
+            .collect(),
+        cursor_param,
+        item_type,
+    })
 }
 
 fn schema_property_is_read_only(doc: &OpenApi, schema: &Schema, property: &str) -> bool {

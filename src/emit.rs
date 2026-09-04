@@ -17,8 +17,8 @@ use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
-    Auth, BodyField, Endpoint, ErrorClass, Field, GlobalHeader, Ir, ObjectType, Prim, RequestBody,
-    TagTypeDecl, TypeDecl, TypeRef,
+    Auth, BodyField, Endpoint, EndpointPagination, ErrorClass, Field, GlobalHeader, Ir, ObjectType,
+    Prim, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::ExtraFields;
@@ -1245,7 +1245,10 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
 
     // Fern's static core runtime, emitted verbatim (see assets/README.md), plus
     // the auth-shaped `client_wrapper.py`.
-    files.extend(core_files(pkg));
+    files.extend(core_files(
+        pkg,
+        ir.endpoints.iter().any(|endpoint| endpoint.pagination.is_some()),
+    ));
     files.push(client_wrapper_file(
         pkg,
         &ir.project_name,
@@ -2671,14 +2674,58 @@ fn scaffolding_files(pkg: &str, project_name: &str) -> Vec<GeneratedFile> {
 /// Emit the vendored core runtime for a package. The runtime assets are emitted
 /// verbatim; `client_wrapper.py` is generated separately (see
 /// [`client_wrapper_file`]) because Fern shapes it from the auth model.
-fn core_files(pkg: &str) -> Vec<GeneratedFile> {
-    CORE_ASSETS
+fn core_files(pkg: &str, paginated: bool) -> Vec<GeneratedFile> {
+    let mut files: Vec<GeneratedFile> = CORE_ASSETS
         .iter()
         .map(|(rel, content)| GeneratedFile {
             path: PathBuf::from(format!("src/{pkg}/core/{rel}")),
-            contents: (*content).to_string(),
+            contents: if paginated && *rel == "__init__.py" {
+                core_init_with_pagination(content)
+            } else {
+                (*content).to_string()
+            },
         })
-        .collect()
+        .collect();
+    // The pager runtime ships only with an SDK that has a paginated endpoint —
+    // Fern emits `core/pagination.py` and exports its two classes from `core`
+    // exactly then, and leaves both out otherwise.
+    if paginated {
+        files.push(GeneratedFile {
+            path: PathBuf::from(format!("src/{pkg}/core/pagination.py")),
+            contents: include_str!("../assets/core/pagination.py").to_string(),
+        });
+    }
+    files
+}
+
+/// `core/__init__.py` with the two pager names spliced into its three sorted
+/// blocks. The asset is verbatim Fern output, so the splices are anchored on the
+/// neighbours the sort puts them beside rather than re-rendering the file.
+fn core_init_with_pagination(asset: &str) -> String {
+    let mut out = asset.to_string();
+    for (anchor, inserted) in [
+        (
+            "    from .parse_error import ParsingError\n",
+            "    from .pagination import AsyncPager, SyncPager\n",
+        ),
+        (
+            "    \"BaseClientWrapper\": \".client_wrapper\",\n",
+            "    \"AsyncPager\": \".pagination\",\n",
+        ),
+        (
+            "    \"UniversalBaseModel\": \".pydantic_utilities\",\n",
+            "    \"SyncPager\": \".pagination\",\n",
+        ),
+        ("    \"BaseClientWrapper\",\n", "    \"AsyncPager\",\n"),
+        ("    \"UniversalBaseModel\",\n", "    \"SyncPager\",\n"),
+    ] {
+        debug_assert!(
+            out.contains(anchor),
+            "core/__init__.py asset no longer carries {anchor:?}"
+        );
+        out = out.replacen(anchor, &format!("{inserted}{anchor}"), 1);
+    }
+    out
 }
 
 /// The auth-varying fragments of `client_wrapper.py`: the credential constructor
@@ -3858,11 +3905,127 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
         "HttpResponse"
     };
     let mp = method_params(ep, imports);
-    let return_type = format!("{wrapper}[{}]", mp.inner);
+    let return_type = pager_return_type(ep, &mp.inner, is_async, imports)
+        .unwrap_or_else(|| format!("{wrapper}[{}]", mp.inner));
     let signature = signature(ep, &mp, &return_type, is_async);
     let docstring = raw_docstring(ep, &mp.path, &mp.query, &mp.header, &mp.body, &return_type);
     let body = raw_body(ep, is_async, &mp.inner, imports);
     format!("{signature}\n{docstring}\n{body}")
+}
+
+/// The success branch of a paginated raw method: parse the page, read its items
+/// and next cursor, and return a pager whose `get_next` calls this same method
+/// with the cursor advanced. The sync form binds a `lambda`; the async form needs
+/// a nested `async def`, because a coroutine cannot be produced by a lambda.
+fn pager_success_branch(
+    ep: &Endpoint,
+    pagination: &EndpointPagination,
+    inner: &str,
+    is_async: bool,
+) -> Vec<String> {
+    let pager = if is_async { "AsyncPager" } else { "SyncPager" };
+    let mut lines = vec![
+        "                _parsed_response = typing.cast(".to_string(),
+        format!("                    {inner},"),
+        "                    parse_obj_as(".to_string(),
+        format!("                        type_={inner},"),
+        "                        object_=_response.json(),".to_string(),
+        "                    ),".to_string(),
+        "                )".to_string(),
+        format!(
+            "                _items = _parsed_response.{}",
+            pagination.results
+        ),
+        "                _has_next = False".to_string(),
+        "                _get_next = None".to_string(),
+    ];
+    // The cursor's container is optional on the response model, so the whole
+    // advance is guarded on it; a cursor declared at the top level needs no guard.
+    let container = pagination.next_cursor_container();
+    let (indent, holder) = if container.is_empty() {
+        ("                ", "_parsed_response".to_string())
+    } else {
+        let holder = format!("_parsed_response.{}", container.join("."));
+        lines.push(format!("                if {holder} is not None:"));
+        ("                    ", holder)
+    };
+    lines.push(format!(
+        "{indent}_parsed_next = {holder}.{}",
+        pagination.next_cursor_leaf()
+    ));
+    lines.push(format!(
+        "{indent}_has_next = _parsed_next is not None and _parsed_next != \"\""
+    ));
+    // The recursive call: every argument the method took, with the cursor replaced
+    // by the one just parsed.
+    let mut args: Vec<String> = Vec::new();
+    for param in &ep.path_params {
+        args.push(param.py_name.clone());
+    }
+    for param in &ep.query_params {
+        let value = if param.py_name == pagination.cursor_param {
+            "_parsed_next"
+        } else {
+            param.py_name.as_str()
+        };
+        args.push(format!("{}={value}", param.py_name));
+    }
+    for param in &ep.header_params {
+        args.push(format!("{}={}", param.py_name, param.py_name));
+    }
+    args.push("request_options=request_options".to_string());
+    if is_async {
+        lines.push(String::new());
+        lines.push(format!("{indent}async def _get_next():"));
+        lines.push(format!(
+            "{indent}    return await self.{}(",
+            ep.method_name
+        ));
+        for arg in &args {
+            lines.push(format!("{indent}        {arg},"));
+        }
+        lines.push(format!("{indent}    )"));
+        lines.push(String::new());
+    } else {
+        lines.push(format!(
+            "{indent}_get_next = lambda: self.{}(",
+            ep.method_name
+        ));
+        for arg in &args {
+            lines.push(format!("{indent}    {arg},"));
+        }
+        lines.push(format!("{indent})"));
+    }
+    lines.push(format!(
+        "                return {pager}(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)"
+    ));
+    lines
+}
+
+/// The pager type as written in a docstring, where no import is registered — the
+/// signature that names it has already registered one.
+fn pager_doc_type(pagination: &EndpointPagination, inner: &str, is_async: bool) -> String {
+    let pager = if is_async { "AsyncPager" } else { "SyncPager" };
+    let TypeRef::Named(item) = &pagination.item_type else {
+        return inner.to_string();
+    };
+    format!("{pager}[{item}, {inner}]")
+}
+
+/// The `SyncPager[Item, Response]` / `AsyncPager[Item, Response]` a paginated
+/// operation returns in place of the buffered `HttpResponse[Response]`, or `None`
+/// when the operation declares no pagination contract.
+fn pager_return_type(
+    ep: &Endpoint,
+    inner: &str,
+    is_async: bool,
+    imports: &mut Imports,
+) -> Option<String> {
+    let pagination = ep.pagination.as_ref()?;
+    let pager = if is_async { "AsyncPager" } else { "SyncPager" };
+    imports.add_core("pagination", pager);
+    let item = raw_type_str(&pagination.item_type, imports);
+    Some(format!("{pager}[{item}, {inner}]"))
 }
 
 /// A parameter as it appears in a method docstring / signature: its Python name,
@@ -4036,6 +4199,9 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         lines.push(format!(
             "                return {wrapper}(response=_response, data=_response.text)"
         ));
+    } else if let Some(pagination) = ep.pagination.as_ref() {
+        imports.add_core("pydantic_utilities", "parse_obj_as");
+        lines.extend(pager_success_branch(ep, pagination, inner, is_async));
     } else if ep.response.is_some() {
         imports.add_core("pydantic_utilities", "parse_obj_as");
         lines.extend([
@@ -5482,7 +5648,7 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
     let return_type = if ep.http_method == "HEAD" {
         "typing.Dict[str, str]".to_string()
     } else {
-        mp.inner.clone()
+        pager_return_type(ep, &mp.inner, is_async, imports).unwrap_or_else(|| mp.inner.clone())
     };
     let sig = signature(ep, &mp, &return_type, is_async);
     let docstring = client_docstring(cx, ep, &mp, is_async);
@@ -5499,6 +5665,12 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
     }
     call_args.push(Doc::atom("request_options=request_options"));
     let open = format!("{await_}self._raw_client.{}(", ep.method_name);
+    // A paginated raw method already returns the pager, so the high-level one
+    // returns it straight through rather than unwrapping a buffered response.
+    if ep.pagination.is_some() {
+        let call = format!("        return {}", Doc::group(open, call_args, ")").flat());
+        return format!("{sig}\n{docstring}\n{call}");
+    }
     let call = format!(
         "        _response = {}",
         Doc::group(open, call_args, ")").flat()
@@ -5794,12 +5966,16 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     lines.push(String::new());
     lines.push("        Returns".to_string());
     lines.push("        -------".to_string());
+    let pager = ep
+        .pagination
+        .as_ref()
+        .map(|pagination| pager_doc_type(pagination, &mp.inner, is_async));
     lines.push(format!(
         "        {}",
         if ep.http_method == "HEAD" && ep.response.is_some() {
             "typing.Dict[str, str]"
         } else {
-            &mp.inner
+            pager.as_deref().unwrap_or(&mp.inner)
         }
     ));
     // A concrete response carries its description (indented, blank when the spec
@@ -7468,6 +7644,21 @@ fn build_example_inner(
             format!(
                 "{pad}response = {rendered}\n{pad}{for_kw} chunk in response:\n{pad}    yield chunk"
             )
+        } else if ep.pagination.is_some() && !documentation {
+            // A pager's worked example shows both ways of consuming it: item by
+            // item, and page by page. The async form separates the two with a
+            // blank line; the sync form does not.
+            let for_kw = if is_async { "async for" } else { "for" };
+            let gap = if is_async { "\n" } else { "" };
+            [
+                format!("{pad}response = {rendered}"),
+                format!("{pad}{for_kw} item in response:"),
+                format!("{pad}    yield item"),
+                format!("{gap}{pad}# alternatively, you can paginate page-by-page"),
+                format!("{pad}{for_kw} page in response.iter_pages():"),
+                format!("{pad}    yield page"),
+            ]
+            .join("\n")
         } else {
             format!("{pad}{rendered}")
         }
