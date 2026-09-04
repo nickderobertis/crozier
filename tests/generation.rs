@@ -6189,3 +6189,412 @@ components:
         "{reference}"
     );
 }
+
+/// A property that declares a scalar `type` beside an `allOf` of constraint-only
+/// subschemas is that scalar, not a hoisted model: VolView's `TaskSpec.id` is
+/// `type: string` with two `pattern` members, and Fern types it `str`.
+#[test]
+fn a_scalar_typed_property_with_a_constraint_all_of_stays_a_scalar() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Tasks, version: 1.0.0 }
+paths:
+  /tasks:
+    get:
+      operationId: tasks_list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TaskSpec" }
+components:
+  schemas:
+    TaskSpec:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+          minLength: 1
+          allOf:
+            - { pattern: "^(?!\\.{1,2}$)" }
+            - { pattern: "\\S" }
+"##,
+    );
+    assert!(files["src/acme/types/task_spec.py"].contains("    id: str\n"));
+    assert!(!files.contains_key("src/acme/types/task_spec_id.py"));
+}
+
+/// A server URL variable whose snake-case spelling collides with the root
+/// client's own `base_url` parameter is prefixed `server_url_`, the way Fern
+/// names VolView's `{baseUrl}` template; a non-colliding one is left alone.
+#[test]
+fn a_server_variable_colliding_with_base_url_is_prefixed() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Neutral, version: 1.0.0 }
+servers:
+  - url: "{baseUrl}"
+    variables:
+      baseUrl: { default: "/" }
+paths:
+  /ping:
+    get:
+      operationId: health_ping
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { type: string }
+"##,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("server_url_base_url: typing.Optional[str] = None,"),
+        "{client}"
+    );
+    assert!(
+        client.contains("base_url = \"{baseUrl}\".format(baseUrl=_server_url_base_url)"),
+        "{client}"
+    );
+
+    let named = render(
+        r##"openapi: 3.1.0
+info: { title: Regional, version: 1.0.0 }
+servers:
+  - url: "https://{region}.example.com"
+    variables:
+      region: { default: us-east-1 }
+paths:
+  /ping:
+    get:
+      operationId: health_ping
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { type: string }
+"##,
+    );
+    assert!(named["src/acme/client.py"].contains("region: typing.Optional[str] = None,"));
+}
+
+/// A map whose `additionalProperties` value declares its own structure hoists
+/// that value to `{Owner}{Prop}Value` — a model for an inline object, a union
+/// alias for a `oneOf` — and a `null` member of that union leaves the alias and
+/// makes the map's value `Optional`.
+#[test]
+fn structured_additional_properties_hoist_a_value_type() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Labels, version: 1.0.0 }
+paths:
+  /annotations:
+    get:
+      operationId: annotations_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AnnotationsFile" }
+components:
+  schemas:
+    InputValue:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string }
+    AnnotationsFile:
+      type: object
+      properties:
+        rulers:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              color: { type: string }
+        values:
+          type: object
+          additionalProperties:
+            oneOf:
+              - { $ref: "#/components/schemas/InputValue" }
+              - { type: string }
+              - { type: "null" }
+"##,
+    );
+    let annotations = &files["src/acme/types/annotations_file.py"];
+    assert!(
+        annotations
+            .contains("rulers: typing.Optional[typing.Dict[str, AnnotationsFileRulersValue]]"),
+        "{annotations}"
+    );
+    assert!(
+        annotations.contains(
+            "values: typing.Optional[typing.Dict[str, typing.Optional[AnnotationsFileValuesValue]]]"
+        ),
+        "{annotations}"
+    );
+    assert!(files["src/acme/types/annotations_file_rulers_value.py"]
+        .contains("class AnnotationsFileRulersValue(UniversalBaseModel):"));
+    assert!(files["src/acme/types/annotations_file_values_value.py"]
+        .contains("AnnotationsFileValuesValue = typing.Union[InputValue, str]"));
+}
+
+/// A union member that is itself an inline composition is a *named* union to
+/// Fern: VolView's `ResultIntent.anyOf[0]` is a `oneOf` of `intent`-const
+/// objects, hoisted to the discriminated union `ResultIntentZero` the enclosing
+/// alias then references by name.
+#[test]
+fn a_composition_union_member_hoists_to_its_own_named_union() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Intents, version: 1.0.0 }
+paths:
+  /results:
+    get:
+      operationId: results_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ResultIntent" }
+components:
+  schemas:
+    ResultIntentId:
+      type: object
+      required: [id]
+      properties:
+        id: { type: string }
+    ResultIntent:
+      anyOf:
+        - oneOf:
+            - type: object
+              required: [intent, name]
+              properties:
+                intent: { type: string, const: add-layer }
+                name: { type: string }
+            - type: object
+              required: [intent, url]
+              properties:
+                intent: { type: string, const: add-base-image }
+                url: { type: string }
+        - $ref: "#/components/schemas/ResultIntentId"
+"##,
+    );
+    assert!(files["src/acme/types/result_intent.py"]
+        .contains("ResultIntent = typing.Union[ResultIntentZero, ResultIntentId]"));
+    let zero = &files["src/acme/types/result_intent_zero.py"];
+    assert!(
+        zero.contains("class ResultIntentZero_AddLayer(UniversalBaseModel):"),
+        "{zero}"
+    );
+    assert!(
+        zero.contains("pydantic.Field(discriminator=\"intent\")"),
+        "{zero}"
+    );
+}
+
+/// An optional map value has no value to show, so its example is the empty map —
+/// where a required one takes the `{"key": ...}` pair.
+#[test]
+fn an_optional_map_value_examples_as_an_empty_map() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Bindings, version: 1.0.0 }
+paths:
+  /run:
+    post:
+      operationId: tasks_run
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RunTaskRequest" }
+      responses: { "204": { description: "" } }
+components:
+  schemas:
+    InputValue:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string }
+    RunTaskRequest:
+      type: object
+      required: [values]
+      properties:
+        values:
+          type: object
+          additionalProperties:
+            oneOf:
+              - { $ref: "#/components/schemas/InputValue" }
+              - { type: string }
+              - { type: "null" }
+"##,
+    );
+    let reference = &files["reference.md"];
+    assert!(reference.contains("values={},"), "{reference}");
+    assert!(files["src/acme/client.py"].contains("values={},"));
+}
+
+/// Example imports order a discriminated-union variant before the models named
+/// after it, the way Fern writes `StageInputDescriptor_Labelmap` ahead of
+/// `StageInputDescriptorLabelmap…`, where a plain sort puts the underscore last.
+#[test]
+fn example_imports_put_a_union_variant_before_its_prefixed_siblings() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Staging, version: 1.0.0 }
+paths:
+  /stage:
+    post:
+      operationId: context_stage_input
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [descriptor]
+              properties:
+                descriptor: { $ref: "#/components/schemas/StageInputDescriptor" }
+      responses: { "204": { description: "" } }
+components:
+  schemas:
+    StageInputDescriptor:
+      oneOf:
+        - type: object
+          required: [type, labelmapReferenceImage, labelmapReferenceImageOwner]
+          properties:
+            type: { type: string, const: labelmap }
+            labelmapReferenceImage:
+              type: object
+              required: [uri]
+              properties:
+                uri: { type: string }
+            labelmapReferenceImageOwner:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+"##,
+    );
+    let client = &files["src/acme/client.py"];
+    let variant = client
+        .find("    StageInputDescriptor_Labelmap,")
+        .expect("the variant is imported");
+    let sibling = client
+        .find("    StageInputDescriptorLabelmapLabelmapReferenceImage,")
+        .expect("the prefixed sibling is imported");
+    assert!(variant < sibling, "{client}");
+}
+
+/// The two remaining shapes of the same two rules: a map value union with no
+/// `null` member keeps the map value required, and a composition member Fern
+/// cannot discriminate becomes a plain named union alias rather than a
+/// discriminated one.
+#[test]
+fn undiscriminated_nested_compositions_still_hoist_a_named_union() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Bindings, version: 1.0.0 }
+paths:
+  /bindings:
+    get:
+      operationId: bindings_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Bindings" }
+components:
+  schemas:
+    InputValue:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string }
+    Bindings:
+      type: object
+      properties:
+        values:
+          type: object
+          additionalProperties:
+            oneOf:
+              - { $ref: "#/components/schemas/InputValue" }
+              - { type: string }
+        choice: { $ref: "#/components/schemas/Choice" }
+    Choice:
+      anyOf:
+        - oneOf:
+            - { type: string }
+            - { type: integer }
+        - { $ref: "#/components/schemas/InputValue" }
+"##,
+    );
+    let bindings = &files["src/acme/types/bindings.py"];
+    assert!(
+        bindings.contains("values: typing.Optional[typing.Dict[str, BindingsValuesValue]]"),
+        "{bindings}"
+    );
+    assert!(files["src/acme/types/bindings_values_value.py"]
+        .contains("BindingsValuesValue = typing.Union[InputValue, str]"));
+    assert!(files["src/acme/types/choice_zero.py"].contains("ChoiceZero = typing.Union[str, int]"));
+    assert!(
+        files["src/acme/types/choice.py"].contains("Choice = typing.Union[ChoiceZero, InputValue]")
+    );
+}
+
+/// Two composition paths the corpus goldens reach and no in-process journey did:
+/// an array of arrays whose innermost items are a union hoists to
+/// `{Owner}{Prop}ItemItem`, and a union member that is itself a multi-member
+/// `type` list becomes its own named alias the enclosing union references.
+#[test]
+fn nested_array_and_multi_type_union_members_hoist_named_aliases() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Grids, version: 1.0.0 }
+paths:
+  /grids:
+    get:
+      operationId: grids_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Grid" }
+    put:
+      operationId: grids_put
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MultiValued" }
+      responses: { "204": { description: "" } }
+components:
+  schemas:
+    Grid:
+      type: object
+      properties:
+        cells:
+          type: array
+          items:
+            type: array
+            items:
+              oneOf:
+                - { type: string }
+                - { type: integer }
+    MultiValued:
+      anyOf:
+        - type: [string, number, boolean]
+        - { type: array, items: { type: string } }
+"##,
+    );
+    assert!(files["src/acme/types/grid.py"]
+        .contains("cells: typing.Optional[typing.List[typing.List[GridCellsItemItem]]]"));
+    assert!(files["src/acme/types/grid_cells_item_item.py"]
+        .contains("GridCellsItemItem = typing.Union[str, int]"));
+    assert!(files["src/acme/types/multi_valued_zero.py"]
+        .contains("MultiValuedZero = typing.Union[str, float, bool]"));
+    assert!(files["src/acme/types/multi_valued.py"]
+        .contains("MultiValued = typing.Union[MultiValuedZero, typing.List[str]]"));
+}

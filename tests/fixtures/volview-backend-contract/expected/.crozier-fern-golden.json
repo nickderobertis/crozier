@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "volview-backend-contract",
+  "corpus_spec_ref": "496ada04c1d07235f98c92a68b5c374c7188ee87",
+  "corpus_spec_url": "https://raw.githubusercontent.com/Kitware/VolView/496ada04c1d07235f98c92a68b5c374c7188ee87/backend-contract/generated/openapi.json"
+}
