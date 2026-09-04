@@ -1877,6 +1877,7 @@ const CORPORA: &[&Corpus] = &[
     &ADYEN_REPORT_NOTIFICATION,
     &ADYEN_MANAGED_RISK_NOTIFICATION,
     &GO_KRATOS_CASBIN_ADMIN,
+    &DESCOPE_AUTHZCACHE,
 ];
 
 #[test]
@@ -2985,6 +2986,24 @@ const GO_KRATOS_CASBIN_ADMIN: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `descope-authzcache`: a second, independent witness of the empty Paths Object
+/// from another project — the `protoc-gen-openapi` document Descope's authzcache
+/// service ships declares the same `paths: {}` beside `components.schemas: {}`
+/// and an empty `info.title` that row 102 does, from a different repository under
+/// a different license. Two witnesses is what tells an empty Paths Object apart
+/// from one project's quirk, the way rows 83 and 84 pin the accent-dropping
+/// property rule.
+const DESCOPE_AUTHZCACHE: Corpus = Corpus {
+    api: "descope-authzcache",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3239,6 +3258,11 @@ fn adyen_managed_risk_notification_matches_fern_output() {
 #[test]
 fn go_kratos_casbin_admin_matches_fern_output() {
     assert_link_ok_corpus_matches(&GO_KRATOS_CASBIN_ADMIN);
+}
+
+#[test]
+fn descope_authzcache_matches_fern_output() {
+    assert_link_ok_corpus_matches(&DESCOPE_AUTHZCACHE);
 }
 
 #[test]
