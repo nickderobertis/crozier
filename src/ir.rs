@@ -3005,10 +3005,23 @@ fn resolve_request_body(
     }
     // A form body: `multipart/form-data` (file uploads via `files=`) or
     // `application/x-www-form-urlencoded` (all fields via `data=`).
+    //
+    // The urlencoded spelling loses to a JSON representation offered beside it,
+    // the same way `multipart/related` does above: `swagger-petstore` offers
+    // `application/json`, `application/xml` and
+    // `application/x-www-form-urlencoded` on five request bodies, all three
+    // `$ref`ing one component schema, and Fern's golden sends `json=` with no
+    // content-type header override — so the whole body stays the named component
+    // rather than being flattened into form fields. `multipart/form-data` keeps
+    // priority: no registered source offers it beside JSON, so nothing measures
+    // Fern there and this preference is not extended to it on a guess.
     for (media_type, multipart) in [
         ("multipart/form-data", true),
         ("application/x-www-form-urlencoded", false),
     ] {
+        if !multipart && selected_json_request_media(rb).is_some() {
+            continue;
+        }
         if let Some(media) = rb.content.get(media_type) {
             let schema = media.schema.as_ref()?;
             let obj = schema
