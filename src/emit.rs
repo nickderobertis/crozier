@@ -6801,16 +6801,21 @@ fn build_example_inner(
             args.push((Some(pp.py_name.clone()), v));
         }
     }
-    // Fern normally follows required/optional grouping for parameters. Wildcard
-    // binary requests are imported with header examples before query examples.
-    let wildcard_request = ep
+    // Fern normally follows required/optional grouping for parameters. Two request
+    // bodies are imported with header examples before query examples instead: a
+    // wildcard (`*/*`) body, and a form body (`multipart/form-data` or
+    // urlencoded) — api.video's `POST /upload` shows its optional `Content-Range`
+    // header ahead of its required `token` query parameter. Both keep the ordinary
+    // query-then-header order in the Markdown writers, so the flag is read
+    // alongside `reference` rather than on its own.
+    let header_first_request = ep
         .request_body
         .as_ref()
-        .is_some_and(RequestBody::is_wildcard_media);
+        .is_some_and(|body| body.is_wildcard_media() || matches!(body, RequestBody::Form(_)));
     for qp in ep
         .query_params
         .iter()
-        .filter(|qp| !ep.wildcard_binary_response && !wildcard_request && qp.required)
+        .filter(|qp| !ep.wildcard_binary_response && !header_first_request && qp.required)
     {
         // Fern omits required collections of referenced shapes from worked
         // examples; their query encoding has no inline scalar placeholder.
@@ -6865,7 +6870,7 @@ fn build_example_inner(
             });
         args.push((Some(hp.py_name.clone()), v));
     }
-    if wildcard_request && !reference {
+    if header_first_request && !reference {
         for hp in ep.header_params.iter().filter(|header| {
             !ep.wildcard_binary_response && !header.required && header.example.is_some()
         }) {
@@ -6897,7 +6902,7 @@ fn build_example_inner(
             args.push((Some(qp.py_name.clone()), value));
         }
     }
-    if wildcard_request && reference {
+    if header_first_request && reference {
         for qp in ep
             .query_params
             .iter()
@@ -6960,7 +6965,7 @@ fn build_example_inner(
                 .unwrap_or_else(|| Example::Atom(example.to_string())),
         ));
     }
-    if reference && !wildcard_request {
+    if reference && !header_first_request {
         for hp in ep
             .header_params
             .iter()
@@ -6980,7 +6985,7 @@ fn build_example_inner(
     }
     for hp in ep.header_params.iter().filter(|header| {
         !ep.wildcard_binary_response
-            && !wildcard_request
+            && !header_first_request
             && !header.required
             && header.example.is_some()
     }) {

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "apivideo-android-uploader",
+  "corpus_spec_ref": "01952c8755c2e3557b6a1785a83ca1e473ab5ffa",
+  "corpus_spec_url": "https://raw.githubusercontent.com/apivideo/api.video-android-uploader/01952c8755c2e3557b6a1785a83ca1e473ab5ffa/api/openapi.yaml"
+}

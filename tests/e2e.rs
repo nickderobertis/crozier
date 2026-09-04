@@ -1881,6 +1881,7 @@ const CORPORA: &[&Corpus] = &[
     &SWAGGER_PETSTORE,
     &CYCLONEDX_TRANSPARENCY_EXCHANGE,
     &ADYEN_CAPITAL,
+    &APIVIDEO_ANDROID_UPLOADER,
 ];
 
 #[test]
@@ -3057,6 +3058,23 @@ const ADYEN_CAPITAL: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `apivideo-android-uploader`: the api.video document is the corpus's only
+/// source declaring a Reference Object `description` sibling — its
+/// `components.parameters.filterBy` is a `$ref` to `filterBy_2` carrying its own
+/// `description`. Every other registered source writes `$ref` alone, so this row
+/// is what pins that crozier reads a reference with a sibling the way Fern does
+/// rather than tripping over the extra key.
+const APIVIDEO_ANDROID_UPLOADER: Corpus = Corpus {
+    api: "apivideo-android-uploader",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3331,6 +3349,11 @@ fn cyclonedx_transparency_exchange_matches_fern_output() {
 #[test]
 fn adyen_capital_matches_fern_output() {
     assert_link_ok_corpus_matches(&ADYEN_CAPITAL);
+}
+
+#[test]
+fn apivideo_android_uploader_matches_fern_output() {
+    assert_link_ok_corpus_matches(&APIVIDEO_ANDROID_UPLOADER);
 }
 
 #[test]
