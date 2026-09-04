@@ -467,9 +467,13 @@ retires the split entirely by teaching the script to emit these selectors itself
   rules on it: `const-boolean`, `const-integer`, `enum-member-float`,
   `enum-member-object`, and `boolean-schema-true` outside the
   `additionalProperties` position.
-- **`gap`** (27 rows) — neither: 19 settle with a `FIXTURE`, 5 need a `PROBE`,
-  and 3 are `UNREACHABLE` — `format-assertion-vocabulary`, `xml-prefix` and
-  `xml-wrapped`.
+- **`gap`** (27 rows) — neither. How those 27 split across the three settlement
+  classes is not written down a second time here: it is
+  [`openapi-surface-coverage.md`](../openapi-surface-coverage.md#what-the-walk-enumerated)'s
+  summary table, which `RankedBacklogTests` recomputes from this file's own rows,
+  so a copy in this file would be the one place a reclassification could leave
+  stale. The three `UNREACHABLE` ones are worth naming because nothing else does:
+  `format-assertion-vocabulary`, `xml-prefix` and `xml-wrapped`.
 
 Every `gap` row's `crozier sites` cell is `none`, and each row states the `grep`
 that measured it rather than resting on a list copied out of the source. The
@@ -513,8 +517,9 @@ because no **registered** source declares them — a statement about a 126-spec
 sample, not about the world. `dollar-anchor` no longer does: the search found it a
 publisher-owned witness Fern accepts, blocked only by that document's absent
 licence, and a witness blocked on redistribution is a supply problem rather than a
-shape no corpus row could pin, so that row is now a `FIXTURE` backlog entry. The
-other five still settle on `PROBE`.
+shape no corpus row could pin, so that row is now a `FIXTURE` backlog entry.
+Which of the rest still settle on `PROBE` is each one's own `settlement` cell in
+the entry table above, not a count restated here.
 
 Issue #188 asks for the second statement, so each was searched across APIs.guru /
 `openapi-directory`, GitHub code search, SwaggerHub's public registry, the Postman
@@ -612,10 +617,14 @@ its consequences are worth naming where a reader meets the outcomes:
   is a screening failure of that document rather than evidence the feature has
   none. The blocked document's own bar is untouched by that: nothing registers
   until a declarer arrives under a redistribution-compatible licence.
-- `dollar-comment` reads `witness-found` and still settles `PROBE`. That is the
-  transient case — the witness is redistributable and Fern accepts it, so the
-  row is waiting on the change that registers it as a corpus row, which is what
-  moves the settlement.
+- `dollar-comment` reads `witness-found` and still settles `PROBE`. That pairing
+  is not a second rule; it is a row the index's rule has not been applied to yet.
+  Its witness is redistributable and Fern accepts it, so under that rule the row
+  is registrable, and the change that owns it — the one settling `dollar-comment`,
+  `dollar-vocabulary` and `format-relative-json-pointer` — is what moves both the
+  registration and the cell. `format-relative-json-pointer` reads
+  `witness-blocked` and settles `PROBE` for the same reason, and is
+  `dollar-anchor`'s exact case awaiting the same change.
 
 | key | outcome | witness | immutable ref | license | fern check | sources searched and the exact query used against each |
 |---|---|---|---|---|---|---|

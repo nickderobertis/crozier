@@ -580,6 +580,22 @@ all is supply. A cell naming a candidate the search
 backlog, so a cell like that is a row still to be moved rather than a third kind
 of probe.
 
+**Two rows in the table below do not yet satisfy the rule above, and that is
+recorded rather than quietly fixed.** `format-relative-json-pointer` is
+`witness-blocked` on a publisher-owned document Fern accepts, blocked only by a
+proprietary licence — `dollar-anchor`'s exact case, which the rule moves to
+`FIXTURE` — and `dollar-comment` is `witness-found` on a redistributable document
+Fern accepts, which the rule makes registrable. Both are
+[`schemas.md`](openapi-surface/schemas.md) rows belonging to the change that
+settles that file's `$comment`, `$vocabulary` and `format` witnesses; moving them
+here would move counts that change has to move too. Until it lands, the twelve
+below are the probe backlog as measured, and two of them are known to be leaving
+it. Nothing in the gate catches this: `RankedBacklogTests` reconciles membership
+and counts against the region files' `settlement` cells, so a cell that has not
+caught up with the rule reconciles perfectly. Making that a red — a check that
+fails when a `witness-blocked` or `witness-found` row settles `PROBE` — needs the
+two rows moved first, and belongs to the change that moves them.
+
 **So this backlog's membership is provisional in a way the fixture backlog's is
 not.** A row can leave it without any Fern run at all — `dollar-anchor` did,
 moving to `FIXTURE` on a publisher-owned witness Fern accepts that the corpus may
