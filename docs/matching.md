@@ -297,6 +297,19 @@ parameter is never exampled, however its enum (inline or `$ref`) and its example
 are declared, while a required one is rendered from the enum's first member.
 `med-anvisa-price` and `sac-backend` pin the combination.
 
+**The synthesized string placeholder needs a real constraint.** Where a required
+query parameter has no example to keep, Fern falls back to the parameter's own
+wire name (`account_holder_id="accountHolderId"`) unless the string is
+*constrained*, in which case it synthesizes a value long enough to satisfy
+`minLength` — `"x"`, or `"strawberry"` at ten. `minLength` alone does not make it
+constrained: `adyen-capital`'s `accountHolderId` declares `minLength: 1` and
+nothing else and gets its name, while `amazonaws.com-cloudformation`'s `StackName`
+declares the same `minLength` beside a `pattern`, and its `SchemaHandlerPackage`
+declares one beside a `maxLength`, and both get `"x"`. So the trigger is
+`maxLength` or `pattern`, with `minLength` choosing only which placeholder
+([`ir::query_parameter_example`]). `pattern` is the one validation keyword crozier
+reads without ever emitting it.
+
 **Example snippets.** The worked examples in docstrings/`README`/`reference.md`
 are laid out by hand (`Example::render`), *not* through `ruff format`, because
 Fern's committed examples are not a `ruff` fixed point: `ruff` reformats a long
@@ -800,7 +813,14 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    model's other fields — over a `{Union} = typing_extensions.Annotated[typing.Union[..],
    pydantic.Field(discriminator="…")]` alias (issue #50 part 2), and the
    discriminant property is stripped from each member's own model.
-   `discriminated-unions` matches in full.
+   `discriminated-unions` matches in full. The **inheritance-style** base — a
+   `discriminator` with a `mapping` and no `oneOf`/`anyOf`, whose subtypes `allOf`
+   it and redeclare the tag — strips the same way, on the mapping's targets:
+   `adyen-capital`'s `BankAccountIdentification` maps 16
+   `*LocalAccountIdentification` schemas that each redeclare `type` with a
+   `default`, and neither Fern's wrappers nor its standalone
+   `UsLocalAccountIdentification` carries a `type` field
+   ([`ir::collect_discriminant_strips`]).
    A discriminator without an explicit `mapping` is inferred when every variant
    exposes a common singleton string value; otherwise it falls back to a plain
    union.

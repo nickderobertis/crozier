@@ -625,6 +625,11 @@ pub struct Schema {
     /// request-example placeholder heuristic.
     #[serde(rename = "maxLength", default)]
     pub max_length: Option<u64>,
+    /// A string's regular-expression constraint. crozier never emits it — it
+    /// reads only as the second half of the "is this string constrained at all?"
+    /// question Fern's synthesized query-parameter example turns on.
+    #[serde(default)]
+    pub pattern: Option<String>,
     /// Legacy Square beta marker. Its importer uses constrained placeholder
     /// values in worked request examples for these schemas.
     #[serde(rename = "x-is-beta", default)]
