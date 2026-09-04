@@ -1833,10 +1833,12 @@ fn endpoints(
     (out, tag_types)
 }
 
-/// The method name an operation takes before a `stream-condition` split renames
-/// its streaming half. Only the extension-declared name is consulted, because a
-/// document that declares a stream condition declares the method name too.
-fn endpoint_method_name_for(op: &Operation) -> String {
+/// The base method name a `stream-condition` operation splits from — *not* the
+/// general per-operation derivation, which is [`endpoint_method_name`]. Only the
+/// extension-declared name is consulted, because a document that declares a
+/// stream condition declares the method name too; the `"stream"` fallback is
+/// meaningful only inside that split.
+fn stream_condition_base_method_name(op: &Operation) -> String {
     op.sdk_method_name().map_or_else(
         || "stream".to_string(),
         |name| {
@@ -1897,7 +1899,7 @@ fn stream_condition_variants(op: &Operation) -> Vec<Option<StreamSplit>> {
     let Some(condition) = streaming.condition_property() else {
         return vec![None];
     };
-    let base = endpoint_method_name_for(op);
+    let base = stream_condition_base_method_name(op);
     let mut variants = Vec::new();
     for stream in [true, false] {
         let mut operation = op.clone();
@@ -2645,31 +2647,18 @@ fn build_endpoint(
 pub struct EndpointPagination {
     /// The Python attribute on the parsed response holding the page's items.
     pub results: String,
-    /// The attribute chain to the next cursor, e.g. `["pagination",
-    /// "next_page_token"]`. Everything but the last segment is the optional
-    /// container the emitted code guards on.
-    pub next_cursor: Vec<String>,
+    /// The attribute chain up to (but excluding) the cursor itself — the optional
+    /// container the emitted `if … is not None` guards on. Empty when the cursor
+    /// sits at the top level of the response model.
+    pub next_cursor_container: Vec<String>,
+    /// The cursor attribute itself, e.g. the `next_page_token` of
+    /// `["pagination", "next_page_token"]`. Split from its container at
+    /// construction so the pair cannot represent a chain with no cursor.
+    pub next_cursor_leaf: String,
     /// The Python name of the request parameter carrying the cursor.
     pub cursor_param: String,
     /// The element type of the item list, which parameterizes the pager.
     pub item_type: TypeRef,
-}
-
-impl EndpointPagination {
-    /// The attribute chain up to (but excluding) the cursor itself — the optional
-    /// container the emitted `if … is not None` guards on.
-    #[must_use]
-    pub fn next_cursor_container(&self) -> &[String] {
-        &self.next_cursor[..self.next_cursor.len() - 1]
-    }
-
-    /// The cursor attribute itself.
-    #[must_use]
-    pub fn next_cursor_leaf(&self) -> &str {
-        self.next_cursor
-            .last()
-            .map_or("", std::string::String::as_str)
-    }
 }
 
 /// Resolve the declared pagination contract against the operation's own response
@@ -2704,12 +2693,18 @@ fn endpoint_pagination(
         .reference
         .as_deref()
         .map(|reference| TypeRef::Named(ref_to_class(reference)))?;
+    // `str::split` always yields at least one segment, so the chain always has a
+    // cursor to pop; splitting it here is what keeps a cursor-less chain
+    // unrepresentable downstream.
+    let mut next_cursor_container: Vec<String> = next_cursor
+        .split('.')
+        .map(naming::model_field_name)
+        .collect();
+    let next_cursor_leaf = next_cursor_container.pop()?;
     Some(EndpointPagination {
         results: naming::model_field_name(results),
-        next_cursor: next_cursor
-            .split('.')
-            .map(naming::model_field_name)
-            .collect(),
+        next_cursor_container,
+        next_cursor_leaf,
         cursor_param,
         item_type,
     })

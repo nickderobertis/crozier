@@ -4058,7 +4058,7 @@ fn pager_success_branch(
     ];
     // The cursor's container is optional on the response model, so the whole
     // advance is guarded on it; a cursor declared at the top level needs no guard.
-    let container = pagination.next_cursor_container();
+    let container = &pagination.next_cursor_container;
     let (indent, holder) = if container.is_empty() {
         ("                ", "_parsed_response".to_string())
     } else {
@@ -4068,7 +4068,7 @@ fn pager_success_branch(
     };
     lines.push(format!(
         "{indent}_parsed_next = {holder}.{}",
-        pagination.next_cursor_leaf()
+        pagination.next_cursor_leaf
     ));
     lines.push(format!(
         "{indent}_has_next = _parsed_next is not None and _parsed_next != \"\""
