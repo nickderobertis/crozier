@@ -5765,6 +5765,13 @@ fn client_stream_docstring(
         "typing.Iterator"
     };
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
+    if let Some(summary) = &ep.docstring {
+        // The summary block every other high-level method carries.
+        for line in summary.split('\n') {
+            lines.push(format!("        {}", python_doc_line(line)));
+        }
+        lines.push(String::new());
+    }
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
     for (name, ty, desc) in &mp.path {

@@ -1977,8 +1977,15 @@ fn build_endpoint(
             let convert = hoister.needs_convert(&type_ref) && !hoister.is_scalar(&type_ref);
             // The parameter's declared example, where Fern keeps it at all.
             let without_declared_example = parameter_example_value(doc, p).is_none();
+            // A synthesized sample needs a *body* on the success response, not a
+            // response crozier can type: CloudFormation's `SignalResource` declares
+            // `200` with no content at all and passes parameter names, while
+            // TrueForge's `download_sandbox_file` returns
+            // `application/octet-stream` and still takes the sample.
             let omit_synthesized_example = without_declared_example
-                && (p.required != Some(true) || success_response(op).is_none());
+                && (p.required != Some(true)
+                    || success_response_entry(op)
+                        .is_none_or(|response| response.content.is_empty()));
             // Fern leaves an optional enum-typed query parameter out of a worked
             // call however its enum and its example are declared: measured on Fern
             // 5.20.0, an inline `enum` carrying a schema example, the same enum
