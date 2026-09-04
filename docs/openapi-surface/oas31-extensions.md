@@ -155,9 +155,12 @@ as the `openapi-version-3.1.1` witness and is row 105, and row 101,
 `adyen-managed-risk-notification` — a sibling of the same Adyen set, registered
 as the `webhooks-without-paths` witness one change earlier — declares the dialect
 as well. That row is settled outright rather than half-settled, because one
-document carries both the declaration and the schemas it governs. The other three
-remain `PROBE` pending their own reclassification; nothing in this table changed
-to make any of the six move, only what the corpus holds.
+document carries both the declaration and the schemas it governs. The other three have since
+been settled too, and none of them as a probe: `reference-description` and
+`x-fern-or-crozier-ignore` are `golden` above, and `reference-summary` is a
+`FIXTURE` gap on this table's `fern-rejected` outcome. This region now carries no
+`PROBE` row at all. Nothing in this table changed to make any of the nine move,
+only what the corpus holds.
 
 `outcome` is one of four words. `witness-found` — a named real-world document
 declares the feature, at a credential-free HTTPS URL ending `.json`, `.yaml` or

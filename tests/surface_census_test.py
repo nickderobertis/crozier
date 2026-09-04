@@ -1092,6 +1092,8 @@ class RankedBacklogTests(unittest.TestCase):
     REGIONS = REPO / "docs" / "openapi-surface"
     CATEGORIES = ("golden", "limitations", "gap")
     SETTLEMENTS = ("FIXTURE", "PROBE", "UNREACHABLE")
+    PROBE_KINDS = ("structural", "witness-supply")
+    WITNESS_SEARCH = "### Witness search (issue #188)"
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1561,6 +1563,198 @@ class RankedBacklogTests(unittest.TestCase):
             derived - self.gaps("PROBE"),
             "a row keeps the witness-supply marker but no longer settles PROBE",
         )
+
+    def probe_kind(self, key: str, cells: list[str]) -> str:
+        """Which of the two kinds this `PROBE` row's own settlement cell declares.
+
+        The declaration is the bolded word, so a cell may say *why it is not the
+        other one* — `witness-supply` grounds "rather than structural ones" — in
+        prose without declaring both.
+        """
+        declared = [
+            kind
+            for kind in self.PROBE_KINDS
+            if re.search(rf"\*\*{re.escape(kind)}\*\*", cells[7])
+        ]
+        self.assertEqual(
+            1,
+            len(declared),
+            f"{key}: a PROBE settlement cell declares exactly one of "
+            f"**structural** or **witness-supply**; this one declares {declared}",
+        )
+        return declared[0]
+
+    def census_selectors_cited(self, cell: str) -> list[str]:
+        """What in `cell` names a census selector: a selector span, or the word.
+
+        The selector set is read out of the script's own grammar rather than
+        transcribed, so a selector declared tomorrow is covered today. A code span
+        counts only when the *whole* span is a selector — a Rust `match` pattern
+        that happens to contain `scheme.scheme` is not a citation of one.
+        """
+        selectors, _prefixes = census.grammar()
+        cited = [
+            f"`{span}`"
+            for span in re.findall(r"`([^`]+)`", cell)
+            if span.partition("=")[0].partition(":")[0] in selectors
+        ]
+        return cited + re.findall(r"(?i)\b(?:the |a )?(selectors?)\b", cell)
+
+    def witness_search_rows(self, region: str) -> dict[str, str]:
+        """key -> the `sources searched and the exact query` cell, per region file."""
+        text = (self.REGIONS / f"{region}.md").read_text(encoding="utf-8")
+        if self.WITNESS_SEARCH not in text:
+            return {}
+        found = {}
+        for line in text.split(self.WITNESS_SEARCH, 1)[1].splitlines():
+            if not line.startswith("| "):
+                continue
+            cells = [
+                cell.replace("\x00", "\\|").strip()
+                for cell in line.replace("\\|", "\x00").strip().strip("|").split("|")
+            ]
+            if len(cells) == 7 and cells[0].startswith("`"):
+                found[cells[0].strip("`")] = cells[6]
+        return found
+
+    @staticmethod
+    def source_key(label: str) -> str:
+        """One source's identity, so a declaration and a row's cell join on it.
+
+        A region declares `**Vendor developer portals**` and its rows write
+        `**Vendor portals:**` or `**vendor portals**`; `**APIs.guru /
+        \\`openapi-directory\\`**` is written both ways too. The leading word is
+        what never varies, so that is the key.
+        """
+        return label.strip("*: ").split()[0].strip("`").lower()
+
+    def declared_witness_sources(self, region: str) -> dict[str, str]:
+        """The sources this region's own witness-search preamble says it searched.
+
+        Required per region rather than from one shared list, because the regions
+        genuinely searched different sets — `security` names six and `schemas`
+        five — and a list pruned to the intersection would let a row delete the
+        Sourcegraph evidence its own region demanded and still pass. Each region
+        declares its set as the bulleted bold labels above its table, which is
+        the contract this reads; a region that owns a witness-supply row and
+        declares nothing fails below rather than being waved through.
+        """
+        text = (self.REGIONS / f"{region}.md").read_text(encoding="utf-8")
+        if self.WITNESS_SEARCH not in text:
+            return {}
+        preamble = text.split(self.WITNESS_SEARCH, 1)[1].split("\n| key | outcome", 1)[0]
+        return {
+            self.source_key(label): label
+            for label in re.findall(r"^[-*] \*\*([^*]+)\*\*", preamble, re.M)
+        }
+
+    def witness_sources_queried(self, cell: str, declared: dict[str, str]) -> dict[str, str]:
+        """Each declared source's bold label in `cell`, mapped to the text under it.
+
+        A row states its sources as bold labels in one cell, so a source's segment
+        runs from its own label to the next *source* label — which is where the
+        query put to it has to be. Bold spans that are not sources (a count, an
+        emphasised value) are not boundaries.
+        """
+        spans = [
+            (match.start(), match.end(), self.source_key(match.group(0)))
+            for match in re.finditer(r"\*\*[^*]+\*\*", cell)
+        ]
+        found: dict[str, tuple[int, int]] = {}
+        for start, end, key in spans:
+            if key in declared and key not in found:
+                found[key] = (start, end)
+        starts = sorted(start for start, _end in found.values())
+        return {
+            key: cell[end : next((s for s in starts if s > start), len(cell))]
+            for key, (start, end) in found.items()
+        }
+
+    def test_every_probe_row_is_one_of_two_kinds_and_cites_no_census_selector(self) -> None:
+        """A `PROBE` row says which kind it is, and never settles on the census.
+
+        A selector reporting zero is `gap` evidence — the census's own statement
+        that no *registered* source declares the shape — and reading it as a
+        settlement is what put twenty-five rows in this class on a 124-spec
+        sample. A shape the grammar cannot express has measured nothing at all.
+        """
+        for key in sorted(self.gaps("PROBE")):
+            _region, cells = self.entries[key]
+            with self.subTest(key=key):
+                self.probe_kind(key, cells)
+                cited = self.census_selectors_cited(cells[7])
+                # `assertFalse`, not `assertEqual([], …)`: the diff would push the
+                # message that names the row below the list it is about.
+                self.assertFalse(
+                    cited,
+                    f"{key}: its PROBE settlement cell names a census selector as "
+                    f"its reason ({', '.join(cited)}); a selector reporting zero "
+                    f"belongs in the `evidence` cell as `gap` evidence, and a "
+                    f"selector that cannot express the shape has measured nothing "
+                    f"about it",
+                )
+
+    def test_every_witness_supply_probe_names_its_sources_and_their_queries(self) -> None:
+        """The issue's own acceptance criterion, as a failure rather than a memo.
+
+        A witness-supply `PROBE` claims the world supplies no witness. The only
+        thing that backs a claim that size is the search itself, so the row is
+        held to carrying one: a line of its own region file's witness-search
+        table, naming every source that region declares it searched, with the
+        query put to each. Without this, "0 declarations across the registered
+        sources" reads as the same claim and nothing says otherwise.
+        """
+        for key in sorted(self.gaps("PROBE")):
+            region, cells = self.entries[key]
+            if self.probe_kind(key, cells) != "witness-supply":
+                continue
+            with self.subTest(key=key):
+                declared = self.declared_witness_sources(region)
+                self.assertTrue(
+                    declared,
+                    f"{key}: settles PROBE on witness-supply grounds, but "
+                    f"{region}.md's `{self.WITNESS_SEARCH}` section declares no "
+                    f"sources — list them as bulleted bold labels above its table",
+                )
+                searched = self.witness_search_rows(region)
+                # Not `assertIn`: the container is every witness-search cell in the
+                # region, and printing it buries the message that names the row.
+                self.assertTrue(
+                    key in searched,
+                    f"{key}: settles PROBE on witness-supply grounds with no row "
+                    f"in {region}.md's `{self.WITNESS_SEARCH}` table",
+                )
+                queried = self.witness_sources_queried(searched[key], declared)
+                missing = sorted(declared[name] for name in set(declared) - set(queried))
+                self.assertFalse(
+                    missing,
+                    f"{key}: its witness-search row omits {missing}, which "
+                    f"{region}.md declares its search put to every row",
+                )
+                for name, segment in sorted(queried.items()):
+                    self.assertTrue(
+                        "`" in segment or "→" in segment,
+                        f"{key}: its witness-search row names {declared[name]} with "
+                        f"no query against it — a source is named with the exact "
+                        f"query put to it and what that returned",
+                    )
+
+    def test_the_probe_backlog_splits_by_the_kind_each_region_row_declares(self) -> None:
+        """The index's two named parts are the region files' own settlement cells."""
+        kinds: dict[str, set[str]] = {kind: set() for kind in self.PROBE_KINDS}
+        for key in sorted(self.gaps("PROBE")):
+            kinds[self.probe_kind(key, self.entries[key][1])].add(key)
+        for kind, expected in kinds.items():
+            heading = f"### {kind[0].upper()}{kind[1:]} probes"
+            with self.subTest(kind=kind):
+                body = self.section(heading, "\n### " if kind == "structural" else None)
+                listed = set(re.findall(r"^\| \[`([^`]+)`\]", body, re.M))
+                self.assertEqual(
+                    expected, listed, f"{heading} is not the rows whose cells say {kind}"
+                )
+                stated = re.match(r"\s*\*\*(\d+) rows?\.\*\*", body)
+                self.assertIsNotNone(stated, f"{heading} no longer states its own size")
+                self.assertEqual(len(expected), int(stated.group(1)))
 
     def test_the_stated_registered_and_golden_source_counts_are_measured(self) -> None:
         """124 registered / 107 golden-bearing, measured rather than transcribed."""

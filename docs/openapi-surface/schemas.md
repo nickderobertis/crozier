@@ -527,13 +527,33 @@ on a byte-matching Fern 5.20.0 golden. Which of the rest still settle on `PROBE`
 is each one's own `settlement` cell in the entry table above, not a count restated
 here.
 
-Issue #188 asks for the second statement, so each was searched across APIs.guru /
-`openapi-directory`, GitHub code search, SwaggerHub's public registry, the Postman
-public API network and the vendor portals its own domain implies. That domain is
-the JSON Schema 2020-12 dialect and the registries that publish it, so the portals
-searched are `spec.openapis.org`, `json-schema.org`, the OAI's own
-`learn.openapis.org` 3.1 examples, Apicurio Registry, and four large vendor 3.1
-documents (OpenAI, Stripe, Cloudflare, and Google Gemini via WSO2).
+Issue #188 asks for the second statement, so each row was searched across the
+same five sources, with only the searched keyword changing. Each row's last cell
+gives the exact query text with that keyword substituted, and the count it
+returned; every row below names all five, and the surface-census reconciliation
+refuses one that drops any of them.
+
+- **APIs.guru / `openapi-directory`** — both the served index
+  (`https://api.apis.guru/v2/list.json`, every version's `swaggerUrl` fetched)
+  and a `--depth 1` clone of the repository, each grepped for the JSON and the
+  YAML spelling of the keyword.
+- **GitHub code search** — `gh search code '"<keyword>" filename:openapi.yaml'`
+  and the same query over `openapi.json`, `openapi.yml`, `swagger.yaml`,
+  `swagger.json` and `path:openapi`, widened to the `language:JSON` and
+  `language:YAML` caps where the narrow queries returned little.
+- **SwaggerHub public registry** — `https://api.swaggerhub.com/specs?query=…`
+  first, and, because that endpoint searches names and descriptions rather than
+  spec bodies, the whole public 3.1/3.2 registry enumerated by page and every
+  body fetched and grepped.
+- **Postman public API network** — `POST https://www.postman.com/_api/ws/proxy`
+  against the `search-all` service over the `apinetwork.team`,
+  `runtime.collection` and `adp.api` indices.
+- **Vendor developer portals** — the portals this region's own domain implies.
+  That domain is the JSON Schema 2020-12 dialect and the registries that publish
+  it, so the thirteen documents searched are `spec.openapis.org`,
+  `json-schema.org`, the OAI's own `learn.openapis.org` 3.1 examples, Apicurio
+  Registry, and four large vendor 3.1 documents (OpenAI, Stripe, Cloudflare, and
+  Google Gemini via WSO2).
 
 **A witness is a document a real API publishes as its own description.** Three
 kinds of document fail that standard however faithfully they declare the keyword,
