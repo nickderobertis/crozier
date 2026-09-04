@@ -1094,18 +1094,6 @@ class RankedBacklogTests(unittest.TestCase):
     SETTLEMENTS = ("FIXTURE", "PROBE", "UNREACHABLE")
     PROBE_KINDS = ("structural", "witness-supply")
     WITNESS_SEARCH = "### Witness search (issue #188)"
-    # The sources issue #188's search puts to every row, whatever the region: the
-    # two regions that publish a bulleted source list name six and five, and these
-    # five are the intersection. Sourcegraph is deliberately not required — only
-    # `security` and `parameters` reached it — so a row is never failed for a
-    # source its own region never searched.
-    REQUIRED_WITNESS_SOURCES = {
-        "APIs.guru": r"APIs\.guru",
-        "GitHub code search": r"GitHub",
-        "SwaggerHub": r"SwaggerHub",
-        "Postman": r"Postman",
-        "vendor portals": r"[Vv]endor [Pp]ortals",
-    }
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1629,25 +1617,57 @@ class RankedBacklogTests(unittest.TestCase):
                 found[cells[0].strip("`")] = cells[6]
         return found
 
-    def witness_sources_queried(self, cell: str) -> dict[str, str]:
-        """Each required source's bold label in `cell`, mapped to the text under it.
+    @staticmethod
+    def source_key(label: str) -> str:
+        """One source's identity, so a declaration and a row's cell join on it.
+
+        A region declares `**Vendor developer portals**` and its rows write
+        `**Vendor portals:**` or `**vendor portals**`; `**APIs.guru /
+        \\`openapi-directory\\`**` is written both ways too. The leading word is
+        what never varies, so that is the key.
+        """
+        return label.strip("*: ").split()[0].strip("`").lower()
+
+    def declared_witness_sources(self, region: str) -> dict[str, str]:
+        """The sources this region's own witness-search preamble says it searched.
+
+        Required per region rather than from one shared list, because the regions
+        genuinely searched different sets — `security` names six and `schemas`
+        five — and a list pruned to the intersection would let a row delete the
+        Sourcegraph evidence its own region demanded and still pass. Each region
+        declares its set as the bulleted bold labels above its table, which is
+        the contract this reads; a region that owns a witness-supply row and
+        declares nothing fails below rather than being waved through.
+        """
+        text = (self.REGIONS / f"{region}.md").read_text(encoding="utf-8")
+        if self.WITNESS_SEARCH not in text:
+            return {}
+        preamble = text.split(self.WITNESS_SEARCH, 1)[1].split("\n| key | outcome", 1)[0]
+        return {
+            self.source_key(label): label
+            for label in re.findall(r"^[-*] \*\*([^*]+)\*\*", preamble, re.M)
+        }
+
+    def witness_sources_queried(self, cell: str, declared: dict[str, str]) -> dict[str, str]:
+        """Each declared source's bold label in `cell`, mapped to the text under it.
 
         A row states its sources as bold labels in one cell, so a source's segment
-        runs from its own label to the next one — which is where the query put to
-        it has to be.
+        runs from its own label to the next *source* label — which is where the
+        query put to it has to be. Bold spans that are not sources (a count, an
+        emphasised value) are not boundaries.
         """
-        labels = list(re.finditer(r"\*\*[^*]+\*\*", cell))
-        found = {}
-        for name, pattern in self.REQUIRED_WITNESS_SOURCES.items():
-            label = next(
-                (match for match in labels if re.search(pattern, match.group(0))), None
-            )
-            if label is not None:
-                found[name] = (label.start(), label.end())
+        spans = [
+            (match.start(), match.end(), self.source_key(match.group(0)))
+            for match in re.finditer(r"\*\*[^*]+\*\*", cell)
+        ]
+        found: dict[str, tuple[int, int]] = {}
+        for start, end, key in spans:
+            if key in declared and key not in found:
+                found[key] = (start, end)
         starts = sorted(start for start, _end in found.values())
         return {
-            name: cell[end : next((s for s in starts if s > start), len(cell))]
-            for name, (start, end) in found.items()
+            key: cell[end : next((s for s in starts if s > start), len(cell))]
+            for key, (start, end) in found.items()
         }
 
     def test_every_probe_row_is_one_of_two_kinds_and_cites_no_census_selector(self) -> None:
@@ -1680,15 +1700,22 @@ class RankedBacklogTests(unittest.TestCase):
         A witness-supply `PROBE` claims the world supplies no witness. The only
         thing that backs a claim that size is the search itself, so the row is
         held to carrying one: a line of its own region file's witness-search
-        table, naming every required source with the query put to each. Without
-        this, "0 declarations across the registered sources" reads as the same
-        claim and nothing says otherwise.
+        table, naming every source that region declares it searched, with the
+        query put to each. Without this, "0 declarations across the registered
+        sources" reads as the same claim and nothing says otherwise.
         """
         for key in sorted(self.gaps("PROBE")):
             region, cells = self.entries[key]
             if self.probe_kind(key, cells) != "witness-supply":
                 continue
             with self.subTest(key=key):
+                declared = self.declared_witness_sources(region)
+                self.assertTrue(
+                    declared,
+                    f"{key}: settles PROBE on witness-supply grounds, but "
+                    f"{region}.md's `{self.WITNESS_SEARCH}` section declares no "
+                    f"sources — list them as bulleted bold labels above its table",
+                )
                 searched = self.witness_search_rows(region)
                 # Not `assertIn`: the container is every witness-search cell in the
                 # region, and printing it buries the message that names the row.
@@ -1697,19 +1724,19 @@ class RankedBacklogTests(unittest.TestCase):
                     f"{key}: settles PROBE on witness-supply grounds with no row "
                     f"in {region}.md's `{self.WITNESS_SEARCH}` table",
                 )
-                queried = self.witness_sources_queried(searched[key])
-                self.assertEqual(
-                    set(self.REQUIRED_WITNESS_SOURCES),
-                    set(queried),
-                    f"{key}: its witness-search row omits "
-                    f"{sorted(set(self.REQUIRED_WITNESS_SOURCES) - set(queried))}",
+                queried = self.witness_sources_queried(searched[key], declared)
+                missing = sorted(declared[name] for name in set(declared) - set(queried))
+                self.assertFalse(
+                    missing,
+                    f"{key}: its witness-search row omits {missing}, which "
+                    f"{region}.md declares its search put to every row",
                 )
                 for name, segment in sorted(queried.items()):
                     self.assertTrue(
                         "`" in segment or "→" in segment,
-                        f"{key}: its witness-search row names {name} with no query "
-                        f"against it — a source is named with the exact query put "
-                        f"to it and what that returned",
+                        f"{key}: its witness-search row names {declared[name]} with "
+                        f"no query against it — a source is named with the exact "
+                        f"query put to it and what that returned",
                     )
 
     def test_the_probe_backlog_splits_by_the_kind_each_region_row_declares(self) -> None:
