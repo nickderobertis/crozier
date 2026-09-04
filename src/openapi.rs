@@ -455,6 +455,15 @@ pub enum SdkGroupName {
     Nested(Vec<String>),
 }
 
+/// One entry of `x-crozier-enum` / `x-fern-enum`: the Python member name a wire
+/// value is given, in place of the identifier derived from the value itself.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct EnumValueName {
+    /// The member name (`USD` for the value `$`).
+    #[serde(default)]
+    pub name: Option<String>,
+}
+
 /// The value of `x-crozier-pagination` / `x-fern-pagination`: the response and
 /// request members that drive a generated pager. Only the cursor form is modelled,
 /// which is the one Fern's Python generator emits a `SyncPager`/`AsyncPager` for.
@@ -791,6 +800,16 @@ pub struct Schema {
     /// by `x-crozier-ignore` when both appear (see [`Schema::ignored`]).
     #[serde(rename = "x-fern-ignore", default)]
     pub ignore_fern: Option<bool>,
+    /// `x-crozier-enum`: per-value member names for a string enum, keyed by wire
+    /// value (canonical spelling). Read via [`Schema::enum_member_names`], which
+    /// also honours the `x-fern-enum` variant per the
+    /// [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-enum", default)]
+    pub(crate) enum_names_crozier: Option<IndexMap<String, EnumValueName>>,
+    /// `x-fern-enum`: the Fern spelling of the per-value member names. Superseded by
+    /// `x-crozier-enum` when both appear (see [`Schema::enum_member_names`]).
+    #[serde(rename = "x-fern-enum", default)]
+    pub(crate) enum_names_fern: Option<IndexMap<String, EnumValueName>>,
     /// Set when this node's `type` was a list with more than one non-`null` member,
     /// which `normalize_multi_type_schemas` rewrote into the equivalent `anyOf`.
     /// Not a wire field. Fern names such a union rather than inlining it — EN
@@ -817,6 +836,23 @@ impl Schema {
     #[must_use]
     pub fn ignored(&self) -> bool {
         self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
+    }
+
+    /// The declared Python member name for each enum value, canonicalizing on the
+    /// `x-crozier-enum` spelling (see the [dual-header
+    /// policy](self#fern-compatible-extensions)). A value the map does not name, or
+    /// names blankly, keeps the identifier derived from the value itself.
+    #[must_use]
+    pub fn enum_member_names(&self) -> impl Iterator<Item = (&str, &str)> {
+        self.enum_names_crozier
+            .as_ref()
+            .or(self.enum_names_fern.as_ref())
+            .into_iter()
+            .flatten()
+            .filter_map(|(value, declared)| {
+                let name = declared.name.as_deref()?.trim();
+                (!name.is_empty()).then_some((value.as_str(), name))
+            })
     }
 
     /// Whether the document says this schema admits `null`: the 3.0 `nullable`

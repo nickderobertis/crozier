@@ -1253,7 +1253,12 @@ fn dedupe(ident: String, seen: &mut std::collections::HashMap<String, usize>) ->
 
 /// Build an [`EnumType`] from a schema's string-enum values, deriving each
 /// member's Python name and `visit` parameter from its wire value.
-fn build_enum(name: &str, values: Vec<String>, docstring: Option<String>) -> EnumType {
+fn build_enum(
+    schema: &Schema,
+    name: &str,
+    values: Vec<String>,
+    docstring: Option<String>,
+) -> EnumType {
     // Fern derives the member name and `visit` parameter from each wire value,
     // sanitizing both into legal Python identifiers (issue #50): `global` →
     // `GLOBAL`/`global_`, `0: Active` → `ZERO_ACTIVE`/`zero_active`. Exact duplicate
@@ -1264,14 +1269,29 @@ fn build_enum(name: &str, values: Vec<String>, docstring: Option<String>) -> Enu
     let mut seen_params: std::collections::HashMap<String, usize> =
         std::collections::HashMap::new();
     let mut seen_values = std::collections::HashSet::new();
+    // `x-crozier-enum` / `x-fern-enum` names a member outright, which is the only
+    // way a value with no identifier characters of its own gets a readable one
+    // (TrueForge's `MetricsUnit` names `$` as `USD`, where the derived identifier
+    // would be the placeholder `_`).
+    let declared: std::collections::HashMap<&str, &str> = schema.enum_member_names().collect();
     let members = values
         .into_iter()
         .filter(|value| seen_values.insert(value.clone()))
-        .map(|value| EnumMember {
-            name: dedupe(naming::enum_member_name(&value), &mut seen_members),
-            visit_param: dedupe(naming::enum_visit_param(&value), &mut seen_params),
-            value,
-            docstring: None,
+        .map(|value| {
+            let name = declared.get(value.as_str()).map_or_else(
+                || naming::enum_member_name(&value),
+                |name| naming::enum_member_name(name),
+            );
+            let visit = declared.get(value.as_str()).map_or_else(
+                || naming::enum_visit_param(&value),
+                |name| naming::enum_visit_param(name),
+            );
+            EnumMember {
+                name: dedupe(name, &mut seen_members),
+                visit_param: dedupe(visit, &mut seen_params),
+                value,
+                docstring: None,
+            }
         })
         .collect();
     EnumType {
@@ -3741,7 +3761,7 @@ impl InlineHoister<'_> {
             if let Some(target) = resolve_ref_from_schemas(schemas, reference).cloned() {
                 let name = naming::child_class_name(parent, prop);
                 if let Some(values) = string_enum_values(&target) {
-                    self.out.push(TypeDecl::Enum(build_enum(
+                    self.out.push(TypeDecl::Enum(build_enum(&target, 
                         &name,
                         values,
                         clean_doc(description),
@@ -3763,7 +3783,7 @@ impl InlineHoister<'_> {
         if prop_schema.reference.is_none() {
             if let Some(values) = string_enum_values(prop_schema) {
                 let name = naming::child_class_name(parent, prop);
-                self.out.push(TypeDecl::Enum(build_enum(
+                self.out.push(TypeDecl::Enum(build_enum(prop_schema, 
                     &name,
                     values,
                     clean_doc(prop_schema.description.as_deref()),
@@ -3789,7 +3809,7 @@ impl InlineHoister<'_> {
                     let member = non_null[0];
                     if let Some(values) = string_enum_values(member) {
                         self.out
-                            .push(TypeDecl::Enum(build_enum(&name, values, None)));
+                            .push(TypeDecl::Enum(build_enum(member, &name, values, None)));
                         return TypeRef::Named(name);
                     }
                     if let Some(reference) = member.reference.as_deref() {
@@ -3929,7 +3949,7 @@ impl InlineHoister<'_> {
         if schema.reference.is_none() {
             if let Some(values) = string_enum_values(schema) {
                 let name = format!("{request_ctx}{}", naming::class_name(param));
-                self.out.push(TypeDecl::Enum(build_enum(
+                self.out.push(TypeDecl::Enum(build_enum(schema, 
                     &name,
                     values,
                     clean_doc(schema.description.as_deref()),
@@ -3947,7 +3967,7 @@ impl InlineHoister<'_> {
                 if non_null.len() == 1 {
                     if let Some(values) = string_enum_values(non_null[0]) {
                         self.out
-                            .push(TypeDecl::Enum(build_enum(&name, values, None)));
+                            .push(TypeDecl::Enum(build_enum(non_null[0], &name, values, None)));
                         return TypeRef::Named(name);
                     }
                     if let Some(reference) = non_null[0].reference.as_deref() {
@@ -4006,7 +4026,7 @@ impl InlineHoister<'_> {
         }
         let values = string_enum_values(item)?;
         let name = format!("{ctx}Item");
-        self.out.push(TypeDecl::Enum(build_enum(
+        self.out.push(TypeDecl::Enum(build_enum(item, 
             &name,
             values,
             clean_doc(item.description.as_deref()),
@@ -5704,7 +5724,7 @@ impl Builder<'_> {
         // stay `Name = int` — see [`base_type_ref`] — and fall through to the alias).
         if let Some(values) = string_enum_values(schema) {
             self.types
-                .push(TypeDecl::Enum(build_enum(name, values, docstring)));
+                .push(TypeDecl::Enum(build_enum(schema, name, values, docstring)));
             return;
         }
 
@@ -6383,7 +6403,7 @@ impl Builder<'_> {
         let docstring = clean_doc(description.or(target.description.as_deref()));
         if let Some(values) = string_enum_values(target) {
             self.types
-                .push(TypeDecl::Enum(build_enum(ctx, values, docstring)));
+                .push(TypeDecl::Enum(build_enum(target, ctx, values, docstring)));
             return TypeRef::Named(ctx.to_string());
         }
         if !is_map(target)
@@ -6424,7 +6444,7 @@ impl Builder<'_> {
             if let Some(AdditionalProperties::Schema(value)) = &prop_schema.additional_properties {
                 if let Some(values) = string_enum_values(value) {
                     let value_name = format!("{owner_prop}Value");
-                    self.types.push(TypeDecl::Enum(build_enum(
+                    self.types.push(TypeDecl::Enum(build_enum(value, 
                         &value_name,
                         values,
                         clean_doc(value.description.as_deref()),
@@ -6437,7 +6457,7 @@ impl Builder<'_> {
             }
             if let Some(values) = string_enum_values(prop_schema) {
                 let hoisted = format!("{owner}{}", naming::class_name(prop));
-                self.types.push(TypeDecl::Enum(build_enum(
+                self.types.push(TypeDecl::Enum(build_enum(prop_schema, 
                     &hoisted,
                     values,
                     clean_doc(prop_schema.description.as_deref()),
@@ -6532,7 +6552,7 @@ impl Builder<'_> {
                     }
                     if let Some(values) = string_enum_values(items) {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
-                        self.types.push(TypeDecl::Enum(build_enum(
+                        self.types.push(TypeDecl::Enum(build_enum(items, 
                             &name,
                             values,
                             clean_doc(items.description.as_deref()),
@@ -6635,7 +6655,7 @@ impl Builder<'_> {
                         }
                         if let Some(values) = string_enum_values(non_null[0]) {
                             self.types
-                                .push(TypeDecl::Enum(build_enum(&name, values, None)));
+                                .push(TypeDecl::Enum(build_enum(non_null[0], &name, values, None)));
                             return TypeRef::Named(name);
                         }
                         if non_null[0].ty.as_ref().and_then(TypeField::primary) == Some("array") {
@@ -6654,7 +6674,7 @@ impl Builder<'_> {
                                     .unwrap_or(items);
                                 if let Some(values) = string_enum_values(resolved_items) {
                                     let item_name = format!("{name}Item");
-                                    self.types.push(TypeDecl::Enum(build_enum(
+                                    self.types.push(TypeDecl::Enum(build_enum(resolved_items, 
                                         &item_name,
                                         values,
                                         clean_doc(items.description.as_deref()),
@@ -6824,7 +6844,7 @@ impl Builder<'_> {
         }
         if let Some(values) = string_enum_values(variant) {
             let name = variant_class_name(parent, index, variant, siblings);
-            self.types.push(TypeDecl::Enum(build_enum(
+            self.types.push(TypeDecl::Enum(build_enum(variant, 
                 &name,
                 values,
                 clean_doc(variant.description.as_deref()),
@@ -8047,6 +8067,7 @@ mod tests {
         // Fern omits exact duplicate wire values. Distinct values that sanitize to
         // the same identifier still need unique members/`visit` params.
         let e = build_enum(
+            &Schema::default(),
             "Color",
             vec![
                 "a-b".to_string(),
