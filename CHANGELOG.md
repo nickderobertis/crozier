@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.57](https://github.com/nickderobertis/crozier/compare/v0.0.56...v0.0.57) - 2026-09-04
+
+### Added
+
+- *(fixtures)* settle the pathless and webhook-only document probe rows against witnesses ([#199](https://github.com/nickderobertis/crozier/pull/199))
+
 ## [0.0.56](https://github.com/nickderobertis/crozier/compare/v0.0.55...v0.0.56) - 2026-09-04
 
 ### Added
