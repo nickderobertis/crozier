@@ -1815,10 +1815,10 @@ fn endpoints(
                     },
                     None => endpoint,
                 };
-            // Fern exposes one method for duplicate synthesized/declared names in
-            // the same client, with the later operation replacing the earlier one's
-            // contents while retaining its first-seen position. Keep all
-            // already-hoisted response types, but only the winning endpoint.
+                // Fern exposes one method for duplicate synthesized/declared names in
+                // the same client, with the later operation replacing the earlier one's
+                // contents while retaining its first-seen position. Keep all
+                // already-hoisted response types, but only the winning endpoint.
                 if let Some(index) = out.iter().position(|existing: &Endpoint| {
                     existing.module == endpoint.module
                         && existing.method_name == endpoint.method_name
@@ -1839,7 +1839,9 @@ fn endpoints(
 fn endpoint_method_name_for(op: &Operation) -> String {
     op.sdk_method_name().map_or_else(
         || "stream".to_string(),
-        |name| naming::escape_python_keyword(naming::sanitize_identifier(&naming::to_snake_case(name))),
+        |name| {
+            naming::escape_python_keyword(naming::sanitize_identifier(&naming::to_snake_case(name)))
+        },
     )
 }
 
@@ -1860,7 +1862,11 @@ fn stream_condition_body_source_names(doc: &OpenApi) -> std::collections::HashSe
             let reference = op
                 .request_body
                 .as_ref()
-                .and_then(|body| body.content.values().find_map(|media| media.schema.as_ref()))
+                .and_then(|body| {
+                    body.content
+                        .values()
+                        .find_map(|media| media.schema.as_ref())
+                })
                 .and_then(|schema| schema.reference.as_deref());
             if let Some(reference) = reference {
                 names.insert(ref_to_class(reference));
@@ -4000,7 +4006,8 @@ impl InlineHoister<'_> {
             if let Some(target) = resolve_ref_from_schemas(schemas, reference).cloned() {
                 let name = naming::child_class_name(parent, prop);
                 if let Some(values) = string_enum_values(&target) {
-                    self.out.push(TypeDecl::Enum(build_enum(&target, 
+                    self.out.push(TypeDecl::Enum(build_enum(
+                        &target,
                         &name,
                         values,
                         clean_doc(description),
@@ -4022,7 +4029,8 @@ impl InlineHoister<'_> {
         if prop_schema.reference.is_none() {
             if let Some(values) = string_enum_values(prop_schema) {
                 let name = naming::child_class_name(parent, prop);
-                self.out.push(TypeDecl::Enum(build_enum(prop_schema, 
+                self.out.push(TypeDecl::Enum(build_enum(
+                    prop_schema,
                     &name,
                     values,
                     clean_doc(prop_schema.description.as_deref()),
@@ -4188,7 +4196,8 @@ impl InlineHoister<'_> {
         if schema.reference.is_none() {
             if let Some(values) = string_enum_values(schema) {
                 let name = format!("{request_ctx}{}", naming::class_name(param));
-                self.out.push(TypeDecl::Enum(build_enum(schema, 
+                self.out.push(TypeDecl::Enum(build_enum(
+                    schema,
                     &name,
                     values,
                     clean_doc(schema.description.as_deref()),
@@ -4265,7 +4274,8 @@ impl InlineHoister<'_> {
         }
         let values = string_enum_values(item)?;
         let name = format!("{ctx}Item");
-        self.out.push(TypeDecl::Enum(build_enum(item, 
+        self.out.push(TypeDecl::Enum(build_enum(
+            item,
             &name,
             values,
             clean_doc(item.description.as_deref()),
@@ -4757,11 +4767,7 @@ fn success_response_entry_mut(op: &mut Operation) -> Option<&mut Response> {
 
 /// The response key [`success_response_entry`] selects.
 fn success_response_key(op: &Operation) -> Option<String> {
-    if op
-        .responses
-        .get("200")
-        .is_some_and(has_dispatchable_media)
-    {
+    if op.responses.get("200").is_some_and(has_dispatchable_media) {
         return Some("200".to_string());
     }
     op.responses
@@ -4822,9 +4828,9 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
     // keyword-escaped, so a camelCase override lands as the Python spelling Fern
     // emits for it.
     if let Some(name) = op.sdk_method_name() {
-        return naming::escape_python_keyword(naming::sanitize_identifier(
-            &naming::to_snake_case(name),
-        ));
+        return naming::escape_python_keyword(naming::sanitize_identifier(&naming::to_snake_case(
+            name,
+        )));
     }
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
     let method = if op
@@ -5480,10 +5486,9 @@ fn schema_is_null_type(schema: &Schema) -> bool {
 /// standalone model still has to carry the tag. Measured across every registered
 /// golden: 123 mapping targets, and this predicate agrees with all of them.
 fn standalone_referenced_classes(doc: &OpenApi) -> std::collections::HashSet<String> {
-    let schemas = &doc.components.schemas;
     let mut classes = std::collections::HashSet::new();
-    for schema in schemas.values() {
-        collect_standalone_references(schema, schemas, &mut classes);
+    for schema in doc.components.schemas.values() {
+        collect_standalone_references(schema, &mut classes);
     }
     for item in doc.paths.values().chain(doc.webhooks.values()) {
         for (_, operation) in item.operations() {
@@ -5499,7 +5504,7 @@ fn standalone_referenced_classes(doc: &OpenApi) -> std::collections::HashSet<Str
                 );
             for media in bodies {
                 if let Some(schema) = media.schema.as_ref() {
-                    collect_standalone_references(schema, schemas, &mut classes);
+                    collect_standalone_references(schema, &mut classes);
                 }
             }
         }
@@ -5511,11 +5516,7 @@ fn standalone_referenced_classes(doc: &OpenApi) -> std::collections::HashSet<Str
 /// position. A union's member list is descended into only for its *own* nested
 /// content, never for the member references themselves; a discriminator mapping
 /// is not a reference position at all.
-fn collect_standalone_references(
-    schema: &Schema,
-    schemas: &IndexMap<String, Schema>,
-    classes: &mut std::collections::HashSet<String>,
-) {
+fn collect_standalone_references(schema: &Schema, classes: &mut std::collections::HashSet<String>) {
     if let Some(reference) = schema.reference.as_deref() {
         classes.insert(ref_to_class(reference));
     }
@@ -5525,16 +5526,16 @@ fn collect_standalone_references(
         .chain(schema.items.iter().map(Box::as_ref))
         .chain(schema.all_of.iter().flatten())
     {
-        collect_standalone_references(child, schemas, classes);
+        collect_standalone_references(child, classes);
     }
     if let Some(AdditionalProperties::Schema(child)) = schema.additional_properties.as_ref() {
-        collect_standalone_references(child, schemas, classes);
+        collect_standalone_references(child, classes);
     }
     for members in schema.one_of.iter().chain(schema.any_of.iter()) {
         let plain = is_nullable_alternation(members);
         for member in members {
             if plain || member.reference.is_none() {
-                collect_standalone_references(member, schemas, classes);
+                collect_standalone_references(member, classes);
             } else {
                 // A variant `$ref` is not a standalone use; its own subtree still is.
                 for child in member
@@ -5543,7 +5544,7 @@ fn collect_standalone_references(
                     .chain(member.items.iter().map(Box::as_ref))
                     .chain(member.all_of.iter().flatten())
                 {
-                    collect_standalone_references(child, schemas, classes);
+                    collect_standalone_references(child, classes);
                 }
             }
         }
@@ -6749,7 +6750,8 @@ impl Builder<'_> {
             if let Some(AdditionalProperties::Schema(value)) = &prop_schema.additional_properties {
                 if let Some(values) = string_enum_values(value) {
                     let value_name = format!("{owner_prop}Value");
-                    self.types.push(TypeDecl::Enum(build_enum(value, 
+                    self.types.push(TypeDecl::Enum(build_enum(
+                        value,
                         &value_name,
                         values,
                         clean_doc(value.description.as_deref()),
@@ -6762,7 +6764,8 @@ impl Builder<'_> {
             }
             if let Some(values) = string_enum_values(prop_schema) {
                 let hoisted = format!("{owner}{}", naming::class_name(prop));
-                self.types.push(TypeDecl::Enum(build_enum(prop_schema, 
+                self.types.push(TypeDecl::Enum(build_enum(
+                    prop_schema,
                     &hoisted,
                     values,
                     clean_doc(prop_schema.description.as_deref()),
@@ -6857,7 +6860,8 @@ impl Builder<'_> {
                     }
                     if let Some(values) = string_enum_values(items) {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
-                        self.types.push(TypeDecl::Enum(build_enum(items, 
+                        self.types.push(TypeDecl::Enum(build_enum(
+                            items,
                             &name,
                             values,
                             clean_doc(items.description.as_deref()),
@@ -6959,8 +6963,12 @@ impl Builder<'_> {
                             return TypeRef::Named(name);
                         }
                         if let Some(values) = string_enum_values(non_null[0]) {
-                            self.types
-                                .push(TypeDecl::Enum(build_enum(non_null[0], &name, values, None)));
+                            self.types.push(TypeDecl::Enum(build_enum(
+                                non_null[0],
+                                &name,
+                                values,
+                                None,
+                            )));
                             return TypeRef::Named(name);
                         }
                         if non_null[0].ty.as_ref().and_then(TypeField::primary) == Some("array") {
@@ -6979,7 +6987,8 @@ impl Builder<'_> {
                                     .unwrap_or(items);
                                 if let Some(values) = string_enum_values(resolved_items) {
                                     let item_name = format!("{name}Item");
-                                    self.types.push(TypeDecl::Enum(build_enum(resolved_items, 
+                                    self.types.push(TypeDecl::Enum(build_enum(
+                                        resolved_items,
                                         &item_name,
                                         values,
                                         clean_doc(items.description.as_deref()),
@@ -7149,7 +7158,8 @@ impl Builder<'_> {
         }
         if let Some(values) = string_enum_values(variant) {
             let name = variant_class_name(parent, index, variant, siblings);
-            self.types.push(TypeDecl::Enum(build_enum(variant, 
+            self.types.push(TypeDecl::Enum(build_enum(
+                variant,
                 &name,
                 values,
                 clean_doc(variant.description.as_deref()),
@@ -8176,7 +8186,7 @@ mod tests {
             }))
             .expect("schemas deserialize");
 
-        let strips = discriminant_strips(&schemas);
+        let strips = discriminant_strips(&schemas, &std::collections::HashSet::new());
         assert_eq!(strips.get("Cat").map(String::as_str), Some("kind"));
         assert_eq!(strips.get("Dog").map(String::as_str), Some("kind"));
         assert_eq!(strips.get("Bird").map(String::as_str), Some("type"));
@@ -10148,7 +10158,12 @@ mod tests {
             .discriminated_union("Content", "content", &content, None)
             .is_some());
         let mut strips = std::collections::HashMap::new();
-        super::collect_discriminant_strips(&content, &components.components.schemas, &mut strips);
+        super::collect_discriminant_strips(
+            &content,
+            &components.components.schemas,
+            &std::collections::HashSet::new(),
+            &mut strips,
+        );
         assert!(!strips.contains_key("ChatCompletionContentPartTextParam"));
         assert_eq!(
             strips

@@ -1247,7 +1247,9 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // the auth-shaped `client_wrapper.py`.
     files.extend(core_files(
         pkg,
-        ir.endpoints.iter().any(|endpoint| endpoint.pagination.is_some()),
+        ir.endpoints
+            .iter()
+            .any(|endpoint| endpoint.pagination.is_some()),
     ));
     files.push(client_wrapper_file(
         pkg,
@@ -1376,10 +1378,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     let root_modules: Vec<&String> = children.get("").map_or(Vec::new(), |names| {
         names
             .iter()
-            .filter(|name| {
-                emittable_modules.iter().any(|module| *module == *name)
-                    || parent_modules.iter().any(|module| module == *name)
-            })
+            .filter(|name| emittable_modules.contains(name) || parent_modules.contains(*name))
             .collect()
     });
     // `emittable_modules` stays in first-appearance (declaration) order — the order
@@ -1485,7 +1484,12 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         path: PathBuf::from("README.md"),
         contents: String::new(),
     }));
-    files.push(reference_file(&env, ir, &client_tree_modules(ir), &tag_map)?);
+    files.push(reference_file(
+        &env,
+        ir,
+        &client_tree_modules(ir),
+        &tag_map,
+    )?);
 
     // Project-root scaffolding (pyproject.toml, requirements.txt, metadata).
     files.extend(scaffolding_files(pkg, &ir.project_name));
@@ -4090,10 +4094,7 @@ fn pager_success_branch(
     if is_async {
         lines.push(String::new());
         lines.push(format!("{indent}async def _get_next():"));
-        lines.push(format!(
-            "{indent}    return await self.{}(",
-            ep.method_name
-        ));
+        lines.push(format!("{indent}    return await self.{}(", ep.method_name));
         for arg in &args {
             lines.push(format!("{indent}        {arg},"));
         }
@@ -7744,7 +7745,9 @@ fn build_example_inner(
     // A `stream-condition` split shows the streaming half's call in `reference.md`
     // under both halves; every other writer uses the method's own name.
     let method_name = if reference {
-        ep.reference_method_name.as_deref().unwrap_or(&ep.method_name)
+        ep.reference_method_name
+            .as_deref()
+            .unwrap_or(&ep.method_name)
     } else {
         &ep.method_name
     };
@@ -8951,6 +8954,9 @@ mod tests {
             openapi_31: false,
             module: "m".to_string(),
             method_name: "op".to_string(),
+            stream_condition: None,
+            reference_method_name: None,
+            pagination: None,
             http_method: "GET",
             path: path.to_string(),
             path_params: params,
@@ -10847,6 +10853,7 @@ mod tests {
             tag_types: &tags,
             global_headers: &[],
             empty_namespace: false,
+            children: &[],
         };
         let mut imports = Imports::at(RefLoc::Client("events".to_string()), &tags);
         let raw_sync = raw_method(&ep, false, &mut imports);

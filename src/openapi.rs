@@ -896,7 +896,6 @@ impl Schema {
     /// `x-crozier-enum` spelling (see the [dual-header
     /// policy](self#fern-compatible-extensions)). A value the map does not name, or
     /// names blankly, keeps the identifier derived from the value itself.
-    #[must_use]
     pub fn enum_member_names(&self) -> impl Iterator<Item = (&str, &str)> {
         self.enum_names_crozier
             .as_ref()
