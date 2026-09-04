@@ -2970,11 +2970,12 @@ const ADYEN_MANAGED_RISK_NOTIFICATION: Corpus = Corpus {
 };
 
 /// `go-kratos-casbin-admin`: the protoc-gen-openapi document the go-kratos
-/// Casbin example ships is the corpus's only source carrying an *empty* Paths
-/// Object — `paths: {}` beside `components.schemas: {}` and an empty
-/// `info.title` — which is a different shape from omitting `paths` entirely
-/// (rows 100 and 101). Its golden pins the empty client and documentation
-/// scaffolding Fern leaves behind.
+/// Casbin example ships is one of the corpus's two independent witnesses of an
+/// *empty* Paths Object — `paths: {}` beside `components.schemas: {}` and an
+/// empty `info.title` — which is a different shape from omitting `paths`
+/// entirely (rows 100 and 101). `descope-authzcache` (row 103) is the other.
+/// Its golden pins the empty client and documentation scaffolding Fern leaves
+/// behind.
 const GO_KRATOS_CASBIN_ADMIN: Corpus = Corpus {
     api: "go-kratos-casbin-admin",
     package_name: "fern",
