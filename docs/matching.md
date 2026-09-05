@@ -473,7 +473,8 @@ stay byte-identical — none of them exercised these paths):
   `attachment-public`), else the PascalCase tag (`Widgets`, `Companies`) or, untagged,
   the PascalCase operationId group (`EndpointsContainer`) — `module_title`. The root
   `client.py` wraps a lazy sub-client import into ruff's parenthesized, trailing-comma
-  form past 107 columns (ruff won't split a single-name import itself); the `README.md`
+  form at 107 columns and wider (ruff won't split a single-name import itself) — corpus
+  row 123 wraps at exactly 107 and the corpus's widest flat import is 106; the `README.md`
   worked-example calls and their tag imports are laid out at Fern's 80-column example
   width ([`emit::Example::render_at`]), not the project `line-length` of 120 — the
   abbreviated error-handling snippets use ruff's 88 instead.
@@ -606,8 +607,12 @@ SDK. All three are closed byte-for-byte against Fern goldens.
    method docstrings retain the worked iteration loop and the README retains a
    separate `## Streaming` section.
 
-The generated **README/reference** pick the first endpoint with a request body
-for the worked example and abbreviate the error-handling/advanced snippets,
+The generated **README/reference** pick the first eligible `POST` for the worked
+example, else the first argument-free non-`GET`, else the first eligible operation
+in the README's own module order — a request body does *not* promote a non-`POST`
+operation ahead of that order (corpus row 123 declares no `POST` and anchors its
+README on the document's first `GET`, not on the later `PUT` that carries a
+flattened JSON body). They abbreviate the error-handling/advanced snippets,
 ruff-wrapped at the 88-col snippet width. At 5.20 the abbreviation is purely
 arity-driven — `(...)` whenever the demonstrated method takes any argument, `()`
 only for an argument-free method — which is refresh rule 1 above; the earlier
@@ -964,11 +969,17 @@ corpus (`digit-leading-property`, `operation-id-non-identifier`,
 
 - **Missing `operationId`** (optional in OpenAPI). Instead of hard-erroring,
   [`ir::endpoint_method_name`] falls back to the operation's `summary`, run
-  through [`naming::prose_identifier`] (`List widgets` → `list_widgets`) — which
-  is what the corpus pins, byte-for-byte against Fern. With no summary either,
-  [`ir::synthesized_method_name`] joins the HTTP method and the full route,
+  through [`naming::summary_identifier`] (`List widgets` → `list_widgets`) — which
+  is what the corpus pins, byte-for-byte against Fern. On that path a full stop is
+  sentence punctuation Fern **deletes** rather than breaks on, so corpus row 123's
+  `… CertificateOrKeyId e.g. revoke reason` names the method
+  `…_certificate_or_key_id_eg_revoke_reason`; every other separator still breaks a
+  word (`read/unread` → `read_unread`, `re-enabled` → `re_enabled`). With no summary
+  either, [`ir::synthesized_method_name`] joins the HTTP method and the full route,
   brace-stripped (`GET /widgets` → `get_widgets`, `GET /widgets/{id}` →
-  `get_widgets_id`).
+  `get_widgets_id`), and there the full stop stays a boundary — corpus row 88's
+  `/_proxy/openapi.json` names `get_proxy_openapi_json` — which is why the two paths
+  use different transforms.
 
 ### Tag-based client grouping
 

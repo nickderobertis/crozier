@@ -1,0 +1,6 @@
+
+
+ProfileType = str
+"""
+Certification type
+"""

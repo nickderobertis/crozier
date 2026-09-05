@@ -1965,17 +1965,18 @@ fn readme_endpoint_eligible(ep: &Endpoint) -> bool {
                 && !form.fields.iter().any(|field| field.form_content_type.is_some()))
 }
 
+/// The endpoint Fern's README and `reference.md` anchor their worked example on:
+/// the first eligible `POST`, else the first argument-free non-`GET`, else the
+/// first eligible operation in the README's own module order. A request body does
+/// **not** promote a non-`POST` operation ahead of that order — corpus row 123
+/// anchors its README on the document's first `GET` even though a later `PUT`
+/// carries a flattened JSON body.
 fn select_readme_endpoint<'a>(
     endpoints: impl Clone + Iterator<Item = &'a Endpoint>,
 ) -> Option<&'a Endpoint> {
     endpoints
         .clone()
         .find(|e| e.emittable && e.http_method == "POST" && readme_endpoint_eligible(e))
-        .or_else(|| {
-            endpoints
-                .clone()
-                .find(|e| e.emittable && e.request_body.is_some() && readme_endpoint_eligible(e))
-        })
         .or_else(|| {
             endpoints.clone().find(|e| {
                 e.emittable
@@ -5538,11 +5539,13 @@ fn root_client_class(
             let cls = tag_client_name(m, is_async);
             // The lazy `from .{attr}.client import {cls}` sits at 12 spaces of indent.
             // Fern's printer wraps this single-name import into the parenthesized,
-            // trailing-comma form once the flat line passes 107 columns; ruff (run at
+            // trailing-comma form once the flat line reaches 107 columns; ruff (run at
             // `line-length = 120`) then preserves that shape via its magic trailing
             // comma, and leaves the shorter flat lines untouched. crozier must make the
-            // same call itself — ruff will not split a single-name import for it.
-            let wrap = 12 + "from .".len() + m.len() + ".client import ".len() + cls.len() > 107;
+            // same call itself — ruff will not split a single-name import for it. The
+            // boundary is exact: corpus row 123 wraps at 107 and the corpus's widest
+            // flat import is 106.
+            let wrap = 12 + "from .".len() + m.len() + ".client import ".len() + cls.len() >= 107;
             RootModuleView {
                 attr: (*m).clone(),
                 cls,
@@ -9349,6 +9352,34 @@ mod tests {
             environment: None,
             extra_fields: crate::settings::ExtraFields::Allow,
         }
+    }
+
+    #[test]
+    fn readme_endpoint_does_not_promote_a_non_post_body_over_the_first_endpoint() {
+        // Corpus row 123 declares no POST at all, and Fern anchors its README on
+        // the document's first GET rather than on the later PUT that carries a
+        // flattened JSON body.
+        let mut first_get = endpoint("/organisations", Vec::new(), None);
+        first_get.method_name = "get_all_organisations".to_string();
+        first_get.module = "organisations".to_string();
+        let mut put_with_body = endpoint("/softwarestatements", Vec::new(), None);
+        put_with_body.http_method = "PUT";
+        put_with_body.method_name = "update_a_software_statement_by_id".to_string();
+        put_with_body.module = "software_statements".to_string();
+        put_with_body.request_body = Some(RequestBody::Single(SingleBody {
+            type_ref: TypeRef::Primitive(Prim::Str),
+            required: true,
+            convert: false,
+            content_type: true,
+            content_type_override: None,
+            example: None,
+        }));
+
+        let ir = ir_with(vec![first_get, put_with_body]);
+        assert_eq!(
+            readme_endpoint(&ir).map(|e| e.method_name.as_str()),
+            Some("get_all_organisations")
+        );
     }
 
     #[test]

@@ -5158,7 +5158,7 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
             .filter(|summary| !summary.trim().is_empty())
             .map_or_else(
                 || synthesized_method_name(http_method, url),
-                naming::prose_identifier,
+                naming::summary_identifier,
             )
     } else if id.contains('.') && dotted_id_names_a_group(id) {
         let group = id.split_once('.').map_or(id, |(group, _)| group);

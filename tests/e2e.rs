@@ -1914,6 +1914,7 @@ const CORPORA: &[&Corpus] = &[
     &LISTENNOTES,
     &VTEX_PRICING,
     &AWS_IMPORTEXPORT,
+    &OPENBANKING_BRASIL_DIRECTORY,
 ];
 
 #[test]
@@ -3366,6 +3367,24 @@ const AWS_IMPORTEXPORT: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `openbanking-brasil-directory`: Open Banking Brasil's participant directory is
+/// the corpus's only source whose OAuth Flows Object declares more than one flow —
+/// `components.securitySchemes.oAuth` names `clientCredentials` (scopes
+/// `directory:admin`, `directory:software`) and `authorizationCode` (scope
+/// `directory:website`) — and the two scope sets are disjoint, so this row pins
+/// which flow Fern reads a scope enum out of where the corpus's other ten Flows
+/// Objects each name exactly one.
+const OPENBANKING_BRASIL_DIRECTORY: Corpus = Corpus {
+    api: "openbanking-brasil-directory",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3720,6 +3739,11 @@ fn vtex_pricing_matches_fern_output() {
 #[test]
 fn aws_importexport_matches_fern_output() {
     assert_link_ok_corpus_matches(&AWS_IMPORTEXPORT);
+}
+
+#[test]
+fn openbanking_brasil_directory_matches_fern_output() {
+    assert_link_ok_corpus_matches(&OPENBANKING_BRASIL_DIRECTORY);
 }
 
 #[test]

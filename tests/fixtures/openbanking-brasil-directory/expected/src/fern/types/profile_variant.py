@@ -1,0 +1,6 @@
+
+
+ProfileVariant = str
+"""
+Certification variant
+"""
