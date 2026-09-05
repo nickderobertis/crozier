@@ -1913,6 +1913,7 @@ const CORPORA: &[&Corpus] = &[
     &STRAPI_REST_API,
     &LISTENNOTES,
     &VTEX_PRICING,
+    &AWS_IMPORTEXPORT,
 ];
 
 #[test]
@@ -3348,6 +3349,23 @@ const VTEX_PRICING: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `aws-importexport`: the AWS Import/Export Service description is the corpus's
+/// densest declarer of a parameter redeclared at both the Path Item and the
+/// Operation level — each of its six paths declares `Action` and `Version`
+/// through `components.parameters`, and each path's `get` and `post` redeclare
+/// both `(name, in)` pairs inline, 24 collisions — so this row pins whether Fern
+/// honours the specification's rule that the operation-level parameter wins.
+const AWS_IMPORTEXPORT: Corpus = Corpus {
+    api: "aws-importexport",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3697,6 +3715,11 @@ fn listennotes_matches_fern_output() {
 #[test]
 fn vtex_pricing_matches_fern_output() {
     assert_link_ok_corpus_matches(&VTEX_PRICING);
+}
+
+#[test]
+fn aws_importexport_matches_fern_output() {
+    assert_link_ok_corpus_matches(&AWS_IMPORTEXPORT);
 }
 
 #[test]

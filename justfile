@@ -177,6 +177,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e strapi_rest_api_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e listennotes_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e vtex_pricing_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e aws_importexport_matches_fern_output
 
 # Format the codebase in place.
 format:
