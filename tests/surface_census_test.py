@@ -147,6 +147,258 @@ def write_fixture(root: Path, name: str, document: str) -> Path:
     return directory
 
 
+# --- the amended settlement rule -------------------------------------------
+# `docs/openapi-surface-coverage.md`'s `#### The settlement rule, as amended`
+# is the prose; these are the same rule as something that fails. A row whose
+# region file records a `witness-blocked` or `fern-rejected` search may be
+# settled by a locally authored Fern probe and become `limitations` — so the
+# recorded search, the named blocker and the recorded probe are all gates, and
+# each is read here off real region-file content rather than assumed.
+
+WITNESS_SEARCH_HEADING = "### Witness search (issue #188)"
+AMENDED_ROUTE = "blocked-witness probe"
+BLOCKED_OUTCOMES = ("witness-blocked", "fern-rejected")
+SEARCH_INCOMPLETE = "search-incomplete"
+UNANSWERED = "unanswered"
+# `fern-limitations.md`'s own `How to read a verdict` vocabulary, which is what
+# "a row with a verdict" in that file means.
+LEDGER_VERDICTS = (
+    "implements",
+    "discards",
+    "ignores",
+    "refuses",
+    "crashes",
+    "coincidence",
+    "unmeasured",
+)
+
+
+def table_cells(line: str, width: int) -> list[str] | None:
+    """One markdown table row as `width` cells, or None if the line is not one.
+
+    `\\|` inside a cell is an escaped pipe, not a column break — one region row's
+    `crozier sites` cell holds a Rust `match` pattern that uses it. An *un*escaped
+    one in the last column is not so easily dismissed: `parameters.md`'s search
+    row quotes a `(yaml|yml)$` regex in its query cell, and a parser demanding
+    exactly `width` cells drops that row silently, which is a search going unread
+    rather than a search failing. So the overflow is folded back into the last
+    column, where it came from.
+    """
+    if not line.startswith("| "):
+        return None
+    cells = [
+        cell.replace("\x00", "\\|").strip()
+        for cell in line.replace("\\|", "\x00").strip().strip("|").split("|")
+    ]
+    if len(cells) < width:
+        return None
+    return cells[: width - 1] + ["|".join(cells[width - 1 :])]
+
+
+def source_key(label: str) -> str:
+    """One source's identity, so a declaration and a row's cell join on it.
+
+    A region declares `**Vendor developer portals**` and its rows write
+    `**Vendor portals:**` or `**vendor portals**`; `**APIs.guru /
+    \\`openapi-directory\\`**` is written both ways too. The leading word is
+    what never varies, so that is the key.
+    """
+    return label.strip("*: ").split()[0].strip("`").lower()
+
+
+def witness_search_table(text: str) -> dict[str, list[str]]:
+    """key -> the seven cells of that key's line in one region file's search table."""
+    if WITNESS_SEARCH_HEADING not in text:
+        return {}
+    found = {}
+    for line in text.split(WITNESS_SEARCH_HEADING, 1)[1].splitlines():
+        cells = table_cells(line, 7)
+        if cells and cells[0].startswith("`"):
+            found[cells[0].strip("`")] = cells
+    return found
+
+
+def witness_search_outcome(row: list[str]) -> str:
+    """The `outcome` cell, whose backticks two regions write and two do not."""
+    return row[1].strip("`* ")
+
+
+def declared_witness_sources(text: str) -> dict[str, str]:
+    """The sources this region's own witness-search preamble says it searched.
+
+    Required per region rather than from one shared list, because the regions
+    genuinely searched different sets — `security` names six and `schemas`
+    five — and a list pruned to the intersection would let a row delete the
+    Sourcegraph evidence its own region demanded and still pass. Each region
+    declares its set as the bulleted bold labels above its table, which is
+    the contract this reads; a region that owns a witness-supply row and
+    declares nothing fails rather than being waved through.
+    """
+    if WITNESS_SEARCH_HEADING not in text:
+        return {}
+    preamble = text.split(WITNESS_SEARCH_HEADING, 1)[1].split("\n| key | outcome", 1)[0]
+    return {
+        source_key(label): label
+        for label in re.findall(r"^[-*] \*\*([^*]+)\*\*", preamble, re.M)
+    }
+
+
+def witness_sources_queried(cell: str, declared: dict[str, str]) -> dict[str, str]:
+    """Each declared source's bold label in `cell`, mapped to the text under it.
+
+    A row states its sources as bold labels in one cell, so a source's segment
+    runs from its own label to the next *source* label — which is where the
+    query put to it has to be. Bold spans that are not sources (a count, an
+    emphasised value) are not boundaries.
+    """
+    spans = [
+        (match.start(), match.end(), source_key(match.group(0)))
+        for match in re.finditer(r"\*\*[^*]+\*\*", cell)
+    ]
+    found: dict[str, tuple[int, int]] = {}
+    for start, end, key in spans:
+        if key in declared and key not in found:
+            found[key] = (start, end)
+    starts = sorted(start for start, _end in found.values())
+    return {
+        key: cell[end : next((s for s in starts if s > start), len(cell))]
+        for key, (start, end) in found.items()
+    }
+
+
+def unanswered_sources(cell: str, declared: dict[str, str]) -> list[str]:
+    """The declared sources this record marks `unanswered` — the ones that did not answer."""
+    queried = witness_sources_queried(cell, declared)
+    return sorted(
+        declared[name]
+        for name, segment in queried.items()
+        if re.search(rf"\b{UNANSWERED}\b", segment, re.I)
+    )
+
+
+def blocker_form(evidence: str) -> str | None:
+    """Which of the rule's three blocker forms this `evidence` cell names, if any.
+
+    Each form has to name what would have to change for the witness to become
+    registrable, so each is recognised by that content and not by its label
+    alone: a licence names the licence, a mutable ref names the URL, and a Fern
+    refusal names the exit status *and* the diagnostic. The most specific form is
+    tested first, because a Fern refusal quotes a code span a licence would also
+    match.
+    """
+    named = re.search(r"\*\*blocker:\*\*(.*)$", evidence, re.S | re.I)
+    if not named:
+        return None
+    text = named.group(1)
+    quoted = re.search(r"`[^`]+`", text)
+    if (
+        re.search(r"\bfern refusal\b", text, re.I)
+        # `exit 1`, `exits **1**`, `exit status 1`: the status is what has to be
+        # there, not one spelling of the word in front of it.
+        and re.search(r"\bexit\w*\b[^\d]{0,40}\d", text, re.I)
+        and quoted
+    ):
+        return "fern refusal"
+    if re.search(r"\bmutable ref\b", text, re.I) and re.search(r"`https?://[^`]+`", text):
+        return "mutable ref"
+    if re.search(r"\blicen[cs]e\b", text, re.I) and (
+        quoted or re.search(r"\bnone declared\b", text, re.I)
+    ):
+        return "licence"
+    return None
+
+
+def ledger_verdict(key: str, ledger: str) -> str | None:
+    """The verdict `fern-limitations.md` records for `key`, or None if it records none."""
+    for line in ledger.splitlines():
+        cells = table_cells(line, 2)
+        if not cells or cells[0].strip("`") != key:
+            continue
+        for cell in cells[1:]:
+            for verdict in LEDGER_VERDICTS:
+                if re.search(rf"\b{verdict}\b", cell):
+                    return verdict
+    return None
+
+
+def blocked_witness_probe_failures(
+    key: str, region: str, cells: list[str], region_text: str, ledger: str
+) -> list[str]:
+    """Every way one row fails the amended settlement rule; empty means it conforms.
+
+    The rule's own five gates, in the order the index states them: a recorded
+    search, an outcome that licenses the route, a search that asked every source
+    the region declares, a blocker in one of three forms, and a probe with a
+    verdict in the ledger.
+    """
+    searched = witness_search_table(region_text)
+    if key not in searched:
+        return [
+            f"{key}: settled as a {AMENDED_ROUTE} with no line in "
+            f"{region}.md's `{WITNESS_SEARCH_HEADING}` table — the recorded "
+            f"search is the gate, and nothing records one for this row"
+        ]
+    row = searched[key]
+    failures = []
+    outcome = witness_search_outcome(row)
+    if outcome not in BLOCKED_OUTCOMES:
+        failures.append(
+            f"{key}: its recorded search returned `{outcome}`; only "
+            f"`witness-blocked` and `fern-rejected` license a {AMENDED_ROUTE}, "
+            f"because only they record a real-world witness this corpus cannot use"
+        )
+    declared = declared_witness_sources(region_text)
+    if not declared:
+        failures.append(
+            f"{key}: {region}.md's `{WITNESS_SEARCH_HEADING}` section declares no "
+            f"sources, so no search recorded under it can be the exhaustive one "
+            f"this route requires"
+        )
+    else:
+        queried = witness_sources_queried(row[6], declared)
+        missing = sorted(declared[name] for name in set(declared) - set(queried))
+        if missing:
+            failures.append(
+                f"{key}: its recorded search omits {missing}, which {region}.md "
+                f"declares its search put to every row"
+            )
+    if blocker_form(cells[4]) is None:
+        failures.append(
+            f"{key}: its `evidence` cell names no blocker in any of the rule's "
+            f"three forms — the licence the witness carries, what makes its "
+            f"reference mutable, or Fern's refusal with its exit status and "
+            f"diagnostic — so nothing says what would have to change for the "
+            f"witness to become registrable"
+        )
+    if ledger_verdict(key, ledger) is None:
+        failures.append(
+            f"{key}: `docs/fern-limitations.md` records no probe and no verdict "
+            f"for it, so the measurement that settles it has not been taken"
+        )
+    return failures
+
+
+def unread_source_failures(
+    key: str, region: str, row: list[str], declared: dict[str, str]
+) -> list[str]:
+    """A search claiming absence while a source it required did not answer.
+
+    `none-found` is a claim about the world, and it is only as good as the set of
+    sources that answered. A record naming one of them `unanswered` has not asked
+    the world, so the rule spells that `search-incomplete` and this refuses the
+    other spelling — which is what keeps an unread source from becoming evidence
+    of absence.
+    """
+    outstanding = unanswered_sources(row[6], declared)
+    if outstanding and witness_search_outcome(row) == "none-found":
+        return [
+            f"{key}: {region}.md records {outstanding} as `{UNANSWERED}` while "
+            f"the row reads `none-found`; a search a required source did not "
+            f"answer is `{SEARCH_INCOMPLETE}`, not evidence of absence"
+        ]
+    return []
+
+
 class RecipeWiringTests(unittest.TestCase):
     """The gate must run this file, and this file must test the recipe's script."""
 
@@ -1093,7 +1345,7 @@ class RankedBacklogTests(unittest.TestCase):
     CATEGORIES = ("golden", "limitations", "gap")
     SETTLEMENTS = ("FIXTURE", "PROBE", "UNREACHABLE")
     PROBE_KINDS = ("structural", "witness-supply")
-    WITNESS_SEARCH = "### Witness search (issue #188)"
+    WITNESS_SEARCH = WITNESS_SEARCH_HEADING
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1600,75 +1852,21 @@ class RankedBacklogTests(unittest.TestCase):
         ]
         return cited + re.findall(r"(?i)\b(?:the |a )?(selectors?)\b", cell)
 
+    def region_text(self, region: str) -> str:
+        return (self.REGIONS / f"{region}.md").read_text(encoding="utf-8")
+
     def witness_search_rows(self, region: str) -> dict[str, str]:
         """key -> the `sources searched and the exact query` cell, per region file."""
-        text = (self.REGIONS / f"{region}.md").read_text(encoding="utf-8")
-        if self.WITNESS_SEARCH not in text:
-            return {}
-        found = {}
-        for line in text.split(self.WITNESS_SEARCH, 1)[1].splitlines():
-            if not line.startswith("| "):
-                continue
-            cells = [
-                cell.replace("\x00", "\\|").strip()
-                for cell in line.replace("\\|", "\x00").strip().strip("|").split("|")
-            ]
-            if len(cells) == 7 and cells[0].startswith("`"):
-                found[cells[0].strip("`")] = cells[6]
-        return found
-
-    @staticmethod
-    def source_key(label: str) -> str:
-        """One source's identity, so a declaration and a row's cell join on it.
-
-        A region declares `**Vendor developer portals**` and its rows write
-        `**Vendor portals:**` or `**vendor portals**`; `**APIs.guru /
-        \\`openapi-directory\\`**` is written both ways too. The leading word is
-        what never varies, so that is the key.
-        """
-        return label.strip("*: ").split()[0].strip("`").lower()
+        return {
+            key: row[6]
+            for key, row in witness_search_table(self.region_text(region)).items()
+        }
 
     def declared_witness_sources(self, region: str) -> dict[str, str]:
-        """The sources this region's own witness-search preamble says it searched.
-
-        Required per region rather than from one shared list, because the regions
-        genuinely searched different sets — `security` names six and `schemas`
-        five — and a list pruned to the intersection would let a row delete the
-        Sourcegraph evidence its own region demanded and still pass. Each region
-        declares its set as the bulleted bold labels above its table, which is
-        the contract this reads; a region that owns a witness-supply row and
-        declares nothing fails below rather than being waved through.
-        """
-        text = (self.REGIONS / f"{region}.md").read_text(encoding="utf-8")
-        if self.WITNESS_SEARCH not in text:
-            return {}
-        preamble = text.split(self.WITNESS_SEARCH, 1)[1].split("\n| key | outcome", 1)[0]
-        return {
-            self.source_key(label): label
-            for label in re.findall(r"^[-*] \*\*([^*]+)\*\*", preamble, re.M)
-        }
+        return declared_witness_sources(self.region_text(region))
 
     def witness_sources_queried(self, cell: str, declared: dict[str, str]) -> dict[str, str]:
-        """Each declared source's bold label in `cell`, mapped to the text under it.
-
-        A row states its sources as bold labels in one cell, so a source's segment
-        runs from its own label to the next *source* label — which is where the
-        query put to it has to be. Bold spans that are not sources (a count, an
-        emphasised value) are not boundaries.
-        """
-        spans = [
-            (match.start(), match.end(), self.source_key(match.group(0)))
-            for match in re.finditer(r"\*\*[^*]+\*\*", cell)
-        ]
-        found: dict[str, tuple[int, int]] = {}
-        for start, end, key in spans:
-            if key in declared and key not in found:
-                found[key] = (start, end)
-        starts = sorted(start for start, _end in found.values())
-        return {
-            key: cell[end : next((s for s in starts if s > start), len(cell))]
-            for key, (start, end) in found.items()
-        }
+        return witness_sources_queried(cell, declared)
 
     def test_every_probe_row_is_one_of_two_kinds_and_cites_no_census_selector(self) -> None:
         """A `PROBE` row says which kind it is, and never settles on the census.
@@ -1739,6 +1937,95 @@ class RankedBacklogTests(unittest.TestCase):
                         f"query put to it and what that returned",
                     )
 
+    def test_the_index_states_one_settlement_rule_and_names_what_it_amended(self) -> None:
+        """One rule, not two: the amendment and the sentence it replaced, in one place.
+
+        The rule it replaced is quoted rather than paraphrased, because a reader
+        arriving at a `FIXTURE` row that a blocked witness put there needs to know
+        the old reading is gone. The quote is asserted verbatim so a reworded
+        amendment cannot leave the old rule standing somewhere unquoted.
+        """
+        rule = self.section("#### The settlement rule, as amended", "\n#### ")
+        flat = " ".join(rule.split())
+        self.assertIn(
+            "leaves this list the day any witness turns up, blocked or not, and "
+            "it leaves as a `FIXTURE` rather than as a measured probe",
+            flat,
+            "the amended rule does not quote the rule it replaced",
+        )
+        for outcome in ("witness-found", *BLOCKED_OUTCOMES, "none-found", SEARCH_INCOMPLETE):
+            self.assertIn(f"**`{outcome}`**", flat, f"the rule does not define `{outcome}`")
+        for demanded in (
+            AMENDED_ROUTE,               # how a row says it took the route
+            "`blocker:`",                # and where it names its blocker
+            "still beats",               # the precedence that does not move
+            "no byte-comparison evidence",
+        ):
+            self.assertIn(demanded, flat, f"the rule no longer states {demanded!r}")
+
+    def test_the_new_outcome_is_defined_once_and_only_deferred_to(self) -> None:
+        """`search-incomplete` is the index's to define; a region file points at it.
+
+        Four outcomes were glossed in three region files at once, which is how a
+        vocabulary drifts. The fifth is defined where the settlement rule that
+        gives it meaning is, and a region file naming it links there rather than
+        re-glossing it.
+        """
+        self.assertIn(
+            SEARCH_INCOMPLETE, self.section("#### The settlement rule, as amended", "\n#### ")
+        )
+        naming = [
+            path
+            for path in sorted(self.REGIONS.glob("*.md"))
+            if SEARCH_INCOMPLETE in path.read_text(encoding="utf-8")
+        ]
+        self.assertTrue(naming, "no region file names the outcome its own tables may read")
+        for path in naming:
+            with self.subTest(region=path.stem):
+                self.assertIn(
+                    "openapi-surface-coverage.md#the-settlement-rule-as-amended",
+                    path.read_text(encoding="utf-8"),
+                    "a region file names the outcome without deferring to its definition",
+                )
+
+    def test_no_recorded_search_calls_an_unanswered_source_evidence_of_absence(self) -> None:
+        """Every recorded search in the tree, held to the outcome its own record supports."""
+        for path in sorted(self.REGIONS.glob("*.md")):
+            text = path.read_text(encoding="utf-8")
+            declared = declared_witness_sources(text)
+            if not declared:
+                continue
+            for key, row in sorted(witness_search_table(text).items()):
+                with self.subTest(region=path.stem, key=key):
+                    self.assertEqual(
+                        [], unread_source_failures(key, path.stem, row, declared)
+                    )
+
+    def test_every_blocked_witness_probe_row_meets_the_amended_settlement_rule(self) -> None:
+        """The amended route, read over every region row in the tree that claims it.
+
+        No row claims it today, so this observes nothing on its own — which is
+        what `AmendedSettlementRuleTests` below exists for. What it does is make
+        the first row that claims it meet the rule at the gate rather than at
+        review, over the real six region files and the real ledger.
+        """
+        ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
+        for key, (region, cells) in sorted(self.entries.items()):
+            if AMENDED_ROUTE not in cells[4]:
+                continue
+            with self.subTest(key=key):
+                self.assertEqual(
+                    "limitations",
+                    cells[3].strip("`"),
+                    f"{key}: a row settled by the amended route is `limitations`",
+                )
+                self.assertEqual(
+                    [],
+                    blocked_witness_probe_failures(
+                        key, region, cells, self.region_text(region), ledger
+                    ),
+                )
+
     def test_the_probe_backlog_splits_by_the_kind_each_region_row_declares(self) -> None:
         """The index's two named parts are the region files' own settlement cells."""
         kinds: dict[str, set[str]] = {kind: set() for kind in self.PROBE_KINDS}
@@ -1773,6 +2060,230 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(
             (len(sources), golden), (int(stated.group(1)), int(stated.group(2)))
         )
+
+
+class AmendedSettlementRuleTests(unittest.TestCase):
+    """The amended settlement rule, driven over real region-file content.
+
+    No row in the tree takes the amended route today, so `RankedBacklogTests`
+    reading the real six region files observes nothing about it: a reconciliation
+    that has never met a conforming row and never met a non-conforming one is one
+    nobody has watched work, and it would pass just as green if it read nothing at
+    all. So these write real region-file content — the skeleton all six carry, a
+    witness-search preamble of bulleted bold sources and the seven-column table
+    under it, and an entry row in the eight-column shape — to a real temporary
+    tree, parse it back off disk with the parsers the gate itself uses, and run the
+    real reconciliation over it: once on a row that conforms to the rule, and once
+    per way of failing it.
+    """
+
+    REGION = """\
+# OpenAPI surface coverage — a sample region
+
+## Scope
+
+| `sample` | `openapi-surface/sample.md` | one sample object |
+
+## Entries
+
+| key | oas | spec location | category | evidence | crozier sites | why bytes could move | settlement |
+|---|---|---|---|---|---|---|---|
+{entry}
+
+## Method notes
+
+### Witness search (issue #188)
+
+`outcome` is one of the five words the index's settlement rule defines.
+
+- **APIs.guru / `openapi-directory`** — a `--depth 1` clone of the repository,
+  grepped for the JSON and the YAML spelling of the keyword.
+- **GitHub code search** — `gh search code '"<keyword>" filename:openapi.yaml'`
+  and the same query over `openapi.json`.
+
+| key | outcome | witness | immutable ref | license | fern check | sources searched and the exact query used against each |
+|---|---|---|---|---|---|---|
+{search}
+"""
+
+    ENTRY = (
+        "| `sample-shape` | both | Schema Object.sample | limitations | ledger "
+        "`sample-shape`, verdict `discards`; settled as a **blocked-witness probe** "
+        "on the `witness-blocked` outcome the search below records. {blocker} |  |  |  |"
+    )
+    BLOCKER = (
+        "**blocker:** licence — the one witness is published under `NOASSERTION`, "
+        "outside the corpus's redistribution set; a re-licence makes it registrable "
+        "and promotes this row to `golden`"
+    )
+    SEARCH = (
+        "| `sample-shape` | {outcome} | Sample API, `sample-org/sample-api` "
+        "`openapi.yaml` — **1** declaration counted in the fetched bytes | "
+        "`https://raw.githubusercontent.com/sample-org/sample-api/"
+        "0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c/openapi.yaml` | proprietary "
+        "(`NOASSERTION`) | clean, exit 0 | {sources} |"
+    )
+    BOTH_SOURCES = (
+        "**APIs.guru** `grep -rlF '\"x-sample\"' APIs` → 0 hits. "
+        "**GitHub code search** `gh search code '\"x-sample\" filename:openapi.yaml'` "
+        "→ 3 hits, every one a synthetic fixture."
+    )
+    ONE_SOURCE = "**APIs.guru** `grep -rlF '\"x-sample\"' APIs` → 0 hits."
+    LEDGER = (
+        "| key | witnesses | goldens | verdict | finding |\n"
+        "|---|---|---|---|---|\n"
+        "| `sample-shape` | 1 | 0 | discards | the probe records that Fern accepts "
+        "the shape and emits nothing derived from it |\n"
+    )
+
+    def written(self, entry: str, search: str, ledger: str) -> tuple[str, list[str], str]:
+        """`entry`/`search`/`ledger` on the real filesystem, read back as the gate reads them."""
+        directory = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, directory)
+        root = Path(directory)
+        (root / "openapi-surface").mkdir()
+        region = root / "openapi-surface" / "sample.md"
+        region.write_text(self.REGION.format(entry=entry, search=search), encoding="utf-8")
+        (root / "fern-limitations.md").write_text(ledger, encoding="utf-8")
+        text = region.read_text(encoding="utf-8")
+        rows = RankedBacklogTests.region_rows(text)
+        self.assertEqual(1, len(rows), "the sample region file no longer parses as one entry row")
+        return text, rows[0], (root / "fern-limitations.md").read_text(encoding="utf-8")
+
+    def reconcile(
+        self,
+        *,
+        blocker: str | None = None,
+        outcome: str = "witness-blocked",
+        sources: str | None = None,
+        search: str | None = None,
+        ledger: str | None = None,
+    ) -> list[str]:
+        entry = self.ENTRY.format(blocker=self.BLOCKER if blocker is None else blocker)
+        if search is None:
+            search = self.SEARCH.format(
+                outcome=outcome, sources=self.BOTH_SOURCES if sources is None else sources
+            )
+        text, cells, read_ledger = self.written(
+            entry, search, self.LEDGER if ledger is None else ledger
+        )
+        return blocked_witness_probe_failures("sample-shape", "sample", cells, text, read_ledger)
+
+    def only_failure(self, failures: list[str]) -> str:
+        self.assertEqual(1, len(failures), failures)
+        self.assertTrue(failures[0].startswith("sample-shape: "), failures[0])
+        return failures[0]
+
+    def test_a_row_that_meets_the_rule_is_accepted(self) -> None:
+        """The route the amendment opens, taken correctly: a blocked witness, a probe."""
+        self.assertEqual([], self.reconcile())
+
+    def test_a_row_with_no_recorded_search_is_refused(self) -> None:
+        """The recorded exhaustive search is the gate, and this row records none."""
+        self.assertIn(
+            "no line in sample.md's `### Witness search (issue #188)` table",
+            self.only_failure(self.reconcile(search="")),
+        )
+
+    def test_a_row_whose_search_omits_a_declared_source_is_refused(self) -> None:
+        """Every source the region's own preamble names, or the search is not exhaustive."""
+        self.assertIn(
+            "omits ['GitHub code search']",
+            self.only_failure(self.reconcile(sources=self.ONE_SOURCE)),
+        )
+
+    def test_a_row_whose_search_found_a_usable_witness_is_refused(self) -> None:
+        """`witness-found` is fixture work: the corpus can register that document."""
+        self.assertIn(
+            "its recorded search returned `witness-found`",
+            self.only_failure(self.reconcile(outcome="witness-found")),
+        )
+
+    def test_a_row_whose_search_found_nothing_is_refused(self) -> None:
+        """`none-found` is the witness-supply probe the unamended rule already covers."""
+        self.assertIn(
+            "its recorded search returned `none-found`",
+            self.only_failure(self.reconcile(outcome="none-found")),
+        )
+
+    def test_a_row_whose_search_did_not_finish_is_refused(self) -> None:
+        """`search-incomplete` settles nothing, so it licenses nothing either."""
+        self.assertIn(
+            "its recorded search returned `search-incomplete`",
+            self.only_failure(self.reconcile(outcome=SEARCH_INCOMPLETE)),
+        )
+
+    def test_a_row_naming_no_blocker_is_refused(self) -> None:
+        """A convertible row names what would have to change; this one names nothing."""
+        self.assertIn(
+            "names no blocker",
+            self.only_failure(self.reconcile(blocker="The witness cannot be registered.")),
+        )
+
+    def test_a_blocker_too_vague_to_act_on_is_refused(self) -> None:
+        """The label alone is not a blocker: each form names the thing that would change."""
+        for vague in (
+            "**blocker:** the licence is wrong",              # names no licence
+            "**blocker:** mutable ref — the upstream moves",  # names no URL
+            "**blocker:** fern refusal — Fern says no",       # names no exit status
+        ):
+            with self.subTest(blocker=vague):
+                self.assertIn("names no blocker", self.only_failure(self.reconcile(blocker=vague)))
+
+    def test_each_of_the_three_blocker_forms_is_accepted(self) -> None:
+        """And the three complete ones are, so the refusal above is about content."""
+        for good in (
+            "**blocker:** licence — the witness declares `none declared`",
+            "**blocker:** mutable ref — served only at "
+            "`https://example.test/openapi.yaml`, which the publisher overwrites in place",
+            "**blocker:** fern refusal — `fern check` exits **1** with "
+            "`Service requires auth, but no auth is defined.`",
+        ):
+            with self.subTest(blocker=good):
+                self.assertEqual([], self.reconcile(blocker=good))
+
+    def test_a_row_with_no_probe_recorded_in_the_ledger_is_refused(self) -> None:
+        """The probe is the measurement that settles it; without one nothing does."""
+        self.assertIn(
+            "records no probe and no verdict",
+            self.only_failure(self.reconcile(ledger="| key | witnesses |\n|---|---|\n")),
+        )
+
+    def unread(self, outcome: str, sources: str) -> list[str]:
+        """The other refusal: a recorded search read against the outcome it claims."""
+        text, _cells, _ledger = self.written(
+            self.ENTRY.format(blocker=self.BLOCKER),
+            self.SEARCH.format(outcome=outcome, sources=sources),
+            self.LEDGER,
+        )
+        return unread_source_failures(
+            "sample-shape",
+            "sample",
+            witness_search_table(text)["sample-shape"],
+            declared_witness_sources(text),
+        )
+
+    UNANSWERED_SOURCES = (
+        "**APIs.guru** `grep -rlF '\"x-sample\"' APIs` → 0 hits. "
+        "**GitHub code search** `gh search code '\"x-sample\" filename:openapi.yaml'` "
+        "→ **unanswered**: the endpoint returned HTTP 502 on every attempt."
+    )
+
+    def test_a_none_found_row_whose_search_a_source_did_not_answer_is_refused(self) -> None:
+        """An unread source is not evidence of absence, however the row spells it."""
+        self.assertIn(
+            "records ['GitHub code search'] as `unanswered` while the row reads "
+            "`none-found`",
+            self.only_failure(self.unread("none-found", self.UNANSWERED_SOURCES)),
+        )
+
+    def test_search_incomplete_is_the_spelling_an_unanswered_source_takes(self) -> None:
+        """The outcome the amendment adds, doing the job the refusal above leaves open."""
+        self.assertEqual([], self.unread(SEARCH_INCOMPLETE, self.UNANSWERED_SOURCES))
+
+    def test_a_none_found_row_every_source_answered_is_accepted(self) -> None:
+        """And a search that really did ask the world still reads `none-found`."""
+        self.assertEqual([], self.unread("none-found", self.BOTH_SOURCES))
 
 
 DOCUMENT = """openapi: 3.0.3

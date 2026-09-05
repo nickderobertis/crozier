@@ -366,7 +366,9 @@ sections after it record what the corpus then did with that. Every row it covers
 has now been reclassified, so no row below is left reading `witness-found` beside
 a `settlement` of `PROBE`.
 
-`outcome` is one of four words. `witness-found` — a named real-world document
+`outcome` is one of the five words the index's [settlement rule](../openapi-surface-coverage.md#the-settlement-rule-as-amended)
+defines. No row below reads `search-incomplete`; the other four, at this
+region's bar, are these. `witness-found` — a named real-world document
 declares the feature, at a credential-free HTTPS URL ending `.json`, `.yaml` or
 `.yml` (the direct-spec-URL rule [`fern-goldens.md`](../fern-goldens.md) states),
 pinned to an immutable ref, under a redistribution-compatible license, accepted

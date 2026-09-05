@@ -637,7 +637,7 @@ the same `FERN_CLI_VERSION` that script defaults to.
 statements, and they are allowed to disagree.** This subsection records what is
 true of the world; the `settlement` cell records what class of work the row
 needs. What each outcome implies for that cell is
-[`openapi-surface-coverage.md`](../openapi-surface-coverage.md#the-probe-backlog)'s
+[`openapi-surface-coverage.md`](../openapi-surface-coverage.md#the-settlement-rule-as-amended)'s
 rule, not this file's, and this file follows it rather than restating it. Two of
 its consequences are worth naming where a reader meets the outcomes:
 
@@ -652,7 +652,7 @@ its consequences are worth naming where a reader meets the outcomes:
   and the change that owns it registered it — corpus row 109,
   `volview-backend-contract`, whose Fern 5.20.0 golden crozier reproduces byte for
   byte. A `witness-found` outcome is therefore not a settlement class of its own:
-  it is the one outcome that can retire a row outright.
+  it is the one outcome that can retire a row to `golden` outright.
 
 | key | outcome | witness | immutable ref | license | fern check | sources searched and the exact query used against each |
 |---|---|---|---|---|---|---|

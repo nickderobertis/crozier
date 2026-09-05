@@ -162,7 +162,9 @@ been settled too, and none of them as a probe: `reference-description` and
 `PROBE` row at all. Nothing in this table changed to make any of the nine move,
 only what the corpus holds.
 
-`outcome` is one of four words. `witness-found` — a named real-world document
+`outcome` is one of the five words the index's [settlement rule](../openapi-surface-coverage.md#the-settlement-rule-as-amended)
+defines. No row below reads `search-incomplete`; the other four, at this
+region's bar, are these. `witness-found` — a named real-world document
 declares the feature, at a credential-free HTTPS URL ending `.json`, `.yaml` or
 `.yml` (the direct-spec-URL rule [`fern-goldens.md`](../fern-goldens.md) states),
 pinned to an immutable ref, under a redistribution-compatible license, and Fern

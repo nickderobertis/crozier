@@ -301,7 +301,10 @@ reclassification that change makes is
 [`schemas.md`](schemas.md)'s `dollar-anchor`, which stays `gap` and moves from
 `PROBE` to `FIXTURE`: it has a publisher-owned real-world witness Fern accepts,
 blocked only because that document's repository declares no licence, and a
-witness blocked on redistribution is fixture backlog rather than probe work. Its
+witness blocked on redistribution is fixture backlog rather than witness-supply
+probe work — the route
+[the amended settlement rule](../openapi-surface-coverage.md#the-settlement-rule-as-amended)
+later opened for a blocked witness is one this row has not taken. Its
 two sibling rows stay `PROBE` on witness supply, each naming every source searched
 and the query run against it.
 
