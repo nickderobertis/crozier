@@ -289,8 +289,40 @@ def is_licence_identifier(span: str) -> bool:
 
 
 def is_fern_invocation(span: str) -> bool:
-    """Whether one code span is the command rather than what the command printed."""
-    return bool(re.fullmatch(r"(?i)\s*fern(\s+\w+)?\s*", span))
+    """Whether one code span is the command rather than what the command printed.
+
+    Anything opening with the word `fern` is the invocation however it goes on —
+    `fern check`, `fern generate --group python-sdk` — because Fern's own
+    diagnostics do not name the tool back at the reader.
+    """
+    return bool(re.match(r"(?i)^\s*fern\b", span))
+
+
+def is_diagnostic_text(span: str) -> bool:
+    """Whether one code span is a phrase Fern printed, not a token about the run.
+
+    A refusal quotes several things and only one of them is the diagnostic: the
+    invocation, the exit status, the generator version, the pinned ref, the spec
+    URL. Each of those is a single token or a command, while a diagnostic is a
+    sentence — `Service requires auth, but no auth is defined.`,
+    `Type name must begin with a letter`. Three words carrying letters is what
+    separates the two, and it is why a refusal reading `exits` with the status
+    alone in a code span names no diagnostic at all.
+    """
+    span = span.strip()
+    if is_fern_invocation(span) or re.match(r"(?i)^https?://", span):
+        return False
+    return len([word for word in span.split() if re.search(r"[A-Za-z]{2}", word)]) >= 3
+
+
+# The clause after a mutable ref's URL has to say what changes at that address,
+# so what says it is a closed list rather than a word count: `this is a mutable
+# reference` is four words restating the label and naming no change at all.
+# `mutable` itself is deliberately absent from the list for that reason.
+MUTABLE_CHANGE = re.compile(
+    r"\b(?:chang|overwrit|overwrote|mov|replac|updat|re-?publish|rewrit|rewrote|mutat)\w*\b",
+    re.I,
+)
 
 
 def blocker_form(evidence: str) -> str | None:
@@ -314,13 +346,13 @@ def blocker_form(evidence: str) -> str | None:
         # `exit 1`, `exits **1**`, `exit status 1`: the status is what has to be
         # there, not one spelling of the word in front of it.
         status = re.search(r"\bexit\w*\b[^\d]{0,40}\d", text, re.I)
-        diagnostic = [span for span in spans if not is_fern_invocation(span)]
-        return "fern refusal" if status and diagnostic else None
+        return "fern refusal" if status and any(map(is_diagnostic_text, spans)) else None
     if re.search(r"\bmutable ref\b", text, re.I):
         url = re.search(r"`https?://[^`]+`", text)
         # A URL is not by itself mutable, so the clause saying what changes under
-        # that same address is the half that carries the blocker.
-        return "mutable ref" if url and len(text[url.end() :].split()) >= 4 else None
+        # that same address is the half that carries the blocker — and saying so
+        # is naming the change, not filling the space after the URL with words.
+        return "mutable ref" if url and MUTABLE_CHANGE.search(text[url.end() :]) else None
     if re.search(r"\blicen[cs]e\b", text, re.I):
         if re.search(r"\bnone declared\b", text, re.I):
             return "licence"
@@ -2323,6 +2355,39 @@ class AmendedSettlementRuleTests(unittest.TestCase):
             "a Fern refusal quoting the diagnostic and no exit status",
             "**blocker:** fern refusal — `Service requires auth, but no auth is defined.`",
         ),
+        (
+            "a Fern refusal whose only code span is the exit status itself",
+            "**blocker:** fern refusal — exits `1`",
+        ),
+        (
+            "a Fern refusal quoting the generator version rather than a diagnostic",
+            "**blocker:** fern refusal — `fern check` exits **1** at `5.20.0`",
+        ),
+        (
+            "a Fern refusal quoting the pinned ref rather than a diagnostic",
+            "**blocker:** fern refusal — `fern check` exits **1** at commit "
+            "`8d9ff98f7d3ddd3e74340bcfb322c12df2ed189b`",
+        ),
+        (
+            "a Fern refusal quoting the spec URL rather than a diagnostic",
+            "**blocker:** fern refusal — `fern check` exits **1** on "
+            "`https://example.test/openapi.yaml`",
+        ),
+        (
+            "a Fern refusal whose longer invocation is its only prose span",
+            "**blocker:** fern refusal — exits **1** running "
+            "`fern generate --group python-sdk --log-level debug`",
+        ),
+        (
+            "a mutable ref restating the label instead of naming the change",
+            "**blocker:** mutable ref — `https://example.test/openapi.yaml`; "
+            "this is a mutable reference",
+        ),
+        (
+            "a mutable ref whose words after the URL describe the document",
+            "**blocker:** mutable ref — `https://example.test/openapi.yaml`, "
+            "an OpenAPI 3.1 document the publisher serves",
+        ),
     )
 
     def test_a_blocker_too_vague_to_act_on_is_refused(self) -> None:
@@ -2338,6 +2403,8 @@ class AmendedSettlementRuleTests(unittest.TestCase):
             "**blocker:** licence — the witness carries `AGPL-3.0`",
             "**blocker:** mutable ref — served only at "
             "`https://example.test/openapi.yaml`, which the publisher overwrites in place",
+            "**blocker:** mutable ref — `https://example.test/openapi.yaml`, whose "
+            "body changes whenever the publisher redeploys",
             "**blocker:** fern refusal — `fern check` exits **1** with "
             "`Service requires auth, but no auth is defined.`",
         ):

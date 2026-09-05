@@ -711,12 +711,20 @@ names what would have to change:
   named no licence.
 - **`mutable ref`** — both halves of what makes the reference mutable: the URL
   the document is served at, in a code span, **and**, after it, what can change
-  under that same address. The URL alone is not a blocker, because a URL is not
-  by itself mutable.
+  under that same address, said with one of *changes*, *overwrites*, *moves*,
+  *replaces*, *updates*, *republishes*, *rewrites* or *mutates* in any
+  inflection. The URL alone is not a blocker, because a URL is not by itself
+  mutable — and neither is a clause after it that restates the label
+  (*"this is a mutable reference"*) or describes the document rather than what
+  happens to it. Naming the change is the half that carries the blocker.
 - **`fern refusal`** — both halves of Fern's own refusal: the **exit status** it
-  returned, and the diagnostic it printed, quoted in a code span of its own. The
-  invocation is not the diagnostic — a refusal whose only code span is `fern
-  check` has recorded that Fern ran, not what it said.
+  returned, and the diagnostic it printed, quoted in a code span of its own — a
+  phrase Fern printed, of at least three words carrying letters. A refusal quotes
+  several things and only one of them is the diagnostic: the invocation, the exit
+  status, the generator version, the pinned ref, the spec URL are all facts
+  *about* the run, and none of them is what Fern said. So a refusal whose only
+  code span is `fern check`, or `1`, or `5.20.0`, has recorded that Fern ran and
+  not why it refused.
 
 A blocker is refused unless it names one of the three *and* carries that form's
 payload, so no row is settled behind one too vague to tell anybody what would
