@@ -2403,7 +2403,8 @@ fn build_endpoint(
                 .as_ref()
                 .is_some_and(|schema| schema.title.is_some())
                 && non_null.len() == members.len();
-            ((non_null.len() != 1 || string_enum_values(non_null[0]).is_none()) && !titled_and_total)
+            ((non_null.len() != 1 || string_enum_values(non_null[0]).is_none())
+                && !titled_and_total)
                 .then(|| format!("{request_ctx}{}", naming::class_name(&parameter.name)))
         })
         .collect();
@@ -4336,7 +4337,32 @@ impl InlineHoister<'_> {
                         |schemas| full_type_ref_resolved(non_null[0], schemas),
                     ));
                 }
-                let variants: Vec<TypeRef> = non_null.iter().copied().map(base_type_ref).collect();
+                // An inline enum alternative becomes a named enum of its own,
+                // ordinal-suffixed the way any other hoisted variant is: oSPARC's
+                // `product_name` is `Union[str, GetProductRequestProductNameOne]`
+                // over a bare `string` beside a `const: current` member.
+                let siblings: Vec<Schema> =
+                    non_null.iter().map(|member| (*member).clone()).collect();
+                let mut variants: Vec<TypeRef> = Vec::with_capacity(non_null.len());
+                for (index, member) in non_null.iter().enumerate() {
+                    let hoisted = member
+                        .reference
+                        .is_none()
+                        .then(|| string_enum_values(member))
+                        .flatten();
+                    if let Some(values) = hoisted {
+                        let variant_name = variant_class_name(&name, index, member, &siblings);
+                        self.out.push(TypeDecl::Enum(build_enum(
+                            member,
+                            &variant_name,
+                            values,
+                            clean_doc(member.description.as_deref()),
+                        )));
+                        variants.push(TypeRef::Named(variant_name));
+                    } else {
+                        variants.push(base_type_ref(member));
+                    }
+                }
                 let mut variants = dedupe_union_members(variants);
                 // A composition whose members all lower to the same type is no
                 // union at all, and Fern hoists nothing for it: Flowdapt's
