@@ -345,6 +345,10 @@ fn enum_words(value: &str) -> String {
             // Fern spells a bare `*` wildcard enum value the word "all"
             // (`"*"` → `ALL`); every other non-alphanumeric is a word boundary.
             spaced.push_str(" all ");
+        } else if c == '\'' || c == '\u{2019}' {
+            // An apostrophe is a contraction rather than a word boundary here,
+            // exactly as in [`prose_identifier`]: DaniWeb's `"Don't Know"` names
+            // the member `DONT_KNOW`, not `DON_T_KNOW`.
         } else if c.is_ascii_alphanumeric() {
             spaced.push(c);
         } else {

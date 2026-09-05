@@ -1,0 +1,6 @@
+
+
+PlaylistNameField = str
+"""
+Playlist name.
+"""

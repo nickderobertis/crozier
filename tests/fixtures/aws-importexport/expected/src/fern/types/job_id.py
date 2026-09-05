@@ -1,0 +1,6 @@
+
+
+JobId = str
+"""
+A unique identifier which refers to a particular job.
+"""

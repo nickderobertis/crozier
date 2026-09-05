@@ -1,0 +1,6 @@
+
+
+TrackingNumber = str
+"""
+The shipping tracking number assigned by AWS Import/Export to the storage device when it's returned to you. We return this value when the LocationCode is "Returned".
+"""

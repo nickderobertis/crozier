@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "paloalto-remote-networks",
+  "corpus_spec_ref": "b9122449813f2a5fb2e1f9e403aae3d50c9712f4",
+  "corpus_spec_url": "https://raw.githubusercontent.com/PaloAltoNetworks/pan.dev/b9122449813f2a5fb2e1f9e403aae3d50c9712f4/openapi-specs/sase/config-orch/paloaltonetworks-Remote_Networks.yaml"
+}

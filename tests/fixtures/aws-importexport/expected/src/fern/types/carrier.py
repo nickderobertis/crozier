@@ -1,0 +1,6 @@
+
+
+Carrier = str
+"""
+Name of the shipping company. This value is included when the LocationCode is "Returned".
+"""

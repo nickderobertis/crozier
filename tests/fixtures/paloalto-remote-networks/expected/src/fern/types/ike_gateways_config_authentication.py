@@ -1,0 +1,12 @@
+
+
+import typing
+
+from .ike_gateways_config_authentication_allow_id_payload_mismatch import (
+    IkeGatewaysConfigAuthenticationAllowIdPayloadMismatch,
+)
+from .ike_gateways_config_authentication_pre_shared_key import IkeGatewaysConfigAuthenticationPreSharedKey
+
+IkeGatewaysConfigAuthentication = typing.Union[
+    IkeGatewaysConfigAuthenticationPreSharedKey, IkeGatewaysConfigAuthenticationAllowIdPayloadMismatch
+]

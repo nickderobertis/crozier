@@ -1,0 +1,6 @@
+
+
+ProgressMessage = str
+"""
+A more human readable form of the job status.
+"""

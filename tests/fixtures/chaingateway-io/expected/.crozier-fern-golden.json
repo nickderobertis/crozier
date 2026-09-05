@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "chaingateway-io",
+  "corpus_spec_ref": "f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49",
+  "corpus_spec_url": "https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/chaingateway.io/1.0/openapi.yaml"
+}

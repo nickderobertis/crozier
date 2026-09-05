@@ -1,0 +1,6 @@
+
+
+WarningMessage = str
+"""
+An optional message notifying you of non-fatal issues with the job, such as use of an incompatible Amazon S3 bucket name.
+"""

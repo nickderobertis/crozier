@@ -1,0 +1,6 @@
+
+
+CurrentManifest = str
+"""
+The last manifest submitted, which will be used to process the job.
+"""

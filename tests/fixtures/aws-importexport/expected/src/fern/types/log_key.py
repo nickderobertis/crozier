@@ -1,0 +1,6 @@
+
+
+LogKey = str
+"""
+The key where the user logs were stored.
+"""

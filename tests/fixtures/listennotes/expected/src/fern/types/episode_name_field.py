@@ -1,0 +1,6 @@
+
+
+EpisodeNameField = str
+"""
+Episode name.
+"""
