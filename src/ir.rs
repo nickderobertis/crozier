@@ -278,7 +278,7 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
             total > 0
                 && *count * 4 >= total * 3
                 && (!*required || total > 1)
-                && !is_transport_managed_header(wire_name)
+                && !is_transport_managed_parameter(wire_name)
                 && !is_promotion_reserved_header(wire_name)
                 && !api_key_wire_names.contains(wire_name.as_str())
         })
@@ -338,12 +338,19 @@ fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
 
 /// Whether a header is managed by the HTTP transport itself and so is never surfaced
 /// as an SDK parameter — Fern excludes `User-Agent` from global-header promotion even
-/// when it rides every operation (the generated client sets its own), and drops a
-/// declared `Content-Type` header parameter outright: the request's own media type
-/// decides that header, so Chaingateway.io's five `Content-Type` parameters reach neither
-/// the wrapper nor a method signature.
+/// when it rides every operation (the generated client sets its own).
 fn is_transport_managed_header(wire_name: &str) -> bool {
-    wire_name.eq_ignore_ascii_case("user-agent") || wire_name.eq_ignore_ascii_case("content-type")
+    wire_name.eq_ignore_ascii_case("user-agent")
+}
+
+/// The same, for a header declared as a *Parameter Object* rather than named by an
+/// api-key security scheme. `Content-Type` is additionally dropped there: the
+/// request's own media type decides that header, so Chaingateway.io's five
+/// `Content-Type` parameters reach neither the client wrapper nor a method
+/// signature. A security scheme that happens to name that header is a credential
+/// and keeps its constructor field.
+fn is_transport_managed_parameter(wire_name: &str) -> bool {
+    is_transport_managed_header(wire_name) || wire_name.eq_ignore_ascii_case("content-type")
 }
 
 /// Whether a header parameter is reserved from client-wrapper promotion.
@@ -2219,7 +2226,7 @@ fn build_endpoint(
             p.location == Some(ParameterLocation::Header)
                 && p.required != Some(true)
                 && !global_headers.contains(p.name.as_str())
-                && !is_transport_managed_header(&p.name)
+                && !is_transport_managed_parameter(&p.name)
                 && !is_auth_managed_header(doc, &p.name)
         })
         .filter_map(|p| {
@@ -2242,7 +2249,7 @@ fn build_endpoint(
         .filter(|p| {
             p.location == Some(ParameterLocation::Header)
                 && !global_headers.contains(p.name.as_str())
-                && !is_transport_managed_header(&p.name)
+                && !is_transport_managed_parameter(&p.name)
                 && !is_auth_managed_header(doc, &p.name)
                 && !constant_headers.iter().any(|(name, _)| name == &p.name)
         })

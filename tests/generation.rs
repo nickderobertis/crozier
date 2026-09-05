@@ -3731,8 +3731,12 @@ components:
         "{raw}"
     );
     assert!(raw.contains("action: WidgetsUpdateRequestAction"), "{raw}");
+    // `file` is outside `required`, and Fern spreads an optional multipart part in
+    // conditionally rather than sending a `None` one — DaniWeb's `csv` is the
+    // corpus's witness; `a_required_multipart_file_part_is_passed_unconditionally`
+    // below covers the other half.
     assert!(
-        raw.contains("files={\n                \"file\": file,"),
+        raw.contains("files={\n                **({\"file\": file} if file is not None else {}),"),
         "{raw}"
     );
     for module in [
@@ -3897,6 +3901,392 @@ components:
         "{environment}"
     );
     assert!(files["src/acme/client.py"].contains("AcmeApiEnvironment.DEFAULT"));
+}
+
+/// The five parameter-style corpus rows (114-118) each pinned a rule about bytes
+/// a caller sees; these drive the same shapes through the real generator.
+#[test]
+fn a_number_schema_with_an_integer_format_is_a_python_int() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Counts, version: 1.0.0 }
+paths:
+  /widgets:
+    get:
+      operationId: widgets_list
+      tags: [Widgets]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Counts" }
+components:
+  schemas:
+    Counts:
+      type: object
+      required: [id]
+      properties:
+        id: { type: number, format: int32 }
+        big: { type: number, format: int64 }
+        ratio: { type: number, format: float }
+        plain: { type: number }
+"##,
+    );
+    let model = &files["src/acme/types/counts.py"];
+    assert!(model.contains("id: int"), "{model}");
+    assert!(
+        model.contains("big: typing.Optional[int] = None"),
+        "{model}"
+    );
+    assert!(
+        model.contains("ratio: typing.Optional[float] = None"),
+        "{model}"
+    );
+    assert!(
+        model.contains("plain: typing.Optional[float] = None"),
+        "{model}"
+    );
+}
+
+#[test]
+fn an_apostrophe_in_an_enum_value_is_a_contraction_not_a_word_boundary() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Sizes, version: 1.0.0 }
+paths:
+  /widgets:
+    get:
+      operationId: widgets_list
+      tags: [Widgets]
+      parameters:
+        - name: size
+          in: query
+          schema: { type: string, enum: ["Don't Know", "Self-employed"] }
+      responses: { '204': { description: OK } }
+"#,
+    );
+    let module = &files["src/acme/widgets/types/widgets_list_request_size.py"];
+    assert!(module.contains("DONT_KNOW = \"Don't Know\""), "{module}");
+    assert!(!module.contains("DON_T_KNOW"), "{module}");
+}
+
+#[test]
+fn a_path_segment_no_identifier_can_hold_is_folded_before_the_type_context() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Users, version: 1.0.0 }
+paths:
+  /users/~:
+    patch:
+      tags: [Users]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                company_size: { type: string, enum: [SMALL, LARGE] }
+      responses: { '204': { description: Updated } }
+"#,
+    );
+    assert!(
+        files.contains_key("src/acme/users/types/patch_users_request_company_size.py"),
+        "hoisted module names: {:?}",
+        files
+            .keys()
+            .filter(|k| k.contains("users/types"))
+            .collect::<Vec<_>>()
+    );
+    let raw = &files["src/acme/users/raw_client.py"];
+    assert!(raw.contains("\"users/~\""), "{raw}");
+}
+
+#[test]
+fn a_property_whose_all_of_holds_one_inline_member_is_that_member() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Wrapped, version: 1.0.0 }
+paths:
+  /widgets:
+    get:
+      operationId: widgets_list
+      tags: [Widgets]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    allOf:
+                      - type: array
+                        items: { $ref: "#/components/schemas/Widget" }
+components:
+  schemas:
+    Widget:
+      type: object
+      properties: { name: { type: string } }
+"##,
+    );
+    let model = &files["src/acme/widgets/types/widgets_list_response.py"];
+    assert!(
+        model.contains("data: typing.Optional[typing.List[Widget]] = None"),
+        "{model}"
+    );
+    assert!(
+        !files
+            .keys()
+            .any(|name| name.ends_with("widgets_list_response_data.py")),
+        "a one-member allOf coined a wrapper model: {:?}",
+        files.keys().collect::<Vec<_>>()
+    );
+}
+
+#[test]
+fn an_authorization_parameter_stays_per_method_and_content_type_is_dropped() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Gateway, version: 1.0.0 }
+paths:
+  /alpha:
+    post:
+      operationId: alpha_run
+      tags: [Alpha]
+      parameters:
+        - { name: Authorization, in: header, required: true, schema: { type: string } }
+        - { name: Content-Type, in: header, required: true, schema: { type: string } }
+      responses: { '204': { description: OK } }
+  /beta:
+    post:
+      operationId: beta_run
+      tags: [Beta]
+      parameters:
+        - { name: Authorization, in: header, required: true, schema: { type: string } }
+      responses: { '204': { description: OK } }
+"#,
+    );
+    let wrapper = &files["src/acme/core/client_wrapper.py"];
+    assert!(!wrapper.contains("authorization"), "{wrapper}");
+    let raw = &files["src/acme/alpha/raw_client.py"];
+    assert!(raw.contains("authorization: str"), "{raw}");
+    assert!(!raw.contains("content_type"), "{raw}");
+}
+
+#[test]
+fn a_description_keeps_its_trailing_carriage_return_in_the_markdown_writers() {
+    let files = render(
+        "openapi: 3.0.3\ninfo: { title: Notes, version: 1.0.0 }\npaths:\n  /notes:\n    get:\n      operationId: notes_list\n      tags: [Notes]\n      description: \"Reads the notes.\\r\\n\"\n      responses: { '204': { description: OK } }\n",
+    );
+    let reference = &files["reference.md"];
+    assert!(reference.contains("Reads the notes.\r\n"), "{reference:?}");
+}
+
+#[test]
+fn an_http_scheme_no_requirement_selects_leaves_the_client_unauthenticated() {
+    let unreferenced = render(
+        r#"openapi: 3.0.3
+info: { title: Open, version: 1.0.0 }
+paths:
+  /widgets:
+    get:
+      operationId: widgets_list
+      tags: [Widgets]
+      responses: { '204': { description: OK } }
+components:
+  securitySchemes:
+    basic_auth: { type: http, scheme: basic }
+"#,
+    );
+    let wrapper = &unreferenced["src/acme/core/client_wrapper.py"];
+    assert!(!wrapper.contains("BasicAuth"), "{wrapper}");
+    assert!(!wrapper.contains("username"), "{wrapper}");
+
+    let requested = render(
+        r#"openapi: 3.0.3
+info: { title: Closed, version: 1.0.0 }
+security: []
+paths:
+  /widgets:
+    get:
+      operationId: widgets_list
+      tags: [Widgets]
+      responses: { '204': { description: OK } }
+components:
+  securitySchemes:
+    basic_auth: { type: http, scheme: basic }
+"#,
+    );
+    let wrapper = &requested["src/acme/core/client_wrapper.py"];
+    assert!(
+        wrapper.contains("httpx.BasicAuth(username, password)"),
+        "{wrapper}"
+    );
+}
+
+#[test]
+fn a_shared_undescribed_request_body_drops_the_explicit_content_type() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Secrets, version: 1.0.0 }
+paths:
+  /secrets:
+    post:
+      operationId: secrets_create
+      tags: [Secrets]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MutableSecret" }
+      responses: { '204': { description: Created } }
+  /secrets/replace:
+    post:
+      operationId: secrets_replace
+      tags: [Secrets]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MutableSecret" }
+      responses: { '204': { description: Replaced } }
+  /solo:
+    post:
+      operationId: solo_create
+      tags: [Solo]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/GrantInfo" }
+      responses: { '204': { description: Created } }
+components:
+  schemas:
+    MutableSecret:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, description: The secret name. }
+        tenant: { type: string }
+    GrantInfo:
+      type: object
+      required: [grant_account_id]
+      properties:
+        grant_account_id: { type: string, description: The account. }
+        counterparty: { type: string }
+"##,
+    );
+    let shared = &files["src/acme/secrets/raw_client.py"];
+    assert!(
+        !shared.contains("\"content-type\": \"application/json\""),
+        "a body two operations post, described nowhere, drops the header: {shared}"
+    );
+    let solo = &files["src/acme/solo/raw_client.py"];
+    assert!(
+        solo.contains("\"content-type\": \"application/json\""),
+        "a body one operation posts keeps it: {solo}"
+    );
+}
+
+#[test]
+fn a_union_variants_own_discriminant_enum_reaches_the_worked_example() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Clients, version: 1.0.0 }
+paths:
+  /clients:
+    post:
+      operationId: clients_create
+      tags: [Clients]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MutableAuthClient" }
+      responses: { '204': { description: Created } }
+  /clients/two-legged:
+    get:
+      operationId: clients_two_legged
+      tags: [Clients]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TwoLegged" }
+components:
+  schemas:
+    MutableAuthClient:
+      oneOf:
+        - $ref: "#/components/schemas/TwoLegged"
+        - $ref: "#/components/schemas/ThreeLegged"
+      discriminator:
+        propertyName: type
+        mapping:
+          TWO_LEGGED: "#/components/schemas/TwoLegged"
+          THREE_LEGGED: "#/components/schemas/ThreeLegged"
+    TwoLegged:
+      type: object
+      required: [name, type, consumer_key]
+      properties:
+        name: { type: string }
+        type: { type: string, enum: [TWO_LEGGED, THREE_LEGGED] }
+        consumer_key: { type: string }
+    ThreeLegged:
+      type: object
+      required: [name, type]
+      properties:
+        name: { type: string }
+        type: { type: string, enum: [TWO_LEGGED, THREE_LEGGED] }
+"##,
+    );
+    // The docstring writer puts the tag back in its schema position …
+    let client = &files["src/acme/clients/client.py"];
+    assert!(
+        client.contains(
+            "name=\"name\",\n                type=TwoLeggedType.TWO_LEGGED,\n                consumer_key=\"consumer_key\","
+        ),
+        "{client}"
+    );
+    // … while the Markdown writers append it after every other argument.
+    let reference = &files["reference.md"];
+    assert!(
+        reference
+            .contains("consumer_key=\"consumer_key\",\n        type=TwoLeggedType.TWO_LEGGED,"),
+        "{reference}"
+    );
+}
+
+#[test]
+fn a_required_multipart_file_part_is_passed_unconditionally() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Upload, version: 1.0.0 }
+paths:
+  /archives:
+    post:
+      operationId: archives_create
+      tags: [Archives]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [archive_file]
+              properties:
+                archive_file: { type: string, format: binary }
+      responses:
+        '204': { description: Created }
+"#,
+    );
+    let raw = &files["src/acme/archives/raw_client.py"];
+    assert!(
+        raw.contains("files={\n                \"archive_file\": archive_file,"),
+        "{raw}"
+    );
+    assert!(
+        !raw.contains("if archive_file is not None else {}"),
+        "{raw}"
+    );
 }
 
 #[test]

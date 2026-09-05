@@ -4727,18 +4727,21 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     || !ep.header_params.is_empty()
                     || !ep.path_params.is_empty()
                     || (body.content_type_header()
-                        // A body schema more than one operation posts, carried
-                        // by a `requestBody` that declares neither a `description`
-                        // nor `required: true`, drops the header: the Open
-                        // Integration Hub's `MutableSecret` and `MutableAuthClient`
-                        // are each the body of a create and an update, and each
-                        // `requestBody` states nothing about itself. Each of the
-                        // other ways to be shared keeps the header — Palo
-                        // Alto's bodies carry a description, exhaustive's carry
-                        // `required: true` or are sent whole, and Adyen's
-                        // `GrantInfo` is posted by one operation.
+                        // A body schema more than one operation posts, which
+                        // says nothing about itself anywhere — no `description` on
+                        // the `requestBody` and none on the schema, no `required:
+                        // true`, and not every field required — drops the header:
+                        // the Open Integration Hub's `MutableSecret` and
+                        // `MutableAuthClient` are each the body of a create and an
+                        // update. Every other way to be shared keeps it — Palo
+                        // Alto's `requestBody`s carry a description, the echo
+                        // `Message` of the same-`$ref` case carries one on the
+                        // schema, exhaustive's carry `required: true` or are sent
+                        // whole, and Adyen's `GrantInfo` is posted by one
+                        // operation.
                         && !(ep.body_schema_shared
                             && ep.body_description_missing
+                            && !ep.body_schema_documented
                             && !ep.body_declared_required
                             && !body.all_fields_required()
                             && !ep.body_schema_dropped)
