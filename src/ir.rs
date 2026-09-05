@@ -4690,6 +4690,10 @@ fn type_is_scalar<'a>(t: &'a TypeRef, types: &'a [TypeDecl], seen: &mut Vec<&'a 
     match t {
         TypeRef::Primitive(primitive) => *primitive != Prim::Any,
         TypeRef::Literal(_) => true,
+        // Nullability does not change how a value reaches the URL: oSPARC's
+        // `file_size` is `Optional[UploadFileRequestFileSize]` over a
+        // `Union[str, int]` and its golden writes the query value raw.
+        TypeRef::Optional(inner) => type_is_scalar(inner, types, seen),
         TypeRef::Union(variants) => variants
             .iter()
             .all(|variant| type_is_scalar(variant, types, seen)),

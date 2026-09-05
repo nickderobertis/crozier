@@ -7698,7 +7698,6 @@ fn build_example_inner(
                         if reference_fields.is_some()
                             || ep.body_schema_is_beta && !ep.body_schema_example_wrapped
                             || f.media_example
-                                && (!f.schema_body_example || !ctx.example_is_object(&f.type_ref))
                             || example.starts_with('{') && ctx.resolves_to_any(&f.type_ref)
                             || ctx.example_is_scalar(&f.type_ref)
                             || ctx.example_is_composite(&f.type_ref)
