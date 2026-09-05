@@ -1,0 +1,3 @@
+
+
+ExtraCreditsUsdRangeInt = int

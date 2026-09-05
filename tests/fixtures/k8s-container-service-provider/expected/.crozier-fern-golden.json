@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "k8s-container-service-provider",
+  "corpus_spec_ref": "2fb9a6decfdb290e819a1571ecb11ca4966ec19a",
+  "corpus_spec_url": "https://raw.githubusercontent.com/dcm-project/k8s-container-service-provider/2fb9a6decfdb290e819a1571ecb11ca4966ec19a/api/v1alpha1/openapi.yaml"
+}

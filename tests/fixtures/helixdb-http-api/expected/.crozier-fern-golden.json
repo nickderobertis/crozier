@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "helixdb-http-api",
+  "corpus_spec_ref": "f19b488b3d48ec1da90f3dfcbac40f1c43d1e596",
+  "corpus_spec_url": "https://raw.githubusercontent.com/HelixDB/helix-db/f19b488b3d48ec1da90f3dfcbac40f1c43d1e596/docs/openapi.json"
+}

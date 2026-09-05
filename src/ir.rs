@@ -269,17 +269,25 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     let mut headers: Vec<GlobalHeader> = seen
         .into_iter()
         .filter(|(wire_name, (count, required))| {
+            // Fern promotes a header carried by *every* operation with its own
+            // declared optionality, and one carried by at least three quarters
+            // of them as an unconditionally optional constructor field.
+            // Flowdapt's `x-api-version` rides 24 of its 26 operations and is
+            // promoted; `marimo`'s `Marimo-Session-Id` rides 55 of 88 and stays
+            // a per-method parameter.
             total > 0
-                && *count == total
+                && *count * 4 >= total * 3
                 && (!*required || total > 1)
                 && !is_transport_managed_header(wire_name)
                 && !is_auth_managed_header(doc, wire_name)
                 && !api_key_wire_names.contains(wire_name.as_str())
         })
-        .map(|(wire_name, (_, required))| GlobalHeader {
+        .map(|(wire_name, (count, required))| GlobalHeader {
             py_name: naming::field_name(header_param_stem(&wire_name)),
             wire_name,
-            required,
+            // A header short of every operation is promoted as optional
+            // whatever the operations that do declare it say.
+            required: required && count == total,
         })
         .collect();
     // Fern also treats additional header apiKey security schemes as SDK-wide
@@ -739,6 +747,17 @@ pub struct Endpoint {
     /// Whether the body came through `components.requestBodies`, which Fern treats
     /// like a reusable declaration for content-type emission.
     pub body_component_ref: bool,
+    /// Whether Fern collapses the whole request to its bare body type, which
+    /// carries no content type at all. Its `openapi-ir-to-fern` request
+    /// converter writes the body type name alone — rather than a request object
+    /// with a `content-type` — when the lowered body is a plain type reference
+    /// and the endpoint declares no path, query or header parameter, no
+    /// request-body description, and the default JSON media type. An inline
+    /// composition lowers to a plain type reference only when it declares
+    /// neither `title` nor `description`: Flowdapt's `create_config` body
+    /// declares neither and its golden sends no `content-type`, where `letta`'s
+    /// `add_mcp_server` body carries `title: Request` and does.
+    pub body_collapses_to_type_reference: bool,
     /// A JSON-compatible request media type that must be emitted verbatim instead
     /// of `application/json` (for example `application/ndjson`).
     pub body_content_type_override: Option<String>,
@@ -2062,6 +2081,7 @@ fn build_endpoint(
             // be converted in a request body (helios sends `block` raw as a query
             // parameter and converted as a body field).
             let convert = hoister.needs_convert(&type_ref) && !hoister.is_scalar(&type_ref);
+            let required = p.required == Some(true);
             // The parameter's declared example, where Fern keeps it at all.
             let without_declared_example = parameter_example_value(doc, p).is_none();
             // A synthesized sample needs a *body* on the success response, not a
@@ -2070,7 +2090,7 @@ fn build_endpoint(
             // TrueForge's `download_sandbox_file` returns
             // `application/octet-stream` and still takes the sample.
             let omit_synthesized_example = without_declared_example
-                && (p.required != Some(true)
+                && (!required
                     || success_response_entry(op)
                         .is_none_or(|response| response.content.is_empty()));
             // Fern leaves an optional enum-typed query parameter out of a worked
@@ -2136,7 +2156,7 @@ fn build_endpoint(
                 wire_name: p.name.clone(),
                 py_name: naming::field_name(&p.name),
                 type_ref,
-                required: p.required == Some(true),
+                required,
                 convert,
                 comma_separated,
                 allow_multiple,
@@ -2366,7 +2386,21 @@ fn build_endpoint(
                 .iter()
                 .filter(|member| member.ty.as_ref().and_then(TypeField::primary) != Some("null"))
                 .collect();
-            (non_null.len() != 1 || string_enum_values(non_null[0]).is_none())
+            // A composition Fern declares in the package root rather than in the
+            // tag's own `types/`. Two shapes stay tag-local: a sole non-null
+            // string enum, and a *titled* composition with no `null`
+            // alternative — a `title` beside a null member belongs to the
+            // nullable wrapper Fern lifts the composition into, not to the
+            // composition, so oSPARC's titled `amount` and `product_name` are
+            // `projects/types/` and `products/types/` while its titled but
+            // nullable `file_size` and letta's untitled `offset` are the root's.
+            let titled_and_total = parameter
+                .schema
+                .as_ref()
+                .is_some_and(|schema| schema.title.is_some())
+                && non_null.len() == members.len();
+            ((non_null.len() != 1 || string_enum_values(non_null[0]).is_none())
+                && !titled_and_total)
                 .then(|| format!("{request_ctx}{}", naming::class_name(&parameter.name)))
         })
         .collect();
@@ -2421,6 +2455,27 @@ fn build_endpoint(
     // shape but an un-hoisted inline object). Error responses never gate
     // emittability (issue #43); an operation with no responses is still emitted.
     let emittable = body_ok && !has_unsupported_params && response_supported(op);
+
+    let body_collapses_to_type_reference = path_params.is_empty()
+        && query_params.is_empty()
+        && header_params.is_empty()
+        && op
+            .request_body
+            .as_ref()
+            .is_some_and(|rb| rb.description.is_none())
+        && op
+            .request_body
+            .as_ref()
+            .and_then(selected_json_request_media)
+            .is_some_and(|(media_type, media)| {
+                media_type == "application/json"
+                    && media.schema.as_ref().is_some_and(|schema| {
+                        schema.reference.is_none()
+                            && schema.title.is_none()
+                            && schema.description.is_none()
+                            && (schema.one_of.is_some() || schema.any_of.is_some())
+                    })
+            });
 
     Endpoint {
         openapi_31: doc.openapi.starts_with("3.1"),
@@ -2483,6 +2538,7 @@ fn build_endpoint(
             .as_ref()
             .is_some_and(|body| body.description.is_none()),
         body_component_ref: op.request_body.as_ref().is_some_and(|rb| rb.component_ref),
+        body_collapses_to_type_reference,
         body_content_type_override: op
             .request_body
             .as_ref()
@@ -2977,8 +3033,15 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
     op.responses.iter().any(|(code, resp)| {
         code.starts_with('2')
             && resp.content.iter().any(|(media_type, media)| {
-                media_type.starts_with("image/")
-                    || media_type == "application/octet-stream"
+                // A binary *media type* loses to an `application/json` declared
+                // beside it — oSPARC's `create_captcha` is `image/png: {}` next
+                // to an `application/json` and its golden returns `typing.Any`,
+                // while flowdapt's `get_plugin_file` is a schemaless
+                // `application/octet-stream` alone and streams. A binary
+                // *schema* wins either way: apicurio's `application/zip` names
+                // one beside an `application/json` and streams.
+                (media_type.starts_with("image/") || media_type == "application/octet-stream")
+                    && !resp.content.contains_key("application/json")
                     || media.schema.as_ref().is_some_and(|schema| {
                         let schema = schema
                             .reference
@@ -4243,35 +4306,82 @@ impl InlineHoister<'_> {
                         member.ty.as_ref().and_then(TypeField::primary) != Some("null")
                     })
                     .collect();
+                // The `type: null` alternative is Fern's nullability rather than a
+                // member: it leaves the union and makes the parameter optional.
+                // oSPARC's `file_size` is `anyOf: [string, integer, null]` and its
+                // golden types it `Optional[UploadFileRequestFileSize]` over a
+                // two-member alias, while its `folder_id` path parameter is
+                // `anyOf: [integer, null]` and is typed `Optional[int]`.
+                let nullable = non_null.len() < members.len();
+                let wrap = |type_ref| {
+                    if nullable {
+                        optional_type_ref(type_ref)
+                    } else {
+                        type_ref
+                    }
+                };
                 if non_null.len() == 1 {
                     if let Some(values) = string_enum_values(non_null[0]) {
                         self.out
                             .push(TypeDecl::Enum(build_enum(non_null[0], &name, values, None)));
-                        return TypeRef::Named(name);
+                        return wrap(TypeRef::Named(name));
                     }
                     if let Some(reference) = non_null[0].reference.as_deref() {
-                        return TypeRef::Named(ref_to_class(reference));
+                        return wrap(TypeRef::Named(ref_to_class(reference)));
                     }
                     if is_unknown(non_null[0]) {
                         return TypeRef::Primitive(Prim::Any);
                     }
                     if is_map(non_null[0]) {
-                        return nullable_map_value_type_ref(non_null[0]);
+                        return wrap(nullable_map_value_type_ref(non_null[0]));
                     }
-                    return self.schemas.map_or_else(
+                    return wrap(self.schemas.map_or_else(
                         || base_type_ref(non_null[0]),
                         |schemas| full_type_ref_resolved(non_null[0], schemas),
-                    );
+                    ));
                 }
-                let variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
-                let variants = dedupe_union_members(variants);
+                // An inline enum alternative becomes a named enum of its own,
+                // ordinal-suffixed the way any other hoisted variant is: oSPARC's
+                // `product_name` is `Union[str, GetProductRequestProductNameOne]`
+                // over a bare `string` beside a `const: current` member.
+                let siblings: Vec<Schema> =
+                    non_null.iter().map(|member| (*member).clone()).collect();
+                let mut variants: Vec<TypeRef> = Vec::with_capacity(non_null.len());
+                for (index, member) in non_null.iter().enumerate() {
+                    let hoisted = member
+                        .reference
+                        .is_none()
+                        .then(|| string_enum_values(member))
+                        .flatten();
+                    if let Some(values) = hoisted {
+                        let variant_name = variant_class_name(&name, index, member, &siblings);
+                        self.out.push(TypeDecl::Enum(build_enum(
+                            member,
+                            &variant_name,
+                            values,
+                            clean_doc(member.description.as_deref()),
+                        )));
+                        variants.push(TypeRef::Named(variant_name));
+                    } else {
+                        variants.push(base_type_ref(member));
+                    }
+                }
+                let mut variants = dedupe_union_members(variants);
+                // A composition whose members all lower to the same type is no
+                // union at all, and Fern hoists nothing for it: Flowdapt's
+                // `identifier` path parameter is
+                // `anyOf: [{type: string}, {type: string, format: uuid}]` and
+                // its golden types the argument `str`.
+                if variants.len() == 1 {
+                    return wrap(variants.pop().expect("length checked above"));
+                }
                 self.out.push(TypeDecl::Alias(AliasType {
                     name: name.clone(),
                     module: naming::module_name(&name),
                     target: TypeRef::Union(variants),
                     docstring: clean_doc(schema.description.as_deref()),
                 }));
-                return TypeRef::Named(name);
+                return wrap(TypeRef::Named(name));
             }
             if let Some(array) = self.hoist_array_item_enum(
                 &format!("{request_ctx}{}", naming::class_name(param)),
@@ -4446,6 +4556,12 @@ fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
     Some(fields)
 }
 
+/// The order reference documentation lists a request body's fields in: the ones
+/// the generated signature makes mandatory first, then the rest, each in
+/// declaration order. That is the *emitted* optionality rather than the Schema
+/// Object's `required` list — oSPARC's `phone` is in `required` and nullable, so
+/// it is `Optional[..] = OMIT` in the signature and its golden's `reference.md`
+/// lists it after `institution` rather than among the mandatory fields.
 fn append_reference_field_names(
     obj: &ObjectType,
     types: &[TypeDecl],
@@ -4466,8 +4582,8 @@ fn append_reference_field_names(
     out.extend(
         obj.fields
             .iter()
-            .filter(|field| field.spec_required)
-            .chain(obj.fields.iter().filter(|field| !field.spec_required))
+            .filter(|field| !field.optional)
+            .chain(obj.fields.iter().filter(|field| field.optional))
             .map(|field| field.wire_name.clone()),
     );
 }
@@ -4484,8 +4600,8 @@ fn append_reference_base_field_names(
     out.extend(
         obj.fields
             .iter()
-            .filter(|field| field.spec_required)
-            .chain(obj.fields.iter().filter(|field| !field.spec_required))
+            .filter(|field| !field.optional)
+            .chain(obj.fields.iter().filter(|field| field.optional))
             .map(|field| field.wire_name.clone()),
     );
     for base in &obj.bases {
@@ -4544,16 +4660,19 @@ fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
         TypeRef::Named(name) => {
             types.iter().any(|d| match d {
                 TypeDecl::Object(o) => o.name == *name,
-                // An alias converts only when its target reaches an object model.
-                // Primitive-only unions (for example `Union[str, float]` query
-                // parameters) serialize directly and need no annotation converter.
-                TypeDecl::Alias(a) => a.name == *name && match &a.target {
-                    TypeRef::Union(variants) => !variants.iter().all(|variant| {
-                        matches!(variant, TypeRef::Primitive(primitive) if *primitive != Prim::Any)
-                            || matches!(variant, TypeRef::Literal(_))
-                    }),
-                    target => type_needs_convert(target, types),
-                },
+                // A union alias always converts: its annotation is what Fern
+                // serializes the selected member against, so oSPARC's
+                // `costPerUnit`, typed by a `Union[float, str]` alias, is written
+                // through the converter. A query parameter carrying such an alias
+                // is the exception and applies its own scalar guard, because a
+                // query value reaches the wire as text either way.
+                TypeDecl::Alias(a) => {
+                    a.name == *name
+                        && match &a.target {
+                            TypeRef::Union(_) => true,
+                            target => type_needs_convert(target, types),
+                        }
+                }
                 // A discriminated union's wrapper models carry field aliases too.
                 TypeDecl::DiscriminatedUnion(u) => u.name == *name,
                 // An enum is a plain `str` value — no field aliases to respect.
@@ -4580,6 +4699,10 @@ fn type_is_scalar<'a>(t: &'a TypeRef, types: &'a [TypeDecl], seen: &mut Vec<&'a 
     match t {
         TypeRef::Primitive(primitive) => *primitive != Prim::Any,
         TypeRef::Literal(_) => true,
+        // Nullability does not change how a value reaches the URL: oSPARC's
+        // `file_size` is `Optional[UploadFileRequestFileSize]` over a
+        // `Union[str, int]` and its golden writes the query value raw.
+        TypeRef::Optional(inner) => type_is_scalar(inner, types, seen),
         TypeRef::Union(variants) => variants
             .iter()
             .all(|variant| type_is_scalar(variant, types, seen)),
@@ -6024,6 +6147,42 @@ impl Builder<'_> {
                         docstring,
                     );
                     return;
+                }
+                // A map whose value is an array of an inline union hoists that
+                // union under the value slot's own name, one step further out
+                // than the `{name}Value` case below: Flowdapt's
+                // `V1Alpha1Metrics` is
+                // `Dict[str, List[V1Alpha1MetricsValueItem]]`.
+                if value.ty.as_ref().and_then(TypeField::primary) == Some("array") {
+                    if let Some(items) = value.items.as_deref() {
+                        if let Some(variants) = items.one_of.as_ref().or(items.any_of.as_ref()) {
+                            let item_name = format!("{name}ValueItem");
+                            let members: Vec<TypeRef> = variants
+                                .iter()
+                                .enumerate()
+                                .map(|(index, variant)| {
+                                    self.variant_ref(&item_name, index, variant, variants)
+                                })
+                                .collect();
+                            let members = dedupe_union_members(members);
+                            self.push_alias(
+                                &item_name,
+                                naming::module_name(&item_name),
+                                TypeRef::Union(members),
+                                clean_doc(items.description.as_deref()),
+                            );
+                            self.push_alias(
+                                name,
+                                module,
+                                TypeRef::Dict(
+                                    Box::new(TypeRef::Primitive(Prim::Str)),
+                                    Box::new(sequence_of(value, TypeRef::Named(item_name))),
+                                ),
+                                docstring,
+                            );
+                            return;
+                        }
+                    }
                 }
                 if let Some(variants) = value.one_of.as_ref().or(value.any_of.as_ref()) {
                     let value_name = format!("{name}Value");
@@ -7753,9 +7912,17 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         return match &schema.additional_properties {
             Some(AdditionalProperties::Schema(value)) => {
                 let mut val = base_type_ref(value);
-                // Fern makes a nullable map's value type optional too. An
-                // ordinary unknown value itself is `Any` under Fern 5.20.
-                if schema.nullable == Some(true) {
+                // Fern makes a nullable map's value type optional too, and a
+                // `$ref` to a nullable component carries that nullability into
+                // the value slot exactly as it does into an array item
+                // (`openapi::normalize_nullable_schema_refs` marks both) —
+                // HelixDB's `QueryParameters` is
+                // `Dict[str, Optional[QueryParameterValue]]` because its
+                // `QueryParameterValue` opens with a `type: null` alternative.
+                // An ordinary unknown value itself is `Any` under Fern 5.20.
+                if schema.nullable == Some(true)
+                    || (value.reference.is_some() && is_optional(value))
+                {
                     val = TypeRef::Optional(Box::new(val));
                 }
                 TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(val))
@@ -7879,6 +8046,16 @@ fn described_all_of_ref(schema: &Schema) -> Option<(&str, Option<&str>)> {
 }
 
 fn property_description(schema: &Schema) -> Option<&str> {
+    // Fern's *bare* unknown type carries no docs: its schema converter passes the
+    // description to every other kind and to `unknown` passes nothing, so
+    // oSPARC's `ProjectInputGet.value` — a property declaring only a `title` and
+    // a `description` — is a bare `typing.Any` with no docstring beside it. A
+    // nullable one keeps its description, because the optional wrapper Fern puts
+    // around it carries the docs: Twilio's `cert_in_validation` is
+    // `{description, nullable: true}` and its golden documents it.
+    if is_unknown(schema) && !is_optional(schema) {
+        return None;
+    }
     schema
         .description
         .as_deref()
@@ -10708,15 +10885,17 @@ mod tests {
         )));
         assert_eq!(
             hoister.hoist_param_enum("ListAgentsRequest", "name", &nullable_string),
-            TypeRef::Primitive(Prim::Str)
+            TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Str)))
         );
         assert_eq!(
             hoister.hoist_param_enum("ListAgentsRequest", "tags", &nullable_array),
-            TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str)))
+            TypeRef::Optional(Box::new(TypeRef::List(Box::new(TypeRef::Primitive(
+                Prim::Str
+            )))))
         );
         assert_eq!(
             hoister.hoist_param_enum("ListAgentsRequest", "last_stop_reason", &nullable_reference,),
-            TypeRef::Named("StopReasonType".to_string())
+            TypeRef::Optional(Box::new(TypeRef::Named("StopReasonType".to_string())))
         );
 
         let offset = schema(serde_json::json!({
@@ -10734,16 +10913,22 @@ mod tests {
         }));
         assert_eq!(
             hoister.hoist_param_enum("ListRunsRequest", "duration_operator", &operator),
-            TypeRef::Named("ListRunsRequestDurationOperator".to_string())
+            TypeRef::Optional(Box::new(TypeRef::Named(
+                "ListRunsRequestDurationOperator".to_string()
+            )))
         );
         assert!(hoister.out.iter().any(|decl| matches!(
             decl,
             TypeDecl::Alias(alias) if alias.name == "FeedsListFeedsRequestOffset"
         )));
-        assert!(!super::type_needs_convert(
+        // A union alias converts wherever its annotation is what Fern serializes
+        // against; a query parameter carrying one applies its own scalar guard,
+        // which is what leaves `offset` written raw onto the URL.
+        assert!(super::type_needs_convert(
             &TypeRef::Named("FeedsListFeedsRequestOffset".to_string()),
             &hoister.out
         ));
+        assert!(hoister.is_scalar(&TypeRef::Named("FeedsListFeedsRequestOffset".to_string())));
         let unknown_union = TypeDecl::Alias(AliasType {
             name: "UnknownUnion".to_string(),
             module: "unknown_union".to_string(),

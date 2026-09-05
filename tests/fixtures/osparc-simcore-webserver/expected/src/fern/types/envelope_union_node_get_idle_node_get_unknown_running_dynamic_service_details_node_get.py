@@ -1,0 +1,23 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .envelope_union_node_get_idle_node_get_unknown_running_dynamic_service_details_node_get_data import (
+    EnvelopeUnionNodeGetIdleNodeGetUnknownRunningDynamicServiceDetailsNodeGetData,
+)
+
+
+class EnvelopeUnionNodeGetIdleNodeGetUnknownRunningDynamicServiceDetailsNodeGet(UniversalBaseModel):
+    data: typing.Optional[EnvelopeUnionNodeGetIdleNodeGetUnknownRunningDynamicServiceDetailsNodeGetData] = None
+    error: typing.Optional[typing.Any] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

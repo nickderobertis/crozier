@@ -3796,7 +3796,14 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
     // annotation (`Optional[..]` unless required, `= None` when optional) and its
     // description.
     let optional_arg = |base: String, required: bool, description: Option<String>, name: String| {
-        if required {
+        // A required parameter whose *type* is optional still defaults to `None`:
+        // Fern's `optional<..>` decides the default, and the Parameter Object's
+        // `required` only decides whether a worked call passes the argument.
+        // oSPARC's `file_size` is `required: true` over an `anyOf` carrying a
+        // `type: null` alternative, and its golden writes
+        // `file_size: typing.Optional[UploadFileRequestFileSize] = None` and
+        // still passes `file_size="file_size"` in the example.
+        if required && !base.starts_with("typing.Optional[") {
             DocParam {
                 name,
                 annotation: base,
@@ -3825,7 +3832,18 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
         .map(|qp| {
             // An array query parameter allows multiple values: Fern types it
             // `Optional[Union[T, Sequence[T]]]` and always defaults it to `None`.
-            if let TypeRef::List(inner) = &qp.type_ref {
+            // A *nullable* array (`anyOf: [array, null]`, letta's `tags`) renders
+            // the same way — the null alternative only supplies the `Optional`
+            // this arm already writes.
+            let array = match &qp.type_ref {
+                TypeRef::List(inner) => Some((inner, qp.required)),
+                TypeRef::Optional(inner) => match inner.as_ref() {
+                    TypeRef::List(item) => Some((item, false)),
+                    _ => None,
+                },
+                _ => None,
+            };
+            if let Some((inner, required)) = array {
                 if qp.allow_multiple {
                     let item = raw_type_str(inner, imports);
                     return DocParam {
@@ -3839,7 +3857,7 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
                 }
                 return optional_arg(
                     format!("typing.Sequence[{}]", raw_type_str(inner, imports)),
-                    qp.required,
+                    required,
                     qp.docstring.clone(),
                     qp.py_name.clone(),
                 );
@@ -4632,6 +4650,19 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     // raw bytes body, else `application/json` when the body intrinsically needs it
     // or is accompanied by path/header parameters. Header parameters follow,
     // rendered as `str(x) if x is not None else None`.
+    // A *resource envelope*: a documented body schema that is mostly `readOnly`
+    // and declares exactly one required member — the k8s Container Service
+    // Provider's `Container`, six of whose seven properties are `readOnly` around
+    // the single required `spec`. Fern keeps the explicit `content-type` for that
+    // shape, so it escapes both drops an ordinary echo body takes: the
+    // response-heavy one below, which applies only to an *undocumented* schema
+    // (apideck's `add`, netbox's `groups_create`), and the request/response
+    // same-`$ref` one, which drops the header for Airflow's `post_pool` (no
+    // required member) and the Petstore's `place_order` (not response-heavy).
+    let resource_envelope = ep.body_schema_is_response_heavy
+        && ep.body_schema_documented
+        && matches!(&ep.request_body, Some(RequestBody::Inline(fields))
+            if fields.iter().filter(|field| field.spec_required).count() == 1);
     let content_type: Option<String> = match &ep.request_body {
         Some(_) if ep.body_content_type_override.is_some() => ep.body_content_type_override.clone(),
         Some(RequestBody::Bytes { content_type }) => Some(content_type.clone()),
@@ -4660,8 +4691,12 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         // argument (its inline `oneOf`, hoisted to `CreateGlobalAuthModuleRequest`),
         // not to one whose inline schema is flattened field by field
         // (blackadi-oauth2's `backchannel_logout/issue`), which keeps the header.
+        // A documented, response-heavy body with one required member — a resource
+        // envelope — keeps the header through both of those drops; see
+        // `resource_envelope` above.
         Some(body)
             if !body.is_wildcard_media()
+                && !ep.body_collapses_to_type_reference
                 && (ep.body_media_has_example && ep.body_schema_dropped && ep.body_schema_ref
                     || ep.reference_body_example.is_some()
                         && !ep.body_schema_is_success_response
@@ -4675,7 +4710,8 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         && !ep.body_codegen_named
                         && (!ep.body_component_ref || ep.body_schema_dropped)
                         && !(matches!(body, RequestBody::Inline(_))
-                            && (ep.body_all_of || ep.body_response_same_ref))
+                            && (ep.body_all_of || ep.body_response_same_ref)
+                            && !resource_envelope)
                         && !matches!(body, RequestBody::Inline(fields)
                             if ep.body_schema_ref
                                 && (!ep.body_schema_dropped
@@ -4685,6 +4721,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                     || ep.body_schema_is_response_heavy
                                         && ep.body_schema_is_open
                                         && ep.body_description_missing
+                                        && !ep.body_schema_documented
                                         && fields.iter().filter(|field| field.spec_required).count() == 1))
                         && (!(ep.body_description_empty
                             || ep.body_schema_has_example
@@ -6845,6 +6882,43 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    /// Whether the type is, after alias resolution, a map whose value slot is
+    /// *directly* free-form (`Dict[str, Any]`) — the shape [`Self::value`]
+    /// renders as Fern's `{"key": "value"}` placeholder.
+    fn resolves_to_unknown_map(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Optional(inner) => self.resolves_to_unknown_map(inner),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.resolves_to_unknown_map(&alias.target),
+                _ => false,
+            },
+            other => is_unknown_map(other),
+        }
+    }
+
+    /// Whether Fern can synthesize no example for this type at all. Its
+    /// `unknown` kind supplies none, and an object one of whose *required*
+    /// fields is a bare unknown inherits that: oSPARC's
+    /// `ProjectInputUpdate.value` declares only a title and a description, and
+    /// the golden's worked call for the array body that holds it is
+    /// `request=[]` — where otoroshi's `PatchItem`, whose `value` is optional,
+    /// is exampled field by field.
+    fn example_has_no_value(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Optional(inner) => self.example_has_no_value(inner),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Object(object)) => object.fields.iter().any(|field| {
+                    field.spec_required
+                        && !field.optional
+                        && matches!(field.type_ref, TypeRef::Primitive(Prim::Any))
+                }),
+                Some(TypeDecl::Alias(alias)) => self.example_has_no_value(&alias.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
     fn resolves_to_string(&self, t: &TypeRef) -> bool {
         match t {
             TypeRef::Primitive(Prim::Str) => true,
@@ -6915,7 +6989,10 @@ impl<'a> ExampleCtx<'a> {
                 // empty (`children=[]`), which also terminates the walk (issue #84).
                 // The element inherits the list's slot, so a `List[str]` field's
                 // example uses the field name (`all_field=["all_field"]`).
-                if self.resolves_to_building(inner) || self.resolves_to_any(inner) {
+                if self.resolves_to_building(inner)
+                    || self.resolves_to_any(inner)
+                    || self.example_has_no_value(inner)
+                {
                     if self.documentation {
                         Example::ReferenceList(vec![])
                     } else {
@@ -7115,6 +7192,16 @@ impl<'a> ExampleCtx<'a> {
     /// are — NDW's `AreaRequest_Municipality` opens with the `GM0344` its
     /// `MunicipalityAreaRequest.id` declares.
     fn field_example(&mut self, ty: &TypeRef, wire: &str, example: Option<&str>) -> Example {
+        // A field typed by a map to unknown (`Dict[str, Any]`) takes Fern's fixed
+        // `{"key": "value"}` placeholder whatever the schema declares: HelixDB's
+        // `OperationTree` is `type: object` + `additionalProperties: true` and
+        // carries two `examples`, and the golden's worked call for the `root`
+        // field that names it shows the placeholder. A value the *enclosing*
+        // object's own example spells out is a different question and reaches
+        // this map through `value_from_example`, which is why the suppression is
+        // here rather than there — `mosip-esignet`'s `Purpose.title` keeps the
+        // `{"@none": "Title"}` its request example gives it.
+        let example = example.filter(|_| !self.resolves_to_unknown_map(ty));
         let literal = match example {
             // A date/date-time field's declared example is used like any other:
             // EN 18222's `last_updated` is typed by the `Timestamp` alias and
@@ -7163,6 +7250,16 @@ impl<'a> ExampleCtx<'a> {
         }
         out
     }
+}
+
+/// A map whose value slot is *directly* free-form (`Dict[str, Any]`) — the shape
+/// [`ExampleBuilder::value`] renders as Fern's `{"key": "value"}` placeholder.
+fn is_unknown_map(t: &TypeRef) -> bool {
+    let TypeRef::Dict(_, value) = t else {
+        return false;
+    };
+    matches!(value.as_ref(), TypeRef::Primitive(Prim::Any))
+        || matches!(value.as_ref(), TypeRef::Optional(inner) if matches!(inner.as_ref(), TypeRef::Primitive(Prim::Any)))
 }
 
 fn example_from_json(value: serde_json::Value) -> Example {
@@ -7652,7 +7749,6 @@ fn build_example_inner(
                         if reference_fields.is_some()
                             || ep.body_schema_is_beta && !ep.body_schema_example_wrapped
                             || f.media_example
-                                && (!f.schema_body_example || !ctx.example_is_object(&f.type_ref))
                             || example.starts_with('{') && ctx.resolves_to_any(&f.type_ref)
                             || ctx.example_is_scalar(&f.type_ref)
                             || ctx.example_is_composite(&f.type_ref)
@@ -8996,6 +9092,7 @@ mod tests {
             body_description_empty: false,
             body_description_missing: false,
             body_component_ref: false,
+            body_collapses_to_type_reference: false,
             body_content_type_override: None,
             basic_auth: false,
             body_schema_ref: false,

@@ -1,0 +1,3 @@
+
+
+ShortTruncatedStr = str

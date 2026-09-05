@@ -1901,6 +1901,10 @@ const CORPORA: &[&Corpus] = &[
     &APIVIDEO_ANDROID_UPLOADER,
     &TRUEFOUNDRY_TRUEFORGE,
     &VOLVIEW_BACKEND_CONTRACT,
+    &OSPARC_SIMCORE_WEBSERVER,
+    &HELIXDB_HTTP_API,
+    &FLOWDAPT,
+    &K8S_CONTAINER_SERVICE_PROVIDER,
 ];
 
 #[test]
@@ -3132,6 +3136,77 @@ const VOLVIEW_BACKEND_CONTRACT: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `osparc-simcore-webserver`: the web API the IT'IS Foundation's own oSPARC
+/// front end calls is the corpus's only source declaring the JSON Schema
+/// 2020-12 string-encoding pair — `contentMediaType` at 24 sites and
+/// `contentSchema` at 24 — and the only one whose `exclusiveMaximum` carries a
+/// *numeric* value (8 sites), the 3.1 spelling beside the 3.0 boolean the
+/// corpus already pins. It is also the corpus's second `propertyNames`
+/// declarer (30 sites, beside row 109's 7), so this row pins what Fern does
+/// with four annotation-only 2020-12 keywords over 214 paths and 480 component
+/// schemas.
+const OSPARC_SIMCORE_WEBSERVER: Corpus = Corpus {
+    api: "osparc-simcore-webserver",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `helixdb-http-api`: the HTTP API HelixDB's own database serves is the
+/// corpus's only source declaring `dependentRequired` —
+/// `components.schemas.ReadQueryRequest` and
+/// `components.schemas.WriteQueryRequest` each carry one — so this row pins
+/// what Fern does with the 2020-12 conditional-requirement keyword, over three
+/// paths, 17 component schemas and a `bearerAuth` scheme.
+const HELIXDB_HTTP_API: Corpus = Corpus {
+    api: "helixdb-http-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `flowdapt`: the API the Flowdapt server publishes for itself is the corpus's
+/// only source declaring `$defs`, the 2020-12 subschema-bundle keyword — seven
+/// of them inside `components.schemas` — and it declares them inside an
+/// `openapi: 3.0.2` document, so this row pins what Fern does with a 2020-12
+/// definitions keyword written where the 3.0 dialect does not define it.
+const FLOWDAPT: Corpus = Corpus {
+    api: "flowdapt",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `k8s-container-service-provider`: the API the DCM project's own Kubernetes
+/// container service provider serves is the corpus's only source declaring
+/// `format: json-pointer` — `components.schemas.Error.pointer` and
+/// `components.schemas.ErrorDetail.pointer` each annotate a string field with
+/// the RFC 6901 format, on the RFC 7807 problem detail the service returns — so
+/// this row pins what Fern does with a registered JSON Schema string format it
+/// has no narrower Python type for, over three paths and 18 component schemas.
+const K8S_CONTAINER_SERVICE_PROVIDER: Corpus = Corpus {
+    api: "k8s-container-service-provider",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3421,6 +3496,26 @@ fn truefoundry_trueforge_matches_fern_output() {
 #[test]
 fn volview_backend_contract_matches_fern_output() {
     assert_link_ok_corpus_matches(&VOLVIEW_BACKEND_CONTRACT);
+}
+
+#[test]
+fn osparc_simcore_webserver_matches_fern_output() {
+    assert_link_ok_corpus_matches(&OSPARC_SIMCORE_WEBSERVER);
+}
+
+#[test]
+fn helixdb_http_api_matches_fern_output() {
+    assert_link_ok_corpus_matches(&HELIXDB_HTTP_API);
+}
+
+#[test]
+fn flowdapt_matches_fern_output() {
+    assert_link_ok_corpus_matches(&FLOWDAPT);
+}
+
+#[test]
+fn k8s_container_service_provider_matches_fern_output() {
+    assert_link_ok_corpus_matches(&K8S_CONTAINER_SERVICE_PROVIDER);
 }
 
 #[test]

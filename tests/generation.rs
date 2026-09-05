@@ -3973,9 +3973,13 @@ components:
 "##,
     );
     let client = &files["src/acme/events/client.py"];
+    // The body schema's own `example` supplies every field, the object-typed one
+    // included: corpus row 110's `GroupUserUpdate` declares a schema-level
+    // example whose `accessRights` is an object, and its Fern 5.20.0 golden
+    // renders that object's declared values rather than synthesized placeholders.
     assert!(client.contains("location=Location("), "{client}");
-    assert!(client.contains("city=\"city\""), "{client}");
-    assert!(client.contains("coordinates=[1.1]"), "{client}");
+    assert!(client.contains("city=\"Paris\""), "{client}");
+    assert!(client.contains("coordinates=[48.8566, 2.3522]"), "{client}");
     assert!(
         client.contains("starts_at=datetime.datetime.fromisoformat("),
         "{client}"
@@ -6597,4 +6601,633 @@ components:
         .contains("MultiValuedZero = typing.Union[str, float, bool]"));
     assert!(files["src/acme/types/multi_valued.py"]
         .contains("MultiValued = typing.Union[MultiValuedZero, typing.List[str]]"));
+}
+
+/// A request body written as a one-member `oneOf` is that member, and a header
+/// carried by three quarters of the operations becomes a client-wrapper field.
+///
+/// Corpus row 112, `flowdapt`, declares both: its `update_config` body is
+/// `{"oneOf": [{"$ref": …}]}` and its Fern 5.20.0 golden spreads the referenced
+/// component's properties as method arguments with no union alias beside them,
+/// and its `x-api-version` header rides 24 of its 26 operations and is
+/// promoted as an optional constructor argument.
+#[test]
+fn a_sole_composition_member_body_inlines_and_a_prevalent_header_promotes() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Prevalent, version: 1.0.0 }
+paths:
+  /configs:
+    put:
+      operationId: configs_update
+      tags: [Configs]
+      parameters:
+        - { name: x-api-version, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - { $ref: "#/components/schemas/ConfigUpdate" }
+      responses: { '204': { description: OK } }
+  /configs/status:
+    get:
+      operationId: configs_status
+      tags: [Configs]
+      parameters:
+        - { name: x-api-version, in: header, required: false, schema: { type: string } }
+      responses: { '204': { description: OK } }
+  /configs/health:
+    get:
+      operationId: configs_health
+      tags: [Configs]
+      parameters:
+        - { name: x-api-version, in: header, required: false, schema: { type: string } }
+      responses: { '204': { description: OK } }
+  /ping:
+    get:
+      operationId: configs_ping
+      tags: [Configs]
+      responses: { '204': { description: OK } }
+components:
+  schemas:
+    ConfigUpdate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        note: { type: string }
+"##,
+    );
+    let client = &files["src/acme/configs/client.py"];
+    assert!(client.contains("name: str,"), "{client}");
+    assert!(!client.contains("ConfigUpdate"), "{client}");
+    assert!(
+        !files.contains_key("src/acme/configs/types/configs_update_request_body.py"),
+        "a one-member composition body coins no union alias"
+    );
+    let wrapper = &files["src/acme/core/client_wrapper.py"];
+    assert!(
+        wrapper.contains("api_version: typing.Optional[str] = None"),
+        "{wrapper}"
+    );
+    assert!(wrapper.contains("\"x-api-version\""), "{wrapper}");
+    assert!(
+        !client.contains("api_version: typing.Optional[str] = None,\n"),
+        "a promoted header is no longer a per-method argument: {client}"
+    );
+}
+
+/// A one-member composition that carries a `discriminator` beside it is not a
+/// bare alternative, so it keeps its union shape and its `request` argument.
+///
+/// The collapse reads a wrapper whose *whole* content is the composition;
+/// dropping a sibling keyword would lose what that keyword says.
+#[test]
+fn a_sole_composition_member_beside_another_keyword_is_left_alone() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Guarded, version: 1.0.0 }
+paths:
+  /shapes:
+    post:
+      operationId: shapes_create
+      tags: [Shapes]
+      responses: { '204': { description: OK } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              discriminator:
+                propertyName: kind
+                mapping:
+                  circle: "#/components/schemas/Circle"
+              oneOf:
+                - { $ref: "#/components/schemas/Circle" }
+components:
+  schemas:
+    Circle:
+      type: object
+      required: [kind, radius]
+      properties:
+        kind: { type: string, const: circle }
+        radius: { type: number }
+"##,
+    );
+    let client = &files["src/acme/shapes/client.py"];
+    assert!(client.contains("request:"), "{client}");
+    assert!(!client.contains("radius: float,"), "{client}");
+}
+
+/// A two-member composition body with no other parameter collapses to its bare
+/// type, which carries no content type at all.
+///
+/// Corpus row 112's `create_config` is exactly that shape and its golden sends
+/// no `content-type` header, where the same body beside a path parameter does.
+#[test]
+fn a_bare_composition_body_argument_sends_no_content_type() {
+    let spec = r##"openapi: 3.1.0
+info: { title: Bare, version: 1.0.0 }
+paths:
+  /configs:
+    post:
+      operationId: configs_create
+      tags: [Configs]
+      responses: { '204': { description: OK } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - { $ref: "#/components/schemas/Alpha" }
+                - { $ref: "#/components/schemas/Beta" }
+  /configs/{identifier}:
+    post:
+      operationId: configs_replace
+      tags: [Configs]
+      parameters:
+        - { name: identifier, in: path, required: true, schema: { type: string } }
+      responses: { '204': { description: OK } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - { $ref: "#/components/schemas/Alpha" }
+                - { $ref: "#/components/schemas/Beta" }
+components:
+  schemas:
+    Alpha: { type: object, required: [a], properties: { a: { type: string } } }
+    Beta: { type: object, required: [b], properties: { b: { type: string } } }
+"##;
+    let files = render(spec);
+    let raw = &files["src/acme/configs/raw_client.py"];
+    let create = raw.split("def create(").nth(1).expect("create method");
+    let create = create.split("def ").next().expect("method body");
+    assert!(!create.contains("content-type"), "{create}");
+    let replace = raw.split("def replace(").nth(1).expect("replace method");
+    let replace = replace.split("def ").next().expect("method body");
+    assert!(
+        replace.contains("\"content-type\": \"application/json\""),
+        "{replace}"
+    );
+}
+
+/// A map whose value is an array of an inline union hoists the union under the
+/// value slot's own name, and a `$ref` to a nullable component in a map value
+/// slot is optional at that use site.
+///
+/// Corpus row 112 declares the first (`V1Alpha1Metrics`) and corpus row 111 the
+/// second (`QueryParameters`), and both goldens byte-match.
+#[test]
+fn a_map_value_hoists_its_array_item_union_and_carries_ref_nullability() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Maps, version: 1.0.0 }
+paths:
+  /metrics:
+    get:
+      operationId: metrics_read
+      tags: [Metrics]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Metrics" }
+components:
+  schemas:
+    Counter: { type: object, required: [count], properties: { count: { type: integer } } }
+    Bucket: { type: object, required: [bounds], properties: { bounds: { type: string } } }
+    Metrics:
+      type: object
+      additionalProperties:
+        type: array
+        items:
+          anyOf:
+            - { $ref: "#/components/schemas/Counter" }
+            - { $ref: "#/components/schemas/Bucket" }
+    Nullable:
+      anyOf:
+        - { type: "null" }
+        - { type: string }
+    Holder:
+      type: object
+      additionalProperties: { $ref: "#/components/schemas/Nullable" }
+"##,
+    );
+    let metrics = &files["src/acme/types/metrics.py"];
+    assert!(
+        metrics.contains("Metrics = typing.Dict[str, typing.List[MetricsValueItem]]"),
+        "{metrics}"
+    );
+    let item = &files["src/acme/types/metrics_value_item.py"];
+    assert!(
+        item.contains("MetricsValueItem = typing.Union[Counter, Bucket]"),
+        "{item}"
+    );
+    let holder = &files["src/acme/types/holder.py"];
+    assert!(
+        holder.contains("Holder = typing.Dict[str, typing.Optional[Nullable]]"),
+        "{holder}"
+    );
+}
+
+/// A parameter composition's `type: null` alternative is nullability, its
+/// inline enum alternative is an ordinal-suffixed enum of its own, and a
+/// composition whose members all lower to one type hoists nothing.
+///
+/// Corpus row 110, `osparc-simcore-webserver`, declares all three — `file_size`,
+/// `product_name` and `folder_id` — and corpus row 112 the fourth,
+/// `identifier`.
+#[test]
+fn a_parameter_composition_reads_null_as_nullability_and_hoists_its_enum() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Params, version: 1.0.0 }
+paths:
+  /files/{folder_id}:
+    put:
+      operationId: files_upload
+      tags: [Files]
+      parameters:
+        - name: folder_id
+          in: path
+          required: true
+          schema:
+            anyOf:
+              - { type: integer }
+              - { type: "null" }
+        - name: file_size
+          in: query
+          required: true
+          schema:
+            anyOf:
+              - { type: string }
+              - { type: integer }
+              - { type: "null" }
+        - name: product_name
+          in: query
+          required: false
+          schema:
+            title: Product Name
+            anyOf:
+              - { type: string }
+              - { type: string, const: current }
+        - name: identifier
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - { type: string }
+              - { type: string, format: uuid }
+        - name: tags
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - { type: array, items: { type: string } }
+              - { type: "null" }
+      responses: { '204': { description: OK } }
+"##,
+    );
+    let raw = &files["src/acme/files/raw_client.py"];
+    assert!(raw.contains("folder_id: typing.Optional[int]"), "{raw}");
+    assert!(
+        raw.contains("file_size: typing.Optional[FilesUploadRequestFileSize] = None"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("identifier: typing.Optional[str] = None"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("tags: typing.Optional[typing.Sequence[str]] = None"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("\"file_size\": file_size,"),
+        "a scalar union reaches the URL raw: {raw}"
+    );
+    let size = &files["src/acme/types/files_upload_request_file_size.py"];
+    assert!(
+        size.contains("FilesUploadRequestFileSize = typing.Union[str, int]"),
+        "{size}"
+    );
+    let product = &files["src/acme/files/types/files_upload_request_product_name.py"];
+    assert!(
+        product.contains(
+            "FilesUploadRequestProductName = typing.Union[str, FilesUploadRequestProductNameOne]"
+        ),
+        "{product}"
+    );
+    assert!(
+        files.contains_key("src/acme/files/types/files_upload_request_product_name_one.py"),
+        "the enum alternative is hoisted under its ordinal name"
+    );
+    assert!(
+        !files.contains_key("src/acme/types/files_upload_request_identifier.py"),
+        "a composition whose members lower to one type hoists nothing"
+    );
+    let client = &files["src/acme/files/client.py"];
+    assert!(
+        client.contains("file_size=\"file_size\","),
+        "a required-but-nullable parameter is still passed in the worked call: {client}"
+    );
+}
+
+/// A map to unknown takes Fern's placeholder example whatever the schema
+/// declares, and an object with a *required* unknown field cannot be exampled
+/// at all, so a list of it renders empty.
+///
+/// Corpus row 111's `OperationTree` is the first and corpus row 110's
+/// `ProjectInputUpdate` the second; both goldens byte-match.
+#[test]
+fn an_unknown_map_takes_the_placeholder_and_an_unexampleable_list_renders_empty() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Unknowns, version: 1.0.0 }
+paths:
+  /queries:
+    post:
+      operationId: queries_run
+      tags: [Queries]
+      responses: { '204': { description: OK } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RunRequest" }
+  /inputs:
+    patch:
+      operationId: inputs_update
+      tags: [Inputs]
+      responses: { '204': { description: OK } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items: { $ref: "#/components/schemas/InputUpdate" }
+components:
+  schemas:
+    OperationTree:
+      type: object
+      additionalProperties: true
+      examples:
+        - { nodes: { reference: all } }
+    NamedQuery:
+      type: object
+      required: [root]
+      properties:
+        root: { $ref: "#/components/schemas/OperationTree" }
+    RunRequest:
+      type: object
+      required: [query]
+      properties:
+        query: { $ref: "#/components/schemas/NamedQuery" }
+    InputUpdate:
+      type: object
+      required: [key, value]
+      properties:
+        key: { type: string }
+        value: { title: Value, description: Value assigned to this port }
+"##,
+    );
+    let queries = &files["src/acme/queries/client.py"];
+    assert!(queries.contains("root={\"key\": \"value\"}"), "{queries}");
+    assert!(!queries.contains("nodes"), "{queries}");
+    assert!(queries.contains("query=NamedQuery("), "{queries}");
+    let inputs = &files["src/acme/inputs/client.py"];
+    assert!(inputs.contains("request=[],"), "{inputs}");
+    let update = &files["src/acme/types/input_update.py"];
+    assert!(
+        update.contains("value: typing.Any\n"),
+        "a bare unknown carries no docstring: {update}"
+    );
+    assert!(!update.contains("Value assigned to this port"), "{update}");
+}
+
+/// A binary media type loses to an `application/json` declared beside it, and a
+/// binary *schema* wins either way.
+///
+/// Corpus row 110's `create_captcha` is `image/png: {}` beside an
+/// `application/json` and returns `typing.Any`; corpus row 112's
+/// `get_plugin_file` is a schemaless `application/octet-stream` alone and
+/// streams.
+#[test]
+fn a_binary_media_type_loses_to_json_beside_it() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Media, version: 1.0.0 }
+paths:
+  /captcha:
+    get:
+      operationId: media_captcha
+      tags: [Media]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json: { schema: {} }
+            image/png: {}
+  /file:
+    get:
+      operationId: media_file
+      tags: [Media]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream: {}
+"##,
+    );
+    let raw = &files["src/acme/media/raw_client.py"];
+    let captcha = raw.split("def captcha(").nth(1).expect("captcha method");
+    assert!(
+        captcha
+            .split("def ")
+            .next()
+            .unwrap()
+            .contains("HttpResponse[typing.Any]"),
+        "{captcha}"
+    );
+    let file = raw.split("def file(").nth(1).expect("file method");
+    assert!(
+        file.split("def ")
+            .next()
+            .unwrap()
+            .contains("typing.Iterator[bytes]"),
+        "{file}"
+    );
+}
+
+/// `x-enum-varnames` names a string enum's members positionally, and a keyed
+/// `x-fern-enum` declaration wins over it for the same value.
+///
+/// Corpus row 113's `Error.type` enumerates seven RFC 9457 problem-type URIs and
+/// names them `INVALIDARGUMENT`, `NOTFOUND`, … that way; its Fern 5.20.0 golden
+/// emits those members rather than the identifiers derived from the URIs, which
+/// would spell the whole scheme and host.
+#[test]
+fn an_enum_takes_its_member_names_from_x_enum_varnames() {
+    let files = render(
+        r##"openapi: 3.0.4
+info: { title: Problems, version: 1.0.0 }
+paths:
+  /errors:
+    get:
+      operationId: errors_get
+      tags: [Errors]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        type:
+          type: string
+          description: URI reference identifying the error type
+          enum:
+            - https://example.test/problems/invalid-argument
+            - https://example.test/problems/not-found
+          x-enum-varnames:
+            - INVALIDARGUMENT
+            - NOTFOUND
+        unit:
+          type: string
+          enum: ["$", "%"]
+          x-enum-varnames:
+            - DOLLAR
+            - PERCENT
+          x-fern-enum:
+            "$": { name: USD }
+"##,
+    );
+    let error_type = &files["src/acme/types/error_type.py"];
+    assert!(
+        error_type.contains("INVALIDARGUMENT = \"https://example.test/problems/invalid-argument\""),
+        "{error_type}"
+    );
+    assert!(
+        error_type.contains("NOTFOUND = \"https://example.test/problems/not-found\""),
+        "{error_type}"
+    );
+    assert!(
+        !error_type.contains("HTTPS_EXAMPLE_TEST"),
+        "a named member does not fall back to the identifier derived from the URI: {error_type}"
+    );
+    assert!(
+        error_type.contains("invalidargument: typing.Callable[[], T_Result]"),
+        "the `visit` parameter is the declared name cased down: {error_type}"
+    );
+    let unit = &files["src/acme/types/error_unit.py"];
+    assert!(
+        unit.contains("USD = \"$\""),
+        "a keyed declaration wins over the positional one: {unit}"
+    );
+    assert!(unit.contains("PERCENT = \"%\""), "{unit}");
+    assert!(!unit.contains("DOLLAR"), "{unit}");
+}
+
+/// A documented, mostly-`readOnly` body schema with exactly one required member
+/// keeps its explicit `content-type` header; the same shape undocumented drops
+/// it.
+///
+/// Corpus row 113's `create_container` sends a `Container` whose six `readOnly`
+/// properties surround the single required `spec`, and whose request and 201
+/// response name the same component — two shapes that each otherwise drop the
+/// header — and its Fern 5.20.0 golden sends `content-type: application/json`.
+#[test]
+fn a_documented_resource_envelope_keeps_its_content_type_header() {
+    let files = render(
+        r##"openapi: 3.0.4
+info: { title: Envelopes, version: 1.0.0 }
+paths:
+  /containers:
+    post:
+      operationId: resources_create_container
+      tags: [Resources]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Container" }
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Container" }
+  /widgets:
+    post:
+      operationId: resources_create_widget
+      tags: [Resources]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Widget" }
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Widget" }
+components:
+  schemas:
+    Container:
+      type: object
+      description: Container resource representing a container instance
+      required: [spec]
+      properties:
+        id: { type: string, readOnly: true }
+        path: { type: string, readOnly: true }
+        spec: { type: string }
+        create_time: { type: string, readOnly: true }
+    Widget:
+      type: object
+      required: [spec]
+      properties:
+        id: { type: string, readOnly: true }
+        path: { type: string, readOnly: true }
+        spec: { type: string }
+        create_time: { type: string, readOnly: true }
+"##,
+    );
+    let raw = &files["src/acme/resources/raw_client.py"];
+    let container = raw
+        .split("def create_container(")
+        .nth(1)
+        .expect("create_container method");
+    assert!(
+        container
+            .split("\n    def ")
+            .next()
+            .unwrap()
+            .contains("\"content-type\": \"application/json\","),
+        "{container}"
+    );
+    let widget = raw
+        .split("def create_widget(")
+        .nth(1)
+        .expect("create_widget method");
+    assert!(
+        !widget
+            .split("\n    def ")
+            .next()
+            .unwrap()
+            .contains("\"content-type\""),
+        "an undocumented envelope drops the header: {widget}"
+    );
 }
