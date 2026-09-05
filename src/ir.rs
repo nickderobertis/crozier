@@ -4651,16 +4651,19 @@ fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
         TypeRef::Named(name) => {
             types.iter().any(|d| match d {
                 TypeDecl::Object(o) => o.name == *name,
-                // An alias converts only when its target reaches an object model.
-                // Primitive-only unions (for example `Union[str, float]` query
-                // parameters) serialize directly and need no annotation converter.
-                TypeDecl::Alias(a) => a.name == *name && match &a.target {
-                    TypeRef::Union(variants) => !variants.iter().all(|variant| {
-                        matches!(variant, TypeRef::Primitive(primitive) if *primitive != Prim::Any)
-                            || matches!(variant, TypeRef::Literal(_))
-                    }),
-                    target => type_needs_convert(target, types),
-                },
+                // A union alias always converts: its annotation is what Fern
+                // serializes the selected member against, so oSPARC's
+                // `costPerUnit`, typed by a `Union[float, str]` alias, is written
+                // through the converter. A query parameter carrying such an alias
+                // is the exception and applies its own scalar guard, because a
+                // query value reaches the wire as text either way.
+                TypeDecl::Alias(a) => {
+                    a.name == *name
+                        && match &a.target {
+                            TypeRef::Union(_) => true,
+                            target => type_needs_convert(target, types),
+                        }
+                }
                 // A discriminated union's wrapper models carry field aliases too.
                 TypeDecl::DiscriminatedUnion(u) => u.name == *name,
                 // An enum is a plain `str` value — no field aliases to respect.
@@ -10905,10 +10908,14 @@ mod tests {
             decl,
             TypeDecl::Alias(alias) if alias.name == "FeedsListFeedsRequestOffset"
         )));
-        assert!(!super::type_needs_convert(
+        // A union alias converts wherever its annotation is what Fern serializes
+        // against; a query parameter carrying one applies its own scalar guard,
+        // which is what leaves `offset` written raw onto the URL.
+        assert!(super::type_needs_convert(
             &TypeRef::Named("FeedsListFeedsRequestOffset".to_string()),
             &hoister.out
         ));
+        assert!(hoister.is_scalar(&TypeRef::Named("FeedsListFeedsRequestOffset".to_string())));
         let unknown_union = TypeDecl::Alias(AliasType {
             name: "UnknownUnion".to_string(),
             module: "unknown_union".to_string(),
