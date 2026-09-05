@@ -4784,28 +4784,40 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     || !ep.header_params.is_empty()
                     || !ep.path_params.is_empty()
                     || (body.content_type_header()
-                        // A body schema more than one operation posts, which
-                        // says little about itself — no `required: true` and not
-                        // every field required — drops
-                        // the header when the operation carries no other input
-                        // either: the Open Integration Hub's `MutableSecret` and
-                        // `MutableAuthClient` are each the body of a create and an
-                        // update with no `requestBody` description, and
-                        // braintrust's `CreateView` and `AclItem` are each posted
-                        // by two argument-free operations that *do* describe the
-                        // body. A query parameter beside it keeps the header —
-                        // Palo Alto's shared `IkeCryptoProfiles` and
-                        // `IpsecCryptoProfiles` bodies each ride a
-                        // `SubTenantName` — as does every other way to be shared:
-                        // exhaustive's carry `required: true` or are sent whole,
-                        // and Adyen's `GrantInfo` is posted by one operation. A
-                        // description on the *schema* does not save it either:
-                        // braintrust's `AclItem` carries one.
-                        && (!ep.body_schema_shared
-                            || ep.body_declared_required
-                            || body.all_fields_required()
-                            || ep.body_schema_dropped
-                            || !ep.body_description_missing && !ep.query_params.is_empty())
+                        // A body schema more than one operation posts, which is
+                        // neither `required: true` nor sent whole, drops the
+                        // header two ways. It drops it when the body says nothing
+                        // about itself anywhere — no `description` on the
+                        // `requestBody` and none on the schema: the Open
+                        // Integration Hub's `MutableSecret` and `MutableAuthClient`
+                        // are each the body of a create and an update. And it drops
+                        // it when the `requestBody` *is* described, the operation
+                        // sends nothing but that body, and the body declares
+                        // required members — some of them, since all of them is the
+                        // sent-whole case above: braintrust's `CreateView`,
+                        // `AclItem` and twelve more are each the body of two
+                        // argument-free operations under a described `requestBody`,
+                        // and a description on the *schema* does not save
+                        // `AclItem`. Both halves of that second drop are load
+                        // bearing across the corpus. A query parameter beside the
+                        // body keeps the header — Palo Alto's `IkeCryptoProfiles`
+                        // and `IpsecCryptoProfiles` are shared, described and
+                        // partly required, and each rides a `SubTenantName` — and
+                        // so does a body with no required member at all, which is
+                        // what leaves the echo `Message` of the same-`$ref` case
+                        // (one optional field) its header under Basic auth's
+                        // documented body. Every other way to be shared keeps it:
+                        // exhaustive's bodies carry `required: true` or are sent
+                        // whole, and Adyen's `GrantInfo` is posted by one operation.
+                        && !(ep.body_schema_shared
+                            && !ep.body_declared_required
+                            && !body.all_fields_required()
+                            && !ep.body_schema_dropped
+                            && (ep.body_description_missing && !ep.body_schema_documented
+                                || !ep.body_description_missing
+                                    && ep.query_params.is_empty()
+                                    && matches!(body, RequestBody::Inline(fields)
+                                        if fields.iter().any(|field| field.spec_required))))
                         && (!ep.basic_auth
                             || !ep.body_description_missing
                             || !ep.body_schema_ref && matches!(body, RequestBody::Inline(_)))
