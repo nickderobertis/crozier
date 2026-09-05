@@ -431,8 +431,10 @@ those Fern 5.20.0 goldens byte-matches with no exclusions, so all six rows are
 next, alone, and it is the one row of this batch that was ranked on a nonzero
 `crozier sites` count — `src/openapi.rs`'s `normalize_parameters` override branch,
 in the file with the largest blind-spot count of any. The corpus already saw the
-shape, but only in `asana.com`, which carries no golden because Fern refuses it;
-put to Fern again for this change it still exits 1 at both stages on 17 errors.
+shape, but only in `asana.com`, which carries no golden because Fern refuses it —
+the search put that cheapest candidate to Fern first and records the refusal:
+exit 1 at both stages on 17 errors, re-measured there rather than inherited from
+the batch-4 ledger.
 The witness the same search recorded is the AWS Import/Export Service
 description, registered as corpus row 122 — six paths declaring `Action` and
 `Version` through `components.parameters` as a plain `type: string`, each path's
