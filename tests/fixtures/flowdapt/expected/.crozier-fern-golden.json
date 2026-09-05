@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "flowdapt",
+  "corpus_spec_ref": "e8f34d411564e6c0e6542fe67d0604c23de1cf91",
+  "corpus_spec_url": "https://raw.githubusercontent.com/emergentmethods/flowdapt/e8f34d411564e6c0e6542fe67d0604c23de1cf91/openapi.json"
+}

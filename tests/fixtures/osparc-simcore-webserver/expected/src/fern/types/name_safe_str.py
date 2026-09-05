@@ -1,0 +1,3 @@
+
+
+NameSafeStr = str

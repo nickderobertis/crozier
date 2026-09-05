@@ -1,0 +1,3 @@
+
+
+GlobPatternSafeStr = str

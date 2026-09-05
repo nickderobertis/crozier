@@ -1,0 +1,3 @@
+
+
+DescriptionSafeStr = str

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "osparc-simcore-webserver",
+  "corpus_spec_ref": "7fa7c73d34bb3bf4d22477a1bc5d9970c2824607",
+  "corpus_spec_url": "https://raw.githubusercontent.com/ITISFoundation/osparc-simcore/7fa7c73d34bb3bf4d22477a1bc5d9970c2824607/services/web/server/src/simcore_service_webserver/api/v0/openapi.json"
+}

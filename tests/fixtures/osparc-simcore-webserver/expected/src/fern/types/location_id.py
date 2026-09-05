@@ -1,0 +1,3 @@
+
+
+LocationId = int

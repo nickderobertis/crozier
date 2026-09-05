@@ -1,0 +1,3 @@
+
+
+LowerCaseEmailStr = str

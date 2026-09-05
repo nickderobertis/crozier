@@ -1,0 +1,8 @@
+
+
+import typing
+
+from ...types.v1alpha1config_resource_create_request import V1Alpha1ConfigResourceCreateRequest
+from ...types.v1alpha2config_resource_create_request import V1Alpha2ConfigResourceCreateRequest
+
+CreateConfigRequestBody = typing.Union[V1Alpha1ConfigResourceCreateRequest, V1Alpha2ConfigResourceCreateRequest]

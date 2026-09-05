@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .user_notification_create_resource_id_zero import UserNotificationCreateResourceIdZero
+
+UserNotificationCreateResourceId = typing.Union[UserNotificationCreateResourceIdZero, str]
