@@ -125,9 +125,9 @@ Schema keyword is [schemas](schemas.md)'s, wherever it appears.
 | `components-parameters` | both | Components Object.parameters | golden | census `components.parameters`: 42 declaration(s) in 42 registered source(s): 6-dot-authentiqio.appspot.com, amazonaws.com-cloudformation, amazonaws.com-cloudfront, anchore.io, apache.org, apache.org-airflow, apideck.com-accounting, apideck.com-ats, apideck.com-connector, apideck.com-crm, apideck.com-customer-support, apideck.com-ecommerce, apideck.com-ecosystem, apideck.com-file-storage, apideck.com-hris, apideck.com-issue-tracking, apideck.com-lead, apideck.com-pos, apideck.com-proxy, apideck.com-sms, apideck.com-vault, apideck.com-webhook, apis.guru, asana.com, bbci.co.uk, bunq.com, codesearch.debian.net, conjur.local, dnd5eapi.co, electric-sql, etherpad.local, exa-gate, frankfurter, github.com, openbanking.org.uk-account-info-openapi, openepcis-dpp-ready, redhat.com-catalog_inventory, redocly.com-museum, sac-backend, tamoss, traccar.org, xero.com-xero-payroll-au |  |  |  |
 | `components-headers` | both | Components Object.headers | golden | census `components.headers`: 4 declaration(s) in 4 registered source(s): apache.org, apache.org-airflow, bunq.com, github.com |  |  |  |
 | `components-examples` | both | Components Object.examples | golden | census `components.examples`: 4 declaration(s) in 4 registered source(s): apache.org, apache.org-airflow, github.com, redocly.com-museum |  |  |  |
-| `parameter-reference` | both | Parameter Object via Reference Object.$ref | golden | conjunction pass (`$ref` entry in a `parameters` list): 8,778 declaration(s) in 39 registered source(s): 6-dot-authentiqio.appspot.com, amazonaws.com-cloudformation, amazonaws.com-cloudfront, anchore.io, apache.org, apache.org-airflow, apideck.com-accounting, apideck.com-ats, apideck.com-connector, apideck.com-crm, apideck.com-customer-support, apideck.com-ecommerce, apideck.com-ecosystem, apideck.com-file-storage, apideck.com-hris, apideck.com-issue-tracking, apideck.com-lead, apideck.com-pos, apideck.com-proxy, apideck.com-sms, apideck.com-vault, apideck.com-webhook, apis.guru, asana.com, bbci.co.uk, bunq.com, conjur.local, dnd5eapi.co, electric-sql, exa-gate, frankfurter, github.com, openbanking.org.uk-account-info-openapi, openepcis-dpp-ready, redhat.com-catalog_inventory, redocly.com-museum, sac-backend, tamoss, xero.com-xero-payroll-au |  |  |  |
+| `parameter-reference` | both | Parameter Object via Reference Object.$ref | golden | conjunction pass (`$ref` entry in a `parameters` list), re-run over the 154 registered sources: 8,973 declaration(s) in 48 registered source(s): 6-dot-authentiqio.appspot.com, amazonaws.com-cloudformation, amazonaws.com-cloudfront, anchore.io, apache.org, apache.org-airflow, apideck.com-accounting, apideck.com-ats, apideck.com-connector, apideck.com-crm, apideck.com-customer-support, apideck.com-ecommerce, apideck.com-ecosystem, apideck.com-file-storage, apideck.com-hris, apideck.com-issue-tracking, apideck.com-lead, apideck.com-pos, apideck.com-proxy, apideck.com-sms, apideck.com-vault, apideck.com-webhook, apis.guru, asana.com, aws-importexport, bbci.co.uk, bunq.com, conjur.local, cyclonedx-transparency-exchange, dnd5eapi.co, electric-sql, exa-gate, frankfurter, github.com, helixdb-http-api, k8s-container-service-provider, listennotes, ndw-accessibility-map, openbanking.org.uk-account-info-openapi, openepcis-dpp-ready, openintegrationhub-secret-service, paloalto-remote-networks, redhat.com-catalog_inventory, redocly.com-museum, sac-backend, strapi-rest-api, tamoss, xero.com-xero-payroll-au |  |  |  |
 | `path-item-parameters` | both | Path Item Object.parameters | golden | census `pathItem.parameters`: 609 declaration(s) in 16 registered source(s): amazonaws.com-cloudformation, amazonaws.com-cloudfront, apache.org, apache.org-airflow, apicurio.local-registry, asana.com, canada-holidays.ca, color.pizza, conjur.local, etsi.local-mec010-2_apppkgmgmt, exa-gate, groundhog-day.com, microcks.local, netbox.dev, tamoss, xero.com-xero-payroll-au |  |  |  |
-| `operation-overrides-path-item-parameter` | both | Operation Object.parameters (overriding Path Item Object.parameters) | gap | conjunction pass (same `(name, in)` at both Path Item and Operation level): 3 declaration(s) in 1 registered source: asana.com — which carries no committed golden (`../../tests/fixtures/CORPUS.md` records why), so no golden fixture declares it; no `../fern-limitations.md` row names it | `src/openapi.rs`: 1 site — the override branch of `normalize_parameters` | The parameter definition `client.py`, `raw_client.py` and `reference.md` are all built from would be the losing one of the pair. | FIXTURE — **the witness exists and is registrable, and the corpus's own declarer was answered first.** The [Witness search (issue #188)](#witness-search-issue-188) row records `witness-found`: AWS Import/Export, `APIs-guru/openapi-directory` `APIs/amazonaws.com/importexport/2010-06-01/openapi.yaml` at commit `f04b8d0b`, declares the collision **24** times — each of six paths declares `Action` and `Version` and each of its two operations redeclares both — is Apache-2.0 at an immutable ref, and Fern accepts it at both stages. `asana.com`, the registered source the census already sees declaring it three times, was put to Fern first as the cheapest candidate available and refused at both stages on the same 17 errors the batch-4 ledger recorded, now re-measured. Register the witness and the byte comparison pins whether Fern honours the specification's operation-wins rule. |
+| `operation-overrides-path-item-parameter` | both | Operation Object.parameters (overriding Path Item Object.parameters) | golden | conjunction pass (same `(name, in)` at both Path Item and Operation level), re-run over the 154 registered sources: 27 declaration(s) in 2 registered source(s): aws-importexport (24) — corpus row 122, registered by this change on the witness the search below records, whose six paths each declare `Action` and `Version` through `components.parameters` as a plain `type: string` while each path's `get` and `post` redeclare both inline as a single-member enum — and asana.com (3), which carries no committed golden. The golden pins the rule directly: Fern types the argument as the operation's enum (`action: GetCancelJobRequestAction`) in the position the path-level declaration held, and crozier reproduces all 152 files byte for byte. No `../fern-limitations.md` row names it |  |  |  |
 ## Method notes
 
 **What was run.** `just surface-census --json`, exit 0. Every `census <selector>`
@@ -175,6 +175,14 @@ are counted here rather than silently dropped so the two totals can be compared.
 `$ref` entries at parameter sites and `(name, in)` collisions between a Path
 Item's list and its operations' lists respectively.
 
+**The style partition is unchanged at 154 sources.** The ninth corpus row this
+region added, row 122 `aws-importexport`, declares no `style` on any parameter —
+`just surface-census --fixture aws-importexport` emits no `parameter.style`
+selector at all — so the twelve conjunctions above still partition the same 326
+of 328. What it does move is the other two rows the pass produces: both were
+re-run over the **154** registered sources it leaves behind and both evidence
+cells carry that re-run's numbers.
+
 **Golden-backing.** The census reads every registered *source*, and not every
 registered source is a *golden*: some carry no `tests/fixtures/<name>/expected/`
 tree, because Fern cannot generate them or has not yet — the status tables of
@@ -189,11 +197,17 @@ just surface-census --json \
   | python3 -c 'import json,sys,pathlib; print(*sorted(s["fixture"] for s in json.load(sys.stdin)["sources"] if not pathlib.Path("tests/fixtures",s["fixture"],"expected").is_dir()),sep="\n")'
 ```
 
-Two rows turn on it, and each says so in its own evidence cell: the only source
-declaring `parameter-style-matrix-path-scalar` is `appng-rest-api` and the only
-one declaring `operation-overrides-path-item-parameter` is `asana.com`, neither
-golden-backed, so both are `gap` rather than `golden`. Land a golden for either
-and its row is re-measured, not merely re-worded.
+One row turns on it and says so in its own evidence cell: the only source
+declaring `parameter-style-matrix-path-scalar` is `appng-rest-api`, which is not
+golden-backed, so that row is `gap` rather than `golden`. Land a golden for it and
+its row is re-measured, not merely re-worded.
+
+`operation-overrides-path-item-parameter` was the second such row and is no
+longer: its only declarer was `asana.com`, which Fern refuses, and the change that
+settled this row registered a golden-backed second declarer — corpus row 122,
+`aws-importexport`, at 24 collisions against asana's 3 — so the re-run above
+measures it `golden` rather than re-wording it. That is what "re-measured" means
+for the row still in the sentence above.
 
 **One row the earlier pass under-reported.** `parameter-style-simple-header-scalar`
 read as *0 declarations across every registered source* while corpus row 107,
