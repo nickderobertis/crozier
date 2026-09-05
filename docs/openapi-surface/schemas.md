@@ -960,9 +960,11 @@ rather than occurrences.
   row for row. Both are a snapshot; re-run them rather than trusting them.
 - **SwaggerHub, re-enumerated whole.** Page
   `https://api.swaggerhub.com/specs?specification=openapi-3.1.x&limit=100&page=N` (and
-  `openapi-3.2.0`) until a page returns fewer than 100 `apis` — 77 pages plus 1, a stated
-  `totalCount` of 7630 and 67, **7688** entries carrying **7666** distinct `Swagger`
-  property URLs. All 7666 fetched and walked; six failed first time and all six recovered
+  `openapi-3.2.0`) until a page returns fewer than 100 `apis` — 77 pages plus 1, and a
+  stated `totalCount` of 7630 and 67. Taking each entry's `Swagger` property yields
+  **7688** URLs, **7666** of them distinct, so the registry lists a handful of entries
+  twice and a handful with no spec URL at all. All 7666 fetched and walked; six failed
+  first time and all six recovered
   when their owner names were percent-encoded (`Jakub Kępka`, `[GD]hpsk`,
   `Thanyawit_[Palm]` and three others containing a space), so the sweep has no unread
   document in it.
