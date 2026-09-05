@@ -3796,7 +3796,14 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
     // annotation (`Optional[..]` unless required, `= None` when optional) and its
     // description.
     let optional_arg = |base: String, required: bool, description: Option<String>, name: String| {
-        if required {
+        // A required parameter whose *type* is optional still defaults to `None`:
+        // Fern's `optional<..>` decides the default, and the Parameter Object's
+        // `required` only decides whether a worked call passes the argument.
+        // oSPARC's `file_size` is `required: true` over an `anyOf` carrying a
+        // `type: null` alternative, and its golden writes
+        // `file_size: typing.Optional[UploadFileRequestFileSize] = None` and
+        // still passes `file_size="file_size"` in the example.
+        if required && !base.starts_with("typing.Optional[") {
             DocParam {
                 name,
                 annotation: base,
@@ -6871,6 +6878,29 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    /// Whether Fern can synthesize no example for this type at all. Its
+    /// `unknown` kind supplies none, and an object one of whose *required*
+    /// fields is a bare unknown inherits that: oSPARC's
+    /// `ProjectInputUpdate.value` declares only a title and a description, and
+    /// the golden's worked call for the array body that holds it is
+    /// `request=[]` — where otoroshi's `PatchItem`, whose `value` is optional,
+    /// is exampled field by field.
+    fn example_has_no_value(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Optional(inner) => self.example_has_no_value(inner),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Object(object)) => object.fields.iter().any(|field| {
+                    field.spec_required
+                        && !field.optional
+                        && matches!(field.type_ref, TypeRef::Primitive(Prim::Any))
+                }),
+                Some(TypeDecl::Alias(alias)) => self.example_has_no_value(&alias.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
     fn resolves_to_string(&self, t: &TypeRef) -> bool {
         match t {
             TypeRef::Primitive(Prim::Str) => true,
@@ -6941,7 +6971,10 @@ impl<'a> ExampleCtx<'a> {
                 // empty (`children=[]`), which also terminates the walk (issue #84).
                 // The element inherits the list's slot, so a `List[str]` field's
                 // example uses the field name (`all_field=["all_field"]`).
-                if self.resolves_to_building(inner) || self.resolves_to_any(inner) {
+                if self.resolves_to_building(inner)
+                    || self.resolves_to_any(inner)
+                    || self.example_has_no_value(inner)
+                {
                     if self.documentation {
                         Example::ReferenceList(vec![])
                     } else {

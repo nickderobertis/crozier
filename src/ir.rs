@@ -2081,6 +2081,7 @@ fn build_endpoint(
             // be converted in a request body (helios sends `block` raw as a query
             // parameter and converted as a body field).
             let convert = hoister.needs_convert(&type_ref) && !hoister.is_scalar(&type_ref);
+            let required = p.required == Some(true);
             // The parameter's declared example, where Fern keeps it at all.
             let without_declared_example = parameter_example_value(doc, p).is_none();
             // A synthesized sample needs a *body* on the success response, not a
@@ -2089,7 +2090,7 @@ fn build_endpoint(
             // TrueForge's `download_sandbox_file` returns
             // `application/octet-stream` and still takes the sample.
             let omit_synthesized_example = without_declared_example
-                && (p.required != Some(true)
+                && (!required
                     || success_response_entry(op)
                         .is_none_or(|response| response.content.is_empty()));
             // Fern leaves an optional enum-typed query parameter out of a worked
@@ -2155,12 +2156,7 @@ fn build_endpoint(
                 wire_name: p.name.clone(),
                 py_name: naming::field_name(&p.name),
                 type_ref,
-                // A parameter whose own schema admits `null` lowers to Fern's
-                // `optional<..>` however the Parameter Object spells `required`,
-                // and an optional query argument carries `= None`: oSPARC's
-                // `file_size` is `required: true` over an `anyOf` with a
-                // `type: null` alternative, and its golden defaults it to `None`.
-                required: p.required == Some(true) && !p.schema.as_ref().is_some_and(is_optional),
+                required,
                 convert,
                 comma_separated,
                 allow_multiple,
@@ -3037,8 +3033,15 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
     op.responses.iter().any(|(code, resp)| {
         code.starts_with('2')
             && resp.content.iter().any(|(media_type, media)| {
-                media_type.starts_with("image/")
-                    || media_type == "application/octet-stream"
+                // A binary *media type* loses to an `application/json` declared
+                // beside it — oSPARC's `create_captcha` is `image/png: {}` next
+                // to an `application/json` and its golden returns `typing.Any`,
+                // while flowdapt's `get_plugin_file` is a schemaless
+                // `application/octet-stream` alone and streams. A binary
+                // *schema* wins either way: apicurio's `application/zip` names
+                // one beside an `application/json` and streams.
+                (media_type.starts_with("image/") || media_type == "application/octet-stream")
+                    && !resp.content.contains_key("application/json")
                     || media.schema.as_ref().is_some_and(|schema| {
                         let schema = schema
                             .reference
@@ -4553,6 +4556,12 @@ fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
     Some(fields)
 }
 
+/// The order reference documentation lists a request body's fields in: the ones
+/// the generated signature makes mandatory first, then the rest, each in
+/// declaration order. That is the *emitted* optionality rather than the Schema
+/// Object's `required` list — oSPARC's `phone` is in `required` and nullable, so
+/// it is `Optional[..] = OMIT` in the signature and its golden's `reference.md`
+/// lists it after `institution` rather than among the mandatory fields.
 fn append_reference_field_names(
     obj: &ObjectType,
     types: &[TypeDecl],
@@ -4573,8 +4582,8 @@ fn append_reference_field_names(
     out.extend(
         obj.fields
             .iter()
-            .filter(|field| field.spec_required)
-            .chain(obj.fields.iter().filter(|field| !field.spec_required))
+            .filter(|field| !field.optional)
+            .chain(obj.fields.iter().filter(|field| field.optional))
             .map(|field| field.wire_name.clone()),
     );
 }
@@ -4591,8 +4600,8 @@ fn append_reference_base_field_names(
     out.extend(
         obj.fields
             .iter()
-            .filter(|field| field.spec_required)
-            .chain(obj.fields.iter().filter(|field| !field.spec_required))
+            .filter(|field| !field.optional)
+            .chain(obj.fields.iter().filter(|field| field.optional))
             .map(|field| field.wire_name.clone()),
     );
     for base in &obj.bases {
