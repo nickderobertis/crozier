@@ -3,8 +3,15 @@
 # The LLM-judge tier — separate from the deterministic `just check` gate.
 # Run with `just lint-llm` (or `just lint-llm-diff` for the merge-base
 # diff); the diff-scoped run is the blocking PR check, not part of `check`.
-# Rules come from the pinned plugins below; tune one in place with
-# `override: true`. Bump a plugin's `@version` pin to pull new rules.
+# Rules come from the plugin set below; tune one in place with `override: true`.
+# The shared plugins are VENDORED under `llmlint-plugins/` and recorded in
+# `llmlint-plugins/lock.json` — the judged tier resolves them from the tree, not
+# over the network at job time, so a refused fetch can no longer fail a required
+# check. That also freezes them: upstream rule changes reach this repo only
+# through `just llmlint-plugins-refresh`, which re-fetches each recorded URL at
+# its recorded `@pin` and rewrites both the copies and the lock. The rationale,
+# the alternatives it was chosen over, and the refresh contract are in
+# docs/llmlint-plugins.md.
 files:
   # No `include`: llmlint lints the whole tree (exclude + .gitignore honored).
   # List committed files that shouldn't be judged (lock files, generated output).
@@ -23,17 +30,25 @@ files:
     - "docs/screenshots/**"
     - "shots/**"
     - "screenshots/fonts/**"
+    # Vendored upstream rule plugins (llmlint-plugins/, refreshed by
+    # scripts/llmlint-plugins.py): someone else's authored configs, judged in
+    # their own repository, not crozier's code.
+    - "llmlint-plugins/**"
 rationales: true
 agents:
   default:
     harness: claude-code   # any id from `oneharness list`
 plugins:
+  # Ships INSIDE the llmlint binary and resolves offline (no fetch, no cache), so
+  # it stays a URL: it is not a job-time network dependency.
   - "https://raw.githubusercontent.com/nickderobertis/llmlint/main/assets/config_lint.yml@1"
-  - "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/base.llmlint.yml@1"
-  - "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/shapes/cli.llmlint.yml@1"
-  - "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/languages/rust.llmlint.yml@1"
+  # Vendored copies; `llmlint-plugins/lock.json` records the URL, the `@pin`, the
+  # version each resolved to, its content hash, and the rules it contributes.
+  - "./llmlint-plugins/base.llmlint.yml"
+  - "./llmlint-plugins/shapes/cli.llmlint.yml"
+  - "./llmlint-plugins/languages/rust.llmlint.yml"
   # The repo ships several shell scripts (scripts/*.sh); the bash plugin supplies
   # their rules (robust_shell, portable_to_target_shell) and the rule names the
   # scripts' `llmlint: ignore` directives reference.
-  - "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/languages/bash.llmlint.yml@1"
-  - "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/ci.llmlint.yml@1"
+  - "./llmlint-plugins/languages/bash.llmlint.yml"
+  - "./llmlint-plugins/ci.llmlint.yml"

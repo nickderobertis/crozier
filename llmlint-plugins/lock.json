@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "plugins": [
+    {
+      "name": "base",
+      "url": "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/base.llmlint.yml",
+      "pin": "1",
+      "file": "llmlint-plugins/base.llmlint.yml",
+      "version": "1.12.0",
+      "sha256": "53addeeb6e35958d5a248b240f2eef586b2c56fae701aec3d71fe1d652d2e646",
+      "rules": [
+        "agents_md_durable_and_terse",
+        "boundary_inputs_validated",
+        "changed_behavior_has_e2e",
+        "comments_earn_their_place",
+        "contracts_have_one_source_or_a_drift_gate",
+        "diagnostics_error_or_absent",
+        "e2e_not_mocked",
+        "least_privilege_grants",
+        "names_match_behavior",
+        "new_code_lands_in_a_project",
+        "no_hardcoded_secrets",
+        "no_redundant_instruction_pointers",
+        "suppressions_justified",
+        "tests_assert_real_behavior",
+        "tests_mirror_real_usage",
+        "tool_output_is_signal",
+        "work_goes_through_command_surface"
+      ]
+    },
+    {
+      "name": "shapes/cli",
+      "url": "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/shapes/cli.llmlint.yml",
+      "pin": "1",
+      "file": "llmlint-plugins/shapes/cli.llmlint.yml",
+      "version": "1.1.1",
+      "sha256": "5ce58700b5386c431e1643a744504df19138888ee990252c6e11b52ee6059bb3",
+      "rules": [
+        "cli_output_contract",
+        "new_command_or_client_gets_its_own_project"
+      ]
+    },
+    {
+      "name": "languages/rust",
+      "url": "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/languages/rust.llmlint.yml",
+      "pin": "1",
+      "file": "llmlint-plugins/languages/rust.llmlint.yml",
+      "version": "1.1",
+      "sha256": "c8be339fdb689a10d727f8f5ebc07c68e829edb04b931ea3a22e63c2b95969a2",
+      "rules": [
+        "crates_stay_in_one_cargo_workspace",
+        "invalid_states_unrepresentable",
+        "no_panics_on_recoverable_errors"
+      ]
+    },
+    {
+      "name": "languages/bash",
+      "url": "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/languages/bash.llmlint.yml",
+      "pin": "1",
+      "file": "llmlint-plugins/languages/bash.llmlint.yml",
+      "version": "1.3.0",
+      "sha256": "fb56e36418322389d3b42a48c2fa81937aa953a806ffd97d54e072193464572e",
+      "rules": [
+        "portable_to_target_shell",
+        "robust_shell",
+        "shell_test_tiers_stay_split"
+      ]
+    },
+    {
+      "name": "ci",
+      "url": "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/ci.llmlint.yml",
+      "pin": "1",
+      "file": "llmlint-plugins/ci.llmlint.yml",
+      "version": "1.4",
+      "sha256": "afb89143986d5f8737ea6143e77bef49f720ec54170bd9bca302ae38054fad2f",
+      "rules": [
+        "ci_invokes_gate_recipe_not_inline_stages",
+        "external_service_suite_stays_out_of_the_affected_tier",
+        "live_tier_compiles_and_requires_credential",
+        "no_second_broader_sweep_over_an_already_gated_commit",
+        "no_untrusted_interpolation_in_run"
+      ]
+    },
+    {
+      "name": "config-lint",
+      "url": "https://raw.githubusercontent.com/nickderobertis/llmlint/main/assets/config_lint.yml",
+      "pin": "1",
+      "bundled": true,
+      "captured_with_llmlint": "0.4.1",
+      "rules": [
+        "description_and_relevance_are_concise",
+        "description_omits_already_excluded_situations",
+        "description_yields_clear_verdict",
+        "line_localizable_rules_require_attribution",
+        "name_describes_what_the_rule_checks",
+        "path_scoped_rules_use_files_not_relevance",
+        "relevance_scopes_conditional_rules",
+        "relevance_scopes_without_deciding_the_verdict"
+      ]
+    }
+  ]
+}
