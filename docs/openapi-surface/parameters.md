@@ -235,7 +235,10 @@ seven, and the reconciliation refuses a row that drops one:
   the same immutable ref: **74,629** candidate files, **32,428** read as OpenAPI
   documents, 0 unparsed. The catalogue keeps five copies of each document (an
   `openapi.json` and four `meta/import/` bundles), so a count of *files* here is
-  five times its count of documents.
+  five times its count of documents. Candidates were then lifted from a sibling
+  dispatch's read-only complete clone of the **same** commit, and every one was
+  verified byte-identical against its pinned `raw.githubusercontent.com` URL before
+  being screened — so nothing in this table rests on a copy nobody else can fetch.
 - **Sourcegraph public code search** — the one literal index reachable without a
   token, queried through `https://sourcegraph.com/.api/search/stream`. Each query's
   matches were then **fetched at the commit Sourcegraph matched** and measured with
