@@ -680,6 +680,19 @@ reads those nine as a zero. Two mechanical notes for re-running a query out of a
 `\|` inside one is markdown escaping a table separator and the query itself carries a
 literal `|`, and `<url>` and `<query>` are placeholders the surrounding sentence fills.
 
+**What each source's number counts, so that a zero and a large number mean the same thing
+in each row.** The two APIs.guru readings, the SwaggerHub sweep and the vendor set report
+**declaring documents out of documents read whole** — 3992 served versions and 4138 clone
+files, 7666 registry specs, 29 vendor documents, every one of them fetched and walked, so
+their zeros are exhaustive over what they cover. The three indices cannot report that,
+because an index returns hits rather than documents: **GitHub** reports its own
+`total_count`, of which the first page — up to 100 items per query — is what was read, and
+the candidates worth fetching out of those pages are the ledger below; **Sourcegraph**
+reports its `matchCount` and the number of distinct files behind it, of which up to 60 per
+query were listed and the plausible ones fetched; **Postman** searches names and
+descriptions rather than spec bodies, so its numbers are matching entities per index with
+`size: 3` sampled and read — which is why `iri` scores 5478 there and declares nothing.
+
 **A declaration was counted by walking the parsed document, never by trusting a search
 hit**, and for these twenty rows that is what decides the answers rather than a detail of
 method. A hit is a string anywhere in a file. `contains:` matches an APIs.guru description
