@@ -8007,3 +8007,463 @@ components:
         "the shadowed parameter was emitted beside its override: {signature}"
     );
 }
+
+/// A `oneOf` pairing `type: null` with exactly one member is Fern's *optional
+/// element*, not a hoisted alias — and every position that pair can stand in
+/// reads it the same way. Corpus row 125 (discord) declares it as a response
+/// array item (`get_entitlements`), inside a named union's array variant and as a
+/// request field's array element (`PruneGuildRequest.include_roles`, `roles`);
+/// none of the three coins a `…Item` of its own.
+#[test]
+fn a_null_paired_member_is_an_optional_element_in_every_array_position() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Rosters, version: 1.0.0 }
+paths:
+  /rosters:
+    get:
+      operationId: list_rosters
+      tags: [Rosters]
+      responses:
+        '200':
+          description: Rosters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - type: "null"
+                    - $ref: "#/components/schemas/Member"
+  /rosters/prune:
+    post:
+      operationId: prune_roster
+      tags: [Rosters]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PruneRequest" }
+      responses: { '204': { description: Pruned } }
+components:
+  schemas:
+    Member:
+      type: object
+      properties: { id: { type: string } }
+    Selector:
+      oneOf:
+        - type: string
+        - type: array
+          items:
+            oneOf:
+              - type: "null"
+              - $ref: "#/components/schemas/Member"
+    PruneRequest:
+      type: object
+      required: [selector]
+      properties:
+        selector: { $ref: "#/components/schemas/Selector" }
+        roles:
+          type: array
+          items:
+            oneOf:
+              - type: "null"
+              - $ref: "#/components/schemas/Member"
+        include_roles:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                oneOf:
+                  - type: "null"
+                  - $ref: "#/components/schemas/Member"
+"##,
+    );
+    let raw = &files["src/acme/rosters/raw_client.py"];
+    assert!(
+        raw.contains("-> HttpResponse[typing.List[typing.Optional[Member]]]"),
+        "the response array element is optional, not a hoisted item: {raw}"
+    );
+    assert!(
+        raw.contains("roles: typing.Optional[typing.Sequence[typing.Optional[Member]]] = OMIT"),
+        "the request field's array element is optional: {raw}"
+    );
+    let selector = &files["src/acme/types/selector.py"];
+    assert_eq!(
+        selector.lines().last().unwrap(),
+        "Selector = typing.Union[str, typing.List[typing.Optional[Member]]]",
+        "a named union's array variant reads the pair the same way: {selector}"
+    );
+    let include_roles = &files["src/acme/rosters/types/prune_request_include_roles.py"];
+    assert_eq!(
+        include_roles.lines().last().unwrap(),
+        "PruneRequestIncludeRoles = typing.Union[str, typing.List[typing.Optional[Member]]]",
+        "and so does a request field's own inline union: {include_roles}"
+    );
+    assert!(
+        !files.keys().any(|path| path.contains("roles_item")),
+        "no `…Item` is coined for any of the three: {:?}",
+        files.keys().collect::<Vec<_>>()
+    );
+}
+
+/// An annotated `$ref` — `allOf: [{$ref}, {description}]` — whose target is a
+/// *union* is a use-site copy, exactly as an object target is: braintrust (corpus
+/// row 126) declares `FacetData.preprocessor` and `RunEval.scores` that way and
+/// Fern coins `FacetDataPreprocessor…`/`RunEvalScoresItem` of their own rather
+/// than pointing at the referenced schema's pair. The same document's nullable
+/// and plain `additionalProperties` maps name their *value* — or, for a map of
+/// arrays, the element — after the property.
+#[test]
+fn an_annotated_union_ref_copies_itself_and_map_values_name_themselves() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Facets, version: 1.0.0 }
+paths:
+  /facets:
+    post:
+      operationId: create_facet
+      tags: [Facets]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [preprocessor]
+              properties:
+                preprocessor:
+                  allOf:
+                    - $ref: "#/components/schemas/SavedFunctionId"
+                    - description: The preprocessor to run.
+                scores:
+                  type: array
+                  items:
+                    allOf:
+                      - $ref: "#/components/schemas/SavedFunctionId"
+                      - description: One score.
+      responses:
+        '200':
+          description: Facet
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Facet" }
+components:
+  schemas:
+    SavedFunctionId:
+      oneOf:
+        - type: object
+          required: [function_id]
+          properties:
+            function_id: { type: string }
+        - type: object
+          required: [global_function]
+          properties:
+            global_function: { type: string }
+    Facet:
+      type: object
+      properties:
+        preprocessor:
+          allOf:
+            - $ref: "#/components/schemas/SavedFunctionId"
+            - description: The preprocessor.
+        scores:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/SavedFunctionId"
+              - description: One score.
+        experiment:
+          type: object
+          nullable: true
+          additionalProperties:
+            type: object
+            properties: { name: { type: string } }
+        classifications:
+          type: object
+          nullable: true
+          additionalProperties:
+            type: array
+            items:
+              type: object
+              properties: { label: { type: string } }
+        topic_maps:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: object
+              properties: { topic: { type: string } }
+        credentials:
+          oneOf:
+            - type: object
+              properties: { token: { type: string } }
+        comments:
+          type: array
+          items: { nullable: true }
+"##,
+    );
+    // The model's annotated `$ref`s copy the referenced union under their own
+    // names rather than reusing `SavedFunctionId`'s members.
+    let preprocessor = &files["src/acme/types/facet_preprocessor.py"];
+    assert_eq!(
+        preprocessor.lines().last().unwrap(),
+        "FacetPreprocessor = typing.Union[FacetPreprocessorFunctionId, FacetPreprocessorGlobalFunction]",
+        "{preprocessor}"
+    );
+    assert!(files.contains_key("src/acme/types/facet_scores_item.py"));
+    assert!(files.contains_key("src/acme/types/facet_scores_item_function_id.py"));
+    // …and an inline body's do the same, under the operation's request name.
+    assert!(files.contains_key("src/acme/facets/types/create_facet_request_preprocessor.py"));
+    assert!(files.contains_key("src/acme/facets/types/create_facet_request_scores_item.py"));
+    let facet = &files["src/acme/types/facet.py"];
+    assert!(
+        facet.contains(
+            "experiment: typing.Optional[typing.Dict[str, typing.Optional[FacetExperimentValue]]] = None"
+        ),
+        "a nullable map of an inline object names its value: {facet}"
+    );
+    assert!(
+        facet.contains(
+            "typing.Dict[str, typing.Optional[typing.List[FacetClassificationsValueItem]]]"
+        ),
+        "a nullable map of arrays names the element, not the array: {facet}"
+    );
+    assert!(
+        facet.contains("topic_maps: typing.Optional[typing.Dict[str, typing.List[FacetTopicMapsValueItem]]] = None"),
+        "and so does a plain map of arrays: {facet}"
+    );
+    assert!(
+        facet.contains("credentials: typing.Optional[FacetCredentials] = None"),
+        "a one-member `oneOf` becomes the member itself, not a one-element union: {facet}"
+    );
+    assert!(
+        facet
+            .contains("comments: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None"),
+        "a `{{nullable: true}}` array element keeps its `Optional`: {facet}"
+    );
+}
+
+/// Three braintrust shapes (corpus row 126) that each move a whole method or
+/// model: an `operationId` carrying a path-template expression is named by that
+/// expression's contents, a `{nullable: true}` success body returns
+/// `Optional[Any]` rather than the bare unknown, and an `allOf` member that is
+/// itself a set of `anyOf` branches contributes every branch's properties to the
+/// object.
+#[test]
+fn a_path_template_operation_id_a_nullable_unknown_body_and_merged_any_of_branches() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Proxy, version: 1.0.0 }
+paths:
+  /v1/proxy/{path+}:
+    post:
+      operationId: "proxy{path+}"
+      tags: [Proxy]
+      parameters:
+        - name: "path+"
+          in: path
+          required: true
+          schema: { type: array, items: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema: { nullable: true }
+      responses:
+        '200':
+          description: Proxied
+          content:
+            application/json:
+              schema: { nullable: true }
+  /snapshots:
+    get:
+      operationId: list_snapshots
+      tags: [Snapshots]
+      responses:
+        '200':
+          description: Snapshots
+          content:
+            application/json:
+              schema:
+                type: array
+                nullable: true
+                items:
+                  type: object
+                  properties: { label: { type: string } }
+  /automations:
+    post:
+      operationId: create_automation
+      tags: [Automations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TopicMapFunctionAutomation" }
+      responses:
+        '200':
+          description: Automation
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FunctionData" }
+components:
+  schemas:
+    SavedFunctionId:
+      type: object
+      required: [id]
+      properties:
+        id: { type: string }
+        version: { type: string }
+    TopicMapData:
+      type: object
+      required: [topic]
+      properties:
+        topic: { type: string }
+        weight: { type: integer }
+    TopicMapFunctionAutomation:
+      allOf:
+        - $ref: "#/components/schemas/SavedFunctionId"
+        - anyOf:
+            - type: object
+              properties:
+                function_type: { type: string, enum: [scorer, task] }
+            - type: object
+              properties:
+                name: { type: string }
+    FunctionData:
+      oneOf:
+        - allOf:
+            - $ref: "#/components/schemas/TopicMapData"
+            - description: A topic map function.
+        - type: object
+          required: [prompt]
+          properties:
+            prompt: { type: string }
+"##,
+    );
+    let proxy = &files["src/acme/proxy/raw_client.py"];
+    assert!(
+        proxy.contains("    def path(\n"),
+        "the method is named by the template's contents, not by `proxy`: {proxy}"
+    );
+    assert!(
+        proxy.contains("-> HttpResponse[typing.Optional[typing.Any]]"),
+        "a nullable unknown body keeps its `Optional`: {proxy}"
+    );
+    let snapshots = &files["src/acme/snapshots/raw_client.py"];
+    assert!(
+        snapshots
+            .contains("-> HttpResponse[typing.Optional[typing.List[ListSnapshotsResponseItem]]]"),
+        "a nullable response array hoists its item and stays optional: {snapshots}"
+    );
+    let automations = &files["src/acme/automations/raw_client.py"];
+    assert!(
+        automations.contains(
+            "function_type: typing.Optional[TopicMapFunctionAutomationFunctionType] = OMIT"
+        ) && automations.contains("name: typing.Optional[str] = OMIT"),
+        "both `anyOf` branches of the `allOf` member reach the request: {automations}"
+    );
+    let variant = &files["src/acme/types/function_data_zero.py"];
+    assert!(
+        variant.contains("topic: str") && variant.contains("weight: typing.Optional[int] = None"),
+        "an annotated `$ref` union variant copies the target's fields: {variant}"
+    );
+}
+
+/// Nullability spelled three ways in one `openapi: 3.1` document. A `type: null`
+/// member beside *two* others is dropped and the rest deduped — so a pair that
+/// lowers to the same Python type collapses to one `Optional[...]` rather than a
+/// `Union` of duplicates — and `type: [object, "null"]` on an unknown-valued map
+/// keeps the `Optional` outside the `Dict` rather than on its value. The
+/// discriminated union declared inline in the body moves, with its variant
+/// models, into the tag's own `types/` package.
+#[test]
+fn null_in_a_type_list_reads_the_same_across_unions_maps_and_moved_variants() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Signals, version: 1.0.0 }
+paths:
+  /signals:
+    post:
+      operationId: record_signal
+      tags: [Signals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event]
+              properties:
+                event:
+                  oneOf:
+                    - $ref: "#/components/schemas/ClickEvent"
+                    - $ref: "#/components/schemas/ViewEvent"
+                  discriminator:
+                    propertyName: kind
+                    mapping:
+                      click: "#/components/schemas/ClickEvent"
+                      view: "#/components/schemas/ViewEvent"
+                scalar: { $ref: "#/components/schemas/NullableScalar" }
+                widened: { $ref: "#/components/schemas/WidenedScalar" }
+                bag: { $ref: "#/components/schemas/NullableBag" }
+      responses: { '204': { description: Recorded } }
+components:
+  schemas:
+    ClickEvent:
+      type: object
+      required: [kind, target]
+      properties:
+        kind: { type: string, enum: [click] }
+        target: { $ref: "#/components/schemas/Target" }
+    ViewEvent:
+      type: object
+      required: [kind]
+      properties:
+        kind: { type: string, enum: [view] }
+        seconds: { type: integer }
+    Target:
+      type: object
+      properties: { selector: { type: string } }
+    NullableScalar:
+      oneOf:
+        - type: "null"
+        - type: string
+        - type: string
+    WidenedScalar:
+      oneOf:
+        - type: "null"
+        - type: string
+        - type: integer
+    NullableBag:
+      type: [object, "null"]
+      additionalProperties: {}
+"##,
+    );
+    let scalar = &files["src/acme/types/nullable_scalar.py"];
+    assert_eq!(
+        scalar.lines().last().unwrap(),
+        "NullableScalar = typing.Optional[str]",
+        "two members lowering to `str` dedupe to one, under the dropped null's `Optional`: {scalar}"
+    );
+    // Two surviving members are a `Union`, which is where the collapse stops:
+    // the `Optional` above comes from the dedupe leaving exactly one.
+    let widened = &files["src/acme/types/widened_scalar.py"];
+    assert_eq!(
+        widened.lines().last().unwrap(),
+        "WidenedScalar = typing.Union[str, int]",
+        "{widened}"
+    );
+    let bag = &files["src/acme/types/nullable_bag.py"];
+    assert_eq!(
+        bag.lines().last().unwrap(),
+        "NullableBag = typing.Optional[typing.Dict[str, typing.Any]]",
+        "the `null` in the type list is the map's, not its value's: {bag}"
+    );
+    assert!(
+        files.contains_key("src/acme/signals/types/record_signal_request_event.py"),
+        "the inline discriminated union moves into the tag's package: {:?}",
+        files.keys().collect::<Vec<_>>()
+    );
+    let raw = &files["src/acme/signals/raw_client.py"];
+    assert!(raw.contains("event: RecordSignalRequestEvent"), "{raw}");
+}
