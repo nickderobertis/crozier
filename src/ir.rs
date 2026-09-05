@@ -423,16 +423,34 @@ fn auth_model(doc: &OpenApi) -> Auth {
     if doc.components.security_schemes.is_empty() {
         return Auth::None;
     }
+    // A scheme nothing selects reaches the wrapper only when it is a header api
+    // key. Fern imports a header `apiKey` as an SDK-wide credential whatever the
+    // requirements say (`byautomata.io` declares no `security` anywhere and still
+    // gets its `api_key`), but it takes an HTTP or OAuth2 scheme only from a
+    // declared Security Requirement Object — an empty root `security: []` counts,
+    // and so does one on a webhook operation. AlayaCare declares `basic_auth` and
+    // no requirement at all, and its golden client wrapper carries no credential.
+    let requirement_declared = doc.security.is_some()
+        || doc
+            .paths
+            .values()
+            .chain(doc.webhooks.values())
+            .flat_map(crate::openapi::PathItem::operations)
+            .any(|(_, op)| op.security.is_some());
     let selected = doc.components.security_schemes.values().find(|scheme| {
         (scheme.ty == SecuritySchemeType::ApiKey
             && scheme.location == Some(ParameterLocation::Header))
-            || (scheme.ty == SecuritySchemeType::Http
-                && matches!(
-                    scheme.scheme,
-                    Some(HttpAuthScheme::Bearer | HttpAuthScheme::Basic)
-                ))
-            || scheme.ty == SecuritySchemeType::OAuth2
+            || (requirement_declared
+                && (scheme.ty == SecuritySchemeType::Http
+                    && matches!(
+                        scheme.scheme,
+                        Some(HttpAuthScheme::Bearer | HttpAuthScheme::Basic)
+                    )
+                    || scheme.ty == SecuritySchemeType::OAuth2))
     });
+    if selected.is_none() && !requirement_declared {
+        return Auth::None;
+    }
     match selected {
         // `name` is validated non-empty at the boundary (see `openapi::load`).
         Some(s)

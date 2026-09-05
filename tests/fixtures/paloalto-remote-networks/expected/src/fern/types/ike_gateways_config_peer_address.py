@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .ike_gateways_config_peer_address_dynamic import IkeGatewaysConfigPeerAddressDynamic
+from .ike_gateways_config_peer_address_fqdn import IkeGatewaysConfigPeerAddressFqdn
+from .ike_gateways_config_peer_address_ip import IkeGatewaysConfigPeerAddressIp
+
+IkeGatewaysConfigPeerAddress = typing.Union[
+    IkeGatewaysConfigPeerAddressIp, IkeGatewaysConfigPeerAddressFqdn, IkeGatewaysConfigPeerAddressDynamic
+]

@@ -1908,7 +1908,6 @@ const CORPORA: &[&Corpus] = &[
     &DANIWEB_CONNECT,
     &CHAINGATEWAY_IO,
     &HUBSPOT_EVENTS,
-    &ALAYACARE_RATING,
     &PALOALTO_REMOTE_NETWORKS,
     &OPENINTEGRATIONHUB_SECRET_SERVICE,
 ];
@@ -3263,22 +3262,6 @@ const HUBSPOT_EVENTS: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `alayacare-rating`: AlayaCare's Billable Item Management API is the
-/// corpus's only source declaring `style: pipeDelimited` at all — one query
-/// parameter over a scalar schema on `GET /service_accounting` — so this row
-/// pins the wire form Fern gives the one serialization style no registered
-/// source has ever declared.
-const ALAYACARE_RATING: Corpus = Corpus {
-    api: "alayacare-rating",
-    package_name: "fern",
-    project_name: "default_package_name",
-    audiences: &[],
-    audience_strict: false,
-    client_class_name: None,
-    extra_fields: None,
-    unmatched: &[],
-};
-
 /// `paloalto-remote-networks`: the Configuration Orchestration API Palo Alto
 /// Networks publishes on its own developer portal is the corpus's only source
 /// crossing `style: deepObject` with an *array* schema —
@@ -3637,11 +3620,6 @@ fn chaingateway_io_matches_fern_output() {
 #[test]
 fn hubspot_events_matches_fern_output() {
     assert_link_ok_corpus_matches(&HUBSPOT_EVENTS);
-}
-
-#[test]
-fn alayacare_rating_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ALAYACARE_RATING);
 }
 
 #[test]

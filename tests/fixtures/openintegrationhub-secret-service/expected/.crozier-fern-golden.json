@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "openintegrationhub-secret-service",
+  "corpus_spec_ref": "f82a32f8ce88a464874c1fcd3a39afd8e7e4908a",
+  "corpus_spec_url": "https://raw.githubusercontent.com/openintegrationhub/openintegrationhub/f82a32f8ce88a464874c1fcd3a39afd8e7e4908a/services/secret-service/doc/openapi.json"
+}
