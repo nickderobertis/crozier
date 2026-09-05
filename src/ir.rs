@@ -269,17 +269,25 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     let mut headers: Vec<GlobalHeader> = seen
         .into_iter()
         .filter(|(wire_name, (count, required))| {
+            // Fern promotes a header carried by *every* operation with its own
+            // declared optionality, and one carried by at least three quarters
+            // of them as an unconditionally optional constructor field.
+            // Flowdapt's `x-api-version` rides 24 of its 26 operations and is
+            // promoted; `marimo`'s `Marimo-Session-Id` rides 55 of 88 and stays
+            // a per-method parameter.
             total > 0
-                && *count == total
+                && *count * 4 >= total * 3
                 && (!*required || total > 1)
                 && !is_transport_managed_header(wire_name)
                 && !is_auth_managed_header(doc, wire_name)
                 && !api_key_wire_names.contains(wire_name.as_str())
         })
-        .map(|(wire_name, (_, required))| GlobalHeader {
+        .map(|(wire_name, (count, required))| GlobalHeader {
             py_name: naming::field_name(header_param_stem(&wire_name)),
             wire_name,
-            required,
+            // A header short of every operation is promoted as optional
+            // whatever the operations that do declare it say.
+            required: required && count == total,
         })
         .collect();
     // Fern also treats additional header apiKey security schemes as SDK-wide
@@ -739,6 +747,17 @@ pub struct Endpoint {
     /// Whether the body came through `components.requestBodies`, which Fern treats
     /// like a reusable declaration for content-type emission.
     pub body_component_ref: bool,
+    /// Whether Fern collapses the whole request to its bare body type, which
+    /// carries no content type at all. Its `openapi-ir-to-fern` request
+    /// converter writes the body type name alone — rather than a request object
+    /// with a `content-type` — when the lowered body is a plain type reference
+    /// and the endpoint declares no path, query or header parameter, no
+    /// request-body description, and the default JSON media type. An inline
+    /// composition lowers to a plain type reference only when it declares
+    /// neither `title` nor `description`: Flowdapt's `create_config` body
+    /// declares neither and its golden sends no `content-type`, where `letta`'s
+    /// `add_mcp_server` body carries `title: Request` and does.
+    pub body_collapses_to_type_reference: bool,
     /// A JSON-compatible request media type that must be emitted verbatim instead
     /// of `application/json` (for example `application/ndjson`).
     pub body_content_type_override: Option<String>,
@@ -2422,6 +2441,27 @@ fn build_endpoint(
     // emittability (issue #43); an operation with no responses is still emitted.
     let emittable = body_ok && !has_unsupported_params && response_supported(op);
 
+    let body_collapses_to_type_reference = path_params.is_empty()
+        && query_params.is_empty()
+        && header_params.is_empty()
+        && op
+            .request_body
+            .as_ref()
+            .is_some_and(|rb| rb.description.is_none())
+        && op
+            .request_body
+            .as_ref()
+            .and_then(selected_json_request_media)
+            .is_some_and(|(media_type, media)| {
+                media_type == "application/json"
+                    && media.schema.as_ref().is_some_and(|schema| {
+                        schema.reference.is_none()
+                            && schema.title.is_none()
+                            && schema.description.is_none()
+                            && (schema.one_of.is_some() || schema.any_of.is_some())
+                    })
+            });
+
     Endpoint {
         openapi_31: doc.openapi.starts_with("3.1"),
         module,
@@ -2483,6 +2523,7 @@ fn build_endpoint(
             .as_ref()
             .is_some_and(|body| body.description.is_none()),
         body_component_ref: op.request_body.as_ref().is_some_and(|rb| rb.component_ref),
+        body_collapses_to_type_reference,
         body_content_type_override: op
             .request_body
             .as_ref()
@@ -4264,7 +4305,15 @@ impl InlineHoister<'_> {
                     );
                 }
                 let variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
-                let variants = dedupe_union_members(variants);
+                let mut variants = dedupe_union_members(variants);
+                // A composition whose members all lower to the same type is no
+                // union at all, and Fern hoists nothing for it: Flowdapt's
+                // `identifier` path parameter is
+                // `anyOf: [{type: string}, {type: string, format: uuid}]` and
+                // its golden types the argument `str`.
+                if variants.len() == 1 {
+                    return variants.pop().expect("length checked above");
+                }
                 self.out.push(TypeDecl::Alias(AliasType {
                     name: name.clone(),
                     module: naming::module_name(&name),
@@ -6024,6 +6073,42 @@ impl Builder<'_> {
                         docstring,
                     );
                     return;
+                }
+                // A map whose value is an array of an inline union hoists that
+                // union under the value slot's own name, one step further out
+                // than the `{name}Value` case below: Flowdapt's
+                // `V1Alpha1Metrics` is
+                // `Dict[str, List[V1Alpha1MetricsValueItem]]`.
+                if value.ty.as_ref().and_then(TypeField::primary) == Some("array") {
+                    if let Some(items) = value.items.as_deref() {
+                        if let Some(variants) = items.one_of.as_ref().or(items.any_of.as_ref()) {
+                            let item_name = format!("{name}ValueItem");
+                            let members: Vec<TypeRef> = variants
+                                .iter()
+                                .enumerate()
+                                .map(|(index, variant)| {
+                                    self.variant_ref(&item_name, index, variant, variants)
+                                })
+                                .collect();
+                            let members = dedupe_union_members(members);
+                            self.push_alias(
+                                &item_name,
+                                naming::module_name(&item_name),
+                                TypeRef::Union(members),
+                                clean_doc(items.description.as_deref()),
+                            );
+                            self.push_alias(
+                                name,
+                                module,
+                                TypeRef::Dict(
+                                    Box::new(TypeRef::Primitive(Prim::Str)),
+                                    Box::new(sequence_of(value, TypeRef::Named(item_name))),
+                                ),
+                                docstring,
+                            );
+                            return;
+                        }
+                    }
                 }
                 if let Some(variants) = value.one_of.as_ref().or(value.any_of.as_ref()) {
                     let value_name = format!("{name}Value");

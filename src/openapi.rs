@@ -1623,9 +1623,48 @@ fn normalize_request_bodies(doc: &mut OpenApi) {
             let Some(op) = slot else { continue };
             if let Some(request_body) = &mut op.request_body {
                 *request_body = resolve_request_body(request_body, &defs);
+                for media in request_body.content.values_mut() {
+                    if let Some(schema) = &mut media.schema {
+                        collapse_sole_composition_member(schema);
+                    }
+                }
             }
         }
     }
+}
+
+/// A request-body schema whose whole content is a one-member `oneOf`/`anyOf`
+/// *is* that member to Fern: Flowdapt declares
+/// `{"oneOf": [{"$ref": "…V1Alpha1WorkflowResourceUpdateRequest"}]}` and its
+/// golden inlines that component's properties as method arguments and emits no
+/// union alias, exactly as it does for the bare `$ref` spelling. A composition
+/// with two or more members stays a union (Flowdapt's own two-member
+/// `create_config` body is the `CreateConfigRequestBody` alias in the same
+/// golden), and a wrapper carrying any other schema field is left alone because
+/// collapsing it would drop that field.
+fn collapse_sole_composition_member(schema: &mut Schema) {
+    let sole = |members: &Option<Vec<Schema>>| {
+        members
+            .as_ref()
+            .filter(|members| members.len() == 1)
+            .map(|members| members[0].clone())
+    };
+    let Some(member) = sole(&schema.one_of).or_else(|| sole(&schema.any_of)) else {
+        return;
+    };
+    if schema.reference.is_some()
+        || schema.all_of.is_some()
+        || schema.ty.is_some()
+        || schema.properties.declared()
+        || schema.additional_properties.is_some()
+        || schema.items.is_some()
+        || schema.enum_values.is_some()
+        || schema.const_value.is_some()
+        || schema.discriminator.is_some()
+    {
+        return;
+    }
+    *schema = member;
 }
 
 /// Resolve a response that is a `$ref` into `components.responses` to the

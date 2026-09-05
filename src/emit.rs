@@ -4662,6 +4662,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         // (blackadi-oauth2's `backchannel_logout/issue`), which keeps the header.
         Some(body)
             if !body.is_wildcard_media()
+                && !ep.body_collapses_to_type_reference
                 && (ep.body_media_has_example && ep.body_schema_dropped && ep.body_schema_ref
                     || ep.reference_body_example.is_some()
                         && !ep.body_schema_is_success_response
