@@ -122,6 +122,12 @@ Use the `just` recipes; do not hand-roll equivalents.
 - `just lint-llm` / `just lint-llm-diff` — LLM-judge tier (llmlint), separate from
   `check` and non-deterministic; config in `llmlint.yml`. `just setup-llmlint`
   installs it.
+- `just llmlint-plugins-refresh` — the judged tier's shared rules are VENDORED in
+  `llmlint-plugins/` and recorded in its `lock.json`, so no plugin is fetched at
+  job time (a flaked fetch used to fail the required `llmlint` check). The cost:
+  upstream rule changes arrive only through this recipe. `just
+  test-llmlint-plugins` (in `check`) proves the set still resolves with the origin
+  unreachable. See [`docs/llmlint-plugins.md`](docs/llmlint-plugins.md).
 - `just screenshots` / `just screenshots-gif` / `just screenshots-bless` — the
   README's CLI captures, gated by screencomp (separate from `check`; drift fails
   the `visual-docs` PR check). Re-bless + commit `shots/baseline/` +

@@ -20,7 +20,7 @@ bootstrap:
     @echo "enabled .githooks (shared sccache + visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
-check: fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census supply-chain doc
+check: fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins supply-chain doc
     @echo "check: ok"
 
 # Format check (does not modify files).
@@ -322,6 +322,25 @@ test-surface-census:
 # Install/refresh the llmlint toolchain (oneharness + llmlint). Idempotent.
 setup-llmlint:
     ./scripts/setup-llmlint.sh
+
+# Re-fetch every plugin `llmlint-plugins/lock.json` records, at its recorded
+# `@pin`, and rewrite the vendored copies + the lock. This is the ONLY way an
+# upstream rule change reaches the judged tier — it lands as a reviewable diff
+# rather than on whatever the network answers mid-PR. Needs network + llmlint.
+# See docs/llmlint-plugins.md.
+# Refresh the vendored llmlint rule plugins and their lock.
+llmlint-plugins-refresh:
+    ./scripts/llmlint-plugins.py refresh
+
+# Boundary coverage for that plugin set: drives the REAL llmlint over the REAL
+# llmlint.yml with the plugin origin refused (a proxy at a closed port, a cold
+# cache), so a job-time fetch reintroduced into the config fails here instead of
+# failing a required PR check on a flaked connection. Part of `check`; skips
+# where llmlint is absent unless CROZIER_REQUIRE_LLMLINT=1, which CI's llmlint
+# job sets so the step cannot no-op.
+# Prove the judged tier resolves its rules with the plugin origin unreachable.
+test-llmlint-plugins:
+    python3 tests/llmlint_plugins_test.py
 
 # Set up local Fern-golden reproduction (Fern CLI, Docker daemon, release binary).
 # Idempotent; also run by the SessionStart hook. The hosted workflow is the normal

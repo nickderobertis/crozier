@@ -158,6 +158,8 @@ jobs:
   # Non-deterministic and harness-backed, so it never runs inside the gate. Scoped
   # to the merge-base diff. It REQUIRES its credential and fails fast without it;
   # fork PRs are gated by the repo's require-approval-for-fork-workflows setting.
+  # The rule plugins are vendored in the tree (llmlint-plugins/), so this job
+  # resolves them with no job-time fetch to flake; docs/llmlint-plugins.md.
   llmlint:
     name: llmlint
     if: github.event_name == 'pull_request' && github.event.action != 'edited'
@@ -184,6 +186,14 @@ jobs:
         run: |
           ./scripts/setup-llmlint.sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      # Prove the rule set still resolves with its origin unreachable — the exact
+      # failure that used to fail this required check on a flaked connection.
+      # CROZIER_REQUIRE_LLMLINT turns the "llmlint absent" skip into a failure,
+      # so this step cannot silently no-op on the one runner that has the binary.
+      - name: Plugin-resolution boundary tests
+        env:
+          CROZIER_REQUIRE_LLMLINT: "1"
+        run: just test-llmlint-plugins
       - name: Validate llmlint config
         run: just lint-llm-validate --diff-base origin/main
       - name: Lint changed files
