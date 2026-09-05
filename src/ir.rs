@@ -279,7 +279,7 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
                 && *count * 4 >= total * 3
                 && (!*required || total > 1)
                 && !is_transport_managed_header(wire_name)
-                && !is_auth_managed_header(doc, wire_name)
+                && !is_promotion_reserved_header(wire_name)
                 && !api_key_wire_names.contains(wire_name.as_str())
         })
         .map(|(wire_name, (count, required))| GlobalHeader {
@@ -338,9 +338,24 @@ fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
 
 /// Whether a header is managed by the HTTP transport itself and so is never surfaced
 /// as an SDK parameter — Fern excludes `User-Agent` from global-header promotion even
-/// when it rides every operation (the generated client sets its own).
+/// when it rides every operation (the generated client sets its own), and drops a
+/// declared `Content-Type` header parameter outright: the request's own media type
+/// decides that header, so Chaingateway.io's five `Content-Type` parameters reach neither
+/// the wrapper nor a method signature.
 fn is_transport_managed_header(wire_name: &str) -> bool {
-    wire_name.eq_ignore_ascii_case("user-agent")
+    wire_name.eq_ignore_ascii_case("user-agent") || wire_name.eq_ignore_ascii_case("content-type")
+}
+
+/// Whether a header parameter is reserved from client-wrapper promotion.
+/// Fern's importer reserves `Authorization`: an operation parameter with that wire
+/// name stays a per-method argument however many operations carry it, even when
+/// the document declares no security scheme for the credential to belong to —
+/// Chaingateway.io declares none, and its required `Authorization` rides all 21 of
+/// its operations without becoming a constructor field. A declared `apiKey` scheme
+/// named `Authorization` still reaches the wrapper, through
+/// [`additional_api_key_global_headers`] rather than this promotion.
+fn is_promotion_reserved_header(wire_name: &str) -> bool {
+    wire_name.eq_ignore_ascii_case("authorization")
 }
 
 /// Whether the SDK's auth credential already owns this header. OAuth and HTTP
@@ -8201,9 +8216,18 @@ fn is_object_type(schema: &Schema) -> bool {
             && (!schema.properties.is_empty() || schema.additional_properties.is_some()))
 }
 
+/// Trailing whitespace Fern strips from a description. A carriage return is
+/// **kept**: Chaingateway.io's `subscribeAddress` description ends `\r\n`, and
+/// the `\r` survives into `reference.md`. It is absent from the Python
+/// docstrings only because the CRLF it forms there is normalized by `ruff
+/// format`, so trimming it here would lose it from the Markdown writers too.
+fn trim_doc_end(text: &str) -> &str {
+    text.trim_end_matches(|character: char| character.is_whitespace() && character != '\r')
+}
+
 /// Normalize a description into a docstring, dropping empty ones.
 fn clean_doc(desc: Option<&str>) -> Option<String> {
-    let text = desc?.trim_end();
+    let text = trim_doc_end(desc?);
     if text.trim_start().is_empty() {
         None
     } else {
@@ -8228,7 +8252,7 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
 /// method docs, while still trimming non-empty prose like [`clean_doc`].
 fn operation_doc(desc: Option<&str>) -> Option<String> {
     let text = desc?;
-    let trimmed = text.trim_end();
+    let trimmed = trim_doc_end(text);
     if trimmed.trim_start().is_empty() {
         Some(String::new())
     } else {
