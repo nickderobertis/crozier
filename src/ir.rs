@@ -7991,6 +7991,16 @@ fn described_all_of_ref(schema: &Schema) -> Option<(&str, Option<&str>)> {
 }
 
 fn property_description(schema: &Schema) -> Option<&str> {
+    // Fern's *bare* unknown type carries no docs: its schema converter passes the
+    // description to every other kind and to `unknown` passes nothing, so
+    // oSPARC's `ProjectInputGet.value` — a property declaring only a `title` and
+    // a `description` — is a bare `typing.Any` with no docstring beside it. A
+    // nullable one keeps its description, because the optional wrapper Fern puts
+    // around it carries the docs: Twilio's `cert_in_validation` is
+    // `{description, nullable: true}` and its golden documents it.
+    if is_unknown(schema) && !is_optional(schema) {
+        return None;
+    }
     schema
         .description
         .as_deref()
@@ -10820,15 +10830,17 @@ mod tests {
         )));
         assert_eq!(
             hoister.hoist_param_enum("ListAgentsRequest", "name", &nullable_string),
-            TypeRef::Primitive(Prim::Str)
+            TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Str)))
         );
         assert_eq!(
             hoister.hoist_param_enum("ListAgentsRequest", "tags", &nullable_array),
-            TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str)))
+            TypeRef::Optional(Box::new(TypeRef::List(Box::new(TypeRef::Primitive(
+                Prim::Str
+            )))))
         );
         assert_eq!(
             hoister.hoist_param_enum("ListAgentsRequest", "last_stop_reason", &nullable_reference,),
-            TypeRef::Named("StopReasonType".to_string())
+            TypeRef::Optional(Box::new(TypeRef::Named("StopReasonType".to_string())))
         );
 
         let offset = schema(serde_json::json!({
@@ -10846,7 +10858,9 @@ mod tests {
         }));
         assert_eq!(
             hoister.hoist_param_enum("ListRunsRequest", "duration_operator", &operator),
-            TypeRef::Named("ListRunsRequestDurationOperator".to_string())
+            TypeRef::Optional(Box::new(TypeRef::Named(
+                "ListRunsRequestDurationOperator".to_string()
+            )))
         );
         assert!(hoister.out.iter().any(|decl| matches!(
             decl,

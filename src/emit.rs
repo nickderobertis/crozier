@@ -9042,6 +9042,7 @@ mod tests {
             body_description_empty: false,
             body_description_missing: false,
             body_component_ref: false,
+            body_collapses_to_type_reference: false,
             body_content_type_override: None,
             basic_auth: false,
             body_schema_ref: false,

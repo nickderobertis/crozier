@@ -61,7 +61,14 @@ pub fn to_snake_case(input: &str) -> String {
                 w.ends_with(|p: char| p.is_ascii_digit())
                     && w.chars().any(|c| c.is_ascii_alphabetic())
             });
-        if !out.is_empty() && !after_digit_word {
+        // A word that *opens* with a digit and carries a letter (`2fa`) joins the
+        // word before it the same way, so oSPARC's `login_2fa` operation becomes
+        // `login2fa` and its `resend_2fa_code` becomes `resend2fa_code`. A
+        // standalone digit word (`2`, from `2Factor`) is not one of these and
+        // keeps its separator.
+        let digit_led_word = word.starts_with(|p: char| p.is_ascii_digit())
+            && word.chars().any(|c| c.is_ascii_alphabetic());
+        if !out.is_empty() && !after_digit_word && !digit_led_word {
             out.push('_');
         }
         out.push_str(&word);
