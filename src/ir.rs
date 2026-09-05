@@ -2390,7 +2390,20 @@ fn build_endpoint(
                 .iter()
                 .filter(|member| member.ty.as_ref().and_then(TypeField::primary) != Some("null"))
                 .collect();
-            (non_null.len() != 1 || string_enum_values(non_null[0]).is_none())
+            // A composition Fern declares in the package root rather than in the
+            // tag's own `types/`. Two shapes stay tag-local: a sole non-null
+            // string enum, and a *titled* composition with no `null`
+            // alternative — a `title` beside a null member belongs to the
+            // nullable wrapper Fern lifts the composition into, not to the
+            // composition, so oSPARC's titled `amount` and `product_name` are
+            // `projects/types/` and `products/types/` while its titled but
+            // nullable `file_size` and letta's untitled `offset` are the root's.
+            let titled_and_total = parameter
+                .schema
+                .as_ref()
+                .is_some_and(|schema| schema.title.is_some())
+                && non_null.len() == members.len();
+            ((non_null.len() != 1 || string_enum_values(non_null[0]).is_none()) && !titled_and_total)
                 .then(|| format!("{request_ctx}{}", naming::class_name(&parameter.name)))
         })
         .collect();
