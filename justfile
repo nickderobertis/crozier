@@ -174,6 +174,9 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e hubspot_events_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_remote_networks_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openintegrationhub_secret_service_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e strapi_rest_api_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e listennotes_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e vtex_pricing_matches_fern_output
 
 # Format the codebase in place.
 format:

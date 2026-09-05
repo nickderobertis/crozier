@@ -1910,6 +1910,9 @@ const CORPORA: &[&Corpus] = &[
     &HUBSPOT_EVENTS,
     &PALOALTO_REMOTE_NETWORKS,
     &OPENINTEGRATIONHUB_SECRET_SERVICE,
+    &STRAPI_REST_API,
+    &LISTENNOTES,
+    &VTEX_PRICING,
 ];
 
 #[test]
@@ -3296,6 +3299,55 @@ const OPENINTEGRATIONHUB_SECRET_SERVICE: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `strapi-rest-api`: Strapi's REST API is the corpus's second declarer of
+/// `style: deepObject` over an *array* schema — `components.parameters.fields`,
+/// `explode: true` over `{type: array}` — so this row and corpus row 117 pin the
+/// same crossing on two independent documents, which is what keeps the parity
+/// evidence from resting on one publisher's spelling of it.
+const STRAPI_REST_API: Corpus = Corpus {
+    api: "strapi-rest-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `listennotes`: the Listen Notes podcast API is a second and independent
+/// declarer of `style: simple` over an `in: header` scalar
+/// (`components.parameters.apiKeyParam`), and the corpus's densest
+/// `openapi: 3.1.0` source — 23 paths over 102 component schemas — whose four
+/// Response Header Objects reach the Header Object rows through
+/// `components.headers` rather than inline.
+const LISTENNOTES: Corpus = Corpus {
+    api: "listennotes",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `vtex-pricing`: VTEX's Pricing API is the corpus's only source declaring a
+/// Header Object's `content` — 22 Response Header Objects carry a media type
+/// instead of a `schema` — so this row pins whatever Fern derives from a field
+/// crozier models nothing of. It is also the corpus's densest `style: simple`
+/// header declarer at 28, beside corpus rows 115 and 120.
+const VTEX_PRICING: Corpus = Corpus {
+    api: "vtex-pricing",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3630,6 +3682,21 @@ fn paloalto_remote_networks_matches_fern_output() {
 #[test]
 fn openintegrationhub_secret_service_matches_fern_output() {
     assert_link_ok_corpus_matches(&OPENINTEGRATIONHUB_SECRET_SERVICE);
+}
+
+#[test]
+fn strapi_rest_api_matches_fern_output() {
+    assert_link_ok_corpus_matches(&STRAPI_REST_API);
+}
+
+#[test]
+fn listennotes_matches_fern_output() {
+    assert_link_ok_corpus_matches(&LISTENNOTES);
+}
+
+#[test]
+fn vtex_pricing_matches_fern_output() {
+    assert_link_ok_corpus_matches(&VTEX_PRICING);
 }
 
 #[test]
