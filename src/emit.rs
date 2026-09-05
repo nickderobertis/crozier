@@ -4650,6 +4650,19 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     // raw bytes body, else `application/json` when the body intrinsically needs it
     // or is accompanied by path/header parameters. Header parameters follow,
     // rendered as `str(x) if x is not None else None`.
+    // A *resource envelope*: a documented body schema that is mostly `readOnly`
+    // and declares exactly one required member — the k8s Container Service
+    // Provider's `Container`, six of whose seven properties are `readOnly` around
+    // the single required `spec`. Fern keeps the explicit `content-type` for that
+    // shape, so it escapes both drops an ordinary echo body takes: the
+    // response-heavy one below, which applies only to an *undocumented* schema
+    // (apideck's `add`, netbox's `groups_create`), and the request/response
+    // same-`$ref` one, which drops the header for Airflow's `post_pool` (no
+    // required member) and the Petstore's `place_order` (not response-heavy).
+    let resource_envelope = ep.body_schema_is_response_heavy
+        && ep.body_schema_documented
+        && matches!(&ep.request_body, Some(RequestBody::Inline(fields))
+            if fields.iter().filter(|field| field.spec_required).count() == 1);
     let content_type: Option<String> = match &ep.request_body {
         Some(_) if ep.body_content_type_override.is_some() => ep.body_content_type_override.clone(),
         Some(RequestBody::Bytes { content_type }) => Some(content_type.clone()),
@@ -4678,6 +4691,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         // argument (its inline `oneOf`, hoisted to `CreateGlobalAuthModuleRequest`),
         // not to one whose inline schema is flattened field by field
         // (blackadi-oauth2's `backchannel_logout/issue`), which keeps the header.
+        // A documented, response-heavy body with one required member — a resource
+        // envelope — keeps the header through both of those drops; see
+        // `resource_envelope` above.
         Some(body)
             if !body.is_wildcard_media()
                 && !ep.body_collapses_to_type_reference
@@ -4694,7 +4710,8 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         && !ep.body_codegen_named
                         && (!ep.body_component_ref || ep.body_schema_dropped)
                         && !(matches!(body, RequestBody::Inline(_))
-                            && (ep.body_all_of || ep.body_response_same_ref))
+                            && (ep.body_all_of || ep.body_response_same_ref)
+                            && !resource_envelope)
                         && !matches!(body, RequestBody::Inline(fields)
                             if ep.body_schema_ref
                                 && (!ep.body_schema_dropped
@@ -4704,6 +4721,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                     || ep.body_schema_is_response_heavy
                                         && ep.body_schema_is_open
                                         && ep.body_description_missing
+                                        && !ep.body_schema_documented
                                         && fields.iter().filter(|field| field.spec_required).count() == 1))
                         && (!(ep.body_description_empty
                             || ep.body_schema_has_example

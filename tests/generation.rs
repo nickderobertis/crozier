@@ -7066,3 +7066,168 @@ paths:
         "{file}"
     );
 }
+
+/// `x-enum-varnames` names a string enum's members positionally, and a keyed
+/// `x-fern-enum` declaration wins over it for the same value.
+///
+/// Corpus row 113's `Error.type` enumerates seven RFC 9457 problem-type URIs and
+/// names them `INVALIDARGUMENT`, `NOTFOUND`, … that way; its Fern 5.20.0 golden
+/// emits those members rather than the identifiers derived from the URIs, which
+/// would spell the whole scheme and host.
+#[test]
+fn an_enum_takes_its_member_names_from_x_enum_varnames() {
+    let files = render(
+        r##"openapi: 3.0.4
+info: { title: Problems, version: 1.0.0 }
+paths:
+  /errors:
+    get:
+      operationId: errors_get
+      tags: [Errors]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        type:
+          type: string
+          description: URI reference identifying the error type
+          enum:
+            - https://example.test/problems/invalid-argument
+            - https://example.test/problems/not-found
+          x-enum-varnames:
+            - INVALIDARGUMENT
+            - NOTFOUND
+        unit:
+          type: string
+          enum: ["$", "%"]
+          x-enum-varnames:
+            - DOLLAR
+            - PERCENT
+          x-fern-enum:
+            "$": { name: USD }
+"##,
+    );
+    let error_type = &files["src/acme/types/error_type.py"];
+    assert!(
+        error_type.contains("INVALIDARGUMENT = \"https://example.test/problems/invalid-argument\""),
+        "{error_type}"
+    );
+    assert!(
+        error_type.contains("NOTFOUND = \"https://example.test/problems/not-found\""),
+        "{error_type}"
+    );
+    assert!(
+        !error_type.contains("HTTPS_EXAMPLE_TEST"),
+        "a named member does not fall back to the identifier derived from the URI: {error_type}"
+    );
+    assert!(
+        error_type.contains("invalidargument: typing.Callable[[], T_Result]"),
+        "the `visit` parameter is the declared name cased down: {error_type}"
+    );
+    let unit = &files["src/acme/types/error_unit.py"];
+    assert!(
+        unit.contains("USD = \"$\""),
+        "a keyed declaration wins over the positional one: {unit}"
+    );
+    assert!(unit.contains("PERCENT = \"%\""), "{unit}");
+    assert!(!unit.contains("DOLLAR"), "{unit}");
+}
+
+/// A documented, mostly-`readOnly` body schema with exactly one required member
+/// keeps its explicit `content-type` header; the same shape undocumented drops
+/// it.
+///
+/// Corpus row 113's `create_container` sends a `Container` whose six `readOnly`
+/// properties surround the single required `spec`, and whose request and 201
+/// response name the same component — two shapes that each otherwise drop the
+/// header — and its Fern 5.20.0 golden sends `content-type: application/json`.
+#[test]
+fn a_documented_resource_envelope_keeps_its_content_type_header() {
+    let files = render(
+        r##"openapi: 3.0.4
+info: { title: Envelopes, version: 1.0.0 }
+paths:
+  /containers:
+    post:
+      operationId: resources_create_container
+      tags: [Resources]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Container" }
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Container" }
+  /widgets:
+    post:
+      operationId: resources_create_widget
+      tags: [Resources]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Widget" }
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Widget" }
+components:
+  schemas:
+    Container:
+      type: object
+      description: Container resource representing a container instance
+      required: [spec]
+      properties:
+        id: { type: string, readOnly: true }
+        path: { type: string, readOnly: true }
+        spec: { type: string }
+        create_time: { type: string, readOnly: true }
+    Widget:
+      type: object
+      required: [spec]
+      properties:
+        id: { type: string, readOnly: true }
+        path: { type: string, readOnly: true }
+        spec: { type: string }
+        create_time: { type: string, readOnly: true }
+"##,
+    );
+    let raw = &files["src/acme/resources/raw_client.py"];
+    let container = raw
+        .split("def create_container(")
+        .nth(1)
+        .expect("create_container method");
+    assert!(
+        container
+            .split("\n    def ")
+            .next()
+            .unwrap()
+            .contains("\"content-type\": \"application/json\","),
+        "{container}"
+    );
+    let widget = raw
+        .split("def create_widget(")
+        .nth(1)
+        .expect("create_widget method");
+    assert!(
+        !widget
+            .split("\n    def ")
+            .next()
+            .unwrap()
+            .contains("\"content-type\""),
+        "an undocumented envelope drops the header: {widget}"
+    );
+}

@@ -870,6 +870,14 @@ pub struct Schema {
     /// `x-crozier-enum` when both appear (see [`Schema::enum_member_names`]).
     #[serde(rename = "x-fern-enum", default)]
     pub(crate) enum_names_fern: Option<IndexMap<String, EnumValueName>>,
+    /// `x-enum-varnames`: the OpenAPI-Generator community spelling of per-value
+    /// member names — a list read *positionally* against `enum`, where
+    /// `x-crozier-enum`/`x-fern-enum` are maps keyed by wire value. It is a
+    /// third-party extension Fern reads rather than one of Fern's own, so the
+    /// dual-header policy does not apply and there is no `x-crozier-` spelling of
+    /// it; the two keyed forms supersede it (see [`Schema::enum_member_names`]).
+    #[serde(rename = "x-enum-varnames", default)]
+    pub(crate) enum_varnames: Option<Vec<String>>,
     /// Set when this node's `type` was a list with more than one non-`null` member,
     /// which `normalize_multi_type_schemas` rewrote into the equivalent `anyOf`.
     /// Not a wire field. Fern names such a union rather than inlining it — EN
@@ -900,18 +908,36 @@ impl Schema {
 
     /// The declared Python member name for each enum value, canonicalizing on the
     /// `x-crozier-enum` spelling (see the [dual-header
-    /// policy](self#fern-compatible-extensions)). A value the map does not name, or
+    /// policy](self#fern-compatible-extensions)). A value no declaration names, or
     /// names blankly, keeps the identifier derived from the value itself.
+    ///
+    /// `x-enum-varnames` is read too, positionally against `enum` — the k8s
+    /// Container Service Provider document names its RFC 9457 problem-type URIs
+    /// that way and Fern honours them (`INVALIDARGUMENT` for
+    /// `https://…/problems/invalid-argument`, where the derived identifier would
+    /// spell the whole URI). A keyed declaration wins over the positional one for
+    /// the same value.
     pub fn enum_member_names(&self) -> impl Iterator<Item = (&str, &str)> {
-        self.enum_names_crozier
-            .as_ref()
-            .or(self.enum_names_fern.as_ref())
-            .into_iter()
+        let mut names: IndexMap<&str, &str> = self
+            .enum_values
+            .iter()
             .flatten()
-            .filter_map(|(value, declared)| {
-                let name = declared.name.as_deref()?.trim();
-                (!name.is_empty()).then_some((value.as_str(), name))
-            })
+            .zip(self.enum_varnames.iter().flatten())
+            .filter_map(|(value, name)| Some((value.as_str()?, name.trim())))
+            .filter(|(_, name)| !name.is_empty())
+            .collect();
+        names.extend(
+            self.enum_names_crozier
+                .as_ref()
+                .or(self.enum_names_fern.as_ref())
+                .into_iter()
+                .flatten()
+                .filter_map(|(value, declared)| {
+                    let name = declared.name.as_deref()?.trim();
+                    (!name.is_empty()).then_some((value.as_str(), name))
+                }),
+        );
+        names.into_iter()
     }
 
     /// Whether the document says this schema admits `null`: the 3.0 `nullable`
