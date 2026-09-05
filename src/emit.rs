@@ -3825,7 +3825,18 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
         .map(|qp| {
             // An array query parameter allows multiple values: Fern types it
             // `Optional[Union[T, Sequence[T]]]` and always defaults it to `None`.
-            if let TypeRef::List(inner) = &qp.type_ref {
+            // A *nullable* array (`anyOf: [array, null]`, letta's `tags`) renders
+            // the same way — the null alternative only supplies the `Optional`
+            // this arm already writes.
+            let array = match &qp.type_ref {
+                TypeRef::List(inner) => Some((inner, qp.required)),
+                TypeRef::Optional(inner) => match inner.as_ref() {
+                    TypeRef::List(item) => Some((item, false)),
+                    _ => None,
+                },
+                _ => None,
+            };
+            if let Some((inner, required)) = array {
                 if qp.allow_multiple {
                     let item = raw_type_str(inner, imports);
                     return DocParam {
@@ -3839,7 +3850,7 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
                 }
                 return optional_arg(
                     format!("typing.Sequence[{}]", raw_type_str(inner, imports)),
-                    qp.required,
+                    required,
                     qp.docstring.clone(),
                     qp.py_name.clone(),
                 );

@@ -2155,7 +2155,12 @@ fn build_endpoint(
                 wire_name: p.name.clone(),
                 py_name: naming::field_name(&p.name),
                 type_ref,
-                required: p.required == Some(true),
+                // A parameter whose own schema admits `null` lowers to Fern's
+                // `optional<..>` however the Parameter Object spells `required`,
+                // and an optional query argument carries `= None`: oSPARC's
+                // `file_size` is `required: true` over an `anyOf` with a
+                // `type: null` alternative, and its golden defaults it to `None`.
+                required: p.required == Some(true) && !p.schema.as_ref().is_some_and(is_optional),
                 convert,
                 comma_separated,
                 allow_multiple,
@@ -4284,27 +4289,41 @@ impl InlineHoister<'_> {
                         member.ty.as_ref().and_then(TypeField::primary) != Some("null")
                     })
                     .collect();
+                // The `type: null` alternative is Fern's nullability rather than a
+                // member: it leaves the union and makes the parameter optional.
+                // oSPARC's `file_size` is `anyOf: [string, integer, null]` and its
+                // golden types it `Optional[UploadFileRequestFileSize]` over a
+                // two-member alias, while its `folder_id` path parameter is
+                // `anyOf: [integer, null]` and is typed `Optional[int]`.
+                let nullable = non_null.len() < members.len();
+                let wrap = |type_ref| {
+                    if nullable {
+                        optional_type_ref(type_ref)
+                    } else {
+                        type_ref
+                    }
+                };
                 if non_null.len() == 1 {
                     if let Some(values) = string_enum_values(non_null[0]) {
                         self.out
                             .push(TypeDecl::Enum(build_enum(non_null[0], &name, values, None)));
-                        return TypeRef::Named(name);
+                        return wrap(TypeRef::Named(name));
                     }
                     if let Some(reference) = non_null[0].reference.as_deref() {
-                        return TypeRef::Named(ref_to_class(reference));
+                        return wrap(TypeRef::Named(ref_to_class(reference)));
                     }
                     if is_unknown(non_null[0]) {
                         return TypeRef::Primitive(Prim::Any);
                     }
                     if is_map(non_null[0]) {
-                        return nullable_map_value_type_ref(non_null[0]);
+                        return wrap(nullable_map_value_type_ref(non_null[0]));
                     }
-                    return self.schemas.map_or_else(
+                    return wrap(self.schemas.map_or_else(
                         || base_type_ref(non_null[0]),
                         |schemas| full_type_ref_resolved(non_null[0], schemas),
-                    );
+                    ));
                 }
-                let variants: Vec<TypeRef> = members.iter().map(base_type_ref).collect();
+                let variants: Vec<TypeRef> = non_null.iter().copied().map(base_type_ref).collect();
                 let mut variants = dedupe_union_members(variants);
                 // A composition whose members all lower to the same type is no
                 // union at all, and Fern hoists nothing for it: Flowdapt's
@@ -4312,7 +4331,7 @@ impl InlineHoister<'_> {
                 // `anyOf: [{type: string}, {type: string, format: uuid}]` and
                 // its golden types the argument `str`.
                 if variants.len() == 1 {
-                    return variants.pop().expect("length checked above");
+                    return wrap(variants.pop().expect("length checked above"));
                 }
                 self.out.push(TypeDecl::Alias(AliasType {
                     name: name.clone(),
@@ -4320,7 +4339,7 @@ impl InlineHoister<'_> {
                     target: TypeRef::Union(variants),
                     docstring: clean_doc(schema.description.as_deref()),
                 }));
-                return TypeRef::Named(name);
+                return wrap(TypeRef::Named(name));
             }
             if let Some(array) = self.hoist_array_item_enum(
                 &format!("{request_ctx}{}", naming::class_name(param)),
