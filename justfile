@@ -169,6 +169,12 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e helixdb_http_api_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e flowdapt_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e k8s_container_service_provider_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e daniweb_connect_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e chaingateway_io_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e hubspot_events_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e alayacare_rating_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_remote_networks_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openintegrationhub_secret_service_matches_fern_output
 
 # Format the codebase in place.
 format:

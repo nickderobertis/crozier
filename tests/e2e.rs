@@ -1905,6 +1905,12 @@ const CORPORA: &[&Corpus] = &[
     &HELIXDB_HTTP_API,
     &FLOWDAPT,
     &K8S_CONTAINER_SERVICE_PROVIDER,
+    &DANIWEB_CONNECT,
+    &CHAINGATEWAY_IO,
+    &HUBSPOT_EVENTS,
+    &ALAYACARE_RATING,
+    &PALOALTO_REMOTE_NETWORKS,
+    &OPENINTEGRATIONHUB_SECRET_SERVICE,
 ];
 
 #[test]
@@ -3207,6 +3213,106 @@ const K8S_CONTAINER_SERVICE_PROVIDER: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `daniweb-connect`: the DaniWeb Connect API is the corpus's only source
+/// crossing `style: simple` with `in: path` over an *array* schema — 15 of
+/// them, the `ID` parameter of `/apps/{ID}`, `/audiences/{ID}`,
+/// `/conversations/{ID}` and twelve more, each an array of integers — so this
+/// row pins the path segment Fern interpolates a list-valued parameter into.
+const DANIWEB_CONNECT: Corpus = Corpus {
+    api: "daniweb-connect",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `chaingateway-io`: the Ethereum gateway Chaingateway.io describes for
+/// itself is the corpus's densest source crossing `style: simple` with
+/// `in: header` over a scalar schema — 26 of them across its 21 operations,
+/// where corpus row 107 declares the same crossing twice — so this row pins
+/// the header value `raw_client.py` sends for an explicitly-styled header
+/// parameter and the argument `client.py` declares for it.
+const CHAINGATEWAY_IO: Corpus = Corpus {
+    api: "chaingateway-io",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `hubspot-events`: HubSpot's Events API v3 is the corpus's only source
+/// crossing `style: form` with `in: query` over an *object* schema —
+/// `objectProperty.{propname}` and `property.{propname}` on
+/// `GET /events/v3/events/`, each `explode: true` over `{type: object}` — so
+/// this row pins the argument Fern declares for a free-form object query
+/// parameter whose wire name itself carries a template.
+const HUBSPOT_EVENTS: Corpus = Corpus {
+    api: "hubspot-events",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `alayacare-rating`: AlayaCare's Billable Item Management API is the
+/// corpus's only source declaring `style: pipeDelimited` at all — one query
+/// parameter over a scalar schema on `GET /service_accounting` — so this row
+/// pins the wire form Fern gives the one serialization style no registered
+/// source has ever declared.
+const ALAYACARE_RATING: Corpus = Corpus {
+    api: "alayacare-rating",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `paloalto-remote-networks`: the Configuration Orchestration API Palo Alto
+/// Networks publishes on its own developer portal is the corpus's only source
+/// crossing `style: deepObject` with an *array* schema —
+/// `components.parameters.RemoteNetworksNames`, `explode: true` over
+/// `{type: array}` — so this row pins what Fern serialises when the
+/// object-only style meets a list.
+const PALOALTO_REMOTE_NETWORKS: Corpus = Corpus {
+    api: "paloalto-remote-networks",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `openintegrationhub-secret-service`: the description the Open Integration
+/// Hub's Secrets Service ships beside its own source is the corpus's only
+/// source crossing `style: deepObject` with a *scalar* schema —
+/// `components.parameters.pageSize`, `{in: query, style: deepObject}` over
+/// `{type: integer}` — the crossing the specification leaves undefined, so
+/// this row pins what Fern does with a style its schema cannot satisfy.
+const OPENINTEGRATIONHUB_SECRET_SERVICE: Corpus = Corpus {
+    api: "openintegrationhub-secret-service",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3516,6 +3622,36 @@ fn flowdapt_matches_fern_output() {
 #[test]
 fn k8s_container_service_provider_matches_fern_output() {
     assert_link_ok_corpus_matches(&K8S_CONTAINER_SERVICE_PROVIDER);
+}
+
+#[test]
+fn daniweb_connect_matches_fern_output() {
+    assert_link_ok_corpus_matches(&DANIWEB_CONNECT);
+}
+
+#[test]
+fn chaingateway_io_matches_fern_output() {
+    assert_link_ok_corpus_matches(&CHAINGATEWAY_IO);
+}
+
+#[test]
+fn hubspot_events_matches_fern_output() {
+    assert_link_ok_corpus_matches(&HUBSPOT_EVENTS);
+}
+
+#[test]
+fn alayacare_rating_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ALAYACARE_RATING);
+}
+
+#[test]
+fn paloalto_remote_networks_matches_fern_output() {
+    assert_link_ok_corpus_matches(&PALOALTO_REMOTE_NETWORKS);
+}
+
+#[test]
+fn openintegrationhub_secret_service_matches_fern_output() {
+    assert_link_ok_corpus_matches(&OPENINTEGRATIONHUB_SECRET_SERVICE);
 }
 
 #[test]
