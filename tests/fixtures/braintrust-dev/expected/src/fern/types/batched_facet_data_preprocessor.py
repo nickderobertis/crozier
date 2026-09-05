@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .batched_facet_data_preprocessor_function_type import BatchedFacetDataPreprocessorFunctionType
+from .batched_facet_data_preprocessor_id import BatchedFacetDataPreprocessorId
+
+BatchedFacetDataPreprocessor = typing.Union[BatchedFacetDataPreprocessorId, BatchedFacetDataPreprocessorFunctionType]

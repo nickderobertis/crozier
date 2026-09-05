@@ -1,0 +1,162 @@
+
+
+import datetime as dt
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .insert_dataset_event_array_delete_item import InsertDatasetEventArrayDeleteItem
+from .insert_dataset_event_metadata import InsertDatasetEventMetadata
+from .object_reference_nullish import ObjectReferenceNullish
+
+
+class InsertDatasetEvent(UniversalBaseModel):
+    """
+    A dataset event
+    """
+
+    input: typing.Optional[typing.Any] = pydantic.Field(default=None)
+    """
+    The argument that uniquely define an input case (an arbitrary, JSON serializable object)
+    """
+
+    expected: typing.Optional[typing.Any] = pydantic.Field(default=None)
+    """
+    The output of your application, including post-processing (an arbitrary, JSON serializable object)
+    """
+
+    metadata: typing.Optional[InsertDatasetEventMetadata] = pydantic.Field(default=None)
+    """
+    A dictionary with additional data about the test example, model outputs, or just about anything else that's relevant, that you can use to help find and analyze examples later. For example, you could log the `prompt`, example's `id`, or anything else that would be useful to slice/dice later. The values in `metadata` can be any JSON-serializable type, but its keys must be strings
+    """
+
+    tags: typing.Optional[typing.List[str]] = pydantic.Field(default=None)
+    """
+    A list of tags to log
+    """
+
+    id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    A unique identifier for the dataset event. If you don't provide one, Braintrust will generate one for you
+    """
+
+    created: typing.Optional[dt.datetime] = pydantic.Field(default=None)
+    """
+    The timestamp the dataset event was created
+    """
+
+    origin: typing.Optional[ObjectReferenceNullish] = None
+    facets: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
+    """
+    Facets for categorization (dictionary from facet id to value)
+    """
+
+    object_delete: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="_object_delete"),
+        pydantic.Field(
+            alias="_object_delete",
+            description="Pass `_object_delete=true` to mark the dataset event deleted. Deleted events will not show up in subsequent fetches for this dataset",
+        ),
+    ] = None
+    """
+    Pass `_object_delete=true` to mark the dataset event deleted. Deleted events will not show up in subsequent fetches for this dataset
+    """
+
+    is_merge: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="_is_merge"),
+        pydantic.Field(
+            alias="_is_merge",
+            description='The `_is_merge` field controls how the row is merged with any existing row with the same id in the DB. By default (or when set to `false`), the existing row is completely replaced by the new row. When set to `true`, the new row is deep-merged into the existing row, if one is found. If no existing row is found, the new row is inserted as is.\n\nFor example, say there is an existing row in the DB `{"id": "foo", "input": {"a": 5, "b": 10}}`. If we merge a new row as `{"_is_merge": true, "id": "foo", "input": {"b": 11, "c": 20}}`, the new row will be `{"id": "foo", "input": {"a": 5, "b": 11, "c": 20}}`. If we replace the new row as `{"id": "foo", "input": {"b": 11, "c": 20}}`, the new row will be `{"id": "foo", "input": {"b": 11, "c": 20}}`',
+        ),
+    ] = None
+    """
+    The `_is_merge` field controls how the row is merged with any existing row with the same id in the DB. By default (or when set to `false`), the existing row is completely replaced by the new row. When set to `true`, the new row is deep-merged into the existing row, if one is found. If no existing row is found, the new row is inserted as is.
+    
+    For example, say there is an existing row in the DB `{"id": "foo", "input": {"a": 5, "b": 10}}`. If we merge a new row as `{"_is_merge": true, "id": "foo", "input": {"b": 11, "c": 20}}`, the new row will be `{"id": "foo", "input": {"a": 5, "b": 11, "c": 20}}`. If we replace the new row as `{"id": "foo", "input": {"b": 11, "c": 20}}`, the new row will be `{"id": "foo", "input": {"b": 11, "c": 20}}`
+    """
+
+    merge_paths: typing_extensions.Annotated[
+        typing.Optional[typing.List[typing.List[str]]],
+        FieldMetadata(alias="_merge_paths"),
+        pydantic.Field(
+            alias="_merge_paths",
+            description='The `_merge_paths` field allows controlling the depth of the merge, when `_is_merge=true`. `_merge_paths` is a list of paths, where each path is a list of field names. The deep merge will not descend below any of the specified merge paths.\n\nFor example, say there is an existing row in the DB `{"id": "foo", "input": {"a": {"b": 10}, "c": {"d": 20}}, "output": {"a": 20}}`. If we merge a new row as `{"_is_merge": true, "_merge_paths": [["input", "a"], ["output"]], "input": {"a": {"q": 30}, "c": {"e": 30}, "bar": "baz"}, "output": {"d": 40}}`, the new row will be `{"id": "foo": "input": {"a": {"q": 30}, "c": {"d": 20, "e": 30}, "bar": "baz"}, "output": {"d": 40}}`. In this case, due to the merge paths, we have replaced `input.a` and `output`, but have still deep-merged `input` and `input.c`.',
+        ),
+    ] = None
+    """
+    The `_merge_paths` field allows controlling the depth of the merge, when `_is_merge=true`. `_merge_paths` is a list of paths, where each path is a list of field names. The deep merge will not descend below any of the specified merge paths.
+    
+    For example, say there is an existing row in the DB `{"id": "foo", "input": {"a": {"b": 10}, "c": {"d": 20}}, "output": {"a": 20}}`. If we merge a new row as `{"_is_merge": true, "_merge_paths": [["input", "a"], ["output"]], "input": {"a": {"q": 30}, "c": {"e": 30}, "bar": "baz"}, "output": {"d": 40}}`, the new row will be `{"id": "foo": "input": {"a": {"q": 30}, "c": {"d": 20, "e": 30}, "bar": "baz"}, "output": {"d": 40}}`. In this case, due to the merge paths, we have replaced `input.a` and `output`, but have still deep-merged `input` and `input.c`.
+    """
+
+    array_delete: typing_extensions.Annotated[
+        typing.Optional[typing.List[InsertDatasetEventArrayDeleteItem]],
+        FieldMetadata(alias="_array_delete"),
+        pydantic.Field(
+            alias="_array_delete",
+            description='The `_array_delete` field allows removing specific values from array fields. It is an array of objects with `path` and `delete` properties.\n\nFor example, to remove tags "foo" and "bar" from an existing row: `{"_is_merge": true, "_array_delete": [{"path": ["tags"], "delete": ["foo", "bar"]}]}`. For nested fields like `metadata.categories`, use `[{"path": ["metadata", "categories"], "delete": ["value"]}]`. This will remove those specific values from the array while preserving others.',
+        ),
+    ] = None
+    """
+    The `_array_delete` field allows removing specific values from array fields. It is an array of objects with `path` and `delete` properties.
+    
+    For example, to remove tags "foo" and "bar" from an existing row: `{"_is_merge": true, "_array_delete": [{"path": ["tags"], "delete": ["foo", "bar"]}]}`. For nested fields like `metadata.categories`, use `[{"path": ["metadata", "categories"], "delete": ["value"]}]`. This will remove those specific values from the array while preserving others.
+    """
+
+    parent_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="_parent_id"),
+        pydantic.Field(
+            alias="_parent_id",
+            description='DEPRECATED: The `_parent_id` field is deprecated and should not be used. Support for `_parent_id` will be dropped in a future version of Braintrust. Log `span_id`, `root_span_id`, and `span_parents` explicitly instead.\n\nUse the `_parent_id` field to create this row as a subspan of an existing row. Tracking hierarchical relationships are important for tracing (see the [guide](https://www.braintrust.dev/docs/instrument) for full details).\n\nFor example, say we have logged a row `{"id": "abc", "input": "foo", "output": "bar", "expected": "boo", "scores": {"correctness": 0.33}}`. We can create a sub-span of the parent row by logging `{"_parent_id": "abc", "id": "llm_call", "input": {"prompt": "What comes after foo?"}, "output": "bar", "metrics": {"tokens": 1}}`. In the webapp, only the root span row `"abc"` will show up in the summary view. You can view the full trace hierarchy (in this case, the `"llm_call"` row) by clicking on the "abc" row.\n\nIf the row is being merged into an existing row, this field will be ignored.',
+        ),
+    ] = None
+    """
+    DEPRECATED: The `_parent_id` field is deprecated and should not be used. Support for `_parent_id` will be dropped in a future version of Braintrust. Log `span_id`, `root_span_id`, and `span_parents` explicitly instead.
+    
+    Use the `_parent_id` field to create this row as a subspan of an existing row. Tracking hierarchical relationships are important for tracing (see the [guide](https://www.braintrust.dev/docs/instrument) for full details).
+    
+    For example, say we have logged a row `{"id": "abc", "input": "foo", "output": "bar", "expected": "boo", "scores": {"correctness": 0.33}}`. We can create a sub-span of the parent row by logging `{"_parent_id": "abc", "id": "llm_call", "input": {"prompt": "What comes after foo?"}, "output": "bar", "metrics": {"tokens": 1}}`. In the webapp, only the root span row `"abc"` will show up in the summary view. You can view the full trace hierarchy (in this case, the `"llm_call"` row) by clicking on the "abc" row.
+    
+    If the row is being merged into an existing row, this field will be ignored.
+    """
+
+    span_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Use `span_id`, `root_span_id`, and `span_parents` instead of `_parent_id`, which is now deprecated. The span_id is a unique identifier describing the row's place in the a trace, and the root_span_id is a unique identifier for the whole trace. See the [guide](https://www.braintrust.dev/docs/instrument) for full details.
+    
+    For example, say we have logged a row `{"id": "abc", "span_id": "span0", "root_span_id": "root_span0", "input": "foo", "output": "bar", "expected": "boo", "scores": {"correctness": 0.33}}`. We can create a sub-span of the parent row by logging `{"id": "llm_call", "span_id": "span1", "root_span_id": "root_span0", "span_parents": ["span0"], "input": {"prompt": "What comes after foo?"}, "output": "bar", "metrics": {"tokens": 1}}`. In the webapp, only the root span row `"abc"` will show up in the summary view. You can view the full trace hierarchy (in this case, the `"llm_call"` row) by clicking on the "abc" row.
+    
+    If the row is being merged into an existing row, this field will be ignored.
+    """
+
+    root_span_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Use `span_id`, `root_span_id`, and `span_parents` instead of `_parent_id`, which is now deprecated. The span_id is a unique identifier describing the row's place in the a trace, and the root_span_id is a unique identifier for the whole trace. See the [guide](https://www.braintrust.dev/docs/instrument) for full details.
+    
+    For example, say we have logged a row `{"id": "abc", "span_id": "span0", "root_span_id": "root_span0", "input": "foo", "output": "bar", "expected": "boo", "scores": {"correctness": 0.33}}`. We can create a sub-span of the parent row by logging `{"id": "llm_call", "span_id": "span1", "root_span_id": "root_span0", "span_parents": ["span0"], "input": {"prompt": "What comes after foo?"}, "output": "bar", "metrics": {"tokens": 1}}`. In the webapp, only the root span row `"abc"` will show up in the summary view. You can view the full trace hierarchy (in this case, the `"llm_call"` row) by clicking on the "abc" row.
+    
+    If the row is being merged into an existing row, this field will be ignored.
+    """
+
+    span_parents: typing.Optional[typing.List[str]] = pydantic.Field(default=None)
+    """
+    Use `span_id`, `root_span_id`, and `span_parents` instead of `_parent_id`, which is now deprecated. The span_id is a unique identifier describing the row's place in the a trace, and the root_span_id is a unique identifier for the whole trace. See the [guide](https://www.braintrust.dev/docs/instrument) for full details.
+    
+    For example, say we have logged a row `{"id": "abc", "span_id": "span0", "root_span_id": "root_span0", "input": "foo", "output": "bar", "expected": "boo", "scores": {"correctness": 0.33}}`. We can create a sub-span of the parent row by logging `{"id": "llm_call", "span_id": "span1", "root_span_id": "root_span0", "span_parents": ["span0"], "input": {"prompt": "What comes after foo?"}, "output": "bar", "metrics": {"tokens": 1}}`. In the webapp, only the root span row `"abc"` will show up in the summary view. You can view the full trace hierarchy (in this case, the `"llm_call"` row) by clicking on the "abc" row.
+    
+    If the row is being merged into an existing row, this field will be ignored.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

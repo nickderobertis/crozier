@@ -1,0 +1,6 @@
+
+
+OrganizationIdParam = str
+"""
+Organization id
+"""

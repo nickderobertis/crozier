@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .project_settings_span_field_order_item_layout_one import ProjectSettingsSpanFieldOrderItemLayoutOne
+from .project_settings_span_field_order_item_layout_zero import ProjectSettingsSpanFieldOrderItemLayoutZero
+
+ProjectSettingsSpanFieldOrderItemLayout = typing.Union[
+    ProjectSettingsSpanFieldOrderItemLayoutZero, ProjectSettingsSpanFieldOrderItemLayoutOne
+]

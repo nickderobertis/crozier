@@ -520,6 +520,51 @@ corpora stay byte-identical — none of them exercised these paths):
 Future Bungie source changes or Fern upgrades follow the standard
 [`Fern golden lifecycle`](fern-goldens.md).
 
+### Braintrust's API (corpus row 126)
+
+Braintrust's own API — 71 paths, 3.0.3, and the corpus's densest optional
+operation-level security requirement — exposed eighteen divergences. The four
+that generalize furthest:
+
+1. **A media whose schema says nothing loses to one that says something.** Every
+   braintrust error response offers `text/plain` as `{type: string}` beside
+   `application/json` as the bare `{nullable: true}`, and Fern types the error
+   body `str` — so [`ir::response_schema`] filters the preference order to media
+   with a non-unknown schema before falling back to it.
+2. **`allOf` composition is a *copy*, not inheritance, wherever it names a
+   union.** A referenced union is a type alias by the time the model is emitted,
+   so `TopicMapFunctionAutomation.function` — `allOf: [$ref SavedFunctionId,
+   anyOf: [function, global]]` — flattens the branches' properties into one
+   all-optional object rather than extending anything, and an annotated `$ref`
+   whose target is a union is re-declared under the annotating name
+   (`FacetDataPreprocessor`, `RunEvalScoresItem`) rather than pointed at.
+3. **A structured map value is named.** A *nullable* map hoists its value the
+   same way a plain one does — `CrossObjectInsertRequest.experiment` is
+   `Dict[str, Optional[CrossObjectInsertRequestExperimentValue]]` — and a map of
+   *arrays* names the element (`…TopicMapsValueItem`).
+4. **Two rules for naming an undiscriminated union's variants**, both measured
+   here and both fallbacks from the alphabetically-first property no sibling
+   declares:
+   - a variant whose properties are `$ref`s beside exactly one plain scalar is
+     named by that scalar (`FunctionIdName`), even though a sibling declares it;
+   - the alphabetically-first property *every* variant declares names only the
+     **last** of them, because every earlier one would compute the same name and
+     Fern gives those the ordinal (`ModelParamsReasoningBudget` beside
+     `ModelParamsThree`; `ResponseFormatNullishType` beside
+     `ResponseFormatNullishZero`). A `type: null` alternative does not vote.
+
+The rest are local: a shared request body drops its `content-type` header when the
+operation carries no query parameter either (`CreateView`, `AclItem`); an
+`operationId` carrying a path-template expression is named by that expression
+(`proxy{path+}` → `path`); an optional unknown body is omitted from a worked
+example in *either* document version, and a list-typed path parameter beside such
+a body no longer suppresses the example; a nullable unknown keeps its `Optional`
+in a response body and in a `{nullable: true}` array element (but not in 3.1's
+`{type: ['null']}` one); an inlined body field's convert annotation reads its
+nullability off the property rather than off the alias its type resolves to; and
+a discriminated union's standalone member models move into a tag's `types/`
+package with the union that names them.
+
 ### Discord's 3.1 API (corpus row 125)
 
 Registering Discord's own API v10 — an `openapi: 3.1.0` document over 128 paths —

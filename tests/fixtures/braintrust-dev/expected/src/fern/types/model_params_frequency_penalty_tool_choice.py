@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .model_params_frequency_penalty_tool_choice_function import ModelParamsFrequencyPenaltyToolChoiceFunction
+from .model_params_frequency_penalty_tool_choice_one import ModelParamsFrequencyPenaltyToolChoiceOne
+from .model_params_frequency_penalty_tool_choice_two import ModelParamsFrequencyPenaltyToolChoiceTwo
+from .model_params_frequency_penalty_tool_choice_zero import ModelParamsFrequencyPenaltyToolChoiceZero
+
+ModelParamsFrequencyPenaltyToolChoice = typing.Union[
+    ModelParamsFrequencyPenaltyToolChoiceZero,
+    ModelParamsFrequencyPenaltyToolChoiceOne,
+    ModelParamsFrequencyPenaltyToolChoiceTwo,
+    ModelParamsFrequencyPenaltyToolChoiceFunction,
+]

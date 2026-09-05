@@ -1917,6 +1917,7 @@ const CORPORA: &[&Corpus] = &[
     &OPENBANKING_BRASIL_DIRECTORY,
     &API_OPENVERSE_ORG,
     &DISCORD_COM,
+    &BRAINTRUST_DEV,
 ];
 
 #[test]
@@ -3419,6 +3420,22 @@ const DISCORD_COM: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `braintrust-dev`: the Braintrust API is the corpus's densest declarer of an
+/// operation-level optional security requirement — 148 Operation Objects whose
+/// `security` array holds `{}` — against the single `bearerAuth` scheme Fern's
+/// importer supports, so it witnesses corpus row 124's shape at 25 times the
+/// density on an independent publisher.
+const BRAINTRUST_DEV: Corpus = Corpus {
+    api: "braintrust-dev",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3788,6 +3805,11 @@ fn api_openverse_org_matches_fern_output() {
 #[test]
 fn discord_com_matches_fern_output() {
     assert_link_ok_corpus_matches(&DISCORD_COM);
+}
+
+#[test]
+fn braintrust_dev_matches_fern_output() {
+    assert_link_ok_corpus_matches(&BRAINTRUST_DEV);
 }
 
 #[test]

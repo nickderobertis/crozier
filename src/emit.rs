@@ -4785,23 +4785,27 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     || !ep.path_params.is_empty()
                     || (body.content_type_header()
                         // A body schema more than one operation posts, which
-                        // says nothing about itself anywhere — no `description` on
-                        // the `requestBody` and none on the schema, no `required:
-                        // true`, and not every field required — drops the header:
-                        // the Open Integration Hub's `MutableSecret` and
+                        // says little about itself — no `required: true` and not
+                        // every field required — drops
+                        // the header when the operation carries no other input
+                        // either: the Open Integration Hub's `MutableSecret` and
                         // `MutableAuthClient` are each the body of a create and an
-                        // update. Every other way to be shared keeps it — Palo
-                        // Alto's `requestBody`s carry a description, the echo
-                        // `Message` of the same-`$ref` case carries one on the
-                        // schema, exhaustive's carry `required: true` or are sent
-                        // whole, and Adyen's `GrantInfo` is posted by one
-                        // operation.
-                        && !(ep.body_schema_shared
-                            && ep.body_description_missing
-                            && !ep.body_schema_documented
-                            && !ep.body_declared_required
-                            && !body.all_fields_required()
-                            && !ep.body_schema_dropped)
+                        // update with no `requestBody` description, and
+                        // braintrust's `CreateView` and `AclItem` are each posted
+                        // by two argument-free operations that *do* describe the
+                        // body. A query parameter beside it keeps the header —
+                        // Palo Alto's shared `IkeCryptoProfiles` and
+                        // `IpsecCryptoProfiles` bodies each ride a
+                        // `SubTenantName` — as does every other way to be shared:
+                        // exhaustive's carry `required: true` or are sent whole,
+                        // and Adyen's `GrantInfo` is posted by one operation. A
+                        // description on the *schema* does not save it either:
+                        // braintrust's `AclItem` carries one.
+                        && (!ep.body_schema_shared
+                            || ep.body_declared_required
+                            || body.all_fields_required()
+                            || ep.body_schema_dropped
+                            || !ep.body_description_missing && !ep.query_params.is_empty())
                         && (!ep.basic_auth
                             || !ep.body_description_missing
                             || !ep.body_schema_ref && matches!(body, RequestBody::Inline(_)))
@@ -7820,11 +7824,14 @@ fn build_example_inner(
                     .and_then(|example| ctx.value_from_example(&s.type_ref, example))
                     .unwrap_or_else(|| ctx.value(&s.type_ref, Slot::Plain))
             };
+            // An optional body Fern types `Optional[Any]` has nothing to show, in
+            // either document version: letta declares the shape in 3.1 and
+            // braintrust's proxy endpoints in 3.0.3, and neither golden passes
+            // `request=`.
             if s.required
                 || body_example.is_some()
                 || s.example.is_some()
                 || !is_any_type(&s.type_ref)
-                || !ep.openapi_31
             {
                 args.push((Some("request".to_string()), v));
             }
@@ -8479,7 +8486,17 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
     // and `/searches`, and `POST /groups/{ID}/schedules`). Either half alone still
     // gets one — `GET /apps/{ID}` shows the bogus `id="ID"`, and every scalar-path
     // body endpoint of the same document keeps its example.
+    // …and only when that body is one the example actually passes: braintrust's
+    // catch-all proxy takes a `Sequence[str]` path parameter beside an optional
+    // unknown body the example omits, and Fern documents it.
+    let body_shown = match &ep.request_body {
+        Some(RequestBody::Single(single)) => {
+            single.required || single.example.is_some() || !is_any_type(&single.type_ref)
+        }
+        _ => true,
+    };
     let list_path_param_with_body = ep.request_body.is_some()
+        && body_shown
         && ep
             .path_params
             .iter()
@@ -9121,6 +9138,11 @@ mod tests {
         assert!(!rendered.contains("annotation=typing.Optional[typing.Sequence"));
     }
 
+    /// An optional body Fern types `Optional[Any]` carries nothing a worked
+    /// example could show, and the document version does not change that: letta
+    /// declares the shape in `openapi: 3.1` and braintrust's proxy endpoints
+    /// declare it in `3.0.3` (corpus row 126), and neither golden passes
+    /// `request=`.
     #[test]
     fn optional_unknown_body_is_omitted_from_worked_example() {
         let mut ep = endpoint("/projects/{id}", Vec::new(), None);
@@ -9143,6 +9165,16 @@ mod tests {
         let mut ctx = example_ctx(&[], &[], &auth);
         let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx, false)
             .expect("legacy endpoint has an example")
+            .join("\n");
+        assert!(!rendered.contains("request="), "{rendered}");
+        // A *required* unknown body is still shown, which is what keeps the
+        // exclusion keyed on optionality rather than on the unknown type.
+        if let Some(RequestBody::Single(body)) = ep.request_body.as_mut() {
+            body.required = true;
+        }
+        let mut ctx = example_ctx(&[], &[], &auth);
+        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx, false)
+            .expect("required unknown body has an example")
             .join("\n");
         assert!(
             rendered.contains("request={\"key\": \"value\"}"),

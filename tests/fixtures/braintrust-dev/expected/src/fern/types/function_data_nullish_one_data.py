@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .function_data_nullish_one_data_code import FunctionDataNullishOneDataCode
+from .function_data_nullish_one_data_zero import FunctionDataNullishOneDataZero
+
+FunctionDataNullishOneData = typing.Union[FunctionDataNullishOneDataZero, FunctionDataNullishOneDataCode]

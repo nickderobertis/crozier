@@ -1692,6 +1692,21 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     }
 }
 
+/// The standalone member models a discriminated union hoists beside its variant
+/// wrappers (`{Union}{Variant}`, the referenced schema's fields minus the tag).
+/// They are declarations in their own right, so a union that moves into a tag's
+/// `types/` package takes them with it — braintrust's
+/// `PatchProjectAutomationConfigBtqlFilterActionSlack` sits beside its union in
+/// `project_automations/types/`.
+fn union_variant_models(union: &DiscriminatedUnion) -> Vec<String> {
+    union
+        .members
+        .iter()
+        .filter(|member| member.source.is_none())
+        .map(|member| format!("{}{}", union.name, naming::class_name(&member.discriminant)))
+        .collect()
+}
+
 fn move_inline_body_enums_to_tags(
     doc: &OpenApi,
     types: &[TypeDecl],
@@ -1716,11 +1731,14 @@ fn move_inline_body_enums_to_tags(
                 });
             }
             TypeDecl::Alias(alias) => collect_named(&alias.target, &mut retained_refs),
-            TypeDecl::DiscriminatedUnion(union) => union
-                .members
-                .iter()
-                .flat_map(|member| &member.fields)
-                .for_each(|field| collect_named(&field.type_ref, &mut retained_refs)),
+            TypeDecl::DiscriminatedUnion(union) => {
+                union
+                    .members
+                    .iter()
+                    .flat_map(|member| &member.fields)
+                    .for_each(|field| collect_named(&field.type_ref, &mut retained_refs));
+                retained_refs.extend(union_variant_models(union));
+            }
             TypeDecl::Enum(_) => {}
         }
     }
@@ -1803,11 +1821,14 @@ fn move_inline_body_enums_to_tags(
                 .iter()
                 .for_each(|field| collect_named(&field.type_ref, &mut dependencies)),
             TypeDecl::Alias(alias) => collect_named(&alias.target, &mut dependencies),
-            TypeDecl::DiscriminatedUnion(union) => union
-                .members
-                .iter()
-                .flat_map(|member| &member.fields)
-                .for_each(|field| collect_named(&field.type_ref, &mut dependencies)),
+            TypeDecl::DiscriminatedUnion(union) => {
+                union
+                    .members
+                    .iter()
+                    .flat_map(|member| &member.fields)
+                    .for_each(|field| collect_named(&field.type_ref, &mut dependencies));
+                dependencies.extend(union_variant_models(union));
+            }
             TypeDecl::Enum(_) => {}
         }
         moved.insert(name.clone());
@@ -2514,7 +2535,14 @@ fn build_endpoint(
         .collect();
     // Register the hoisted inline types under this tag's `types/` package.
     for decl in hoister.out {
-        let decl_module = if global_parameter_unions.contains(decl.name()) {
+        // A type the union itself names — its variants and their elements, all
+        // spelled `{Union}…` — sits beside it: braintrust's
+        // `GetProjectScoreRequestScoreTypeOneItem` is in the package root with the
+        // `GetProjectScoreRequestScoreType` alias that lists it.
+        let decl_module = if global_parameter_unions
+            .iter()
+            .any(|root| decl.name().starts_with(root.as_str()))
+        {
             String::new()
         } else {
             module.clone()
@@ -4037,6 +4065,27 @@ impl InlineHoister<'_> {
         Some(TypeRef::Named(name.to_string()))
     }
 
+    /// Copy a referenced schema's own declaration under `name`, in the operation's
+    /// tag-scoped `types/` package. An annotated `$ref` whose target is a *union*
+    /// is a use-site copy exactly as an object one is: braintrust's `RunEval.scores`
+    /// is a list of `allOf: [$ref FunctionId, {description}]` and Fern declares a
+    /// `RunEvalScoresItem` union of its own beside `FunctionId`'s.
+    fn hoist_named_copy(&mut self, name: &str, target: &Schema) -> Option<TypeRef> {
+        let schemas = self.schemas?;
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        builder.add_named(name, target);
+        if builder.types.is_empty() {
+            return None;
+        }
+        self.out.extend(builder.types);
+        Some(TypeRef::Named(name.to_string()))
+    }
+
     /// Hoist an inline union used as a top-level response array item. Fern coins
     /// `{Operation}ResponseItem` and exposes the response as a list of that alias.
     fn hoist_response_array_item_union(
@@ -4221,6 +4270,25 @@ impl InlineHoister<'_> {
                     }));
                     return TypeRef::List(Box::new(TypeRef::Named(item_name)));
                 }
+                // An annotated `$ref` element is a use-site copy of its target:
+                // braintrust's `score_type` query parameter is
+                // `anyOf: [$ref ProjectScoreType, {items: allOf[$ref
+                // ProjectScoreType, {title}]}]` and Fern's list element is a
+                // `GetProjectScoreRequestScoreTypeOneItem` of its own.
+                if let Some(target) = self
+                    .schemas
+                    .zip(described_all_of_ref(item))
+                    .and_then(|(schemas, (reference, _))| {
+                        resolve_ref_from_schemas(schemas, reference)
+                    })
+                    .cloned()
+                {
+                    let variant_name = variant_class_name(parent, index, variant, siblings);
+                    let item_name = format!("{variant_name}Item");
+                    if let Some(element) = self.hoist_named_copy(&item_name, &target) {
+                        return TypeRef::List(Box::new(element));
+                    }
+                }
                 if item.reference.is_none() && is_inline_struct(item) {
                     let variant_name = variant_class_name(parent, index, variant, siblings);
                     let item_name = format!("{variant_name}Item");
@@ -4298,6 +4366,11 @@ impl InlineHoister<'_> {
                         clean_doc(description),
                     )));
                     return TypeRef::Named(name);
+                }
+                if target.one_of.is_some() || target.any_of.is_some() {
+                    if let Some(copy) = self.hoist_named_copy(&name, &target) {
+                        return copy;
+                    }
                 }
                 if !is_map(&target)
                     && !is_bare_object(&target)
@@ -4432,6 +4505,17 @@ impl InlineHoister<'_> {
             return None;
         }
         let item_name = format!("{ctx}Item");
+        if let Some(target) = self
+            .schemas
+            .zip(described_all_of_ref(item_schema))
+            .and_then(|(schemas, (reference, _))| resolve_ref_from_schemas(schemas, reference))
+            .filter(|target| target.one_of.is_some() || target.any_of.is_some())
+            .cloned()
+        {
+            if let Some(element) = self.hoist_named_copy(&item_name, &target) {
+                return Some(sequence_of(array, element));
+            }
+        }
         if is_inline_struct(item_schema) {
             self.hoist_object(&item_name, item_schema);
             let item = TypeRef::Named(item_name);
@@ -4568,9 +4652,34 @@ impl InlineHoister<'_> {
                             clean_doc(member.description.as_deref()),
                         )));
                         variants.push(TypeRef::Named(variant_name));
-                    } else {
-                        variants.push(base_type_ref(member));
+                        continue;
                     }
+                    // An array member whose element is an annotated `$ref` copies
+                    // that target under the member's own name: braintrust's
+                    // `score_type` query parameter is `anyOf: [$ref
+                    // ProjectScoreType, {items: allOf[$ref ProjectScoreType,
+                    // {title}]}]` and Fern's list element is a
+                    // `GetProjectScoreRequestScoreTypeOneItem` of its own.
+                    let annotated_item = member
+                        .ty
+                        .as_ref()
+                        .and_then(TypeField::primary)
+                        .filter(|ty| *ty == "array")
+                        .and(member.items.as_deref())
+                        .zip(self.schemas)
+                        .and_then(|(items, schemas)| {
+                            let (reference, _) = described_all_of_ref(items)?;
+                            resolve_ref_from_schemas(schemas, reference).cloned()
+                        });
+                    if let Some(target) = annotated_item {
+                        let variant_name = variant_class_name(&name, index, member, &siblings);
+                        let item_name = format!("{variant_name}Item");
+                        if let Some(element) = self.hoist_named_copy(&item_name, &target) {
+                            variants.push(TypeRef::List(Box::new(element)));
+                            continue;
+                        }
+                    }
+                    variants.push(base_type_ref(member));
                 }
                 let mut variants = dedupe_union_members(variants);
                 // A composition whose members all lower to the same type is no
@@ -4835,7 +4944,11 @@ fn append_request_fields(
         py_name: naming::request_field_name(&f.wire_name),
         type_ref: f.type_ref.clone(),
         optional: f.optional,
-        nullable: f.nullable || type_ref_allows_none(&f.type_ref, types),
+        // The *property* is what makes an inlined body field nullable, not the
+        // alias its type resolves to: braintrust's `PatchProjectAutomation.config`
+        // is a union whose last member is `{nullable: true}`, and Fern's convert
+        // wrapper annotates the bare `PatchProjectAutomationConfig`.
+        nullable: f.nullable,
         spec_required: f.spec_required,
         docstring: f.docstring.clone(),
         convert: type_needs_convert(&f.type_ref, types),
@@ -4929,26 +5042,6 @@ fn type_is_scalar<'a>(t: &'a TypeRef, types: &'a [TypeDecl], seen: &mut Vec<&'a 
     }
 }
 
-fn type_ref_allows_none(t: &TypeRef, types: &[TypeDecl]) -> bool {
-    match t {
-        TypeRef::Optional(_) => true,
-        TypeRef::Union(variants) => variants
-            .iter()
-            .any(|variant| type_ref_allows_none(variant, types)),
-        TypeRef::Named(name) => types.iter().any(|decl| match decl {
-            TypeDecl::Alias(alias) if alias.name == *name => {
-                type_ref_allows_none(&alias.target, types)
-            }
-            _ => false,
-        }),
-        TypeRef::Primitive(_)
-        | TypeRef::List(_)
-        | TypeRef::Set(_)
-        | TypeRef::Dict(_, _)
-        | TypeRef::Literal(_) => false,
-    }
-}
-
 /// A bare scalar request-body type Fern serializes with a plain `json=request`,
 /// paired with whether it carries the content-type header. Plain scalars and the
 /// date formats omit it; the `uuid`/`byte` string formats (still rendered as `str`)
@@ -5035,8 +5128,17 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
         // `$ref` is not that: 3.0 ignores a reference's siblings, and
         // `exhaustive`'s `getAndReturnOptional` returns the bare model.
         .map(|schema| {
-            if schema.reference.is_none() {
-                full_type_ref(schema)
+            if schema.reference.is_none() && is_optional(schema) {
+                // A nullable *unknown* body is `Optional[Any]` here, not the bare
+                // `Any` the collapsing wrapper would give: braintrust's proxy
+                // endpoints declare `{nullable: true}` and Fern's return type
+                // carries the `Optional`.
+                let base = base_type_ref(schema);
+                if base == TypeRef::Primitive(Prim::Any) {
+                    TypeRef::Optional(Box::new(base))
+                } else {
+                    optional_type_ref(base)
+                }
             } else {
                 base_type_ref(schema)
             }
@@ -5190,14 +5292,28 @@ fn success_response_key(op: &Operation) -> Option<String> {
 }
 
 fn response_schema(response: &Response) -> Option<&Schema> {
-    response
-        .content
-        .get("application/json")
-        .or_else(|| response.content.get("application/jwt"))
-        .or_else(|| response.content.get("*/*"))
-        .or_else(|| response.content.values().next())?
-        .schema
-        .as_ref()
+    let select = |typed_only: bool| {
+        let keep = |media: &&crate::openapi::MediaType| {
+            !typed_only
+                || media
+                    .schema
+                    .as_ref()
+                    .is_some_and(|schema| !is_unknown(schema))
+        };
+        response
+            .content
+            .get("application/json")
+            .filter(keep)
+            .or_else(|| response.content.get("application/jwt").filter(keep))
+            .or_else(|| response.content.get("*/*").filter(keep))
+            .or_else(|| response.content.values().find(|media| keep(media)))
+    };
+    // A media whose schema says nothing loses to one that says something: every
+    // braintrust error response offers `text/plain` as `{type: string}` beside
+    // `application/json` as the bare `{nullable: true}`, and Fern types the error
+    // body `str` rather than the unknown the preference order would otherwise
+    // reach first.
+    select(true).or_else(|| select(false))?.schema.as_ref()
 }
 
 /// Whether crozier can render an operation's success response. Every resolved
@@ -5237,6 +5353,19 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
         )));
     }
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
+    // An `operationId` carrying a path-template expression is named by that
+    // expression's contents alone: braintrust's catch-all proxy declares
+    // `proxy{path+}` on `/v1/proxy/{path+}` and Fern's method is `path`.
+    if let Some(template) = id
+        .rsplit_once('{')
+        .and_then(|(_, rest)| rest.split_once('}'))
+        .map(|(inner, _)| inner)
+        .filter(|inner| !inner.trim().is_empty())
+    {
+        return naming::escape_python_keyword(naming::sanitize_identifier(&naming::to_snake_case(
+            template,
+        )));
+    }
     let method = if op
         .operation_id
         .as_deref()
@@ -5741,6 +5870,21 @@ fn inferred_discriminant_property(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
 ) -> Option<String> {
+    inferred_discriminant_property_with(schema, schemas, true)
+}
+
+/// [`inferred_discriminant_property`], with `enum_tag` saying whether a member
+/// tagging itself with a required one-member `enum` counts even when the union
+/// also references components. Building the union reads that spelling (see the
+/// comment below); *stripping* the tag from the referenced model does not, because
+/// Fern keeps it — braintrust's `TopicAutomationConfig` is a member of the
+/// `event_type` union its `CreateProjectAutomation.config` forms, and its
+/// standalone model still declares `event_type`.
+fn inferred_discriminant_property_with(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+    enum_tag: bool,
+) -> Option<String> {
     let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
     let references_components = variants.iter().any(|variant| variant.reference.is_some());
     let resolved: Vec<&Schema> = variants
@@ -5774,7 +5918,7 @@ fn inferred_discriminant_property(
                         .enum_values
                         .as_ref()
                         .is_some_and(|values| values.len() == 1);
-                if references_components && !tagged_by_enum {
+                if references_components && !(enum_tag && tagged_by_enum) {
                     let supported = match property.as_str() {
                         "type" => {
                             variant.required.contains(property)
@@ -5836,7 +5980,7 @@ fn inferred_strip_discriminant_property(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
 ) -> Option<String> {
-    inferred_discriminant_property(schema, schemas).or_else(|| {
+    inferred_discriminant_property_with(schema, schemas, false).or_else(|| {
         let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
         let targets: Option<Vec<(&str, &Schema)>> = variants
             .iter()
@@ -6771,7 +6915,13 @@ impl Builder<'_> {
             .filter_map(|member| {
                 let reference = member.reference.as_deref()?;
                 let base = resolve_ref_from_schemas(self.schemas, reference)?;
-                (!is_inheritance_union_base(base)).then(|| (ref_to_class(reference), base))
+                // A referenced *union* is a type alias by the time this model is
+                // emitted, so there is no class to extend: braintrust's
+                // `TopicMapFunctionAutomation.function` composes `SavedFunctionId`
+                // and Fern flattens rather than inheriting.
+                let alias = base.one_of.is_some() || base.any_of.is_some();
+                (!alias && !is_inheritance_union_base(base))
+                    .then(|| (ref_to_class(reference), base))
             })
             .collect();
         // A base property this model redeclares. Only the bases that have one are
@@ -6784,6 +6934,26 @@ impl Builder<'_> {
         let mut fields = Vec::new();
         for member in schema.all_of.iter().flatten() {
             if member.reference.is_none() {
+                // An inline `allOf` member that is itself an undiscriminated union
+                // contributes the union of its branches' properties, every one of
+                // them optional: Fern flattens braintrust's
+                // `TopicMapFunctionAutomation.function` — `allOf: [$ref
+                // SavedFunctionId, anyOf: [function, global]]` — into one object
+                // carrying `type`, `id`, `version`, `name` and `function_type`,
+                // where a property two branches declare keeps the first branch's
+                // position and the last branch's schema.
+                if let Some(branches) = member.one_of.as_ref().or(member.any_of.as_ref()) {
+                    let mut merged = Schema::default();
+                    for branch in branches {
+                        for (prop, prop_schema) in &branch.properties {
+                            merged.properties.insert(prop.clone(), prop_schema.clone());
+                        }
+                    }
+                    if !merged.properties.is_empty() {
+                        self.collect_fields(name, &merged, &[], &mut fields);
+                        continue;
+                    }
+                }
                 self.collect_fields(name, member, &required, &mut fields);
             }
         }
@@ -7029,11 +7199,7 @@ impl Builder<'_> {
                         self.schemas,
                     ),
                     source: target_name.clone(),
-                    docstring: variant
-                        .reference
-                        .is_none()
-                        .then(|| docstring.clone())
-                        .flatten(),
+                    docstring: docstring.clone(),
                     wrapped: false,
                 });
             }
@@ -7278,6 +7444,63 @@ impl Builder<'_> {
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
         if is_map(prop_schema) && is_optional(prop_schema) {
+            // A nullable map whose value declares its own structure still hoists
+            // that value to `{Owner}{Prop}Value`, exactly as a non-nullable one
+            // does below; only the *unknown*-valued case degrades to a bare
+            // `Dict`. braintrust's `CrossObjectInsertRequest.experiment` is a
+            // nullable map of an inline object and generates
+            // `Dict[str, Optional[CrossObjectInsertRequestExperimentValue]]`.
+            if let Some(AdditionalProperties::Schema(value)) = &prop_schema.additional_properties {
+                if value.reference.is_none() {
+                    let value_name = format!("{owner}{}Value", naming::class_name(prop));
+                    let module = naming::module_name(&value_name);
+                    let optional_map = |inner: TypeRef| {
+                        TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(TypeRef::Optional(Box::new(inner))),
+                        )
+                    };
+                    if value.one_of.is_some() || value.any_of.is_some() {
+                        if let Some(decl) = self.discriminated_union(
+                            &value_name,
+                            &module,
+                            value,
+                            clean_doc(value.description.as_deref()),
+                        ) {
+                            self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                            return optional_map(TypeRef::Named(value_name));
+                        }
+                    }
+                    if is_inline_struct(value) {
+                        self.add_object(
+                            &value_name,
+                            module,
+                            value,
+                            clean_doc(value.description.as_deref()),
+                        );
+                        return optional_map(TypeRef::Named(value_name));
+                    }
+                    // A map of *arrays* of an inline object names the element, not
+                    // the array: braintrust's `DatasetEvent.classifications` is
+                    // `Dict[str, Optional[List[DatasetEventClassificationsValueItem]]]`.
+                    if value.ty.as_ref().and_then(TypeField::primary) == Some("array") {
+                        if let Some(items) = value.items.as_deref() {
+                            if items.reference.is_none() && is_inline_struct(items) {
+                                let item_name = format!("{value_name}Item");
+                                self.add_object(
+                                    &item_name,
+                                    naming::module_name(&item_name),
+                                    items,
+                                    clean_doc(items.description.as_deref()),
+                                );
+                                return optional_map(TypeRef::List(Box::new(TypeRef::Named(
+                                    item_name,
+                                ))));
+                            }
+                        }
+                    }
+                }
+            }
             return legacy_nullable_map_type_ref(prop_schema);
         }
         let owner_prop = format!("{owner}{}", naming::class_name(prop));
@@ -7352,6 +7575,26 @@ impl Builder<'_> {
                             Box::new(TypeRef::Primitive(Prim::Str)),
                             Box::new(TypeRef::Named(value_name)),
                         );
+                    }
+                    // A map of *arrays* of an inline object names the element:
+                    // braintrust's `BatchedFacetData.topic_maps` is
+                    // `Dict[str, List[BatchedFacetDataTopicMapsValueItem]]`.
+                    if value.ty.as_ref().and_then(TypeField::primary) == Some("array") {
+                        if let Some(items) = value.items.as_deref() {
+                            if items.reference.is_none() && is_inline_struct(items) {
+                                let item_name = format!("{value_name}Item");
+                                self.add_object(
+                                    &item_name,
+                                    naming::module_name(&item_name),
+                                    items,
+                                    clean_doc(items.description.as_deref()),
+                                );
+                                return TypeRef::Dict(
+                                    Box::new(TypeRef::Primitive(Prim::Str)),
+                                    Box::new(TypeRef::List(Box::new(TypeRef::Named(item_name)))),
+                                );
+                            }
+                        }
                     }
                 }
             }
@@ -7523,6 +7766,16 @@ impl Builder<'_> {
                         } else {
                             element
                         }));
+                    }
+                    // An annotated `$ref` element is a use-site copy of its target,
+                    // not an empty inline object: braintrust's `RunEval.scores` is a
+                    // list of `allOf: [$ref FunctionId, {description}]` and Fern
+                    // declares a `RunEvalScoresItem` of its own.
+                    if described_all_of_ref(items).is_some() {
+                        let name = format!("{owner}{}Item", naming::class_name(prop));
+                        if let Some(element) = self.annotated_ref_type(&name, items) {
+                            return sequence_of(prop_schema, element);
+                        }
                     }
                     if items.reference.is_none() && is_inline_struct(items) {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
@@ -7823,6 +8076,17 @@ impl Builder<'_> {
             )));
             return TypeRef::Named(name);
         }
+        // `allOf: [$ref Base, {title}]` is an annotated reference, not inheritance:
+        // Fern copies the referenced model's fields under the variant's own name.
+        // braintrust's `FunctionData` tags its `TopicMapData` member that way and
+        // Fern's `FunctionDataEight` declares every one of `TopicMapData`'s fields
+        // rather than extending it.
+        if described_all_of_ref(variant).is_some() {
+            let name = variant_class_name(parent, index, variant, siblings);
+            if let Some(type_ref) = self.annotated_ref_type(&name, variant) {
+                return type_ref;
+            }
+        }
         if is_inline_object(variant) {
             let name = variant_class_name(parent, index, variant, siblings);
             let module = naming::module_name(&name);
@@ -7946,11 +8210,25 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
                 .keys()
                 .all(|property| sibling.required.contains(property))
         });
-    let shared_first = variant.properties.keys().next().filter(|candidate| {
-        siblings
-            .iter()
-            .all(|sibling| sibling.properties.contains_key(*candidate))
-    });
+    // The property every variant declares, alphabetically first. It names only the
+    // *last* variant: every other one would compute the same name, and Fern gives
+    // those the ordinal. braintrust's `ModelParams` ends in a member whose three
+    // properties are exactly the three all five share, named
+    // `ModelParamsReasoningBudget` while the member before it is `ModelParamsThree`;
+    // its `ResponseFormatNullish` ends in the second of two `type`-only members and
+    // is `ResponseFormatNullishType` beside `…Zero`. A `type: null` alternative is
+    // nullability rather than a variant, so it does not vote.
+    let shared_first = variant
+        .properties
+        .keys()
+        .filter(|candidate| {
+            siblings
+                .iter()
+                .filter(|sibling| !is_null_variant(sibling))
+                .all(|sibling| sibling.properties.contains_key(*candidate))
+        })
+        .min_by(|left, right| left.as_str().cmp(right.as_str()))
+        .filter(|_| siblings.iter().skip(index + 1).all(is_null_variant));
     // A property that names this variant: one no sibling declares. Fern takes the
     // alphabetically first of them — `mosip-esignet`'s RSA encryption key declares
     // `n` before `e` and is named `…EncPublicKeyE`, while its EC sibling's `crv`,
@@ -7986,6 +8264,44 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
             .filter(|values| values.len() == 1)
             .and_then(|values| values.into_iter().next())
     });
+    // A variant whose only *nameable* property is one plain scalar — a string,
+    // number or boolean that is neither an enum, a `$ref` nor a composition, with
+    // every other property a `$ref` — is named by it even when a sibling declares
+    // it too. braintrust's `FunctionId` and `RunEval.scores` each end in a member
+    // whose properties are `inline_prompt` and `function_type` (both `$ref`s)
+    // beside `name`, and Fern names it `…Name` rather than `…Six`. A variant with
+    // a *structural* property beside the scalar is not one of these — Portfolio
+    // Optimizer's Sharpe-ratio body pairs `riskFreeRate` with an inline
+    // `portfolios` array and is `…RequestOne`.
+    let sole_scalar = {
+        let plain = |schema: &Schema| {
+            schema.reference.is_none()
+                && schema.one_of.is_none()
+                && schema.any_of.is_none()
+                && schema.all_of.is_none()
+                && schema.enum_values.is_none()
+                && schema.const_value.is_none()
+                && matches!(
+                    schema.ty.as_ref().and_then(TypeField::primary),
+                    Some("string" | "integer" | "number" | "boolean")
+                )
+        };
+        let mut scalars = variant
+            .properties
+            .iter()
+            .filter(|(_, schema)| plain(schema))
+            .map(|(name, _)| name);
+        match (scalars.next(), scalars.next()) {
+            (Some(only), None) => Some(only.clone()).filter(|only| {
+                variant.properties.len() > 1
+                    && variant
+                        .properties
+                        .iter()
+                        .all(|(name, schema)| name == only || schema.reference.is_some())
+            }),
+            _ => None,
+        }
+    };
     // A property only distinguishes a variant when there is a sibling to
     // distinguish it from; a one-member union takes the discriminant value.
     let unique = if siblings.len() > 1 {
@@ -8017,6 +8333,7 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
         Some(shared.clone())
     });
     let suffix = unique
+        .or(sole_scalar)
         .or(fallback)
         .or_else(|| {
             variant
@@ -8379,7 +8696,17 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                 .as_ref()
                 .map_or(TypeRef::Primitive(Prim::Any), |i| {
                     if is_unknown(i) {
-                        TypeRef::Primitive(Prim::Any)
+                        // An unknown element spelled `{nullable: true}` keeps its
+                        // `Optional`, which the collapsing wrapper would drop:
+                        // braintrust's `DatasetEvent.comments` is
+                        // `{items: {nullable: true}}` and Fern types it
+                        // `List[Optional[Any]]`. 3.1's `{type: ['null']}` is the
+                        // other way — Fern collapses that one to a bare unknown.
+                        if i.nullable == Some(true) {
+                            TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
+                        } else {
+                            TypeRef::Primitive(Prim::Any)
+                        }
                     } else {
                         array_item_type_ref(i)
                     }
@@ -10399,12 +10726,44 @@ mod tests {
             "PetWhiskers"
         );
 
+        // The property every variant declares names only the *last* of them; every
+        // earlier one would compute the same name and takes the ordinal instead
+        // (braintrust's `ResponseFormatNullish`, corpus row 126).
         let shared = schema(serde_json::json!({
             "properties": { "common": { "type": "string" } }
         }));
         assert_eq!(
-            variant_class_name("Pet", 0, &shared, &[shared.clone(), shared.clone()]),
+            variant_class_name("Pet", 1, &shared, &[shared.clone(), shared.clone()]),
             "PetCommon"
+        );
+        assert_eq!(
+            variant_class_name("Pet", 0, &shared, &[shared.clone(), shared.clone()]),
+            "PetZero"
+        );
+        // A variant whose properties are `$ref`s beside one plain scalar is named
+        // by that scalar even where a sibling declares it (braintrust's
+        // `FunctionId`); one that declares the scalar alone is not.
+        let refs_and_scalar = schema(serde_json::json!({
+            "properties": {
+                "inline_prompt": { "$ref": "#/components/schemas/PromptData" },
+                "name": { "type": "string" }
+            }
+        }));
+        let scalar_sibling = schema(serde_json::json!({
+            "properties": {
+                "inline_prompt": { "$ref": "#/components/schemas/PromptData" },
+                "name": { "type": "string" },
+                "other": { "type": "string" }
+            }
+        }));
+        assert_eq!(
+            variant_class_name(
+                "Pet",
+                0,
+                &refs_and_scalar,
+                &[refs_and_scalar.clone(), scalar_sibling]
+            ),
+            "PetName"
         );
         assert_eq!(
             variant_class_name("Pet", 1, &Schema::default(), &[]),

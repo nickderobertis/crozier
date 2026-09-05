@@ -1,0 +1,6 @@
+
+
+AiSecretIdParam = str
+"""
+AiSecret id
+"""

@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .topic_automation_data_scope_experiment_id import TopicAutomationDataScopeExperimentId
+from .topic_automation_data_scope_one import TopicAutomationDataScopeOne
+from .topic_automation_data_scope_zero import TopicAutomationDataScopeZero
+
+TopicAutomationDataScope = typing.Union[
+    TopicAutomationDataScopeZero, TopicAutomationDataScopeOne, TopicAutomationDataScopeExperimentId
+]

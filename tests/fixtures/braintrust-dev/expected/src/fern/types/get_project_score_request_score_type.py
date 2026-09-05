@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .get_project_score_request_score_type_one_item import GetProjectScoreRequestScoreTypeOneItem
+from .project_score_type import ProjectScoreType
+
+GetProjectScoreRequestScoreType = typing.Union[ProjectScoreType, typing.List[GetProjectScoreRequestScoreTypeOneItem]]

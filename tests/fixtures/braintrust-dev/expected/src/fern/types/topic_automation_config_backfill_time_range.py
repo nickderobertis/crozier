@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .topic_automation_config_backfill_time_range_from import TopicAutomationConfigBackfillTimeRangeFrom
+
+TopicAutomationConfigBackfillTimeRange = typing.Union[str, TopicAutomationConfigBackfillTimeRangeFrom]

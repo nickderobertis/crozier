@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .nullable_saved_function_id_function_type import NullableSavedFunctionIdFunctionType
+from .nullable_saved_function_id_id import NullableSavedFunctionIdId
+
+NullableSavedFunctionId = typing.Union[NullableSavedFunctionIdId, NullableSavedFunctionIdFunctionType]
