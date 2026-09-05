@@ -2513,13 +2513,28 @@ fn reference_entry(
                             field
                                 .wire_name
                                 .starts_with(|character: char| character.is_ascii_digit())
+                        })
+                        .map(|field| {
+                            naming::model_field_name(&field.wire_name)
+                                .trim_start_matches("f_")
+                                .to_string()
+                        }),
+                    // A form property whose wire name ends in `[]` is documented
+                    // with the bracket spelled out — DaniWeb's `emails[]` is
+                    // `emails_array` in `reference.md`, while the Python argument
+                    // the same property names stays `emails`.
+                    RequestBody::Form(form) => form
+                        .fields
+                        .iter()
+                        .find(|field| field.py_name == dp.name)
+                        .filter(|field| field.wire_name.ends_with("[]"))
+                        .map(|field| {
+                            naming::field_name(&format!(
+                                "{}_array",
+                                field.wire_name.trim_end_matches("[]")
+                            ))
                         }),
                     _ => None,
-                })
-                .map(|field| {
-                    naming::model_field_name(&field.wire_name)
-                        .trim_start_matches("f_")
-                        .to_string()
                 })
                 .unwrap_or_else(|| dp.name.trim_end_matches('_').to_string())
         } else {
@@ -4617,6 +4632,14 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         ")",
                     );
                     format!("{},\n", call.flat())
+                } else if f.is_file && f.optional {
+                    // An optional file field is spread in conditionally rather
+                    // than passed as a `None` part: DaniWeb's `csv` is the
+                    // corpus's first multipart file property outside `required`.
+                    format!(
+                        "                **({{\"{}\": {value}}} if {value} is not None else {{}}),\n",
+                        f.wire_name
+                    )
                 } else {
                     format!("                \"{}\": {value},\n", f.wire_name)
                 };
@@ -7821,7 +7844,11 @@ fn build_example_inner(
                 .fields
                 .iter()
                 .filter(|f| {
-                    (f.spec_required || f.media_example || (related && f.is_file))
+                    // `reference.md` shows every multipart file input, required or
+                    // not — DaniWeb's optional `csv` is the corpus's first — while
+                    // the client docstring shows an optional one only when the
+                    // media example or a per-part content type reaches it.
+                    (f.spec_required || f.media_example || ((related || reference) && f.is_file))
                         && (documentation || !f.is_file)
                 })
                 .collect();
@@ -8282,7 +8309,21 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
         && ep.request_body.is_none();
     let opaque_multipart_example = ep.body_media_has_example
         && matches!(&ep.request_body, Some(RequestBody::Form(form)) if form.fields.iter().any(|field| field.is_file));
-    !(ep.binary_response && binary_has_no_required_arguments || opaque_multipart_example)
+    // A list-typed path parameter beside a request body defeats Fern's example
+    // generator: it renders every path parameter as a plain string, which the
+    // list type rejects once a body makes the wrapper validate, so the endpoint
+    // gets no worked example at all (DaniWeb's `POST /conversations/{ID}/schedules`
+    // and `/searches`, and `POST /groups/{ID}/schedules`). Either half alone still
+    // gets one — `GET /apps/{ID}` shows the bogus `id="ID"`, and every scalar-path
+    // body endpoint of the same document keeps its example.
+    let list_path_param_with_body = ep.request_body.is_some()
+        && ep
+            .path_params
+            .iter()
+            .any(|param| matches!(param.type_ref, TypeRef::List(_)));
+    !(ep.binary_response && binary_has_no_required_arguments
+        || opaque_multipart_example
+        || list_path_param_with_body)
 }
 
 /// Assemble the `raw_client.py` file for one client module: the sync and async

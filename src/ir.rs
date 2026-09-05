@@ -4758,11 +4758,22 @@ fn scalar_body(schema: &Schema) -> Option<(TypeRef, bool)> {
             _ => return None,
         },
         "integer" => TypeRef::Primitive(int_prim(schema)),
-        "number" => TypeRef::Primitive(Prim::Float),
+        "number" => TypeRef::Primitive(number_prim(schema)),
         "boolean" => TypeRef::Primitive(Prim::Bool),
         _ => return None,
     };
     Some((type_ref, false))
+}
+
+/// The primitive for a `type: number` schema. Fern's importer keys the numeric
+/// type off `format` before `type`, so DaniWeb's `{type: number, format: int32}`
+/// fields land on Python `int` rather than `float`; only a non-integer format (or
+/// none) stays a float.
+fn number_prim(schema: &Schema) -> Prim {
+    match schema.format.as_deref() {
+        Some("int32" | "int64") => int_prim(schema),
+        _ => Prim::Float,
+    }
 }
 
 /// The integer primitive for a schema: `Long` for `format: int64`, else `Int`.
@@ -5159,10 +5170,15 @@ fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &str) -> Stri
             .map(|segment| segment.trim_matches(['{', '}']))
             .collect::<Vec<_>>()
             .join("_");
+        // A path segment may carry a character no Python identifier can hold
+        // (DaniWeb's `PATCH /users/~`); Fern folds it away before casing, so the
+        // hoisted type is `PatchUsersRequest…` rather than one whose module name
+        // is unparseable. Sanitizing first is the same fold the `operationId`
+        // branch below applies, and is the identity on an already-identifier path.
         format!(
             "{}{}",
             naming::to_pascal_case(http_method),
-            naming::to_pascal_case(&path)
+            naming::to_pascal_case(&naming::sanitize_identifier(&path))
         )
     } else {
         naming::sanitize_identifier(&naming::to_pascal_case(id))
@@ -7946,7 +7962,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
             _ => TypeRef::Primitive(Prim::Str),
         },
         Some("integer") => TypeRef::Primitive(int_prim(schema)),
-        Some("number") => TypeRef::Primitive(Prim::Float),
+        Some("number") => TypeRef::Primitive(number_prim(schema)),
         Some("boolean") => TypeRef::Primitive(Prim::Bool),
         Some("array") => {
             let item = schema
