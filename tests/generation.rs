@@ -4256,6 +4256,322 @@ components:
     );
 }
 
+/// The rules corpus rows 119-121 pinned, driven through the compiled generator.
+#[test]
+fn a_one_or_many_query_composition_is_the_array_it_offers() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Sorting, version: 1.0.0 }
+paths:
+  /entries:
+    get:
+      operationId: entries_list
+      tags: [Entries]
+      parameters:
+        - name: sort
+          in: query
+          style: deepObject
+          explode: true
+          schema:
+            oneOf:
+              - { type: string }
+              - { type: array, items: { type: string } }
+        - name: fields
+          in: query
+          schema: { type: array, items: { type: string } }
+      responses: { '204': { description: OK } }
+"##,
+    );
+    let raw = &files["src/acme/entries/raw_client.py"];
+    assert!(
+        raw.contains("sort: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None"),
+        "{raw}"
+    );
+    assert!(raw.contains("\"sort\": sort,"), "{raw}");
+    assert!(
+        !files
+            .keys()
+            .any(|name| name.ends_with("entries_list_request_sort.py")),
+        "the composition coined a union alias: {:?}",
+        files.keys().collect::<Vec<_>>()
+    );
+}
+
+#[test]
+fn an_open_object_that_composes_a_base_is_a_model_not_a_dict_alias() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Documents, version: 1.0.0 }
+paths:
+  /entries:
+    get:
+      operationId: entries_list
+      tags: [Entries]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Entry" }
+components:
+  schemas:
+    DocumentMeta:
+      type: object
+      properties:
+        document_id: { type: string }
+    Entry:
+      type: object
+      description: A document.
+      additionalProperties: true
+      allOf:
+        - $ref: "#/components/schemas/DocumentMeta"
+"##,
+    );
+    let model = &files["src/acme/types/entry.py"];
+    assert!(model.contains("class Entry(DocumentMeta):"), "{model}");
+    assert!(!model.contains("Entry = DocumentMeta"), "{model}");
+}
+
+#[test]
+fn a_urlencoded_body_keeps_its_model_and_documents_it_as_one_request() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Submissions, version: 1.0.0 }
+paths:
+  /submit:
+    post:
+      operationId: submit_podcast
+      tags: [Submissions]
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema: { $ref: "#/components/schemas/SubmitPodcastForm" }
+      responses: { '204': { description: OK } }
+components:
+  schemas:
+    SubmitPodcastForm:
+      type: object
+      required: [rss]
+      properties:
+        rss: { type: string }
+        email: { type: string }
+"##,
+    );
+    assert!(
+        files.contains_key("src/acme/types/submit_podcast_form.py"),
+        "the urlencoded body's model was pruned: {:?}",
+        files.keys().collect::<Vec<_>>()
+    );
+    // The executable methods still flatten it …
+    let raw = &files["src/acme/submissions/raw_client.py"];
+    assert!(raw.contains("rss: str"), "{raw}");
+    // … while the reference documents the model as one `request` parameter.
+    let reference = &files["reference.md"];
+    assert!(
+        reference.contains("**request:** `SubmitPodcastForm`"),
+        "{reference}"
+    );
+}
+
+#[test]
+fn an_alias_docstring_is_written_verbatim_while_a_field_docstring_escapes() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Transcripts, version: 1.0.0 }
+paths:
+  /transcripts:
+    get:
+      operationId: transcripts_list
+      tags: [Transcripts]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Holder" }
+components:
+  schemas:
+    TranscriptField:
+      type: string
+      description: 'Plain text (with the newline character \n).'
+    Holder:
+      type: object
+      properties:
+        note:
+          type: string
+          description: 'Plain text (with the newline character \n).'
+"##,
+    );
+    let alias = &files["src/acme/types/transcript_field.py"];
+    assert!(alias.contains(r"the newline character \n)."), "{alias}");
+    assert!(!alias.contains(r"\\n"), "{alias}");
+    let model = &files["src/acme/types/holder.py"];
+    assert!(model.contains(r"the newline character \\n)."), "{model}");
+}
+
+#[test]
+fn a_parameterised_json_media_type_is_still_json() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Config, version: 1.0.0 }
+paths:
+  /config:
+    get:
+      operationId: config_read
+      tags: [Config]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json; charset=utf-8:
+              schema: { $ref: "#/components/schemas/Config" }
+components:
+  schemas:
+    Config:
+      type: object
+      properties:
+        blocked: { type: boolean }
+"##,
+    );
+    let raw = &files["src/acme/config/raw_client.py"];
+    assert!(raw.contains("HttpResponse[Config]"), "{raw}");
+    assert!(!raw.contains("HttpResponse[None]"), "{raw}");
+}
+
+#[test]
+fn an_array_body_beside_another_input_takes_the_body_infix() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Rules, version: 1.0.0 }
+paths:
+  /rules:
+    post:
+      operationId: rules_create
+      tags: [Rules]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                required: [name]
+                properties:
+                  name: { type: string }
+      responses: { '204': { description: OK } }
+  /rules/{id}:
+    put:
+      operationId: rules_replace
+      tags: [Rules]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                required: [name]
+                properties:
+                  name: { type: string }
+      responses: { '204': { description: OK } }
+"##,
+    );
+    assert!(
+        files.contains_key("src/acme/rules/types/rules_create_request_item.py"),
+        "{:?}",
+        files.keys().collect::<Vec<_>>()
+    );
+    assert!(
+        files.contains_key("src/acme/rules/types/rules_replace_request_body_item.py"),
+        "{:?}",
+        files.keys().collect::<Vec<_>>()
+    );
+}
+
+#[test]
+fn an_inline_bodys_schema_example_reaches_the_worked_example() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Rules, version: 1.0.0 }
+paths:
+  /rules/{id}:
+    put:
+      operationId: rules_replace
+      tags: [Rules]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rules]
+              example:
+                rules:
+                  - amap: { "Brand ID": "2000002" }
+                    ident: 1
+              properties:
+                rules:
+                  type: array
+                  items:
+                    type: object
+                    required: [amap, ident]
+                    properties:
+                      amap:
+                        type: object
+                        additionalProperties: { type: string }
+                      ident: { type: integer, example: 0 }
+      responses: { '204': { description: OK } }
+"##,
+    );
+    let client = &files["src/acme/rules/client.py"];
+    assert!(
+        client.contains(r#"amap={"Brand ID": "2000002"}"#),
+        "{client}"
+    );
+    assert!(client.contains("ident=1,"), "{client}");
+}
+
+#[test]
+fn a_yaml_timestamp_example_is_no_example_for_a_plain_string_field() {
+    let quoted = render(
+        r##"openapi: 3.0.3
+info: { title: Ranges, version: 1.0.0 }
+paths:
+  /ranges/{id}:
+    put:
+      operationId: ranges_replace
+      tags: [Ranges]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [range]
+              example:
+                range: { from: "2022-01-23T19:00:00.000Z", label: "winter" }
+              properties:
+                range:
+                  type: object
+                  required: [from, label]
+                  properties:
+                    from: { type: string }
+                    label: { type: string }
+      responses: { '204': { description: OK } }
+"##,
+    );
+    let client = &quoted["src/acme/ranges/client.py"];
+    // The timestamp is a date to a YAML reader, so it is no string example …
+    assert!(client.contains(r#"from_="from","#), "{client}");
+    // … while the plain string beside it still is.
+    assert!(client.contains(r#"label="winter","#), "{client}");
+}
+
 #[test]
 fn a_required_multipart_file_part_is_passed_unconditionally() {
     let files = render(

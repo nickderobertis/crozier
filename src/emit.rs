@@ -9331,6 +9331,7 @@ mod tests {
             .into_iter()
             .collect();
         Ir {
+            yaml_source: false,
             openapi_31: false,
             package_name: "fern".to_string(),
             project_name: "default_package_name".to_string(),
@@ -11248,7 +11249,6 @@ mod tests {
         let auth = Auth::None;
         let tags = std::collections::BTreeMap::new();
         let cx = ClientCtx {
-            yaml_source: ir.yaml_source,
             yaml_source: false,
             pkg: "acme",
             client_name: "AcmeApi",
