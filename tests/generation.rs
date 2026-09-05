@@ -7937,3 +7937,73 @@ components:
         "an undocumented envelope drops the header: {widget}"
     );
 }
+
+/// The rule corpus row 122 pins, driven through the compiled generator. Each of
+/// the AWS Import/Export Service's six paths declares `Action` and `Version`
+/// through `components.parameters` as a plain `type: string`, and each path's
+/// `get` and `post` redeclare both `(name, in)` pairs inline as a single-member
+/// enum. The specification says the operation-level declaration wins, and Fern's
+/// golden types the argument as the enum — so a generator that took the
+/// path-level one would emit `str` and coin no enum module at all.
+#[test]
+fn an_operation_parameter_overrides_the_path_item_one_it_shadows() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: Dispatch, version: 1.0.0 }
+paths:
+  /dispatch:
+    parameters:
+      - { $ref: "#/components/parameters/AccessKey" }
+      - { $ref: "#/components/parameters/Action" }
+      - { $ref: "#/components/parameters/Signature" }
+    get:
+      operationId: cancelJob
+      parameters:
+        - name: jobId
+          in: query
+          required: true
+          schema: { type: string }
+        - name: Action
+          in: query
+          required: true
+          schema: { type: string, enum: [CancelJob] }
+      responses: { '200': { description: OK, content: { text/plain: { schema: { type: string } } } } }
+components:
+  parameters:
+    AccessKey: { name: AccessKey, in: query, required: true, schema: { type: string } }
+    Action: { name: Action, in: query, required: true, schema: { type: string } }
+    Signature: { name: Signature, in: query, required: true, schema: { type: string } }
+"##,
+    );
+    let signature = files["src/acme/client.py"]
+        .split("def cancel_job(")
+        .nth(1)
+        .expect("cancel_job method")
+        .split(')')
+        .next()
+        .expect("argument list");
+    // The operation's enum schema wins, and it wins *in place* — the overridden
+    // parameter keeps the position its path-level declaration held, so `action`
+    // stays between `access_key` and `signature` rather than moving to the end.
+    assert!(
+        signature.contains("access_key: str,")
+            && signature.contains("action: CancelJobRequestAction,")
+            && signature.contains("signature: str,")
+            && signature.find("action:") > signature.find("access_key:")
+            && signature.find("action:") < signature.find("signature:"),
+        "{signature}"
+    );
+    // The losing path-level declaration would have been a bare `str`, which
+    // coins no module at all.
+    assert!(
+        files.contains_key("src/acme/types/cancel_job_request_action.py"),
+        "the operation's enum coined no module: {:?}",
+        files.keys().collect::<Vec<_>>()
+    );
+    // And it is declared once, not twice.
+    assert_eq!(
+        signature.matches("action:").count(),
+        1,
+        "the shadowed parameter was emitted beside its override: {signature}"
+    );
+}
