@@ -688,10 +688,14 @@ searching, and its gate is a property of this repository rather than of anything
 outside it. A row is eligible only where **its own region file** records a search
 for that row: a line of that file's `### Witness search (issue #188)` table whose
 `outcome` cell reads `witness-blocked` or `fern-rejected`, naming **every source
-that region's own witness-search preamble names**, with the query put to each and
-what each returned. A row with no search recorded against it is not eligible, and
-neither is one whose search returned `none-found` — that is the witness-supply
-probe outcome 3 already covers.
+that region's own witness-search preamble names**, and recording for each both
+halves of what it did — the query put to it, in a code span so it can be re-run
+verbatim, and after that query what the query returned, a count or `unanswered`.
+Both halves, because a source named with no query is one nobody can check was
+really asked, and a query with no result is a question with no answer written
+down. A row with no search recorded against it is not eligible, and neither is
+one whose search returned `none-found` — that is the witness-supply probe
+outcome 3 already covers.
 
 **The row stays convertible, so it names its blocker.** A row settled this way
 records that a real witness exists and names precisely what stops that witness
@@ -701,16 +705,24 @@ as permanently settled. A blocker counts only in one of three forms, and each
 names what would have to change:
 
 - **`licence`** — the licence the witness carries, spelled as the SPDX identifier
-  this corpus is refusing (`AGPL-3.0`, `NOASSERTION`) in a code span, or as
-  `none declared` where the publisher declares none.
-- **`mutable ref`** — what makes the reference mutable: the URL the document is
-  served at, in a code span, and what can change under that same address.
-- **`fern refusal`** — Fern's own refusal: the **exit status** it returned and the
-  diagnostic it printed, quoted in a code span.
+  this corpus is refusing (`AGPL-3.0`, `NOASSERTION`) in a code span of its own,
+  or as `none declared` where the publisher declares none. Some *other* quoted
+  string does not stand in for it: a licence blocker that quotes `fern check` has
+  named no licence.
+- **`mutable ref`** — both halves of what makes the reference mutable: the URL
+  the document is served at, in a code span, **and**, after it, what can change
+  under that same address. The URL alone is not a blocker, because a URL is not
+  by itself mutable.
+- **`fern refusal`** — both halves of Fern's own refusal: the **exit status** it
+  returned, and the diagnostic it printed, quoted in a code span of its own. The
+  invocation is not the diagnostic — a refusal whose only code span is `fern
+  check` has recorded that Fern ran, not what it said.
 
-A blocker naming none of the three is refused, so no row is settled behind one
-too vague to tell anybody what would have to change for the witness to become
-registrable.
+A blocker is refused unless it names one of the three *and* carries that form's
+payload, so no row is settled behind one too vague to tell anybody what would
+have to change for the witness to become registrable. Each form's label with
+everything but its payload is the shape that failure takes, which is why the
+payload rather than the label is what is checked.
 
 **How a row says it took this route.** Its `evidence` cell carries what every
 `limitations` row carries — the [`fern-limitations.md`](fern-limitations.md) key
@@ -728,12 +740,14 @@ buys and the whole of what it costs.
 **The gate reads all of it.** `RankedBacklogTests` in
 [`../tests/surface_census_test.py`](../tests/surface_census_test.py) accepts a
 row conforming to the above and refuses one settled with no recorded search, one
-whose recorded search drops a source its region declares, one whose search
+whose recorded search drops a source its region declares, one that names every
+source but records no query against one or no result for one, one whose search
 returned any outcome other than the two that license this route — a witness the
 corpus can use, or no witness at all — one naming no blocker in any of the three
-forms, and one for which [`fern-limitations.md`](fern-limitations.md) records no
-probe and no verdict, which is the gate that keeps a row from being reclassified
-without the measurement that settles it.
+forms or naming a form without its payload, and one for which
+[`fern-limitations.md`](fern-limitations.md) records no probe and no verdict,
+which is the gate that keeps a row from being reclassified without the
+measurement that settles it.
 
 #### The rows, and how they are derived
 

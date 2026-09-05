@@ -276,35 +276,55 @@ def unanswered_sources(cell: str, declared: dict[str, str]) -> list[str]:
     )
 
 
+def is_licence_identifier(span: str) -> bool:
+    """Whether one code span is a licence the corpus could be refusing.
+
+    An SPDX identifier is a single unspaced token carrying a capital or a
+    version digit — `MIT`, `Apache-2.0`, `AGPL-3.0`, `NOASSERTION`. That is
+    narrow on purpose: the failure this refuses is a licence blocker that quotes
+    something else entirely, `fern check` or `golden`, and reads as though it had
+    named a licence.
+    """
+    return bool(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9.+-]*", span) and re.search(r"[A-Z0-9]", span))
+
+
+def is_fern_invocation(span: str) -> bool:
+    """Whether one code span is the command rather than what the command printed."""
+    return bool(re.fullmatch(r"(?i)\s*fern(\s+\w+)?\s*", span))
+
+
 def blocker_form(evidence: str) -> str | None:
     """Which of the rule's three blocker forms this `evidence` cell names, if any.
 
-    Each form has to name what would have to change for the witness to become
-    registrable, so each is recognised by that content and not by its label
-    alone: a licence names the licence, a mutable ref names the URL, and a Fern
-    refusal names the exit status *and* the diagnostic. The most specific form is
-    tested first, because a Fern refusal quotes a code span a licence would also
-    match.
+    A blocker exists to tell a reader what would have to change for the witness to
+    become registrable, so each form is recognised by that payload and never by
+    its label: the label plus any code span at all is exactly the shape that lets
+    a row be settled behind a blocker nobody can act on. So a licence names a
+    licence and not some other quoted string, a mutable ref names the URL *and*
+    what changes beneath it, and a Fern refusal names the exit status *and* the
+    diagnostic Fern printed — the invocation being the one code span a refusal
+    always has and the one that says nothing.
     """
     named = re.search(r"\*\*blocker:\*\*(.*)$", evidence, re.S | re.I)
     if not named:
         return None
     text = named.group(1)
-    quoted = re.search(r"`[^`]+`", text)
-    if (
-        re.search(r"\bfern refusal\b", text, re.I)
+    spans = re.findall(r"`([^`]+)`", text)
+    if re.search(r"\bfern refusal\b", text, re.I):
         # `exit 1`, `exits **1**`, `exit status 1`: the status is what has to be
         # there, not one spelling of the word in front of it.
-        and re.search(r"\bexit\w*\b[^\d]{0,40}\d", text, re.I)
-        and quoted
-    ):
-        return "fern refusal"
-    if re.search(r"\bmutable ref\b", text, re.I) and re.search(r"`https?://[^`]+`", text):
-        return "mutable ref"
-    if re.search(r"\blicen[cs]e\b", text, re.I) and (
-        quoted or re.search(r"\bnone declared\b", text, re.I)
-    ):
-        return "licence"
+        status = re.search(r"\bexit\w*\b[^\d]{0,40}\d", text, re.I)
+        diagnostic = [span for span in spans if not is_fern_invocation(span)]
+        return "fern refusal" if status and diagnostic else None
+    if re.search(r"\bmutable ref\b", text, re.I):
+        url = re.search(r"`https?://[^`]+`", text)
+        # A URL is not by itself mutable, so the clause saying what changes under
+        # that same address is the half that carries the blocker.
+        return "mutable ref" if url and len(text[url.end() :].split()) >= 4 else None
+    if re.search(r"\blicen[cs]e\b", text, re.I):
+        if re.search(r"\bnone declared\b", text, re.I):
+            return "licence"
+        return "licence" if any(is_licence_identifier(span) for span in spans) else None
     return None
 
 
@@ -318,6 +338,24 @@ def ledger_verdict(key: str, ledger: str) -> str | None:
             for verdict in LEDGER_VERDICTS:
                 if re.search(rf"\b{verdict}\b", cell):
                     return verdict
+    return None
+
+
+def source_record_failure(label: str, segment: str) -> str | None:
+    """Why one source's segment is not a record of what the search asked it.
+
+    Two halves, and a segment carrying one of them records nothing usable: the
+    query, in a code span so it can be re-run verbatim, and after it what the
+    query returned — a count, or `unanswered` where the source did not answer. A
+    source named with no query is a source nobody can check was really asked, and
+    a query with no result is a question with no answer written down; either way
+    "no witness was found" rests on that source having been read, and it has not.
+    """
+    query = re.search(r"`[^`]+`", segment)
+    if not query:
+        return f"names {label} with no query in a code span"
+    if not re.search(rf"\d|\b{UNANSWERED}\b", segment[query.end() :], re.I):
+        return f"names {label} with a query and no result after it"
     return None
 
 
@@ -361,6 +399,20 @@ def blocked_witness_probe_failures(
             failures.append(
                 f"{key}: its recorded search omits {missing}, which {region}.md "
                 f"declares its search put to every row"
+            )
+        incomplete = sorted(
+            reason
+            for reason in (
+                source_record_failure(declared[name], segment)
+                for name, segment in queried.items()
+            )
+            if reason
+        )
+        if incomplete:
+            failures.append(
+                f"{key}: its recorded search {'; '.join(incomplete)} — every "
+                f"required source is recorded with the query put to it and what "
+                f"that query returned, or the search of it is not on the record"
             )
     if blocker_form(cells[4]) is None:
         failures.append(
@@ -2192,6 +2244,29 @@ class AmendedSettlementRuleTests(unittest.TestCase):
             self.only_failure(self.reconcile(sources=self.ONE_SOURCE)),
         )
 
+    NO_QUERY_SOURCES = (
+        "**APIs.guru** `grep -rlF '\"x-sample\"' APIs` → 0 hits. "
+        "**GitHub code search** — searched, and nothing it returned was a witness."
+    )
+    NO_RESULT_SOURCES = (
+        "**APIs.guru** `grep -rlF '\"x-sample\"' APIs` → 0 hits. "
+        "**GitHub code search** `gh search code '\"x-sample\" filename:openapi.yaml'`."
+    )
+
+    def test_a_row_naming_every_source_but_querying_one_of_them_is_refused(self) -> None:
+        """Naming a source is not asking it; the query has to be on the record."""
+        self.assertIn(
+            "names GitHub code search with no query in a code span",
+            self.only_failure(self.reconcile(sources=self.NO_QUERY_SOURCES)),
+        )
+
+    def test_a_row_recording_a_query_and_not_what_it_returned_is_refused(self) -> None:
+        """A question with no answer written down settles nothing about the world."""
+        self.assertIn(
+            "names GitHub code search with a query and no result after it",
+            self.only_failure(self.reconcile(sources=self.NO_RESULT_SOURCES)),
+        )
+
     def test_a_row_whose_search_found_a_usable_witness_is_refused(self) -> None:
         """`witness-found` is fixture work: the corpus can register that document."""
         self.assertIn(
@@ -2220,20 +2295,47 @@ class AmendedSettlementRuleTests(unittest.TestCase):
             self.only_failure(self.reconcile(blocker="The witness cannot be registered.")),
         )
 
+    # Each of these carries its form's label and everything but the payload that
+    # makes the form act on anything. The last three are the deceptive ones: they
+    # quote a code span, which a check reading the label plus "some code span"
+    # accepts, and none of them names a licence or a diagnostic.
+    VAGUE_BLOCKERS = (
+        ("no licence at all", "**blocker:** the licence is wrong"),
+        ("no URL", "**blocker:** mutable ref — the upstream moves"),
+        ("no exit status and no diagnostic", "**blocker:** fern refusal — Fern says no"),
+        (
+            "a licence blocker quoting a command instead of a licence",
+            "**blocker:** licence — the corpus cannot redistribute it, as `fern check` shows",
+        ),
+        (
+            "a licence blocker quoting a word that is no licence",
+            "**blocker:** licence — this row is blocked; see `golden`",
+        ),
+        (
+            "a mutable ref naming the URL and not what changes beneath it",
+            "**blocker:** mutable ref — served at `https://example.test/openapi.yaml`",
+        ),
+        (
+            "a Fern refusal whose only code span is the invocation",
+            "**blocker:** fern refusal — `fern check` exits **1**",
+        ),
+        (
+            "a Fern refusal quoting the diagnostic and no exit status",
+            "**blocker:** fern refusal — `Service requires auth, but no auth is defined.`",
+        ),
+    )
+
     def test_a_blocker_too_vague_to_act_on_is_refused(self) -> None:
         """The label alone is not a blocker: each form names the thing that would change."""
-        for vague in (
-            "**blocker:** the licence is wrong",              # names no licence
-            "**blocker:** mutable ref — the upstream moves",  # names no URL
-            "**blocker:** fern refusal — Fern says no",       # names no exit status
-        ):
-            with self.subTest(blocker=vague):
+        for missing, vague in self.VAGUE_BLOCKERS:
+            with self.subTest(missing=missing):
                 self.assertIn("names no blocker", self.only_failure(self.reconcile(blocker=vague)))
 
     def test_each_of_the_three_blocker_forms_is_accepted(self) -> None:
         """And the three complete ones are, so the refusal above is about content."""
         for good in (
             "**blocker:** licence — the witness declares `none declared`",
+            "**blocker:** licence — the witness carries `AGPL-3.0`",
             "**blocker:** mutable ref — served only at "
             "`https://example.test/openapi.yaml`, which the publisher overwrites in place",
             "**blocker:** fern refusal — `fern check` exits **1** with "
