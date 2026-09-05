@@ -4727,6 +4727,21 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     || !ep.header_params.is_empty()
                     || !ep.path_params.is_empty()
                     || (body.content_type_header()
+                        // A body schema more than one operation posts, carried
+                        // by a `requestBody` that declares neither a `description`
+                        // nor `required: true`, drops the header: the Open
+                        // Integration Hub's `MutableSecret` and `MutableAuthClient`
+                        // are each the body of a create and an update, and each
+                        // `requestBody` states nothing about itself. Each of the
+                        // other ways to be shared keeps the header — Palo
+                        // Alto's bodies carry a description, exhaustive's carry
+                        // `required: true` or are sent whole, and Adyen's
+                        // `GrantInfo` is posted by one operation.
+                        && !(ep.body_schema_shared
+                            && ep.body_description_missing
+                            && !ep.body_declared_required
+                            && !body.all_fields_required()
+                            && !ep.body_schema_dropped)
                         && (!ep.basic_auth
                             || !ep.body_description_missing
                             || !ep.body_schema_ref && matches!(body, RequestBody::Inline(_)))
@@ -7174,7 +7189,14 @@ impl<'a> ExampleCtx<'a> {
                 Some(m) => {
                     self.record_ref(&m.class_name);
                     // The discriminant field carries a default (`= "circle"`), so
-                    // Fern's example omits it and sets only the required fields.
+                    // Fern's example omits it and sets only the required fields —
+                    // *unless* the variant's own declaration of the tag hoisted an
+                    // enum type of its own, which happens when that declaration
+                    // lists more than the one value the variant is. The Open
+                    // Integration Hub's four auth-client variants each declare all
+                    // four `type` values, so `MutableOa1TwoLeggedClientType` exists
+                    // and the example passes it, back in the schema position the
+                    // model moved the tag out of.
                     let mut args = Vec::new();
                     for (py_name, wire_name, ty, example) in m
                         .fields
@@ -7194,6 +7216,45 @@ impl<'a> ExampleCtx<'a> {
                             Some(py_name),
                             self.field_example(&ty, &wire_name, example.as_deref()),
                         ));
+                    }
+                    if let Some(index) = m.discriminant_index {
+                        let enum_name = m.source.as_deref().map(|source| {
+                            naming::child_class_name(source, &u.discriminant_property)
+                        });
+                        let member =
+                            enum_name
+                                .as_deref()
+                                .and_then(|enum_name| match self.find(enum_name) {
+                                    Some(TypeDecl::Enum(declared)) => declared
+                                        .members
+                                        .iter()
+                                        .find(|value| value.value == m.discriminant)
+                                        .map(|value| value.name.clone()),
+                                    _ => None,
+                                });
+                        if let (Some(enum_name), Some(member)) = (enum_name, member) {
+                            // The Python docstring writer puts the tag back in
+                            // its schema position; the Markdown writers (README
+                            // and `reference.md`) append it after every other
+                            // argument.
+                            let at = if self.documentation {
+                                args.len()
+                            } else {
+                                m.fields
+                                    .iter()
+                                    .take(index)
+                                    .filter(|f| f.spec_required && !f.optional)
+                                    .count()
+                            };
+                            self.record_ref(&enum_name);
+                            args.insert(
+                                at.min(args.len()),
+                                (
+                                    Some(naming::model_field_name(&u.discriminant_property)),
+                                    Example::Atom(format!("{enum_name}.{member}")),
+                                ),
+                            );
+                        }
                     }
                     Example::Call(m.class_name.clone(), args)
                 }
@@ -9132,6 +9193,7 @@ mod tests {
             body_codegen_named: false,
             body_description_empty: false,
             body_description_missing: false,
+            body_declared_required: false,
             body_component_ref: false,
             body_collapses_to_type_reference: false,
             body_content_type_override: None,
@@ -9946,6 +10008,7 @@ mod tests {
                     wrapped: false,
                     class_name: "ModifyMessageRequestBody_SystemMessage".to_string(),
                     discriminant: "system_message".to_string(),
+                    discriminant_index: None,
                     fields: Vec::new(),
                     source: None,
                     docstring: None,
@@ -10494,6 +10557,7 @@ mod tests {
                 wrapped: false,
                 class_name: "Shape_Circle".to_string(),
                 discriminant: "circle".to_string(),
+                discriminant_index: None,
                 fields: vec![
                     model_field("radius", TypeRef::Primitive(Prim::Float), true),
                     nullable_required,
@@ -10566,12 +10630,12 @@ mod tests {
     #[test]
     fn worked_example_orders_wildcard_parameters_and_renders_body_examples() {
         let mut ep = endpoint(
-            "/widgets/{ids}",
+            "/widgets/{id}",
             vec![PathParam {
-                wire_name: "ids".to_string(),
-                py_name: "ids".to_string(),
-                type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
-                docstring: Some("Widget identifiers.".to_string()),
+                wire_name: "id".to_string(),
+                py_name: "id".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+                docstring: Some("Widget identifier.".to_string()),
                 example: None,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
@@ -10717,6 +10781,95 @@ mod tests {
         assert!(rendered.contains("await client.widgets.op("), "{rendered}");
     }
 
+    #[test]
+    fn a_list_path_parameter_beside_a_request_body_has_no_worked_example() {
+        // DaniWeb's `POST /conversations/{ID}/schedules` takes an array path
+        // parameter and a body, and Fern emits no example for it while both
+        // halves alone keep one.
+        let with_body = |type_ref: TypeRef| {
+            let mut ep = endpoint(
+                "/conversations/{id}/schedules",
+                vec![PathParam {
+                    wire_name: "id".to_string(),
+                    py_name: "id".to_string(),
+                    type_ref,
+                    docstring: None,
+                    example: None,
+                }],
+                Some(TypeRef::Primitive(Prim::Str)),
+            );
+            ep.http_method = "POST";
+            ep.request_body = Some(RequestBody::Inline(vec![BodyField {
+                wire_name: "date".to_string(),
+                py_name: "date".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+                optional: false,
+                nullable: false,
+                spec_required: true,
+                docstring: None,
+                convert: false,
+                is_file: false,
+                form_json: false,
+                form_content_type: None,
+                collision_prefix: None,
+                example: None,
+                media_example: false,
+                schema_body_example: false,
+                reference_order: 0,
+            }]));
+            ep
+        };
+        let auth = Auth::None;
+
+        let list_path = with_body(TypeRef::List(Box::new(TypeRef::Primitive(Prim::Int))));
+        let mut ctx = example_ctx(&[], &[], &auth);
+        assert!(
+            build_example(
+                &list_path,
+                false,
+                "conversations",
+                "fern",
+                "FernApi",
+                &mut ctx,
+                false
+            )
+            .is_none(),
+            "a list path parameter beside a body suppresses the example"
+        );
+
+        let scalar_path = with_body(TypeRef::Primitive(Prim::Int));
+        let mut ctx = example_ctx(&[], &[], &auth);
+        assert!(
+            build_example(
+                &scalar_path,
+                false,
+                "conversations",
+                "fern",
+                "FernApi",
+                &mut ctx,
+                false
+            )
+            .is_some(),
+            "a scalar path parameter beside a body keeps it"
+        );
+
+        let mut bodyless = with_body(TypeRef::List(Box::new(TypeRef::Primitive(Prim::Int))));
+        bodyless.request_body = None;
+        let mut ctx = example_ctx(&[], &[], &auth);
+        assert!(
+            build_example(
+                &bodyless,
+                false,
+                "conversations",
+                "fern",
+                "FernApi",
+                &mut ctx,
+                false
+            )
+            .is_some(),
+            "a list path parameter with no body keeps it"
+        );
+    }
     #[test]
     fn referenced_request_examples_preserve_fern_importer_names() {
         let alias = TypeDecl::Alias(AliasType {
@@ -11083,6 +11236,7 @@ mod tests {
                 wrapped: false,
                 class_name: "Content_Text".to_string(),
                 discriminant: "text".to_string(),
+                discriminant_index: None,
                 fields: vec![model_field("text", TypeRef::Primitive(Prim::Str), true)],
                 source: None,
                 docstring: None,

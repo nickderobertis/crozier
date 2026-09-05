@@ -428,8 +428,9 @@ fn auth_model(doc: &OpenApi) -> Auth {
     // requirements say (`byautomata.io` declares no `security` anywhere and still
     // gets its `api_key`), but it takes an HTTP or OAuth2 scheme only from a
     // declared Security Requirement Object — an empty root `security: []` counts,
-    // and so does one on a webhook operation. AlayaCare declares `basic_auth` and
-    // no requirement at all, and its golden client wrapper carries no credential.
+    // and so does one on a webhook operation. Selection order is untouched by
+    // this: the first supported scheme still wins, and the check is on what that
+    // scheme turned out to be.
     let requirement_declared = doc.security.is_some()
         || doc
             .paths
@@ -440,15 +441,16 @@ fn auth_model(doc: &OpenApi) -> Auth {
     let selected = doc.components.security_schemes.values().find(|scheme| {
         (scheme.ty == SecuritySchemeType::ApiKey
             && scheme.location == Some(ParameterLocation::Header))
-            || (requirement_declared
-                && (scheme.ty == SecuritySchemeType::Http
-                    && matches!(
-                        scheme.scheme,
-                        Some(HttpAuthScheme::Bearer | HttpAuthScheme::Basic)
-                    )
-                    || scheme.ty == SecuritySchemeType::OAuth2))
+            || (scheme.ty == SecuritySchemeType::Http
+                && matches!(
+                    scheme.scheme,
+                    Some(HttpAuthScheme::Bearer | HttpAuthScheme::Basic)
+                ))
+            || scheme.ty == SecuritySchemeType::OAuth2
     });
-    if selected.is_none() && !requirement_declared {
+    if !requirement_declared
+        && selected.is_none_or(|scheme| scheme.ty != SecuritySchemeType::ApiKey)
+    {
         return Auth::None;
     }
     match selected {
@@ -777,6 +779,11 @@ pub struct Endpoint {
     pub body_description_empty: bool,
     /// Whether the request body omits a description entirely.
     pub body_description_missing: bool,
+    /// Whether the Request Body Object declares `required: true` of itself. Fern
+    /// keeps the explicit `content-type` for such a body even when several
+    /// operations share its schema; a body that leaves `required` unstated and is
+    /// shared drops it.
+    pub body_declared_required: bool,
     /// Whether the body came through `components.requestBodies`, which Fern treats
     /// like a reusable declaration for content-type emission.
     pub body_component_ref: bool,
@@ -1231,6 +1238,10 @@ pub struct UnionMember {
     pub discriminant: String,
     /// The variant's fields, with the discriminant property removed.
     pub fields: Vec<Field>,
+    /// Where the discriminant sat among those fields before it was removed, when
+    /// the variant declares it as a property of its own. The model writes the tag
+    /// first, but Fern's worked example writes it back in this position.
+    pub discriminant_index: Option<usize>,
     /// The component schema this wrapper flattened, when the variant was a
     /// `$ref`. It is the one cyclic name the wrapper's own `update_forward_refs`
     /// call omits — the wrapper *is* that model, so resolving its name against
@@ -2570,6 +2581,10 @@ fn build_endpoint(
             .request_body
             .as_ref()
             .is_some_and(|body| body.description.is_none()),
+        body_declared_required: op
+            .request_body
+            .as_ref()
+            .is_some_and(|body| body.required == Some(true)),
         body_component_ref: op.request_body.as_ref().is_some_and(|rb| rb.component_ref),
         body_collapses_to_type_reference,
         body_content_type_override: op
@@ -5997,6 +6012,47 @@ fn member_fields(
     fields
 }
 
+/// Where a union member's own declaration of the discriminant sat among the
+/// fields [`member_fields`] keeps, walking the same order. `None` when the
+/// variant declares no such property.
+fn member_discriminant_index(
+    schema: &Schema,
+    discriminant: &str,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<usize> {
+    fn scan(schema: &Schema, discriminant: &str, index: &mut usize) -> bool {
+        for prop in schema.properties.keys() {
+            if prop == discriminant {
+                return true;
+            }
+            *index += 1;
+        }
+        false
+    }
+    let mut index = 0usize;
+    for member in schema.all_of.iter().flatten() {
+        if member.reference.is_none() && scan(member, discriminant, &mut index) {
+            return Some(index);
+        }
+    }
+    if scan(schema, discriminant, &mut index) {
+        return Some(index);
+    }
+    for member in schema.all_of.iter().flatten() {
+        let Some(base) = member
+            .reference
+            .as_deref()
+            .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+        else {
+            continue;
+        };
+        if scan(base, discriminant, &mut index) {
+            return Some(index);
+        }
+    }
+    None
+}
+
 /// Append a schema's own properties (minus the discriminant) to `fields`.
 fn append_member_fields(
     schema: &Schema,
@@ -6749,6 +6805,11 @@ impl Builder<'_> {
                         self.schemas,
                         target_name.as_deref().or(Some(variant_name.as_str())),
                     ),
+                    discriminant_index: member_discriminant_index(
+                        target,
+                        &property_name,
+                        self.schemas,
+                    ),
                     source: target_name.clone(),
                     docstring: variant
                         .reference
@@ -6785,6 +6846,7 @@ impl Builder<'_> {
                     self.schemas,
                     Some(&naming::class_name(target_key)),
                 ),
+                discriminant_index: member_discriminant_index(target, &property_name, self.schemas),
                 source: Some(naming::class_name(target_key)),
                 docstring: docstring.clone(),
                 wrapped: false,
@@ -6859,6 +6921,7 @@ impl Builder<'_> {
                         docstring: None,
                         example: None,
                     }],
+                    discriminant_index: None,
                     source: None,
                     docstring: None,
                     wrapped: true,
@@ -6871,6 +6934,11 @@ impl Builder<'_> {
                 class_name,
                 discriminant: value.clone(),
                 fields: self.variant_own_fields(&target_class, &target),
+                discriminant_index: member_discriminant_index(
+                    &target,
+                    &property_name,
+                    self.schemas,
+                ),
                 source: Some(target_class.clone()),
                 docstring: docstring.clone(),
                 wrapped: false,
