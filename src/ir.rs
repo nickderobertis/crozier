@@ -4153,6 +4153,9 @@ impl InlineHoister<'_> {
                 return full_type_ref_resolved(&target, schemas);
             }
         }
+        if let Some(member) = sole_inline_all_of(prop_schema) {
+            return self.prop_type_ref(parent, prop, member);
+        }
         if prop_schema.reference.is_none() {
             if let Some(values) = string_enum_values(prop_schema) {
                 let name = naming::child_class_name(parent, prop);
@@ -8063,6 +8066,28 @@ fn single_all_of_ref(schema: &Schema) -> Option<&str> {
 /// 3.0 idiom for annotating a reference — and Fern reads the referenced schema's
 /// example straight through it, so `digitalProductPassportId` is exampled with
 /// `Identifier`'s GS1 Digital Link rather than with its own field name.
+/// The one inline member of a property-level `allOf` that adds nothing of its
+/// own. Palo Alto Networks writes `data: {allOf: [{type: array, items: {$ref:
+/// IkeGatewaysConfig}}]}`, and Fern collapses the single member into the property
+/// rather than coining a wrapper model, so `data` is
+/// `Optional[List[IkeGatewaysConfig]]`. A single `$ref` member is left to
+/// [`sole_all_of_ref`] and [`described_all_of_ref`], which already read that form.
+fn sole_inline_all_of(schema: &Schema) -> Option<&Schema> {
+    let [member] = schema.all_of.as_ref()?.as_slice() else {
+        return None;
+    };
+    (member.reference.is_none()
+        && schema.reference.is_none()
+        && schema.ty.is_none()
+        && !schema.properties.declared()
+        && schema.one_of.is_none()
+        && schema.any_of.is_none()
+        && schema.items.is_none()
+        && schema.additional_properties.is_none()
+        && schema.enum_values.is_none())
+    .then_some(member)
+}
+
 fn sole_all_of_ref(schema: &Schema) -> Option<&str> {
     let [member] = schema.all_of.as_ref()?.as_slice() else {
         return None;
