@@ -141,12 +141,14 @@ separately re-spells the same config with each plugin restored to its recorded
 URL — the pre-repair configuration — and asserts *that* still fails, which is
 what keeps the other assertions from being ones that could never fail.
 
-Observed, in that order: over the pre-repair `llmlint.yml`, four of five tests
-failed, the end-to-end one with the CI error verbatim (`io: Connection refused`);
-over the repaired tree, all five pass, with the pre-repair control still failing
-offline. The suite is part of `just check` and runs as its own step in the
-`llmlint` job with `CROZIER_REQUIRE_LLMLINT=1`, which turns "llmlint is not
-installed" from a skip into a failure so the required check cannot no-op.
+Observed, in that order: with `llmlint.yml` restored to the pre-repair spelling,
+all four llmlint-driving tests fail — the end-to-end one with the CI error
+verbatim (`io: Connection refused`) — and reverting the workflow step as well
+takes the whole suite to 11 failures across its 8 tests; over the repaired tree
+all 8 pass, with the pre-repair control still failing offline. The suite is part
+of `just check` and runs as its own step in the `llmlint` job with
+`CROZIER_REQUIRE_LLMLINT=1`, which turns "llmlint is not installed" from a skip
+into a failure so the required check cannot no-op.
 
 ## Provenance
 
