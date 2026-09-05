@@ -1,0 +1,205 @@
+{
+ "openapi": "3.0.3",
+ "info": {
+  "title": "Probe",
+  "version": "1.0.0"
+ },
+ "paths": {
+  "/rules/{id}": {
+   "put": {
+    "operationId": "probe_rules",
+    "tags": [
+     "Probe"
+    ],
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "example": {
+         "rules": [
+          {
+           "context": {
+            "brands": {
+             "Brand ID": "2000002",
+             "Brand Name": "Whiskas"
+            },
+            "categories": {
+             "Category ID": "1",
+             "Category Name": "Alimenta\u00e7\u00e3o"
+            },
+            "dateRange": {
+             "from": "2022-01-23T19:00:00.000Z",
+             "to": "2023-10-26T00:00:00.000Z"
+            },
+            "markupRange": {
+             "from": 0,
+             "to": 200
+            }
+           },
+           "id": 1,
+           "percentualModifier": 0
+          }
+         ]
+        },
+        "properties": {
+         "rules": {
+          "description": "Array of rules for the price table.",
+          "items": {
+           "description": "Object containing a price table rule.",
+           "properties": {
+            "context": {
+             "description": "Rule Context is a group of filters to be checked at an item level when applying the rule. If all those filters check out, the rule will be applied for that item, unless there is a fixed price for that item.",
+             "properties": {
+              "brands": {
+               "additionalProperties": {
+                "additionalProperties": {
+                 "description": "Brand Name.",
+                 "example": "Goldman",
+                 "type": "string"
+                },
+                "description": "Brand ID.",
+                "example": "421",
+                "type": "string"
+               },
+               "description": "Brands that an item should have to be eligible for the rule. Format: key: `brandId`, value: `brandName`.",
+               "title": "brands",
+               "type": "object"
+              },
+              "categories": {
+               "additionalProperties": {
+                "additionalProperties": {
+                 "description": "Category Name.",
+                 "example": "Books",
+                 "type": "string"
+                },
+                "description": "Category ID.",
+                "example": "209",
+                "type": "string"
+               },
+               "description": "Categories that an item should have to be eligible for the rule. Format: key: `categoryId`, value: `categoryName`.",
+               "title": "categories",
+               "type": "object"
+              },
+              "dateRange": {
+               "description": "The rule will be active during this time range.",
+               "properties": {
+                "from": {
+                 "description": "Date when rule will be activated. Date format: `RFC3339`.",
+                 "example": "2019-10-23T19:00:00.000Z",
+                 "title": "from",
+                 "type": "string"
+                },
+                "to": {
+                 "description": "Date when the rule will be deactivated. Date format: `RFC3339`.",
+                 "example": "2019-10-26T00:00:00.000Z",
+                 "title": "to",
+                 "type": "string"
+                }
+               },
+               "required": [
+                "from",
+                "to"
+               ],
+               "title": "dateRange",
+               "type": "object"
+              },
+              "internalCategories": {
+               "description": "Internal Categories.",
+               "example": null,
+               "nullable": true,
+               "title": "internalCategories",
+               "type": "object"
+              },
+              "markupRange": {
+               "description": "For an item to be eligible to the rule, it's markup should be in this Markup Range.",
+               "example": null,
+               "nullable": true,
+               "properties": {
+                "from": {
+                 "description": "Item markup should be greater than or equal to this value.",
+                 "example": 0,
+                 "title": "from",
+                 "type": "integer"
+                },
+                "to": {
+                 "description": "Item markup should be less than or equal to this value.",
+                 "example": 200,
+                 "title": "to",
+                 "type": "integer"
+                }
+               },
+               "required": [
+                "from",
+                "to"
+               ],
+               "title": "markupRange",
+               "type": "object"
+              },
+              "stockStatuses": {
+               "description": "Stock statuses.",
+               "example": null,
+               "nullable": true,
+               "title": "stockStatuses",
+               "type": "object"
+              }
+             },
+             "required": [
+              "categories",
+              "brands",
+              "markupRange",
+              "dateRange"
+             ],
+             "title": "context",
+             "type": "object"
+            },
+            "id": {
+             "description": "Rule ID.",
+             "example": 0,
+             "title": "id",
+             "type": "integer"
+            },
+            "percentualModifier": {
+             "description": "Percentual modifier.",
+             "example": 0,
+             "title": "percentualModifier",
+             "type": "number"
+            }
+           },
+           "required": [
+            "id",
+            "context",
+            "percentualModifier"
+           ],
+           "type": "object"
+          },
+          "title": "rules",
+          "type": "array"
+         }
+        },
+        "required": [
+         "rules"
+        ],
+        "type": "object"
+       }
+      }
+     }
+    },
+    "responses": {
+     "204": {
+      "description": "OK"
+     }
+    }
+   }
+  }
+ }
+}

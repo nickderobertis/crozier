@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "strapi-rest-api",
+  "corpus_spec_ref": "eb9d12a2684b0fbcb5aecf51e8ae54dba0929743",
+  "corpus_spec_url": "https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/strapi.io/strapi-rest-api/5.0.0/openapi.json"
+}

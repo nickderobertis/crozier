@@ -13,6 +13,9 @@ use crate::openapi::{
 /// A fully-resolved SDK model ready to emit.
 #[derive(Debug)]
 pub struct Ir {
+    /// Whether the source document was YAML; see
+    /// [`crate::openapi::OpenApi::yaml_source`].
+    pub yaml_source: bool,
     /// Whether the source uses the OpenAPI 3.1 importer behavior.
     pub openapi_31: bool,
     /// Python import package name (directory under `src/`).
@@ -681,6 +684,25 @@ fn request_schema_use_count(doc: &OpenApi, reference: &str) -> usize {
                 == Some(reference)
         })
         .count()
+}
+
+/// The component schemas an `application/x-www-form-urlencoded` request body
+/// names. Fern flattens such a body into the method's arguments exactly as it
+/// flattens a JSON one, but it **keeps** the model in the public type layer:
+/// Listen Notes' `SubmitPodcastForm`, `GetEpisodesInBatchForm` and
+/// `GetPodcastsInBatchForm` are each posted by one operation, referenced nowhere
+/// else, and each is a class in its golden. A `multipart/*` body's model is
+/// dropped the way an inlined JSON one is (api.video's `token-upload-payload`,
+/// marimo's `FileCreateMultipartRequest`, every `Body_*` of letta and Livepeer).
+fn urlencoded_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
+    doc.paths
+        .values()
+        .flat_map(crate::openapi::PathItem::operations)
+        .filter_map(|(_, operation)| operation.request_body.as_ref())
+        .filter_map(|body| body.content.get("application/x-www-form-urlencoded"))
+        .filter_map(|media| media.schema.as_ref()?.reference.as_deref())
+        .map(ref_to_class)
+        .collect()
 }
 
 fn form_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
@@ -1550,6 +1572,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     }
     let inline_sources = inline_body_source_names(doc);
     let form_sources = form_body_source_names(doc);
+    let urlencoded_sources = urlencoded_body_source_names(doc);
     // A `stream-condition` operation sends its body from two methods, and Fern
     // keeps the request model rather than flattening it away into one of them.
     let stream_condition_sources = stream_condition_body_source_names(doc);
@@ -1557,6 +1580,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         .iter()
         .filter(|name| {
             !referenced.contains(*name)
+                && !urlencoded_sources.contains(name.as_str())
                 && !stream_condition_sources.contains(name.as_str())
                 && !doc.components.schemas.keys().any(|key| {
                     key.starts_with("Body_")
@@ -1637,6 +1661,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     let environment = environment_model(doc, &client_name);
 
     Ir {
+        yaml_source: doc.yaml_source,
         openapi_31: doc.openapi.starts_with("3.1"),
         package_name: config.package_name.as_str().to_string(),
         project_name: config.project_name.clone(),
@@ -2110,18 +2135,22 @@ fn build_endpoint(
         .iter()
         .filter(|p| p.location == Some(ParameterLocation::Query))
         .map(|p| {
+            // A one-or-many composition is the array it offers; see
+            // [`one_or_many_query_schema`]. Every reading below takes this schema
+            // so both spellings of that shape generate the same bytes.
+            let schema = p
+                .schema
+                .as_ref()
+                .map(|schema| one_or_many_query_schema(schema).unwrap_or(schema));
             // An inline string enum hoists to a named `{ctx}Request{Prop}` alias in
             // the tag's `types/` package (Fern's `ListWidgetsRequestLevel`); a
             // `$ref`/scalar passes through `base_type_ref`.
             // Fern's OpenAPI importer treats a schema-less query parameter as a
             // string. Content-based parameters remain strings for the same reason:
             // both arrive on the URL as text.
-            let type_ref = p
-                .schema
-                .as_ref()
-                .map_or(TypeRef::Primitive(Prim::Str), |s| {
-                    hoister.hoist_param_enum(&request_ctx, &p.name, s)
-                });
+            let type_ref = schema.map_or(TypeRef::Primitive(Prim::Str), |s| {
+                hoister.hoist_param_enum(&request_ctx, &p.name, s)
+            });
             let type_ref = if p.schema.is_none() && !p.content.is_empty() {
                 TypeRef::Primitive(Prim::Str)
             } else {
@@ -2164,7 +2193,7 @@ fn build_endpoint(
             } else {
                 query_parameter_example(doc, p)
             };
-            let example_is_scalar = p.schema.as_ref().is_some_and(|schema| {
+            let example_is_scalar = schema.is_some_and(|schema| {
                 let schema = schema
                     .reference
                     .as_deref()
@@ -2177,7 +2206,7 @@ fn build_endpoint(
             });
             let comma_separated = p.explode == Some(false)
                 && p.style.as_deref().is_none_or(|style| style == "form")
-                && p.schema.as_ref().is_some_and(|schema| {
+                && schema.is_some_and(|schema| {
                     let schema = schema
                         .reference
                         .as_deref()
@@ -2185,7 +2214,7 @@ fn build_endpoint(
                         .unwrap_or(schema);
                     schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
                 });
-            let allow_multiple = p.schema.as_ref().is_some_and(|schema| {
+            let allow_multiple = schema.is_some_and(|schema| {
                 let schema = schema
                     .reference
                     .as_deref()
@@ -2193,9 +2222,7 @@ fn build_endpoint(
                     .unwrap_or(schema);
                 schema.ty.as_ref().and_then(TypeField::primary) == Some("array")
             });
-            let aliased_datetime = p
-                .schema
-                .as_ref()
+            let aliased_datetime = schema
                 .and_then(|schema| schema.reference.as_deref())
                 .and_then(|reference| resolve_ref(doc, reference))
                 .map(base_type_ref)
@@ -2554,7 +2581,19 @@ fn build_endpoint(
         reference_body_type: op
             .request_body
             .as_ref()
-            .and_then(selected_json_request_media)
+            .and_then(|body| {
+                // A urlencoded body keeps its model
+                // ([`urlencoded_body_source_names`]), and the reference documents
+                // that model as one `request` parameter even though the executable
+                // methods flatten its fields — Listen Notes' `getEpisodesInBatch`
+                // takes `ids`/`rsses`/… in `client.py` and reads
+                // `**request:** GetEpisodesInBatchForm` in `reference.md`.
+                selected_json_request_media(body).or_else(|| {
+                    body.content
+                        .get("application/x-www-form-urlencoded")
+                        .map(|media| ("application/x-www-form-urlencoded", media))
+                })
+            })
             .and_then(|(_, media)| media.schema.as_ref())
             .and_then(|schema| schema.reference.as_deref())
             .filter(|reference| {
@@ -3401,6 +3440,8 @@ fn resolve_request_body(
     rb: &crate::openapi::RequestBody,
     hoister: &mut InlineHoister,
     request_ctx: &str,
+    // Whether the operation carries inputs beside the body. Fern then wraps the
+    // request, so a body it must name of its own gets a `Body` infix.
     union_body_suffix: bool,
 ) -> Option<RequestBody> {
     // A raw `application/octet-stream` body is a bytes stream, independent of its
@@ -3655,6 +3696,11 @@ fn resolve_request_body(
     // objects hoist into `{request_ctx}{Prop}` models.
     if !schema.properties.is_empty() {
         return hoist_inline_object(schema, hoister, request_ctx).map(|mut fields| {
+            // An inline body carries its example on the schema as readily as a
+            // `$ref` body does — VTEX puts the whole `rules` array on the request
+            // schema — so both are applied here in the same order the `$ref` path
+            // above uses: the schema's own example first, the media's over it.
+            apply_body_example(&mut fields, schema_example(schema), false);
             apply_body_example(&mut fields, media_example(doc, media), true);
             RequestBody::Inline(fields)
         });
@@ -3682,8 +3728,18 @@ fn resolve_request_body(
         // (Fern's structural name for an array body's element) in the tag's `types/`
         // package, so the argument is `Sequence[{Ctx}Item]` rather than
         // `Sequence[Any]`. An array of `$ref`/scalar items passes through unchanged.
+        // The element takes the same `Body` infix a union body does when the
+        // operation has other inputs: probed at 5.20.0, one array body alone is
+        // `{Ctx}RequestItem`, and the same body beside a path *or* a query
+        // parameter is `{Ctx}RequestBodyItem` — VTEX's
+        // `createorupdatefixedpricesonpricetableortradepolicy` takes two path
+        // parameters beside its array.
         let item = if items.reference.is_none() && is_inline_struct(items) {
-            let name = format!("{request_ctx}Item");
+            let name = if union_body_suffix {
+                format!("{request_ctx}BodyItem")
+            } else {
+                format!("{request_ctx}Item")
+            };
             hoister.hoist_object(&name, items);
             TypeRef::Named(name)
         } else {
@@ -3828,7 +3884,13 @@ fn reference_body_example<'a>(
 }
 
 fn is_json_like_media_type(media_type: &str) -> bool {
-    media_type.ends_with("+json") || media_type.ends_with("/ndjson")
+    // A media type's parameters do not change what it is: VTEX declares its
+    // `/pricing/config` body under `application/json; charset=utf-8` alone, and
+    // Fern types the response from it. Where a document spells both — the
+    // OpenBanking component responses carry plain `application/json` beside the
+    // parameterised one — the plain key is still selected first by the callers.
+    let base = media_type.split(';').next().unwrap_or(media_type).trim();
+    base == "application/json" || base.ends_with("+json") || base.ends_with("/ndjson")
 }
 
 fn selected_json_request_media(
@@ -4821,6 +4883,34 @@ fn scalar_body(schema: &Schema) -> Option<(TypeRef, bool)> {
         _ => return None,
     };
     Some((type_ref, false))
+}
+
+/// The array member of a query parameter whose schema is a `oneOf`/`anyOf` of a
+/// scalar and an array of that same scalar. Fern reads that composition as its
+/// ordinary "one or many" query array rather than as a union: Strapi's `sort` is
+/// `oneOf: [{type: string}, {type: array, items: {type: string}}]` and its golden
+/// types the argument `Optional[Union[str, Sequence[str]]]` and passes it through
+/// unconverted, exactly as the plain `fields` array beside it. Every downstream
+/// reading of the parameter takes the array member this returns, so the two
+/// spellings of one-or-many generate the same bytes.
+fn one_or_many_query_schema(schema: &Schema) -> Option<&Schema> {
+    if schema.reference.is_some() {
+        return None;
+    }
+    let members = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
+    let [first, second] = members.as_slice() else {
+        return None;
+    };
+    fn kind(member: &Schema) -> Option<&str> {
+        member.ty.as_ref().and_then(TypeField::primary)
+    }
+    let (array, scalar) = match (kind(first), kind(second)) {
+        (Some("array"), Some(other)) if other != "array" => (first, second),
+        (Some(other), Some("array")) if other != "array" => (second, first),
+        _ => return None,
+    };
+    let item = array.items.as_deref()?;
+    (base_type_ref(item) == base_type_ref(scalar)).then_some(array)
 }
 
 /// The primitive for a `type: number` schema. Fern's importer keys the numeric
@@ -6241,8 +6331,12 @@ impl Builder<'_> {
         }
 
         // An object with `additionalProperties` but no declared properties is a
-        // map, which Fern emits as a `Dict[..]` alias rather than an empty model.
-        if is_map(schema) {
+        // map, which Fern emits as a `Dict[..]` alias rather than an empty model —
+        // unless it also composes a base, which makes it a model that inherits.
+        // Strapi's `Entry` is `additionalProperties: true` over
+        // `allOf: [$ref DocumentMeta]`, and Fern emits `class Entry(DocumentMeta)`
+        // with the open `extra="allow"` config rather than `Entry = DocumentMeta`.
+        if is_map(schema) && schema.all_of.is_none() {
             if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
                 if is_inline_struct(value) {
                     let value_name = format!("{name}Value");

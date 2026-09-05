@@ -37,6 +37,12 @@ use crate::error::{Error, Result};
 /// A parsed OpenAPI document.
 #[derive(Debug, Deserialize)]
 pub struct OpenApi {
+    /// Whether the document was parsed from YAML rather than JSON. Fern's parser
+    /// resolves an *unquoted* YAML timestamp scalar to a date rather than to a
+    /// string, so an example written that way is not a string example; a JSON
+    /// document cannot spell one. Set by [`load`], never deserialized.
+    #[serde(skip)]
+    pub yaml_source: bool,
     /// The `openapi` version string (e.g. `3.0.1`).
     #[serde(default)]
     pub openapi: String,
@@ -1193,6 +1199,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
         .and_then(|e| e.to_str())
         .map(str::to_ascii_lowercase);
 
+    let yaml_source = matches!(ext.as_deref(), Some("yml" | "yaml"));
     let mut doc: OpenApi = match ext.as_deref() {
         Some("yml" | "yaml") => serde_yaml_ng::from_str(&text).map_err(|e| Error::ParseSpec {
             path: path.to_path_buf(),
@@ -1209,6 +1216,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
         }
     };
 
+    doc.yaml_source = yaml_source;
     if doc.openapi.is_empty() {
         return Err(Error::InvalidSpec {
             path: path.to_path_buf(),
