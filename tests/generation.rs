@@ -8467,3 +8467,292 @@ components:
     let raw = &files["src/acme/signals/raw_client.py"];
     assert!(raw.contains("event: RecordSignalRequestEvent"), "{raw}");
 }
+
+/// OpenAPI's *other* polymorphism spelling: a base object whose
+/// `discriminator.mapping` names the subtypes that `allOf` it, with no `oneOf` of
+/// its own. Fern reads the mapping as the variant list, lifts the base's
+/// non-discriminant properties into a shared `Base`, gives each wrapper only what
+/// it declares beyond the base, and — for a mapping entry naming the base itself —
+/// holds the payload in a `value` field.
+#[test]
+fn an_inheritance_discriminator_mapping_is_a_union_over_base() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Reasons, version: 1.0.0 }
+paths:
+  /reasons:
+    post:
+      operationId: submit_reason
+      tags: [Reasons]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SubmitReasonRequest" }
+      responses:
+        '200':
+          description: Reason
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Reason" }
+components:
+  schemas:
+    Reason:
+      type: object
+      required: [kind]
+      description: Why a decision was taken.
+      discriminator:
+        propertyName: kind
+        mapping:
+          weather: "#/components/schemas/WeatherReason"
+          strike: "#/components/schemas/StrikeReason"
+          unknown: "#/components/schemas/Reason"
+      properties:
+        kind: { type: string }
+        note: { type: string }
+    WeatherReason:
+      allOf:
+        - $ref: "#/components/schemas/Reason"
+        - type: object
+          required: [conditions]
+          properties:
+            conditions: { type: string }
+    StrikeReason:
+      allOf:
+        - $ref: "#/components/schemas/Reason"
+        - type: object
+          properties:
+            union_name: { type: string }
+    SubmitReasonRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason: { $ref: "#/components/schemas/Reason" }
+"##,
+    );
+    let reason = &files["src/acme/types/reason.py"];
+    assert!(
+        reason.contains("class Base(UniversalBaseModel):\n    note: typing.Optional[str] = None"),
+        "the base's non-discriminant properties become the shared `Base`: {reason}"
+    );
+    assert!(
+        reason.contains("class Reason_Weather(Base):")
+            && reason.contains(
+                "    kind: typing.Literal[\"weather\"] = \"weather\"\n    conditions: str"
+            ),
+        "a variant carries its discriminant literal and only what it adds: {reason}"
+    );
+    assert!(
+        reason.contains("class Reason_Unknown(Base):\n    value: \"Reason\""),
+        "a mapping entry naming the base itself holds the payload in `value`: {reason}"
+    );
+    assert!(
+        reason.contains(
+            "Reason = typing_extensions.Annotated[\n    typing.Union[Reason_Weather, Reason_Strike, Reason_Unknown], pydantic.Field(discriminator=\"kind\")\n]"
+        ) && reason.contains("update_forward_refs(Reason_Unknown, Reason=Reason)"),
+        "{reason}"
+    );
+}
+
+/// An array standing as a *union member* reads its element the same way an array
+/// property does, in a parameter and in an inline body alike — braintrust's
+/// `score_type` query parameter is `anyOf: [$ref ProjectScoreType, {items:
+/// allOf[$ref ProjectScoreType, {title}]}]` and Fern's list element is a
+/// `GetProjectScoreRequestScoreTypeOneItem` of its own, while a `type: null`
+/// paired with one member stays an optional element with no `…Item` at all.
+#[test]
+fn an_array_union_member_names_its_element_in_a_parameter_and_an_inline_body() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Scores, version: 1.0.0 }
+paths:
+  /project_scores:
+    get:
+      operationId: get_project_score
+      tags: [Scores]
+      parameters:
+        - name: score_type
+          in: query
+          schema:
+            anyOf:
+              - $ref: "#/components/schemas/ProjectScoreType"
+              - type: array
+                items:
+                  allOf:
+                    - $ref: "#/components/schemas/ProjectScoreType"
+                    - title: One score type.
+      responses:
+        '200':
+          description: Scores
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - type: "null"
+                    - type: string
+  /project_scores/search:
+    post:
+      operationId: search_project_scores
+      tags: [Scores]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [selector]
+              properties:
+                selector:
+                  oneOf:
+                    - type: string
+                    - type: array
+                      items:
+                        oneOf:
+                          - type: "null"
+                          - $ref: "#/components/schemas/Score"
+                    - type: array
+                      items:
+                        allOf:
+                          - $ref: "#/components/schemas/ProjectScoreType"
+                          - title: One score type.
+                tags:
+                  type: array
+                  items:
+                    oneOf:
+                      - type: "null"
+                      - $ref: "#/components/schemas/Score"
+      responses: { '204': { description: Searched } }
+components:
+  schemas:
+    Score:
+      type: object
+      properties: { name: { type: string } }
+    ProjectScoreType:
+      oneOf:
+        - type: object
+          required: [slider]
+          properties: { slider: { type: number } }
+        - type: object
+          required: [categorical]
+          properties: { categorical: { type: string } }
+"##,
+    );
+    let score_type = &files["src/acme/types/get_project_score_request_score_type.py"];
+    assert_eq!(
+        score_type.lines().last().unwrap(),
+        "GetProjectScoreRequestScoreType = typing.Union[ProjectScoreType, typing.List[GetProjectScoreRequestScoreTypeOneItem]]",
+        "the parameter union's array member copies the annotated target: {score_type}"
+    );
+    assert!(files.contains_key("src/acme/types/get_project_score_request_score_type_one_item.py"));
+    let selector = &files["src/acme/scores/types/search_project_scores_request_selector.py"];
+    assert!(
+        selector.contains(
+            "typing.Union[\n    str, typing.List[typing.Optional[Score]], typing.List[SearchProjectScoresRequestSelectorTwoItem]\n]"
+        ),
+        "an inline body's union reads the null pair and the annotated `$ref` side by side: {selector}"
+    );
+    let raw = &files["src/acme/scores/raw_client.py"];
+    assert!(
+        raw.contains("tags: typing.Optional[typing.Sequence[typing.Optional[Score]]] = OMIT"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("-> HttpResponse[typing.List[typing.Optional[str]]]"),
+        "a null-paired scalar response element is optional, not hoisted: {raw}"
+    );
+}
+
+/// A discriminated union declared *inline* under a flattened request body moves,
+/// with its variant models, into the owning tag's `types/` package — and the same
+/// union standing as a nullable map's value names itself after the property.
+#[test]
+fn an_inline_discriminated_union_moves_to_its_tag_and_names_a_map_value() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Events, version: 1.0.0 }
+paths:
+  /events:
+    post:
+      operationId: record_event
+      tags: [Events]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RecordEventRequest" }
+      responses:
+        '200':
+          description: Recorded
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EventBatch" }
+components:
+  schemas:
+    ClickEvent:
+      type: object
+      required: [kind]
+      properties:
+        kind: { type: string, enum: [click] }
+        target: { type: string }
+    ViewEvent:
+      type: object
+      required: [kind]
+      properties:
+        kind: { type: string, enum: [view] }
+        seconds: { type: integer }
+    RecordEventRequest:
+      type: object
+      required: [payload]
+      properties:
+        payload:
+          oneOf:
+            - $ref: "#/components/schemas/ClickEvent"
+            - $ref: "#/components/schemas/ViewEvent"
+          discriminator:
+            propertyName: kind
+            mapping:
+              click: "#/components/schemas/ClickEvent"
+              view: "#/components/schemas/ViewEvent"
+    EventBatch:
+      type: object
+      properties:
+        by_session:
+          type: object
+          nullable: true
+          additionalProperties:
+            oneOf:
+              - $ref: "#/components/schemas/ClickEvent"
+              - $ref: "#/components/schemas/ViewEvent"
+            discriminator:
+              propertyName: kind
+              mapping:
+                click: "#/components/schemas/ClickEvent"
+                view: "#/components/schemas/ViewEvent"
+"##,
+    );
+    assert!(
+        files.contains_key("src/acme/events/types/record_event_request_payload.py"),
+        "the flattened body's inline union moves into the tag's package: {:?}",
+        files.keys().collect::<Vec<_>>()
+    );
+    let payload = &files["src/acme/events/types/record_event_request_payload.py"];
+    assert!(
+        payload.contains("class RecordEventRequestPayload_Click(UniversalBaseModel):")
+            && payload.contains("pydantic.Field(discriminator=\"kind\")"),
+        "{payload}"
+    );
+    let batch = &files["src/acme/types/event_batch.py"];
+    assert!(
+        batch.contains(
+            "by_session: typing.Optional[typing.Dict[str, typing.Optional[EventBatchBySessionValue]]] = None"
+        ),
+        "a nullable map of a discriminated union names its value after the property: {batch}"
+    );
+    let value = &files["src/acme/types/event_batch_by_session_value.py"];
+    assert!(
+        value.contains("class EventBatchBySessionValue_View(UniversalBaseModel):"),
+        "{value}"
+    );
+}
