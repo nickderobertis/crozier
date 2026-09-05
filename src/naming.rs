@@ -16,7 +16,12 @@ pub fn split_words(input: &str) -> Vec<String> {
 
     for idx in 0..chars.len() {
         let c = chars[idx];
-        if c == '_' || c == '-' || c == ' ' || c == '.' {
+        // `/` and `+` separate words the way `_`, `-`, ` ` and `.` do, so a
+        // media-type-shaped discriminant value (oSPARC maps `schema_class:
+        // application/schema+json` onto a `oneOf` member) names the variant
+        // class `ApplicationSchemaJson` rather than sanitizing the punctuation
+        // into underscores.
+        if c == '_' || c == '-' || c == ' ' || c == '.' || c == '/' || c == '+' {
             if !current.is_empty() {
                 words.push(std::mem::take(&mut current));
             }
