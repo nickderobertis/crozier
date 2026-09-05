@@ -6845,6 +6845,20 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    /// Whether the type is, after alias resolution, a map whose value slot is
+    /// *directly* free-form (`Dict[str, Any]`) — the shape [`Self::value`]
+    /// renders as Fern's `{"key": "value"}` placeholder.
+    fn resolves_to_unknown_map(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Optional(inner) => self.resolves_to_unknown_map(inner),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.resolves_to_unknown_map(&alias.target),
+                _ => false,
+            },
+            other => is_unknown_map(other),
+        }
+    }
+
     fn resolves_to_string(&self, t: &TypeRef) -> bool {
         match t {
             TypeRef::Primitive(Prim::Str) => true,
@@ -7115,6 +7129,16 @@ impl<'a> ExampleCtx<'a> {
     /// are — NDW's `AreaRequest_Municipality` opens with the `GM0344` its
     /// `MunicipalityAreaRequest.id` declares.
     fn field_example(&mut self, ty: &TypeRef, wire: &str, example: Option<&str>) -> Example {
+        // A field typed by a map to unknown (`Dict[str, Any]`) takes Fern's fixed
+        // `{"key": "value"}` placeholder whatever the schema declares: HelixDB's
+        // `OperationTree` is `type: object` + `additionalProperties: true` and
+        // carries two `examples`, and the golden's worked call for the `root`
+        // field that names it shows the placeholder. A value the *enclosing*
+        // object's own example spells out is a different question and reaches
+        // this map through `value_from_example`, which is why the suppression is
+        // here rather than there — `mosip-esignet`'s `Purpose.title` keeps the
+        // `{"@none": "Title"}` its request example gives it.
+        let example = example.filter(|_| !self.resolves_to_unknown_map(ty));
         let literal = match example {
             // A date/date-time field's declared example is used like any other:
             // EN 18222's `last_updated` is typed by the `Timestamp` alias and
@@ -7163,6 +7187,16 @@ impl<'a> ExampleCtx<'a> {
         }
         out
     }
+}
+
+/// A map whose value slot is *directly* free-form (`Dict[str, Any]`) — the shape
+/// [`ExampleBuilder::value`] renders as Fern's `{"key": "value"}` placeholder.
+fn is_unknown_map(t: &TypeRef) -> bool {
+    let TypeRef::Dict(_, value) = t else {
+        return false;
+    };
+    matches!(value.as_ref(), TypeRef::Primitive(Prim::Any))
+        || matches!(value.as_ref(), TypeRef::Optional(inner) if matches!(inner.as_ref(), TypeRef::Primitive(Prim::Any)))
 }
 
 fn example_from_json(value: serde_json::Value) -> Example {

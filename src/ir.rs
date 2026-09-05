@@ -7753,9 +7753,17 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         return match &schema.additional_properties {
             Some(AdditionalProperties::Schema(value)) => {
                 let mut val = base_type_ref(value);
-                // Fern makes a nullable map's value type optional too. An
-                // ordinary unknown value itself is `Any` under Fern 5.20.
-                if schema.nullable == Some(true) {
+                // Fern makes a nullable map's value type optional too, and a
+                // `$ref` to a nullable component carries that nullability into
+                // the value slot exactly as it does into an array item
+                // (`openapi::normalize_nullable_schema_refs` marks both) —
+                // HelixDB's `QueryParameters` is
+                // `Dict[str, Optional[QueryParameterValue]]` because its
+                // `QueryParameterValue` opens with a `type: null` alternative.
+                // An ordinary unknown value itself is `Any` under Fern 5.20.
+                if schema.nullable == Some(true)
+                    || (value.reference.is_some() && is_optional(value))
+                {
                     val = TypeRef::Optional(Box::new(val));
                 }
                 TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(val))
