@@ -1,0 +1,3 @@
+
+
+InviteTargetTypes = int

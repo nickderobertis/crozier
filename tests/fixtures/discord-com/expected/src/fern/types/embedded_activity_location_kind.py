@@ -1,0 +1,3 @@
+
+
+EmbeddedActivityLocationKind = str

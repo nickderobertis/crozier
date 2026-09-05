@@ -1,0 +1,25 @@
+
+
+import typing
+
+from .application_command_attachment_option import ApplicationCommandAttachmentOption
+from .application_command_boolean_option import ApplicationCommandBooleanOption
+from .application_command_channel_option import ApplicationCommandChannelOption
+from .application_command_integer_option import ApplicationCommandIntegerOption
+from .application_command_mentionable_option import ApplicationCommandMentionableOption
+from .application_command_number_option import ApplicationCommandNumberOption
+from .application_command_role_option import ApplicationCommandRoleOption
+from .application_command_string_option import ApplicationCommandStringOption
+from .application_command_user_option import ApplicationCommandUserOption
+
+ApplicationCommandSubcommandOptionOptionsItem = typing.Union[
+    ApplicationCommandAttachmentOption,
+    ApplicationCommandBooleanOption,
+    ApplicationCommandChannelOption,
+    ApplicationCommandIntegerOption,
+    ApplicationCommandMentionableOption,
+    ApplicationCommandNumberOption,
+    ApplicationCommandRoleOption,
+    ApplicationCommandStringOption,
+    ApplicationCommandUserOption,
+]

@@ -1,0 +1,3 @@
+
+
+InteractionContextType = int

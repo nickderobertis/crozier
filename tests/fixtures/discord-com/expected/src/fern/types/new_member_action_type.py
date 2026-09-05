@@ -1,0 +1,3 @@
+
+
+NewMemberActionType = int

@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .external_scheduled_event_response import ExternalScheduledEventResponse
+from .stage_scheduled_event_response import StageScheduledEventResponse
+from .voice_scheduled_event_response import VoiceScheduledEventResponse
+
+GuildAuditLogResponseGuildScheduledEventsItem = typing.Union[
+    ExternalScheduledEventResponse, StageScheduledEventResponse, VoiceScheduledEventResponse
+]

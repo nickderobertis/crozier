@@ -1,0 +1,3 @@
+
+
+MessageReferenceType = int

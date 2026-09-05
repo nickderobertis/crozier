@@ -699,6 +699,12 @@ fn urlencoded_body_source_names(doc: &OpenApi) -> std::collections::HashSet<Stri
         .values()
         .flat_map(crate::openapi::PathItem::operations)
         .filter_map(|(_, operation)| operation.request_body.as_ref())
+        // A body that also offers JSON is not sent as a form at all — the
+        // selection above prefers the JSON representation — so its model is
+        // flattened and dropped like any other inlined one. discord posts
+        // `MessageCreateRequest` under `application/json`, urlencoded *and*
+        // multipart, and Fern emits no standalone model for it.
+        .filter(|body| selected_json_request_media(body).is_none())
         .filter_map(|body| body.content.get("application/x-www-form-urlencoded"))
         .filter_map(|media| media.schema.as_ref()?.reference.as_deref())
         .map(ref_to_class)
@@ -948,6 +954,11 @@ pub struct PathParam {
     pub docstring: Option<String>,
     /// Example literal resolved from the parameter or its component schema.
     pub example: Option<String>,
+    /// Whether the parameter's schema constrains its value with a `pattern`.
+    /// Fern's *binary-download* example generator substitutes the parameter's own
+    /// name as the placeholder and drops the whole example when the schema
+    /// rejects it, so this is what decides whether such an endpoint documents one.
+    pub pattern_constrained: bool,
 }
 
 /// A resolved query parameter, rendered as a keyword-only method argument and a
@@ -2111,6 +2122,14 @@ fn build_endpoint(
                 }),
             docstring: declared_doc(p.description.as_deref()),
             example: parameter_example(doc, p),
+            pattern_constrained: p.schema.as_ref().is_some_and(|schema| {
+                schema.pattern.is_some()
+                    || schema
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| resolve_ref(doc, reference))
+                        .is_some_and(|target| target.pattern.is_some())
+            }),
         })
         .collect();
     if !doc.openapi.starts_with("3.1")
@@ -2406,6 +2425,10 @@ fn build_endpoint(
                 success_response(op)
             }
         }
+        // A hoisted element keeps the response schema's own nullability, the same
+        // way `success_response` applies it below: discord's
+        // `list_auto_moderation_rules` declares `type: [array, null]` over a union
+        // element and returns `Optional[List[Optional[…Item]]]`.
         Some(schema) if schema.reference.is_none() => hoister
             .hoist_array_item_enum(&format!("{pascal_ctx}Response"), schema)
             .or_else(|| {
@@ -2415,6 +2438,13 @@ fn build_endpoint(
             .or_else(|| {
                 hoister
                     .hoist_response_array_item_object(&format!("{pascal_ctx}ResponseItem"), schema)
+            })
+            .map(|hoisted| {
+                if is_optional(schema) {
+                    optional_type_ref(hoisted)
+                } else {
+                    hoisted
+                }
             })
             .or_else(|| success_response(op)),
         _ => success_response(op),
@@ -2995,6 +3025,13 @@ fn query_parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter)
         //
         // No registered source declares a described schema beside a `pattern`, so
         // that corner is taken with the `maxLength` one it shares a column with.
+        //
+        // The table's fifth shape is an *undocumented parameter*: discord's
+        // required `query` declares `{minLength: 1, maxLength: 100}` with no
+        // description on either the parameter or its schema, and Fern's worked
+        // call passes the parameter's own name. Every synthesizing witness above
+        // documents the parameter itself, so the synthesis needs that first.
+        parameter.description.as_ref()?;
         let schema = parameter
             .schema
             .as_ref()
@@ -3483,7 +3520,7 @@ fn resolve_request_body(
         ("multipart/form-data", true),
         ("application/x-www-form-urlencoded", false),
     ] {
-        if !multipart && selected_json_request_media(rb).is_some() {
+        if selected_json_request_media(rb).is_some() {
             continue;
         }
         if let Some(media) = rb.content.get(media_type) {
@@ -3941,7 +3978,12 @@ fn hoist_inline_object(
             convert: hoister.needs_convert(&type_ref),
             type_ref,
             optional,
-            nullable: false,
+            // A property that says so itself is nullable, and the convert
+            // wrapper's annotation says so too: discord's inline `create_lobby`
+            // body declares `members` as `type: [array, null]` and Fern passes
+            // `annotation=Optional[Sequence[LobbyMemberRequest]]`. A `nullable`
+            // beside a `$ref` is not that — 3.0 ignores a reference's siblings.
+            nullable: is_optional(prop_schema) && prop_schema.reference.is_none(),
             spec_required,
             example: schema_example_literal(prop_schema),
             media_example: false,
@@ -4010,6 +4052,18 @@ impl InlineHoister<'_> {
             .one_of
             .as_ref()
             .or(item_schema.any_of.as_ref())?;
+        // One element member beside `type: null` is an optional element, not an
+        // alias: discord's `get_entitlements` returns
+        // `List[Optional[EntitlementResponse]]` and Fern coins no
+        // `…ResponseItem` for it.
+        if let Some(member) = simple_nullable_member(item_schema) {
+            let element = if let Some(reference) = member.reference.as_deref() {
+                TypeRef::Named(ref_to_class(reference))
+            } else {
+                base_type_ref(member)
+            };
+            return Some(TypeRef::List(Box::new(optional_type_ref(element))));
+        }
         if self
             .hoist_discriminated_union(
                 item_name,
@@ -4022,10 +4076,16 @@ impl InlineHoister<'_> {
                 item_name.to_string(),
             ))));
         }
+        // A `type: null` member states that the element may be absent rather than
+        // adding an `Any` alternative to the alias, exactly as it does at a
+        // property: discord's auto-moderation rule list is an alias of the five
+        // rule responses alone.
+        let dropped_null = variants.iter().any(is_null_variant);
         let target = TypeRef::Union(
             variants
                 .iter()
                 .enumerate()
+                .filter(|(_, variant)| !is_null_variant(variant))
                 .map(|(index, variant)| {
                     self.hoist_union_variant(item_name, index, variant, variants)
                 })
@@ -4037,9 +4097,12 @@ impl InlineHoister<'_> {
             target,
             docstring: clean_doc(item_schema.description.as_deref()),
         }));
-        Some(TypeRef::List(Box::new(TypeRef::Named(
-            item_name.to_string(),
-        ))))
+        let element = TypeRef::Named(item_name.to_string());
+        Some(TypeRef::List(Box::new(if dropped_null {
+            optional_type_ref(element)
+        } else {
+            element
+        })))
     }
 
     /// Hoist an inline object used as a top-level response array item. Fern coins
@@ -4122,6 +4185,17 @@ impl InlineHoister<'_> {
         }
         if variant.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
             if let Some(item) = variant.items.as_deref() {
+                // One element member beside `type: null` is an optional element,
+                // not a hoisted alias: discord's `PruneGuildRequest.include_roles`
+                // is `Union[str, List[Optional[SnowflakeType]]]`.
+                if let Some(member) = simple_nullable_member(item) {
+                    let element = if let Some(reference) = member.reference.as_deref() {
+                        TypeRef::Named(ref_to_class(reference))
+                    } else {
+                        base_type_ref(member)
+                    };
+                    return TypeRef::List(Box::new(optional_type_ref(element)));
+                }
                 if let Some(members) = item.one_of.as_ref().or(item.any_of.as_ref()) {
                     let variant_name = variant_class_name(parent, index, variant, siblings);
                     let item_name = format!("{variant_name}Item");
@@ -4369,6 +4443,18 @@ impl InlineHoister<'_> {
             return Some(sequence_of(array, item));
         }
         if let Some(members) = item_schema.one_of.as_ref().or(item_schema.any_of.as_ref()) {
+            // One member beside `type: null` is Fern's *optional element*, not an
+            // alias: discord's `roles` request field declares `oneOf: [{type:
+            // null}, {$ref: SnowflakeType}]` and generates
+            // `List[Optional[SnowflakeType]]` with no `…RolesItem` of its own.
+            if let Some(member) = simple_nullable_member(item_schema) {
+                let element = if let Some(reference) = member.reference.as_deref() {
+                    TypeRef::Named(ref_to_class(reference))
+                } else {
+                    base_type_ref(member)
+                };
+                return Some(sequence_of(array, optional_type_ref(element)));
+            }
             if members.len() == 1 && is_inline_struct(&members[0]) {
                 self.hoist_object(&item_name, &members[0]);
                 return Some(sequence_of(array, TypeRef::Named(item_name)));
@@ -4943,8 +5029,13 @@ fn resolve_ref<'a>(doc: &'a OpenApi, reference: &str) -> Option<&'a Schema> {
 /// The success (2xx) response's JSON body type, if any.
 fn success_response(op: &Operation) -> Option<TypeRef> {
     success_response_schema(op)
+        // A nullable success schema returns an optional body: discord declares
+        // `type: [array, null]` on `list_my_connections` and Fern's return type is
+        // `Optional[List[ConnectedAccountResponse]]`. A `nullable` *beside* a
+        // `$ref` is not that: 3.0 ignores a reference's siblings, and
+        // `exhaustive`'s `getAndReturnOptional` returns the bare model.
         .map(|schema| {
-            if is_unknown(schema) {
+            if schema.reference.is_none() {
                 full_type_ref(schema)
             } else {
                 base_type_ref(schema)
@@ -5991,13 +6082,21 @@ fn collect_discriminant_strips(
             if let Some(variants) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
                 for variant in variants {
                     if let Some(reference) = &variant.reference {
+                        // A member reached from a non-variant position keeps its
+                        // tag, exactly as it does under an explicit discriminator
+                        // below: discord's `RoleSelectDefaultValue` is both a
+                        // member of an inferred `type` union and a component the
+                        // document references on its own, and Fern's standalone
+                        // model still declares `type`.
                         let class = ref_to_class(reference);
-                        if !matches!(
-                            class.as_str(),
-                            "ChatCompletionContentPartTextParam"
-                                | "ChatCompletionMessageFunctionToolCallInput"
-                                | "ChatCompletionMessageFunctionToolCallOutput"
-                        ) {
+                        if !standalone.contains(&class)
+                            && !matches!(
+                                class.as_str(),
+                                "ChatCompletionContentPartTextParam"
+                                    | "ChatCompletionMessageFunctionToolCallInput"
+                                    | "ChatCompletionMessageFunctionToolCallOutput"
+                            )
+                        {
                             strips.insert(class, property.clone());
                         }
                     }
@@ -6214,7 +6313,7 @@ fn append_member_fields(
                     ))))
                 },
             )
-        } else if is_map(prop_schema) && prop_schema.nullable == Some(true) {
+        } else if is_map(prop_schema) && is_optional(prop_schema) {
             legacy_nullable_map_type_ref(prop_schema)
         } else if prop_schema.one_of.is_some() || prop_schema.any_of.is_some() {
             enum_owner.map_or_else(
@@ -6252,7 +6351,7 @@ fn simple_nullable_primitive_member(schema: &Schema) -> Option<&Schema> {
     (matches!(
         member.ty.as_ref().and_then(TypeField::primary),
         Some("string" | "integer" | "number" | "boolean")
-    ) && member.enum_values.is_none())
+    ) && string_enum_values(member).is_none())
     .then_some(member)
 }
 
@@ -6262,11 +6361,16 @@ fn simple_nullable_member(schema: &Schema) -> Option<&Schema> {
         .iter()
         .filter(|member| member.ty.as_ref().and_then(TypeField::primary) != Some("null"))
         .collect();
+    // A *numeric* enum is not a generated type to Fern — discord's
+    // `UpdateGuildChannelRequestPartial.type` is `oneOf: [{type: null}, {type:
+    // integer, enum: [...], allOf: [$ref ChannelTypes]}]` and generates
+    // `Optional[int]` — so it does not stop the nullable pair from collapsing the
+    // way a string enum, which does become a class, still does.
     (non_null.len() == 1
         && non_null.len() != members.len()
         && non_null[0].one_of.is_none()
         && non_null[0].any_of.is_none()
-        && non_null[0].enum_values.is_none())
+        && string_enum_values(non_null[0]).is_none())
     .then_some(non_null[0])
 }
 
@@ -7136,6 +7240,16 @@ impl Builder<'_> {
                 .push(TypeDecl::Enum(build_enum(target, ctx, values, docstring)));
             return TypeRef::Named(ctx.to_string());
         }
+        // A union target is copied the same way an object is: Fern re-hoists the
+        // referenced union's own members under the annotating name, so
+        // braintrust's `FacetData.preprocessor` — `allOf: [$ref
+        // NullableSavedFunctionId, {description}]` — declares
+        // `FacetDataPreprocessorId` and `FacetDataPreprocessorFunctionType` of its
+        // own rather than pointing at the referenced schema's pair.
+        if !is_map(target) && (target.one_of.is_some() || target.any_of.is_some()) {
+            self.add_named(ctx, target);
+            return TypeRef::Named(ctx.to_string());
+        }
         if !is_map(target)
             && !is_bare_object(target)
             && (!target.properties.is_empty() || target.all_of.is_some() || is_object_type(target))
@@ -7163,7 +7277,7 @@ impl Builder<'_> {
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
-        if is_map(prop_schema) && prop_schema.nullable == Some(true) {
+        if is_map(prop_schema) && is_optional(prop_schema) {
             return legacy_nullable_map_type_ref(prop_schema);
         }
         let owner_prop = format!("{owner}{}", naming::class_name(prop));
@@ -7347,6 +7461,20 @@ impl Builder<'_> {
                         )));
                         return TypeRef::List(Box::new(TypeRef::Named(name)));
                     }
+                    // An element union that is one member beside `type: null` is
+                    // Fern's *optional element*, not a hoisted alias: discord's
+                    // `roles` array declares `oneOf: [{type: null}, {$ref:
+                    // SnowflakeType}]` and generates
+                    // `List[Optional[SnowflakeType]]` with no `…RolesItem` of its
+                    // own.
+                    if let Some(member) = simple_nullable_member(items) {
+                        let element = if let Some(reference) = member.reference.as_deref() {
+                            TypeRef::Named(ref_to_class(reference))
+                        } else {
+                            base_type_ref(member)
+                        };
+                        return TypeRef::List(Box::new(optional_type_ref(element)));
+                    }
                     if let Some(members) = items.one_of.as_ref().or(items.any_of.as_ref()) {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
                         let module = naming::module_name(&name);
@@ -7368,9 +7496,17 @@ impl Builder<'_> {
                             self.types.push(TypeDecl::DiscriminatedUnion(decl));
                             return TypeRef::List(Box::new(TypeRef::Named(name)));
                         }
+                        // A `type: null` member states that the *element* may be
+                        // absent rather than adding an `Any` alternative to the
+                        // alias: discord's `GuildAuditLogResponse
+                        // .auto_moderation_rules` is
+                        // `List[Optional[…AutoModerationRulesItem]]` over an alias
+                        // of the five rule responses alone.
+                        let dropped_null = members.iter().any(is_null_variant);
                         let variants = members
                             .iter()
                             .enumerate()
+                            .filter(|(_, variant)| !is_null_variant(variant))
                             .map(|(index, variant)| {
                                 self.variant_ref(&name, index, variant, members)
                             })
@@ -7381,7 +7517,12 @@ impl Builder<'_> {
                             TypeRef::Union(variants),
                             clean_doc(items.description.as_deref()),
                         );
-                        return TypeRef::List(Box::new(TypeRef::Named(name)));
+                        let element = TypeRef::Named(name);
+                        return TypeRef::List(Box::new(if dropped_null {
+                            optional_type_ref(element)
+                        } else {
+                            element
+                        }));
                     }
                     if items.reference.is_none() && is_inline_struct(items) {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
@@ -7574,6 +7715,21 @@ impl Builder<'_> {
                                 if let Some(item_members) = m.items.as_deref().and_then(|items| {
                                     items.any_of.as_ref().or(items.one_of.as_ref())
                                 }) {
+                                    // One member beside `type: null` is an
+                                    // optional element, not an alias: discord's
+                                    // `PruneGuildRequest.include_roles` is
+                                    // `Union[str, List[Optional[SnowflakeType]]]`.
+                                    if let Some(member) = simple_nullable_member(
+                                        m.items.as_deref().expect("item members came from items"),
+                                    ) {
+                                        let element =
+                                            if let Some(reference) = member.reference.as_deref() {
+                                                TypeRef::Named(ref_to_class(reference))
+                                            } else {
+                                                base_type_ref(member)
+                                            };
+                                        return TypeRef::List(Box::new(optional_type_ref(element)));
+                                    }
                                     let item_name = format!("{name}{}Item", ordinal_word(index));
                                     if let Some(decl) = self.discriminated_union(
                                         &item_name,
@@ -8100,6 +8256,11 @@ fn legacy_nullable_map_type_ref(schema: &Schema) -> TypeRef {
     if unknown_value {
         let mut non_nullable = schema.clone();
         non_nullable.nullable = None;
+        // 3.1 spells the same nullability in the `type` list, so drop it there too
+        // or the value slot picks up an `Optional` this branch exists to avoid.
+        if let Some(TypeField::Multiple(types)) = non_nullable.ty.as_mut() {
+            types.retain(|ty| ty != "null");
+        }
         base_type_ref(&non_nullable)
     } else {
         base_type_ref(schema)
@@ -8155,7 +8316,13 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         // Fern renders an OpenAPI string enum as an extensible enum.
         return extensible_enum(values);
     }
-    if let Some(variants) = union_variants(schema) {
+    if let Some((mut variants, dropped_null)) = union_variants(schema) {
+        if variants.is_empty() {
+            return TypeRef::Primitive(Prim::Any);
+        }
+        if dropped_null && variants.len() == 1 {
+            return optional_type_ref(variants.remove(0));
+        }
         return TypeRef::Union(variants);
     }
     if is_bare_object(schema) {
@@ -8176,10 +8343,12 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                 // `Dict[str, Optional[QueryParameterValue]]` because its
                 // `QueryParameterValue` opens with a `type: null` alternative.
                 // An ordinary unknown value itself is `Any` under Fern 5.20.
-                if schema.nullable == Some(true)
-                    || (value.reference.is_some() && is_optional(value))
-                {
-                    val = TypeRef::Optional(Box::new(val));
+                // Either nullability spelling counts: discord writes 3.1's
+                // `type: [object, null]` where a 3.0 document writes `nullable`,
+                // and its `name_localizations` map is
+                // `Dict[str, Optional[str]]` all the same.
+                if is_optional(schema) || (value.reference.is_some() && is_optional(value)) {
+                    val = optional_type_ref(val);
                 }
                 TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(val))
             }
@@ -8409,16 +8578,27 @@ fn string_enum_values(schema: &Schema) -> Option<Vec<String>> {
 }
 
 /// Extract union variants from a `oneOf`/`anyOf` schema, if present.
-fn union_variants(schema: &Schema) -> Option<Vec<TypeRef>> {
+/// The member types of an undiscriminated union, with the `type: null`
+/// alternative dropped. That alternative states nullability rather than a member
+/// — discord's `PruneGuildRequest.include_roles` is
+/// `Union[str, List[Optional[SnowflakeType]]]`, not a list of
+/// `Union[Any, SnowflakeType]` — so the caller wraps what is left instead of
+/// carrying an `Any` member for it.
+fn union_variants(schema: &Schema) -> Option<(Vec<TypeRef>, bool)> {
     let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
     let mut types = Vec::new();
+    let mut dropped_null = false;
     for variant in variants {
+        if is_null_variant(variant) {
+            dropped_null = true;
+            continue;
+        }
         let ty = base_type_ref(variant);
         if !types.contains(&ty) {
             types.push(ty);
         }
     }
-    Some(types)
+    Some((types, dropped_null))
 }
 
 /// Resolve a `$ref` to the class name it points at.
@@ -9185,6 +9365,9 @@ mod tests {
                 ..Schema::default()
             }),
             example: Some(serde_json::json!(40022701955_u64)),
+            // Fern synthesizes a placeholder only for a parameter that documents
+            // itself; the undocumented case is asserted at the end.
+            description: Some("A documented parameter.".to_string()),
             ..Parameter::default()
         };
         assert_eq!(parameter_example(&doc, &parameter), None);
@@ -9217,6 +9400,12 @@ mod tests {
             query_parameter_example(&doc, &parameter).as_deref(),
             Some("\"strawberry\"")
         );
+        // An *undocumented* parameter takes its own name however constrained its
+        // schema is: discord's required `query` declares `{minLength: 1,
+        // maxLength: 100}` with no description anywhere and Fern's worked call
+        // passes `query="query"`.
+        parameter.description = None;
+        assert_eq!(query_parameter_example(&doc, &parameter), None);
     }
 
     #[test]

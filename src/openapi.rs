@@ -1389,6 +1389,14 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
                     *members = None;
                 }
             }
+            if matches!(
+                node.ty.as_ref().and_then(TypeField::primary),
+                Some("string" | "integer" | "number" | "boolean")
+            ) {
+                node.one_of = None;
+                node.any_of = None;
+                node.all_of = None;
+            }
         });
     });
 }

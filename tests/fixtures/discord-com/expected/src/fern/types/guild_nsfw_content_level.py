@@ -1,0 +1,3 @@
+
+
+GuildNsfwContentLevel = int

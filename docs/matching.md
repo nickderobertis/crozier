@@ -520,6 +520,45 @@ corpora stay byte-identical — none of them exercised these paths):
 Future Bungie source changes or Fern upgrades follow the standard
 [`Fern golden lifecycle`](fern-goldens.md).
 
+### Discord's 3.1 API (corpus row 125)
+
+Registering Discord's own API v10 — an `openapi: 3.1.0` document over 128 paths —
+exposed twelve divergences, all repaired in `src/`. They fall into three groups.
+
+1. **A `type` beside a composition wins.** A schema declaring a scalar `type`
+   *and* a `oneOf`/`anyOf`/`allOf` generates the scalar and discards the
+   composition: `AvailableLocalesEnum` is `{type: string, oneOf: [23 consts]}` and
+   Fern emits `= str`, and `UpdateGuildChannelRequestPartial.type` is `{type:
+   integer, enum: […], allOf: [$ref ChannelTypes]}` and generates `Optional[int]`.
+   An *empty* `oneOf: []` is discarded the same way (`ApplicationCommandHandler`),
+   which also stops crozier emitting the `typing.Union[]` that `ruff` refuses to
+   parse. Both live in `openapi::normalize_empty_compositions`.
+2. **`type: null` is nullability, everywhere.** A union member declaring
+   `type: null` states that what is left may be absent rather than adding an `Any`
+   alternative — as an element (`roles` is `List[Optional[SnowflakeType]]`), as a
+   map value, as a response (`get_entitlements`), and on the whole success body
+   (`list_my_connections` declares `type: [array, null]` and returns
+   `Optional[List[…]]`). The same holds for 3.1's `type: [object, null]` on a map,
+   whose *value* becomes `Optional` exactly as 3.0's `nullable` does, and for an
+   inline request field, whose convert-wrapper annotation carries the `Optional`.
+   A `nullable` beside a `$ref` is **not** that: 3.0 ignores a reference's
+   siblings, which is why `exhaustive`'s `getAndReturnOptional` still returns a
+   bare model.
+3. **Two selection rules the corpus had never crossed.** A request body offering
+   `multipart/form-data` beside a JSON representation is sent as JSON, so its model
+   is flattened and dropped like any other inlined one (`MessageCreateRequest`),
+   and a body that is a bare `anyOf` of two `$ref`s becomes the
+   `{Ctx}RequestBody` union alias. A *binary download* documents no worked example
+   when a path parameter's schema declares a `pattern`: Fern substitutes the
+   parameter's own name for the placeholder there rather than the schema's example,
+   and `SnowflakeType`'s `^(0|[1-9][0-9]*)$` rejects `"guild_id"` — while
+   apicurio's unconstrained named path parameters keep theirs.
+
+Discord also pins the fifth shape of the synthesized query-parameter placeholder
+(`ir::query_parameter_example`): the four the table already recorded all
+*document* the parameter, and an undocumented one takes the parameter's own name
+however constrained its schema is.
+
 ### Five more real-world corpora (issue #77): the harder batch
 
 Beyond the three corpora above, five more `link-ok` corpora were added

@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .incoming_webhook_request_partial import IncomingWebhookRequestPartial
+from .incoming_webhook_update_request_partial import IncomingWebhookUpdateRequestPartial
+
+ExecuteWebhookRequestBody = typing.Union[IncomingWebhookRequestPartial, IncomingWebhookUpdateRequestPartial]

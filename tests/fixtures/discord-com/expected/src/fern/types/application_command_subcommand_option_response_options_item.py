@@ -1,0 +1,25 @@
+
+
+import typing
+
+from .application_command_attachment_option_response import ApplicationCommandAttachmentOptionResponse
+from .application_command_boolean_option_response import ApplicationCommandBooleanOptionResponse
+from .application_command_channel_option_response import ApplicationCommandChannelOptionResponse
+from .application_command_integer_option_response import ApplicationCommandIntegerOptionResponse
+from .application_command_mentionable_option_response import ApplicationCommandMentionableOptionResponse
+from .application_command_number_option_response import ApplicationCommandNumberOptionResponse
+from .application_command_role_option_response import ApplicationCommandRoleOptionResponse
+from .application_command_string_option_response import ApplicationCommandStringOptionResponse
+from .application_command_user_option_response import ApplicationCommandUserOptionResponse
+
+ApplicationCommandSubcommandOptionResponseOptionsItem = typing.Union[
+    ApplicationCommandAttachmentOptionResponse,
+    ApplicationCommandBooleanOptionResponse,
+    ApplicationCommandChannelOptionResponse,
+    ApplicationCommandIntegerOptionResponse,
+    ApplicationCommandMentionableOptionResponse,
+    ApplicationCommandNumberOptionResponse,
+    ApplicationCommandRoleOptionResponse,
+    ApplicationCommandStringOptionResponse,
+    ApplicationCommandUserOptionResponse,
+]

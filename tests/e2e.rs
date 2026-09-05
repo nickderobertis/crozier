@@ -1916,6 +1916,7 @@ const CORPORA: &[&Corpus] = &[
     &AWS_IMPORTEXPORT,
     &OPENBANKING_BRASIL_DIRECTORY,
     &API_OPENVERSE_ORG,
+    &DISCORD_COM,
 ];
 
 #[test]
@@ -3402,6 +3403,22 @@ const API_OPENVERSE_ORG: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `discord-com`: Discord's API v10 is the corpus's second declarer of an
+/// operation-level optional security requirement (22 `{}` requirements) and its
+/// second whose OAuth Flows Object declares more than one flow — three, whose
+/// scope sets differ pairwise — so one `openapi: 3.1.0` document witnesses both
+/// of this batch's shapes beside corpus rows 123 and 124's separate ones.
+const DISCORD_COM: Corpus = Corpus {
+    api: "discord-com",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3766,6 +3783,11 @@ fn openbanking_brasil_directory_matches_fern_output() {
 #[test]
 fn api_openverse_org_matches_fern_output() {
     assert_link_ok_corpus_matches(&API_OPENVERSE_ORG);
+}
+
+#[test]
+fn discord_com_matches_fern_output() {
+    assert_link_ok_corpus_matches(&DISCORD_COM);
 }
 
 #[test]

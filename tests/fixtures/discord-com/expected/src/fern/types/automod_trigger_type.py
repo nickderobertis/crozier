@@ -1,0 +1,3 @@
+
+
+AutomodTriggerType = int

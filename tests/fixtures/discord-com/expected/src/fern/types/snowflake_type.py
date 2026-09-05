@@ -1,0 +1,3 @@
+
+
+SnowflakeType = str

@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .discord_integration_response import DiscordIntegrationResponse
+from .external_connection_integration_response import ExternalConnectionIntegrationResponse
+from .guild_subscription_integration_response import GuildSubscriptionIntegrationResponse
+
+ListGuildIntegrationsResponseItem = typing.Union[
+    DiscordIntegrationResponse, ExternalConnectionIntegrationResponse, GuildSubscriptionIntegrationResponse
+]

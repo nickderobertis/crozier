@@ -8461,6 +8461,15 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
             .all(|param| matches!(param.type_ref, TypeRef::List(_)))
         && ep.header_params.is_empty()
         && ep.request_body.is_none();
+    // A binary download substitutes the parameter's own name for each path
+    // placeholder — it ignores the schema's declared example, see
+    // `build_example_inner` — so a `pattern` the name cannot satisfy costs the
+    // endpoint its whole example. discord's `get_guild_widget_png` takes
+    // `guild_id: SnowflakeType`, whose `^(0|[1-9][0-9]*)$` rejects `"guild_id"`,
+    // and Fern's golden documents no example; apicurio's `get_latest_artifact`
+    // takes two unconstrained named path parameters and keeps one.
+    let binary_path_placeholder_rejected =
+        ep.path_params.iter().any(|param| param.pattern_constrained);
     let opaque_multipart_example = ep.body_media_has_example
         && matches!(&ep.request_body, Some(RequestBody::Form(form)) if form.fields.iter().any(|field| field.is_file));
     // A list-typed path parameter beside a request body defeats Fern's example
@@ -8475,7 +8484,7 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
             .path_params
             .iter()
             .any(|param| matches!(param.type_ref, TypeRef::List(_)));
-    !(ep.binary_response && binary_has_no_required_arguments
+    !(ep.binary_response && (binary_has_no_required_arguments || binary_path_placeholder_rejected)
         || opaque_multipart_example
         || list_path_param_with_body)
 }
@@ -9392,6 +9401,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Int),
                 docstring: None,
                 example: None,
+                pattern_constrained: false,
             }],
             None,
         );
@@ -9659,6 +9669,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 docstring: None,
                 example: None,
+                pattern_constrained: false,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
         );
@@ -9957,6 +9968,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 docstring: None,
                 example: None,
+                pattern_constrained: false,
             }],
             Some(TypeRef::Named("Resp".to_string())),
         );
@@ -10760,6 +10772,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 docstring: Some("Widget identifier.".to_string()),
                 example: None,
+                pattern_constrained: false,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
         );
@@ -10918,6 +10931,7 @@ mod tests {
                     type_ref,
                     docstring: None,
                     example: None,
+                    pattern_constrained: false,
                 }],
                 Some(TypeRef::Primitive(Prim::Str)),
             );
@@ -11227,6 +11241,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 docstring: Some("Event identifier.\nSecond line.".to_string()),
                 example: None,
+                pattern_constrained: false,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
         );

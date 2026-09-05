@@ -1,0 +1,3 @@
+
+
+PremiumGuildTiers = int

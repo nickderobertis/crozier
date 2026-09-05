@@ -1,0 +1,13 @@
+
+
+import typing
+
+from .partial_discord_integration_response import PartialDiscordIntegrationResponse
+from .partial_external_connection_integration_response import PartialExternalConnectionIntegrationResponse
+from .partial_guild_subscription_integration_response import PartialGuildSubscriptionIntegrationResponse
+
+GuildAuditLogResponseIntegrationsItem = typing.Union[
+    PartialDiscordIntegrationResponse,
+    PartialExternalConnectionIntegrationResponse,
+    PartialGuildSubscriptionIntegrationResponse,
+]

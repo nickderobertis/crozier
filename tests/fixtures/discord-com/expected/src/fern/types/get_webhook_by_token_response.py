@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .application_incoming_webhook_response import ApplicationIncomingWebhookResponse
+from .channel_follower_webhook_response import ChannelFollowerWebhookResponse
+from .guild_incoming_webhook_response import GuildIncomingWebhookResponse
+
+GetWebhookByTokenResponse = typing.Union[
+    ApplicationIncomingWebhookResponse, ChannelFollowerWebhookResponse, GuildIncomingWebhookResponse
+]

@@ -1,0 +1,3 @@
+
+
+GuildMfaLevel = int

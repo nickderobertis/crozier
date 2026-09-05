@@ -1,0 +1,12 @@
+
+
+import typing
+
+from .update_dm_request_partial import UpdateDmRequestPartial
+from .update_group_dm_request_partial import UpdateGroupDmRequestPartial
+from .update_guild_channel_request_partial import UpdateGuildChannelRequestPartial
+from .update_thread_request_partial import UpdateThreadRequestPartial
+
+UpdateChannelRequestBody = typing.Union[
+    UpdateDmRequestPartial, UpdateGroupDmRequestPartial, UpdateGuildChannelRequestPartial, UpdateThreadRequestPartial
+]

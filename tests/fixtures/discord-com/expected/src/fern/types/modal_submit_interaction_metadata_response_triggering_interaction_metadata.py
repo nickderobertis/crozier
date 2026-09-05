@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .application_command_interaction_metadata_response import ApplicationCommandInteractionMetadataResponse
+from .message_component_interaction_metadata_response import MessageComponentInteractionMetadataResponse
+
+ModalSubmitInteractionMetadataResponseTriggeringInteractionMetadata = typing.Union[
+    ApplicationCommandInteractionMetadataResponse, MessageComponentInteractionMetadataResponse
+]

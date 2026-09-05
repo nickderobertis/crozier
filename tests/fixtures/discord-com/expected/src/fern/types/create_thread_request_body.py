@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .create_forum_thread_request import CreateForumThreadRequest
+from .create_text_thread_without_message_request import CreateTextThreadWithoutMessageRequest
+
+CreateThreadRequestBody = typing.Union[CreateForumThreadRequest, CreateTextThreadWithoutMessageRequest]

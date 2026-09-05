@@ -1,0 +1,3 @@
+
+
+AvailableLocalesEnum = str

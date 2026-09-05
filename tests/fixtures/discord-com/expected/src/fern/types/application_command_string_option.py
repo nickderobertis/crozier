@@ -1,0 +1,29 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .application_command_option_string_choice import ApplicationCommandOptionStringChoice
+
+
+class ApplicationCommandStringOption(UniversalBaseModel):
+    type: int
+    name: str
+    name_localizations: typing.Optional[typing.Dict[str, typing.Optional[str]]] = None
+    description: str
+    description_localizations: typing.Optional[typing.Dict[str, typing.Optional[str]]] = None
+    required: typing.Optional[bool] = None
+    autocomplete: typing.Optional[bool] = None
+    min_length: typing.Optional[int] = None
+    max_length: typing.Optional[int] = None
+    choices: typing.Optional[typing.List[ApplicationCommandOptionStringChoice]] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

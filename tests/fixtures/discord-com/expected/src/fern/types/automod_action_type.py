@@ -1,0 +1,3 @@
+
+
+AutomodActionType = int
