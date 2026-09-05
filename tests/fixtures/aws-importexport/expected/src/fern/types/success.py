@@ -1,0 +1,6 @@
+
+
+Success = bool
+"""
+Specifies whether (true) or not (false) AWS Import/Export updated your job.
+"""

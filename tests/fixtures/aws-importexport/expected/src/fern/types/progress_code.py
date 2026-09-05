@@ -1,0 +1,6 @@
+
+
+ProgressCode = str
+"""
+A token representing the state of the job, such as "Started".
+"""

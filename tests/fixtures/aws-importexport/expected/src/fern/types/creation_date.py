@@ -1,0 +1,8 @@
+
+
+import datetime as dt
+
+CreationDate = dt.datetime
+"""
+Timestamp of the CreateJob request in ISO8601 date format. For example "2010-03-28T20:27:35Z".
+"""

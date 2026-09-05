@@ -1,0 +1,6 @@
+
+
+LocationCode = str
+"""
+A token representing the location of the storage device, such as "AtAWS".
+"""

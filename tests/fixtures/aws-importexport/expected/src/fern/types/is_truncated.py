@@ -1,0 +1,6 @@
+
+
+IsTruncated = bool
+"""
+Indicates whether the list of jobs was truncated. If true, then call ListJobs again using the last JobId element as the marker.
+"""

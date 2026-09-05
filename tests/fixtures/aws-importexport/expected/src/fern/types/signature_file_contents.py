@@ -1,0 +1,6 @@
+
+
+SignatureFileContents = str
+"""
+The actual text of the SIGNATURE file to be written to disk.
+"""

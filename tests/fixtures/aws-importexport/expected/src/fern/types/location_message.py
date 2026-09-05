@@ -1,0 +1,6 @@
+
+
+LocationMessage = str
+"""
+A more human readable form of the physical location of the storage device.
+"""

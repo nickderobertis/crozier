@@ -1,0 +1,3 @@
+
+
+GenericString = str

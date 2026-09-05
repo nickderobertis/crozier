@@ -1,0 +1,6 @@
+
+
+Manifest = str
+"""
+The UTF-8 encoded text of the manifest file.
+"""
