@@ -826,24 +826,30 @@ every other source's documents were:
   `json-schema.org/draft/2020-12/meta/validation`, and the OAI's own 3.1 examples
   `OAI/learn.openapis.org` `examples/v3.1/tictactoe.yaml` and
   `examples/v3.1/webhook-example.yaml`;
-- **network and infrastructure**, for the `format-*` rows — Cloudflare (both the
-  `openapi.json` and the `openapi.yaml` of `cloudflare/api-schemas`), DigitalOcean,
-  Kubernetes `apis__networking.k8s.io__v1`, NetBox, Vercel's `openapi.vercel.sh`, Gitea's
-  successor OpenSearch, Sentry, Grafana and Discourse;
-- **large 3.1 publisher documents**, where a 2020-12 keyword is likeliest to appear at all
-  — OpenAI, Stripe, GitHub, Twilio, SendGrid, Adyen Checkout, Box, Asana, Ory Hydra, Ory
-  Kratos, Apicurio Registry, Crossref and the OGC's `ogcapi-features-1`.
+- **network, infrastructure and data-registry publishers**, where the `format-*` rows'
+  own fields live — Cloudflare (both the `openapi.json` and the `openapi.yaml` of
+  `cloudflare/api-schemas`), DigitalOcean, the Kubernetes
+  `apis__networking.k8s.io__v1` OpenAPI v3 document, NetBox's published 2020-12
+  device-type schema, Vercel's `openapi.vercel.sh`, OpenSearch's `_common` 3.1 schema
+  document, Sentry, Grafana, Discourse, Crossref's Swagger 2.0 REST API description and
+  the OGC's `ogcapi-features-1`;
+- **large publisher documents**, where a 2020-12 keyword is likeliest to appear at all —
+  OpenAI, Stripe, GitHub, Twilio, SendGrid, Adyen Checkout, Box, Asana, Ory Hydra, Ory
+  Kratos and Apicurio Registry.
 
-What they returned is each row's own cell. The set declares four of the twenty at all, and
-only two of those four outside a meta-schema: `format: ipv6` (Cloudflare 3, Vercel 1),
-`multipleOf` (Cloudflare 8, Box 1, Vercel 1), `propertyNames` (OpenAI 2, plus 1 in the OAI
-meta-schema) and `dollar-defs`/`dependent-schemas` (meta-schemas only). Three vendor URLs
-this set was assembled from could not be read and are not counted in the 29: GitLab's
-`doc/api/openapi/openapi.yaml` answered **HTTP 429**, and the IETF Datatracker's and
-RIPE's advertised `openapi.json` endpoints both 404. `cloudflare/api-schemas`'s YAML
-spelling is fetched but not walked — PyYAML refuses it with `could not determine a
-constructor for the tag 'tag:yaml.org,2002:value'` at line 460687 — which costs nothing,
-because it is the same document as the JSON spelling that is walked.
+What they returned is each row's own cell. The set declares five of the twenty at all, and
+only three of those five outside a meta-schema: `format: ipv6` (Cloudflare 3, Vercel 1),
+`multipleOf` (Cloudflare 8, Box 1, Vercel 1) and `propertyNames` (OpenAI 2, plus 1 in the
+OAI meta-schema). The other two, `$defs` (4 in the OAI 3.1 meta-schema, 1 in JSON Schema's
+own validation vocabulary) and `dependentSchemas` (3 in the OAI meta-schema), appear
+nowhere in the set but a meta-schema. Three further URLs this
+set was assembled from could not be read and are not among the 29 — GitLab's
+`doc/api/openapi/openapi.yaml` answered `HTTP 429` on the first attempt and `HTTP 404` on
+a later one, and the IETF Datatracker's and the RIPE database's advertised
+`openapi.json` endpoints both answer `HTTP 404` — and one is fetched but not walked:
+`cloudflare/api-schemas`'s YAML spelling, which PyYAML refuses with `could not determine a
+constructor for the tag 'tag:yaml.org,2002:value'` at line 460687. That last one costs
+nothing, because it is the same document as the JSON spelling that is walked.
 
 #### Every query, shown able to find the shape it looks for
 
