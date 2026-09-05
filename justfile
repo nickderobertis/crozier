@@ -168,6 +168,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e osparc_simcore_webserver_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e helixdb_http_api_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e flowdapt_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e k8s_container_service_provider_matches_fern_output
 
 # Format the codebase in place.
 format:

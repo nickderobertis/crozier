@@ -1904,6 +1904,7 @@ const CORPORA: &[&Corpus] = &[
     &OSPARC_SIMCORE_WEBSERVER,
     &HELIXDB_HTTP_API,
     &FLOWDAPT,
+    &K8S_CONTAINER_SERVICE_PROVIDER,
 ];
 
 #[test]
@@ -3188,6 +3189,24 @@ const FLOWDAPT: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `k8s-container-service-provider`: the API the DCM project's own Kubernetes
+/// container service provider serves is the corpus's only source declaring
+/// `format: json-pointer` — `components.schemas.Error.pointer` and
+/// `components.schemas.ErrorDetail.pointer` each annotate a string field with
+/// the RFC 6901 format, on the RFC 7807 problem detail the service returns — so
+/// this row pins what Fern does with a registered JSON Schema string format it
+/// has no narrower Python type for, over three paths and 18 component schemas.
+const K8S_CONTAINER_SERVICE_PROVIDER: Corpus = Corpus {
+    api: "k8s-container-service-provider",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3492,6 +3511,11 @@ fn helixdb_http_api_matches_fern_output() {
 #[test]
 fn flowdapt_matches_fern_output() {
     assert_link_ok_corpus_matches(&FLOWDAPT);
+}
+
+#[test]
+fn k8s_container_service_provider_matches_fern_output() {
+    assert_link_ok_corpus_matches(&K8S_CONTAINER_SERVICE_PROVIDER);
 }
 
 #[test]
