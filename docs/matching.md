@@ -523,8 +523,8 @@ Future Bungie source changes or Fern upgrades follow the standard
 ### Braintrust's API (corpus row 126)
 
 Braintrust's own API — 71 paths, 3.0.3, and the corpus's densest optional
-operation-level security requirement — exposed eighteen divergences. The four
-that generalize furthest:
+operation-level security requirement — exposed a further run of divergences, also
+all repaired in `src/`. The four that generalize furthest:
 
 1. **A media whose schema says nothing loses to one that says something.** Every
    braintrust error response offers `text/plain` as `{type: string}` beside
@@ -568,7 +568,7 @@ package with the union that names them.
 ### Discord's 3.1 API (corpus row 125)
 
 Registering Discord's own API v10 — an `openapi: 3.1.0` document over 128 paths —
-exposed twelve divergences, all repaired in `src/`. They fall into three groups.
+exposed a run of divergences, all repaired in `src/`. They fall into three groups.
 
 1. **A `type` beside a composition wins.** A schema declaring a scalar `type`
    *and* a `oneOf`/`anyOf`/`allOf` generates the scalar and discards the
