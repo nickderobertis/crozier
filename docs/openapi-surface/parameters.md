@@ -251,8 +251,9 @@ is a tooling test stub, an example fixture or a document that declares the style
 somewhere other than a path parameter — the two closest of those are in the
 candidate ledger, because each looks like a witness until it is fetched.
 
-`outcome` is one of four words, spelled as the other regions' subsections spell
-them. `witness-found` — a named real-world document declares the feature, at a
+`outcome` is one of the five words the index's [settlement rule](../openapi-surface-coverage.md#the-settlement-rule-as-amended)
+defines, spelled as the other regions' subsections spell them. No row here
+reads `search-incomplete`; the other four are these. `witness-found` — a named real-world document declares the feature, at a
 credential-free HTTPS URL ending `.json`, `.yaml` or `.yml`, pinned to an
 immutable ref, under a redistribution-compatible license, accepted by Fern, and
 under a name that is neither registered in
