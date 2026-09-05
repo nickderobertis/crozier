@@ -553,8 +553,12 @@ all repaired in `src/`. The four that generalize furthest:
      `ModelParamsThree`; `ResponseFormatNullishType` beside
      `ResponseFormatNullishZero`). A `type: null` alternative does not vote.
 
-The rest are local: a shared request body drops its `content-type` header when the
-operation carries no query parameter either (`CreateView`, `AclItem`); an
+The rest are local: a shared request body under a *described* `requestBody` drops
+its `content-type` header when the operation carries no query parameter either
+and the body declares some (not all) required members (`CreateView`, `AclItem`) —
+both qualifiers measured against the rest of the corpus, where Palo Alto's shared
+crypto profiles keep the header on a query parameter and the Petstore's `User`
+keeps it with no required member at all; an
 `operationId` carrying a path-template expression is named by that expression
 (`proxy{path+}` → `path`); an optional unknown body is omitted from a worked
 example in *either* document version, and a list-typed path parameter beside such
