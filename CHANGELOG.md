@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.62](https://github.com/nickderobertis/crozier/compare/v0.0.61...v0.0.62) - 2026-09-05
+
+### Fixed
+
+- *(generate)* match Fern on the DaniWeb Connect golden ([#218](https://github.com/nickderobertis/crozier/pull/218))
+
 ## [0.0.61](https://github.com/nickderobertis/crozier/compare/v0.0.60...v0.0.61) - 2026-09-05
 
 ### Added
