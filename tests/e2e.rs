@@ -1915,6 +1915,7 @@ const CORPORA: &[&Corpus] = &[
     &VTEX_PRICING,
     &AWS_IMPORTEXPORT,
     &OPENBANKING_BRASIL_DIRECTORY,
+    &API_OPENVERSE_ORG,
 ];
 
 #[test]
@@ -3385,6 +3386,22 @@ const OPENBANKING_BRASIL_DIRECTORY: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `api-openverse-org`: the Openverse media-search API is the corpus's first
+/// golden-bearing declarer of an operation-level optional security requirement —
+/// six Operation Objects whose `security` array holds `{}` — so this row pins
+/// whether an operation that opts authentication out still reaches the generated
+/// client's constructor.
+const API_OPENVERSE_ORG: Corpus = Corpus {
+    api: "api-openverse-org",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3744,6 +3761,11 @@ fn aws_importexport_matches_fern_output() {
 #[test]
 fn openbanking_brasil_directory_matches_fern_output() {
     assert_link_ok_corpus_matches(&OPENBANKING_BRASIL_DIRECTORY);
+}
+
+#[test]
+fn api_openverse_org_matches_fern_output() {
+    assert_link_ok_corpus_matches(&API_OPENVERSE_ORG);
 }
 
 #[test]

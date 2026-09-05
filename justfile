@@ -179,6 +179,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e vtex_pricing_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e aws_importexport_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openbanking_brasil_directory_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e api_openverse_org_matches_fern_output
 
 # Format the codebase in place.
 format:

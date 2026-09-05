@@ -1256,6 +1256,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     // normalizations run, so every later pass sees one self-contained document.
     crate::refs::resolve(&mut doc, &crate::refs::CurlFetcher, path)?;
 
+    normalize_empty_compositions(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
     normalize_multi_type_schemas(&mut doc);
     normalize_nullable_schema_refs(&mut doc);
@@ -1372,6 +1373,26 @@ pub(crate) fn referenced_component_schema(reference: &str) -> Option<&str> {
 /// of the same shape. A `null` member stays optionality: it leaves the union and
 /// sets `nullable`, matching the `typing.Optional[ReadModelSummaryValue]` Fern
 /// emits for a five-member list ending in `null`.
+/// Drop an empty `oneOf`/`anyOf`/`allOf` list.
+///
+/// An empty composition constrains nothing, and every later pass reads
+/// `Some(vec![])` as "this node is a union" — which renders as an empty
+/// `typing.Union[]` that `ruff` refuses to parse. Discord's
+/// `ApplicationCommandHandler` writes `{type: integer, oneOf: [], format: int32}`
+/// and Fern generates the plain `int` its `type` names, so the list is discarded
+/// here rather than guarded against at each use site.
+fn normalize_empty_compositions(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            for members in [&mut node.one_of, &mut node.any_of, &mut node.all_of] {
+                if members.as_ref().is_some_and(Vec::is_empty) {
+                    *members = None;
+                }
+            }
+        });
+    });
+}
+
 fn normalize_multi_type_schemas(doc: &mut OpenApi) {
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut |node| {
@@ -2350,6 +2371,42 @@ components:
             ok.reference.as_deref(),
             Some("#/components/responses/ItemsResponse")
         );
+    }
+
+    /// An empty `oneOf` constrains nothing. Left in place it reads downstream as
+    /// "this node is a union" and renders `typing.Union[]`, which `ruff` refuses
+    /// to parse — so the node keeps the plain `type` it also declares.
+    #[test]
+    fn normalize_empty_compositions_drops_the_empty_list() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    ApplicationCommandHandler:
+      type: integer
+      format: int32
+      oneOf: []
+    Wrapper:
+      type: object
+      properties:
+        handler:
+          allOf: []
+          anyOf: []
+          type: string
+"##,
+        );
+        normalize_empty_compositions(&mut doc);
+        let handler = &doc.components.schemas["ApplicationCommandHandler"];
+        assert!(handler.one_of.is_none());
+        assert_eq!(
+            handler.ty.as_ref().and_then(TypeField::primary),
+            Some("integer")
+        );
+        let nested = &doc.components.schemas["Wrapper"].properties["handler"];
+        assert!(nested.all_of.is_none() && nested.any_of.is_none());
     }
 
     /// A reference to a schema the document never declares is Fern's unknown

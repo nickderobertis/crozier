@@ -5670,7 +5670,20 @@ fn inferred_discriminant_property(
                 let field = variant.properties.get(property)?;
                 let singleton_enum =
                     string_enum_values(field).is_some_and(|values| values.len() == 1);
-                if references_components {
+                // A member that spells its tag as a required one-member `enum`
+                // discriminates whether or not the union also references
+                // components: braintrust's `CreateProjectAutomation.config` mixes
+                // four inline objects with a `$ref` whose target tags itself the
+                // same way on `event_type`, and Fern reads the discriminator off
+                // all five. A `const` tag is deliberately not enough here — the
+                // `$ref`-only shapes below are what that spelling reaches.
+                let tagged_by_enum = variant.required.contains(property)
+                    && singleton_enum
+                    && field
+                        .enum_values
+                        .as_ref()
+                        .is_some_and(|values| values.len() == 1);
+                if references_components && !tagged_by_enum {
                     let supported = match property.as_str() {
                         "type" => {
                             variant.required.contains(property)
@@ -7398,7 +7411,13 @@ impl Builder<'_> {
             // does for the alias — kept local to the hoist so inline unions elsewhere
             // are unchanged.
             if let Some(members) = prop_schema.any_of.as_ref().or(prop_schema.one_of.as_ref()) {
-                if prop_schema.discriminator.is_some() {
+                // A property-level union whose members all tag themselves with the
+                // same single-valued property is one of Fern's discriminated unions
+                // even with no `discriminator` block — braintrust's `CodeBundle.location`
+                // tags three inline objects with `type`. A one-member union is not a
+                // union at all, so an *inferred* discriminant needs a sibling to
+                // discriminate against.
+                if prop_schema.discriminator.is_some() || members.len() > 1 {
                     let name = format!("{owner}{}", naming::class_name(prop));
                     let module = naming::module_name(&name);
                     if let Some(decl) = self.discriminated_union(
@@ -7521,6 +7540,22 @@ impl Builder<'_> {
                     let name = format!("{owner}{}", naming::class_name(prop));
                     for (nested_prop, nested_schema) in &prop_schema.properties {
                         self.field_type_ref(&name, nested_prop, nested_schema);
+                    }
+                    // A one-member union is not a union: Fern hoists that single
+                    // inline object under the property's own name — braintrust's
+                    // BTQL-export `credentials` is a one-member `oneOf` and becomes
+                    // `…BtqlExportCredentials` itself — rather than naming a variant
+                    // beneath a one-element `typing.Union`.
+                    if let [only] = members.as_slice() {
+                        if is_inline_object(only) {
+                            self.add_object(
+                                &name,
+                                naming::module_name(&name),
+                                only,
+                                clean_doc(prop_schema.description.as_deref()),
+                            );
+                            return TypeRef::Named(name);
+                        }
                     }
                     let variants: Vec<TypeRef> = members
                         .iter()
@@ -7798,7 +7833,7 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
     // A property only distinguishes a variant when there is a sibling to
     // distinguish it from; a one-member union takes the discriminant value.
     let unique = if siblings.len() > 1 {
-        distinguishing_name.or(discriminant_value)
+        distinguishing_name
     } else {
         discriminant_value.or(distinguishing_name)
     };
