@@ -1,0 +1,83 @@
+# Positive control for the issue #188 witness search over the twenty `schemas`
+# rows of the ranked FIXTURE backlog.
+#
+# Every row's query is run against this document before it is run against a
+# corpus, so a query that could never detect its shape is caught here rather
+# than reported as a zero. It declares each of the twenty exactly once, and
+# carries the three decoys the searches would otherwise miscount: a component
+# property literally named `contains`, an `example:` value spelling three of
+# the keywords, and the 3.0 boolean `exclusiveMaximum` that
+# `exclusive-maximum-numeric` must not match.
+openapi: 3.1.0
+info:
+  title: Witness query control
+  version: 1.0.0
+paths: {}
+components:
+  schemas:
+    Control:
+      type: object
+      $anchor: ControlAnchor
+      unevaluatedItems: false
+      dependentRequired:
+        card: [billing_address]
+      dependentSchemas:
+        card:
+          type: object
+      propertyNames:
+        pattern: "^[a-z]+$"
+      properties:
+        tags:
+          type: array
+          contains:
+            type: string
+          maxContains: 4
+          minContains: 1
+        quantity:
+          type: number
+          multipleOf: 0.5
+          exclusiveMaximum: 100
+        attachment:
+          type: string
+          contentMediaType: application/json
+          contentSchema:
+            type: object
+        owner_email:
+          type: string
+          format: idn-email
+        owner_host:
+          type: string
+          format: idn-hostname
+        peer:
+          type: string
+          format: ipv6
+        canonical:
+          type: string
+          format: iri
+        related:
+          type: string
+          format: iri-reference
+        cursor:
+          type: string
+          format: json-pointer
+        rebase:
+          type: string
+          format: relative-json-pointer
+        contains:
+          description: a decoy — a property whose name is the applicator keyword
+          type: string
+        legacy:
+          $ref: "#/$defs/Legacy"
+    BooleanExclusive:
+      type: number
+      exclusiveMaximum: true
+      maximum: 10
+    Documented:
+      type: object
+      example:
+        multipleOf: 3
+        propertyNames: decoy
+        contentMediaType: text/plain
+$defs:
+  Legacy:
+    type: string
