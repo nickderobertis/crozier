@@ -69,9 +69,9 @@ anywhere), `format-idn-email`'s `wttw/aboutmyemail` (no licence) and
 worked examples.
 
 Every candidate those records block on a licence has since been rescreened
-against the rule as it now stands, one line each, in
-[`licence-rescreening.md`](licence-rescreening.md) — which the widening admits,
-what Fern does with it, and which coverage rows it would settle.
+against the rule as it now stands — one line per document, in
+[`licence-rescreening.md`](licence-rescreening.md): which the widening admits,
+what a real Fern run returned for it, and which coverage rows it declares.
 
 ## Screening a candidate against it
 
