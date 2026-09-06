@@ -440,11 +440,14 @@ fn auth_model(doc: &OpenApi) -> Auth {
     // declares `HTTPBearer` in `components.securitySchemes`, no `security` at the
     // document level and none on any of its 44 operations, and its golden's client
     // wrapper still takes an optional `token` and sends `Authorization: Bearer`.
-    // An `http` `basic` or an OAuth2 scheme is still taken only from a declared
-    // Security Requirement Object — an empty root `security: []` counts, and so
-    // does one on a webhook operation. Selection order is untouched by this: the
-    // first supported scheme still wins, and the check is on what that scheme
-    // turned out to be.
+    // An OAuth2 scheme reads the same way: SteamInputDB declares one `oauth2`
+    // scheme, no `security` at the document level and none on any of its nine
+    // operations, and its golden's wrapper still takes an optional `token` and
+    // sends `Authorization: Bearer`. Only an `http` `basic` scheme is taken solely
+    // from a declared Security Requirement Object — an empty root `security: []`
+    // counts, and so does one on a webhook operation. Selection order is untouched
+    // by this: the first supported scheme still wins, and the check is on what
+    // that scheme turned out to be.
     let requirement_declared = doc.security.is_some()
         || doc
             .paths
@@ -465,6 +468,7 @@ fn auth_model(doc: &OpenApi) -> Auth {
     if !requirement_declared
         && selected.is_none_or(|scheme| {
             scheme.ty != SecuritySchemeType::ApiKey
+                && scheme.ty != SecuritySchemeType::OAuth2
                 && !(scheme.ty == SecuritySchemeType::Http
                     && scheme.scheme == Some(HttpAuthScheme::Bearer))
         })
@@ -632,15 +636,31 @@ fn referenced_type_names(
 }
 
 /// Class names of schemas used as an inlined (plain-object `$ref`) request body by
-/// **exactly one** operation — the candidates Fern omits from the type layer.
-/// Mirrors the `$ref`-object and form branches of [`resolve_request_body`]. A schema
-/// shared as the body of two or more operations (bunq's create+update pairs share
-/// `PermittedIp`, `CardGeneratedCvc2`, …) is kept as a standalone type even though it
-/// is still inlined into each method, so only single-use bodies are returned.
-fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
+/// **exactly one** surviving endpoint — the candidates Fern omits from the type
+/// layer. Mirrors the `$ref`-object and form branches of [`resolve_request_body`].
+/// A schema shared by two or more endpoints (bunq's create+update pairs share
+/// `PermittedIp`, `CardGeneratedCvc2`, …) is kept as a standalone type even though
+/// it is still inlined into each method, so only single-use bodies are returned.
+///
+/// The count is over the endpoints that survive method-name collapse, not over the
+/// document's operations: SteamInputDB's `GET` and `POST /v1/steam/login` declare
+/// no `operationId` and share the summary `Log in with Steam`, so both name
+/// `log_in_with_steam`, one method survives, and the `OpenIDBody` both bodies
+/// `$ref` is inlined into it and dropped from the type layer.
+fn inline_body_source_names(
+    doc: &OpenApi,
+    endpoints: &[Endpoint],
+) -> std::collections::HashSet<String> {
+    let surviving: std::collections::HashSet<(&str, &str)> = endpoints
+        .iter()
+        .map(|endpoint| (endpoint.path.as_str(), endpoint.http_method))
+        .collect();
     let mut counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
-    for item in doc.paths.values() {
-        for (_, op) in item.operations() {
+    for (path, item) in &doc.paths {
+        for (method, op) in item.operations() {
+            if !surviving.contains(&(path.as_str(), method)) {
+                continue;
+            }
             let Some(rb) = &op.request_body else { continue };
             let Some(schema) = rb
                 .content
@@ -1598,7 +1618,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
             TypeDecl::Enum(_) => {}
         }
     }
-    let inline_sources = inline_body_source_names(doc);
+    let inline_sources = inline_body_source_names(doc, &endpoints);
     let form_sources = form_body_source_names(doc);
     let urlencoded_sources = urlencoded_body_source_names(doc);
     // A `stream-condition` operation sends its body from two methods, and Fern
@@ -3052,13 +3072,20 @@ fn endpoint_pagination(
     })
 }
 
+/// Whether a property of a flattened request schema is server-populated, either
+/// on its own declaration or on the schema its `$ref` names. Fern drops such a
+/// property from the request it inlines: SteamInputDB's `$schema` is
+/// `{description, format: uri, readOnly: true, type: string}` on `OpenIDBody`,
+/// `SearchAllBody`, `SearchConfigsBody` and `SearchGamesBody`, and none of the
+/// four methods its golden writes takes it.
 fn schema_property_is_read_only(doc: &OpenApi, schema: &Schema, property: &str) -> bool {
     schema.properties.get(property).is_some_and(|property| {
-        property
-            .reference
-            .as_deref()
-            .and_then(|reference| resolve_ref(doc, reference))
-            .is_some_and(|schema| schema.read_only == Some(true))
+        property.read_only == Some(true)
+            || property
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref(doc, reference))
+                .is_some_and(|schema| schema.read_only == Some(true))
     })
 }
 
@@ -4526,7 +4553,7 @@ impl InlineHoister<'_> {
                 nullable: referenced_nullable
                     || (is_optional(prop_schema) && prop_schema.read_only == Some(true)),
                 spec_required,
-                docstring: declared_doc(property_description(prop_schema)),
+                docstring: declared_doc(property_description(prop_schema, optional)),
                 example: schema_example_literal(prop_schema).or_else(|| {
                     let reference = prop_schema.reference.as_deref().or_else(|| {
                         described_all_of_ref(prop_schema).map(|(reference, _)| reference)
@@ -7404,7 +7431,7 @@ impl Builder<'_> {
                         && (prop_schema.reference.is_none()
                             || prop_schema.read_only == Some(true))),
                 spec_required,
-                docstring: declared_doc(property_description(prop_schema)),
+                docstring: declared_doc(property_description(prop_schema, optional)),
                 example: schema_example_literal(prop_schema)
                     .or_else(|| {
                         prop_schema
@@ -9155,15 +9182,17 @@ fn described_all_of_ref(schema: &Schema) -> Option<(&str, Option<&str>)> {
     reference.map(|reference| (reference, description))
 }
 
-fn property_description(schema: &Schema) -> Option<&str> {
+fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
     // Fern's *bare* unknown type carries no docs: its schema converter passes the
     // description to every other kind and to `unknown` passes nothing, so
-    // oSPARC's `ProjectInputGet.value` — a property declaring only a `title` and
-    // a `description` — is a bare `typing.Any` with no docstring beside it. A
-    // nullable one keeps its description, because the optional wrapper Fern puts
-    // around it carries the docs: Twilio's `cert_in_validation` is
-    // `{description, nullable: true}` and its golden documents it.
-    if is_unknown(schema) && !is_optional(schema) {
+    // oSPARC's `ProjectInputGet.value` — a required property declaring only a
+    // `title` and a `description` — is a bare `typing.Any` with no docstring
+    // beside it. What carries the docs is the optional *wrapper*, so the drop is
+    // scoped to a field Fern leaves unwrapped: Twilio's `cert_in_validation` is
+    // `{description, nullable: true}` and SteamInputDB's `ErrorDetail.value` is
+    // `{description}` absent from `required`, and both goldens document their
+    // `typing.Optional[typing.Any]`.
+    if is_unknown(schema) && !optional {
         return None;
     }
     schema
@@ -9361,7 +9390,12 @@ fn operation_doc(desc: Option<&str>) -> Option<String> {
         } else {
             trimmed.trim_start()
         };
-        Some(trimmed.replace('\t', "    "))
+        // Tabs are kept: `reference.md` carries the document's own bytes —
+        // SteamInputDB's `Log in with Steam` description indents its second line
+        // with three tabs and its golden's entry does too — and the Python
+        // docstring's tab expansion happens where `ruff format` performs it, in
+        // [`crate::emit`]'s `python_doc_line`.
+        Some(trimmed.to_string())
     }
 }
 
@@ -13087,7 +13121,7 @@ mod tests {
             described_all_of_ref(&valid),
             Some(("#/components/schemas/Target", Some("Use-site docs.")))
         );
-        assert_eq!(property_description(&valid), Some("Use-site docs."));
+        assert_eq!(property_description(&valid, false), Some("Use-site docs."));
 
         let outer_description = schema(serde_json::json!({
             "description": "Outer docs.",

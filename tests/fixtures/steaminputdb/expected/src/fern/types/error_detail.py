@@ -1,0 +1,32 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class ErrorDetail(UniversalBaseModel):
+    location: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'
+    """
+
+    message: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Error message text
+    """
+
+    value: typing.Optional[typing.Any] = pydantic.Field(default=None)
+    """
+    The value at the given location
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

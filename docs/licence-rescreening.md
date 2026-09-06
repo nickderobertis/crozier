@@ -77,6 +77,27 @@ say so: a SwaggerHub version string is republishable in place, and Short.io
 serves its document at a live address. Screening them is what turns "blocked on
 two things" into a measured statement about both.
 
+**Every `document check` and `generate` figure in the table below is that preview
+path at CLI 5.114.1, and a preview-path exit 0 is not an acceptance.** Two things
+separate the two, and both have bitten this corpus:
+
+* **A Fern verdict is CLI-version-bound.** The corpus generates at the CLI
+  [`../scripts/generate-fern-fixture.sh`](../scripts/generate-fern-fixture.sh)
+  pins — `FERN_CLI_VERSION` **5.67.1**, the version every committed golden's
+  `.fern/metadata.json` records — and a document this record admits can still be
+  refused there. Eclipse Ditto is that case.
+* **Fern exits 0 over a document it never parsed.** It logs the skip, prints
+  `All checks passed`, and writes an empty SDK. CureDAO is that case, and it
+  reaches exit 0 at *both* CLIs, so no version comparison reveals it — only
+  reading what the generate wrote does.
+
+So the two Fern columns record what a *command exited*, and the registering node
+is what records whether Fern produced an SDK. **Every candidate below was screened
+on the preview path only**, except the seven put to the corpus's own generation
+path as well — the five registered as corpus rows 133-137, plus `eclipse-ditto`
+and `curedao`, whose two paths disagree or whose exit status hides a skip. Those
+seven carry that second measurement in their own `generate` cell.
+
 ## How to read a line
 
 * **admission** is exactly `admitted` or `still-blocked` — whether
@@ -100,11 +121,11 @@ two things" into a measured statement about both.
 |---|---|---|---|---|---|---|---|---|
 | `aces/Loris` `modules/dataquery/static/schema.yml` — the LORIS Data Query Tool API | `parameters.md:434`; `parameters.md:404` | commit `3305a00312178ea75f135be1564beaf222b25822`, fetched at `https://raw.githubusercontent.com/aces/Loris/3305a00312178ea75f135be1564beaf222b25822/modules/dataquery/static/schema.yml` (12,810 bytes, MD5 `008cd4080d9d010d6ec42ac30e0ceb98`) | `GPL-3.0`, the repository's own; `info.license` `GNU Public License, Version 3` | admitted | a copyleft grant attaches conditions to redistribution rather than withholding permission for it, and the manifest row plus `NOTICE` satisfy them; it was the only thing in the way and no longer is | `parameter-style-pipedelimited-query-scalar` = **4**, `parameter-style-simple-path-scalar` = **5**, `parameter-style-spacedelimited-query-scalar` = **2** | `fern check` at CLI 5.114.1 → **exit 0**, `Found 0 errors and 2 warnings in 0.000 seconds. Run fern check --warnings to print out the warnings not shown.` | `fern generate --group python-sdk --preview` at `fernapi/fern-python-sdk` 5.20.0 → **exit 0**, `Found 0 errors and 2 warnings in 0.107 seconds. Run fern check --warnings to print out the warnings not shown.`, `fernapi/fern-python-sdk Finished.`, **50** `.py` files |
 | `advplyr/audiobookshelf` `docs/openapi.json` — Audiobookshelf | `bodies-media.md:282` | commit `0a797ab8bee15dc3ca92d1d76155259c46dbec62`, fetched at `https://raw.githubusercontent.com/advplyr/audiobookshelf/0a797ab8bee15dc3ca92d1d76155259c46dbec62/docs/openapi.json` (126,270 bytes, MD5 `77f29aaa9d0ef7328bab8f7210d19dab`) | `GPL-3.0`, the repository's own per the GitHub API; the document declares no `info.license` | admitted | a copyleft grant attaches conditions to redistribution rather than withholding permission for it, and the manifest row plus `NOTICE` satisfy them, one licence family along from SFTPGo | `media-type-range` = **3** | `fern check` at CLI 5.114.1 → **exit 0**, `All checks passed` | `fern generate --group python-sdk --preview` at `fernapi/fern-python-sdk` 5.20.0 → **exit 0**, `All checks passed`, `fernapi/fern-python-sdk Finished.`, **174** `.py` files |
-| `Alia5/steaminputdb.com` `openapi.yaml` — SteamInputDB | `security.md:767` | commit `a2bd0c37fd3d22e6b9e153b49e9a6e7de5a00393`, fetched at `https://raw.githubusercontent.com/Alia5/steaminputdb.com/a2bd0c37fd3d22e6b9e153b49e9a6e7de5a00393/openapi.yaml` (75,146 bytes, MD5 `bca248c34fb34880340646b5cdd81377`) | `AGPL-3.0`; `info.license` `GNU Affero General Public License v3.0` | admitted | a copyleft grant attaches conditions to redistribution rather than withholding permission for it, and the manifest row plus `NOTICE` satisfy them; the ledger's own correction stands, its `Steam Auth` scheme being `type: oauth2` with a stray `scheme` key | none — re-measured in the fetched bytes, it declares no enumerated coverage row | `fern check` at CLI 5.114.1 → **exit 0**, `All checks passed` | `fern generate --group python-sdk --preview` at `fernapi/fern-python-sdk` 5.20.0 → **exit 0**, `All checks passed`, `fernapi/fern-python-sdk Finished.`, **126** `.py` files |
+| `Alia5/steaminputdb.com` `openapi.yaml` — SteamInputDB | `security.md:767` | commit `a2bd0c37fd3d22e6b9e153b49e9a6e7de5a00393`, fetched at `https://raw.githubusercontent.com/Alia5/steaminputdb.com/a2bd0c37fd3d22e6b9e153b49e9a6e7de5a00393/openapi.yaml` (75,146 bytes, MD5 `bca248c34fb34880340646b5cdd81377`) | `AGPL-3.0`; `info.license` `GNU Affero General Public License v3.0` | admitted | a copyleft grant attaches conditions to redistribution rather than withholding permission for it, and the manifest row plus `NOTICE` satisfy them; the ledger's own correction stands, its `Steam Auth` scheme being `type: oauth2` with a stray `scheme` key | none — re-measured in the fetched bytes, it declares no enumerated coverage row | `fern check` at CLI 5.114.1 → **exit 0**, `All checks passed` | `fern generate --group python-sdk --preview` at `fernapi/fern-python-sdk` 5.20.0 → **exit 0**, `All checks passed`, `fernapi/fern-python-sdk Finished.`, **126** `.py` files. **Accepted at the corpus's own generation path too**: re-run at CLI **5.67.1** through [`../scripts/generate-fern-fixture.sh`](../scripts/generate-fern-fixture.sh) it exits 0 and writes a real SDK — 133 files with `meta`, `search` and `steam` sub-clients, a `types/` package and an `errors/` one. **Registered as [`CORPUS.md`](../tests/fixtures/CORPUS.md) row 137**, byte-matching with an empty `unmatched` |
 | `APIs-guru/openapi-directory` `APIs/googleapis.com/servicebroker/v1alpha1/openapi.yaml` — the Google Service Broker API | `document-paths.md:915` | commit `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49`, fetched at `https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/googleapis.com/servicebroker/v1alpha1/openapi.yaml` (64,403 bytes, MD5 `04370af2881b54b502ce1d36956cd755`) | `Creative Commons Attribution 3.0`, the document's own `info.license` | admitted | an attribution licence grants redistribution and conditions it on credit, which the manifest row's source URL and licence name and `NOTICE` already give; the ledger calls it a witness with no further work once rescreened | `duplicate-normalized-paths` = **4** | `fern check` at CLI 5.114.1 → **exit 0**, `Found 0 errors and 2 warnings in 0.000 seconds. Run fern check --warnings to print out the warnings not shown.` | `fern generate --group python-sdk --preview` at `fernapi/fern-python-sdk` 5.20.0 → **exit 0**, `Found 0 errors and 2 warnings in 0.107 seconds. Run fern check --warnings to print out the warnings not shown.`, `fernapi/fern-python-sdk Finished.`, **86** `.py` files |
-| `curedao/curedao-monorepo` `docs/openapi-huge.yml` — the CureDAO API | `schemas.md:924` | commit `552aa46991d22d98ed557d900d72ac8cd2b65cd6`, fetched at `https://raw.githubusercontent.com/curedao/curedao-monorepo/552aa46991d22d98ed557d900d72ac8cd2b65cd6/docs/openapi-huge.yml` (308,811 bytes, MD5 `c462f3ae73097b78a5a1b95ae6696e72`) | `GPL-3.0` — the document's own `info.license` `GNU General Public License v3 (GPL-3)`, where the repository declares none | admitted | a copyleft grant attaches conditions to redistribution rather than withholding permission for it, and the manifest row plus `NOTICE` satisfy them; a **correction**: the ledger records this repository as declaring no licence, and its document declares one | none — re-measured in the fetched bytes, it declares no enumerated coverage row | `fern check` at CLI 5.114.1 → **exit 0**, `All checks passed` | `fern generate --group python-sdk --preview` at `fernapi/fern-python-sdk` 5.20.0 → **exit 0**, `All checks passed`, `fernapi/fern-python-sdk Finished.`, **28** `.py` files |
+| `curedao/curedao-monorepo` `docs/openapi-huge.yml` — the CureDAO API | `schemas.md:924` | commit `552aa46991d22d98ed557d900d72ac8cd2b65cd6`, fetched at `https://raw.githubusercontent.com/curedao/curedao-monorepo/552aa46991d22d98ed557d900d72ac8cd2b65cd6/docs/openapi-huge.yml` (308,811 bytes, MD5 `c462f3ae73097b78a5a1b95ae6696e72`) | `GPL-3.0` — the document's own `info.license` `GNU General Public License v3 (GPL-3)`, where the repository declares none | admitted | a copyleft grant attaches conditions to redistribution rather than withholding permission for it, and the manifest row plus `NOTICE` satisfy them; a **correction**: the ledger records this repository as declaring no licence, and its document declares one | none — re-measured in the fetched bytes, it declares no enumerated coverage row | `fern check` at CLI 5.114.1 → **exit 0**, `All checks passed` | `fern generate --group python-sdk --preview` at `fernapi/fern-python-sdk` 5.20.0 → **exit 0**, `All checks passed`, `fernapi/fern-python-sdk Finished.`, **28** `.py` files. **The exit status hides a skip, and the corpus's own generation path says so.** Re-run at CLI **5.67.1** through [`../scripts/generate-fern-fixture.sh`](../scripts/generate-fern-fixture.sh) it exits 0 again and logs `[api]: python-sdk /tmp/.../fern/openapi/openapi.yml is not a valid OpenAPI, AsyncAPI, or OpenRPC file. Skipping...` before `All checks passed`, and what it writes is an **empty SDK**: 36 files, a zero-byte `README.md`, a 12-byte `reference.md`, an `__init__.py` exporting nothing but the client, and no `types/`, sub-client or endpoint. The document declares **no `openapi` version key** — its top-level keys are `x-stoplight`, `info`, `servers`, `tags`, `paths` and `components` — so Fern never recognises it. **Not registrable**, on the corpus's `Fern must accept it FIRST` screen rather than on its licence; logged in [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md#specs-already-tried-and-rejected-do-not-re-attempt-without-a-fix-upstream) |
 | `drakkan/sftpgo` `openapi/openapi.yaml` — SFTPGo | `bodies-media.md:279` | commit `c737df6cd42ef375bf51a2d0a04ea2b1ab9f8842`, fetched at `https://raw.githubusercontent.com/drakkan/sftpgo/c737df6cd42ef375bf51a2d0a04ea2b1ab9f8842/openapi/openapi.yaml` (253,216 bytes, MD5 `bfb6f857c503eb809f6bee5418666e47`) | `AGPL-3.0`, the repository's own; `info.license` `AGPL-3.0-only` | admitted | a copyleft grant attaches conditions to redistribution rather than withholding permission for it, and the manifest row plus `NOTICE` satisfy them; the ledger already names it the document to revisit first | `media-type-range` = **10**, `operation-overrides-path-item-parameter` = **1** | `fern check` at CLI 5.114.1 → **exit 0**, `All checks passed` | `fern generate --group python-sdk --preview` at `fernapi/fern-python-sdk` 5.20.0 → **exit 0**, `All checks passed`, `fernapi/fern-python-sdk Finished.`, **251** `.py` files |
-| `eclipse-ditto/ditto` `documentation/src/main/resources/openapi/ditto-api-2.yml` — Eclipse Ditto | `schemas.md:969` | commit `d75e2629bbbfac76e799223aa1717a744e811572`, fetched at `https://raw.githubusercontent.com/eclipse-ditto/ditto/d75e2629bbbfac76e799223aa1717a744e811572/documentation/src/main/resources/openapi/ditto-api-2.yml` (519,051 bytes, MD5 `35bb17afdfccb4e820727fe3de24a40b`) | `EPL-2.0`, the repository's own | admitted | a weak-copyleft grant of redistribution, so the widened rule reaches it; publisher-owned, being the Eclipse Foundation's own project | `format-iri-reference` = **5** | `fern check` at CLI 5.114.1 → **exit 0**, `All checks passed` | `fern generate --group python-sdk --preview` at `fernapi/fern-python-sdk` 5.20.0 → **exit 0**, `All checks passed`, `fernapi/fern-python-sdk Finished.`, **313** `.py` files |
+| `eclipse-ditto/ditto` `documentation/src/main/resources/openapi/ditto-api-2.yml` — Eclipse Ditto | `schemas.md:969` | commit `d75e2629bbbfac76e799223aa1717a744e811572`, fetched at `https://raw.githubusercontent.com/eclipse-ditto/ditto/d75e2629bbbfac76e799223aa1717a744e811572/documentation/src/main/resources/openapi/ditto-api-2.yml` (519,051 bytes, MD5 `35bb17afdfccb4e820727fe3de24a40b`) | `EPL-2.0`, the repository's own | admitted | a weak-copyleft grant of redistribution, so the widened rule reaches it; publisher-owned, being the Eclipse Foundation's own project | `format-iri-reference` = **5** | `fern check` at CLI 5.114.1 → **exit 0**, `All checks passed` | `fern generate --group python-sdk --preview` at `fernapi/fern-python-sdk` 5.20.0 → **exit 0**, `All checks passed`, `fernapi/fern-python-sdk Finished.`, **313** `.py` files. **The verdict does not hold at the CLI the corpus generates at.** Re-run at CLI **5.67.1** through [`../scripts/generate-fern-fixture.sh`](../scripts/generate-fern-fixture.sh) the Python generator exits **1**: `[api]: python-sdk things.yml -> service -> endpoints -> createOrPatchAThingWithASpecifiedId`, `[error] Multiple request properties have the name thingId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.`, `- Path parameter "thingId"`, `- Body property: <Request Body> -> thingId`, `Found 1 errors and 0 warnings in 0.342 seconds.` **Not registrable**, on the corpus's `Fern must accept it FIRST` screen rather than on its licence; logged in [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md#specs-already-tried-and-rejected-do-not-re-attempt-without-a-fix-upstream) |
 | `justiceo/openapi-zod` `test/fixtures/primitives/openapi.yaml` — a format showcase fixture | `schemas.md:911` | commit `ff0015071d7d8711628b66b87e25de9f5cc487d1`, fetched at `https://raw.githubusercontent.com/justiceo/openapi-zod/ff0015071d7d8711628b66b87e25de9f5cc487d1/test/fixtures/primitives/openapi.yaml` (1,683 bytes, MD5 `4500c171256d13bbb89ca23044119cdf`) | `MIT`, the repository's own | admitted | a permissive grant was never outside the set, so the rule reaches it and never was what stopped it; it is a `test/fixtures/` document no API serves, which is what the corpus's real-world rule excludes | `format-idn-email` = **1**, `format-idn-hostname` = **1**, `format-ipv6` = **1**, `format-iri` = **1**, `format-iri-reference` = **1**, `format-json-pointer` = **1**, `format-relative-json-pointer` = **1** | `fern check` at CLI 5.114.1 → **exit 0**, `All checks passed` | `fern generate --group python-sdk --preview` at `fernapi/fern-python-sdk` 5.20.0 → **exit 0**, `All checks passed`, `fernapi/fern-python-sdk Finished.`, **57** `.py` files over a document declaring no `paths` — an empty SDK |
 | SwaggerHub `1584335/redocly-museum_api/1.0.0` | `schemas.md:932` | no immutable ref — a SwaggerHub version string is republishable in place, so the bytes behind the address can change without the address changing; fetched at `https://api.swaggerhub.com/apis/1584335/redocly-museum_api/1.0.0/swagger.json` (121,271 bytes, MD5 `b4c2bcff83522e6f60dac4d9c22023f6`) | `MIT`, the document's own `info.license` | admitted | a permissive grant was never outside the set, so the rule reaches it and never was what stopped it; the registry offers no immutable reference, which is what stops it and which the widening does not touch | `dollar-comment` = **19**, `dollar-dynamic-anchor` = **17**, `format-json-pointer` = **1**, `parameter-style-form-query-array` = **1**, `parameter-style-form-query-scalar` = **1** | `fern check` at CLI 5.114.1 → **exit 0**, `Found 0 errors and 2 warnings in 0.000 seconds. Run fern check --warnings to print out the warnings not shown.` | `fern generate --group python-sdk --preview` at `fernapi/fern-python-sdk` 5.20.0 → **exit 0**, `Found 0 errors and 2 warnings in 0.157 seconds. Run fern check --warnings to print out the warnings not shown.`, `fernapi/fern-python-sdk Finished.`, **177** `.py` files |
 | SwaggerHub `frank-kilcommins/Swagger-Petstore-31/1.0.9-SNAPSHOT` | `schemas.md:932` | no immutable ref — a SwaggerHub version string is republishable in place, so the bytes behind the address can change without the address changing; fetched at `https://api.swaggerhub.com/apis/frank-kilcommins/Swagger-Petstore-31/1.0.9-SNAPSHOT/swagger.json` (9,589 bytes, MD5 `3c159a542f75540eb4b5ed9089287f46`) | `Apache 2.0`, the document's own `info.license` | admitted | a permissive grant was never outside the set, so the rule reaches it and never was what stopped it; the registry offers no immutable reference, which is what stops it and which the widening does not touch | `contains` = **1**, `dollar-anchor` = **1**, `dollar-vocabulary` = **1**, `max-contains` = **1**, `min-contains` = **1** | `fern check` at CLI 5.114.1 → **exit 0**, `Found 0 errors and 4 warnings in 0.000 seconds. Run fern check --warnings to print out the warnings not shown.` | `fern generate --group python-sdk --preview` at `fernapi/fern-python-sdk` 5.20.0 → **exit 0**, `Found 0 errors and 4 warnings in 0.094 seconds. Run fern check --warnings to print out the warnings not shown.`, `fernapi/fern-python-sdk Finished.`, **47** `.py` files |
@@ -172,9 +193,14 @@ two things" into a measured statement about both.
 **68 documents screened, 23 admitted by the widened rule and 45 still blocked.**
 29 are accepted by Fern at both stages; 12 of those 29 are also admitted.
 
-**Five documents are registrable witnesses** — admitted, accepted by Fern at both
-stages, immutably pinned, published by the API they describe, and declaring a
-coverage row. In the order a registering node should weigh them:
+**Seven documents pass every admission screen the corpus states** — admitted by
+the widened licence rule, accepted by Fern at both preview stages, immutably
+pinned, and published by the API they describe. Five of the seven also declare a
+coverage row this backlog carried when they were screened, and are listed here in
+the order a registering node should weigh them. *Declaring a coverage row is not
+itself an admission screen* — it is a priority, which is what this ordering is —
+so the other two, `Alia5/steaminputdb.com` and `curedao/curedao-monorepo`, are
+weighed after these five rather than dropped; what became of each is below.
 
 1. `aces/Loris` — settles `parameter-style-spacedelimited-query-scalar`, whose
    census count across every registered source is **0**, and is the second-best
@@ -190,28 +216,31 @@ coverage row. In the order a registering node should weigh them:
 5. `advplyr/audiobookshelf` — a second `media-type-range` declarer, three sites
    all `image/*`; worth registering only if SFTPGo is rejected downstream.
 
-**Registration has since consumed this record, and four of the five witnesses
-took.** `aces/Loris`, `drakkan/sftpgo`, `APIs-guru/openapi-directory`'s
-`googleapis.com/servicebroker` and `advplyr/audiobookshelf` are corpus rows
-133-136, each with a byte-matching Fern 5.20.0 golden. The fifth,
-`eclipse-ditto/ditto`, is **not** registered, and the reason is a version this
-record does not screen at: every `fern check` and `fern generate` figure below was
-measured at Fern CLI **5.114.1**, while the corpus's own generation path pins CLI
-**5.67.1** (`scripts/generate-fern-fixture.sh`'s `FERN_CLI_VERSION`, which is what
-every committed golden's `.fern/metadata.json` records). At that pin the Python
-generator exits **1** on Ditto: `[api]: python-sdk things.yml -> service ->
-endpoints -> createOrPatchAThingWithASpecifiedId`, `[error] Multiple request
-properties have the name thingId. This is not suitable for code generation. Use
-the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.`,
-`- Path parameter "thingId"`, `- Body property: <Request Body> -> thingId`,
-`Found 1 errors and 0 warnings in 0.342 seconds.` — the same `thingId` error the
-schemas ledger originally recorded and the bullet below reports as not
-reproducing. It is logged in
-[`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md)'s REJECTED table, and
-`format-iri-reference` stays a `gap` on it. **The screening path below is
-unchanged and its measurements stand**; what this paragraph adds is that a Fern
-verdict is CLI-version-bound, so a candidate this record admits still has to be
-put to the CLI the corpus generates at.
+**Registration has since consumed this record, and five of its seven
+Fern-accepted, real-world, immutably-pinned candidates took.** `aces/Loris`,
+`drakkan/sftpgo`, `APIs-guru/openapi-directory`'s `googleapis.com/servicebroker`,
+`advplyr/audiobookshelf` and `Alia5/steaminputdb.com` are corpus rows **133-137**,
+each with a byte-matching Fern 5.20.0 golden and an empty `unmatched`.
+`Alia5/steaminputdb.com` was registered although it declares no coverage row that
+was open when it was screened: a byte-matching golden is parity evidence in its
+own right, and *"it settles no backlog row"* is not one of the corpus's three
+admission screens ([`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md)).
+It did in the end move three: it is the corpus's only declarer of
+`securityScheme.scheme=OAuth`, its only golden-bearing declarer of
+`securityScheme.in=query`, and one of five now declaring
+`securityScheme.flows.implicit`.
+
+**The other two are refused by Fern at the CLI the corpus generates at, and that
+is the rule that excludes each.** `eclipse-ditto/ditto` exits **1** there where
+this record measured exit 0 at CLI 5.114.1, and `curedao/curedao-monorepo` exits
+**0** at both while writing an empty SDK over a document it never parsed. Each
+line's own `generate` cell quotes that second measurement in full, and both are
+logged in [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md)'s REJECTED
+table; `format-iri-reference` stays a `gap` on Ditto. **The screening path above
+is unchanged and its measurements stand**; what these paragraphs add is that a
+Fern *exit status* on the preview path is not an acceptance, so a candidate this
+record admits still has to be put to the CLI the corpus generates at and the
+result read rather than counted.
 
 **Three Fern verdicts recorded by the region files did not reproduce** at Fern
 CLI 5.114.1, and a registering node should take them from here rather than from
@@ -242,17 +271,30 @@ was actually screened. `api-evangelist/crunchdao`'s reproduces the row's
 its counts for those two come from files it did not name. A later search should
 pin the path as well as the repository.
 
-**The licence is not the only screen, and the record now separates them.**
-Eleven admitted documents are refused by Fern — among them the two vendored
-copies of the OpenAPI 3.1 meta-schema, which are documents about OpenAPI rather
-than descriptions of an API. Of the twelve Fern accepts, five are the
-registrable witnesses above; four are SwaggerHub versions that declare a
-permissive `info.license` and are reachable at no immutable reference;
-`Alia5/steaminputdb.com` and `curedao/curedao-monorepo` declare no enumerated
-coverage row, so they settle nothing; and `justiceo/openapi-zod` is the sharpest
-case of a screen the widening does not touch — admitted, accepted at both
-stages, declaring seven `format-*` rows at once, and a `test/fixtures/` document
-no API serves, which the corpus's real-world rule excludes.
+**The licence is not the only screen, and the record now separates them. Every
+admitted candidate below is either registered or carries the named rule that
+excludes it.** Eleven admitted documents are refused by Fern on the preview path
+itself — among them the two vendored copies of the OpenAPI 3.1 meta-schema, which
+are documents about OpenAPI rather than descriptions of an API. Of the twelve the
+preview path accepts:
+
+* **five are registered** as corpus rows 133-137 — `aces/Loris`,
+  `drakkan/sftpgo`, `googleapis.com/servicebroker`, `advplyr/audiobookshelf` and
+  `Alia5/steaminputdb.com`;
+* **two fail the corpus's `Fern must accept it FIRST` screen** at the CLI it
+  generates at — `eclipse-ditto/ditto` (exit 1) and `curedao/curedao-monorepo`
+  (exit 0 over an unparsed document, empty SDK);
+* **four fail the immutable-reference screen** — SwaggerHub versions
+  `1584335/redocly-museum_api/1.0.0`,
+  `frank-kilcommins/Swagger-Petstore-31/1.0.9-SNAPSHOT`,
+  `PangaeaInnovations/grid-parameters-v3-unified-grid-schema-api/3.0.0` and
+  `test-2a8-f7e/qtTestSchema/1.0.1`. Each declares a permissive `info.license`,
+  and a SwaggerHub version string is republishable in place, so the bytes behind
+  the address can change without the address changing;
+* **one fails the real-world screen** — `justiceo/openapi-zod`, the sharpest case
+  of a screen the widening does not touch: admitted, accepted at both stages,
+  declaring seven `format-*` rows at once, and a `test/fixtures/` document no API
+  serves.
 
 **Every remaining candidate stays blocked because the licence grants nothing.**
 An absent licence, a proprietary one, and one the GitHub API reports as

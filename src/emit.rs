@@ -4352,8 +4352,13 @@ fn push_param_doc(lines: &mut Vec<String>, description: &str) {
     }));
 }
 
+/// One line of Python docstring prose. A backslash is escaped for the source
+/// literal, and a tab is expanded to four spaces: `ruff format` normalizes
+/// docstring indentation, so SteamInputDB's tab-indented second description line
+/// reaches its golden's `client.py` as spaces while `reference.md` — which no
+/// formatter touches — keeps the tabs the document wrote.
 fn python_doc_line(line: &str) -> String {
-    line.replace('\\', "\\\\")
+    line.replace('\\', "\\\\").replace('\t', "    ")
 }
 
 /// Push the `Returns` description under the return type: each line of the

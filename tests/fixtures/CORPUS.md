@@ -159,6 +159,7 @@ re-measure with `just fixtures-gaps`.
 | 134 | `sftpgo` | github-raw | https://raw.githubusercontent.com/drakkan/sftpgo/c737df6cd42ef375bf51a2d0a04ea2b1ab9f8842/openapi/openapi.yaml | `c737df6cd42ef375bf51a2d0a04ea2b1ab9f8842` | AGPL-3.0 (declared by the document's `info.license`, `AGPL-3.0-only`, and by the repository's own `LICENSE`) | link-ok | The administration API the SFTPGo file-transfer server publishes for itself, the third registered declarer of a **media type range** other than `*/*` and by far the densest — ten content-map keys over five distinct ranges (`application/*`, `text/*`, `image/*`, `audio/*` and `video/*`, each declared on both `POST /shares/{id}/{fileName}` and `POST /user/files/upload`) against rows 127 and 130's six and one — and the first to declare one on the **request** side, where both of those declare theirs on responses only. It is also the second registered declarer of a parameter redeclared at both levels: `PUT /quotas/folders/{name}/usage` redeclares its path item's own `mode` query parameter, one Operation-over-Path-Item collision beside row 122's 24, and the one where the two declarations are otherwise identical — same `required`, same `description`, same two-member `enum` — so the golden pins that the operation-level declaration is taken even where nothing about it differs. Over 76 paths, 116 component schemas and three security schemes — `http` `basic`, `http` `bearer` and an `apiKey` header |
 | 135 | `googleapis-servicebroker` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/googleapis.com/servicebroker/v1alpha1/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | Creative Commons Attribution 3.0 (the document's own `info.license`, Google's grant over its own description; the aggregating repository is CC0-1.0) | link-ok | Google's Service Broker API (`info.x-origin` records the publisher-served `https://servicebroker.googleapis.com/$discovery/rest?version=v1alpha1`), the fourth registered declarer of **two path templates that normalize to one** and the first where one colliding group is nested inside another: `/v1alpha1/{parent}/v2/service_instances/{instanceId}` beside `…/{instance_id}`, and one segment deeper `…/{instanceId}/service_bindings/{bindingId}` beside `…/{instanceId}/service_bindings/{binding_id}` — four keys in two groups that crozier's own `naming::field_name` folds to two, where the deeper pair agrees on the `{instanceId}` spelling it inherits and collides only on its own leaf. The collisions are inside one document, so the golden's own raw clients say what Fern did with them. Over 13 paths, 21 component schemas, 11 component parameters and two `oauth2` schemes |
 | 136 | `audiobookshelf` | github-raw | https://raw.githubusercontent.com/advplyr/audiobookshelf/0a797ab8bee15dc3ca92d1d76155259c46dbec62/docs/openapi.json | `0a797ab8bee15dc3ca92d1d76155259c46dbec62` | GPL-3.0 (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | The API the Audiobookshelf self-hosted audiobook server publishes for itself, the fourth registered declarer of a **media type range** other than `*/*` — three `200` responses keyed on `image/*` over `{type: string, format: binary}`, one each for the `GET`, `POST` and `PATCH` of `/api/authors/{id}/image` — and the only registered source declaring a range **beside two concrete media types of its own type**: that `GET`'s response content map is `image/webp`, `image/jpeg` and `image/*`, all three over the same binary schema, so this golden pins which of an overlapping set Fern picks. Over 31 paths, 91 component schemas and a `bearerAuth` `http` scheme |
+| 137 | `steaminputdb` | github-raw | https://raw.githubusercontent.com/Alia5/steaminputdb.com/a2bd0c37fd3d22e6b9e153b49e9a6e7de5a00393/openapi.yaml | `a2bd0c37fd3d22e6b9e153b49e9a6e7de5a00393` | AGPL-3.0 (declared by the document's `info.license`, `GNU Affero General Public License v3.0`, and by the repository's own `LICENSE.txt`) | link-ok | The API the SteamInputDB controller-configuration site publishes for itself, the corpus's only source whose sole Security Scheme Object mixes three vocabularies at once: `type: oauth2` carrying `flows.implicit` beside a stray `scheme: OAuth`, an `in: query`, a `name: Steam Auth` and an `openIdConnectUrl`. It is the corpus's **only** declarer of `securityScheme.scheme=OAuth` and its only **golden-bearing** declarer of `securityScheme.in=query` — the other three are DROPPED rows — and Fern reads neither key, importing the scheme as an optional bearer `token` on a document that declares no `security` requirement anywhere, which is what this golden says crozier must do too. Its `implicit` flow writes `scopes: null` where the specification makes the map required, and is the corpus's only `securityScheme.flows.implicit.tokenUrl`, a field an implicit flow has no use for. It is also the corpus's first source whose two colliding method names come from a shared **`summary`** rather than a shared `operationId`: `GET` and `POST /v1/steam/login` declare no `operationId` anywhere in the document and both read `Log in with Steam`, so one `log_in_with_steam` survives — and the `OpenIDBody` both of their bodies `$ref` is inlined into it and dropped from the type layer, where a schema two *surviving* endpoints shared would have been kept. Four of its request schemas carry a `readOnly: true` `$schema` property Fern drops from every method it inlines them into, and its one multi-line operation description indents its second line with three tabs, which its `reference.md` entry keeps and its `client.py` docstring does not. Over 8 paths, 72 component schemas and an `openapi: 3.1.0` document's 96 `type: null` union members |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -597,13 +598,17 @@ the two `jentic/jentic-public-apis` redistributions are CC0-1.0 by the aggregati
 
 ## Batch 15 — the candidates a widened licence rule admitted (issue #188)
 
-Four documents, from the rescreening
+Five documents, from the rescreening
 [`../../docs/licence-rescreening.md`](../../docs/licence-rescreening.md) ran after
 the corpus's admissible-licence rule widened
 ([`../../docs/corpus-licensing.md`](../../docs/corpus-licensing.md)). **Every
 candidate that record admits, Fern accepts and the corpus's other two screens
 allow is registered** — a witness is not dropped for being redundant, and rows 134
-and 136 are each a further declarer of a shape another row already pins.
+and 136 are each a further declarer of a shape another row already pins, while row
+137 declares no enumerated coverage row that was open when it was screened and is
+registered all the same: a byte-matching golden is parity evidence in its own
+right, and *"it settles no backlog row"* is not one of this corpus's three
+admission screens.
 
 | # | name | settles | state |
 |---:|---|---|---|
@@ -611,17 +616,36 @@ and 136 are each a further declarer of a shape another row already pins.
 | 134 | `sftpgo` | `media-type-range`, `operation-overrides-path-item-parameter` | ✅ byte-matched after eleven repairs |
 | 135 | `googleapis-servicebroker` | `duplicate-normalized-paths` | ✅ byte-matched after two repairs |
 | 136 | `audiobookshelf` | `media-type-range` | ✅ byte-matched after six repairs |
+| 137 | `steaminputdb` | `apiKey-query`, `http-oauth`, `oauth2-implicit` | ✅ byte-matched after six repairs |
 
-**The one candidate this batch does not register.** Eclipse Ditto's HTTP API is
-admitted by the widened rule, publisher-owned and immutably pinned, and is the
-only such declarer of `format-iri-reference` anywhere the issue #188 searches
-reached. Fern's Python generator **refuses it at the CLI version this corpus
-generates at**: exit 1 on `Multiple request properties have the name thingId`,
-where the rescreening measured exit 0 at Fern CLI 5.114.1. It is logged in
-[`AGENTS.md`](AGENTS.md)'s REJECTED table with that diagnostic and the version it
-belongs to, and `format-iri-reference` stays a `gap`.
+**The two candidates this batch does not register, and the rule that excludes
+each.** Both are admitted by the widened rule and both are accepted by Fern at the
+*preview* CLI the rescreening screened at; neither survives the corpus's own
+`Fern must accept it FIRST` screen, read at the CLI
+[`../../scripts/generate-fern-fixture.sh`](../../scripts/generate-fern-fixture.sh)
+pins.
 
-**What the four rows cost.** Google's Service Broker: a dotted `operationId`'s
+- **Eclipse Ditto's HTTP API** is publisher-owned and immutably pinned, and is the
+  only admitted declarer of `format-iri-reference` anywhere the issue #188
+  searches reached. Fern's Python generator **refuses it at the CLI version this
+  corpus generates at**: exit 1 on `Multiple request properties have the name
+  thingId`, where the rescreening measured exit 0 at Fern CLI 5.114.1.
+  `format-iri-reference` stays a `gap` on it.
+- **The CureDAO API** (`curedao/curedao-monorepo` `docs/openapi-huge.yml`) is the
+  **exit-0-and-nothing-happened** failure [`AGENTS.md`](AGENTS.md)'s screening
+  section names, and it exits 0 at *both* CLIs. The document declares no `openapi`
+  version key at all — its top-level keys are `x-stoplight`, `info`, `servers`,
+  `tags`, `paths` and `components` — so Fern logs
+  `is not a valid OpenAPI, AsyncAPI, or OpenRPC file. Skipping...`, prints
+  `All checks passed`, and writes an **empty SDK**: 36 files, a zero-byte
+  `README.md`, a 12-byte `reference.md`, no `types/`, no sub-client and no
+  endpoint. A golden like that pins nothing about crozier's OpenAPI behaviour, so
+  the document fails the screen rather than the licence.
+
+Both are logged in [`AGENTS.md`](AGENTS.md)'s REJECTED table with their exact
+diagnostics and the CLI each belongs to.
+
+**What the five rows cost.** Google's Service Broker: a dotted `operationId`'s
 kept group snake-cases as one name with its dots as word separators, and a
 parameter's leading punctuation drops out of the class it hoists. LORIS: a
 flattened body over an untitled surviving schema loses its explicit
@@ -635,7 +659,14 @@ property follows its `$ref` for an example. SFTPGo: an untyped `enum` is a strin
 `copy` is a protected pydantic field name, a content-map key is matched with its
 parameters ignored, a multipart array of binary strings is a list of `core.File`,
 an `allOf` of one `$ref` is an alias, and a `*/*` binary download documents its own
-arguments. All are recorded in
+arguments. SteamInputDB: an OAuth Flow Object's
+`scopes: null` reads as no scopes; an `oauth2` scheme reaches the client wrapper
+with no Security Requirement Object declared anywhere; a typeless property keeps
+its description when the field wraps it in `Optional`; the inlined-body drop
+counts *surviving* endpoints rather than the document's operations; an inline
+`readOnly: true` property is dropped from the request it is inlined into; and a
+tab in an operation description survives into `reference.md`, expanded to spaces
+only where `ruff format` performs that expansion. All are recorded in
 [`../../docs/matching.md`](../../docs/matching.md#what-the-widened-licence-rules-witnesses-cost-issue-188).
 
 Two of those repairs also shortened a batch-14 residual: `komga`'s `unmatched` is
@@ -643,6 +674,8 @@ re-measured from 40 of its 338 files to 32.
 
 Licences were verified at each source repository at the pinned ref rather than
 copied from the screening record: `aces/Loris` and `advplyr/audiobookshelf` each
-carry a `GPL-3.0` `LICENSE`, `drakkan/sftpgo` an `AGPL-3.0` one, and the Google
-Service Broker document carries its own `Creative Commons Attribution 3.0`
-`info.license` inside the CC0-1.0 `APIs-guru/openapi-directory` aggregation.
+carry a `GPL-3.0` `LICENSE`, `drakkan/sftpgo` an `AGPL-3.0` one,
+`Alia5/steaminputdb.com` an `AGPL-3.0` `LICENSE.txt` beside the document's own
+`info.license` `identifier: AGPL-3.0`, and the Google Service Broker document
+carries its own `Creative Commons Attribution 3.0` `info.license` inside the
+CC0-1.0 `APIs-guru/openapi-directory` aggregation.

@@ -2118,6 +2118,7 @@ const CORPORA: &[&Corpus] = &[
     &SFTPGO,
     &GOOGLEAPIS_SERVICEBROKER,
     &AUDIOBOOKSHELF,
+    &STEAMINPUTDB,
 ];
 
 #[test]
@@ -4282,6 +4283,21 @@ const AUDIOBOOKSHELF: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `steaminputdb`: the SteamInputDB API is the corpus's first source whose only
+/// security scheme is an `oauth2` Security Scheme Object carrying a stray
+/// `scheme: OAuth` and `in: query` beside its flows, and its `servers` declare a
+/// localhost development URL ahead of the live one.
+const STEAMINPUTDB: Corpus = Corpus {
+    api: "steaminputdb",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -4706,6 +4722,11 @@ fn googleapis_servicebroker_matches_fern_output() {
 #[test]
 fn audiobookshelf_matches_fern_output() {
     assert_link_ok_corpus_matches(&AUDIOBOOKSHELF);
+}
+
+#[test]
+fn steaminputdb_matches_fern_output() {
+    assert_link_ok_corpus_matches(&STEAMINPUTDB);
 }
 
 #[test]

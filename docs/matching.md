@@ -1736,11 +1736,11 @@ declared in the root's `types/`.
 
 ## What the widened licence rule's witnesses cost (issue #188)
 
-Corpus rows 133-136 register the four candidates the rescreening
-([`licence-rescreening.md`](licence-rescreening.md)) admitted and Fern accepted —
-`loris-dataquery`, `sftpgo`, `googleapis-servicebroker` and `audiobookshelf`.
-All four reach byte parity with an empty `unmatched`. These are the rules they
-settled.
+Corpus rows 133-137 register the five candidates the rescreening
+([`licence-rescreening.md`](licence-rescreening.md)) admitted and Fern accepted at
+the CLI this corpus generates at — `loris-dataquery`, `sftpgo`,
+`googleapis-servicebroker`, `audiobookshelf` and `steaminputdb`. All five reach
+byte parity with an empty `unmatched`. These are the rules they settled.
 
 **A dotted `operationId`'s group reads as words, not as a run-together name.**
 Google's Service Broker writes
@@ -1854,6 +1854,54 @@ other endpoint's takes one: `streamzip` posts `{type: array, items: {type:
 string}}` and streams a zip back, and its golden documents
 `request=["string", "string"]`, where gambitcomm's `set_protocols` posts the same
 shape, answers JSON, and gets `request=["string"]`.
+
+**An OAuth Flow Object's `scopes: null` is no scopes.** The specification makes
+the map required, and SteamInputDB's `Steam OpenID` implicit flow writes
+`scopes: null` all the same. Crozier refused the document at the boundary —
+`components.securitySchemes.Steam OpenID.flows.implicit.scopes: invalid type: unit
+value, expected a map` — where Fern reads it. An explicit `null` now reads as the
+absent key does.
+
+**An `oauth2` scheme reaches the client wrapper with no Security Requirement
+Object anywhere.** The rule the DaniWeb batch measured — that an `http` or OAuth2
+scheme is taken *only* from a declared requirement, where a header `apiKey` and an
+`http` `bearer` are taken whatever the requirements say — is now measured to be
+about `http` `basic` alone. SteamInputDB declares one `oauth2` scheme, no
+`security` at the document level and none on any of its nine operations, and its
+golden's wrapper still takes an optional `token` and sends `Authorization: Bearer`.
+
+**A typeless property keeps its description when the field wraps it in
+`Optional`.** oSPARC's `ProjectInputGet.value` measured the drop on a *required*
+property, and the rule read it as a property of the schema (`is_unknown &&
+!explicitly nullable`). What carries the docs is the optional wrapper, so the drop
+is scoped to a field Fern leaves unwrapped: SteamInputDB's `ErrorDetail.value` is
+a bare `{description}` absent from `required`, and its golden documents the
+`typing.Optional[typing.Any]` it becomes.
+
+**The inlined-body drop counts surviving endpoints, not operations.** bunq's
+create+update pairs share `PermittedIp`, `CardGeneratedCvc2` and others as the
+body of two operations, and Fern keeps each as a standalone type — which is why
+the drop was scoped to a single-use body. SteamInputDB's `GET` and
+`POST /v1/steam/login` share `OpenIDBody` the same way, and Fern drops it, because
+the two operations declare no `operationId` and share the summary
+`Log in with Steam`: both name `log_in_with_steam`, one method survives, and the
+schema is inlined into it. Counting over the endpoints that survive method-name
+collapse separates the two.
+
+**A `readOnly: true` property is dropped from the request it is inlined into,
+however it is declared.** The drop already followed a `$ref` to a read-only
+schema; SteamInputDB writes `readOnly: true` on the property itself.
+`$schema` — `{description, format: uri, readOnly: true, type: string}` — sits on
+`OpenIDBody`, `SearchAllBody`, `SearchConfigsBody` and `SearchGamesBody`, and none
+of the four methods its golden writes takes it.
+
+**A tab in an operation description survives into `reference.md`.** The expansion
+to four spaces was attributed to Fern's importer; SteamInputDB shows it is
+`ruff format` normalizing docstring indentation. Its `Log in with Steam`
+description indents its second line with three tabs, and its golden's
+`reference.md` entry keeps them where its `client.py` docstring has twelve spaces.
+The expansion moved from `ir::operation_doc` to `emit::python_doc_line`, which
+every Python docstring path goes through and no Markdown one does.
 
 **What the untitled-schema rule cost two synthetic tests.** Two
 `tests/generation.rs` cases pinned the authenticated-echo content-type carve-outs
