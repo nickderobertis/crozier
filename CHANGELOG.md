@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.65](https://github.com/nickderobertis/crozier/compare/v0.0.64...v0.0.65) - 2026-09-06
+
+### Fixed
+
+- *(refs)* follow a response alias only where the target was fetched ([#225](https://github.com/nickderobertis/crozier/pull/225))
+
 ## [0.0.64](https://github.com/nickderobertis/crozier/compare/v0.0.63...v0.0.64) - 2026-09-06
 
 ### Added
