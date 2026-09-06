@@ -969,7 +969,8 @@ byte-compared it with Fern under the gate's normalization, finding no differing
 file; like the round above, that is corroborating evidence counted nowhere here.
 
 **With them the `FIXTURE` backlog is exhausted.** All 0 `FIXTURE` gaps remain
-across the six regions, so the table below carries no rows. The rubric and its
+across the six regions: the gate recomputes that total off the region files
+themselves and zero is what it reports, so the table below carries no rows. The rubric and its
 four criteria stay stated because the next `FIXTURE` gap the walk enumerates is
 ranked by them, and a row that returns is ranked by [the ranking
 rubric](#the-ranking-rubric) — crozier sites ascending, then blind-spot reach
@@ -990,8 +991,8 @@ checked rather than trusted.
   cell after rewording it.
 - **Criterion 4**, witness supply: registered sources the census reports
   declaring the shape, read off the row's own `evidence` cell. A `FIXTURE` gap
-  can only score above zero here from a source with no committed golden, which is
-what makes it a gap. The last row to score above zero,
+  can only score above zero here from a source with no committed golden, which
+  is what makes it a gap. The last row to score above zero,
   `parameter-style-matrix-path-scalar` on the golden-less `appng-rest-api`, left
   this list [settled by probe](#the-six-rows-a-round-of-probes-settled).
 
@@ -1439,7 +1440,7 @@ just fixtures-coverage | sed -n '/golden blind spots/,/^  total/p'
 Refresh both columns and every ranked row's criterion-2 cell together — criterion
 2 is checked against the `printed` column, the quoted `total ... region(s)` line
 against the report's own, each file's ranked-gap count against the ranked table,
-and the two-largest-files figure below against the `printed` column it sums, so
+and the two-largest-files figure above against the `printed` column it sums, so
 updating one alone fails rather than passing silently.
 
 Everything else — the rubric order, the published median, the two backlogs
