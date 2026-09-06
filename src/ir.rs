@@ -2584,7 +2584,7 @@ fn build_endpoint(
             let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) else {
                 return (schema.ty.as_ref().and_then(TypeField::primary) == Some("object")
                     && !schema.properties.is_empty())
-                .then(|| format!("{request_ctx}{}", naming::class_name(&parameter.name)));
+                .then(|| format!("{request_ctx}{}", naming::param_class_name(&parameter.name)));
             };
             let non_null: Vec<&Schema> = members
                 .iter()
@@ -2605,7 +2605,7 @@ fn build_endpoint(
                 && non_null.len() == members.len();
             ((non_null.len() != 1 || string_enum_values(non_null[0]).is_none())
                 && !titled_and_total)
-                .then(|| format!("{request_ctx}{}", naming::class_name(&parameter.name)))
+                .then(|| format!("{request_ctx}{}", naming::param_class_name(&parameter.name)))
         })
         .collect();
     // Register the hoisted inline types under this tag's `types/` package.
@@ -4688,7 +4688,7 @@ impl InlineHoister<'_> {
     fn hoist_param_enum(&mut self, request_ctx: &str, param: &str, schema: &Schema) -> TypeRef {
         if schema.reference.is_none() {
             if let Some(values) = string_enum_values(schema) {
-                let name = format!("{request_ctx}{}", naming::class_name(param));
+                let name = format!("{request_ctx}{}", naming::param_class_name(param));
                 self.out.push(TypeDecl::Enum(build_enum(
                     schema,
                     &name,
@@ -4698,7 +4698,7 @@ impl InlineHoister<'_> {
                 return TypeRef::Named(name);
             }
             if let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
-                let name = format!("{request_ctx}{}", naming::class_name(param));
+                let name = format!("{request_ctx}{}", naming::param_class_name(param));
                 let non_null: Vec<&Schema> = members
                     .iter()
                     .filter(|member| {
@@ -4808,13 +4808,13 @@ impl InlineHoister<'_> {
                 return wrap(TypeRef::Named(name));
             }
             if let Some(array) = self.hoist_array_item_enum(
-                &format!("{request_ctx}{}", naming::class_name(param)),
+                &format!("{request_ctx}{}", naming::param_class_name(param)),
                 schema,
             ) {
                 return array;
             }
             if is_object_type(schema) && is_inline_struct(schema) {
-                let name = format!("{request_ctx}{}", naming::class_name(param));
+                let name = format!("{request_ctx}{}", naming::param_class_name(param));
                 self.hoist_object(&name, schema);
                 return TypeRef::Named(name);
             }
@@ -5551,19 +5551,30 @@ fn dotted_id_names_a_group(id: &str) -> bool {
 /// The group is *dropped* only when it names the operation's own tag, which is
 /// the client the method already hangs off: bungie's `App.GetApplicationApiUsage`
 /// under tag `App` and letta's `models.listEmbeddingModels` under `models` both
-/// reach their goldens as the bare method. A group that names something else is
-/// kept, snake-cased with its dots removed, and prefixed to the method — svix
-/// writes `v1.application.list` under tag `Application` and
-/// `v1.message-attempt.list-by-endpoint` under `Message Attempt`, and its golden
-/// carries `v1application_list` and `v1message_attempt_list_by_endpoint`.
+/// reach their goldens as the bare method.
+///
+/// A group that names something else is kept, and then the *whole* id — group
+/// and method together — snake-cases as one name, its dots reading as word
+/// separators. That is what joins `v2` to the segment after it without a
+/// separator, because [`naming::to_snake_case`] absorbs a word following one that
+/// ends in a digit: Google's Service Broker writes
+/// `servicebroker.projects.brokers.v2.service_instances.get` under tag `projects`
+/// and its golden carries `servicebroker_projects_brokers_v2service_instances_get`,
+/// where the `instances`/`service_bindings` pair in
+/// `servicebroker.projects.brokers.instances.service_bindings.list` keeps its
+/// separator. Svix's `v1.application.list` and
+/// `v1.message-attempt.list-by-endpoint` read the same way, giving
+/// `v1application_list` and `v1message_attempt_list_by_endpoint`. Snake-casing the
+/// whole id is also what splits the final segment's own camel boundaries, so
+/// `servicebroker.setIamPolicy` is `servicebroker_set_iam_policy`; a *dropped*
+/// group leaves the method lowercased verbatim instead (`App.GetUsage` →
+/// `getusage`), which is the branch above.
 fn method_from_dotted_id(id: &str, tag: Option<&str>) -> String {
     let (group, method) = id.rsplit_once('.').unwrap_or(("", id));
-    let method = naming::sanitize_identifier(&method.to_ascii_lowercase());
     if group.is_empty() || tag.is_some_and(|tag| operation_id_matches_tag_spelling(group, tag)) {
-        return method;
+        return naming::sanitize_identifier(&method.to_ascii_lowercase());
     }
-    let prefix = naming::sanitize_identifier(&naming::to_snake_case(&group.replace('.', "")));
-    format!("{prefix}_{method}")
+    naming::sanitize_identifier(&naming::to_snake_case(id))
 }
 
 /// The method name for a groupless camelCase operationId (no `_`). Fern drops a
