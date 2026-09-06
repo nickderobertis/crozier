@@ -4859,10 +4859,21 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                             && ep.query_params.is_empty()
                             && ep.stream_condition.is_none()
                             && (ep.body_media_alternatives || !ep.body_schema_titled))
-                        && !(matches!(body, RequestBody::Inline(_))
+                        // A query parameter beside the body keeps the header
+                        // through both drops below, the same exception the shared
+                        // and surviving-schema drops above already record: SFTPGo's
+                        // `add_event_rule` posts an `allOf` body beside a
+                        // `sanitize` query parameter and `loaddata_from_request_body`
+                        // posts an open, unnamed one beside two, and Fern keeps
+                        // both content types where the same bodies without a query
+                        // parameter (`update_event_rule` on a path parameter) are
+                        // unaffected.
+                        && !(ep.query_params.is_empty()
+                            && matches!(body, RequestBody::Inline(_))
                             && (ep.body_all_of || ep.body_response_same_ref)
                             && !resource_envelope)
-                        && !matches!(body, RequestBody::Inline(fields)
+                        && !(ep.query_params.is_empty()
+                            && matches!(body, RequestBody::Inline(fields)
                             if ep.body_schema_ref
                                 && (!ep.body_schema_dropped
                                     && ep.body_schema_metadata_missing
@@ -4872,7 +4883,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                         && ep.body_schema_is_open
                                         && ep.body_description_missing
                                         && !ep.body_schema_documented
-                                        && fields.iter().filter(|field| field.spec_required).count() == 1))
+                                        && fields.iter().filter(|field| field.spec_required).count() == 1)))
                         && (!(ep.body_description_empty
                             || ep.body_schema_has_example
                                 && ep.body_schema_documented
