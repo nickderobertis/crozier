@@ -1956,8 +1956,9 @@ fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
 /// Whether an endpoint can anchor the README's representative calls. Fern skips
 /// referenced file-form declarations here even though their methods may still have
 /// a deliberately argument-free worked example in `reference.md`.
-fn readme_endpoint_eligible(ep: &Endpoint) -> bool {
+fn readme_endpoint_eligible(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
     endpoint_has_worked_example(ep)
+        && path_object_documented(ep, types, tag_decls)
         && !matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
         && !matches!(&ep.request_body, Some(RequestBody::Form(form))
             if ep.body_schema_ref
@@ -1973,10 +1974,14 @@ fn readme_endpoint_eligible(ep: &Endpoint) -> bool {
 /// carries a flattened JSON body.
 fn select_readme_endpoint<'a>(
     endpoints: impl Clone + Iterator<Item = &'a Endpoint>,
+    types: &[TypeDecl],
+    tag_decls: &[TagTypeDecl],
 ) -> Option<&'a Endpoint> {
     endpoints
         .clone()
-        .find(|e| e.emittable && e.http_method == "POST" && readme_endpoint_eligible(e))
+        .find(|e| {
+            e.emittable && e.http_method == "POST" && readme_endpoint_eligible(e, types, tag_decls)
+        })
         .or_else(|| {
             endpoints.clone().find(|e| {
                 e.emittable
@@ -1990,7 +1995,7 @@ fn select_readme_endpoint<'a>(
         .or_else(|| {
             endpoints
                 .clone()
-                .find(|e| e.emittable && readme_endpoint_eligible(e))
+                .find(|e| e.emittable && readme_endpoint_eligible(e, types, tag_decls))
         })
 }
 
@@ -2084,7 +2089,11 @@ fn readme_endpoint_order(ir: &Ir) -> Vec<&Endpoint> {
 }
 
 fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
-    select_readme_endpoint(readme_endpoint_order(ir).into_iter())
+    select_readme_endpoint(
+        readme_endpoint_order(ir).into_iter(),
+        &ir.types,
+        &ir.tag_types,
+    )
 }
 
 /// The endpoint the README's streaming section demonstrates: the first emittable
@@ -2621,6 +2630,7 @@ fn reference_entry(
             .map(|description| format!("{description}{}", ep.reference_description_suffix)),
         example,
         example_gap: if !endpoint_has_worked_example(ep)
+            || !path_object_documented(ep, &ir.types, &ir.tag_types)
             || matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
             || ep.binary_schema_response && module.is_empty() && !ep.openapi_31
         {
@@ -3810,14 +3820,34 @@ fn raw_type_str_ctx(t: &TypeRef, imports: &mut Imports, seq: bool) -> String {
 /// The request's URL argument: the document path with its leading slash stripped,
 /// rendered as an f-string interpolating `encode_path_param(param)` for each path
 /// placeholder, or a plain string literal when there are none.
-fn url_arg(ep: &Endpoint) -> String {
+///
+/// An object-typed path parameter is interpolated through the same
+/// `convert_and_respect_annotation_metadata` wrapper Fern gives an object-typed
+/// *query* parameter, so its field aliases are respected on the way into the URL
+/// segment. No registered source declares that shape; it is measured on
+/// `docs/openapi-surface/probes/parameter-style-simple-path-object.yml`, whose
+/// Fern tree interpolates
+/// `encode_path_param(convert_and_respect_annotation_metadata(object_=probe_param,
+/// annotation=ProbeParam, direction='write'))`. The quoting is single inside the
+/// f-string, which is Fern's own rendering there.
+fn url_arg(ep: &Endpoint, imports: &mut Imports) -> String {
     let stripped = ep.path.strip_prefix('/').unwrap_or(&ep.path);
     if stripped.contains('{') {
         let mut rendered = stripped.to_string();
         for pp in &ep.path_params {
+            let value = if pp.convert {
+                imports.add_core("serialization", "convert_and_respect_annotation_metadata");
+                let annotation = raw_type_str_ctx(&pp.type_ref, imports, true);
+                format!(
+                    "convert_and_respect_annotation_metadata(object_={}, annotation={annotation}, direction='write')",
+                    pp.py_name
+                )
+            } else {
+                pp.py_name.clone()
+            };
             rendered = rendered.replace(
                 &format!("{{{}}}", pp.wire_name),
-                &format!("{{encode_path_param({})}}", pp.py_name),
+                &format!("{{encode_path_param({value})}}"),
             );
         }
         format!("f\"{rendered}\"")
@@ -4396,7 +4426,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         "        _response = {await_}self._client_wrapper.httpx_client.request("
     )];
     if ep.path != "/" {
-        lines.push(format!("            {},", url_arg(ep)));
+        lines.push(format!("            {},", url_arg(ep, imports)));
     }
     lines.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut lines, ep, imports);
@@ -5037,7 +5067,7 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
         "        {async_with} self._client_wrapper.httpx_client.stream("
     )];
     if ep.path != "/" {
-        call.push(format!("            {},", url_arg(ep)));
+        call.push(format!("            {},", url_arg(ep, imports)));
     }
     call.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut call, ep, imports);
@@ -5192,7 +5222,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
         "        {async_with} self._client_wrapper.httpx_client.stream("
     )];
     if ep.path != "/" {
-        call.push(format!("            {},", url_arg(ep)));
+        call.push(format!("            {},", url_arg(ep, imports)));
     }
     call.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut call, ep, imports);
@@ -7448,6 +7478,63 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    /// Run `render` and then forget every import it registered — the constructor
+    /// names, the tag-scoped ones and the `datetime` flag alike.
+    ///
+    /// The docstring writer needs to know whether an object-typed path parameter's
+    /// model *can* be constructed while documenting the plain name placeholder
+    /// instead of the model, so it renders the value and throws it away. Without
+    /// this the discarded render still imports the model, and the docstring's
+    /// `from fern import FernApi` gains a `ProbeParam` nothing in it names.
+    fn without_recording<T>(&mut self, render: impl FnOnce(&mut Self) -> T) -> T {
+        let referenced = self.referenced.clone();
+        let referenced_doc_order = self.referenced_doc_order.clone();
+        let referenced_tag = self.referenced_tag.clone();
+        let referenced_tag_doc_order = self.referenced_tag_doc_order.clone();
+        let uses_datetime = self.uses_datetime;
+        let datetime_precedes_tag_import = self.datetime_precedes_tag_import;
+        let out = render(self);
+        self.referenced = referenced;
+        self.referenced_doc_order = referenced_doc_order;
+        self.referenced_tag = referenced_tag;
+        self.referenced_tag_doc_order = referenced_tag_doc_order;
+        self.uses_datetime = uses_datetime;
+        self.datetime_precedes_tag_import = datetime_precedes_tag_import;
+        out
+    }
+
+    /// The example Fern renders for an **object-typed path parameter**, or `None`
+    /// where Fern renders the endpoint no example at all.
+    ///
+    /// A path parameter over an object schema is a shape no registered source
+    /// declares, so it is measured on
+    /// `docs/openapi-surface/probes/parameter-style-simple-path-object.yml` and
+    /// the field-kind variants recorded beside it in `docs/fern-limitations.md`'s
+    /// Round 6. Fern renders the model over its **required** fields alone, and
+    /// each value comes from the field's *type* rather than from its name —
+    /// `role="string"`, not the `role="role"` a request body's field takes. Two
+    /// kinds render empty rather than populated (an array is `[]`, a map `{}`),
+    /// and a required field the writer cannot render drops the whole example:
+    /// Fern emits no `Examples` docstring, no README call and a bare
+    /// `client.probe(...)` in `reference.md`. Which kinds those are is
+    /// [`path_field_render`], the one place the rule is stated.
+    fn path_object_value(&mut self, t: &TypeRef) -> Option<Example> {
+        let obj = path_object_decl(t, self.types, self.tag_decls)?;
+        let fields = path_object_required_fields(obj, self.types, self.tag_decls);
+        let name = obj.name.clone();
+        self.record_ref(&name);
+        let mut args = Vec::new();
+        for (py_name, type_ref) in fields {
+            let rendered = match path_field_render(&type_ref, self.types, self.tag_decls)? {
+                PathFieldRender::EmptyList => Example::List(Vec::new()),
+                PathFieldRender::EmptyDict => Example::Dict(Vec::new()),
+                PathFieldRender::Plain => self.value(&type_ref, Slot::Plain),
+            };
+            args.push((Some(py_name), rendered));
+        }
+        Some(Example::Call(name, args))
+    }
+
     /// One field's example value: its declared `example` where that literal is
     /// what Fern shows for the field's type, and the synthesized placeholder
     /// otherwise. A union wrapper's fields are exampled the same way an object's
@@ -7512,6 +7599,122 @@ impl<'a> ExampleCtx<'a> {
         }
         out
     }
+}
+
+/// How one required field of an **object-typed path parameter** renders inside
+/// Fern's documentation example, or `None` where Fern documents the endpoint no
+/// example at all.
+///
+/// The kinds are the ones measured, one probe variant each, against
+/// `fernapi/fern-python-sdk` 5.20.0 (`docs/fern-limitations.md`, Round 6): a
+/// string, an integer, a `date-time` and an enum member render from the type;
+/// an array renders `[]` and a map `{}`, populated in neither case; and a
+/// required field that is itself a generated model drops the example entirely.
+/// Every other kind is unmeasured and drops it too, which invents no bytes.
+enum PathFieldRender {
+    /// Rendered from the type, as [`Slot::Plain`] renders it.
+    Plain,
+    /// `[]` — an array field is never populated here.
+    EmptyList,
+    /// `{}` — nor is a map.
+    EmptyDict,
+}
+
+fn path_field_render(
+    t: &TypeRef,
+    types: &[TypeDecl],
+    tag_decls: &[TagTypeDecl],
+) -> Option<PathFieldRender> {
+    match t {
+        TypeRef::Optional(inner) => path_field_render(inner, types, tag_decls),
+        TypeRef::List(_) | TypeRef::Set(_) => Some(PathFieldRender::EmptyList),
+        TypeRef::Dict(_, _) => Some(PathFieldRender::EmptyDict),
+        TypeRef::Primitive(
+            Prim::Str
+            | Prim::Int
+            | Prim::Long
+            | Prim::Float
+            | Prim::Bool
+            | Prim::Datetime
+            | Prim::Date,
+        ) => Some(PathFieldRender::Plain),
+        TypeRef::Named(name) => match lookup_decl(types, tag_decls, name) {
+            Some(TypeDecl::Enum(_)) => Some(PathFieldRender::Plain),
+            Some(TypeDecl::Alias(alias)) => path_field_render(&alias.target, types, tag_decls),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+/// One declaration by name, over the package-root types and the tag-scoped ones —
+/// the lookup [`ExampleCtx::find`] performs, as a free function so the
+/// example writer and the structural predicates that gate it share one answer.
+fn lookup_decl<'a>(
+    types: &'a [TypeDecl],
+    tag_decls: &'a [TagTypeDecl],
+    name: &str,
+) -> Option<&'a TypeDecl> {
+    types.iter().find(|d| d.name() == name).or_else(|| {
+        tag_decls
+            .iter()
+            .find_map(|tt| (tt.decl.name() == name).then_some(&tt.decl))
+    })
+}
+
+/// The generated object a path parameter's type resolves to, through `Optional`
+/// and named aliases; `None` when the parameter is not object-typed at all.
+fn path_object_decl<'a>(
+    t: &TypeRef,
+    types: &'a [TypeDecl],
+    tag_decls: &'a [TagTypeDecl],
+) -> Option<&'a ObjectType> {
+    match t {
+        TypeRef::Optional(inner) => path_object_decl(inner, types, tag_decls),
+        TypeRef::Named(name) => match lookup_decl(types, tag_decls, name) {
+            Some(TypeDecl::Object(obj)) => Some(obj),
+            Some(TypeDecl::Alias(alias)) => path_object_decl(&alias.target, types, tag_decls),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+/// An object's required fields as `(python name, type)`, inherited ones first, in
+/// the order a constructed example passes them.
+fn path_object_required_fields(
+    obj: &ObjectType,
+    types: &[TypeDecl],
+    tag_decls: &[TagTypeDecl],
+) -> Vec<(String, TypeRef)> {
+    let mut out = Vec::new();
+    for base in &obj.bases {
+        if let Some(TypeDecl::Object(parent)) = lookup_decl(types, tag_decls, base) {
+            out.extend(path_object_required_fields(parent, types, tag_decls));
+        }
+    }
+    out.extend(
+        obj.fields
+            .iter()
+            .filter(|field| field.spec_required)
+            .map(|field| (field.py_name.clone(), field.type_ref.clone())),
+    );
+    out
+}
+
+/// Whether Fern documents a worked example for this endpoint's path parameters —
+/// false only where one is object-typed and [`path_field_render`] cannot render a
+/// required field of it. The example writer reaches the same answer by rendering;
+/// this is what the *structural* callers (README endpoint selection, the
+/// `reference.md` snippet gap) ask before there is a value to look at.
+fn path_object_documented(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
+    ep.path_params.iter().all(|pp| {
+        path_object_decl(&pp.type_ref, types, tag_decls).is_none_or(|obj| {
+            path_object_required_fields(obj, types, tag_decls)
+                .iter()
+                .all(|(_, type_ref)| path_field_render(type_ref, types, tag_decls).is_some())
+        })
+    })
 }
 
 /// A map whose value slot is *directly* free-form (`Dict[str, Any]`) — the shape
@@ -7711,6 +7914,23 @@ fn build_example_inner(
                 // Fern's path placeholder stays a string even for the unusual array
                 // path parameters accepted by its OpenAPI importer.
                 Example::Atom(format!("{:?}", pp.wire_name))
+            } else if path_object_decl(&pp.type_ref, ctx.types, ctx.tag_decls).is_some() {
+                // An object-typed path parameter is documented two different ways
+                // by Fern's two example writers, and the difference is measured on
+                // `parameter-style-simple-path-object.yml`: the Markdown writers
+                // construct the model, while the docstring writer keeps the plain
+                // name placeholder a scalar parameter would take. Where the model
+                // cannot be constructed at all the endpoint documents nothing, in
+                // either writer — see [`ExampleCtx::path_object_value`].
+                if documentation {
+                    ctx.path_object_value(&pp.type_ref)?
+                } else {
+                    // The value is rendered and discarded: what the docstring
+                    // takes from it is only whether Fern documents the endpoint
+                    // at all, so the imports it would register are rolled back.
+                    ctx.without_recording(|ctx| ctx.path_object_value(&pp.type_ref))?;
+                    Example::Atom(format!("{:?}", pp.wire_name))
+                }
             } else {
                 pp.example
                     .as_ref()
@@ -8928,11 +9148,12 @@ mod tests {
     use super::{
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts,
         build_documentation_example, build_example, client_method, environment, escape_py_str,
-        example_from_json, example_import_cmp, field_decl, generate, natural_cmp, raw_method,
-        raw_type_str, readme_endpoint, readme_endpoint_eligible, reference_entry,
-        reference_param_annotation, render, render_class_body, render_enum, render_type_decl,
-        url_arg, ClientCtx, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc,
-        ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
+        example_from_json, example_import_cmp, field_decl, generate, natural_cmp,
+        path_field_render, path_object_decl, path_object_documented, raw_method, raw_type_str,
+        readme_endpoint, readme_endpoint_eligible, reference_entry, reference_param_annotation,
+        render, render_class_body, render_enum, render_type_decl, url_arg, ClientCtx, Example,
+        ExampleCtx, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView, RenderedField,
+        RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -9239,7 +9460,7 @@ mod tests {
         bytes.request_body = Some(RequestBody::Bytes {
             content_type: "application/octet-stream".to_string(),
         });
-        assert!(!readme_endpoint_eligible(&bytes));
+        assert!(!readme_endpoint_eligible(&bytes, &[], &[]));
     }
 
     #[test]
@@ -9588,6 +9809,7 @@ mod tests {
                 docstring: None,
                 example: None,
                 pattern_constrained: false,
+                convert: false,
             }],
             None,
         );
@@ -9841,12 +10063,13 @@ mod tests {
 
     #[test]
     fn url_arg_is_plain_or_interpolated() {
+        let mut imports = Imports::default();
         let plain = endpoint(
             "/urls/MixedCase",
             vec![],
             Some(TypeRef::Primitive(Prim::Str)),
         );
-        assert_eq!(url_arg(&plain), "\"urls/MixedCase\"");
+        assert_eq!(url_arg(&plain, &mut imports), "\"urls/MixedCase\"");
         let interp = endpoint(
             "/things/{id}",
             vec![PathParam {
@@ -9856,10 +10079,42 @@ mod tests {
                 docstring: None,
                 example: None,
                 pattern_constrained: false,
+                convert: false,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
         );
-        assert_eq!(url_arg(&interp), "f\"things/{encode_path_param(id)}\"");
+        assert_eq!(
+            url_arg(&interp, &mut imports),
+            "f\"things/{encode_path_param(id)}\""
+        );
+        // An object-typed path parameter is wrapped, and the wrapper's import is
+        // registered by the same call — the shape
+        // `docs/openapi-surface/probes/parameter-style-simple-path-object.yml`
+        // measures.
+        let converted = endpoint(
+            "/things/{id}",
+            vec![PathParam {
+                wire_name: "id".to_string(),
+                py_name: "id".to_string(),
+                type_ref: TypeRef::Named("Thing".to_string()),
+                docstring: None,
+                example: None,
+                pattern_constrained: false,
+                convert: true,
+            }],
+            Some(TypeRef::Primitive(Prim::Str)),
+        );
+        assert_eq!(
+            url_arg(&converted, &mut imports),
+            "f\"things/{encode_path_param(convert_and_respect_annotation_metadata(object_=id, annotation=Thing, direction='write'))}\""
+        );
+        assert!(
+            imports
+                .render()
+                .contains("import convert_and_respect_annotation_metadata"),
+            "the wrapper's import is registered by the same call; imports render as:\n{}",
+            imports.render()
+        );
     }
 
     #[test]
@@ -10155,6 +10410,7 @@ mod tests {
                 docstring: None,
                 example: None,
                 pattern_constrained: false,
+                convert: false,
             }],
             Some(TypeRef::Named("Resp".to_string())),
         );
@@ -10830,6 +11086,221 @@ mod tests {
         );
     }
 
+    /// The object-typed path parameter's own rendering rules, over each field kind
+    /// the Round 6 probe variants measured (`docs/fern-limitations.md`). The e2e
+    /// journeys drive the binary over the whole shape; this pins the rule table
+    /// itself, kind by kind, so a kind that silently changed answer fails here.
+    #[test]
+    fn a_path_object_renders_measured_field_kinds_and_refuses_the_rest() {
+        let inner = TypeDecl::Object(ObjectType {
+            name: "Inner".to_string(),
+            module: "inner".to_string(),
+            bases: Vec::new(),
+            fields: vec![model_field("label", TypeRef::Primitive(Prim::Str), true)],
+            example_fields: Default::default(),
+            docstring: None,
+        });
+        let kind = TypeDecl::Enum(EnumType {
+            name: "Kind".to_string(),
+            module: "kind".to_string(),
+            members: vec![EnumMember {
+                name: "ALPHA".to_string(),
+                value: "alpha".to_string(),
+                visit_param: "alpha".to_string(),
+                docstring: None,
+            }],
+            docstring: None,
+        });
+        let alias = TypeDecl::Alias(AliasType {
+            name: "Label".to_string(),
+            module: "label".to_string(),
+            target: TypeRef::Primitive(Prim::Str),
+            docstring: None,
+        });
+        let base = TypeDecl::Object(ObjectType {
+            name: "Base".to_string(),
+            module: "base".to_string(),
+            bases: Vec::new(),
+            fields: vec![model_field("role", TypeRef::Primitive(Prim::Str), true)],
+            example_fields: Default::default(),
+            docstring: None,
+        });
+        let probe = TypeDecl::Object(ObjectType {
+            name: "ProbeParam".to_string(),
+            module: "probe_param".to_string(),
+            bases: vec!["Base".to_string()],
+            fields: vec![
+                model_field("count", TypeRef::Primitive(Prim::Int), true),
+                model_field(
+                    "tags",
+                    TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+                    true,
+                ),
+                model_field(
+                    "meta",
+                    TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                    ),
+                    true,
+                ),
+                model_field("kind", TypeRef::Named("Kind".to_string()), true),
+                model_field("nickname", TypeRef::Named("Label".to_string()), true),
+                // Optional fields are not passed at all, as Fern's own example omits them.
+                model_field("note", TypeRef::Primitive(Prim::Str), false),
+            ],
+            example_fields: Default::default(),
+            docstring: None,
+        });
+        let types = vec![inner, kind, alias, base, probe];
+        let auth = Auth::None;
+        let mut ctx = example_ctx(&types, &[], &auth);
+        let rendered = ctx
+            .path_object_value(&TypeRef::Optional(Box::new(TypeRef::Named(
+                "ProbeParam".to_string(),
+            ))))
+            .expect("every required field is a measured kind");
+        assert_eq!(
+            "ProbeParam(role=\"string\", count=1, tags=[], meta={}, kind=Kind.ALPHA, nickname=\"string\")",
+            rendered.flat(),
+            "inherited field first, values read off each field's type, collections empty"
+        );
+
+        // A required field that is itself a generated model is the one kind Fern
+        // was measured dropping the whole example for.
+        let nested = TypeDecl::Object(ObjectType {
+            name: "Nested".to_string(),
+            module: "nested".to_string(),
+            bases: Vec::new(),
+            fields: vec![model_field(
+                "nested",
+                TypeRef::Named("Inner".to_string()),
+                true,
+            )],
+            example_fields: Default::default(),
+            docstring: None,
+        });
+        let mut with_nested = types.clone();
+        with_nested.push(nested);
+        let mut ctx = example_ctx(&with_nested, &[], &auth);
+        assert!(ctx
+            .path_object_value(&TypeRef::Named("Nested".to_string()))
+            .is_none());
+        // …and so is a kind no variant measured — a union, here.
+        assert!(path_field_render(
+            &TypeRef::Union(vec![
+                TypeRef::Primitive(Prim::Str),
+                TypeRef::Primitive(Prim::Int)
+            ]),
+            &with_nested,
+            &[]
+        )
+        .is_none());
+        // A parameter that is not object-typed at all is not this rule's business.
+        assert!(path_object_decl(&TypeRef::Primitive(Prim::Str), &with_nested, &[]).is_none());
+        assert!(path_object_decl(&TypeRef::Named("Kind".to_string()), &with_nested, &[]).is_none());
+    }
+
+    /// `path_object_documented` is what the README's endpoint selection and the
+    /// `reference.md` snippet gap read, so it answers for the endpoint rather than
+    /// for one type — and a scalar path parameter is always documented.
+    #[test]
+    fn an_endpoint_is_documented_unless_a_path_object_field_is_unrenderable() {
+        let inner = TypeDecl::Object(ObjectType {
+            name: "Inner".to_string(),
+            module: "inner".to_string(),
+            bases: Vec::new(),
+            fields: vec![model_field("label", TypeRef::Primitive(Prim::Str), true)],
+            example_fields: Default::default(),
+            docstring: None,
+        });
+        let renderable = TypeDecl::Object(ObjectType {
+            name: "Renderable".to_string(),
+            module: "renderable".to_string(),
+            bases: Vec::new(),
+            fields: vec![model_field("role", TypeRef::Primitive(Prim::Str), true)],
+            example_fields: Default::default(),
+            docstring: None,
+        });
+        let unrenderable = TypeDecl::Object(ObjectType {
+            name: "Unrenderable".to_string(),
+            module: "unrenderable".to_string(),
+            bases: Vec::new(),
+            fields: vec![model_field(
+                "nested",
+                TypeRef::Named("Inner".to_string()),
+                true,
+            )],
+            example_fields: Default::default(),
+            docstring: None,
+        });
+        let types = vec![inner, renderable, unrenderable];
+        let path_param = |type_ref: TypeRef| PathParam {
+            wire_name: "id".to_string(),
+            py_name: "id".to_string(),
+            type_ref,
+            docstring: None,
+            example: None,
+            pattern_constrained: false,
+            convert: false,
+        };
+        let scalar = endpoint(
+            "/things/{id}",
+            vec![path_param(TypeRef::Primitive(Prim::Str))],
+            Some(TypeRef::Primitive(Prim::Str)),
+        );
+        assert!(path_object_documented(&scalar, &types, &[]));
+        let ok = endpoint(
+            "/things/{id}",
+            vec![path_param(TypeRef::Named("Renderable".to_string()))],
+            Some(TypeRef::Primitive(Prim::Str)),
+        );
+        assert!(path_object_documented(&ok, &types, &[]));
+        let dropped = endpoint(
+            "/things/{id}",
+            vec![path_param(TypeRef::Named("Unrenderable".to_string()))],
+            Some(TypeRef::Primitive(Prim::Str)),
+        );
+        assert!(!path_object_documented(&dropped, &types, &[]));
+    }
+
+    /// The docstring writer renders the model only to learn whether Fern documents
+    /// the endpoint, and must not import it for an example that never names it.
+    #[test]
+    fn rendering_without_recording_leaves_the_import_set_untouched() {
+        let probe = TypeDecl::Object(ObjectType {
+            name: "ProbeParam".to_string(),
+            module: "probe_param".to_string(),
+            bases: Vec::new(),
+            fields: vec![model_field(
+                "when",
+                TypeRef::Primitive(Prim::Datetime),
+                true,
+            )],
+            example_fields: Default::default(),
+            docstring: None,
+        });
+        let types = vec![probe];
+        let auth = Auth::None;
+        let mut ctx = example_ctx(&types, &[], &auth);
+        let recorded = ctx.path_object_value(&TypeRef::Named("ProbeParam".to_string()));
+        assert!(recorded.is_some());
+        assert_eq!(vec!["ProbeParam".to_string()], ctx.referenced_doc_order);
+        assert!(ctx.uses_datetime, "the datetime value registers its import");
+
+        let mut ctx = example_ctx(&types, &[], &auth);
+        let discarded = ctx.without_recording(|ctx| {
+            ctx.path_object_value(&TypeRef::Named("ProbeParam".to_string()))
+        });
+        assert!(discarded.is_some(), "the value is still rendered");
+        assert!(
+            ctx.referenced_doc_order.is_empty(),
+            "and its imports rolled back"
+        );
+        assert!(ctx.referenced.is_empty());
+        assert!(!ctx.uses_datetime);
+    }
+
     #[test]
     fn example_context_constructs_inherited_recursive_and_union_models() {
         let mut base_id = model_field("id", TypeRef::Primitive(Prim::Int), true);
@@ -10959,6 +11430,7 @@ mod tests {
                 docstring: Some("Widget identifier.".to_string()),
                 example: None,
                 pattern_constrained: false,
+                convert: false,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
         );
@@ -11118,6 +11590,7 @@ mod tests {
                     docstring: None,
                     example: None,
                     pattern_constrained: false,
+                    convert: false,
                 }],
                 Some(TypeRef::Primitive(Prim::Str)),
             );
@@ -11296,7 +11769,7 @@ mod tests {
             }],
         }));
         ep.body_schema_ref = true;
-        assert!(readme_endpoint_eligible(&ep));
+        assert!(readme_endpoint_eligible(&ep, &[], &[]));
         let mut ctx = example_ctx(&types, &[], &auth);
         let form = build_documentation_example(
             &ep, false, "contexts", "fern", "FernApi", &mut ctx, None, false,
@@ -11428,6 +11901,7 @@ mod tests {
                 docstring: Some("Event identifier.\nSecond line.".to_string()),
                 example: None,
                 pattern_constrained: false,
+                convert: false,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
         );

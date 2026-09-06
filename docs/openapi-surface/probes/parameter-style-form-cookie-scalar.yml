@@ -1,0 +1,34 @@
+openapi: 3.0.3
+info:
+  title: parameter-style-form-cookie-scalar
+  version: 1.0.0
+servers:
+  - url: https://probe.invalid
+paths:
+  /probe:
+    get:
+      operationId: probe
+      parameters:
+        - name: probeParam
+          in: cookie
+          required: true
+          style: form
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProbeResult"
+components:
+  schemas:
+    ProbeResult:
+      title: ProbeResult
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required:
+        - ok
