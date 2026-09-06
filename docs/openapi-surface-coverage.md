@@ -21,6 +21,21 @@ It is also not a fixture backlog on its own: what a `gap` row becomes is decided
 by its `settlement` cell, and the corpus registration rules in
 [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md) still govern.
 
+**What it says today.** The walk enumerates 412 features. 322 are `golden`: a
+registered source declares the feature and its committed Fern golden
+byte-matches, so crozier-versus-Fern parity is *measured* there. 70 are
+`limitations`: Fern's behaviour is measured on a locally authored probe and
+recorded in [`fern-limitations.md`](fern-limitations.md), which is a verdict
+about Fern and not a byte comparison against crozier. 20 are `gap`, every one of
+them `UNREACHABLE` — the shape has no position in a generated Python SDK at all.
+Both backlogs this file carries are empty. So *does crozier byte-match Fern on
+every OpenAPI feature and scenario?* **No.** The honest answer is that byte-match
+evidence covers 322 of the 412 features this walk can see, that 70 more carry a
+Fern verdict and no byte comparison at all, and that the walk cannot see
+everything — where the remaining distance lies is
+[stated in full below](#golden-classified-is-not-golden-exhausted) rather than
+left for a reader to infer from an empty backlog.
+
 ## The region files
 
 Every object the specification defines belongs to exactly one region, and no
@@ -421,6 +436,16 @@ The walk enumerated **412** features and landed each in exactly one category:
 **322** `golden`, **70** `limitations`, **20** `gap`. The `gap` column splits by
 settlement class into **0** `FIXTURE`, **0** `PROBE` and **20** `UNREACHABLE`.
 
+**What the `golden` count means, and what it does not.** 322 of those 412
+features carry byte-match evidence: a registered source declares the feature and
+its committed Fern golden byte-matches, so crozier and Fern are compared over
+real bytes there and `just check` fails if they diverge. The other 90 do not. 70
+carry a Fern verdict measured on a probe and no byte comparison at all, and 20
+have no position in a generated Python SDK for a comparison to be about. Neither
+column is a defect count, and neither 322 nor 412 is a claim of exhaustion —
+[the section below](#golden-classified-is-not-golden-exhausted) states where the
+remaining distance lies, including the part of it this walk cannot enumerate.
+
 **What the `gap` count means.** 20 is the number of OpenAPI shapes for which
 crozier's behaviour is vouched for by nothing but crozier: no committed golden's
 source declares the shape, so no byte comparison against Fern touches it, and
@@ -553,6 +578,68 @@ source against the census's 22 and 13, and the repaired walk reaches 99 and 58.
 **No region's category is overturned.** This node re-derived the census join, the
 ledger join and the site counts it ranks on, and found no row whose `category` or
 `settlement` cell it would change.
+
+### Golden-classified is not golden-exhausted
+
+Both backlogs below are empty, and an empty backlog is the easiest thing in this
+document to misread. It does not say every OpenAPI feature is byte-matched
+against Fern; it says every feature this walk enumerated has been *landed* — in a
+category, with the evidence that category demands. The distance between a
+classified feature and an exhausted one is real, it is measurable, and it lives
+in four places. Naming them is the point of this section, because the one claim
+this file has never made is that everything is covered.
+
+**A `golden` row is one witness, not a branch.** It says a registered source
+declares the feature and its committed Fern golden byte-matches — so the bytes
+that document's own shapes produce are pinned, and nothing else is. Three
+measured examples already in the tree: `audience-dual-header-policy` is `golden`
+on two audience goldens declaring 8 sites between them, leaving the rest of the
+branch space to unit tests; `filter_ignored` is `golden` on corpus row 108's four
+`x-fern-ignore` operations, one witness that reaches the Operation-Object arm and
+leaves the schema arm and the `x-crozier-*` precedence untouched; and
+`media-type-range` is `golden` on a witness reaching two of crozier's seven reads
+of a media-type range, which that row's own cell names against the five it does
+not. Every conjunction row says the same thing in its own evidence cell, because
+a conjunction row is about a *branch*: a golden pinning one pins the bytes for
+the shapes its document sends down the arm, not the arm's behaviour.
+
+**A `limitations` row carries no byte comparison at all.** 70 features are there,
+and what settles them is a Fern verdict measured on a locally authored probe. That
+is a real measurement of Fern and it is not parity evidence: nothing in it
+compares crozier's bytes against Fern's over a registered document, and no
+`just check` byte-diff touches the shape. The cost is not rhetorical, and the
+refreshed join below is where it shows up as a number — settling those rows put
+generator code into `src/` that no committed golden reaches: the object-typed
+path parameter block in `src/emit.rs` (125 regions of its union) and
+`normalize_security_scheme_refs` in `src/openapi.rs` (18), both driven by shapes
+no registered source declares. Each such row stays convertible, and the day a
+registrable witness turns up the classification precedence promotes it to
+`golden` — which is exactly what makes the gap a *supply* problem rather than a
+closed question.
+
+**The enumeration cannot see everything, and it says where it stops.** A feature
+is enumerable only where a selector can name it, so the walk's 412 is a
+denominator bounded by the grammar rather than by the specification. The sharpest
+statement of that bound is
+[the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 53
+branches those six functions of `src/ir.rs` offer a document, 9 carry an exact
+selector and 44 are enumeration holes, each naming the predicate or valued
+selector that would close it and none of them a row anywhere. The same is true
+off that file — the enum-member spellings `src/naming.rs` lowers, the JSON value
+*kinds* the example branches of `src/emit.rs` switch on, and the cross-document
+`$ref` path of `src/refs.rs`, which the corpus is single-document by construction
+and so can never reach. None of that is in the 412, in the 20 `gap` rows, or in
+either backlog. It is not unclassified work; it is unnamed work, and this
+document's own instrument is what would have to grow first.
+
+**And the thin end is one document wide.** A `golden` row rests on whichever
+registered sources happen to declare the shape, and for several that is a single
+one: `schema.anyOf>schema.allOf` is `golden` on `braintrust-dev`'s 4 declaration
+sites and nothing else. Withdraw that corpus row and the feature is a `gap`
+without a line of `src/` changing. That is a fact about this corpus at this
+commit rather than a property of the feature, and it is the reason "the backlog
+is empty" is a statement about today's registered sources and not a property the
+generator has earned.
 
 ### The ranked `FIXTURE` backlog
 
