@@ -927,58 +927,71 @@ class ConjunctionCensusTests(unittest.TestCase):
     members under `&` and `>` as it walks — so the only way to know a spelling
     counts what it says is to run the real script over the real vendored documents
     and assert every entry's number. One exemplar would leave the other
-    twenty-two unproven, which is exactly how a mis-composed member would survive.
+    thirty-three unproven, which is exactly how a mis-composed member would
+    survive.
 
     Each map below is the whole answer for one selector: every registered vendored
     source that declares it and how many times. An empty map is the other answer
     the instrument must be able to give — a shape the corpus has never seen — and
     it is the evidence a `gap` row would cite.
+
+    The numbers are the census's own. They agree with an independent count over
+    every vendored document except `schema.properties>schema.type=array` in
+    `query-parameters-openapi`, which declares two and is censused as one: that
+    document writes an unquoted `200:` status code, and the walk skips a free-map
+    key that is not a string, so the whole Response Object under it is unreached.
+    The defect predates conjunctions and costs the plain `schema.properties` and
+    `schema.type=array` selectors the same site; fixing it moves published
+    per-source evidence counts, so it belongs to a change that may edit the region
+    files.
     """
 
     DECLARED = {
-        "schema.allOf>schema.properties": {"exhaustive": 2},
+        "schema.anyOf>schema.$ref": {},
+        "schema.anyOf>schema.allOf": {},
+        "schema.anyOf>schema.example&schema.type=object": {},
+        "schema.anyOf>schema.examples&schema.type=object": {},
         "schema.anyOf>schema.properties": {},
-        "schema.items>schema.$ref": {
-            "audience-filter": 1, "audience-filter-strict": 1,
+        "schema.anyOf>schema.type=array&schema.items>schema.allOf": {},
+        "schema.anyOf>schema.type=array&schema.items>schema.anyOf": {},
+        "schema.anyOf>schema.type=array&schema.items>schema.discriminator&schema.oneOf":
+            {},
+        "schema.anyOf>schema.type=array&schema.items>schema.oneOf": {},
+        "schema.anyOf>schema.type=array&schema.items>schema.properties": {},
+        "schema.items>schema.$ref": {"audience-filter": 1, "audience-filter-strict": 1,
             "crozier-sdk-extensions": 1, "exhaustive": 7, "inline-array-request": 1,
             "inline-request-response": 1, "oauth-client-credentials": 1,
-            "query-parameters-openapi": 2, "recursive-types": 2,
-        },
+            "query-parameters-openapi": 2, "recursive-types": 2},
         "schema.items>schema.allOf": {},
+        "schema.items>schema.anyOf": {},
         "schema.items>schema.discriminator&schema.oneOf": {},
         "schema.items>schema.oneOf": {},
         "schema.items>schema.properties": {"inline-array-request": 1},
         "schema.items>schema.type=array": {},
-        "schema.oneOf>schema.$ref": {
-            "discriminated-unions": 1, "query-parameters-openapi": 2,
-            "recursive-types": 1,
-        },
+        "schema.oneOf>schema.$ref": {"discriminated-unions": 1,
+            "query-parameters-openapi": 2, "recursive-types": 1},
         "schema.oneOf>schema.allOf": {"exhaustive": 1},
         "schema.oneOf>schema.example&schema.type=object": {},
+        "schema.oneOf>schema.examples&schema.type=object": {},
         "schema.oneOf>schema.properties": {},
         "schema.oneOf>schema.type=array&schema.items>schema.allOf": {},
-        "schema.oneOf>schema.type=array&schema.items>schema.discriminator&schema.oneOf": {},
+        "schema.oneOf>schema.type=array&schema.items>schema.anyOf": {},
+        "schema.oneOf>schema.type=array&schema.items>schema.discriminator&schema.oneOf":
+            {},
         "schema.oneOf>schema.type=array&schema.items>schema.oneOf": {},
         "schema.oneOf>schema.type=array&schema.items>schema.properties": {},
         "schema.properties>schema.allOf": {},
+        "schema.properties>schema.anyOf": {},
         "schema.properties>schema.discriminator&schema.oneOf": {},
-        "schema.properties>schema.enum": {
-            "discriminated-unions": 2, "exhaustive": 2, "recursive-types": 2,
-        },
-        "schema.properties>schema.items": {
-            "crozier-sdk-extensions": 1, "exhaustive": 3, "inline-request-response": 1,
-            "malformed-property-schema": 1, "query-parameters-openapi": 1,
-            "recursive-types": 2, "schema-constraints": 1,
-        },
+        "schema.properties>schema.enum": {"discriminated-unions": 2, "exhaustive": 2,
+            "recursive-types": 2},
         "schema.properties>schema.oneOf": {},
-        "schema.properties>schema.properties": {
-            "inline-request-response": 2, "nested-core-imports": 1,
-        },
-        "schema.properties>schema.type=array": {
-            "crozier-sdk-extensions": 1, "exhaustive": 3, "inline-request-response": 1,
-            "malformed-property-schema": 1, "query-parameters-openapi": 1,
-            "recursive-types": 2, "schema-constraints": 1,
-        },
+        "schema.properties>schema.properties": {"inline-request-response": 2,
+            "nested-core-imports": 1},
+        "schema.properties>schema.type=array": {"crozier-sdk-extensions": 1,
+            "exhaustive": 3, "inline-request-response": 1, "malformed-property-schema":
+            1, "query-parameters-openapi": 1, "recursive-types": 2,
+            "schema-constraints": 1},
     }
 
     # A conjunction no vendored source declares, asserted as absent rather than as
@@ -1009,6 +1022,49 @@ class ConjunctionCensusTests(unittest.TestCase):
             {(selector, fixture): count for fixture, count in self.DECLARED[selector].items()},
             rows(completed),
         )
+
+    def test_an_any_of_only_document_is_counted_by_its_own_spelling(self) -> None:
+        """The correction the `anyOf` half of the closed list exists for.
+
+        `nested_array_element`, `hoist_union_variant` and `prop_type_ref` all reach
+        their union arms through `one_of.as_ref().or(any_of.as_ref())`, so a
+        document that writes only `anyOf` selects those branches exactly as one
+        writing `oneOf` does. A closed list naming only the `oneOf` spelling would
+        report this document as declaring none of them — silence that reads as
+        "the corpus has never seen this shape" when the corpus is looking at it.
+        """
+        document = """\
+            openapi: 3.0.3
+            info: {title: any-of-only, version: "1"}
+            paths: {}
+            components:
+              schemas:
+                Bag:
+                  type: object
+                  properties:
+                    choice:
+                      anyOf:
+                        - type: string
+                        - type: integer
+                    many:
+                      type: array
+                      items:
+                        anyOf:
+                          - type: string
+                          - type: integer
+            """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_fixture(root, "any-of-only", document)
+            completed = run("--vendored-only", "--fixtures-root", str(root))
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        counted = rows(completed)
+        for selector in ("schema.items>schema.anyOf", "schema.properties>schema.anyOf"):
+            with self.subTest(selector=selector):
+                self.assertEqual(1, counted.get((selector, "any-of-only")))
+        for selector in ("schema.items>schema.oneOf", "schema.properties>schema.oneOf"):
+            with self.subTest(selector=selector):
+                self.assertNotIn((selector, "any-of-only"), counted)
 
     def test_a_misspelling_of_a_conjunction_is_refused_by_name(self) -> None:
         for selector, expected in (
