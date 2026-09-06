@@ -190,6 +190,29 @@ coverage row. In the order a registering node should weigh them:
 5. `advplyr/audiobookshelf` — a second `media-type-range` declarer, three sites
    all `image/*`; worth registering only if SFTPGo is rejected downstream.
 
+**Registration has since consumed this record, and four of the five witnesses
+took.** `aces/Loris`, `drakkan/sftpgo`, `APIs-guru/openapi-directory`'s
+`googleapis.com/servicebroker` and `advplyr/audiobookshelf` are corpus rows
+133-136, each with a byte-matching Fern 5.20.0 golden. The fifth,
+`eclipse-ditto/ditto`, is **not** registered, and the reason is a version this
+record does not screen at: every `fern check` and `fern generate` figure below was
+measured at Fern CLI **5.114.1**, while the corpus's own generation path pins CLI
+**5.67.1** (`scripts/generate-fern-fixture.sh`'s `FERN_CLI_VERSION`, which is what
+every committed golden's `.fern/metadata.json` records). At that pin the Python
+generator exits **1** on Ditto: `[api]: python-sdk things.yml -> service ->
+endpoints -> createOrPatchAThingWithASpecifiedId`, `[error] Multiple request
+properties have the name thingId. This is not suitable for code generation. Use
+the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.`,
+`- Path parameter "thingId"`, `- Body property: <Request Body> -> thingId`,
+`Found 1 errors and 0 warnings in 0.342 seconds.` — the same `thingId` error the
+schemas ledger originally recorded and the bullet below reports as not
+reproducing. It is logged in
+[`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md)'s REJECTED table, and
+`format-iri-reference` stays a `gap` on it. **The screening path below is
+unchanged and its measurements stand**; what this paragraph adds is that a Fern
+verdict is CLI-version-bound, so a candidate this record admits still has to be
+put to the CLI the corpus generates at.
+
 **Three Fern verdicts recorded by the region files did not reproduce** at Fern
 CLI 5.114.1, and a registering node should take them from here rather than from
 the ledger:

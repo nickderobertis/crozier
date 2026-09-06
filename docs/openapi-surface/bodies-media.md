@@ -142,8 +142,7 @@ one, is `golden` on corpus row 127, and on rows 130, 134 and 136 beside it.
 
 This region carried no witness-search subsection until this change. Its then-only
 `gap` row, `media-type-range` — `golden` since corpus row 127 registered the
-second of the two documents this table records, and declared by rows 134 and 136
-besides — rested on a census statement
+second of the two documents this table records, and declared by rows 134/136 too — rested on a census statement
 about the **registered**
 corpus — an object-model map-key walk reporting zero `type/*` keys other than
 `*/*` across every registered source — which is a fact about that document set
