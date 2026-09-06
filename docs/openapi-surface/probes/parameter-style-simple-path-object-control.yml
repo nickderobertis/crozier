@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: parameter-style-simple-path-object-control
+  version: 1.0.0
+servers:
+  - url: https://probe.invalid
+paths:
+  /probe/{probeParam}:
+    get:
+      operationId: probe
+      parameters:
+        - name: probeParam
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/ProbeParam"
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProbeResult"
+components:
+  schemas:
+    ProbeParam:
+      title: ProbeParam
+      type: object
+      properties:
+        role:
+          type: string
+        level:
+          type: integer
+      required:
+        - role
+    ProbeResult:
+      title: ProbeResult
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required:
+        - ok

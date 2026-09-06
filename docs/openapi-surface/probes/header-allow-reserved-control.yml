@@ -1,0 +1,32 @@
+openapi: 3.0.3
+info:
+  title: header-allow-reserved-control
+  version: 1.0.0
+servers:
+  - url: https://probe.invalid
+paths:
+  /probe:
+    get:
+      operationId: probe
+      responses:
+        "200":
+          description: ""
+          headers:
+            X-Probe-Cursor:
+              description: A probe response header.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProbeResult"
+components:
+  schemas:
+    ProbeResult:
+      title: ProbeResult
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required:
+        - ok
