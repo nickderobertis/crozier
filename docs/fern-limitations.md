@@ -3568,6 +3568,65 @@ construction: these are exactly the rows whose world-wide search returned
 | `http-privatetoken` | 0 | 0 | discards | as `http-concealed`, on [`http-privatetoken-alone.yml`](openapi-surface/probes/http-privatetoken-alone.yml) and [`http-privatetoken-beside-bearer.yml`](openapi-surface/probes/http-privatetoken-beside-bearer.yml): **1**/**1** with the same diagnostic alone, 0/0 beside `bearer` with zero occurrences of `privatetoken`; crozier byte-matches the paired document on all 39 files. Measured in [Round 5](#round-5--concealed-gnap-privatetoken-and-vapid) |
 | `http-vapid` | 0 | 0 | discards | as `http-concealed`, on [`http-vapid-alone.yml`](openapi-surface/probes/http-vapid-alone.yml) and [`http-vapid-beside-bearer.yml`](openapi-surface/probes/http-vapid-beside-bearer.yml): **1**/**1** with the same diagnostic alone, 0/0 beside `bearer` with zero occurrences of `vapid`; crozier byte-matches the paired document on all 39 files. Measured in [Round 5](#round-5--concealed-gnap-privatetoken-and-vapid) |
 
+## Round 6 — the probe-settled rows of the coverage backlog
+
+**Nothing is measured here yet.** This section is opened ahead of the rounds that
+write into it, so that the measurements land in one place with their pins and
+their reading rules already stated rather than each restating them. Every
+subsection below is empty by design; a subsection carrying no row means no
+measurement has been recorded for that region, never that a measurement came back
+blank.
+
+**The pins each measurement runs under** are the ones this file already declares —
+Fern CLI `5.67.1`, generator `fernapi/fern-python-sdk:5.20.0`,
+`CI=true`/`GITHUB_ACTIONS=true` — against a workspace scaffolded exactly as
+`scripts/generate-fern-fixture.sh` builds one, with the workspace itself under
+`mktemp -d` so Fern's `.fern/` provenance carries no `originGitCommit`. A
+measurement recorded under a different pin says so in its own subsection.
+
+**The probe documents are committed**, under
+[`openapi-surface/probes/`](openapi-surface/probes/), one file per measurement, so
+every run below can be repeated rather than taken on trust. None is a corpus
+fixture, none is proposed as one, and none sits under `tests/fixtures/` — the
+corpus takes real-world specifications only
+([`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md)). A probe document is
+a corpus fixture of nothing.
+
+**Every row this round settles stays convertible.** A verdict measured on a probe
+settles what Fern does; it does not close the row against a real-world witness.
+Each subsection names what a registrable witness would have to be, and the day one
+is found the row leaves `limitations` for `golden` under
+[the classification precedence](openapi-surface-coverage.md#the-category-rules).
+
+**Each row's verdict is spelled from this file's own vocabulary** — the words
+[How to read a verdict](#how-to-read-a-verdict) defines — because that is what a
+`limitations` row in
+[`openapi-surface-coverage.md`](openapi-surface-coverage.md#the-settlement-rule-as-amended)
+cites when it names this file.
+
+**A probe produces no crozier-versus-Fern parity evidence.** It records a measured
+Fern verdict and nothing about whether crozier reproduces those bytes, so no row
+this round settles becomes `golden` on it. That is the whole of what settling by
+probe buys and the whole of what it costs.
+
+### Round 6 — parameters and the 3.1 tail
+
+*No measurement recorded yet.*
+
+### Round 6 — schemas
+
+*No measurement recorded yet.*
+
+### Round 6 — security
+
+*No measurement recorded yet.*
+
+### Round 6 — what the round measured
+
+*No measurement recorded yet.* The keys this round adds to the ledger are listed
+here, one row each, in the column layout the
+[documented join](openapi-surface-coverage.md#the-category-rules) reads.
+
 ## What Round 3 did not register, and why
 
 The round's main result. Round 3 registers a fixture only where **both** bars are
