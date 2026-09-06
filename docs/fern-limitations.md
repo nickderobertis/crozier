@@ -3621,10 +3621,18 @@ this subsection by
 [route 2](openapi-surface-coverage.md#the-settlement-rule-as-amended) — their own
 [witness search](openapi-surface/schemas.md#witness-search-issue-188) found a
 real-world witness this corpus cannot use, and each row's cell names that
-witness's blocker. The thirteenth, `dependent-schemas`, reads `none-found`: no
-document a real API publishes as its own description declares `dependentSchemas`
-anywhere the six sources reach, so it is a witness-supply probe of exactly the
-kind [Round 5](#round-5--the-seven-witness-supply-probes) settled seven of.
+witness's blocker. The thirteenth, `dependent-schemas`, reaches it by **route 3**,
+the open-search probe: its search found no usable witness — every
+`dependentSchemas` declaration the six sources produced is a meta-schema, a
+tooling fixture or a Petstore sample, and the one candidate that is neither
+describes an API whose only `servers` entry is an RFC 2606 `.invalid` placeholder
+— *and* it left a required source unanswered, so its record reads
+`search-incomplete` and claims nothing about the world. The outstanding source is
+the SwaggerHub public registry: the enumerated 3.1/3.2 sweep answered **0**, while
+that registry's `openapi-3.0.x` family, **414,968** specs, exposes no body search
+and those bodies went unread rather than answering the query. A probe claims
+nothing about the world either, which is exactly why an unread source does not bar
+one.
 
 **Every one of the thirteen is `discards`.** Fern accepts each shape and emits
 nothing derived from it. The two stages are run and recorded separately for every
@@ -3778,8 +3786,9 @@ which is what `dollar-comment` did as corpus row 109.
 
 **The thirteen keys this round adds to the ledger.** `eligible` and `verified`
 are the witness search's own counts and are `0` and `0` on every row: twelve of
-the thirteen found a witness the corpus cannot use, and the thirteenth found
-none, so no row has a candidate this corpus could register.
+the thirteen found a witness the corpus cannot use, and the thirteenth found no
+usable one and left a source unread, so no row has a candidate this corpus could
+register.
 
 | gap | eligible | verified | verdict | what the probe measured |
 |---|---:|---:|---|---|
@@ -3788,7 +3797,7 @@ none, so no row has a candidate this corpus could register.
 | `min-contains` | 0 | 0 | discards | as `max-contains`, on the same probe and control: `minContains: 1` moves no byte and no rendering of the keyword appears in the tree. Measured in [Round 6](#round-6--schemas) |
 | `multiple-of` | 0 | 0 | discards | a numeric bound reaches no annotation: `stepped: float` and `stepped_integer: int` are what the unbounded `plain: float` gets, and `multipleOf` occurs nowhere in the SDK. Probe [`multiple-of.yml`](openapi-surface/probes/multiple-of.yml), `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 39 files. Measured in [Round 6](#round-6--schemas) |
 | `unevaluated-items` | 0 | 0 | discards | the tail a `prefixItems` schema leaves unevaluated is not typed: the property carrying `unevaluatedItems: {type: boolean}` and the one carrying the same `prefixItems` without it both emit `typing.List[typing.Any]`. Probe [`unevaluated-items.yml`](openapi-surface/probes/unevaluated-items.yml), `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 39 files. Measured in [Round 6](#round-6--schemas) |
-| `dependent-schemas` | 0 | 0 | discards | the conditional properties reach no model: `Payment` emits `amount: float` and `card: typing.Optional[bool]`, and `cardNumber` occurs nowhere in the SDK. Probe [`dependent-schemas.yml`](openapi-surface/probes/dependent-schemas.yml), `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 39 files. Measured in [Round 6](#round-6--schemas) |
+| `dependent-schemas` | 0 | 0 | discards | the conditional properties reach no model: `Payment` emits `amount: float` and `card: typing.Optional[bool]`, and `cardNumber` occurs nowhere in the SDK. Probe [`dependent-schemas.yml`](openapi-surface/probes/dependent-schemas.yml), `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 39 files. Settled by **route 3**, the open-search probe, on a `search-incomplete` record whose outstanding source is SwaggerHub's unread `openapi-3.0.x` family. Measured in [Round 6](#round-6--schemas) |
 | `dollar-anchor` | 0 | 0 | discards | the anchor is neither recorded nor resolvable through: [`dollar-anchor.yml`](openapi-surface/probes/dollar-anchor.yml) and its control [`dollar-anchor-control.yml`](openapi-surface/probes/dollar-anchor-control.yml) generate byte-identical 40-file SDKs, and in [`dollar-anchor-ref.yml`](openapi-surface/probes/dollar-anchor-ref.yml) a plain-name `$ref: "#anchored"` emits `typing.Any` where the pointer `$ref` beside it emits `Anchored`. `fern check` 0 `All checks passed`, `fern generate` 0 on all three; crozier byte-matches on all 40 files of each. Measured in [Round 6](#round-6--schemas) |
 | `format-idn-email` | 0 | 0 | discards | the registered format narrows nothing: the annotated property and the plain `type: string` beside it both emit `str`, and the format value occurs nowhere in the SDK. Probe [`format-idn-email.yml`](openapi-surface/probes/format-idn-email.yml), `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 39 files. Measured in [Round 6](#round-6--schemas) |
 | `format-idn-hostname` | 0 | 0 | discards | as `format-idn-email`, on [`format-idn-hostname.yml`](openapi-surface/probes/format-idn-hostname.yml): `formatted: str` beside `plain: str`, 0/0, crozier byte-matching on all 39 files. Measured in [Round 6](#round-6--schemas) |

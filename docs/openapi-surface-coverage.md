@@ -709,8 +709,10 @@ own searches' `witness-blocked` or `fern-rejected` outcomes —
 [`min-contains`](openapi-surface/schemas.md),
 [`multiple-of`](openapi-surface/schemas.md) and
 [`unevaluated-items`](openapi-surface/schemas.md) — and the thirteenth,
-[`dependent-schemas`](openapi-surface/schemas.md), is a probe for a shape whose
-search found no witness anywhere, which outcome 3 has always settled that way.
+[`dependent-schemas`](openapi-surface/schemas.md), took [route 3](#the-settlement-rule-as-amended),
+the open-search probe: its search found no usable witness *and* left SwaggerHub's
+unread `openapi-3.0.x` family outstanding, so its record reads
+`search-incomplete` and its cell names that source rather than a blocker.
 All thirteen are `discards` on the fourteen probe documents
 [Round 6](fern-limitations.md#round-6--schemas) measures, and every one of them
 stays convertible: a registrable witness found later promotes it to `golden`
@@ -1421,8 +1423,10 @@ depends on why it is unusable, and a search returns one of five outcomes.
    reconciliation refuses that pairing — which is what keeps an unread source
    from becoming evidence of absence. **Amended a second time:** such a row may
    nonetheless be settled by a locally authored Fern probe, because a probe
-   claims nothing about the world — that is route 3 below. No row in the tree
-   reads this outcome today.
+   claims nothing about the world — that is route 3 below. One row in the tree
+   reads this outcome: [`schemas`](openapi-surface/schemas.md)'s
+   `dependent-schemas`, whose search found no usable witness and left SwaggerHub's
+   `openapi-3.0.x` family unread, and which route 3 settles.
 
 **This is an amendment, and this is what it replaced.** The rule used to close
 with one sentence covering outcomes 1 and 2 together: a witness-supply probe
