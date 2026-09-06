@@ -1313,7 +1313,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
 
     // A `$ref` into another document is fetched and resolved before the local
     // normalizations run, so every later pass sees one self-contained document.
-    crate::refs::resolve(&mut doc, &crate::refs::CurlFetcher, path)?;
+    let remote_origin = crate::refs::resolve(&mut doc, &crate::refs::CurlFetcher, path)?;
 
     normalize_empty_compositions(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
@@ -1321,7 +1321,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_nullable_schema_refs(&mut doc);
     normalize_parameters(&mut doc);
     normalize_responses(&mut doc);
-    normalize_response_alias_refs(&mut doc);
+    normalize_fetched_response_alias_refs(&mut doc, &remote_origin);
     normalize_response_schema_refs(&mut doc);
     normalize_request_bodies(&mut doc);
 
@@ -1525,15 +1525,32 @@ fn normalize_nullable_schema_refs(doc: &mut OpenApi) {
 }
 
 /// Resolve an operation response that names a component schema which is nothing
-/// but a `$ref`.
+/// but a `$ref` to a schema a **remote** `$ref` declared.
 ///
-/// Fern follows such an alias when it types an endpoint's response: helios'
-/// `BlockResponse: {$ref: #/components/schemas/Block}` still *declares*
-/// `BlockResponse = Block`, but `get_block_information` is generated as returning
-/// `Block`. A reference from inside another schema keeps the alias name
-/// (Airbyte's `DestinationAuthSpecification` stays itself on the property that
-/// carries it), so this rewrite is confined to response media schemas.
-fn normalize_response_alias_refs(doc: &mut OpenApi) {
+/// Fern follows such an alias when it types an endpoint's response:
+/// `helios-verifiable-api` declares `BlockResponse: {$ref: #/components/schemas/Block}`
+/// over `Block: {$ref: <execution-apis URL>#/Block}`, and its byte-matching golden
+/// still declares `BlockResponse = Block` while generating
+/// `get_block_information` as returning `Block`.
+///
+/// **The remote origin is the whole of the rule, and it was measured.** A local
+/// alias to an ordinary local schema is *not* followed. Probed at
+/// `fernapi/fern-python-sdk:5.20.0` on four spellings — `AliasOfThing: {$ref:
+/// Thing}` bare, and the same `$ref` beside a `title`, a `description` and an
+/// `unevaluatedProperties` — with the alias declared before and after its target
+/// and with the target referenced elsewhere as well: every one exits 0 at both
+/// stages and returns `AliasOfThing`. So the rewrite is confined to the names
+/// [`crate::refs::resolve`] reports as remotely declared. A reference from inside
+/// another schema keeps the alias name in either case (Airbyte's
+/// `DestinationAuthSpecification` stays itself on the property that carries it),
+/// so the rewrite is confined to response media schemas too.
+fn normalize_fetched_response_alias_refs(
+    doc: &mut OpenApi,
+    remote_origin: &std::collections::BTreeSet<String>,
+) {
+    if remote_origin.is_empty() {
+        return;
+    }
     let mut targets: IndexMap<String, String> = IndexMap::new();
     for name in doc.components.schemas.keys() {
         let mut seen = std::collections::BTreeSet::new();
@@ -1550,7 +1567,7 @@ fn normalize_response_alias_refs(doc: &mut OpenApi) {
             }
             current = next;
         }
-        if current != name {
+        if current != name && remote_origin.contains(current) {
             targets.insert(name.clone(), current.to_string());
         }
     }
@@ -2576,10 +2593,19 @@ components:
         );
     }
 
-    /// Fern types an endpoint's response against the schema an alias points at,
-    /// while a reference from inside another schema keeps the alias name.
+    /// A component schema that is nothing but a *local* `$ref` keeps its own name
+    /// everywhere, including where an operation response names it.
+    ///
+    /// Probed directly at `fernapi/fern-python-sdk:5.20.0`: on a document
+    /// declaring `AliasOfThing: {$ref: Thing}` and a response naming
+    /// `AliasOfThing`, Fern generates `-> AliasOfThing` at exit 0 — with a
+    /// sibling `title`, `description` or `unevaluatedProperties` on the alias
+    /// too, with the alias declared either side of its target, and with the
+    /// target referenced elsewhere as well. The response-alias rewrite is
+    /// therefore confined to aliases of a *remotely* declared schema, which
+    /// `a_response_alias_of_a_fetched_schema_resolves_to_the_fetched_name` covers.
     #[test]
-    fn normalize_response_alias_refs_follows_only_response_references() {
+    fn a_local_ref_alias_keeps_its_name_in_a_response() {
         let mut doc = parse(
             r##"
 openapi: 3.0.0
@@ -2606,7 +2632,57 @@ components:
         block: { $ref: "#/components/schemas/BlockResponse" }
 "##,
         );
-        normalize_response_alias_refs(&mut doc);
+        normalize_fetched_response_alias_refs(&mut doc, &std::collections::BTreeSet::new());
+        let response = &doc.paths["/block"].get.as_ref().unwrap().responses["200"];
+        assert_eq!(
+            response.content["application/json"]
+                .schema
+                .as_ref()
+                .unwrap()
+                .reference
+                .as_deref(),
+            Some("#/components/schemas/BlockResponse")
+        );
+        assert_eq!(
+            doc.components.schemas["BlockResponse"].reference.as_deref(),
+            Some("#/components/schemas/Block")
+        );
+    }
+
+    /// The other half of the same rule: where the alias target *was* declared by a
+    /// remote `$ref`, the response resolves to it — `helios-verifiable-api`'s
+    /// `BlockResponse` over its fetched `Block` — while a reference from inside
+    /// another schema still keeps the alias name.
+    #[test]
+    fn a_response_alias_of_a_fetched_schema_resolves_to_the_fetched_name() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+paths:
+  /block:
+    get:
+      operationId: getBlock
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/BlockResponse" } }
+components:
+  schemas:
+    BlockResponse: { $ref: "#/components/schemas/Block" }
+    Block:
+      type: object
+      properties:
+        hash: { type: string }
+    Holder:
+      type: object
+      properties:
+        block: { $ref: "#/components/schemas/BlockResponse" }
+"##,
+        );
+        let remote_origin = std::collections::BTreeSet::from(["Block".to_string()]);
+        normalize_fetched_response_alias_refs(&mut doc, &remote_origin);
         let response = &doc.paths["/block"].get.as_ref().unwrap().responses["200"];
         assert_eq!(
             response.content["application/json"]

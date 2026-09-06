@@ -1,0 +1,33 @@
+openapi: 3.0.3
+info:
+  title: http-vapid-alone
+  version: 1.0.0
+servers:
+  - url: https://probe.invalid
+security:
+  - ProbeScheme: []
+paths:
+  /probe:
+    get:
+      operationId: probe
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProbeResult"
+components:
+  schemas:
+    ProbeResult:
+      title: ProbeResult
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required:
+        - ok
+  securitySchemes:
+    ProbeScheme:
+      type: http
+      scheme: vapid

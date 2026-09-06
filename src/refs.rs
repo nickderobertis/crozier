@@ -34,7 +34,7 @@
 //! surfaces as an actionable [`Error::RemoteRef`] instead. The fetcher is a
 //! trait so the resolution rules above are unit-testable without a network.
 
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::path::Path;
 use std::process::Command;
 
@@ -104,14 +104,25 @@ fn curl_fetch(program: &str, url: &str) -> std::result::Result<String, String> {
 /// Replace every remote `$ref` in `doc` with the schema it names, fetching each
 /// referenced document at most once. `spec` names the document being loaded, for
 /// error messages. A document with no remote `$ref` fetches nothing.
-pub fn resolve(doc: &mut OpenApi, fetcher: &dyn RemoteFetcher, spec: &Path) -> Result<()> {
+///
+/// Returns the `components.schemas` keys that a remote `$ref` declared, under the
+/// names they carry *after* resolution. That set is what
+/// [`crate::openapi`]'s response-alias normalization is confined to: a local
+/// alias to one of these is followed when it types an operation response, and a
+/// local alias to an ordinary local schema is not — see that function for the
+/// measurement.
+pub fn resolve(
+    doc: &mut OpenApi,
+    fetcher: &dyn RemoteFetcher,
+    spec: &Path,
+) -> Result<BTreeSet<String>> {
     let mut resolver = Resolver {
         fetcher,
         spec,
         documents: HashMap::new(),
         active: Vec::new(),
     };
-    register_component_schemas(doc, &mut resolver)?;
+    let remote_origin = register_component_schemas(doc, &mut resolver)?;
     let mut failure = None;
     for_each_root_schema(doc, &mut |schema| {
         if failure.is_none() {
@@ -122,7 +133,7 @@ pub fn resolve(doc: &mut OpenApi, fetcher: &dyn RemoteFetcher, spec: &Path) -> R
     });
     match failure {
         Some(error) => Err(error),
-        None => Ok(()),
+        None => Ok(remote_origin),
     }
 }
 
@@ -139,10 +150,14 @@ pub fn resolve(doc: &mut OpenApi, fetcher: &dyn RemoteFetcher, spec: &Path) -> R
 ///
 /// A pointer name the document already uses keeps the schema in place under the
 /// local key rather than silently rebinding an existing name.
-fn register_component_schemas(doc: &mut OpenApi, resolver: &mut Resolver) -> Result<()> {
+fn register_component_schemas(
+    doc: &mut OpenApi,
+    resolver: &mut Resolver,
+) -> Result<BTreeSet<String>> {
     let names: Vec<String> = doc.components.schemas.keys().cloned().collect();
     let mut fetched: Vec<(String, Schema)> = Vec::new();
     let mut renamed: Vec<(String, String)> = Vec::new();
+    let mut remote_origin: BTreeSet<String> = BTreeSet::new();
     for name in names {
         let Some(reference) = doc.components.schemas[&name].reference.clone() else {
             continue;
@@ -158,18 +173,20 @@ fn register_component_schemas(doc: &mut OpenApi, resolver: &mut Resolver) -> Res
             || fetched.iter().any(|(taken, _)| *taken == target)
         {
             doc.components.schemas[&name] = resolved;
+            remote_origin.insert(name);
         } else {
             doc.components.schemas[&name] = Schema {
                 reference: Some(format!("#/components/schemas/{target}")),
                 ..Schema::default()
             };
             renamed.push((name, target.clone()));
+            remote_origin.insert(target.clone());
             fetched.push((target, resolved));
         }
     }
     doc.components.schemas.extend(fetched);
     rename_references(doc, &renamed);
-    Ok(())
+    Ok(remote_origin)
 }
 
 /// Point every reference at the name the fetched schema was registered under.
