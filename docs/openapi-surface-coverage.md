@@ -1581,32 +1581,47 @@ corpus goldens rather than probes.
 
 #### The settlement rule, as amended
 
-**What a found witness settles.** The bar above is narrower than it first reads:
-a witness the search *did* find does not leave a row here on witness-supply
-grounds, however unusable that document turns out to be. What it leaves *as*
-depends on why it is unusable, and a search returns one of five outcomes.
+**The rule, in one statement.** A row's search returns one of five outcomes, and
+the outcome decides which of three routes settles the row. **Route 1** settles it
+with a registered corpus golden, and is the only route that produces
+crozier-versus-Fern byte-comparison evidence. **Route 2** and **route 3** settle
+it with a locally authored Fern probe recorded in
+[`fern-limitations.md`](fern-limitations.md), which makes the row `limitations`
+under [the classification precedence](#the-category-rules) and leaves it
+convertible to `golden` the day a registrable witness turns up. Each route
+carries its own gate, stated with the route below, and none of the three is a way
+past searching: a witness the search *did* find never leaves a row here on
+witness-supply grounds, however unusable that document turns out to be, and what
+it leaves *as* depends on why it is unusable. The five outcomes, and what each
+licenses:
 
 1. **`witness-found`** — a real-world document declares the shape, at an
    immutable ref, under a [redistribution-compatible](corpus-licensing.md)
    licence, and Fern accepts it.
-   The row becomes `FIXTURE`, and retires outright to `golden` the moment that
-   document is registered: `dollar-comment` did exactly that, as corpus row 109.
+   The row becomes `FIXTURE` and takes **route 1**, retiring outright to `golden`
+   the moment that document is registered: `dollar-comment` did exactly that, as
+   corpus row 109. Route 1's gate is the corpus registration rules themselves
+   ([`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md)) and the
+   byte-match the golden has to reach; nothing in this section relaxes either.
 2. **`witness-blocked`** or **`fern-rejected`** — such a document exists and this
    corpus cannot use it: outside its redistribution set, reachable at no
    immutable ref, or refused by Fern. The row still becomes `FIXTURE`, because
    the search proved the shape has a real-world witness and what is short is that
    document rather than the world — which is what `dollar-anchor` records.
-   **Amended:** such a row may *instead* be settled by a locally authored Fern
-   probe recorded in [`fern-limitations.md`](fern-limitations.md), at which point
-   its category here becomes `limitations` under
-   [the classification precedence](#the-category-rules). The three properties
-   that route carries are stated below.
+   **Route 2** settles such a row *instead* by a locally authored Fern probe
+   recorded in [`fern-limitations.md`](fern-limitations.md), at which point its
+   category here becomes `limitations` under
+   [the classification precedence](#the-category-rules). Its two gates — the
+   recorded exhaustive search, and the blocker the row names — are stated with
+   the route below.
 3. **`none-found`** — no document reaching that bar was found anywhere the
-   region's declared sources reach. The row stays here as a witness-supply probe.
-   This is the case the rule already covered and the amendment does not touch it.
-4. **`search-incomplete`** — **the outcome the amendment adds**, for a search a
-   required source did not answer: the registry was unreachable, the query was
-   refused, the index returned an error rather than a result. The row says so in
+   region's declared sources reach. The row stays here as a witness-supply probe,
+   and no route above or below settles it: what settles it is the probe this
+   class itself names, authored and measured, which is how
+   [the seven that stood here](#witness-supply-probes) left.
+4. **`search-incomplete`** — the outcome for a search a required source did not
+   answer: the registry was unreachable, the query was refused, the index
+   returned an error rather than a result. The row says so in
    that source's own segment of its `sources searched and the exact query used
    against each` cell, with the word `unanswered` beside what the source did
    instead of answering, so the record names what is outstanding. It says the
@@ -1615,29 +1630,16 @@ depends on why it is unusable, and a search returns one of five outcomes.
    of those rest on what the search found. A record marking a required source
    `unanswered` reads `search-incomplete` rather than `none-found`, and the
    reconciliation refuses that pairing — which is what keeps an unread source
-   from becoming evidence of absence. **Amended a second time:** such a row may
-   nonetheless be settled by a locally authored Fern probe, because a probe
-   claims nothing about the world — that is route 3 below. One row in the tree
-   reads this outcome: [`schemas`](openapi-surface/schemas.md)'s
+   from becoming evidence of absence. **Route 3** settles such a row nonetheless,
+   by a locally authored Fern probe, because a probe claims nothing about the
+   world; its gate is the outstanding source, stated with the route below. One
+   row in the tree reads this outcome: [`schemas`](openapi-surface/schemas.md)'s
    `dependent-schemas`, whose search found no usable witness and left SwaggerHub's
    `openapi-3.0.x` family unread, and which route 3 settles.
 
-**This is an amendment, and this is what it replaced.** The rule used to close
-with one sentence covering outcomes 1 and 2 together: a witness-supply probe
-*"leaves this list the day any witness turns up, blocked or not, and it leaves as
-a `FIXTURE` rather than as a measured probe."* Under it, a `FIXTURE` row whose
-only real-world witness is outside the corpus's redistribution set, reachable at
-no immutable ref, or refused by Fern could be settled by nothing at all: no
-corpus row may pin it, because the document cannot be registered, and no probe
-may measure it, because a witness was found. Nine rows of the ranked backlog
-stood in exactly that state when the amendment was written, and every further
-search puts more there. Route 2 above is the one way out of it, and it is the
-whole of the change; four of those nine have since taken it, in
-[the round below](#the-six-rows-a-round-of-probes-settled).
-
-**The recorded exhaustive search is the gate.** Route 2 is never a shortcut past
-searching, and its gate is a property of this repository rather than of anything
-outside it. A row is eligible only where **its own region file** records a search
+**Route 2's first gate: the recorded exhaustive search.** Route 2 is never a
+shortcut past searching, and its gate is a property of this repository rather
+than of anything outside it. A row is eligible only where **its own region file** records a search
 for that row: a line of that file's `### Witness search (issue #188)` table whose
 `outcome` cell reads `witness-blocked` or `fern-rejected`, naming **every source
 that region's own witness-search preamble names**, and recording for each both
@@ -1649,8 +1651,8 @@ down. A row with no search recorded against it is not eligible, and neither is
 one whose search returned `none-found` — that is the witness-supply probe
 outcome 3 already covers.
 
-**The row stays convertible, so it names its blocker.** A row settled this way
-records that a real witness exists and names precisely what stops that witness
+**Route 2's second gate: the blocker, which is what keeps the row convertible.**
+A row settled this way records that a real witness exists and names precisely what stops that witness
 being registered, so that the day the blocker lifts the witness is registrable
 and the classification precedence promotes the row to `golden`. It must not read
 as permanently settled. A blocker counts only in one of three forms, and each
@@ -1690,12 +1692,12 @@ and its verdict — and beside it the words **`blocked-witness probe`**, the
 outcome its own region file's search recorded, and the blocker after
 **`blocker:`**.
 
-**Route 3, the open-search probe, and the second thing this amends.** Outcome 4
-licenses neither route above, on the sound ground that an unread source must
-never become evidence of absence — and that leaves a row whose search found no
-usable witness *and* left a required source unanswered settleable by nothing at
-all: no corpus row may pin it, because no witness was found, and no probe may
-settle it, because a source went unread. The amendment separates the two things
+**Route 3: the open-search probe, and its gate.** Outcome 4 licenses neither
+route above, on the sound ground that an unread source must never become
+evidence of absence — and read alone that would leave a row whose search found
+no usable witness *and* left a required source unanswered settleable by nothing
+at all: no corpus row may pin it, because no witness was found, and no probe may
+settle it, because a source went unread. The rule separates the two things
 `search-incomplete` conflates. A row may not claim *the world* has no witness
 while a source is unread — that stays, unchanged, and it is the whole point of
 the outcome. But a locally authored probe claims nothing about the world: it
@@ -1709,7 +1711,9 @@ category here becomes `limitations`.** Two rows of the ranked backlog stood in
 exactly that state — `header-allow-reserved`, whose only two declaring documents
 anywhere are synthetic, and `parameter-style-form-cookie-scalar`, whose eighteen
 declaring files are all tooling fixtures — and route 3 is what settled them, in
-[the round below](#the-six-rows-a-round-of-probes-settled).
+[the round below](#the-six-rows-a-round-of-probes-settled). `dependent-schemas`
+is the third row to take it, on the SwaggerHub family its own search left
+unanswered, in [the `schemas` round](#the-thirteen-rows-the-schemas-round-of-probes-settled).
 
 **What separates route 3 from the two routes above.** Route 1 settles a row whose
 search found a witness this corpus can register, and it settles it with a corpus
@@ -1749,6 +1753,24 @@ and its verdict, spelled from that file's own
 the words **`open-search probe`**, the outstanding source after
 **`outstanding:`** together with what it did instead of answering, and the
 statement that the row **stays convertible** to `golden`.
+
+**What this rule replaced, and why the record stays.** The rule above is not the
+one this document started with, and the difference is worth keeping visible for a
+reader arriving at a row the old reading cannot explain. It used to close with
+one sentence covering outcomes 1 and 2 together: a witness-supply probe
+*"leaves this list the day any witness turns up, blocked or not, and it leaves as
+a `FIXTURE` rather than as a measured probe."* Under it, a `FIXTURE` row whose
+only real-world witness is outside the corpus's redistribution set, reachable at
+no immutable ref, or refused by Fern could be settled by nothing at all: no
+corpus row may pin it, because the document cannot be registered, and no probe
+may measure it, because a witness was found. Nine rows of the ranked backlog
+stood in exactly that state, and every further search put more there. Route 2 is
+the way out of it and route 3 the way out of the same dead end on
+`search-incomplete`; between them, twenty-four rows have taken those routes and
+the ranked backlog is empty. **Both routes buy a Fern verdict and cost the
+parity evidence route 1 would have produced** — which is why the rule spends more
+words on their gates than on route 1's, and why neither is the first thing to
+reach for.
 
 **Nothing else moves.** `golden` still beats `limitations` still beats `gap`; the
 corpus still takes real-world specifications only; a probe is still never
