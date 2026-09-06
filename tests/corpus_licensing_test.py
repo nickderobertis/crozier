@@ -19,6 +19,7 @@ Run: `just test-corpus-licensing` (part of `just check`).
 
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 import tempfile
@@ -154,6 +155,23 @@ class TheRuleFileIsWhereTheGateSaysItIs(unittest.TestCase):
         result = run_gate()
         self.assertEqual(result.returncode, 1)
         self.assertIn("the canonical enumeration is gone", result.stderr)
+
+    def test_gutting_the_enumeration_under_the_marker_fails_differently(self) -> None:
+        """The marker can survive an edit that empties the list beneath it."""
+        rule = REPO / RULE
+        original = rule.read_text(encoding="utf-8")
+        self.addCleanup(rule.write_text, original, encoding="utf-8")
+        gutted = re.sub(
+            r"\*\*Admissible[^\n]*\n(?:[^\n]*\n)*?\n",
+            "**Admissible — any licence that grants redistribution.**\n\n",
+            original,
+            count=1,
+        )
+        self.assertNotEqual(gutted, original, "the rule's wording moved; retarget this")
+        rule.write_text(gutted, encoding="utf-8")
+        result = run_gate()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("no longer lists three or more", result.stderr)
 
 
 class TheGateAndItsTestsAreBothInTheDeterministicTier(unittest.TestCase):

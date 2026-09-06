@@ -25,7 +25,6 @@ Run: `just lint-corpus-licensing` (part of `just check`).
 
 from __future__ import annotations
 
-import argparse
 import re
 import subprocess
 import sys
@@ -123,16 +122,7 @@ def check(root: Path) -> list[str]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--root",
-        type=Path,
-        default=REPO,
-        help="repository root to read (default: this checkout)",
-    )
-    root = parser.parse_args().root.resolve()
-
-    problems = check(root)
+    problems = check(REPO)
     if not problems:
         return 0
     print(
