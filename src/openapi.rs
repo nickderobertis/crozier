@@ -147,6 +147,11 @@ pub type SecurityRequirement = IndexMap<String, Vec<String>>;
 /// unknown value is explicit rather than a stray string compared downstream.
 #[derive(Debug, Default, Clone, Deserialize)]
 pub struct SecurityScheme {
+    /// `$ref`: the map may hold a Reference Object here instead of a Security
+    /// Scheme Object. `normalize_security_scheme_refs` resolves the in-document
+    /// spelling at load time, so nothing downstream sees this field set.
+    #[serde(rename = "$ref", default)]
+    pub reference: Option<String>,
     /// `type`: `apiKey`, `http`, `oauth2`, ...
     #[serde(rename = "type", default)]
     pub ty: SecuritySchemeType,
@@ -1310,6 +1315,10 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     // longer requires it: the IR's endpoint naming synthesizes a client group and
     // method from the operation's tag and route when it is absent (see
     // `crate::ir::endpoint_method_name`), so a spec without one still generates.
+    // A Reference Object in the `components.securitySchemes` position is resolved
+    // before anything reads the map, so the validation below and every later pass
+    // see the Security Scheme Object the reference names.
+    normalize_security_scheme_refs(&mut doc);
     // An apiKey scheme's `name` (the header/query/cookie carrying the key) is
     // required by OpenAPI; without it the generated header name would be empty.
     // Fail at the boundary rather than emit a broken client.
@@ -1341,6 +1350,41 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_request_bodies(&mut doc);
 
     Ok(doc)
+}
+
+/// Resolve a Reference Object sitting in `components.securitySchemes`.
+///
+/// OpenAPI lets that map hold a Reference Object where a Security Scheme Object
+/// is expected. Fern follows the in-document spelling —
+/// `#/components/securitySchemes/<name>` — and imports the referenced scheme under
+/// the *referencing* key, which is a second credential where the target is also
+/// declared under its own name. It refuses to follow a reference into another
+/// document, printing `Failed to resolve` out of `resolveSecuritySchemeReference`
+/// and parsing nothing (see `docs/openapi-surface/security.md`'s
+/// `securityscheme-ref` row). So only the in-document form is followed here; any
+/// other reference is left as the unrecognized scheme it deserialized to, which is
+/// what Fern leaves behind too.
+fn normalize_security_scheme_refs(doc: &mut OpenApi) {
+    const PREFIX: &str = "#/components/securitySchemes/";
+    let resolved: Vec<(String, SecurityScheme)> = doc
+        .components
+        .security_schemes
+        .iter()
+        .filter_map(|(name, scheme)| {
+            let target = scheme.reference.as_deref()?.strip_prefix(PREFIX)?;
+            let target = doc.components.security_schemes.get(target)?;
+            // A reference naming another reference resolves to nothing importable,
+            // and one naming itself would resolve to itself forever; neither is
+            // followed, so a single pass is the whole of the resolution.
+            target
+                .reference
+                .is_none()
+                .then(|| (name.clone(), target.clone()))
+        })
+        .collect();
+    for (name, scheme) in resolved {
+        doc.components.security_schemes[&name] = scheme;
+    }
 }
 
 /// Visit every schema the document declares, wherever it sits: the component
@@ -2619,6 +2663,68 @@ components:
     /// target referenced elsewhere as well. The response-alias rewrite is
     /// therefore confined to aliases of a *remotely* declared schema, which
     /// `a_response_alias_of_a_fetched_schema_resolves_to_the_fetched_name` covers.
+    #[test]
+    fn an_in_document_security_scheme_ref_resolves_to_the_scheme_it_names() {
+        // Measured at fernapi/fern-python-sdk:5.20.0 on
+        // docs/openapi-surface/probes/securityscheme-ref.yml: Fern follows a
+        // `#/components/securitySchemes/…` reference and imports the referenced
+        // scheme under the REFERENCING key, so the probe's two map entries emit two
+        // credentials where its control's one entry emits one.
+        let mut doc = parse(
+            r##"
+openapi: 3.0.3
+info: { title: T }
+paths: {}
+components:
+  securitySchemes:
+    ProbeScheme: { $ref: "#/components/securitySchemes/ProbeApiKey" }
+    ProbeApiKey: { type: apiKey, name: X-Probe-Key, in: header }
+"##,
+        );
+        normalize_security_scheme_refs(&mut doc);
+        let resolved = &doc.components.security_schemes["ProbeScheme"];
+        assert_eq!(resolved.ty, SecuritySchemeType::ApiKey);
+        assert_eq!(resolved.name.as_deref(), Some("X-Probe-Key"));
+        assert_eq!(resolved.location, Some(ParameterLocation::Header));
+        assert!(
+            resolved.reference.is_none(),
+            "the resolved entry is the scheme itself, not a reference to it"
+        );
+    }
+
+    #[test]
+    fn a_security_scheme_ref_crozier_cannot_follow_is_left_alone() {
+        // Fern refuses a cross-document reference here — it prints `Failed to
+        // resolve` out of `resolveSecuritySchemeReference` and parses nothing, which
+        // is what `docs/openapi-surface/security.md`'s `securityscheme-ref` row
+        // records of the Open-EO witness. A reference naming another reference, or
+        // naming itself, resolves to nothing importable either. All three stay the
+        // unrecognized scheme they deserialized to.
+        let mut doc = parse(
+            r##"
+openapi: 3.0.3
+info: { title: T }
+paths: {}
+components:
+  securitySchemes:
+    Across: { $ref: "../../openapi.yaml#/components/securitySchemes/Bearer" }
+    Chained: { $ref: "#/components/securitySchemes/Across" }
+    Itself: { $ref: "#/components/securitySchemes/Itself" }
+    Missing: { $ref: "#/components/securitySchemes/Absent" }
+"##,
+        );
+        normalize_security_scheme_refs(&mut doc);
+        for name in ["Across", "Chained", "Itself", "Missing"] {
+            let scheme = &doc.components.security_schemes[name];
+            assert_eq!(
+                scheme.ty,
+                SecuritySchemeType::Other,
+                "{name} names no scheme crozier can import"
+            );
+            assert!(scheme.reference.is_some(), "{name} keeps its reference");
+        }
+    }
+
     #[test]
     fn a_local_ref_alias_keeps_its_name_in_a_response() {
         let mut doc = parse(
