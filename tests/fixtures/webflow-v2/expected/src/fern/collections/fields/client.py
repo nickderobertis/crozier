@@ -1,0 +1,381 @@
+
+
+import typing
+
+from ...core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ...core.request_options import RequestOptions
+from .raw_client import AsyncRawFieldsClient, RawFieldsClient
+from .types.create_fields_request_body import CreateFieldsRequestBody
+from .types.create_fields_response import CreateFieldsResponse
+from .types.update_fields_response import UpdateFieldsResponse
+
+
+OMIT = typing.cast(typing.Any, ...)
+
+
+class FieldsClient:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._raw_client = RawFieldsClient(client_wrapper=client_wrapper)
+
+    @property
+    def with_raw_response(self) -> RawFieldsClient:
+        """
+        Retrieves a raw implementation of this client that returns raw responses.
+
+        Returns
+        -------
+        RawFieldsClient
+        """
+        return self._raw_client
+
+    def create(
+        self,
+        collection_id: str,
+        *,
+        request: CreateFieldsRequestBody,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> CreateFieldsResponse:
+        """
+        Create a custom field in a collection.
+
+        Field validation is currently not available through the API.
+
+        Bulk creation of fields is not supported with this endpoint. To add multiple fields at once, include them when you [create the collection.](/data/v2.0.0/reference/cms/collections/create)
+
+        Required scope | `cms:write`
+
+        Parameters
+        ----------
+        collection_id : str
+            Unique identifier for a Collection
+
+        request : CreateFieldsRequestBody
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        CreateFieldsResponse
+            Request was successful
+
+        Examples
+        --------
+        from fern.collections.fields import StaticField, StaticFieldType
+
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.collections.fields.create(
+            collection_id="580e63fc8c9a982ac9b8b745",
+            request=StaticField(
+                is_required=False,
+                type=StaticFieldType.RICH_TEXT,
+                display_name="Post Body",
+                help_text="Add the body of your post here",
+            ),
+        )
+        """
+        _response = self._raw_client.create(collection_id, request=request, request_options=request_options)
+        return _response.data
+
+    def delete(
+        self, collection_id: str, field_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Delete a custom field in a collection. This endpoint does not currently support bulk deletion.
+
+        Required scope | `cms:write`
+
+        Parameters
+        ----------
+        collection_id : str
+            Unique identifier for a Collection
+
+        field_id : str
+            Unique identifier for a Field in a collection
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.collections.fields.delete(
+            collection_id="580e63fc8c9a982ac9b8b745",
+            field_id="580e63fc8c9a982ac9b8b745",
+        )
+        """
+        _response = self._raw_client.delete(collection_id, field_id, request_options=request_options)
+        return _response.data
+
+    def update(
+        self,
+        collection_id: str,
+        field_id: str,
+        *,
+        is_required: typing.Optional[bool] = OMIT,
+        display_name: typing.Optional[str] = OMIT,
+        help_text: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> UpdateFieldsResponse:
+        """
+        Update a custom field in a collection.
+
+        Required scope | `cms:write`
+
+        Parameters
+        ----------
+        collection_id : str
+            Unique identifier for a Collection
+
+        field_id : str
+            Unique identifier for a Field in a collection
+
+        is_required : typing.Optional[bool]
+            Define whether a field is required in a collection
+
+        display_name : typing.Optional[str]
+            The name of a field
+
+        help_text : typing.Optional[str]
+            Additional text to help anyone filling out this field
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        UpdateFieldsResponse
+            Request was successful
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.collections.fields.update(
+            collection_id="580e63fc8c9a982ac9b8b745",
+            field_id="580e63fc8c9a982ac9b8b745",
+            is_required=False,
+            display_name="Post Body",
+            help_text="Add the body of your post here",
+        )
+        """
+        _response = self._raw_client.update(
+            collection_id,
+            field_id,
+            is_required=is_required,
+            display_name=display_name,
+            help_text=help_text,
+            request_options=request_options,
+        )
+        return _response.data
+
+
+class AsyncFieldsClient:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._raw_client = AsyncRawFieldsClient(client_wrapper=client_wrapper)
+
+    @property
+    def with_raw_response(self) -> AsyncRawFieldsClient:
+        """
+        Retrieves a raw implementation of this client that returns raw responses.
+
+        Returns
+        -------
+        AsyncRawFieldsClient
+        """
+        return self._raw_client
+
+    async def create(
+        self,
+        collection_id: str,
+        *,
+        request: CreateFieldsRequestBody,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> CreateFieldsResponse:
+        """
+        Create a custom field in a collection.
+
+        Field validation is currently not available through the API.
+
+        Bulk creation of fields is not supported with this endpoint. To add multiple fields at once, include them when you [create the collection.](/data/v2.0.0/reference/cms/collections/create)
+
+        Required scope | `cms:write`
+
+        Parameters
+        ----------
+        collection_id : str
+            Unique identifier for a Collection
+
+        request : CreateFieldsRequestBody
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        CreateFieldsResponse
+            Request was successful
+
+        Examples
+        --------
+        import asyncio
+
+        from fern.collections.fields import StaticField, StaticFieldType
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.collections.fields.create(
+                collection_id="580e63fc8c9a982ac9b8b745",
+                request=StaticField(
+                    is_required=False,
+                    type=StaticFieldType.RICH_TEXT,
+                    display_name="Post Body",
+                    help_text="Add the body of your post here",
+                ),
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.create(collection_id, request=request, request_options=request_options)
+        return _response.data
+
+    async def delete(
+        self, collection_id: str, field_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Delete a custom field in a collection. This endpoint does not currently support bulk deletion.
+
+        Required scope | `cms:write`
+
+        Parameters
+        ----------
+        collection_id : str
+            Unique identifier for a Collection
+
+        field_id : str
+            Unique identifier for a Field in a collection
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.collections.fields.delete(
+                collection_id="580e63fc8c9a982ac9b8b745",
+                field_id="580e63fc8c9a982ac9b8b745",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.delete(collection_id, field_id, request_options=request_options)
+        return _response.data
+
+    async def update(
+        self,
+        collection_id: str,
+        field_id: str,
+        *,
+        is_required: typing.Optional[bool] = OMIT,
+        display_name: typing.Optional[str] = OMIT,
+        help_text: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> UpdateFieldsResponse:
+        """
+        Update a custom field in a collection.
+
+        Required scope | `cms:write`
+
+        Parameters
+        ----------
+        collection_id : str
+            Unique identifier for a Collection
+
+        field_id : str
+            Unique identifier for a Field in a collection
+
+        is_required : typing.Optional[bool]
+            Define whether a field is required in a collection
+
+        display_name : typing.Optional[str]
+            The name of a field
+
+        help_text : typing.Optional[str]
+            Additional text to help anyone filling out this field
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        UpdateFieldsResponse
+            Request was successful
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.collections.fields.update(
+                collection_id="580e63fc8c9a982ac9b8b745",
+                field_id="580e63fc8c9a982ac9b8b745",
+                is_required=False,
+                display_name="Post Body",
+                help_text="Add the body of your post here",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.update(
+            collection_id,
+            field_id,
+            is_required=is_required,
+            display_name=display_name,
+            help_text=help_text,
+            request_options=request_options,
+        )
+        return _response.data

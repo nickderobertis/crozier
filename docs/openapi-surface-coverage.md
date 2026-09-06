@@ -59,7 +59,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 32 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 128 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 132 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -252,9 +252,9 @@ The six region files, read as one body of work. Two measurements feed it:
   snapshot is the one every region file's evidence was taken from, pinned by
   digest in
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
-  rather than restated here; the nineteen sources corpus rows 110-128 added since
-  are walked into the counts below. It reads **160** registered sources, of which
-  **143** carry a committed golden.
+  rather than restated here; the twenty-three sources corpus rows 110-132 added
+  since are walked into the counts below. It reads **164** registered sources, of which
+  **147** carry a committed golden.
 - **`just fixtures-coverage`**, for criterion 2 alone. That recipe is outside
   `just check` — it needs network and runs the corpus instrumented — so its
   per-file counts are a dated snapshot (2026-08-25), stated once, in the join
@@ -502,26 +502,31 @@ change that registered two of those witnesses as corpus rows 127 and 128.
 range the witness reaches — the two response-side ones — and which five it does
 not, so a row settled on one document does not read as covering handling sites it
 never touched. [`duplicate-normalized-paths`](openapi-surface/document-paths.md)
-went on the same `torrentarr` (4 collision sites) and again on `agco-ats` (row
-128, 2), and [`duplicate-operation-id`](openapi-surface/document-paths.md) on
-`agco-ats` (22 sites over 11 ids). Both were `PROBE` while the census could not
+went on the same `torrentarr` (4 collision sites), on `agco-ats` (row 128, 2) and
+on `short-io` (row 131, 2), and
+[`duplicate-operation-id`](openapi-surface/document-paths.md) on `agco-ats` (22
+sites over 11 ids), `svix-webhooks` (row 129, 2) and `webflow-v2` (row 132, 2). Both were `PROBE` while the census could not
 compare two values at all, and became `FIXTURE` on a measured zero over the
 registered sources; neither was ever a [structural probe](#structural-probes),
 because one document declaring the collision generates a golden whose raw-client
 methods say what Fern did with it — and each row's record now names that method
 set on both sides, which is what makes a method lost to a collision visible
 rather than hidden behind an empty diff. **Every alternate those searches
-recorded is registered where it is not already covered by a registered
-document**: `gotson/komga` declares `media-type-range` once against Torrentarr's
-six and on the same response side, `jentic`'s short.io redistribution declares
-`duplicate-normalized-paths` where two registered rows already do, and
-`svix/svix-webhooks` and `webflow/openapi-spec` declare `duplicate-operation-id`
-twice each against AGCO's 22. None of the four was refused by Fern. The three
-goldens between them cost a run of repairs in `src/` — an enum `visit` parameter
-named `float`, an operation-scoped type hoisted twice when two operations share
-one `operationId`, and the explicit JSON `content-type` header on a body whose
-referenced schema survives in the public type layer and which offers several
-media types — recorded in [`matching.md`](matching.md).
+recorded is registered too**, because a witness is not dropped for being
+redundant, inconvenient or already covered by another document: `gotson/komga`
+(row 130) declares `media-type-range` once against Torrentarr's six,
+`jentic`'s short.io redistribution (row 131) declares `duplicate-normalized-paths`
+where two registered rows already do, and `svix/svix-webhooks` (row 129) and
+`webflow/openapi-spec` (row 132) declare `duplicate-operation-id` twice each
+against AGCO's 22. Fern accepted all six, so none took the `fern-rejected` route.
+Three of the six reach full byte parity and three are registered with a **measured
+residual** — every divergent file named in that corpus's `unmatched`, and for
+`webflow-v2` every crozier-only module named beside it — which
+[`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md)'s batch 14 records
+along with what each residual is. The six goldens between them cost a run of
+repairs in `src/`, from a `float`-named enum `visit` parameter to an undeclared
+path template expression crozier was interpolating without declaring, recorded in
+[`matching.md`](matching.md).
 
 [`reference-summary`](openapi-surface/oas31-extensions.md) (#3) is the one row of
 that tail that stayed, and it stayed on the searches' own outcome rather than on

@@ -610,8 +610,12 @@ pub struct Parameter {
     /// Human-readable description, surfaced in the method docstring.
     #[serde(default)]
     pub description: Option<String>,
-    /// The parameter's value schema.
-    #[serde(default)]
+    /// The parameter's value schema. Deserialized leniently through the same
+    /// boundary as object properties: `short-io` writes `"schema": "object"` on
+    /// two header parameters, and Fern reads that bare string as the type it
+    /// names (`typing.Dict[str, typing.Any]` in its golden) rather than refusing
+    /// the document.
+    #[serde(default, deserialize_with = "de_optional_schema")]
     pub schema: Option<Schema>,
     /// Content-based parameter representation, used instead of `schema` by some
     /// JSON-valued headers. Fern exposes these headers as string arguments.
@@ -781,7 +785,8 @@ pub struct Schema {
     pub format: Option<String>,
     /// Object properties, in document order. Deserialized leniently: a property
     /// whose value is not a schema object degrades to a malformed unknown node
-    /// rather than aborting the parse (issue #86).
+    /// rather than aborting the parse (issue #86), and an explicit `null` map
+    /// reads as the absent key.
     #[serde(default, deserialize_with = "de_properties")]
     pub properties: SchemaProperties,
     /// Required property names.
@@ -822,8 +827,14 @@ pub struct Schema {
     #[serde(default)]
     pub example: Option<serde_json::Value>,
     /// OpenAPI 3.1 schema examples. Fern uses the first value when synthesizing
-    /// worked calls, after the singular `example` when both are present.
-    #[serde(default)]
+    /// worked calls, after the singular `example` when both are present. JSON
+    /// Schema spells this as a sequence of values, but a document may write the
+    /// Media Type Object's *map* of named Example Objects here instead — Webflow's
+    /// `well_known` body does — and Fern reads that map's entries in declaration
+    /// order, taking each one's `value`: its golden's worked call for that
+    /// operation carries the first entry's
+    /// `file_name="apple-app-site-association.txt"`.
+    #[serde(default, deserialize_with = "de_schema_examples")]
     pub examples: Vec<serde_json::Value>,
     /// Inclusive lower bound used when Fern synthesizes integer examples.
     #[serde(default)]
@@ -1053,11 +1064,41 @@ fn de_properties<'de, D>(deserializer: D) -> std::result::Result<SchemaPropertie
 where
     D: serde::Deserializer<'de>,
 {
-    let raw: IndexMap<String, MaybeSchema> = IndexMap::deserialize(deserializer)?;
+    // An explicit `properties: null` declares no property map at all — Webflow's
+    // DOM node schema writes one beside its `oneOf` — so it reads as the absent
+    // key rather than as the closed, argument-free `properties: {}`.
+    let Some(raw) = Option::<IndexMap<String, MaybeSchema>>::deserialize(deserializer)? else {
+        return Ok(SchemaProperties::default());
+    };
     Ok(SchemaProperties {
         values: raw.into_iter().map(|(k, v)| (k, v.0)).collect(),
         declared: true,
     })
+}
+
+/// Deserialize a Schema Object's `examples` from either spelling: JSON Schema's
+/// sequence of values, or a map of named Example Objects whose `value` each entry
+/// carries. Both flatten to the values in declaration order.
+fn de_schema_examples<'de, D>(
+    deserializer: D,
+) -> std::result::Result<Vec<serde_json::Value>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    match serde_json::Value::deserialize(deserializer)? {
+        serde_json::Value::Array(values) => Ok(values),
+        serde_json::Value::Object(named) => Ok(named
+            .into_iter()
+            .map(|(_, example)| match example {
+                serde_json::Value::Object(mut fields) => {
+                    fields.remove("value").unwrap_or(serde_json::Value::Null)
+                }
+                other => other,
+            })
+            .collect()),
+        serde_json::Value::Null => Ok(Vec::new()),
+        other => Ok(vec![other]),
+    }
 }
 
 /// Deserialize array `items` through the same tolerant schema boundary as object
@@ -1070,6 +1111,16 @@ where
 {
     Option::<MaybeSchema>::deserialize(deserializer)
         .map(|value| value.map(|schema| Box::new(schema.0)))
+}
+
+/// Deserialize an optional schema through the same tolerant boundary as object
+/// properties and array `items`, so a non-object standing in for a schema names a
+/// type or degrades rather than aborting the parse.
+fn de_optional_schema<'de, D>(deserializer: D) -> std::result::Result<Option<Schema>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Option::<MaybeSchema>::deserialize(deserializer).map(|value| value.map(|schema| schema.0))
 }
 
 /// A property value that is either a real schema object or — when the document put
@@ -1111,10 +1162,18 @@ impl<'de> serde::de::Visitor<'de> for MaybeSchemaVisitor {
         Ok(MaybeSchema(malformed_schema()))
     }
 
-    // Any other scalar standing in for a schema degrades the same way.
-    fn visit_str<E>(self, _v: &str) -> std::result::Result<Self::Value, E> {
-        Ok(MaybeSchema(malformed_schema()))
+    /// A bare string where a schema was expected names the `type`. `short-io`'s
+    /// `{"schema": "object", "in": "header", "name": "type"}` reaches Fern's
+    /// golden as `typing.Dict[str, typing.Any]` — what the open map `type: object`
+    /// renders as — rather than as the unknown a degrade would give.
+    fn visit_str<E>(self, v: &str) -> std::result::Result<Self::Value, E> {
+        Ok(MaybeSchema(Schema {
+            ty: Some(TypeField::Single(v.to_string())),
+            ..Schema::default()
+        }))
     }
+
+    // Any other scalar standing in for a schema degrades to the unknown node.
     fn visit_bool<E>(self, _v: bool) -> std::result::Result<Self::Value, E> {
         Ok(MaybeSchema(malformed_schema()))
     }
@@ -2047,7 +2106,7 @@ mod tests {
     fn null_schema_nodes_degrade_to_malformed_unknowns() {
         let parsed: MaybeSchema = serde_json::from_str("null").expect("null degrades");
         assert!(parsed.0.malformed);
-        for value in ["1", "-1", "1.5", "true", "[]", "\"text\""] {
+        for value in ["1", "-1", "1.5", "true", "[]"] {
             assert!(
                 serde_json::from_str::<MaybeSchema>(value)
                     .unwrap()
@@ -2055,6 +2114,15 @@ mod tests {
                     .malformed
             );
         }
+        // A bare STRING is the exception: it names the `type` it spells, which is
+        // how Fern reads short-io's `{"schema": "object", "in": "header"}` (corpus
+        // row 131) into a `typing.Dict[str, typing.Any]` argument.
+        let named: MaybeSchema = serde_json::from_str("\"object\"").expect("a string names a type");
+        assert!(!named.0.malformed);
+        assert_eq!(
+            named.0.ty.as_ref().and_then(TypeField::primary),
+            Some("object")
+        );
         let error = <serde::de::value::Error as serde::de::Error>::invalid_type(
             serde::de::Unexpected::Unit,
             &MaybeSchemaVisitor,

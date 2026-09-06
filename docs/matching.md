@@ -1664,6 +1664,76 @@ several-media bodies (`Endpoint::body_media_alternatives`) because exhaustive's
 `postJsonPatchContentType` and `getAndReturnOptional` — each a lone
 `application/json` over a surviving schema — keep their header.
 
+## What the collision goldens' alternates cost (issue #188)
+
+Corpus rows 129-132 register the remaining witnesses the issue #188 searches
+recorded — `svix-webhooks`, `komga`, `short-io` and `webflow-v2`. Svix reaches
+byte parity; the other three are registered with a measured residual
+([`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md)'s batch 14). These
+are the rules the four of them settled.
+
+**A path template expression nobody declares is still an argument.** Svix
+declares `app_id` on the `PUT` of `/api/v1/app/{app_id}` and on none of its
+`GET`, `DELETE` or `PATCH`, and Fern gives all four the same required `app_id:
+str`. Crozier was interpolating `{app_id}` into the request URL while declaring
+no such parameter — a `NameError` in generated code, not merely a mismatch — so
+`build_endpoint` now synthesizes a `str` path parameter for every template
+expression the operation leaves undeclared, in path order, with no docstring and
+no example.
+
+**A declared `http` `bearer` scheme wires the client even with no Security
+Requirement Object anywhere.** Svix declares `HTTPBearer` in
+`components.securitySchemes`, no document-level `security`, and none on any of
+its 44 operations; its golden's client wrapper still takes an optional `token`
+and sends `Authorization: Bearer`. That is the treatment a header `apiKey`
+already had. `basic` and OAuth2 still need a requirement.
+
+**A dotted `operationId` keeps a group that is not the tag.** Everything before
+the final `.` is the group; it is dropped only when it names the operation's own
+tag — bungie's `App.GetApplicationApiUsage` under `App`, letta's
+`models.listEmbeddingModels` under `models`. Svix's `v1.application.list` under
+tag `Application` keeps it, snake-cased with its dots removed:
+`v1application_list`, and `v1.message-attempt.list-by-endpoint` →
+`v1message_attempt_list_by_endpoint`. A declared tag titles that section verbatim
+too, so svix's `Message Attempt` keeps its space where letta's undeclared
+`agents` is titled `Agents`.
+
+**An array parameter takes its item schema's example, as a one-element list.**
+Svix's `event_types` is `{type: array, items: {example: "user.signup", …}}` and
+its worked call passes `event_types=["user.signup"]`. The same array is *not*
+offered the scalar shorthand: a `nullable: true` array is the 3.0 spelling of the
+3.1 `type: [array, "null"]` union the shorthand already declined, so
+`typing.Optional[typing.Sequence[str]]`, not `Union[str, Sequence[str]]`.
+
+**Two more from svix's models and docs.** An *inline* nullable
+`additionalProperties` value type is `Optional` exactly as a `$ref` to a nullable
+component is (`EndpointHeadersPatchIn.headers` →
+`typing.Dict[str, typing.Optional[str]]`); and a description that opens on a line
+break keeps it, in both the method docstring and the `reference.md` entry.
+
+**Three at the document boundary, from Short.io and Webflow.** A bare string
+where a Schema Object was expected names the `type` it spells — short.io writes
+`{"schema": "object", "in": "header", "name": "type"}` and Fern types the
+argument `typing.Dict[str, typing.Any]`. A Schema Object's `examples` is read
+from a map of named Example Objects as well as from JSON Schema's sequence, each
+entry contributing its `value` in declaration order — Webflow's `well_known` body
+writes the map spelling and Fern's worked call carries the first entry's
+`file_name="apple-app-site-association.txt"`. And an explicit `properties: null`
+reads as the absent key rather than as the closed `properties: {}`. Crozier
+refused all three documents outright before these; refusing a document Fern
+accepts is a boundary defect whatever the parity outcome.
+
+**Two from Webflow's SDK-shaped operations.** When `x-fern-sdk-method-name` is
+declared, the hoisted `{Ctx}Request…`/`{Ctx}Response…` context is that method name
+joined to the *last* `x-fern-sdk-group-name` segment, not the `operationId`:
+`time-on-page` under `[analyze, reports]` hoists
+`TimeOnPageReportsRequestDeviceType` where the `operationId` is
+`get-analyze-time-on-page-report`. And a structured inline **object** query
+parameter hoists its nested types into the package root, as a `oneOf`/`anyOf`
+parameter already did — Webflow's `filter` is `{type: object, properties: {…}}`
+on five `analyze/reports` operations and every type Fern lifts out of it is
+declared in the root's `types/`.
+
 ## Coverage note
 
 The gate measures coverage with `cargo llvm-cov --fail-under-lines 95`, which

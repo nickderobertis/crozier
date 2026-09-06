@@ -1,0 +1,68 @@
+
+
+import datetime as dt
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+
+
+class PageMetadataUpdatedPayloadPayload(UniversalBaseModel):
+    """
+    The payload of data sent from Webflow
+    """
+
+    site_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="siteId"), pydantic.Field(alias="siteId")
+    ] = None
+    page_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="pageId"), pydantic.Field(alias="pageId")
+    ] = None
+    page_title: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="pageTitle"), pydantic.Field(alias="pageTitle")
+    ] = None
+    page_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="pageName"),
+        pydantic.Field(alias="pageName", description="The display name of the page, or null if not set"),
+    ] = None
+    """
+    The display name of the page, or null if not set
+    """
+
+    archived: typing.Optional[bool] = pydantic.Field(default=None)
+    """
+    Whether the page is archived
+    """
+
+    draft: typing.Optional[bool] = pydantic.Field(default=None)
+    """
+    Whether the page is a draft
+    """
+
+    is_branch: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="isBranch"),
+        pydantic.Field(alias="isBranch", description="Whether the page belongs to a branch"),
+    ] = None
+    """
+    Whether the page belongs to a branch
+    """
+
+    last_updated: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="lastUpdated"), pydantic.Field(alias="lastUpdated")
+    ] = None
+    published_path: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="publishedPath"), pydantic.Field(alias="publishedPath")
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

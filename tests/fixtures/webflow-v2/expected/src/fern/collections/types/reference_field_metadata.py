@@ -1,0 +1,32 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+
+
+class ReferenceFieldMetadata(UniversalBaseModel):
+    """
+    The collectionId for the referenced collection. Only applicable for Reference and MultiReference fields.
+    """
+
+    collection_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="collectionId"),
+        pydantic.Field(alias="collectionId", description="The unique identifier of the collection"),
+    ]
+    """
+    The unique identifier of the collection
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

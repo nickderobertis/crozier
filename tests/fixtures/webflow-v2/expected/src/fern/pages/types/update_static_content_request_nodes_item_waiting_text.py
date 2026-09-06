@@ -1,0 +1,44 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+
+
+class UpdateStaticContentRequestNodesItemWaitingText(UniversalBaseModel):
+    """
+    Update a submit button node
+    """
+
+    node_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="nodeId"), pydantic.Field(alias="nodeId", description="Node UUID")
+    ]
+    """
+    Node UUID
+    """
+
+    value: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The text content of the submit button.
+    """
+
+    waiting_text: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="waitingText"),
+        pydantic.Field(alias="waitingText", description="The text to show while the form is submitting."),
+    ] = None
+    """
+    The text to show while the form is submitting.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

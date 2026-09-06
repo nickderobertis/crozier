@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .update_items_items_response_cms_locale_id import UpdateItemsItemsResponseCmsLocaleId
+from .update_items_items_response_items import UpdateItemsItemsResponseItems
+
+UpdateItemsItemsResponse = typing.Union[UpdateItemsItemsResponseCmsLocaleId, UpdateItemsItemsResponseItems]

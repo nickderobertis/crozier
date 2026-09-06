@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "svix-webhooks",
+  "corpus_spec_ref": "ee528fb27439a298da69c628fa1fabd70e9d55b9",
+  "corpus_spec_url": "https://raw.githubusercontent.com/svix/svix-webhooks/ee528fb27439a298da69c628fa1fabd70e9d55b9/server/openapi.json"
+}

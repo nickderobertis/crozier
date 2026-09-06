@@ -1,0 +1,81 @@
+
+
+import datetime as dt
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+from .collection_item_created_payload_payload_field_data import CollectionItemCreatedPayloadPayloadFieldData
+
+
+class CollectionItemCreatedPayloadPayload(UniversalBaseModel):
+    id: str = pydantic.Field()
+    """
+    Unique identifier for the Item
+    """
+
+    workspace_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="workspaceId"),
+        pydantic.Field(alias="workspaceId", description="Unique identifier of the workspace"),
+    ]
+    """
+    Unique identifier of the workspace
+    """
+
+    site_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="siteId"), pydantic.Field(alias="siteId", description="Unique identifier of the site")
+    ]
+    """
+    Unique identifier of the site
+    """
+
+    collection_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="collectionId"),
+        pydantic.Field(alias="collectionId", description="Unique identifier of the collection"),
+    ]
+    """
+    Unique identifier of the collection
+    """
+
+    cms_locale_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="cmsLocaleId"),
+        pydantic.Field(alias="cmsLocaleId", description="Unique identifier of the CMS locale for this item"),
+    ] = None
+    """
+    Unique identifier of the CMS locale for this item
+    """
+
+    last_published: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="lastPublished"), pydantic.Field(alias="lastPublished")
+    ] = None
+    last_updated: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="lastUpdated"), pydantic.Field(alias="lastUpdated")
+    ] = None
+    created_on: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="createdOn"), pydantic.Field(alias="createdOn")
+    ] = None
+    is_archived: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="isArchived"), pydantic.Field(alias="isArchived")
+    ] = None
+    is_draft: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="isDraft"), pydantic.Field(alias="isDraft")
+    ] = None
+    field_data: typing_extensions.Annotated[
+        CollectionItemCreatedPayloadPayloadFieldData,
+        FieldMetadata(alias="fieldData"),
+        pydantic.Field(alias="fieldData"),
+    ]
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

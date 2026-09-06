@@ -1,0 +1,46 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ....core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ....core.serialization import FieldMetadata
+
+
+class DeleteRedirectsResponseRedirectsItem(UniversalBaseModel):
+    """
+    A single redirection rule, specifying a source URL and a destination URL.
+    """
+
+    id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The ID of the specific redirect rule
+    """
+
+    from_url: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="fromUrl"),
+        pydantic.Field(alias="fromUrl", description="The source URL path that will be redirected."),
+    ] = None
+    """
+    The source URL path that will be redirected.
+    """
+
+    to_url: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="toUrl"),
+        pydantic.Field(alias="toUrl", description="The target URL path where the user or client will be redirected."),
+    ] = None
+    """
+    The target URL path where the user or client will be redirected.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

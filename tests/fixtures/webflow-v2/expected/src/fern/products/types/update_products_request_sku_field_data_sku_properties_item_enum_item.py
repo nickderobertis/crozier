@@ -1,0 +1,36 @@
+
+
+import typing
+
+import pydantic
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class UpdateProductsRequestSkuFieldDataSkuPropertiesItemEnumItem(UniversalBaseModel):
+    """
+    Enumerated Product variants/Options for the SKU
+    """
+
+    id: str = pydantic.Field()
+    """
+    Unique identifier for a Product variant/Option
+    """
+
+    name: str = pydantic.Field()
+    """
+    Name of the Product variant/Option
+    """
+
+    slug: str = pydantic.Field()
+    """
+    Slug for the Product variant/Option in the Site URL structure
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

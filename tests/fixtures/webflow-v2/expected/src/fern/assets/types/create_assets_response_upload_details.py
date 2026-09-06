@@ -1,0 +1,49 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+
+
+class CreateAssetsResponseUploadDetails(UniversalBaseModel):
+    """
+    Metadata for uploading the asset binary
+    """
+
+    acl: typing.Optional[str] = None
+    bucket: typing.Optional[str] = None
+    x_amz_algorithm: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="X-Amz-Algorithm"), pydantic.Field(alias="X-Amz-Algorithm")
+    ] = None
+    x_amz_credential: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="X-Amz-Credential"), pydantic.Field(alias="X-Amz-Credential")
+    ] = None
+    x_amz_date: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="X-Amz-Date"), pydantic.Field(alias="X-Amz-Date")
+    ] = None
+    key: typing.Optional[str] = None
+    policy: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="Policy"), pydantic.Field(alias="Policy")
+    ] = None
+    x_amz_signature: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="X-Amz-Signature"), pydantic.Field(alias="X-Amz-Signature")
+    ] = None
+    success_action_status: typing.Optional[str] = None
+    content_type: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="content-type"), pydantic.Field(alias="content-type")
+    ] = None
+    cache_control: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="Cache-Control"), pydantic.Field(alias="Cache-Control")
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

@@ -1,0 +1,13666 @@
+# Reference
+## Token
+<details><summary><code>client.token.<a href="src/fern/token/client.py">authorized_by</a>() -> AuthorizedByTokenResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Information about the Authorized User
+
+Required Scope | `authorized_user:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.token.authorized_by()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.token.<a href="src/fern/token/client.py">introspect</a>() -> IntrospectTokenResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Information about the authorization token
+
+<Note>Access to this endpoint requires a bearer token from a [Data Client App](/data/docs/data-clients/getting-started).</Note>
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.token.introspect()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sites
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py">create</a>(...) -> CreateSitesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Create a site.
+
+<Warning title="Enterprise Only">This endpoint requires an Enterprise workspace.</Warning>
+
+Required scope | `workspace:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.create(
+    workspace_id="580e63e98c9a982ac9b8b741",
+    name="The Hitchhiker\'s Guide to the Galaxy",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**workspace_id:** `str` — Unique identifier for a Workspace
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `str` — The name of the site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**template_name:** `typing.Optional[str]` — The workspace or marketplace template to use
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**parent_folder_id:** `typing.Optional[str]` — MegaDodo Publications - Potential Book Ideas
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py">list</a>() -> ListSitesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List of all sites the provided access token is able to access.
+
+Required scope | `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.list()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py">get</a>(...) -> GetSitesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get details of a site.
+
+Required scope | `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.get(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py">delete</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete a site.
+
+<Warning title="Enterprise Only">This endpoint requires an Enterprise workspace.</Warning>
+
+Required scope | `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.delete(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py">update</a>(...) -> UpdateSitesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update a site.
+
+<Warning title="Enterprise Only">This endpoint requires an Enterprise workspace.</Warning>
+
+Required scope | `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.update(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `typing.Optional[str]` — The name of the site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**parent_folder_id:** `typing.Optional[str]` — The parent folder ID of the site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py">get_custom_domain</a>(...) -> GetCustomDomainSitesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get a list of all custom domains related to site.
+
+Required scope | `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.get_custom_domain(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py">publish</a>(...) -> PublishSitesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Publishes a site or an individual page to one or more domains.
+If multiple individual pages are published to staging, publishing from staging to production publishes all staged changes.
+
+To publish to a specific custom domain, use the domain IDs from the [Get Custom Domains](/data/reference/sites/get-custom-domain) endpoint.
+
+You must include at least one of the `customDomains` or `publishToWebflowSubdomain` properties in the request body.
+
+To publish an individual page instead of the entire site, provide the ID of the page in the `pageId` parameter.
+
+<Note title="Rate limit: 1 publish per minute">This endpoint has a specific rate limit of one successful publish queue per minute.</Note>
+
+Required scope | `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.publish(
+    site_id="580e63e98c9a982ac9b8b741",
+    custom_domains=[
+        "660c6449dd97ebc7346ac629",
+        "660c6449dd97ebc7346ac62f"
+    ],
+    publish_to_webflow_subdomain=False,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**custom_domains:** `typing.Optional[typing.List[str]]` — Array of Custom Domain IDs to publish
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**publish_to_webflow_subdomain:** `typing.Optional[bool]` — Choice of whether to publish to the default Webflow Subdomain
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_id:** `typing.Optional[str]` — The ID of the page to publish
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Collections
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py">list</a>(...) -> ListCollectionsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List of all Collections within a Site.
+
+Required scope | `cms:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.list(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py">create</a>(...) -> CreateCollectionsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Create a Collection for a site with collection fields.
+
+Each collection includes the required _name_ and _slug_ fields, which are generated automatically. You can update the `displayName` of these fields, but the slug for them cannot be changed. Fields slugs are automatically converted to lowercase. Spaces in slugs are replaced with hyphens.
+
+Required scope | `cms:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.collections import StaticField, StaticFieldType, ReferenceField, ReferenceFieldType, ReferenceFieldMetadata
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.create(
+    site_id="580e63e98c9a982ac9b8b741",
+    display_name="Blog Posts",
+    singular_name="Blog Post",
+    slug="posts",
+    fields=[
+        StaticField(
+            is_required=True,
+            type=StaticFieldType.PLAIN_TEXT,
+            display_name="Title",
+            help_text="The title of the blog post",
+        ),
+        StaticField(
+            is_required=True,
+            type=StaticFieldType.RICH_TEXT,
+            display_name="Content",
+            help_text="The content of the blog post",
+        ),
+        ReferenceField(
+            is_required=True,
+            type=ReferenceFieldType.REFERENCE,
+            display_name="Author",
+            help_text="The author of the blog post",
+            metadata=ReferenceFieldMetadata(
+                collection_id="23cc2d952d4e4631ffd4345d2743db4e",
+            ),
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**display_name:** `str` — Name of the collection. Each collection name must be distinct.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**singular_name:** `str` — Singular name of each item.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**slug:** `typing.Optional[str]` — Part of a URL that identifier
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fields:** `typing.Optional[typing.List[CreateCollectionsRequestFieldsItem]]` — An array of custom fields to add to the collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py">get</a>(...) -> GetCollectionsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get the full details of a collection from its ID.
+
+Required scope | `cms:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.get(
+    collection_id="580e63fc8c9a982ac9b8b745",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py">delete</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete a collection using its ID.
+
+Required scope | `cms:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.delete(
+    collection_id="580e63fc8c9a982ac9b8b745",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py">patch</a>(...) -> PatchCollectionsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update a collection's display name, singular name, slug, or field groups.
+
+**Field group rules:**
+- A collection can have a maximum of 50 field groups
+- Each `displayName` must be unique across all field groups in the collection
+- Each `fieldId` must be unique across all field groups in the collection
+- Ecommerce collections do not support field groups
+
+Required scope | `cms:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.patch(
+    collection_id="580e63fc8c9a982ac9b8b745",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**display_name:** `typing.Optional[str]` — Name given to the Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**singular_name:** `typing.Optional[str]` — The name of one Item in Collection (e.g. ”Blog Post” if the Collection is called “Blog Posts”)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**slug:** `typing.Optional[str]` — Slug of Collection in Site URL structure
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**field_groups:** `typing.Optional[typing.List[PatchCollectionsRequestFieldGroupsItem]]` — The list of field groups in the Collection. Replaces the existing field groups.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Pages
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py">list</a>(...) -> ListPagesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List of all pages for a site.
+
+Required scope | `pages:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.pages.list(
+    site_id="580e63e98c9a982ac9b8b741",
+    locale_id="65427cf400e02b306eaa04a0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale_id:** `typing.Optional[str]` 
+
+Unique identifier for a specific Locale.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py">get_metadata</a>(...) -> GetMetadataPagesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get metadata information for a single page.
+
+Required scope | `pages:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.pages.get_metadata(
+    page_id="63c720f9347c2139b248e552",
+    locale_id="65427cf400e02b306eaa04a0",
+    translatable="65427cf400e02b306eaa04a0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**page_id:** `str` — Unique identifier for a Page
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale_id:** `typing.Optional[str]` 
+
+Unique identifier for a specific Locale.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**translatable:** `typing.Optional[str]` 
+
+Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+`?localeId={primary locale id}&translatable={target locale id}`
+
+Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py">update_page_settings</a>(...) -> UpdatePageSettingsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update Page-level metadata, including SEO and Open Graph fields.
+
+Required scope | `pages:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.pages import UpdatePageSettingsRequestSeo, UpdatePageSettingsRequestOpenGraph
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.pages.update_page_settings(
+    page_id="63c720f9347c2139b248e552",
+    locale_id="65427cf400e02b306eaa04a0",
+    title="Guide to the Galaxy",
+    slug="guide-to-the-galaxy",
+    seo=UpdatePageSettingsRequestSeo(
+        title="The Ultimate Hitchhiker\'s Guide to the Galaxy",
+        description="Everything you need to know about the galaxy, from avoiding Vogon poetry to the importance of towels.",
+    ),
+    open_graph=UpdatePageSettingsRequestOpenGraph(
+        title="Explore the Cosmos with The Ultimate Guide",
+        title_copied=False,
+        description="Dive deep into the mysteries of the universe with your guide to everything galactic.",
+        description_copied=False,
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**page_id:** `str` — Unique identifier for a Page
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale_id:** `typing.Optional[str]` 
+
+Unique identifier for a specific Locale.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `typing.Optional[str]` — Title for the page
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**slug:** `typing.Optional[str]` 
+
+Slug for the page.
+
+**Note:** The slug field is ignored in the following cases — all other fields in the same request still apply:
+- The site's home page, collection template pages, and utility pages (e.g. 404, password, search).
+- For secondary locales, updating the slug requires an <a href="https://webflow.com/feature/localization">Advanced or Enterprise localization add-on plan</a>.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**seo:** `typing.Optional[UpdatePageSettingsRequestSeo]` — SEO-related fields for the Page
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**open_graph:** `typing.Optional[UpdatePageSettingsRequestOpenGraph]` — Open Graph fields for the Page
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py">get_content</a>(...) -> GetContentPagesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get text and component instance content from a static page.
+
+<Badge intent="info">Localization</Badge>
+
+Required scope | `pages:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.pages.get_content(
+    page_id="63c720f9347c2139b248e552",
+    locale_id="65427cf400e02b306eaa04a0",
+    translatable="65427cf400e02b306eaa04a0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**page_id:** `str` — Unique identifier for a Page
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale_id:** `typing.Optional[str]` 
+
+Unique identifier for a specific Locale.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**translatable:** `typing.Optional[str]` 
+
+Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+`?localeId={primary locale id}&translatable={target locale id}`
+
+Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py">update_static_content</a>(...) -> UpdateStaticContentResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+This endpoint updates content on a static page in **secondary locales**. It supports updating up to 1000 nodes in a single request.
+
+Before making updates:
+1. Use the [get page content](/data/reference/pages-and-components/pages/get-content) endpoint to identify available content nodes and their types.
+2. If the page has component instances, retrieve the component's properties that you'll override using the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint.
+3. DOM elements may include a `data-w-id` attribute. This attribute is used by Webflow to maintain custom attributes and links across locales. Always include the original `data-w-id` value in your update requests to ensure consistent behavior across all locales.
+
+<Note>
+  This endpoint is specifically for localized pages. Ensure that the specified `localeId` is a valid **secondary locale** for the site otherwise the request will fail.
+</Note>
+
+Required scope | `pages:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.pages import UpdateStaticContentRequestNodesItemText, UpdateStaticContentRequestNodesItemChoices, UpdateStaticContentRequestNodesItemChoicesChoicesItem, UpdateStaticContentRequestNodesItemPlaceholder, UpdateStaticContentRequestNodesItemWaitingText, UpdateStaticContentRequestNodesItemPropertyOverrides, UpdateStaticContentRequestNodesItemPropertyOverridesPropertyOverridesItem
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.pages.update_static_content(
+    page_id="63c720f9347c2139b248e552",
+    locale_id="localeId",
+    nodes=[
+        UpdateStaticContentRequestNodesItemText(
+            node_id="a245c12d-995b-55ee-5ec7-aa36a6cad623",
+            text="<h1>The Hitchhiker\'s Guide to the Galaxy</h1>",
+        ),
+        UpdateStaticContentRequestNodesItemText(
+            node_id="a245c12d-995b-55ee-5ec7-aa36a6cad627",
+            text="<div><h3>Don\'t Panic!</h3><p>Always know where your towel is.</p></div>",
+        ),
+        UpdateStaticContentRequestNodesItemChoices(
+            node_id="a245c12d-995b-55ee-5ec7-aa36a6cad635",
+            choices=[
+                UpdateStaticContentRequestNodesItemChoicesChoicesItem(
+                    value="choice-1",
+                    text="First choice",
+                ),
+                UpdateStaticContentRequestNodesItemChoicesChoicesItem(
+                    value="choice-2",
+                    text="Second choice",
+                )
+            ],
+        ),
+        UpdateStaticContentRequestNodesItemPlaceholder(
+            node_id="a245c12d-995b-55ee-5ec7-aa36a6cad642",
+            placeholder="Enter something here...",
+        ),
+        UpdateStaticContentRequestNodesItemWaitingText(
+            node_id="a245c12d-995b-55ee-5ec7-aa36a6cad671",
+            value="Submit",
+            waiting_text="Submitting...",
+        ),
+        UpdateStaticContentRequestNodesItemPropertyOverrides(
+            node_id="a245c12d-995b-55ee-5ec7-aa36a6cad629",
+            property_overrides=[
+                UpdateStaticContentRequestNodesItemPropertyOverridesPropertyOverridesItem(
+                    property_id="7dd14c08-2e96-8d3d-2b19-b5c03642a0f0",
+                    text="<div><h1>Time is an <em>illusion</em></h1></div>",
+                ),
+                UpdateStaticContentRequestNodesItemPropertyOverridesPropertyOverridesItem(
+                    property_id="7dd14c08-2e96-8d3d-2b19-b5c03642a0f1",
+                    text="Life, the Universe and Everything",
+                )
+            ],
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**page_id:** `str` — Unique identifier for a Page
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale_id:** `str` — The locale identifier.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**nodes:** `typing.List[UpdateStaticContentRequestNodesItem]` — List of DOM Nodes with the new content that will be updated in each node.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Components
+<details><summary><code>client.components.<a href="src/fern/components/client.py">list</a>(...) -> ListComponentsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List of all components for a site.
+
+Required scope | `components:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.components.list(
+    site_id="580e63e98c9a982ac9b8b741",
+    branch_id="68026fa68ef6dc744c75b833",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**branch_id:** `typing.Optional[str]` — Scope the operation to work on a specific branch.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.components.<a href="src/fern/components/client.py">get_content</a>(...) -> GetContentComponentsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get static content from a component definition. This includes text nodes, image nodes, select nodes, text input nodes, submit button nodes, and nested component instances.
+To retrieve dynamic content set by component properties, use the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint.
+
+<Note>If you do not provide a Locale ID in your request, the response will return any content that can be localized from the Primary locale.</Note>
+
+Required scope | `components:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.components.get_content(
+    site_id="580e63e98c9a982ac9b8b741",
+    component_id="8505ba55-ef72-629e-f85c-33e4b703d48b",
+    locale_id="65427cf400e02b306eaa04a0",
+    branch_id="68026fa68ef6dc744c75b833",
+    translatable="65427cf400e02b306eaa04a0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**component_id:** `str` — Unique identifier for a Component
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale_id:** `typing.Optional[str]` 
+
+Unique identifier for a specific Locale.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**branch_id:** `typing.Optional[str]` — Scope the operation to work on a specific branch.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**translatable:** `typing.Optional[str]` 
+
+Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+`?localeId={primary locale id}&translatable={target locale id}`
+
+Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.components.<a href="src/fern/components/client.py">update_content</a>(...) -> UpdateContentComponentsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+This endpoint updates content within a component defintion for **secondary locales**. It supports updating up to 1000 nodes in a single request.
+
+Before making updates:
+1. Use the [get component content](/data/reference/pages-and-components/components/get-content) endpoint to identify available content nodes and their types.
+2. If your component definition has a component instance nested within it, retrieve the nested component instance's properties that you'll override using the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint.
+3. DOM elements may include a `data-w-id` attribute. This attribute is used by Webflow to maintain custom attributes and links across locales. Always include the original `data-w-id` value in your update requests to ensure consistent behavior across all locales.
+
+<Note>
+  This endpoint is specifically for localizing component definitions. Ensure that the specified `localeId` is a valid **secondary locale** for the site otherwise the request will fail.
+</Note>
+
+Required scope | `components:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.components import UpdateContentComponentsRequestNodesItemText, UpdateContentComponentsRequestNodesItemChoices, UpdateContentComponentsRequestNodesItemChoicesChoicesItem, UpdateContentComponentsRequestNodesItemPlaceholder, UpdateContentComponentsRequestNodesItemWaitingText, UpdateContentComponentsRequestNodesItemPropertyOverrides, UpdateContentComponentsRequestNodesItemPropertyOverridesPropertyOverridesItem
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.components.update_content(
+    site_id="580e63e98c9a982ac9b8b741",
+    component_id="8505ba55-ef72-629e-f85c-33e4b703d48b",
+    locale_id="65427cf400e02b306eaa04a0",
+    branch_id="68026fa68ef6dc744c75b833",
+    nodes=[
+        UpdateContentComponentsRequestNodesItemText(
+            node_id="a245c12d-995b-55ee-5ec7-aa36a6cad623",
+            text="<h1>The Hitchhiker\'s Guide to the Galaxy</h1>",
+        ),
+        UpdateContentComponentsRequestNodesItemText(
+            node_id="a245c12d-995b-55ee-5ec7-aa36a6cad627",
+            text="<div><h3>Don\'t Panic!</h3><p>Always know where your towel is.</p></div>",
+        ),
+        UpdateContentComponentsRequestNodesItemChoices(
+            node_id="a245c12d-995b-55ee-5ec7-aa36a6cad635",
+            choices=[
+                UpdateContentComponentsRequestNodesItemChoicesChoicesItem(
+                    value="choice-1",
+                    text="First choice",
+                ),
+                UpdateContentComponentsRequestNodesItemChoicesChoicesItem(
+                    value="choice-2",
+                    text="Second choice",
+                )
+            ],
+        ),
+        UpdateContentComponentsRequestNodesItemPlaceholder(
+            node_id="a245c12d-995b-55ee-5ec7-aa36a6cad642",
+            placeholder="Enter something here...",
+        ),
+        UpdateContentComponentsRequestNodesItemWaitingText(
+            node_id="a245c12d-995b-55ee-5ec7-aa36a6cad671",
+            value="Submit",
+            waiting_text="Submitting...",
+        ),
+        UpdateContentComponentsRequestNodesItemPropertyOverrides(
+            node_id="a245c12d-995b-55ee-5ec7-aa36a6cad629",
+            property_overrides=[
+                UpdateContentComponentsRequestNodesItemPropertyOverridesPropertyOverridesItem(
+                    property_id="7dd14c08-2e96-8d3d-2b19-b5c03642a0f0",
+                    text="<div><h1>Time is an <em>illusion</em></h1></div>",
+                ),
+                UpdateContentComponentsRequestNodesItemPropertyOverridesPropertyOverridesItem(
+                    property_id="7dd14c08-2e96-8d3d-2b19-b5c03642a0f1",
+                    text="Life, the Universe and Everything",
+                )
+            ],
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**component_id:** `str` — Unique identifier for a Component
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**nodes:** `typing.List[UpdateContentComponentsRequestNodesItem]` — List of DOM Nodes with the new content that will be updated in each node.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale_id:** `typing.Optional[str]` 
+
+Unique identifier for a specific Locale.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**branch_id:** `typing.Optional[str]` — Scope the operation to work on a specific branch.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.components.<a href="src/fern/components/client.py">get_properties</a>(...) -> GetPropertiesComponentsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get the default property values of a component definition.
+
+<Note>If you do not include a `localeId` in your request, the response will return any properties that can be localized from the Primary locale.</Note>
+
+Required scope | `components:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.components.get_properties(
+    site_id="580e63e98c9a982ac9b8b741",
+    component_id="8505ba55-ef72-629e-f85c-33e4b703d48b",
+    locale_id="65427cf400e02b306eaa04a0",
+    branch_id="68026fa68ef6dc744c75b833",
+    translatable="65427cf400e02b306eaa04a0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**component_id:** `str` — Unique identifier for a Component
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale_id:** `typing.Optional[str]` 
+
+Unique identifier for a specific Locale.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**branch_id:** `typing.Optional[str]` — Scope the operation to work on a specific branch.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**translatable:** `typing.Optional[str]` 
+
+Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+`?localeId={primary locale id}&translatable={target locale id}`
+
+Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.components.<a href="src/fern/components/client.py">update_properties</a>(...) -> UpdatePropertiesComponentsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update the default property values of a component definition in a specificed locale.
+
+Before making updates:
+1. Use the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint to identify properties that can be updated in a secondary locale.
+2. Rich Text properties may include a `data-w-id` attribute. This attribute is used by Webflow to maintain links across locales. Always include the original `data-w-id` value in your update requests to ensure consistent behavior across all locales.
+
+<Note>The request requires a secondary locale ID. If a `localeId` is missing, the request will not be processed and will result in an error.</Note>
+
+Required scope | `components:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.components import UpdatePropertiesComponentsRequestPropertiesItem
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.components.update_properties(
+    site_id="580e63e98c9a982ac9b8b741",
+    component_id="8505ba55-ef72-629e-f85c-33e4b703d48b",
+    locale_id="65427cf400e02b306eaa04a0",
+    branch_id="68026fa68ef6dc744c75b833",
+    properties=[
+        UpdatePropertiesComponentsRequestPropertiesItem(
+            property_id="a245c12d-995b-55ee-5ec7-aa36a6cad623",
+            text="The Hitchhiker’s Guide to the Galaxy",
+        ),
+        UpdatePropertiesComponentsRequestPropertiesItem(
+            property_id="a245c12d-995b-55ee-5ec7-aa36a6cad627",
+            text="<div><h3>Dont Panic!</h3><p>Always know where your towel is.</p></div>",
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**component_id:** `str` — Unique identifier for a Component
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**properties:** `typing.List[UpdatePropertiesComponentsRequestPropertiesItem]` — A list of component properties to update within the specified secondary locale.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale_id:** `typing.Optional[str]` 
+
+Unique identifier for a specific Locale.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**branch_id:** `typing.Optional[str]` — Scope the operation to work on a specific branch.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scripts
+<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py">list</a>(...) -> ListScriptsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get a list of scripts that have been registered to a site. A site can have a maximum of 800 registered scripts.
+
+<Note title="Script Registration">
+  To apply a script to a site or page, the script must first be registered to a site via the [Register Script](/data/reference/custom-code/custom-code/register-hosted) endpoints. Once registered, the script can be applied to a Site or Page using the appropriate endpoints. See the documentation on [working with Custom Code](/data/docs/custom-code) for more information.
+</Note>
+
+<Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+Required scope | `custom_code:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.scripts.list(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py">register_hosted</a>(...) -> RegisterHostedScriptsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Register a hosted script to a site.
+
+<Note title="Script Registration">
+  To apply a script to a site or page, the script must first be registered to a site via the [Register Script](/data/reference/custom-code/custom-code/register-hosted) endpoints. Once registered, the script can be applied to a Site or Page using the appropriate endpoints. See the documentation on [working with Custom Code](/data/docs/custom-code) for more information.
+</Note>
+
+<Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+Required scope | `custom_code:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.scripts.register_hosted(
+    site_id="580e63e98c9a982ac9b8b741",
+    hosted_location="https://cdn.jsdelivr.net/.../cmsslider.js",
+    integrity_hash="sha384-J+YlJ8v0gpaRoKH7SbFbEmxOZlAxLiwNjfSsBhDooGa5roXlPPpXbEevck4J7YZ+",
+    can_copy=True,
+    version="1.0.0",
+    display_name="CMS Slider",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosted_location:** `str` — URI for an externally hosted script location
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**integrity_hash:** `str` — Sub-Resource Integrity Hash
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**version:** `str` — A Semantic Version (SemVer) string, denoting the version of the script
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**display_name:** `str` — User-facing name for the script. Must be between 1 and 50 alphanumeric characters
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**can_copy:** `typing.Optional[bool]` — Define whether the script can be copied on site duplication and transfer
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py">register_inline</a>(...) -> RegisterInlineScriptsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Register an inline script to a site. Inline scripts are limited to 2000 characters.
+
+<Note title="Script Registration">
+  To apply a script to a site or page, the script must first be registered to a site via the [Register Script](/data/reference/custom-code/custom-code/register-hosted) endpoints. Once registered, the script can be applied to a Site or Page using the appropriate endpoints. See the documentation on [working with Custom Code](/data/docs/custom-code) for more information.
+</Note>
+
+<Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+Required scope | `custom_code:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.scripts.register_inline(
+    site_id="580e63e98c9a982ac9b8b741",
+    source_code="alert(\'hello world\');",
+    version="0.0.1",
+    display_name="Alert",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**source_code:** `str` — The code to be added to the site (to be hosted by Webflow).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**version:** `str` — A Semantic Version (SemVer) string, denoting the version of the script
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**display_name:** `str` — User-facing name for the script. Must be between 1 and 50 alphanumeric characters
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**integrity_hash:** `typing.Optional[str]` — Sub-Resource Integrity Hash. Only required for externally hosted scripts (passed via hostedLocation)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**can_copy:** `typing.Optional[bool]` — Define whether the script can be copied on site duplication and transfer
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Assets
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py">list</a>(...) -> ListAssetsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List of assets uploaded to a site
+
+Required scope | `assets:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.assets.list(
+    site_id="580e63e98c9a982ac9b8b741",
+    locale_id="65427cf400e02b306eaa04a0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale_id:** `typing.Optional[str]` 
+
+Unique identifier for a specific Locale.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**folder_id:** `typing.Optional[str]` 
+
+Filter assets to those in the specified folder and all descendant folders.
+Must be a 24-character hex ObjectId.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py">create</a>(...) -> CreateAssetsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The first step in uploading an asset to a site.
+
+
+This endpoint generates a response with the following information: `uploadUrl` and `uploadDetails`.
+
+
+Use these properties in the header of a [POST request to Amazson s3](https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPOST.html) to complete the upload.
+
+
+To learn more about how to upload assets to Webflow, see our [assets guide](/data/docs/working-with-assets).
+
+ Required scope | `assets:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.assets.create(
+    site_id="580e63e98c9a982ac9b8b741",
+    file_name="file.png",
+    file_hash="3c7d87c9575702bc3b1e991f4d3c638e",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**file_name:** `str` — File name including file extension. File names must be less than 100 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**file_hash:** `str` — MD5 hash of the file
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**parent_folder:** `typing.Optional[str]` — ID of the Asset folder (optional)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py">get</a>(...) -> GetAssetsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get details about an asset
+
+Required scope | `assets:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.assets.get(
+    asset_id="580e63fc8c9a982ac9b8b745",
+    locale_id="65427cf400e02b306eaa04a0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**asset_id:** `str` — Unique identifier for an Asset on a site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale_id:** `typing.Optional[str]` 
+
+Unique identifier for a specific Locale.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py">delete</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete an Asset
+
+Required Scope: `assets: write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.assets.delete(
+    asset_id="580e63fc8c9a982ac9b8b745",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**asset_id:** `str` — Unique identifier for an Asset on a site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py">update</a>(...) -> UpdateAssetsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update details of an Asset.
+
+Required scope | `assets:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.assets.update(
+    asset_id="580e63fc8c9a982ac9b8b745",
+    locale_id="65427cf400e02b306eaa04a0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**asset_id:** `str` — Unique identifier for an Asset on a site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale_id:** `typing.Optional[str]` 
+
+Unique identifier for a specific Locale.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**display_name:** `typing.Optional[str]` — A human readable name for the asset. This value is not localizable.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**alt_text:** `typing.Optional[str]` — Alternate text describing the image
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py">list_folders</a>(...) -> ListFoldersAssetsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List Asset Folders within a given site
+
+Required scope | `assets:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.assets.list_folders(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py">create_folder</a>(...) -> CreateFolderAssetsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Create an Asset Folder within a given site
+
+Required scope | `assets:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.assets.create_folder(
+    site_id="580e63e98c9a982ac9b8b741",
+    display_name="my asset folder",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**display_name:** `str` — A human readable name for the Asset Folder
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**parent_folder:** `typing.Optional[str]` — An (optional) pointer to a parent Asset Folder (or null for root)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py">get_folder</a>(...) -> GetFolderAssetsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get details about a specific Asset Folder
+
+Required scope | `assets:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.assets.get_folder(
+    asset_folder_id="6390c49774a71f0e3c1a08ee",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**asset_folder_id:** `str` — Unique identifier for an Asset Folder
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Custom Fonts
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">list</a>(...) -> ListCustomFontsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List the custom fonts uploaded to a site.
+
+Required scope | `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.custom_fonts.list(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">create</a>(...) -> CreateCustomFontsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Register a custom font on a site and get a presigned S3 URL to upload the font binary.
+
+The response includes a `customFont` object and an `upload` object. Use the `upload.url` and `upload.fields`
+to POST the font binary directly to S3 as `multipart/form-data`. The binary must go in a field named `file`
+and must be the last field in the form (an AWS S3 requirement). S3 returns `201 Created` on a successful upload.
+
+To learn more, see [Custom fonts](/data/docs/custom-fonts).
+
+Required scope | `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.custom_fonts import CreateCustomFontsRequestFontDisplay
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.custom_fonts.create(
+    site_id="580e63e98c9a982ac9b8b741",
+    file_name="AcmeSans-Regular.woff2",
+    file_hash="3c7d87c9575702bc3b1e991f4d3c638e",
+    font_family="Acme Sans",
+    weight=400,
+    italic=False,
+    font_display=CreateCustomFontsRequestFontDisplay.AUTO,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**file_name:** `str` — File name including extension. Accepted extensions are `.woff2`, `.woff`, `.ttf`, `.otf`, and `.eot`. Maximum 256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**file_hash:** `str` — Lowercase hex MD5 hash of the font binary (exactly 32 characters)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**font_family:** `str` — The CSS font-family name (1-256 characters). Commas are stripped server-side.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**weight:** `int` — CSS font-weight value (1-1000)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**italic:** `bool` — Whether the font is italic
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**font_display:** `CreateCustomFontsRequestFontDisplay` — CSS font-display value
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**axes:** `typing.Optional[typing.List[CreateCustomFontsRequestAxesItem]]` — Variable font axes. Omit or pass an empty array for static fonts.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">get</a>(...) -> GetCustomFontsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get details about a custom font on a site.
+
+Required scope | `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.custom_fonts.get(
+    site_id="580e63e98c9a982ac9b8b741",
+    font_id="66f3a1b2c4d5e6f7a8b9c0d1",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**font_id:** `str` — Unique identifier for a custom font on a site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">delete</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete a custom font from a site.
+
+Required scope | `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.custom_fonts.delete(
+    site_id="580e63e98c9a982ac9b8b741",
+    font_id="66f3a1b2c4d5e6f7a8b9c0d1",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**font_id:** `str` — Unique identifier for a custom font on a site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">update</a>(...) -> UpdateCustomFontsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update the metadata of a custom font. The font binary is not changed by this endpoint.
+To replace the binary, use [Replace custom font file](#operation/replace-custom-font-file).
+
+The request body must include at least one of `fontFamily`, `weight`, `italic`, or `fontDisplay`.
+
+Required scope | `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.custom_fonts.update(
+    site_id="580e63e98c9a982ac9b8b741",
+    font_id="66f3a1b2c4d5e6f7a8b9c0d1",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**font_id:** `str` — Unique identifier for a custom font on a site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**font_family:** `typing.Optional[str]` — The CSS font-family name (1-256 characters)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**weight:** `typing.Optional[int]` — CSS font-weight value (1-1000)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**italic:** `typing.Optional[bool]` — Whether the font is italic
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**font_display:** `typing.Optional[UpdateCustomFontsRequestFontDisplay]` — CSS font-display value
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">replace_file</a>(...) -> ReplaceFileCustomFontsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Replace the binary of an existing custom font while preserving its ID and any references to it.
+The upload handshake is identical to [Create custom font](#operation/create-custom-font).
+
+If the existing font has a non-empty `axes` array (a variable font), you must include an `axes` field
+in the request. Send `axes: []` to declare that the new binary is a static font, or send the new variable
+axes to declare it is still variable. Omitting `axes` when the existing font is variable returns `400`.
+
+Required scope | `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.custom_fonts.replace_file(
+    site_id="580e63e98c9a982ac9b8b741",
+    font_id="66f3a1b2c4d5e6f7a8b9c0d1",
+    file_name="AcmeSans-Regular-v2.woff2",
+    file_hash="3c7d87c9575702bc3b1e991f4d3c638e",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**font_id:** `str` — Unique identifier for a custom font on a site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**file_name:** `str` — File name including extension. Accepted extensions are `.woff2`, `.woff`, `.ttf`, `.otf`, and `.eot`. Maximum 256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**file_hash:** `str` — Lowercase hex MD5 hash of the font binary (exactly 32 characters)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**axes:** `typing.Optional[typing.List[ReplaceFileCustomFontsRequestAxesItem]]` — Variable font axes for the replacement binary. Required when the existing font has a non-empty `axes` array.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">batch_create</a>(...) -> BatchCreateCustomFontsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Register 1–25 custom fonts in a single request and get a presigned S3 URL for each one.
+This collapses the registration step for a whole font family (for example, Regular, Bold,
+Italic, and Bold Italic) into one rate-limited request.
+
+Registration is batched, but the binary uploads are not: the response contains one `upload`
+object per registered font, and you must POST each font binary to its own presigned S3 URL
+exactly as you would for [Create custom font](#operation/create-custom-font). The Webflow API
+server never receives the raw font bytes.
+
+The response is `200 OK` for a valid request body. Per-font results are reported in the
+`created` and `failed` arrays. If the site's font limit is reached partway through the batch,
+the fonts that still fit are registered and returned in `created`, while the rest appear in
+`failed` with `name: "FontLimitReached"` — valid fonts are never discarded because a later
+font in the same batch could not be registered. Each presigned URL expires approximately
+15 minutes after issuance, so upload the binaries promptly.
+
+Required scope | `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.custom_fonts import BatchCreateCustomFontsRequestItemsItem, BatchCreateCustomFontsRequestItemsItemFontDisplay
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.custom_fonts.batch_create(
+    site_id="580e63e98c9a982ac9b8b741",
+    items=[
+        BatchCreateCustomFontsRequestItemsItem(
+            file_name="AcmeSans-Regular.woff2",
+            file_hash="3c7d87c9575702bc3b1e991f4d3c638e",
+            font_family="Acme Sans",
+            weight=400,
+            italic=False,
+            font_display=BatchCreateCustomFontsRequestItemsItemFontDisplay.AUTO,
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**items:** `typing.List[BatchCreateCustomFontsRequestItemsItem]` — The custom fonts to register. Each item uses the same shape as the single-font create request.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">batch_delete</a>(...) -> BatchDeleteCustomFontsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete 1-100 custom fonts in a single request. The response is always `200 OK` for a valid request body.
+Per-font results are reported in the `deleted` and `failed` arrays.
+
+The endpoint is idempotent: fonts that do not exist appear in `failed` with `name: "NotFound"` rather than
+failing the entire request. You can safely retry a partial failure by re-sending only the IDs that did not
+appear in `deleted`.
+
+Required scope | `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.custom_fonts import BatchDeleteCustomFontsRequestItemsItem
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.custom_fonts.batch_delete(
+    site_id="580e63e98c9a982ac9b8b741",
+    items=[
+        BatchDeleteCustomFontsRequestItemsItem(
+            id="66f3a1b2c4d5e6f7a8b9c0d1",
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**items:** `typing.List[BatchDeleteCustomFontsRequestItemsItem]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Webhooks
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">list</a>(...) -> ListWebhooksResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List all App-created Webhooks registered for a given site
+
+Required scope | `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.webhooks.list(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">create</a>(...) -> CreateWebhooksResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Create a new Webhook.
+
+Limit of 75 registrations per `triggerType`, per site.
+
+<Note>Access to this endpoint requires a bearer token from a [Data Client App](/data/docs/data-clients/getting-started).</Note>
+Required scope | `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.webhooks import CreateWebhooksRequestTriggerType
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.webhooks.create(
+    site_id="580e63e98c9a982ac9b8b741",
+    trigger_type=CreateWebhooksRequestTriggerType.FORM_SUBMISSION,
+    url="https://webhook.site/7f7f7f7f-7f7f-7f7f-7f7f-7f7f7f7f7f7f",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**trigger_type:** `typing.Optional[CreateWebhooksRequestTriggerType]` — The type of event that triggered the request. See the the documentation for details on [supported events](/data/reference/all-events).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**url:** `typing.Optional[str]` — URL to send the Webhook payload to
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter:** `typing.Optional[CreateWebhooksRequestFilter]` — Only supported for the `form_submission` trigger type. Filter for the form you want Webhooks to be sent for.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">get</a>(...) -> GetWebhooksResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get a specific Webhook instance
+
+Required scope: `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.webhooks.get(
+    webhook_id="580e64008c9a982ac9b8b754",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**webhook_id:** `str` — Unique identifier for a Webhook
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">delete</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Remove a Webhook
+
+Required scope: `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.webhooks.delete(
+    webhook_id="580e64008c9a982ac9b8b754",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**webhook_id:** `str` — Unique identifier for a Webhook
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Forms
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py">list</a>(...) -> ListFormsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List forms for a given site.
+
+Required scope | `forms:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.forms.list(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py">get</a>(...) -> GetFormsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get information about a given form.
+
+Required scope | `forms:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.forms.get(
+    form_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**form_id:** `str` — Unique identifier for a Form
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py">list_submissions</a>(...) -> ListSubmissionsFormsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List form submissions for a given form
+
+<Note title="Forms in components">
+  When a form is used in a component definition, each instance of the form is considered a unique form.
+
+  To get a combined list of submissions for a form that appears across multiple component instances, use the [List Form Submissions by Site](/data/reference/forms/form-submissions/list-submissions-by-site) endpoint.
+</Note>
+
+Required scope | `forms:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.forms.list_submissions(
+    form_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**form_id:** `str` — Unique identifier for a Form
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py">get_submission</a>(...) -> GetSubmissionFormsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get information about a given form submissio.
+
+Required scope | `forms:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.forms.get_submission(
+    form_submission_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**form_submission_id:** `str` — Unique identifier for a Form Submission
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py">delete_submission</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete a form submission
+
+
+Required scope | `forms:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.forms.delete_submission(
+    form_submission_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**form_submission_id:** `str` — Unique identifier for a Form Submission
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py">update_submission</a>(...) -> UpdateSubmissionFormsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update hidden fields on a form submission
+
+Required scope | `forms:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.forms.update_submission(
+    form_submission_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**form_submission_id:** `str` — Unique identifier for a Form Submission
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**form_submission_data:** `typing.Optional[typing.Dict[str, typing.Any]]` — An existing **hidden field** defined on the form schema, and the corresponding value to set
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Products
+<details><summary><code>client.products.<a href="src/fern/products/client.py">list</a>(...) -> ListProductsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Retrieve all products for a site.
+
+Use `limit` and `offset` to page through all products with subsequent requests. All SKUs for each product
+will also be fetched and returned. The `limit`, `offset` and `total` values represent Products only and do not include any SKUs.
+
+Required scope | `ecommerce:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.products.list(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.products.<a href="src/fern/products/client.py">create</a>(...) -> CreateProductsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Create a new ecommerce product and defaultSKU. A product, at minimum, must have a single SKU.
+
+To create a product with multiple SKUs:
+  - First, create a list of `sku-properties`, also known as [product options](https://help.webflow.com/hc/en-us/articles/33961334531347-Create-product-options-and-variants). For example, a T-shirt product may have a "color" `sku-property`, with a list of enum values: red, yellow, and blue, another `sku-property` may be "size", with a list of enum values: small, medium, and large.
+  - Once, a product is created with a list of `sku-properties`, Webflow will create a **default SKU**, which is always a combination of the first `enum` values of each `sku-property`. (e.g. Small - Red - T-Shirt)
+  - After creation, you can create additional SKUs for the product, using the [Create SKUs endpoint.](/data/reference/ecommerce/products/create-sku)
+
+Upon creation, the default product type will be `Advanced`, which ensures all Product and SKU fields will be shown to users in the Designer.
+
+Required scope | `ecommerce:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.products import CreateProductsRequestPublishStatus, CreateProductsRequestProduct, CreateProductsRequestProductFieldData, CreateProductsRequestProductFieldDataSkuPropertiesItem, CreateProductsRequestProductFieldDataSkuPropertiesItemEnumItem, CreateProductsRequestSku, CreateProductsRequestSkuFieldData, CreateProductsRequestSkuFieldDataPrice
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.products.create(
+    site_id="580e63e98c9a982ac9b8b741",
+    publish_status=CreateProductsRequestPublishStatus.STAGING,
+    product=CreateProductsRequestProduct(
+        field_data=CreateProductsRequestProductFieldData(
+            name="Colorful T-shirt",
+            slug="colorful-t-shirt",
+            description="Our best-selling t-shirt available in multiple colors and sizes",
+            sku_properties=[
+                CreateProductsRequestProductFieldDataSkuPropertiesItem(
+                    id="color",
+                    name="Color",
+                    enum=[
+                        CreateProductsRequestProductFieldDataSkuPropertiesItemEnumItem(
+                            id="red",
+                            name="Red",
+                            slug="red",
+                        ),
+                        CreateProductsRequestProductFieldDataSkuPropertiesItemEnumItem(
+                            id="yellow",
+                            name="Yellow",
+                            slug="yellow",
+                        ),
+                        CreateProductsRequestProductFieldDataSkuPropertiesItemEnumItem(
+                            id="blue",
+                            name="Blue",
+                            slug="blue",
+                        )
+                    ],
+                ),
+                CreateProductsRequestProductFieldDataSkuPropertiesItem(
+                    id="size",
+                    name="Size",
+                    enum=[
+                        CreateProductsRequestProductFieldDataSkuPropertiesItemEnumItem(
+                            id="small",
+                            name="Small",
+                            slug="small",
+                        ),
+                        CreateProductsRequestProductFieldDataSkuPropertiesItemEnumItem(
+                            id="medium",
+                            name="Medium",
+                            slug="medium",
+                        ),
+                        CreateProductsRequestProductFieldDataSkuPropertiesItemEnumItem(
+                            id="large",
+                            name="Large",
+                            slug="large",
+                        )
+                    ],
+                )
+            ],
+        ),
+    ),
+    sku=CreateProductsRequestSku(
+        field_data=CreateProductsRequestSkuFieldData(
+            name="Colorful T-shirt - Red Small",
+            slug="colorful-t-shirt-red-small",
+            price=CreateProductsRequestSkuFieldDataPrice(
+                value=2499,
+                unit="USD",
+                currency="USD",
+            ),
+            main_image="https://rocketamp-sample-store.myshopify.com/cdn/shop/products/Gildan_2000_Antique_Cherry_Red_Front_1024x1024.jpg?v=1527232987",
+        ),
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**product:** `CreateProductsRequestProduct` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sku:** `CreateProductsRequestSku` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**publish_status:** `typing.Optional[CreateProductsRequestPublishStatus]` — Indicate whether your Product should be set as "staging" or "live"
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.products.<a href="src/fern/products/client.py">get</a>(...) -> GetProductsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Retrieve a single product by its ID. All of its SKUs will also be
+retrieved.
+
+Required scope | `ecommerce:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.products.get(
+    site_id="580e63e98c9a982ac9b8b741",
+    product_id="580e63fc8c9a982ac9b8b745",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**product_id:** `str` — Unique identifier for a Product
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.products.<a href="src/fern/products/client.py">update</a>(...) -> UpdateProductsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update an existing Product.
+
+Updating an existing Product will set the product type to `Advanced`, which ensures all Product and SKU fields will be shown to users in the Designer.
+
+Required scope | `ecommerce:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.products.update(
+    site_id="580e63e98c9a982ac9b8b741",
+    product_id="580e63fc8c9a982ac9b8b745",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**product_id:** `str` — Unique identifier for a Product
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**publish_status:** `typing.Optional[UpdateProductsRequestPublishStatus]` — Indicate whether your Product should be set as "staging" or "live"
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**product:** `typing.Optional[UpdateProductsRequestProduct]` — The Product object
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sku:** `typing.Optional[UpdateProductsRequestSku]` — The SKU object
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.products.<a href="src/fern/products/client.py">create_sku</a>(...) -> CreateSkuProductsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Create additional SKUs to manage every [option and variant of your Product.](https://help.webflow.com/hc/en-us/articles/33961334531347-Create-product-options-and-variants)
+
+Creating SKUs through the API will set the product type to `Advanced`, which ensures all Product and SKU fields will be shown to users in the Designer.
+
+Required scope | `ecommerce:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.products import CreateSkuProductsRequestSkusItem, CreateSkuProductsRequestSkusItemFieldData, CreateSkuProductsRequestSkusItemFieldDataPrice
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.products.create_sku(
+    site_id="580e63e98c9a982ac9b8b741",
+    product_id="580e63fc8c9a982ac9b8b745",
+    skus=[
+        CreateSkuProductsRequestSkusItem(
+            field_data=CreateSkuProductsRequestSkusItemFieldData(
+                name="Colorful T-shirt - Default",
+                slug="colorful-t-shirt-default",
+                price=CreateSkuProductsRequestSkusItemFieldDataPrice(
+                    value=2499,
+                    unit="USD",
+                    currency="USD",
+                ),
+            ),
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**product_id:** `str` — Unique identifier for a Product
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**skus:** `typing.List[CreateSkuProductsRequestSkusItem]` — An array of the SKU data your are adding
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**publish_status:** `typing.Optional[CreateSkuProductsRequestPublishStatus]` — Indicate whether your Product should be set as "staging" or "live"
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.products.<a href="src/fern/products/client.py">update_sku</a>(...) -> UpdateSkuProductsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update a specified SKU.
+
+Updating an existing SKU will set the Product type to `Advanced`, which ensures all Product and SKU fields will be shown to users in the Designer.
+
+Required scope | `ecommerce:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.products import UpdateSkuProductsRequestSku, UpdateSkuProductsRequestSkuFieldData, UpdateSkuProductsRequestSkuFieldDataPrice
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.products.update_sku(
+    site_id="580e63e98c9a982ac9b8b741",
+    product_id="580e63fc8c9a982ac9b8b745",
+    sku_id="5e8518516e147040726cc415",
+    sku=UpdateSkuProductsRequestSku(
+        field_data=UpdateSkuProductsRequestSkuFieldData(
+            name="Colorful T-shirt - Default",
+            slug="colorful-t-shirt-default",
+            price=UpdateSkuProductsRequestSkuFieldDataPrice(
+                value=2499,
+                unit="USD",
+                currency="USD",
+            ),
+        ),
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**product_id:** `str` — Unique identifier for a Product
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sku_id:** `str` — Unique identifier for a SKU
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sku:** `UpdateSkuProductsRequestSku` — The SKU object
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**publish_status:** `typing.Optional[UpdateSkuProductsRequestPublishStatus]` — Indicate whether your Product should be set as "staging" or "live"
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Orders
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py">list</a>(...) -> ListOrdersResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List all orders created for a given site.
+
+Required scope | `ecommerce:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.orders.list(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `typing.Optional[ListOrdersRequestStatus]` — Filter the orders by status
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py">get</a>(...) -> GetOrdersResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Retrieve a single product by its ID. All of its SKUs will also be
+retrieved.
+
+Required scope | `ecommerce:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.orders.get(
+    site_id="580e63e98c9a982ac9b8b741",
+    order_id="5e8518516e147040726cc415",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**order_id:** `str` — Unique identifier for an Order
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py">update</a>(...) -> UpdateOrdersResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+This API lets you update the fields, `comment`, `shippingProvider`,
+and/or `shippingTracking` for a given order. All three fields can be
+updated simultaneously or independently.
+
+Required scope | `ecommerce:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.orders.update(
+    site_id="580e63e98c9a982ac9b8b741",
+    order_id="5e8518516e147040726cc415",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**order_id:** `str` — Unique identifier for an Order
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**comment:** `typing.Optional[str]` — Arbitrary data for your records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**shipping_provider:** `typing.Optional[str]` — Company or method used to ship order
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**shipping_tracking:** `typing.Optional[str]` — Tracking number for order shipment
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**shipping_tracking_url:** `typing.Optional[str]` — URL to track order shipment
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py">update_fulfill</a>(...) -> UpdateFulfillOrdersResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Updates an order's status to fulfilled
+
+Required scope | `ecommerce:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.orders.update_fulfill(
+    site_id="580e63e98c9a982ac9b8b741",
+    order_id="5e8518516e147040726cc415",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**order_id:** `str` — Unique identifier for an Order
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**send_order_fulfilled_email:** `typing.Optional[bool]` — Whether or not the Order Fulfilled email should be sent
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py">update_unfulfill</a>(...) -> UpdateUnfulfillOrdersResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Updates an order's status to unfulfilled
+
+Required scope | `ecommerce:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.orders.update_unfulfill(
+    site_id="580e63e98c9a982ac9b8b741",
+    order_id="5e8518516e147040726cc415",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**order_id:** `str` — Unique identifier for an Order
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py">refund</a>(...) -> RefundOrdersResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+This API will reverse a Stripe charge and refund an order back to a
+customer. It will also set the order's status to `refunded`.
+
+Required scope | `ecommerce:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.orders.refund(
+    site_id="580e63e98c9a982ac9b8b741",
+    order_id="5e8518516e147040726cc415",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**order_id:** `str` — Unique identifier for an Order
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reason:** `typing.Optional[RefundOrdersRequestReason]` — The reason for the refund
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Inventory
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">list</a>(...) -> ListInventoryResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List the current inventory levels for a particular SKU item.
+
+Required scope | `ecommerce:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.inventory.list(
+    sku_collection_id="6377a7c4b7a79608c34a46f7",
+    sku_id="5e8518516e147040726cc415",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**sku_collection_id:** `str` — Unique identifier for a SKU collection. Use the List Collections API to find this ID.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sku_id:** `str` — Unique identifier for a SKU
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">update</a>(...) -> UpdateInventoryResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Updates the current inventory levels for a particular SKU item.
+
+Updates may be given in one or two methods, absolutely or incrementally.
+- Absolute updates are done by setting `quantity` directly.
+- Incremental updates are by specifying the inventory delta in `updateQuantity` which is then added to the `quantity` stored on the server.
+
+Required scope | `ecommerce:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.inventory import UpdateInventoryRequestInventoryType
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.inventory.update(
+    sku_collection_id="6377a7c4b7a79608c34a46f7",
+    sku_id="5e8518516e147040726cc415",
+    inventory_type=UpdateInventoryRequestInventoryType.INFINITE,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**sku_collection_id:** `str` — Unique identifier for a SKU collection. Use the List Collections API to find this ID.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sku_id:** `str` — Unique identifier for a SKU
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**inventory_type:** `UpdateInventoryRequestInventoryType` — infinite or finite
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**update_quantity:** `typing.Optional[float]` — Adds this quantity to currently store quantity. Can be negative.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**quantity:** `typing.Optional[float]` — Immediately sets quantity to this value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Ecommerce
+<details><summary><code>client.ecommerce.<a href="src/fern/ecommerce/client.py">get_settings</a>(...) -> GetSettingsEcommerceResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Retrieve ecommerce settings for a site.
+
+Required scope | `ecommerce:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.ecommerce.get_settings(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Analyze Reports
+<details><summary><code>client.analyze.reports.<a href="src/fern/analyze/reports/client.py">traffic</a>(...) -> TrafficReportsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Returns a daily time series of a single metric — sessions, users, or pageviews — over a time window.
+
+Filter the report with top-level query parameters (`country`, `deviceType`, `pagePath`, etc.) or via the `filter` parameter for multi-value and negation matching.
+
+<Warning title="Analyze add-on required">This endpoint requires a workspace with the Analyze add-on.</Warning>
+
+<Note title="Concurrency limit: 1 request at a time">Each access token can have one Analyze request in flight at a time, across all Analyze endpoints. Additional concurrent requests return `429 Too Many Requests`; wait for your in-flight request to finish, or for the `Retry-After` interval, then retry.</Note>
+
+Required scope | `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+import datetime
+from fern.analyze.reports import TrafficReportsRequestMetricScope
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.analyze.reports.traffic(
+    site_id="580e63e98c9a982ac9b8b741",
+    start_time=datetime.datetime.fromisoformat("2026-04-01T00:00:00+00:00"),
+    end_time=datetime.datetime.fromisoformat("2026-04-08T00:00:00+00:00"),
+    metric_scope=TrafficReportsRequestMetricScope.SESSION,
+    bucket_time_zone="America/New_York",
+    country="US",
+    page_path="/towels",
+    traffic_source="SO",
+    referrer="google.com",
+    browser="Chrome",
+    utm_campaign="dont-panic-2026",
+    utm_medium="email",
+    utm_source="hitchhikers-guide",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start_time:** `datetime.datetime` — Inclusive start of the reporting window. Must be a UTC timestamp in ISO 8601 / RFC 3339 format ending in `Z` (for example, `2026-04-01T00:00:00Z`); numeric offsets such as `-04:00` or `+00:00` are not accepted. Must be on or after `2025-04-09T00:00:00Z`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end_time:** `datetime.datetime` — Exclusive end of the reporting window. Must be a UTC timestamp in ISO 8601 / RFC 3339 format ending in `Z` (for example, `2026-04-08T00:00:00Z`); numeric offsets such as `-04:00` or `+00:00` are not accepted. Must be greater than `startTime` and within 100 days of it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metric_scope:** `TrafficReportsRequestMetricScope` — The unit each `count` data point is measured in.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bucket_time_zone:** `str` — IANA time zone used to align daily bucket boundaries.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**device_type:** `typing.Optional[TrafficReportsRequestDeviceType]` — Restrict the report to a single device type.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**country:** `typing.Optional[str]` — Restrict the report to a single country. ISO 3166-1 alpha-2 (two letters, normalized to uppercase).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_path:** `typing.Optional[str]` — Restrict the report to a single page path.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**traffic_source:** `typing.Optional[str]` — Restrict the report to a single traffic source code (for example, `SO` for Organic Search).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**referrer:** `typing.Optional[str]` — Restrict the report to a single referrer domain.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**browser:** `typing.Optional[str]` — Restrict the report to a single browser.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**utm_campaign:** `typing.Optional[str]` — Restrict the report to a single `utm_campaign` value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**utm_medium:** `typing.Optional[str]` — Restrict the report to a single `utm_medium` value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**utm_source:** `typing.Optional[str]` — Restrict the report to a single `utm_source` value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter:** `typing.Optional[TrafficReportsRequestFilter]` 
+
+Filter the report by dimension. Use bracket notation. Scalars take a single value (`filter[country][eq]=US`, `filter[country][ne]=US`). Arrays use indexed brackets (`filter[country][in][0]=US&filter[country][in][1]=CA`, `filter[country][nin][0]=US&filter[country][nin][1]=CA`).
+Each dimension entry takes at least one of `eq`, `in`, `ne`, or `nin`. Filter a given dimension in one place — either a top-level query parameter or a `filter` entry. See the `TrafficFilter` schema for the full list of supported dimensions.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.analyze.reports.<a href="src/fern/analyze/reports/client.py">top_pages</a>(...) -> TopPagesReportsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Returns the most-visited pages over a time window, ranked by `sortBy` (sessions, users, or pageviews).
+
+Each row carries all three scope counts; `sortBy` only governs ordering. Filter the report with top-level query parameters (`country`, `deviceType`, `pagePath`, etc.) or via the `filter` parameter for multi-value and negation matching.
+
+Set `timeseries[bucketTimeZone]` to attach a daily pageview `timeseries` to each row. Bucket counts are always pageviews regardless of `sortBy` — row-level counts honor the requested sort; the timeseries does not.
+
+<Warning title="Analyze add-on required">This endpoint requires a workspace with the Analyze add-on.</Warning>
+
+<Note title="Concurrency limit: 1 request at a time">Each access token can have one Analyze request in flight at a time, across all Analyze endpoints. Additional concurrent requests return `429 Too Many Requests`; wait for your in-flight request to finish, or for the `Retry-After` interval, then retry.</Note>
+
+Required scope | `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+import datetime
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.analyze.reports.top_pages(
+    site_id="580e63e98c9a982ac9b8b741",
+    start_time=datetime.datetime.fromisoformat("2026-04-01T00:00:00+00:00"),
+    end_time=datetime.datetime.fromisoformat("2026-04-08T00:00:00+00:00"),
+    country="US",
+    page_path="/towels",
+    traffic_source="SO",
+    referrer="google.com",
+    browser="Chrome",
+    utm_campaign="dont-panic-2026",
+    utm_medium="email",
+    utm_source="hitchhikers-guide",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start_time:** `datetime.datetime` — Inclusive start of the reporting window. Must be a UTC timestamp in ISO 8601 / RFC 3339 format ending in `Z` (for example, `2026-04-01T00:00:00Z`); numeric offsets such as `-04:00` or `+00:00` are not accepted. Must be on or after `2025-04-09T00:00:00Z`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end_time:** `datetime.datetime` — Exclusive end of the reporting window. Must be a UTC timestamp in ISO 8601 / RFC 3339 format ending in `Z` (for example, `2026-04-08T00:00:00Z`); numeric offsets such as `-04:00` or `+00:00` are not accepted. Must be greater than `startTime` and within 100 days of it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort_by:** `typing.Optional[TopPagesReportsRequestSortBy]` — Metric used to rank rows in the response, descending. Defaults to `session`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of rows to return. Defaults to `25`, up to a maximum of `250`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**timeseries:** `typing.Optional[TopPagesReportsRequestTimeseries]` — Include a daily pageview `timeseries` for each row, bucketed in the supplied IANA time zone. Omit this parameter to return ranked rows without per-page timeseries data.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**device_type:** `typing.Optional[TopPagesReportsRequestDeviceType]` — Restrict the report to a single device type.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**country:** `typing.Optional[str]` — Restrict the report to a single country. ISO 3166-1 alpha-2 (two letters, normalized to uppercase).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_path:** `typing.Optional[str]` — Restrict the report to a single page path.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**traffic_source:** `typing.Optional[str]` — Restrict the report to a single traffic source code (for example, `SO` for Organic Search).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**referrer:** `typing.Optional[str]` — Restrict the report to a single referrer domain.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**browser:** `typing.Optional[str]` — Restrict the report to a single browser.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**utm_campaign:** `typing.Optional[str]` — Restrict the report to a single `utm_campaign` value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**utm_medium:** `typing.Optional[str]` — Restrict the report to a single `utm_medium` value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**utm_source:** `typing.Optional[str]` — Restrict the report to a single `utm_source` value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter:** `typing.Optional[TopPagesReportsRequestFilter]` 
+
+Filter the report by dimension. Use bracket notation. Scalars take a single value (`filter[country][eq]=US`, `filter[country][ne]=US`). Arrays use indexed brackets (`filter[country][in][0]=US&filter[country][in][1]=CA`, `filter[country][nin][0]=US&filter[country][nin][1]=CA`).
+Each dimension entry takes at least one of `eq`, `in`, `ne`, or `nin`. Filter a given dimension in one place — either a top-level query parameter or a `filter` entry. See the `TopPagesFilter` schema for the full list of supported dimensions.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.analyze.reports.<a href="src/fern/analyze/reports/client.py">top_dimensions</a>(...) -> TopDimensionsReportsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Returns the top values within a chosen `dimension` — top countries, top traffic sources, top campaigns, top audiences, and so on — over a time window, ranked by sessions or users.
+
+Filter the report with top-level query parameters (`country`, `deviceType`, `pagePath`, etc.) or via the `filter` parameter for multi-value and negation matching.
+
+<Warning title="Analyze add-on required">This endpoint requires a workspace with the Analyze add-on.</Warning>
+
+<Note title="Concurrency limit: 1 request at a time">Each access token can have one Analyze request in flight at a time, across all Analyze endpoints. Additional concurrent requests return `429 Too Many Requests`; wait for your in-flight request to finish, or for the `Retry-After` interval, then retry.</Note>
+
+Required scope | `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+import datetime
+from fern.analyze.reports import TopDimensionsReportsRequestDimension, TopDimensionsReportsRequestMetricScope
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.analyze.reports.top_dimensions(
+    site_id="580e63e98c9a982ac9b8b741",
+    start_time=datetime.datetime.fromisoformat("2026-04-01T00:00:00+00:00"),
+    end_time=datetime.datetime.fromisoformat("2026-04-08T00:00:00+00:00"),
+    dimension=TopDimensionsReportsRequestDimension.COUNTRY,
+    metric_scope=TopDimensionsReportsRequestMetricScope.SESSION,
+    country="US",
+    page_path="/towels",
+    traffic_source="SO",
+    referrer="google.com",
+    browser="Chrome",
+    utm_campaign="dont-panic-2026",
+    utm_medium="email",
+    utm_source="hitchhikers-guide",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start_time:** `datetime.datetime` — Inclusive start of the reporting window. Must be a UTC timestamp in ISO 8601 / RFC 3339 format ending in `Z` (for example, `2026-04-01T00:00:00Z`); numeric offsets such as `-04:00` or `+00:00` are not accepted. Must be on or after `2025-04-09T00:00:00Z`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end_time:** `datetime.datetime` — Exclusive end of the reporting window. Must be a UTC timestamp in ISO 8601 / RFC 3339 format ending in `Z` (for example, `2026-04-08T00:00:00Z`); numeric offsets such as `-04:00` or `+00:00` are not accepted. Must be greater than `startTime` and within 100 days of it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**dimension:** `TopDimensionsReportsRequestDimension` — The dimension whose top values are ranked. See `TopDimensionsDimension` for the supported values.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metric_scope:** `TopDimensionsReportsRequestMetricScope` — The unit each row's `count` is measured in — sessions or users.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of rows to return. Defaults to `25`, up to a maximum of `100`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**device_type:** `typing.Optional[TopDimensionsReportsRequestDeviceType]` — Restrict the report to a single device type.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**country:** `typing.Optional[str]` — Restrict the report to a single country. ISO 3166-1 alpha-2 (two letters, normalized to uppercase).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_path:** `typing.Optional[str]` — Restrict the report to a single page path.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**traffic_source:** `typing.Optional[str]` — Restrict the report to a single traffic source code (for example, `SO` for Organic Search).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**referrer:** `typing.Optional[str]` — Restrict the report to a single referrer domain.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**browser:** `typing.Optional[str]` — Restrict the report to a single browser.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**utm_campaign:** `typing.Optional[str]` — Restrict the report to a single `utm_campaign` value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**utm_medium:** `typing.Optional[str]` — Restrict the report to a single `utm_medium` value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**utm_source:** `typing.Optional[str]` — Restrict the report to a single `utm_source` value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter:** `typing.Optional[TopDimensionsReportsRequestFilter]` 
+
+Filter the report by dimension. Use bracket notation. Scalars take a single value (`filter[country][eq]=US`, `filter[country][ne]=US`). Arrays use indexed brackets (`filter[country][in][0]=US&filter[country][in][1]=CA`, `filter[country][nin][0]=US&filter[country][nin][1]=CA`).
+Each dimension entry takes at least one of `eq`, `in`, `ne`, or `nin`. Filter a given dimension in one place — either a top-level query parameter or a `filter` entry. See the `TopDimensionsFilter` schema for the full list of supported dimensions.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.analyze.reports.<a href="src/fern/analyze/reports/client.py">top_events</a>(...) -> TopEventsReportsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Returns the top events over a time window, ranked by how often they occurred.
+
+Events are counted individually, not rolled up into sessions, users, or pageviews — so this report has no `metricScope`. Each row's `count` is how many times the event occurred. Filter the report with top-level query parameters (`country`, `deviceType`, `pagePath`, etc.) or via the `filter` parameter for multi-value and negation matching.
+
+Set `timeseries[bucketTimeZone]` to attach a daily event count `timeseries` to each row.
+
+<Warning title="Analyze add-on required">This endpoint requires a workspace with the Analyze add-on.</Warning>
+
+<Note title="Concurrency limit: 1 request at a time">Each access token can have one Analyze request in flight at a time, across all Analyze endpoints. Additional concurrent requests return `429 Too Many Requests`; wait for your in-flight request to finish, or for the `Retry-After` interval, then retry.</Note>
+
+Required scope | `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+import datetime
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.analyze.reports.top_events(
+    site_id="580e63e98c9a982ac9b8b741",
+    start_time=datetime.datetime.fromisoformat("2026-04-01T00:00:00+00:00"),
+    end_time=datetime.datetime.fromisoformat("2026-04-08T00:00:00+00:00"),
+    country="US",
+    page_path="/towels",
+    traffic_source="SO",
+    browser="Chrome",
+    utm_campaign="dont-panic-2026",
+    utm_medium="email",
+    utm_source="hitchhikers-guide",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start_time:** `datetime.datetime` — Inclusive start of the reporting window. Must be a UTC timestamp in ISO 8601 / RFC 3339 format ending in `Z` (for example, `2026-04-01T00:00:00Z`); numeric offsets such as `-04:00` or `+00:00` are not accepted. Must be on or after `2025-04-09T00:00:00Z`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end_time:** `datetime.datetime` — Exclusive end of the reporting window. Must be a UTC timestamp in ISO 8601 / RFC 3339 format ending in `Z` (for example, `2026-04-08T00:00:00Z`); numeric offsets such as `-04:00` or `+00:00` are not accepted. Must be greater than `startTime` and within 100 days of it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of rows to return. Defaults to `25`, up to a maximum of `250`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**timeseries:** `typing.Optional[TopEventsReportsRequestTimeseries]` — Include a daily event count `timeseries` for each row, bucketed in the supplied IANA time zone. Omit this parameter to return ranked rows without per-event timeseries data.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**device_type:** `typing.Optional[TopEventsReportsRequestDeviceType]` — Restrict the report to a single device type.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**country:** `typing.Optional[str]` — Restrict the report to a single country. ISO 3166-1 alpha-2 (two letters, normalized to uppercase).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_path:** `typing.Optional[str]` — Restrict the report to a single page path.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**traffic_source:** `typing.Optional[str]` — Restrict the report to a single traffic source code (for example, `SO` for Organic Search).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**browser:** `typing.Optional[str]` — Restrict the report to a single browser.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**utm_campaign:** `typing.Optional[str]` — Restrict the report to a single `utm_campaign` value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**utm_medium:** `typing.Optional[str]` — Restrict the report to a single `utm_medium` value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**utm_source:** `typing.Optional[str]` — Restrict the report to a single `utm_source` value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter:** `typing.Optional[TopEventsReportsRequestFilter]` 
+
+Filter the report by dimension. Use bracket notation. Scalars take a single value (`filter[country][eq]=US`, `filter[country][ne]=US`). Arrays use indexed brackets (`filter[country][in][0]=US&filter[country][in][1]=CA`, `filter[country][nin][0]=US&filter[country][nin][1]=CA`).
+Each dimension entry takes at least one of `eq`, `in`, `ne`, or `nin`. Filter a given dimension in one place — either a top-level query parameter or a `filter` entry. See the `TopEventsFilter` schema for the full list of supported dimensions.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.analyze.reports.<a href="src/fern/analyze/reports/client.py">time_on_page</a>(...) -> TimeOnPageReportsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Returns the average time on page over a time window — as a single aggregate value, or bucketed by day or week when `timeseries` is supplied.
+
+Choose how the average is computed with `metricScope` (per session, user, or pageview). Filter the report with top-level query parameters (`country`, `deviceType`, `pagePath`, etc.) or via the `filter` parameter for multi-value and negation matching.
+
+<Warning title="Analyze add-on required">This endpoint requires a workspace with the Analyze add-on.</Warning>
+
+<Note title="Concurrency limit: 1 request at a time">Each access token can have one Analyze request in flight at a time, across all Analyze endpoints. Additional concurrent requests return `429 Too Many Requests`; wait for your in-flight request to finish, or for the `Retry-After` interval, then retry.</Note>
+
+Required scope | `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+import datetime
+from fern.analyze.reports import TimeOnPageReportsRequestMetricScope
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.analyze.reports.time_on_page(
+    site_id="580e63e98c9a982ac9b8b741",
+    start_time=datetime.datetime.fromisoformat("2026-04-01T00:00:00+00:00"),
+    end_time=datetime.datetime.fromisoformat("2026-04-08T00:00:00+00:00"),
+    metric_scope=TimeOnPageReportsRequestMetricScope.SESSION,
+    country="US",
+    page_path="/towels",
+    traffic_source="SO",
+    referrer="google.com",
+    browser="Chrome",
+    utm_campaign="dont-panic-2026",
+    utm_medium="email",
+    utm_source="hitchhikers-guide",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start_time:** `datetime.datetime` — Inclusive start of the reporting window. Must be a UTC timestamp in ISO 8601 / RFC 3339 format ending in `Z` (for example, `2026-04-01T00:00:00Z`); numeric offsets such as `-04:00` or `+00:00` are not accepted. Must be on or after `2025-04-09T00:00:00Z`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end_time:** `datetime.datetime` — Exclusive end of the reporting window. Must be a UTC timestamp in ISO 8601 / RFC 3339 format ending in `Z` (for example, `2026-04-08T00:00:00Z`); numeric offsets such as `-04:00` or `+00:00` are not accepted. Must be greater than `startTime` and within 100 days of it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metric_scope:** `TimeOnPageReportsRequestMetricScope` — How the average time on page is computed — per session, user, or pageview.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**timeseries:** `typing.Optional[TimeOnPageReportsRequestTimeseries]` — Include bucketed average time data using the supplied granularity and IANA time zone. Omit this parameter to return a single aggregate value for the requested window.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**device_type:** `typing.Optional[TimeOnPageReportsRequestDeviceType]` — Restrict the report to a single device type.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**country:** `typing.Optional[str]` — Restrict the report to a single country. ISO 3166-1 alpha-2 (two letters, normalized to uppercase).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_path:** `typing.Optional[str]` — Restrict the report to a single page path.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**traffic_source:** `typing.Optional[str]` — Restrict the report to a single traffic source code (for example, `SO` for Organic Search).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**referrer:** `typing.Optional[str]` — Restrict the report to a single referrer domain.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**browser:** `typing.Optional[str]` — Restrict the report to a single browser.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**utm_campaign:** `typing.Optional[str]` — Restrict the report to a single `utm_campaign` value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**utm_medium:** `typing.Optional[str]` — Restrict the report to a single `utm_medium` value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**utm_source:** `typing.Optional[str]` — Restrict the report to a single `utm_source` value.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter:** `typing.Optional[TimeOnPageReportsRequestFilter]` 
+
+Filter the report by dimension. Use bracket notation. Scalars take a single value (`filter[country][eq]=US`, `filter[country][ne]=US`). Arrays use indexed brackets (`filter[country][in][0]=US&filter[country][in][1]=CA`, `filter[country][nin][0]=US&filter[country][nin][1]=CA`).
+Each dimension entry takes at least one of `eq`, `in`, `ne`, or `nin`. Filter a given dimension in one place — either a top-level query parameter or a `filter` entry. See the `TimeOnPageFilter` schema for the full list of supported dimensions.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Collections Fields
+<details><summary><code>client.collections.fields.<a href="src/fern/collections/fields/client.py">create</a>(...) -> CreateFieldsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Create a custom field in a collection.
+
+Field validation is currently not available through the API.
+
+Bulk creation of fields is not supported with this endpoint. To add multiple fields at once, include them when you [create the collection.](/data/v2.0.0/reference/cms/collections/create)
+
+Required scope | `cms:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.collections.fields import StaticField, StaticFieldType
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.fields.create(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    request=StaticField(
+        is_required=False,
+        type=StaticFieldType.RICH_TEXT,
+        display_name="Post Body",
+        help_text="Add the body of your post here",
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `CreateFieldsRequestBody` — Details about the field of a collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.fields.<a href="src/fern/collections/fields/client.py">delete</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete a custom field in a collection. This endpoint does not currently support bulk deletion.
+
+Required scope | `cms:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.fields.delete(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    field_id="580e63fc8c9a982ac9b8b745",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**field_id:** `str` — Unique identifier for a Field in a collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.fields.<a href="src/fern/collections/fields/client.py">update</a>(...) -> UpdateFieldsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update a custom field in a collection.
+
+Required scope | `cms:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.fields.update(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    field_id="580e63fc8c9a982ac9b8b745",
+    is_required=False,
+    display_name="Post Body",
+    help_text="Add the body of your post here",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**field_id:** `str` — Unique identifier for a Field in a collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**is_required:** `typing.Optional[bool]` — Define whether a field is required in a collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**display_name:** `typing.Optional[str]` — The name of a field
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**help_text:** `typing.Optional[str]` — Additional text to help anyone filling out this field
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Collections Items
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">list_items</a>(...) -> ListItemsItemsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+<Tip title="Components in Rich Text">
+  Rich Text field values may contain Webflow component instances as `<wf-component>` markup. On read they appear inline in the field's HTML; on write, the same markup creates or updates the instance.
+
+  Scalar props are `prop-<propId>="…"` attributes on the `<wf-component>`. Text and rich-text props are nested `<wf-prop name="<propId>" type="text|richtext">…</wf-prop>` children.
+
+  A write is rejected with a `400` if a component can't be resolved, contains a Collection List, populates a Slot (a component with an unpopulated Slot is allowed), includes an unknown prop, or creates a new instance in a secondary locale.
+
+  `component-id` and each `prop-<propId>` are specific to your site's component definition — obtain them by listing your site's components (`GET /v2/sites/{site_id}/components`, plus `/components/{component_id}/properties` for prop IDs) or by reading an item that already contains the component and reusing the returned markup. Omit `data-w-id` when creating an instance (the server assigns it); keep it when updating one.
+</Tip>
+
+List of all Items within a Collection.
+
+<Note>
+  This endpoint supports:
+
+  - Custom `filter[...]` queries support up to 10 filter terms and 2 text-search terms per request.
+  - Custom `sort[...]` queries support up to 3 sort fields per request.
+</Note>
+
+Required scope | `CMS:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.list_items(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    translatable="65427cf400e02b306eaa04a0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cms_locale_id:** `typing.Optional[str]` — Unique identifier for a CMS Locale. This UID is different from the Site locale identifier and is listed as `cmsLocaleId` in the Sites response. To query multiple locales, input a comma separated string.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `typing.Optional[str]` — Filter by the exact name of the item(s)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**slug:** `typing.Optional[str]` — Filter by the exact slug of the item
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_on:** `typing.Optional[ListItemsItemsRequestCreatedOn]` — Filter by the creation date of the item(s)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**last_published:** `typing.Optional[ListItemsItemsRequestLastPublished]` — Filter by the last published date of the item(s)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**last_updated:** `typing.Optional[ListItemsItemsRequestLastUpdated]` — Filter by the last updated date of the item(s)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter:** `typing.Optional[typing.Dict[str, ListItemsItemsRequestFilterValue]]` 
+
+Filter collection items by custom field values. Use bracket notation:
+`filter[<fieldSlug>][<operator>]=<value>`.
+
+Example: `filter[price][gte]=10&filter[price][lte]=100&filter[name][contains]=shirt`.
+
+Filters are combined with AND. You can combine custom field filters with top-level filters such as `name`, `slug`, `createdOn`, `lastPublished`, and `lastUpdated`. OR logic and nested filter groups are not supported on GET requests.
+
+More filter terms can increase request latency.
+
+Supported operators by field type:
+
+| Field type | Supported operators |
+| --- | --- |
+| `id` | `eq`, `ne`, `in`, `nin` |
+| `PlainText` | `eq`, `ne`, `in`, `nin`, `contains`, `ncontains`, `exists` |
+| `Number` | `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `in`, `nin`, `exists` |
+| `Switch` | `eq`, `ne`, `in`, `nin`, `exists` |
+| `DateTime` | `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `in`, `nin`, `exists` |
+| `Email`, `Phone`, `Link` | `eq`, `ne`, `in`, `nin`, `contains`, `ncontains`, `exists` |
+| `Color` | `eq`, `ne`, `in`, `nin`, `exists` |
+| `Reference` | `eq`, `ne`, `in`, `nin`, `exists` |
+| `Option` | `eq`, `ne`, `in`, `nin` |
+| `RichText`, `Image`, `MultiImage`, `VideoLink`, `MultiReference` | `exists` |
+
+`contains` and `ncontains` are case-insensitive. `ncontains` also matches items where the field is empty or not set.
+
+`exists=true` matches items where the field has a value. `exists=false` matches items where the field is missing or null. For `Switch` fields, `false` is still a set value.
+
+Value formats:
+
+| Field type | Value format |
+| --- | --- |
+| `Number` | A valid number, such as `10` or `12.5` |
+| `Switch` | `true` or `false` |
+| `DateTime` | ISO 8601 date-time string |
+| `id`, `Reference` | 24-character item ID |
+| `Option` | Option ID |
+| `in`, `nin` | Comma-separated list, up to 100 values |
+
+Invalid fields, invalid values, and operators that do not apply to a field type return a `400 BadArgument` response.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort_by:** `typing.Optional[ListItemsItemsRequestSortBy]` — Sort results by the provided value
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort_order:** `typing.Optional[ListItemsItemsRequestSortOrder]` — Sorts the results by asc or desc
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort:** `typing.Optional[typing.Dict[str, ListItemsItemsRequestSortValue]]` 
+
+Sort collection items by custom fields using bracket notation: `sort[<fieldSlug>]=<asc|desc>`.
+
+- Example: `sort[price]=desc`
+- Multiple sort fields are applied in query-string order. When `sort[...]` is provided, it takes precedence over `sortBy` and `sortOrder`.
+- Sortable field types: `PlainText`, `Email`, `Phone`, `Number`, `DateTime`, and `Switch`.
+- Unknown fields, invalid sort directions, and non-sortable field types return a `400 BadArgument` response.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**translatable:** `typing.Optional[str]` 
+
+Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+`?localeId={primary locale id}&translatable={target locale id}`
+
+Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">create_item</a>(...) -> CreateItemItemsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+<Tip title="Components in Rich Text">
+  Rich Text field values may contain Webflow component instances as `<wf-component>` markup. On read they appear inline in the field's HTML; on write, the same markup creates or updates the instance.
+
+  Scalar props are `prop-<propId>="…"` attributes on the `<wf-component>`. Text and rich-text props are nested `<wf-prop name="<propId>" type="text|richtext">…</wf-prop>` children.
+
+  A write is rejected with a `400` if a component can't be resolved, contains a Collection List, populates a Slot (a component with an unpopulated Slot is allowed), includes an unknown prop, or creates a new instance in a secondary locale.
+
+  `component-id` and each `prop-<propId>` are specific to your site's component definition — obtain them by listing your site's components (`GET /v2/sites/{site_id}/components`, plus `/components/{component_id}/properties` for prop IDs) or by reading an item that already contains the component and reusing the returned markup. Omit `data-w-id` when creating an instance (the server assigns it); keep it when updating one.
+</Tip>
+
+Create Item(s) in a Collection.
+
+This endpoint accepts two request shapes, and a request must use one or the other:
+
+- **Single item** — send `fieldData` at the top level. Set `cmsLocaleId` to create the item in a specific locale.
+- **Multiple items** — send an `items` array with at least one entry. Each entry needs its own `fieldData`, and can set its own `cmsLocaleId`, `isDraft`, and `isArchived`. The API ignores any other property on an entry.
+
+```json
+{
+  "items": [
+    {
+      "isArchived": false,
+      "isDraft": false,
+      "fieldData": {
+        "name": "Senior Data Analyst",
+        "slug": "senior-data-analyst"
+      }
+    },
+    {
+      "isArchived": false,
+      "isDraft": false,
+      "fieldData": {
+        "name": "Product Manager",
+        "slug": "product-manager"
+      }
+    }
+  ]
+}
+```
+
+A request that carries both `fieldData` and `items` returns a `400`.
+
+To create items across multiple locales, please use [this endpoint.](/data/reference/cms/collection-items/staged-items/create-items)
+
+Required scope | `CMS:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.create_item(
+    collection_id="580e63fc8c9a982ac9b8b745",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `CreateItemItemsRequestBody` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**skip_invalid_files:** `typing.Optional[bool]` — When true, invalid files are skipped and processing continues. When false, the entire request fails if any file is invalid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">delete_items</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete Items from a Collection.
+
+<Tip title="Localization Tip">Items will only be deleted in the primary locale unless a `cmsLocaleId` is included in the request.</Tip>
+
+Required scope | `CMS:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.collections.items import DeleteItemsItemsRequestItemsItem
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.delete_items(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    items=[
+        DeleteItemsItemsRequestItemsItem(
+            id="580e64008c9a982ac9b8b754",
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**items:** `typing.List[DeleteItemsItemsRequestItemsItem]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">update_items</a>(...) -> UpdateItemsItemsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+<Tip title="Components in Rich Text">
+  Rich Text field values may contain Webflow component instances as `<wf-component>` markup. On read they appear inline in the field's HTML; on write, the same markup creates or updates the instance.
+
+  Scalar props are `prop-<propId>="…"` attributes on the `<wf-component>`. Text and rich-text props are nested `<wf-prop name="<propId>" type="text|richtext">…</wf-prop>` children.
+
+  A write is rejected with a `400` if a component can't be resolved, contains a Collection List, populates a Slot (a component with an unpopulated Slot is allowed), includes an unknown prop, or creates a new instance in a secondary locale.
+
+  `component-id` and each `prop-<propId>` are specific to your site's component definition — obtain them by listing your site's components (`GET /v2/sites/{site_id}/components`, plus `/components/{component_id}/properties` for prop IDs) or by reading an item that already contains the component and reusing the returned markup. Omit `data-w-id` when creating an instance (the server assigns it); keep it when updating one.
+</Tip>
+
+Update a single item or multiple items in a Collection.
+
+The limit for this endpoint is 100 items.
+
+<Tip title="Localization Tip">Items will only be updated in the primary locale, unless a `cmsLocaleId` is included in the request.</Tip>
+
+<Note title="Draft status behavior">
+  `isDraft: true` doesn't unpublish an item. The resulting status depends on whether the item has been published before:
+
+  - **Item that has never been published:** the item gets a `Draft` status.
+  - **Already-published item:** the item gets a `Changes in draft` status. The live item stays published, and your changes are held back until you publish them.
+
+  Setting `isDraft: false` queues the item to publish on the next site publish. To remove an item from the live site, use [Unpublish Live Collection Items](/data/reference/cms/collection-items/live-items/delete-items-live). For the full status mapping, see [Publishing with the CMS API](/data/docs/working-with-the-cms/publishing).
+</Note>
+
+Required scope | `CMS:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.collections.items import UpdateItemsItemsRequestItemsItem, UpdateItemsItemsRequestItemsItemFieldData
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.update_items(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    items=[
+        UpdateItemsItemsRequestItemsItem(
+            id="66f6ed9576ddacf3149d5ea6",
+            cms_locale_id="66f6e966c9e1dc700a857ca5",
+            field_data=UpdateItemsItemsRequestItemsItemFieldData(
+                name="Ne Paniquez Pas",
+                slug="ne-paniquez-pas",
+            ),
+        ),
+        UpdateItemsItemsRequestItemsItem(
+            id="66f6ed9576ddacf3149d5ea6",
+            cms_locale_id="66f6e966c9e1dc700a857ca4",
+            field_data=UpdateItemsItemsRequestItemsItemFieldData(
+                name="No Entrar en Pánico",
+                slug="no-entrar-en-panico",
+            ),
+        ),
+        UpdateItemsItemsRequestItemsItem(
+            id="66f6ed9576ddacf3149d5eaa",
+            cms_locale_id="66f6e966c9e1dc700a857ca5",
+            field_data=UpdateItemsItemsRequestItemsItemFieldData(
+                name="Au Revoir et Merci pour Tous les Poissons",
+                slug="au-revoir-et-merci",
+            ),
+        ),
+        UpdateItemsItemsRequestItemsItem(
+            id="66f6ed9576ddacf3149d5eaa",
+            cms_locale_id="66f6e966c9e1dc700a857ca4",
+            field_data=UpdateItemsItemsRequestItemsItemFieldData(
+                name="Hasta Luego y Gracias por Todo el Pescado",
+                slug="hasta-luego-y-gracias",
+            ),
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**skip_invalid_files:** `typing.Optional[bool]` — When true, invalid files are skipped and processing continues. When false, the entire request fails if any file is invalid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**items:** `typing.Optional[typing.List[UpdateItemsItemsRequestItemsItem]]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">list_items_live</a>(...) -> ListItemsLiveItemsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+<Tip title="Components in Rich Text">
+  Rich Text field values may contain Webflow component instances as `<wf-component>` markup. On read they appear inline in the field's HTML; on write, the same markup creates or updates the instance.
+
+  Scalar props are `prop-<propId>="…"` attributes on the `<wf-component>`. Text and rich-text props are nested `<wf-prop name="<propId>" type="text|richtext">…</wf-prop>` children.
+
+  A write is rejected with a `400` if a component can't be resolved, contains a Collection List, populates a Slot (a component with an unpopulated Slot is allowed), includes an unknown prop, or creates a new instance in a secondary locale.
+
+  `component-id` and each `prop-<propId>` are specific to your site's component definition — obtain them by listing your site's components (`GET /v2/sites/{site_id}/components`, plus `/components/{component_id}/properties` for prop IDs) or by reading an item that already contains the component and reusing the returned markup. Omit `data-w-id` when creating an instance (the server assigns it); keep it when updating one.
+</Tip>
+
+List all published items in a collection.
+
+<Tip title="Serve data with the Content Delivery API">
+  Serving data to applications in real-time? Use the Content Delivery API at `api-cdn.webflow.com` for better performance. The CDN-backed endpoint is optimized for high-volume reads, while the Data API is designed for writes and management operations.
+</Tip>
+
+<Note>
+  This endpoint supports:
+
+  - Custom `filter[...]` queries support up to 10 filter terms and 2 text-search terms per request.
+  - Custom `sort[...]` queries support up to 3 sort fields per request.
+</Note>
+
+Required scope | `CMS:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.list_items_live(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    translatable="65427cf400e02b306eaa04a0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cms_locale_id:** `typing.Optional[str]` — Unique identifier for a CMS Locale. This UID is different from the Site locale identifier and is listed as `cmsLocaleId` in the Sites response. To query multiple locales, input a comma separated string.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `typing.Optional[str]` — Filter by the exact name of the item(s)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**slug:** `typing.Optional[str]` — Filter by the exact slug of the item
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_on:** `typing.Optional[ListItemsLiveItemsRequestCreatedOn]` — Filter by the creation date of the item(s)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**last_published:** `typing.Optional[ListItemsLiveItemsRequestLastPublished]` — Filter by the last published date of the item(s)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**last_updated:** `typing.Optional[ListItemsLiveItemsRequestLastUpdated]` — Filter by the last updated date of the item(s)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter:** `typing.Optional[typing.Dict[str, ListItemsLiveItemsRequestFilterValue]]` 
+
+Filter collection items by custom field values. Use bracket notation:
+`filter[<fieldSlug>][<operator>]=<value>`.
+
+Example: `filter[price][gte]=10&filter[price][lte]=100&filter[name][contains]=shirt`.
+
+Filters are combined with AND. You can combine custom field filters with top-level filters such as `name`, `slug`, `createdOn`, `lastPublished`, and `lastUpdated`. OR logic and nested filter groups are not supported on GET requests.
+
+More filter terms can increase request latency.
+
+Supported operators by field type:
+
+| Field type | Supported operators |
+| --- | --- |
+| `id` | `eq`, `ne`, `in`, `nin` |
+| `PlainText` | `eq`, `ne`, `in`, `nin`, `contains`, `ncontains`, `exists` |
+| `Number` | `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `in`, `nin`, `exists` |
+| `Switch` | `eq`, `ne`, `in`, `nin`, `exists` |
+| `DateTime` | `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `in`, `nin`, `exists` |
+| `Email`, `Phone`, `Link` | `eq`, `ne`, `in`, `nin`, `contains`, `ncontains`, `exists` |
+| `Color` | `eq`, `ne`, `in`, `nin`, `exists` |
+| `Reference` | `eq`, `ne`, `in`, `nin`, `exists` |
+| `Option` | `eq`, `ne`, `in`, `nin` |
+| `RichText`, `Image`, `MultiImage`, `VideoLink`, `MultiReference` | `exists` |
+
+`contains` and `ncontains` are case-insensitive. `ncontains` also matches items where the field is empty or not set.
+
+`exists=true` matches items where the field has a value. `exists=false` matches items where the field is missing or null. For `Switch` fields, `false` is still a set value.
+
+Value formats:
+
+| Field type | Value format |
+| --- | --- |
+| `Number` | A valid number, such as `10` or `12.5` |
+| `Switch` | `true` or `false` |
+| `DateTime` | ISO 8601 date-time string |
+| `id`, `Reference` | 24-character item ID |
+| `Option` | Option ID |
+| `in`, `nin` | Comma-separated list, up to 100 values |
+
+Invalid fields, invalid values, and operators that do not apply to a field type return a `400 BadArgument` response.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort_by:** `typing.Optional[ListItemsLiveItemsRequestSortBy]` — Sort results by the provided value
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort_order:** `typing.Optional[ListItemsLiveItemsRequestSortOrder]` — Sorts the results by asc or desc
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort:** `typing.Optional[typing.Dict[str, ListItemsLiveItemsRequestSortValue]]` 
+
+Sort collection items by custom fields using bracket notation: `sort[<fieldSlug>]=<asc|desc>`.
+
+- Example: `sort[price]=desc`
+- Multiple sort fields are applied in query-string order. When `sort[...]` is provided, it takes precedence over `sortBy` and `sortOrder`.
+- Sortable field types: `PlainText`, `Email`, `Phone`, `Number`, `DateTime`, and `Switch`.
+- Unknown fields, invalid sort directions, and non-sortable field types return a `400 BadArgument` response.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**translatable:** `typing.Optional[str]` 
+
+Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+`?localeId={primary locale id}&translatable={target locale id}`
+
+Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">create_item_live</a>(...) -> CreateItemLiveItemsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+<Tip title="Components in Rich Text">
+  Rich Text field values may contain Webflow component instances as `<wf-component>` markup. On read they appear inline in the field's HTML; on write, the same markup creates or updates the instance.
+
+  Scalar props are `prop-<propId>="…"` attributes on the `<wf-component>`. Text and rich-text props are nested `<wf-prop name="<propId>" type="text|richtext">…</wf-prop>` children.
+
+  A write is rejected with a `400` if a component can't be resolved, contains a Collection List, populates a Slot (a component with an unpopulated Slot is allowed), includes an unknown prop, or creates a new instance in a secondary locale.
+
+  `component-id` and each `prop-<propId>` are specific to your site's component definition — obtain them by listing your site's components (`GET /v2/sites/{site_id}/components`, plus `/components/{component_id}/properties` for prop IDs) or by reading an item that already contains the component and reusing the returned markup. Omit `data-w-id` when creating an instance (the server assigns it); keep it when updating one.
+</Tip>
+
+Create item(s) in a collection that will be immediately published to the live site.
+
+This endpoint accepts two request shapes, and a request must use one or the other:
+
+- **Single item** — send `fieldData` at the top level. Set `cmsLocaleId` to create the item in a specific locale.
+- **Multiple items** — send an `items` array with at least one entry. Each entry needs its own `fieldData`, and can set its own `cmsLocaleId`, `isDraft`, and `isArchived`. The API ignores any other property on an entry.
+
+```json
+{
+  "items": [
+    {
+      "isArchived": false,
+      "isDraft": false,
+      "fieldData": {
+        "name": "Senior Data Analyst",
+        "slug": "senior-data-analyst"
+      }
+    },
+    {
+      "isArchived": false,
+      "isDraft": false,
+      "fieldData": {
+        "name": "Product Manager",
+        "slug": "product-manager"
+      }
+    }
+  ]
+}
+```
+
+A request that carries both `fieldData` and `items` returns a `400`.
+
+To create items across multiple locales, [please use this endpoint.](/data/reference/cms/collection-items/staged-items/create-items)
+
+Required scope | `CMS:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.create_item_live(
+    collection_id="580e63fc8c9a982ac9b8b745",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `CreateItemLiveItemsRequestBody` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**skip_invalid_files:** `typing.Optional[bool]` — When true, invalid files are skipped and processing continues. When false, the entire request fails if any file is invalid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">delete_items_live</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Unpublish up to 100 items from the live site and set the `isDraft` property to `true`.
+
+<Tip title="Localization Tip">Items will only be unpublished in the primary locale unless a `cmsLocaleId` is included in the request.</Tip>
+
+Required scope | `CMS:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.collections.items import DeleteItemsLiveItemsRequestItemsItem
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.delete_items_live(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    items=[
+        DeleteItemsLiveItemsRequestItemsItem(
+            id="580e64008c9a982ac9b8b754",
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**items:** `typing.List[DeleteItemsLiveItemsRequestItemsItem]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">update_items_live</a>(...) -> UpdateItemsLiveItemsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+<Tip title="Components in Rich Text">
+  Rich Text field values may contain Webflow component instances as `<wf-component>` markup. On read they appear inline in the field's HTML; on write, the same markup creates or updates the instance.
+
+  Scalar props are `prop-<propId>="…"` attributes on the `<wf-component>`. Text and rich-text props are nested `<wf-prop name="<propId>" type="text|richtext">…</wf-prop>` children.
+
+  A write is rejected with a `400` if a component can't be resolved, contains a Collection List, populates a Slot (a component with an unpopulated Slot is allowed), includes an unknown prop, or creates a new instance in a secondary locale.
+
+  `component-id` and each `prop-<propId>` are specific to your site's component definition — obtain them by listing your site's components (`GET /v2/sites/{site_id}/components`, plus `/components/{component_id}/properties` for prop IDs) or by reading an item that already contains the component and reusing the returned markup. Omit `data-w-id` when creating an instance (the server assigns it); keep it when updating one.
+</Tip>
+
+Update a single published item or multiple published items (up to 100) in a Collection
+
+<Tip title="Localization Tip">Items will only be updated in the primary locale, unless a `cmsLocaleId` is included in the request.</Tip>
+
+Required scope | `CMS:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.collections.items import UpdateItemsLiveItemsRequestItemsItem, UpdateItemsLiveItemsRequestItemsItemFieldData
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.update_items_live(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    items=[
+        UpdateItemsLiveItemsRequestItemsItem(
+            id="66f6ed9576ddacf3149d5ea6",
+            cms_locale_id="66f6e966c9e1dc700a857ca5",
+            field_data=UpdateItemsLiveItemsRequestItemsItemFieldData(
+                name="Ne Paniquez Pas",
+                slug="ne-paniquez-pas",
+            ),
+        ),
+        UpdateItemsLiveItemsRequestItemsItem(
+            id="66f6ed9576ddacf3149d5ea6",
+            cms_locale_id="66f6e966c9e1dc700a857ca4",
+            field_data=UpdateItemsLiveItemsRequestItemsItemFieldData(
+                name="No Entrar en Pánico",
+                slug="no-entrar-en-panico",
+            ),
+        ),
+        UpdateItemsLiveItemsRequestItemsItem(
+            id="66f6ed9576ddacf3149d5eaa",
+            cms_locale_id="66f6e966c9e1dc700a857ca5",
+            field_data=UpdateItemsLiveItemsRequestItemsItemFieldData(
+                name="Au Revoir et Merci pour Tous les Poissons",
+                slug="au-revoir-et-merci",
+            ),
+        ),
+        UpdateItemsLiveItemsRequestItemsItem(
+            id="66f6ed9576ddacf3149d5eaa",
+            cms_locale_id="66f6e966c9e1dc700a857ca4",
+            field_data=UpdateItemsLiveItemsRequestItemsItemFieldData(
+                name="Hasta Luego y Gracias por Todo el Pescado",
+                slug="hasta-luego-y-gracias",
+            ),
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**skip_invalid_files:** `typing.Optional[bool]` — When true, invalid files are skipped and processing continues. When false, the entire request fails if any file is invalid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**items:** `typing.Optional[typing.List[UpdateItemsLiveItemsRequestItemsItem]]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">create_items</a>(...) -> CreateItemsItemsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+<Tip title="Components in Rich Text">
+  Rich Text field values may contain Webflow component instances as `<wf-component>` markup. On read they appear inline in the field's HTML; on write, the same markup creates or updates the instance.
+
+  Scalar props are `prop-<propId>="…"` attributes on the `<wf-component>`. Text and rich-text props are nested `<wf-prop name="<propId>" type="text|richtext">…</wf-prop>` children.
+
+  A write is rejected with a `400` if a component can't be resolved, contains a Collection List, populates a Slot (a component with an unpopulated Slot is allowed), includes an unknown prop, or creates a new instance in a secondary locale.
+
+  `component-id` and each `prop-<propId>` are specific to your site's component definition — obtain them by listing your site's components (`GET /v2/sites/{site_id}/components`, plus `/components/{component_id}/properties` for prop IDs) or by reading an item that already contains the component and reusing the returned markup. Omit `data-w-id` when creating an instance (the server assigns it); keep it when updating one.
+</Tip>
+
+Create an item or multiple items in a CMS Collection across multiple corresponding locales.
+
+<Note>
+  - This endpoint can create up to 100 items in a request.
+  - If the `cmsLocaleIds` parameter is not included in the request, an item will only be created in the primary locale.
+</Note>
+
+Required scope | `CMS:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.collections.items import SingleCmsItem
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.create_items(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    cms_locale_ids=[
+        "66f6e966c9e1dc700a857ca3",
+        "66f6e966c9e1dc700a857ca4",
+        "66f6e966c9e1dc700a857ca5"
+    ],
+    is_archived=False,
+    is_draft=False,
+    field_data=SingleCmsItem(
+        name="Don’t Panic",
+        slug="dont-panic",
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**field_data:** `CreateItemsItemsRequestFieldData` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**skip_invalid_files:** `typing.Optional[bool]` — When true, invalid files are skipped and processing continues. When false, the entire request fails if any file is invalid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cms_locale_ids:** `typing.Optional[typing.List[str]]` — Array of identifiers for the locales where the item will be created
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**is_archived:** `typing.Optional[bool]` — Indicates whether the item is archived.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**is_draft:** `typing.Optional[bool]` — Indicates whether the item is in draft state.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">get_item</a>(...) -> GetItemItemsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+<Tip title="Components in Rich Text">
+  Rich Text field values may contain Webflow component instances as `<wf-component>` markup. On read they appear inline in the field's HTML; on write, the same markup creates or updates the instance.
+
+  Scalar props are `prop-<propId>="…"` attributes on the `<wf-component>`. Text and rich-text props are nested `<wf-prop name="<propId>" type="text|richtext">…</wf-prop>` children.
+
+  A write is rejected with a `400` if a component can't be resolved, contains a Collection List, populates a Slot (a component with an unpopulated Slot is allowed), includes an unknown prop, or creates a new instance in a secondary locale.
+
+  `component-id` and each `prop-<propId>` are specific to your site's component definition — obtain them by listing your site's components (`GET /v2/sites/{site_id}/components`, plus `/components/{component_id}/properties` for prop IDs) or by reading an item that already contains the component and reusing the returned markup. Omit `data-w-id` when creating an instance (the server assigns it); keep it when updating one.
+</Tip>
+
+Get details of a selected Collection Item.
+
+Required scope | `CMS:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.get_item(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    item_id="580e64008c9a982ac9b8b754",
+    translatable="65427cf400e02b306eaa04a0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**item_id:** `str` — Unique identifier for an Item
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cms_locale_id:** `typing.Optional[str]` — Unique identifier for a CMS Locale. This UID is different from the Site locale identifier and is listed as `cmsLocaleId` in the Sites response. This endpoint returns a single item, so it accepts one locale. To retrieve an item in several locales, use [List Collection Items](/data/reference/cms/collection-items/staged-items/list-items) with `filter[id][eq]` and a comma separated `cmsLocaleId`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**translatable:** `typing.Optional[str]` 
+
+Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+`?localeId={primary locale id}&translatable={target locale id}`
+
+Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">delete_item</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete an item from a collection.
+
+Required scope | `CMS:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.delete_item(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    item_id="580e64008c9a982ac9b8b754",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**item_id:** `str` — Unique identifier for an Item
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cms_locale_id:** `typing.Optional[str]` — Unique identifier for a CMS Locale. This UID is different from the Site locale identifier and is listed as `cmsLocaleId` in the Sites response. To query multiple locales, input a comma separated string.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">update_item</a>(...) -> UpdateItemItemsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+<Tip title="Components in Rich Text">
+  Rich Text field values may contain Webflow component instances as `<wf-component>` markup. On read they appear inline in the field's HTML; on write, the same markup creates or updates the instance.
+
+  Scalar props are `prop-<propId>="…"` attributes on the `<wf-component>`. Text and rich-text props are nested `<wf-prop name="<propId>" type="text|richtext">…</wf-prop>` children.
+
+  A write is rejected with a `400` if a component can't be resolved, contains a Collection List, populates a Slot (a component with an unpopulated Slot is allowed), includes an unknown prop, or creates a new instance in a secondary locale.
+
+  `component-id` and each `prop-<propId>` are specific to your site's component definition — obtain them by listing your site's components (`GET /v2/sites/{site_id}/components`, plus `/components/{component_id}/properties` for prop IDs) or by reading an item that already contains the component and reusing the returned markup. Omit `data-w-id` when creating an instance (the server assigns it); keep it when updating one.
+</Tip>
+
+Update a selected Item in a Collection.
+
+<Note title="Draft status behavior">
+  `isDraft: true` doesn't unpublish an item. The resulting status depends on whether the item has been published before:
+
+  - **Item that has never been published:** the item gets a `Draft` status.
+  - **Already-published item:** the item gets a `Changes in draft` status. The live item stays published, and your changes are held back until you publish them.
+
+  Setting `isDraft: false` queues the item to publish on the next site publish. To remove an item from the live site, use [Unpublish Live Collection Items](/data/reference/cms/collection-items/live-items/delete-items-live). For the full status mapping, see [Publishing with the CMS API](/data/docs/working-with-the-cms/publishing).
+</Note>
+
+Required scope | `CMS:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.collections.items import UpdateItemItemsRequestFieldData
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.update_item(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    item_id="580e64008c9a982ac9b8b754",
+    is_archived=False,
+    is_draft=False,
+    field_data=UpdateItemItemsRequestFieldData(
+        name="The Hitchhiker\'s Guide to the Galaxy",
+        slug="hitchhikers-guide-to-the-galaxy",
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**item_id:** `str` — Unique identifier for an Item
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**skip_invalid_files:** `typing.Optional[bool]` — When true, invalid files are skipped and processing continues. When false, the entire request fails if any file is invalid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cms_locale_id:** `typing.Optional[str]` — Identifier for the locale of the CMS item
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**is_archived:** `typing.Optional[bool]` — Boolean determining if the Item is set to archived
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**is_draft:** `typing.Optional[bool]` 
+
+Sets the item's draft state. The resulting status depends on whether the item has been published before:
+
+- **Item that has never been published:** `isDraft: true` results in a `Draft` status.
+- **Already-published item:** `isDraft: true` results in a `Changes in draft` status. The live item stays published, and your changes are held back until you publish them.
+
+Setting `isDraft: true` never unpublishes an item. To remove an item from the live site, use [Unpublish Live Collection Items](/data/reference/cms/collection-items/live-items/delete-items-live).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**field_data:** `typing.Optional[UpdateItemItemsRequestFieldData]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">get_item_live</a>(...) -> GetItemLiveItemsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+<Tip title="Components in Rich Text">
+  Rich Text field values may contain Webflow component instances as `<wf-component>` markup. On read they appear inline in the field's HTML; on write, the same markup creates or updates the instance.
+
+  Scalar props are `prop-<propId>="…"` attributes on the `<wf-component>`. Text and rich-text props are nested `<wf-prop name="<propId>" type="text|richtext">…</wf-prop>` children.
+
+  A write is rejected with a `400` if a component can't be resolved, contains a Collection List, populates a Slot (a component with an unpopulated Slot is allowed), includes an unknown prop, or creates a new instance in a secondary locale.
+
+  `component-id` and each `prop-<propId>` are specific to your site's component definition — obtain them by listing your site's components (`GET /v2/sites/{site_id}/components`, plus `/components/{component_id}/properties` for prop IDs) or by reading an item that already contains the component and reusing the returned markup. Omit `data-w-id` when creating an instance (the server assigns it); keep it when updating one.
+</Tip>
+
+Get details of a selected Collection live Item.
+
+<Tip title="Serve data with the Content Delivery API">
+  Serving data to applications in real-time? Use the Content Delivery API at `api-cdn.webflow.com` for better performance. The CDN-backed endpoint is optimized for high-volume reads, while the Data API is designed for writes and management operations.
+</Tip>
+
+Required scope | `CMS:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.get_item_live(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    item_id="580e64008c9a982ac9b8b754",
+    translatable="65427cf400e02b306eaa04a0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**item_id:** `str` — Unique identifier for an Item
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cms_locale_id:** `typing.Optional[str]` — Unique identifier for a CMS Locale. This UID is different from the Site locale identifier and is listed as `cmsLocaleId` in the Sites response. This endpoint returns a single item, so it accepts one locale. To retrieve an item in several locales, use [List Collection Items](/data/reference/cms/collection-items/staged-items/list-items) with `filter[id][eq]` and a comma separated `cmsLocaleId`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**translatable:** `typing.Optional[str]` 
+
+Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+`?localeId={primary locale id}&translatable={target locale id}`
+
+Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">delete_item_live</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Unpublish a live item from the site and set the `isDraft` property to `true`.
+
+For bulk unpublishing, please use [this endpoint.](/data/v2.0.0/reference/cms/collection-items/live-items/delete-items-live)
+
+Required scope | `CMS:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.delete_item_live(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    item_id="580e64008c9a982ac9b8b754",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**item_id:** `str` — Unique identifier for an Item
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cms_locale_id:** `typing.Optional[str]` — Unique identifier for a CMS Locale. This UID is different from the Site locale identifier and is listed as `cmsLocaleId` in the Sites response. To query multiple locales, input a comma separated string.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">update_item_live</a>(...) -> UpdateItemLiveItemsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+<Tip title="Components in Rich Text">
+  Rich Text field values may contain Webflow component instances as `<wf-component>` markup. On read they appear inline in the field's HTML; on write, the same markup creates or updates the instance.
+
+  Scalar props are `prop-<propId>="…"` attributes on the `<wf-component>`. Text and rich-text props are nested `<wf-prop name="<propId>" type="text|richtext">…</wf-prop>` children.
+
+  A write is rejected with a `400` if a component can't be resolved, contains a Collection List, populates a Slot (a component with an unpopulated Slot is allowed), includes an unknown prop, or creates a new instance in a secondary locale.
+
+  `component-id` and each `prop-<propId>` are specific to your site's component definition — obtain them by listing your site's components (`GET /v2/sites/{site_id}/components`, plus `/components/{component_id}/properties` for prop IDs) or by reading an item that already contains the component and reusing the returned markup. Omit `data-w-id` when creating an instance (the server assigns it); keep it when updating one.
+</Tip>
+
+Update a selected live Item in a Collection. The updates for this Item will be published to the live site.
+
+Required scope | `CMS:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.collections.items import UpdateItemLiveItemsRequestFieldData
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.update_item_live(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    item_id="580e64008c9a982ac9b8b754",
+    is_archived=False,
+    is_draft=False,
+    field_data=UpdateItemLiveItemsRequestFieldData(
+        name="The Hitchhiker\'s Guide to the Galaxy",
+        slug="hitchhikers-guide-to-the-galaxy",
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**item_id:** `str` — Unique identifier for an Item
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**skip_invalid_files:** `typing.Optional[bool]` — When true, invalid files are skipped and processing continues. When false, the entire request fails if any file is invalid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cms_locale_id:** `typing.Optional[str]` — Identifier for the locale of the CMS item
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**is_archived:** `typing.Optional[bool]` — Boolean determining if the Item is set to archived
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**is_draft:** `typing.Optional[bool]` 
+
+Sets the item's draft state. The resulting status depends on whether the item has been published before:
+
+- **Item that has never been published:** `isDraft: true` results in a `Draft` status.
+- **Already-published item:** `isDraft: true` results in a `Changes in draft` status. The live item stays published, and your changes are held back until you publish them.
+
+Setting `isDraft: true` never unpublishes an item. To remove an item from the live site, use [Unpublish Live Collection Items](/data/reference/cms/collection-items/live-items/delete-items-live).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**field_data:** `typing.Optional[UpdateItemLiveItemsRequestFieldData]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">publish_item</a>(...) -> PublishItemItemsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Publish an item or multiple items.
+
+Required scope | `cms:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.collections.items import ItemIDs
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.collections.items.publish_item(
+    collection_id="580e63fc8c9a982ac9b8b745",
+    request=ItemIDs(
+        item_ids=[
+            "643fd856d66b6528195ee2ca",
+            "643fd856d66b6528195ee2cb",
+            "643fd856d66b6528195ee2cc"
+        ],
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**collection_id:** `str` — Unique identifier for a Collection
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `PublishItemItemsRequestBody` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Pages Scripts
+<details><summary><code>client.pages.scripts.<a href="src/fern/pages/scripts/client.py">get_custom_code</a>(...) -> GetCustomCodeScriptsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get all scripts applied to a page.
+
+<Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+Required scope | `custom_code:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.pages.scripts.get_custom_code(
+    page_id="63c720f9347c2139b248e552",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**page_id:** `str` — Unique identifier for a Page
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.pages.scripts.<a href="src/fern/pages/scripts/client.py">upsert_custom_code</a>(...) -> UpsertCustomCodeScriptsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Apply registered scripts to a page. If you have multiple scripts your App needs to apply or maintain on a page, ensure they are always included in the request body for this endpoint. To remove individual scripts, simply call this endpoint without the script in the request body.
+
+<Note title="Script Registration">
+  To apply a script to a page, the script must first be registered to a Site via the [Register Script](/data/reference/custom-code/custom-code/register-hosted) endpoints. Once registered, the script can be applied to a Site or Page using the appropriate endpoints. See the documentation on [working with Custom Code](/data/docs/custom-code) for more information.
+</Note>
+
+<Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+Required scope | `custom_code:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.pages.scripts import UpsertCustomCodeScriptsRequestScriptsItem, UpsertCustomCodeScriptsRequestScriptsItemLocation
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.pages.scripts.upsert_custom_code(
+    page_id="63c720f9347c2139b248e552",
+    scripts=[
+        UpsertCustomCodeScriptsRequestScriptsItem(
+            id="cms_slider",
+            location=UpsertCustomCodeScriptsRequestScriptsItemLocation.HEADER,
+            version="1.0.0",
+            attributes={
+                "my-attribute": "some-value"
+            },
+        ),
+        UpsertCustomCodeScriptsRequestScriptsItem(
+            id="alert",
+            location=UpsertCustomCodeScriptsRequestScriptsItemLocation.HEADER,
+            version="0.0.1",
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**page_id:** `str` — Unique identifier for a Page
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scripts:** `typing.Optional[typing.List[UpsertCustomCodeScriptsRequestScriptsItem]]` — A list of scripts applied to a Site or a Page
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.pages.scripts.<a href="src/fern/pages/scripts/client.py">delete_custom_code</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Remove all scripts from a page applied by the App. This endpoint will not remove scripts from the site's registered scripts.
+
+To remove individual scripts applied by the App, use the [Add/Update Custom Code](/data/reference/custom-code/custom-code-pages/upsert-custom-code) endpoint.
+
+<Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+Required scope | `custom_code:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.pages.scripts.delete_custom_code(
+    page_id="63c720f9347c2139b248e552",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**page_id:** `str` — Unique identifier for a Page
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sites Redirects
+<details><summary><code>client.sites.redirects.<a href="src/fern/sites/redirects/client.py">list</a>(...) -> ListRedirectsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Fetch a list of all 301 redirect rules configured for a specific site.
+
+Use this endpoint to review, audit, or manage the redirection rules that control how traffic is rerouted on your site.
+
+<Warning title="Enterprise Only">This endpoint requires an Enterprise workspace.</Warning>
+
+Required scope: `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.redirects.list(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.redirects.<a href="src/fern/sites/redirects/client.py">create</a>(...) -> CreateRedirectsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Add a new 301 redirection rule to a site.
+
+This endpoint allows you to define a source path (`fromUrl`) and its corresponding destination path (`toUrl`), which will dictate how traffic is rerouted on your site. This is useful for managing site changes, restructuring URLs, or handling outdated links.
+
+<Warning title="Enterprise Only">This endpoint requires an Enterprise workspace.</Warning>
+
+Required scope: `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.redirects.create(
+    site_id="580e63e98c9a982ac9b8b741",
+    from_url="/mostly-harmless",
+    to_url="/earth",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**from_url:** `typing.Optional[str]` — The source URL path that will be redirected.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to_url:** `typing.Optional[str]` — The target URL path where the user or client will be redirected.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.redirects.<a href="src/fern/sites/redirects/client.py">delete</a>(...) -> DeleteRedirectsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Remove a 301 redirection rule from a site.
+
+This is useful for cleaning up outdated or unnecessary redirects, ensuring that your site's routing behavior remains efficient and up-to-date.
+
+<Warning title="Enterprise Only">This endpoint requires an Enterprise workspace.</Warning>
+
+Required scope: `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.redirects.delete(
+    site_id="580e63e98c9a982ac9b8b741",
+    redirect_id="66c4cb9a20cac35ed19500e6",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**redirect_id:** `str` — Unique identifier site redirect
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.redirects.<a href="src/fern/sites/redirects/client.py">update</a>(...) -> UpdateRedirectsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update a 301 redirection rule from a site.
+
+<Warning title="Enterprise Only">This endpoint requires an Enterprise workspace.</Warning>
+
+Required scope: `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.redirects.update(
+    site_id="580e63e98c9a982ac9b8b741",
+    redirect_id="66c4cb9a20cac35ed19500e6",
+    from_url="/mostly-harmless",
+    to_url="/earth",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**redirect_id:** `str` — Unique identifier site redirect
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**from_url:** `typing.Optional[str]` — The source URL path that will be redirected.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to_url:** `typing.Optional[str]` — The target URL path where the user or client will be redirected.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sites Plans
+<details><summary><code>client.sites.plans.<a href="src/fern/sites/plans/client.py">get_site_plan</a>(...) -> GetSitePlanPlansResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get site plan details for the specified Site.
+
+<Warning title="Enterprise Only">This endpoint requires an Enterprise workspace.</Warning>
+
+Required scope | `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.plans.get_site_plan(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sites RobotsTxt
+<details><summary><code>client.sites.robots_txt.<a href="src/fern/sites/robots_txt/client.py">get</a>(...) -> GetRobotsTxtResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Retrieve the robots.txt configuration for various user agents.
+
+<Warning title="Enterprise Only">This endpoint requires an Enterprise workspace.</Warning>
+
+Required scope: `site_config:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.robots_txt.get(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.robots_txt.<a href="src/fern/sites/robots_txt/client.py">put</a>(...) -> PutRobotsTxtResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Replace the `robots.txt` configuration for various user agents.
+
+<Warning title="Enterprise Only">This endpoint requires an Enterprise workspace.</Warning>
+
+Required scope | `site_config:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.sites.robots_txt import PutRobotsTxtRequestRulesItem
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.robots_txt.put(
+    site_id="580e63e98c9a982ac9b8b741",
+    rules=[
+        PutRobotsTxtRequestRulesItem(
+            user_agent="googlebot",
+            allows=[
+                "/public"
+            ],
+            disallows=[
+                "/vogon-poetry",
+                "/total-perspective-vortex"
+            ],
+        )
+    ],
+    sitemap="https://heartofgold.ship/sitemap.xml",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**rules:** `typing.Optional[typing.List[PutRobotsTxtRequestRulesItem]]` — List of rules for user agents.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sitemap:** `typing.Optional[str]` — URL to the sitemap.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.robots_txt.<a href="src/fern/sites/robots_txt/client.py">delete</a>(...) -> DeleteRobotsTxtResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Remove specific rules for a user-agent in your `robots.txt` file. To delete all rules for a user-agent, provide an empty rule set. This will remove the user-agent's entry entirely, leaving it subject to your site's default crawling behavior.
+
+**Note:** Deleting a user-agent with no rules will make the user-agent's access unrestricted unless other directives apply.
+
+<Warning title="Enterprise Only">This endpoint requires an Enterprise workspace.</Warning>
+
+Required scope: `site_config:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.sites.robots_txt import DeleteRobotsTxtRequestRulesItem
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.robots_txt.delete(
+    site_id="580e63e98c9a982ac9b8b741",
+    rules=[
+        DeleteRobotsTxtRequestRulesItem(
+            user_agent="*",
+            allows=[
+                "/public"
+            ],
+            disallows=[
+                "/bubbles"
+            ],
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**rules:** `typing.Optional[typing.List[DeleteRobotsTxtRequestRulesItem]]` — List of rules for user agents.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sitemap:** `typing.Optional[str]` — URL to the sitemap.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.robots_txt.<a href="src/fern/sites/robots_txt/client.py">patch</a>(...) -> PatchRobotsTxtResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update the `robots.txt` configuration for various user agents.
+
+<Warning title="Enterprise Only">This endpoint requires an Enterprise workspace.</Warning>
+
+Required scope | `site_config:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.sites.robots_txt import PatchRobotsTxtRequestRulesItem
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.robots_txt.patch(
+    site_id="580e63e98c9a982ac9b8b741",
+    rules=[
+        PatchRobotsTxtRequestRulesItem(
+            user_agent="googlebot",
+            allows=[
+                "/public"
+            ],
+            disallows=[
+                "/vogon-poetry",
+                "/total-perspective-vortex"
+            ],
+        )
+    ],
+    sitemap="https://heartofgold.ship/sitemap.xml",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**rules:** `typing.Optional[typing.List[PatchRobotsTxtRequestRulesItem]]` — List of rules for user agents.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sitemap:** `typing.Optional[str]` — URL to the sitemap.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sites WellKnown
+<details><summary><code>client.sites.well_known.<a href="src/fern/sites/well_known/client.py">put</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Upload a supported well-known file to a site.
+
+The current restrictions on well-known files are as follows:
+  - Each file must be smaller than 100kb
+  - Less than 30 total files
+  - Have one of the following file extensions (or no extension): `.txt`, `.json`, `.noext`
+
+  <Note title=".noext">
+    `.noext` is a special file extension that removes other extensions. For example, `apple-app-site-association.noext.txt` will be uploaded as `apple-app-site-association`. Use this extension for tools that have trouble uploading extensionless files.
+  </Note>
+
+<Warning title="Enterprise Only">This endpoint requires an Enterprise workspace.</Warning>
+
+Required scope: `site_config:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.sites.well_known import PutWellKnownRequestContentType
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.well_known.put(
+    site_id="580e63e98c9a982ac9b8b741",
+    file_name="apple-app-site-association.txt",
+    file_data="{\n  \"applinks\": {\n    \"apps\": [],\n    \"details\": [\n  {\n    \"appID\": \"ABCDE12345.com.example.app\",\n    \"paths\": [ \"/*\", \"/some/path/*\" ]\n      }\n    ]\n  }\n}\n",
+    content_type=PutWellKnownRequestContentType.APPLICATION_JSON,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**file_name:** `str` — The name of the file
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**file_data:** `str` — The contents of the file
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**content_type:** `typing.Optional[PutWellKnownRequestContentType]` — The content type of the file. Defaults to application/json
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.well_known.<a href="src/fern/sites/well_known/client.py">delete</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete existing well-known files from a site.
+
+<Warning title="Enterprise Only">This endpoint requires an Enterprise workspace.</Warning>
+
+Required scope: `site_config:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.well_known.delete(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**file_names:** `typing.Optional[typing.List[str]]` — A list of file names to delete
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sites GoogleTag
+<details><summary><code>client.sites.google_tag.<a href="src/fern/sites/google_tag/client.py">list</a>(...) -> ListGoogleTagResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List all Google Tag IDs configured for a site, sorted by order.
+
+Required scope: `sites:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.google_tag.list(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.google_tag.<a href="src/fern/sites/google_tag/client.py">delete_all</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete all Google Tag IDs from a site.
+
+Required scope: `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.google_tag.delete_all(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.google_tag.<a href="src/fern/sites/google_tag/client.py">upsert</a>(...) -> UpsertGoogleTagResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Add or update Google Tag IDs for a site. Existing tags not referenced in the request are preserved. A site may have a maximum of 25 tags total.
+
+`order` is optional on input — it is auto-assigned for new tags and returned on all tags in the response.
+
+Required scope: `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.sites.google_tag import UpsertGoogleTagRequestGoogleTagIdsItem
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.google_tag.upsert(
+    site_id="580e63e98c9a982ac9b8b741",
+    google_tag_ids=[
+        UpsertGoogleTagRequestGoogleTagIdsItem(
+            order=0,
+            display_name="Main Analytics Tag",
+            tag_id="G-1234567890",
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**google_tag_ids:** `typing.List[UpsertGoogleTagRequestGoogleTagIdsItem]` — List of Google Tags configured for a site, sorted by order.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.google_tag.<a href="src/fern/sites/google_tag/client.py">delete</a>(...) -> DeleteGoogleTagResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete a single Google Tag ID from a site. The `order` values of the remaining tags are renormalized after deletion.
+
+Required scope: `sites:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.google_tag.delete(
+    site_id="580e63e98c9a982ac9b8b741",
+    tag_id="G-XXXXXXXXXX",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tag_id:** `str` — The Google Tag ID (e.g. G-XXXXXXXXXX)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sites ActivityLogs
+<details><summary><code>client.sites.activity_logs.<a href="src/fern/sites/activity_logs/client.py">list</a>(...) -> ListActivityLogsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Retrieve Activity Logs for a specific Site.
+
+<Warning title="Enterprise Only">This endpoint requires an Enterprise workspace.</Warning>
+
+Required scope: `site_activity:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.activity_logs.list(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sites Comments
+<details><summary><code>client.sites.comments.<a href="src/fern/sites/comments/client.py">list_comment_threads</a>(...) -> ListCommentThreadsCommentsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List all comment threads for a site.
+
+<Note title="Timing of comment threads">
+  There may be a delay of up to 5 minutes before new comments appear in the system.
+</Note>
+
+Required scope | `comments:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.comments.list_comment_threads(
+    site_id="580e63e98c9a982ac9b8b741",
+    locale_id="65427cf400e02b306eaa04a0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale_id:** `typing.Optional[str]` 
+
+Unique identifier for a specific Locale.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort_by:** `typing.Optional[ListCommentThreadsCommentsRequestSortBy]` — Sort results by the provided value. Only allowed when sortOrder is provided.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort_order:** `typing.Optional[ListCommentThreadsCommentsRequestSortOrder]` — Sorts the results by asc or desc
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.comments.<a href="src/fern/sites/comments/client.py">get_comment_thread</a>(...) -> GetCommentThreadCommentsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get details of a specific comment thread.
+
+  <Note title="Timing of comment threads">
+    There may be a delay of up to 5 minutes before new comments appear in the system.
+  </Note>
+
+Required scope | `comments:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.comments.get_comment_thread(
+    site_id="580e63e98c9a982ac9b8b741",
+    comment_thread_id="580e63e98c9a982ac9b8b741",
+    locale_id="65427cf400e02b306eaa04a0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**comment_thread_id:** `str` — Unique identifier for a Comment Thread
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale_id:** `typing.Optional[str]` 
+
+Unique identifier for a specific Locale.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort_by:** `typing.Optional[GetCommentThreadCommentsRequestSortBy]` — Sort results by the provided value. Only allowed when sortOrder is provided.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort_order:** `typing.Optional[GetCommentThreadCommentsRequestSortOrder]` — Sorts the results by asc or desc
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.comments.<a href="src/fern/sites/comments/client.py">resolve_comment_thread</a>(...) -> ResolveCommentThreadCommentsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Resolve or unresolve a comment thread.
+
+<Note>
+  This endpoint is rate limited to 60 requests per minute per site.
+</Note>
+
+Required scope | `comments:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.comments.resolve_comment_thread(
+    site_id="580e63e98c9a982ac9b8b741",
+    comment_thread_id="580e63e98c9a982ac9b8b741",
+    resolved=True,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**comment_thread_id:** `str` — Unique identifier for a Comment Thread
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**resolved:** `bool` — Set to `true` to resolve the thread, or `false` to unresolve it
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.comments.<a href="src/fern/sites/comments/client.py">list_comment_replies</a>(...) -> ListCommentRepliesCommentsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List all replies to a specific comment thread.
+
+<Note title="Timing of comment threads">
+  There may be a delay of up to 5 minutes before new comments appear in the system.
+</Note>
+
+Required scope | `comments:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.comments.list_comment_replies(
+    site_id="580e63e98c9a982ac9b8b741",
+    comment_thread_id="580e63e98c9a982ac9b8b741",
+    locale_id="65427cf400e02b306eaa04a0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**comment_thread_id:** `str` — Unique identifier for a Comment Thread
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale_id:** `typing.Optional[str]` 
+
+Unique identifier for a specific Locale.
+
+[Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort_by:** `typing.Optional[ListCommentRepliesCommentsRequestSortBy]` — Sort results by the provided value. Only allowed when sortOrder is provided.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort_order:** `typing.Optional[ListCommentRepliesCommentsRequestSortOrder]` — Sorts the results by asc or desc
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.comments.<a href="src/fern/sites/comments/client.py">create_comment_reply</a>(...) -> CreateCommentReplyCommentsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Create a reply to an existing comment thread.
+
+The reply author is always the user who authorized the OAuth token.
+To @mention a user in the reply, include their user ID in double square brackets in the `content` field, as in `[[userId]]`.
+
+<Note>
+  The `comment_created` webhook fires automatically when a reply is created.
+</Note>
+
+Required scope | `comments:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.comments.create_comment_reply(
+    site_id="580e63e98c9a982ac9b8b741",
+    comment_thread_id="580e63e98c9a982ac9b8b741",
+    content="Thanks for the feedback [[6287ec36a841b25637c663df]]!",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**comment_thread_id:** `str` — Unique identifier for a Comment Thread
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**content:** `str` — The text content of the reply. To @mention a user, include their user ID in double square brackets, as in `[[userId]]`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sites Scripts
+<details><summary><code>client.sites.scripts.<a href="src/fern/sites/scripts/client.py">get_custom_code</a>(...) -> GetCustomCodeScriptsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get all scripts applied to a site by the App.
+
+<Note title="Script Registration">
+  To apply a script to a site or page, the script must first be registered to a site via the [Register Script](/data/reference/custom-code/custom-code/register-hosted) endpoints. Once registered, the script can be applied to a Site or Page using the appropriate endpoints. See the documentation on [working with Custom Code](/data/docs/custom-code) for more information.
+</Note>
+
+<Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+Required scope | `custom_code:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.scripts.get_custom_code(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.scripts.<a href="src/fern/sites/scripts/client.py">upsert_custom_code</a>(...) -> UpsertCustomCodeScriptsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Apply registered scripts to a site. If you have multiple scripts your App needs to apply or maintain on a site, ensure they are always included in the request body for this endpoint. To remove individual scripts, simply call this endpoint without the script in the request body.
+
+<Note title="Script Registration">
+  To apply a script to a site or page, the script must first be registered to a site via the [Register Script](/data/reference/custom-code/custom-code/register-hosted) endpoints. Once registered, the script can be applied to a Site or Page using the appropriate endpoints. See the documentation on [working with Custom Code](/data/docs/custom-code) for more information.
+</Note>
+
+<Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+Required scope | `custom_code:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.sites.scripts import UpsertCustomCodeScriptsRequestScriptsItem, UpsertCustomCodeScriptsRequestScriptsItemLocation
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.scripts.upsert_custom_code(
+    site_id="580e63e98c9a982ac9b8b741",
+    scripts=[
+        UpsertCustomCodeScriptsRequestScriptsItem(
+            id="cms_slider",
+            location=UpsertCustomCodeScriptsRequestScriptsItemLocation.HEADER,
+            version="1.0.0",
+            attributes={
+                "my-attribute": "some-value"
+            },
+        ),
+        UpsertCustomCodeScriptsRequestScriptsItem(
+            id="alert",
+            location=UpsertCustomCodeScriptsRequestScriptsItemLocation.HEADER,
+            version="0.0.1",
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scripts:** `typing.Optional[typing.List[UpsertCustomCodeScriptsRequestScriptsItem]]` — A list of scripts applied to a Site or a Page
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.scripts.<a href="src/fern/sites/scripts/client.py">delete_custom_code</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Remove all scripts from a site applied by the App. This endpoint will not remove scripts from the site's registered scripts.
+
+To remove individual scripts applied by the App, use the [Add/Update Custom Code](/data/reference/custom-code/custom-code-sites/upsert-custom-code) endpoint.
+
+<Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+Required scope | `custom_code:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.scripts.delete_custom_code(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.scripts.<a href="src/fern/sites/scripts/client.py">list_custom_code_blocks</a>(...) -> ListCustomCodeBlocksScriptsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get a list of scripts that have been applied to a site and/or individual pages.
+
+<Note title="Script Registration">
+  To apply a script to a site or page, the script must first be registered to a site via the [Register Script](/data/reference/custom-code/custom-code/register-hosted) endpoints. Once registered, the script can be applied to a Site or Page using the appropriate endpoints.
+
+  See the documentation on [working with Custom Code](/data/docs/custom-code) for more information.
+</Note>
+
+<Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+Required scope | `custom_code:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.scripts.list_custom_code_blocks(
+    site_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sites Forms
+<details><summary><code>client.sites.forms.<a href="src/fern/sites/forms/client.py">list_submissions_by_site</a>(...) -> ListSubmissionsBySiteFormsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List all form submissions for a given site with the ability to filter submissions by a centralized `elementId`.
+
+Add `elementId` when you want to filter form submissions to a specific form in a site. You can get the `elementId` from the [List forms endpoint](/data/reference/forms/forms/list) (displayed as `formElementId` in the response).
+
+<Note title="Forms in components">
+When a form is used in a Webflow component definition, each instance of the component will yield a unique form. Adding the `elementId` in this request ensures this API response includes all submissions from that core form, wherever that form is used in instantiated components.
+</Note>
+
+Use the [List Form Submissions endpoint](/data/reference/forms/form-submissions/list-submissions) to list form submissions for a given form ID.
+
+Required scope | `forms:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.forms.list_submissions_by_site(
+    site_id="580e63e98c9a982ac9b8b741",
+    element_id="18259716-3e5a-646a-5f41-5dc4b9405aa0",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**element_id:** `typing.Optional[str]` — Identifier for an element
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.forms.<a href="src/fern/sites/forms/client.py">list_submissions</a>(...) -> ListSubmissionsFormsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List form submissions for a given form ID within a specific site.
+
+Use the [List Form Submissions by Site endpoint](/data/reference/forms/form-submissions/list-submissions-by-site) to list form submissions for a given site with the ability to filter by a `formElementId`.
+
+Required scope | `forms:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.forms.list_submissions(
+    site_id="580e63e98c9a982ac9b8b741",
+    form_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**form_id:** `str` — Unique identifier for a Form
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.forms.<a href="src/fern/sites/forms/client.py">get_submission</a>(...) -> GetSubmissionFormsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get information about a form submission within a specific site.
+
+Required scope | `forms:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.forms.get_submission(
+    site_id="580e63e98c9a982ac9b8b741",
+    form_submission_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**form_submission_id:** `str` — Unique identifier for a Form Submission
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.forms.<a href="src/fern/sites/forms/client.py">delete_submission</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete a form submission within a specific site.
+
+Required scope | `forms:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.forms.delete_submission(
+    site_id="580e63e98c9a982ac9b8b741",
+    form_submission_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**form_submission_id:** `str` — Unique identifier for a Form Submission
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sites.forms.<a href="src/fern/sites/forms/client.py">update_submission</a>(...) -> UpdateSubmissionFormsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update hidden fields on a form submission within a specific site.
+
+Required scope | `forms:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.sites.forms.update_submission(
+    site_id="580e63e98c9a982ac9b8b741",
+    form_submission_id="580e63e98c9a982ac9b8b741",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**site_id:** `str` — Unique identifier for a Site
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**form_submission_id:** `str` — Unique identifier for a Form Submission
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**form_submission_data:** `typing.Optional[typing.Dict[str, typing.Any]]` — An existing **hidden field** defined on the form schema, and the corresponding value to set
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Workspaces AuditLogs
+<details><summary><code>client.workspaces.audit_logs.<a href="src/fern/workspaces/audit_logs/client.py">get_workspace_audit_logs</a>(...) -> GetWorkspaceAuditLogsAuditLogsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get audit logs for a workspace.
+
+<Warning title="Enterprise & workspace API token only">This endpoint requires an Enterprise workspace and a workspace token with the `workspace_activity:read` scope. Create a workspace token from your workspace dashboard integrations page to use this endpoint.</Warning>
+
+Required scope | `workspace_activity:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+import datetime
+
+client = FernApi(
+    token="<token>",
+    environment=FernApiEnvironment.DATA_API,
+)
+
+client.workspaces.audit_logs.get_workspace_audit_logs(
+    workspace_id_or_slug="hitchhikers-workspace",
+    from_=datetime.datetime.fromisoformat("2025-06-22T16:00:31+00:00"),
+    to=datetime.datetime.fromisoformat("2025-07-22T16:00:31+00:00"),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**workspace_id_or_slug:** `str` — Unique identifier or slug for a Workspace
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Maximum number of records to be returned (max limit: 100)
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**offset:** `typing.Optional[int]` — Offset used for pagination if the results have more than limit records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort_order:** `typing.Optional[GetWorkspaceAuditLogsAuditLogsRequestSortOrder]` — Sorts the results by asc or desc
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**event_type:** `typing.Optional[GetWorkspaceAuditLogsAuditLogsRequestEventType]` — The event type to filter by
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**from:** `typing.Optional[datetime.datetime]` — The start date to filter by
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `typing.Optional[datetime.datetime]` — The end date to filter by
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+

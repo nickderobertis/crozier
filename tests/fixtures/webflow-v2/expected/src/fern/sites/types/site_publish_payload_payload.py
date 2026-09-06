@@ -1,0 +1,75 @@
+
+
+import datetime as dt
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+from .site_publish_payload_payload_publish_scope import SitePublishPayloadPayloadPublishScope
+
+
+class SitePublishPayloadPayload(UniversalBaseModel):
+    """
+    The payload of data sent from Webflow
+    """
+
+    site_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="siteId"),
+        pydantic.Field(alias="siteId", description="The ID of the site that was published"),
+    ] = None
+    """
+    The ID of the site that was published
+    """
+
+    published_on: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="publishedOn"),
+        pydantic.Field(alias="publishedOn", description="The timestamp of the publish event"),
+    ] = None
+    """
+    The timestamp of the publish event
+    """
+
+    domains: typing.Optional[typing.List[str]] = pydantic.Field(default=None)
+    """
+    The domains that were published
+    """
+
+    published_by: typing_extensions.Annotated[
+        typing.Optional[typing.Dict[str, typing.Any]],
+        FieldMetadata(alias="publishedBy"),
+        pydantic.Field(alias="publishedBy", description="The name and ID of the user who published the site"),
+    ] = None
+    """
+    The name and ID of the user who published the site
+    """
+
+    publish_scope: typing_extensions.Annotated[
+        typing.Optional[SitePublishPayloadPayloadPublishScope],
+        FieldMetadata(alias="publishScope"),
+        pydantic.Field(alias="publishScope", description="Whether the entire site or an individual page was published"),
+    ] = None
+    """
+    Whether the entire site or an individual page was published
+    """
+
+    page_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="pageId"),
+        pydantic.Field(alias="pageId", description="The ID of the page that was published"),
+    ] = None
+    """
+    The ID of the page that was published
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

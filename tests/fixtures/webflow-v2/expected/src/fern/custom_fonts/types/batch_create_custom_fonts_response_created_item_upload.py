@@ -1,0 +1,49 @@
+
+
+import datetime as dt
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+from .batch_create_custom_fonts_response_created_item_upload_fields import (
+    BatchCreateCustomFontsResponseCreatedItemUploadFields,
+)
+
+
+class BatchCreateCustomFontsResponseCreatedItemUpload(UniversalBaseModel):
+    """
+    Presigned S3 upload details. Post the font binary to `url` as `multipart/form-data`, including every key from `fields` plus the binary itself in a field named `file`. The `file` field must be the last field in the form.
+    """
+
+    url: str = pydantic.Field()
+    """
+    The S3 endpoint to POST the font binary to
+    """
+
+    fields: BatchCreateCustomFontsResponseCreatedItemUploadFields = pydantic.Field()
+    """
+    Form fields to include in the S3 multipart POST. Every key must be sent as a form field before the `file` field.
+    """
+
+    expires_at: typing_extensions.Annotated[
+        dt.datetime,
+        FieldMetadata(alias="expiresAt"),
+        pydantic.Field(
+            alias="expiresAt",
+            description="ISO 8601 timestamp after which the presigned URL expires (approximately 15 minutes from issuance)",
+        ),
+    ]
+    """
+    ISO 8601 timestamp after which the presigned URL expires (approximately 15 minutes from issuance)
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

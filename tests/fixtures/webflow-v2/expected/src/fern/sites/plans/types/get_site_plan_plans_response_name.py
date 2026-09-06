@@ -1,0 +1,42 @@
+
+
+import typing
+
+from ....core import enum
+
+T_Result = typing.TypeVar("T_Result")
+
+
+class GetSitePlanPlansResponseName(enum.StrEnum):
+    """
+    Name of the hosting plan.
+    """
+
+    BASIC_HOSTING = "Basic Hosting"
+    CMS_HOSTING = "CMS Hosting"
+    BUSINESS_HOSTING = "Business Hosting"
+    E_COMMERCE_STANDARD_HOSTING = "ECommerce Standard Hosting"
+    E_COMMERCE_PLUS_HOSTING = "ECommerce Plus Hosting"
+    E_COMMERCE_ADVANCED_HOSTING = "ECommerce Advanced Hosting"
+
+    def visit(
+        self,
+        basic_hosting: typing.Callable[[], T_Result],
+        cms_hosting: typing.Callable[[], T_Result],
+        business_hosting: typing.Callable[[], T_Result],
+        e_commerce_standard_hosting: typing.Callable[[], T_Result],
+        e_commerce_plus_hosting: typing.Callable[[], T_Result],
+        e_commerce_advanced_hosting: typing.Callable[[], T_Result],
+    ) -> T_Result:
+        if self is GetSitePlanPlansResponseName.BASIC_HOSTING:
+            return basic_hosting()
+        if self is GetSitePlanPlansResponseName.CMS_HOSTING:
+            return cms_hosting()
+        if self is GetSitePlanPlansResponseName.BUSINESS_HOSTING:
+            return business_hosting()
+        if self is GetSitePlanPlansResponseName.E_COMMERCE_STANDARD_HOSTING:
+            return e_commerce_standard_hosting()
+        if self is GetSitePlanPlansResponseName.E_COMMERCE_PLUS_HOSTING:
+            return e_commerce_plus_hosting()
+        if self is GetSitePlanPlansResponseName.E_COMMERCE_ADVANCED_HOSTING:
+            return e_commerce_advanced_hosting()

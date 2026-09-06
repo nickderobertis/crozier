@@ -1,0 +1,453 @@
+
+
+import typing
+
+from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.request_options import RequestOptions
+from .raw_client import AsyncRawScriptsClient, RawScriptsClient
+from .types.list_scripts_response import ListScriptsResponse
+from .types.register_hosted_scripts_response import RegisterHostedScriptsResponse
+from .types.register_inline_scripts_response import RegisterInlineScriptsResponse
+
+
+OMIT = typing.cast(typing.Any, ...)
+
+
+class ScriptsClient:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._raw_client = RawScriptsClient(client_wrapper=client_wrapper)
+
+    @property
+    def with_raw_response(self) -> RawScriptsClient:
+        """
+        Retrieves a raw implementation of this client that returns raw responses.
+
+        Returns
+        -------
+        RawScriptsClient
+        """
+        return self._raw_client
+
+    def list(self, site_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ListScriptsResponse:
+        """
+        Get a list of scripts that have been registered to a site. A site can have a maximum of 800 registered scripts.
+
+        <Note title="Script Registration">
+          To apply a script to a site or page, the script must first be registered to a site via the [Register Script](/data/reference/custom-code/custom-code/register-hosted) endpoints. Once registered, the script can be applied to a Site or Page using the appropriate endpoints. See the documentation on [working with Custom Code](/data/docs/custom-code) for more information.
+        </Note>
+
+        <Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+        Required scope | `custom_code:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ListScriptsResponse
+            Request was successful
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.scripts.list(
+            site_id="580e63e98c9a982ac9b8b741",
+        )
+        """
+        _response = self._raw_client.list(site_id, request_options=request_options)
+        return _response.data
+
+    def register_hosted(
+        self,
+        site_id: str,
+        *,
+        hosted_location: str,
+        integrity_hash: str,
+        version: str,
+        display_name: str,
+        can_copy: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> RegisterHostedScriptsResponse:
+        """
+        Register a hosted script to a site.
+
+        <Note title="Script Registration">
+          To apply a script to a site or page, the script must first be registered to a site via the [Register Script](/data/reference/custom-code/custom-code/register-hosted) endpoints. Once registered, the script can be applied to a Site or Page using the appropriate endpoints. See the documentation on [working with Custom Code](/data/docs/custom-code) for more information.
+        </Note>
+
+        <Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+        Required scope | `custom_code:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        hosted_location : str
+            URI for an externally hosted script location
+
+        integrity_hash : str
+            Sub-Resource Integrity Hash
+
+        version : str
+            A Semantic Version (SemVer) string, denoting the version of the script
+
+        display_name : str
+            User-facing name for the script. Must be between 1 and 50 alphanumeric characters
+
+        can_copy : typing.Optional[bool]
+            Define whether the script can be copied on site duplication and transfer
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        RegisterHostedScriptsResponse
+            Request was successful
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.scripts.register_hosted(
+            site_id="580e63e98c9a982ac9b8b741",
+            hosted_location="https://cdn.jsdelivr.net/.../cmsslider.js",
+            integrity_hash="sha384-J+YlJ8v0gpaRoKH7SbFbEmxOZlAxLiwNjfSsBhDooGa5roXlPPpXbEevck4J7YZ+",
+            can_copy=True,
+            version="1.0.0",
+            display_name="CMS Slider",
+        )
+        """
+        _response = self._raw_client.register_hosted(
+            site_id,
+            hosted_location=hosted_location,
+            integrity_hash=integrity_hash,
+            version=version,
+            display_name=display_name,
+            can_copy=can_copy,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def register_inline(
+        self,
+        site_id: str,
+        *,
+        source_code: str,
+        version: str,
+        display_name: str,
+        integrity_hash: typing.Optional[str] = OMIT,
+        can_copy: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> RegisterInlineScriptsResponse:
+        """
+        Register an inline script to a site. Inline scripts are limited to 2000 characters.
+
+        <Note title="Script Registration">
+          To apply a script to a site or page, the script must first be registered to a site via the [Register Script](/data/reference/custom-code/custom-code/register-hosted) endpoints. Once registered, the script can be applied to a Site or Page using the appropriate endpoints. See the documentation on [working with Custom Code](/data/docs/custom-code) for more information.
+        </Note>
+
+        <Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+        Required scope | `custom_code:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        source_code : str
+            The code to be added to the site (to be hosted by Webflow).
+
+        version : str
+            A Semantic Version (SemVer) string, denoting the version of the script
+
+        display_name : str
+            User-facing name for the script. Must be between 1 and 50 alphanumeric characters
+
+        integrity_hash : typing.Optional[str]
+            Sub-Resource Integrity Hash. Only required for externally hosted scripts (passed via hostedLocation)
+
+        can_copy : typing.Optional[bool]
+            Define whether the script can be copied on site duplication and transfer
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        RegisterInlineScriptsResponse
+            Created
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.scripts.register_inline(
+            site_id="580e63e98c9a982ac9b8b741",
+            source_code="alert('hello world');",
+            version="0.0.1",
+            display_name="Alert",
+        )
+        """
+        _response = self._raw_client.register_inline(
+            site_id,
+            source_code=source_code,
+            version=version,
+            display_name=display_name,
+            integrity_hash=integrity_hash,
+            can_copy=can_copy,
+            request_options=request_options,
+        )
+        return _response.data
+
+
+class AsyncScriptsClient:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._raw_client = AsyncRawScriptsClient(client_wrapper=client_wrapper)
+
+    @property
+    def with_raw_response(self) -> AsyncRawScriptsClient:
+        """
+        Retrieves a raw implementation of this client that returns raw responses.
+
+        Returns
+        -------
+        AsyncRawScriptsClient
+        """
+        return self._raw_client
+
+    async def list(
+        self, site_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> ListScriptsResponse:
+        """
+        Get a list of scripts that have been registered to a site. A site can have a maximum of 800 registered scripts.
+
+        <Note title="Script Registration">
+          To apply a script to a site or page, the script must first be registered to a site via the [Register Script](/data/reference/custom-code/custom-code/register-hosted) endpoints. Once registered, the script can be applied to a Site or Page using the appropriate endpoints. See the documentation on [working with Custom Code](/data/docs/custom-code) for more information.
+        </Note>
+
+        <Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+        Required scope | `custom_code:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ListScriptsResponse
+            Request was successful
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.scripts.list(
+                site_id="580e63e98c9a982ac9b8b741",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.list(site_id, request_options=request_options)
+        return _response.data
+
+    async def register_hosted(
+        self,
+        site_id: str,
+        *,
+        hosted_location: str,
+        integrity_hash: str,
+        version: str,
+        display_name: str,
+        can_copy: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> RegisterHostedScriptsResponse:
+        """
+        Register a hosted script to a site.
+
+        <Note title="Script Registration">
+          To apply a script to a site or page, the script must first be registered to a site via the [Register Script](/data/reference/custom-code/custom-code/register-hosted) endpoints. Once registered, the script can be applied to a Site or Page using the appropriate endpoints. See the documentation on [working with Custom Code](/data/docs/custom-code) for more information.
+        </Note>
+
+        <Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+        Required scope | `custom_code:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        hosted_location : str
+            URI for an externally hosted script location
+
+        integrity_hash : str
+            Sub-Resource Integrity Hash
+
+        version : str
+            A Semantic Version (SemVer) string, denoting the version of the script
+
+        display_name : str
+            User-facing name for the script. Must be between 1 and 50 alphanumeric characters
+
+        can_copy : typing.Optional[bool]
+            Define whether the script can be copied on site duplication and transfer
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        RegisterHostedScriptsResponse
+            Request was successful
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.scripts.register_hosted(
+                site_id="580e63e98c9a982ac9b8b741",
+                hosted_location="https://cdn.jsdelivr.net/.../cmsslider.js",
+                integrity_hash="sha384-J+YlJ8v0gpaRoKH7SbFbEmxOZlAxLiwNjfSsBhDooGa5roXlPPpXbEevck4J7YZ+",
+                can_copy=True,
+                version="1.0.0",
+                display_name="CMS Slider",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.register_hosted(
+            site_id,
+            hosted_location=hosted_location,
+            integrity_hash=integrity_hash,
+            version=version,
+            display_name=display_name,
+            can_copy=can_copy,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def register_inline(
+        self,
+        site_id: str,
+        *,
+        source_code: str,
+        version: str,
+        display_name: str,
+        integrity_hash: typing.Optional[str] = OMIT,
+        can_copy: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> RegisterInlineScriptsResponse:
+        """
+        Register an inline script to a site. Inline scripts are limited to 2000 characters.
+
+        <Note title="Script Registration">
+          To apply a script to a site or page, the script must first be registered to a site via the [Register Script](/data/reference/custom-code/custom-code/register-hosted) endpoints. Once registered, the script can be applied to a Site or Page using the appropriate endpoints. See the documentation on [working with Custom Code](/data/docs/custom-code) for more information.
+        </Note>
+
+        <Note>Access to this endpoint requires a bearer token obtained from an [OAuth Code Grant Flow](/data/reference/oauth-app).</Note>
+
+        Required scope | `custom_code:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        source_code : str
+            The code to be added to the site (to be hosted by Webflow).
+
+        version : str
+            A Semantic Version (SemVer) string, denoting the version of the script
+
+        display_name : str
+            User-facing name for the script. Must be between 1 and 50 alphanumeric characters
+
+        integrity_hash : typing.Optional[str]
+            Sub-Resource Integrity Hash. Only required for externally hosted scripts (passed via hostedLocation)
+
+        can_copy : typing.Optional[bool]
+            Define whether the script can be copied on site duplication and transfer
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        RegisterInlineScriptsResponse
+            Created
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.scripts.register_inline(
+                site_id="580e63e98c9a982ac9b8b741",
+                source_code="alert('hello world');",
+                version="0.0.1",
+                display_name="Alert",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.register_inline(
+            site_id,
+            source_code=source_code,
+            version=version,
+            display_name=display_name,
+            integrity_hash=integrity_hash,
+            can_copy=can_copy,
+            request_options=request_options,
+        )
+        return _response.data
