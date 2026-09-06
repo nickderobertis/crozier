@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.67](https://github.com/nickderobertis/crozier/compare/v0.0.66...v0.0.67) - 2026-09-06
+
+### Added
+
+- *(surface)* settle the five security rows no registrable witness reaches ([#233](https://github.com/nickderobertis/crozier/pull/233))
+
 ## [0.0.66](https://github.com/nickderobertis/crozier/compare/v0.0.65...v0.0.66) - 2026-09-06
 
 ### Added
