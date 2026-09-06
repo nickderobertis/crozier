@@ -44,6 +44,9 @@ WEBHOOKS = "servers-webhooks"
 DISCRIMINATED = "discriminated-unions"
 COOKIES = "cookie-parameters"
 EXHAUSTIVE = "exhaustive"
+# The vendored source that keys its one Responses Object with an unquoted YAML
+# integer, which is what makes it the walk's free-map-key regression witness.
+UNQUOTED_STATUS = "query-parameters-openapi"
 
 
 def grep_speaks_pcre() -> bool:
@@ -942,13 +945,12 @@ class ConjunctionCensusTests(unittest.TestCase):
     sends elsewhere. The other forty-four cases are enumeration holes.
 
     The numbers are the census's own, and an independent count over every vendored
-    document agrees with all nine. It agrees only because none of the nine reaches
-    the one place this walk under-reports: `query-parameters-openapi` writes an
-    unquoted `200:` status code, the walk skips a free-map key that is not a
-    string, and so the whole Response Object under it goes unvisited — costing the
-    plain `schema.properties` and `schema.type=array` selectors a site each. The
-    defect predates conjunctions, and fixing it moves published per-source evidence
-    counts, so it belongs to a change that may edit the region files.
+    document agrees with all nine. They were taken before the free-map-key walk
+    repair `FreeMapKeyWalkTests` guards and are unchanged by it: that repair
+    restores the Response Object subtree under an unquoted `200:` status code,
+    which moves the plain `schema.properties`, `schema.items` and `schema.type`
+    selectors on `query-parameters-openapi` and reaches no conjunction — so the
+    classification these numbers carry is the repaired walk's as well.
     """
 
     DECLARED = {
@@ -1144,6 +1146,88 @@ class ObjectModelWalkTests(unittest.TestCase):
             counted = rows(run("--vendored-only", "--fixtures-root", str(root)))
         self.assertEqual(1, counted[("reference.$ref", "refs")])
         self.assertEqual(1, counted[("schema.$ref", "refs")])
+
+
+class FreeMapKeyWalkTests(unittest.TestCase):
+    """A free-keyed map's key is a name; the object it names is still surface.
+
+    YAML lets a Responses Object be keyed `200:` rather than `"200":`, and the
+    two documents declare the same thing. The walk used to skip a non-string key
+    outright — correctly refusing to emit a selector for it, but taking the
+    descent with it — so every Response Object under an unquoted status code,
+    and every media type, schema and header beneath, went unvisited. Six
+    registered sources write their status codes that way, so this was not an
+    edge case the corpus never reached: it was an undercount published as
+    evidence.
+
+    These drive the real script over real documents, one pair written here to
+    isolate the spelling and one vendored source that writes the unquoted form.
+    """
+
+    RESPONSES = """\
+        openapi: 3.0.3
+        info: {{title: statuses, version: "1"}}
+        paths:
+          /a:
+            get:
+              responses:
+                {key}:
+                  description: ok
+                  headers:
+                    X-Rate:
+                      schema: {{type: integer}}
+                  content:
+                    application/json:
+                      schema:
+                        type: array
+                        items: {{$ref: "#/components/schemas/A"}}
+        components:
+          schemas:
+            A: {{type: object, properties: {{id: {{type: string}}}}}}
+        """
+
+    def surface(self, key: str) -> dict[str, int]:
+        """Every selector one document declares, keyed the way its Responses is."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_fixture(root, "statuses", self.RESPONSES.format(key=key))
+            counted = rows(run("--vendored-only", "--fixtures-root", str(root)))
+        return {selector: count for (selector, _fixture), count in counted.items()}
+
+    def test_an_unquoted_status_code_declares_what_the_quoted_spelling_declares(self) -> None:
+        quoted = self.surface('"200"')
+        self.assertIn("mediaType.schema", quoted)  # the subtree the skip used to lose
+        self.assertEqual(quoted, self.surface("200"))
+
+    def test_the_key_itself_is_still_a_name_in_either_spelling(self) -> None:
+        """The descent is restored; the selector the grammar refuses to emit is not."""
+        for key in ('"200"', "200"):
+            with self.subTest(key=key):
+                declared = self.surface(key)
+                self.assertEqual(
+                    [], [selector for selector in declared if selector.endswith(".200")]
+                )
+                self.assertNotIn("responses.200", declared)
+
+    def test_the_vendored_source_that_writes_an_unquoted_status_code_is_read(self) -> None:
+        """`query-parameters-openapi` writes `200:`; its one response is surface.
+
+        The counts are this source's own, so a walk that loses the subtree again
+        reports zero for the three response-side selectors and one fewer array
+        schema, and fails here rather than in a region file's evidence cell.
+        """
+        counted = rows(run("--vendored-only", "--fixture", UNQUOTED_STATUS))
+        source = (FIXTURES / UNQUOTED_STATUS / "openapi.yml").read_text(encoding="utf-8")
+        self.assertIn("\n        200:\n", source, "the fixture no longer writes `200:`")
+        for selector, count in (
+            ("response.description", 1),
+            ("response.content", 1),
+            ("mediaType.schema", 1),
+            ("schema.properties", 3),
+            ("schema.type=array", 7),
+        ):
+            with self.subTest(selector=selector):
+                self.assertEqual(count, counted.get((selector, UNQUOTED_STATUS), 0))
 
 
 class SourceSelectionTests(unittest.TestCase):
