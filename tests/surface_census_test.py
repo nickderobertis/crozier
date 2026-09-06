@@ -2039,7 +2039,7 @@ class RankedBacklogTests(unittest.TestCase):
                 self.assertEqual(counts, numbers)
 
     def test_the_prose_totals_are_the_summary_tables_own_column_sums(self) -> None:
-        """The narrated 402/271/42/89 and 39/30/20 are the table's totals."""
+        """The narrated per-category and per-settlement totals are the table's own."""
         rows = list(self.entries.values())
         totals = [len(rows)]
         totals += [
@@ -2106,7 +2106,8 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(3, named, "the reconciliation no longer names three locations by size")
 
     def test_the_ledger_join_counts_the_keys_it_reports(self) -> None:
-        """56 reported, 51 spelled by a region row, 55 that are feature keys."""
+        """Every key the join reports, split into the ones a region row spells
+        verbatim and the remainder each accounted for by a row of its own."""
         keys = self.ledger_keys()
         verbatim = keys & set(self.entries)
         text = self.section("**Every ledger key is accounted for.**", "**The one correction")
@@ -2293,7 +2294,7 @@ class RankedBacklogTests(unittest.TestCase):
         )
 
     def test_the_ranked_backlog_counts_its_own_populations(self) -> None:
-        """The "N of the 39" figures the criteria list and the join narrate.
+        """The "N of the M" figures the criteria list and the join narrate.
 
         An exhausted backlog has no population to narrate, so the index must
         narrate none rather than restate the last list's shares against zero.
@@ -2708,12 +2709,14 @@ class RankedBacklogTests(unittest.TestCase):
                     )
 
     def test_every_blocked_witness_probe_row_meets_the_amended_settlement_rule(self) -> None:
-        """The amended route, read over every region row in the tree that claims it.
+        """Route 2, read over every region row in the tree that claims it.
 
-        No row claims it today, so this observes nothing on its own — which is
-        what `AmendedSettlementRuleTests` below exists for. What it does is make
-        the first row that claims it meet the rule at the gate rather than at
-        review, over the real six region files and the real ledger.
+        Twenty-one rows claim it today, across four of the six region files, so
+        this reads the real documents end to end: every one of those rows is held
+        to the recorded search, the blocker form and the ledger verdict at the
+        gate rather than at review, over the real six region files and the real
+        ledger. `AmendedSettlementRuleTests` below stays, because a fixture is
+        the only way to watch the reconciliation *refuse* a row.
         """
         ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
         for key, (region, cells) in sorted(self.entries.items()):
@@ -2735,10 +2738,12 @@ class RankedBacklogTests(unittest.TestCase):
     def test_every_open_search_probe_row_meets_the_amended_settlement_rule(self) -> None:
         """Route 3, read over every region row in the tree that claims it.
 
-        No row claims it today either, so this observes nothing on its own — that
-        is what `OpenSearchProbeRuleTests` below is for. What it does is make the
-        first row that claims it meet the rule at the gate rather than at review,
-        over the real six region files and the real ledger.
+        Three rows claim it today — `parameters`' `header-allow-reserved` and
+        `parameter-style-form-cookie-scalar`, and `schemas`' `dependent-schemas` —
+        so this reads the real documents end to end, holding each to its
+        outstanding source, its convertibility statement and its ledger verdict.
+        `OpenSearchProbeRuleTests` below stays for the refusals, which no row in
+        the tree exhibits.
         """
         ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
         for key, (region, cells) in sorted(self.entries.items()):
@@ -2813,7 +2818,8 @@ class RankedBacklogTests(unittest.TestCase):
                 self.assertEqual(len(expected), int(stated.group(1)))
 
     def test_the_stated_registered_and_golden_source_counts_are_measured(self) -> None:
-        """124 registered / 107 golden-bearing, measured rather than transcribed."""
+        """The registered and golden-bearing source counts, measured rather than
+        transcribed off whichever walk the section was last written on."""
         sources = census.registered_sources(FIXTURES, REPO / ".local" / "corpus", False)
         aliases = census.corpus_aliases(FIXTURES)
         golden = sum(
@@ -2889,11 +2895,12 @@ class RegionFixture:
 class AmendedSettlementRuleTests(RegionFixture, unittest.TestCase):
     """The amended settlement rule, driven over real region-file content.
 
-    No row in the tree takes the amended route today, so `RankedBacklogTests`
-    reading the real six region files observes nothing about it: a reconciliation
-    that has never met a conforming row and never met a non-conforming one is one
-    nobody has watched work, and it would pass just as green if it read nothing at
-    all. So these write real region-file content — the skeleton all six carry, a
+    `RankedBacklogTests` reads every row in the tree that takes this route, so the
+    conforming half is observed over the real documents. What no real row
+    exhibits is the *refusing* half — a row that drops a declared source, names a
+    blocker without its payload, or carries no ledger verdict — and a
+    reconciliation nobody has watched refuse anything would pass just as green if
+    it read nothing at all. So these write real region-file content — the skeleton all six carry, a
     witness-search preamble of bulleted bold sources and the seven-column table
     under it, and an entry row in the eight-column shape — to a real temporary
     tree, parse it back off disk with the parsers the gate itself uses, and run the
