@@ -4823,6 +4823,31 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                             || !ep.body_schema_ref && matches!(body, RequestBody::Inline(_)))
                         && !ep.body_codegen_named
                         && (!ep.body_component_ref || ep.body_schema_dropped)
+                        // A referenced request schema that SURVIVES in the public
+                        // type layer — Fern kept the model because something else
+                        // (a response, another body) needs it — is a documented
+                        // type the request merely flattens, and Fern leaves its
+                        // content type to httpx. AGCO posts 28 such bodies
+                        // (`UpdateSystem.Models.Bundle`, `BuildSystem.Shared.DTO.Job`,
+                        // …), every one of them without the header, against the
+                        // seven whose schema Fern dropped (`API.Models.Credentials`,
+                        // `DealerDB.Models.LicenseActivationCreate`, …), every one
+                        // of them with it. A query parameter beside the body keeps
+                        // it either way — AGCO's `POST /api/v2/GlobalImages` rides
+                        // an `overridePublisherOrDate` and is the document's one
+                        // surviving-schema body that carries the header — which is
+                        // the same query-parameter exception the shared-body drop
+                        // above already records for Palo Alto's crypto profiles.
+                        // The drop is scoped to a body that offers SEVERAL media
+                        // types, which is the whole of AGCO's: a body declared over
+                        // one media type keeps the header through it, which is what
+                        // leaves exhaustive's `postJsonPatchContentType` and
+                        // `getAndReturnOptional` — each a lone `application/json`
+                        // over a surviving schema — their own.
+                        && !(ep.body_schema_ref
+                            && !ep.body_schema_dropped
+                            && ep.query_params.is_empty()
+                            && ep.body_media_alternatives)
                         && !(matches!(body, RequestBody::Inline(_))
                             && (ep.body_all_of || ep.body_response_same_ref)
                             && !resource_envelope)
@@ -9341,6 +9366,7 @@ mod tests {
             body_description_missing: false,
             body_declared_required: false,
             body_component_ref: false,
+            body_media_alternatives: false,
             body_collapses_to_type_reference: false,
             body_content_type_override: None,
             basic_auth: false,

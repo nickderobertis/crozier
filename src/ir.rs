@@ -822,6 +822,11 @@ pub struct Endpoint {
     /// Whether the body came through `components.requestBodies`, which Fern treats
     /// like a reusable declaration for content-type emission.
     pub body_component_ref: bool,
+    /// Whether the Request Body Object offers more than one media type. Fern will
+    /// not pin one of several offered encodings as the request's `content-type`
+    /// when the schema it selects survives in the public type layer (see
+    /// [`crate::emit`]); AGCO declares every body over five media types.
+    pub body_media_alternatives: bool,
     /// Whether Fern collapses the whole request to its bare body type, which
     /// carries no content type at all. Its `openapi-ir-to-fern` request
     /// converter writes the body type name alone — rather than a request object
@@ -1993,6 +1998,19 @@ fn endpoints(
             }
         }
     }
+    // Two Operation Objects sharing one `operationId` collapse to a single method
+    // above, but both were built, so both hoisted their own operation-scoped
+    // types. Fern declares such a type once — the first hoist takes the name and
+    // the second finds it taken — while still keeping the types the *losing*
+    // operation contributed on its own. AGCO's `Vouchers_Get` is declared on
+    // `/api/v2/Vouchers` and `/api/v2/Vouchers/{VoucherCode}`, each with a
+    // `Deleted` enum query parameter and only the first with a `Type` one, and
+    // its golden exports `VouchersGetRequestDeleted` once beside
+    // `VouchersGetRequestType`.
+    let mut declared = std::collections::HashSet::new();
+    tag_types.retain(|tag_type| {
+        declared.insert((tag_type.module.clone(), tag_type.decl.name().to_string()))
+    });
     (out, tag_types)
 }
 
@@ -2690,6 +2708,10 @@ fn build_endpoint(
             .as_ref()
             .is_some_and(|body| body.required == Some(true)),
         body_component_ref: op.request_body.as_ref().is_some_and(|rb| rb.component_ref),
+        body_media_alternatives: op
+            .request_body
+            .as_ref()
+            .is_some_and(|body| body.content.len() > 1),
         body_collapses_to_type_reference,
         body_content_type_override: op
             .request_body

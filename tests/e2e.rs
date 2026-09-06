@@ -1918,6 +1918,7 @@ const CORPORA: &[&Corpus] = &[
     &API_OPENVERSE_ORG,
     &DISCORD_COM,
     &BRAINTRUST_DEV,
+    &AGCO_ATS,
     &TORRENTARR,
 ];
 
@@ -3437,6 +3438,27 @@ const BRAINTRUST_DEV: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `agco-ats`: AGCO's Advanced Technical Support API is the corpus's first source
+/// that collides with itself. Its Paths Object declares
+/// `/api/v2/Releases/{ReleaseId}` beside `/api/v2/Releases/{releaseId}`, two keys
+/// crozier's own `naming::field_name` normalizes to one
+/// `/api/v2/Releases/{release_id}`; and 22 of its Operation Objects share 11
+/// `operationId` values, each written exactly twice. The golden's raw clients say
+/// what Fern does with each: it keeps both colliding routes (`getrelease` over
+/// `release_id`, `putcontentdefinition` over `release_id_`), and it drops the
+/// *first* declaration of every duplicated `operationId`, so 269 of the document's
+/// 280 operations reach the client.
+const AGCO_ATS: Corpus = Corpus {
+    api: "agco-ats",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `torrentarr`: the Torrentarr automation API is the corpus's only source
 /// declaring a media type range other than `*/*` — six `200` responses keyed on
 /// `image/*` over `{type: string, format: binary}`, which Fern emits as streamed
@@ -3828,6 +3850,11 @@ fn discord_com_matches_fern_output() {
 #[test]
 fn braintrust_dev_matches_fern_output() {
     assert_link_ok_corpus_matches(&BRAINTRUST_DEV);
+}
+
+#[test]
+fn agco_ats_matches_fern_output() {
+    assert_link_ok_corpus_matches(&AGCO_ATS);
 }
 
 #[test]

@@ -27,7 +27,7 @@ Three rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **An unfetched source is a hard failure, not a silent skip.** A `link-ok` row
   whose spec has not been fetched would otherwise report as declaring nothing,
-  and 127 of the 159 registered sources are `link-ok`. Pass `--allow-unfetched`
+  and 128 of the 160 registered sources are `link-ok`. Pass `--allow-unfetched`
   to downgrade that to a warning, or `--vendored-only` to census the offline half
   on purpose.
 
@@ -879,7 +879,9 @@ _PYTHON_KEYWORDS = frozenset({
     "not", "or", "pass", "raise", "return", "try", "while", "with", "yield",
 })
 # Builtins Fern munges in field contexts; `naming::is_reserved` is the two sets.
-_RESERVED_BUILTINS = frozenset({"all", "bool", "int", "list", "long", "map", "set", "uuid"})
+_RESERVED_BUILTINS = frozenset(
+    {"all", "bool", "float", "int", "list", "long", "map", "set", "uuid"}
+)
 # A path template expression: `{userId}` in `/users/{userId}/roles`.
 _TEMPLATE_EXPRESSION = re.compile(r"\{([^{}]*)\}")
 

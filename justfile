@@ -182,6 +182,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e api_openverse_org_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e discord_com_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e braintrust_dev_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e agco_ats_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e torrentarr_matches_fern_output
 
 # Format the codebase in place.

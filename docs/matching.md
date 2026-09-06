@@ -1606,6 +1606,64 @@ exampled from the referenced schema, an array of such references is exampled as 
 one-element list of it, and a date/date-time field's declared example is used
 rather than the synthesized placeholder.
 
+## Documents that collide with themselves (issue #188)
+
+Corpus rows 127 (`torrentarr`) and 128 (`agco-ats`) are the corpus's first
+sources that collide with *themselves* — two Paths Object keys that normalize to
+one, and one `operationId` written twice — plus its only source keying a response
+on a media type **range** other than `*/*`. All three shapes are settled inside a
+single document, so each golden's own raw clients, not a cross-document
+comparison, are what say what Fern did.
+
+**Fern keeps both members of a normalized path collision, and lets them render
+the same URL.** Torrentarr declares `/api/arr/{category}/open/{kind}/{entryId}`
+beside `…/{entry_id}` and the same pair under `/web/`; all four operations reach
+`client.web_ui`, and each pair interpolates one `entry_id`, so the two methods of
+a pair issue byte-identical requests. AGCO's pair sits on different HTTP methods
+(`GET /api/v2/Releases/{ReleaseId}`, `PUT …/{releaseId}`) and reaches
+`client.release` as `getrelease(release_id)` and
+`putcontentdefinition(release_id_, …)` — the trailing underscore being the
+ordinary body-versus-path deconfliction, since the `PUT`'s flattened body carries
+a `release_id` field. Crozier needed no change for either: nothing in it
+normalizes a path key, so two keys stay two endpoints.
+
+**A duplicated `operationId` costs the document a method, and it is the FIRST
+declaration that goes.** AGCO writes 11 ids twice each and declares 280
+operations; Fern's raw clients carry 269 distinct `(method, path)` calls.
+Crozier already collapsed two endpoints sharing a module and method name (the
+later replacing the earlier in the earlier's position), which reproduces that.
+What it did not reproduce is the *type* side: both operations were built, so both
+hoisted their operation-scoped request types, and `VouchersGetRequestDeleted`
+was exported twice. Fern declares such a type once — the first hoist takes the
+name — while keeping the types the losing operation contributed alone
+(`VouchersGetRequestType` comes from the dropped `GET /api/v2/Vouchers`). The
+endpoint builder now dedupes `tag_types` by `(module, name)`, keeping the first.
+
+**A range-keyed response is a binary stream, and `float` is a reserved name.**
+Torrentarr's six `image/*` responses over `{type: string, format: binary}` reach
+`is_binary_response` through its `starts_with("image/")` test and come out as
+`httpx_client.stream(...)` methods returning `typing.Iterator[bytes]` — which
+crozier already matched. AGCO's enums cost one naming rule: Fern safe-names the
+`visit` parameter of a `FLOAT` member to `float_`, so `float` joins
+`naming::is_reserved`'s builtin set beside `bool`, `int`, `list` and the rest.
+`scripts/openapi-surface-census.py` mirrors that set for its normalized-path
+predicate and gains the same word.
+
+**A body whose referenced schema survives the public type layer sends no explicit
+JSON `content-type` — when the body offers several media types.** AGCO declares
+every request body over five media types (`application/json`,
+`application/x-www-form-urlencoded`, `application/xml`, `text/json`, `text/xml`).
+Of the 36 such bodies that ride no path parameter, the 28 whose `$ref`'d schema
+Fern keeps as a public model send no header, and the 7 whose schema Fern drops —
+`API.Models.Credentials`, `DealerDB.Models.LicenseActivationCreate` and five more
+that exist only to be flattened into one request — send it. The 36th,
+`POST /api/v2/GlobalImages`, keeps the header on a surviving schema because it
+rides a query parameter, which is the same exception the shared-schema drop
+already recorded for Palo Alto's crypto profiles. The drop is scoped to
+several-media bodies (`Endpoint::body_media_alternatives`) because exhaustive's
+`postJsonPatchContentType` and `getAndReturnOptional` — each a lone
+`application/json` over a surviving schema — keep their header.
+
 ## Coverage note
 
 The gate measures coverage with `cargo llvm-cov --fail-under-lines 95`, which

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "agco-ats",
+  "corpus_spec_ref": "eb9d12a2684b0fbcb5aecf51e8ae54dba0929743",
+  "corpus_spec_url": "https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/agco-ats.com/main/v1/openapi.json"
+}
