@@ -1,0 +1,35 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+
+
+class UpdateStaticContentRequestNodesItemFive(UniversalBaseModel):
+    """
+    Update a search button node
+    """
+
+    node_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="nodeId"), pydantic.Field(alias="nodeId", description="Node UUID")
+    ]
+    """
+    Node UUID
+    """
+
+    value: str = pydantic.Field()
+    """
+    The text content of the search button.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

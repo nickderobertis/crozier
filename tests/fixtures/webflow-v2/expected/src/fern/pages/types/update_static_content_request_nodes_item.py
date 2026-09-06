@@ -1,0 +1,21 @@
+
+
+import typing
+
+from .update_static_content_request_nodes_item_choices import UpdateStaticContentRequestNodesItemChoices
+from .update_static_content_request_nodes_item_five import UpdateStaticContentRequestNodesItemFive
+from .update_static_content_request_nodes_item_placeholder import UpdateStaticContentRequestNodesItemPlaceholder
+from .update_static_content_request_nodes_item_property_overrides import (
+    UpdateStaticContentRequestNodesItemPropertyOverrides,
+)
+from .update_static_content_request_nodes_item_text import UpdateStaticContentRequestNodesItemText
+from .update_static_content_request_nodes_item_waiting_text import UpdateStaticContentRequestNodesItemWaitingText
+
+UpdateStaticContentRequestNodesItem = typing.Union[
+    UpdateStaticContentRequestNodesItemText,
+    UpdateStaticContentRequestNodesItemPropertyOverrides,
+    UpdateStaticContentRequestNodesItemChoices,
+    UpdateStaticContentRequestNodesItemPlaceholder,
+    UpdateStaticContentRequestNodesItemWaitingText,
+    UpdateStaticContentRequestNodesItemFive,
+]

@@ -1,0 +1,43 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+
+
+class IntrospectTokenResponseApplication(UniversalBaseModel):
+    id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Unique identifier for the Application
+    """
+
+    description: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Application description provided by the developer
+    """
+
+    homepage: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Application homepage URL provided by the developer
+    """
+
+    display_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="displayName"),
+        pydantic.Field(alias="displayName", description="Application name provided by the developer"),
+    ] = None
+    """
+    Application name provided by the developer
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

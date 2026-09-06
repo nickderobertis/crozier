@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .post_domains_settings_domain_id_request_webhook_url_one import PostDomainsSettingsDomainIdRequestWebhookUrlOne
+
+PostDomainsSettingsDomainIdRequestWebhookUrl = typing.Union[str, PostDomainsSettingsDomainIdRequestWebhookUrlOne]

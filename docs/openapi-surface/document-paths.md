@@ -164,13 +164,13 @@ would not pass a refresh unnoticed.
 | reference-ref | both | Reference Object.$ref | golden | 2026-09-04 census: `6-dot-authentiqio.appspot.com` (27), `adyen-report-notification` (2), `airbyte.local-config` (148), `amazonaws.com-cloudformation` (462), `amazonaws.com-cloudfront` (119), `anchore.io` (52), `apache.org` (376), `apache.org-airflow` (376), `apicurio.local-registry` (115), `apideck.com-accounting` (675), `apideck.com-ats` (66), `apideck.com-connector` (65), `apideck.com-crm` (505), `apideck.com-customer-support` (62), `apideck.com-ecommerce` (95), `apideck.com-ecosystem` (44), `apideck.com-file-storage` (403), `apideck.com-hris` (345), `apideck.com-issue-tracking` (216), `apideck.com-lead` (64), `apideck.com-pos` (574), `apideck.com-proxy` (48), `apideck.com-sms` (62), `apideck.com-vault` (206), `apideck.com-webhook` (86), `apis.guru` (6), `apivideo-android-uploader` (1), `asana.com` (1333), `bbci.co.uk` (110), `bunq.com` (4634), `conjur.local` (209), `cyclonedx-transparency-exchange` (91), `dnd5eapi.co` (48), `electric-sql` (6), `etsi.local-mec010-2_apppkgmgmt` (105), `exa-gate` (101), `frankfurter` (16), `github.com` (4204), `med-anvisa-price` (1), `microcks.local` (1), `ndw-accessibility-map` (5), `netbox.dev` (452), `openbanking.org.uk-account-info-openapi` (428), `openbankingproject-ch-kundenbeziehung` (27), `openepcis-dpp-ready` (87), `redhat.com-catalog_inventory` (106), `redocly.com-museum` (40), `reverb.com` (6), `sac-backend` (64), `squareup.com` (8), `tamoss` (51), `xero.com-xero-payroll-au` (16) |  |  |  |
 | templated-path-segment | both | Paths Object templated path key | gap | 2026-09-04 census: path keys are deliberately free-map names, so zero declaration selector; no ledger row names it | src/ir.rs (3 places) | A disagreement could change raw-client URL strings, path-argument order, and `reference.md` examples. | FIXTURE — register a real-world specification with a templated path and byte-compare its generated methods. |
 | several-path-template-variables | both | Paths Object path key with several template expressions | gap | 2026-09-04 census: path keys are deliberately names and per-document path-parameter totals cannot prove several variables occur in one path; no ledger row names it | src/ir.rs (3 places) | A disagreement could reorder or omit generated method path arguments and change raw-client URL interpolation. | FIXTURE — register a real-world specification with two template variables on one path and byte-compare its client methods. |
-| duplicate-normalized-paths | both | Paths Object paths equal after template-name normalization | gap | 2026-09-04 census `openapi.paths:normalized-collision`: 0 declaration sites across all 140 registered sources, 123 of them golden-bearing — the selector normalizes each path key's template expressions with crozier's own `naming::field_name`, and no document holds two keys that collide under it; no ledger row names it | none | A disagreement could add, remove, or overwrite generated raw-client methods and their `reference.md` examples. | FIXTURE — a single document declaring two normalized-equivalent path templates settles it outright: the golden's raw-client methods and their URL strings say which endpoints Fern emitted, so this is a corpus row rather than a probe. **The world-wide search has now been run** and found three such documents the corpus can take: `jentic/jentic-public-apis`' AGCO redistribution (2 sites, CC0-1.0), `Feramance/Torrentarr` (4 sites, MIT, and also [`bodies-media.md`](bodies-media.md)'s `media-type-range`) and `jentic`'s short.io redistribution (2 sites, CC0-1.0), each accepted by Fern at the pin the corpus's provenance records — `fern check` and a real generate at `fernapi/fern-python-sdk` 5.20.0, exit 0 on both halves for all three. What is short is the registration, not the witness. The two that were generated disagree about what Fern does with a collision — AGCO keeps both routes and deconflicts the parameter as `release_id`/`release_id_`, Torrentarr keeps one method per normalized route and drops the operations with no `operationId` — which is why the golden is worth having. The outcome, the screening and the seven near-misses are the `duplicate-normalized-paths` line of [Witness search (issue #188)](#witness-search-issue-188). |
+| duplicate-normalized-paths | both | Paths Object paths equal after template-name normalization | golden | Census `openapi.paths:normalized-collision`: **eight** declaration sites in three golden-bearing sources, where the 2026-09-04 walk read zero across all 140 registered sources — `torrentarr` (corpus row 127, **4** sites: `/api/arr/{category}/open/{kind}/{entryId}` beside `…/{entry_id}`, and the same pair under `/web/`), `agco-ats` (corpus row 128, **2** sites: `/api/v2/Releases/{ReleaseId}` beside `/api/v2/Releases/{releaseId}`) and `short-io` (corpus row 131, **2** sites: `/links/{link_id}` beside `/links/{linkId}`), each folding under crozier's own `naming::field_name`. **Read as the generated raw-client method set on both sides rather than as an empty diff, because a collision is where a client loses a method silently.** Torrentarr declares four colliding operations and Fern emits four methods, all on `client.web_ui` — `redirect_to_arr_ui_for_movie_series_artist_author_api` and `api_arr_open_item` for the `/api` pair, `redirect_to_arr_ui_for_movie_series_artist_author_web` and `web_arr_open_item` for the `/web` one — each pair rendering the identical request URL, since both members of a pair interpolate one `entry_id`. AGCO declares two, on different HTTP methods, and Fern emits both on `client.release`: `getrelease(release_id)` for the `GET` and `putcontentdefinition(release_id_, …)` for the `PUT`, whose path argument takes the trailing underscore because its flattened body carries a `release_id` field of its own. Short.io's two keys carry an *uneven* set — `/links/{link_id}` declares only `DELETE`, `/links/{linkId}` declares `POST` and `GET` — and Fern keeps all three, as `client.link_management.delete_link`, `client.link_management.update_existing_url` and `client.link_queries.get_link_info_by_link_id`, all three interpolating the same `link_id`. So no registered witness shows Fern losing a method to a path collision: what a normalized-path collision costs is that two methods can address one URL, not that one of them disappears. Crozier reproduces rows 127 and 128 byte for byte; row 131 is registered with a measured residual whose entries are model bodies and `reference.md` blocks rather than either colliding method. | | | |
 | pathitem-ref | both | Path Item Object.$ref | golden | 2026-09-04 census: `cyberark-conjur-api` (36); 2026-08-25 ledger `pathitem-ref` — discards |  |  |  |
 | trace-operation | both | Path Item Object.trace | limitations | 2026-09-03 ledger `trace-operation` — discards + supply |  |  |  |
 | server-description-multiword | both | Server Object.description with several words | limitations | 2026-09-03 ledger `server-description-multiword` — discards |  |  |  |
 | servers-three-levels | both | Server Object at document, Path Item and Operation levels | limitations | 2026-09-03 ledger `servers-three-levels` — discards |  |  |  |
 | missing-operation-id | both | Operation Object.operationId omitted | golden | census arithmetic (method declarations minus `operation.operationId`): `6-dot-authentiqio.appspot.com` (1), `blackadi-oauth2` (84), `byautomata.io` (4), `color.pizza` (4), `crozier-sdk-extensions` (2), `dnd5eapi.co` (47), `electric-sql` (3), `eozilla` (1), `esgenterprise.com` (1), `exa-gate` (29), `helios-verifiable-api` (12), `khoainats` (1), `kytos-sdntrace-cp` (2), `marimo` (88), `med-anvisa-price` (1), `microcks.local` (2), `missing-operation-id` (1), `nimisampo` (14), `openfigi.com` (2), `portfoliooptimizer.io` (83), `reverb.com` (163), `slurmdb-rest` (4), `squareup.com` (7), `tamoss` (8), `traccar.org` (61), `truefoundry-trueforge` (58), `withsecure-gdpr-subject-rights` (5), `worldcoin-signup-sequencer` (4) |  |  |  |
-| duplicate-operation-id | both | Operation Object.operationId duplicated | gap | 2026-09-04 census `operation.operationId:duplicate`: 0 declaration sites across all 140 registered sources, 123 of them golden-bearing — the selector compares the values, and no document holds two Operation Objects sharing one `operationId`; no ledger row names it | src/openapi.rs (1 place); src/ir.rs (6 places) | A disagreement could collapse or rename generated client methods and their `reference.md` entries. | FIXTURE — a single document declaring two Operation Objects with one `operationId` settles it outright: the golden's surviving method and its signature say which operation Fern kept, so this is a corpus row rather than a probe. **The world-wide search has now been run** and the shape is common rather than rare — 138 of jentic's primary documents declare it — so three screened candidates are named: the same `jentic/jentic-public-apis` AGCO redistribution (22 sites over 11 ids, CC0-1.0, and also the row above), `svix/svix-webhooks` (2 sites of `v1.health.get`, MIT) and `webflow/openapi-spec` (2 sites of `list-submissions`, MIT), each accepted by Fern at the pin the corpus's provenance records with exit 0 on both halves. Fern's answer already differs between them — svix's `HEAD` operation vanishes from the generated client while webflow's two survive under different tags sharing one response type — so what a golden settles here is which of those crozier must reproduce. The outcome, the screening and the seven near-misses are the `duplicate-operation-id` line of [Witness search (issue #188)](#witness-search-issue-188). |
+| duplicate-operation-id | both | Operation Object.operationId duplicated | golden | Census `operation.operationId:duplicate`: **26** declaration sites in three golden-bearing sources, where the 2026-09-04 walk read zero across all 140 registered sources — `agco-ats` (corpus row 128, **22** sites) over 11 distinct ids each written exactly twice, `svix-webhooks` (corpus row 129, **2** sites) of `v1.health.get`, and `webflow-v2` (corpus row 132, **2** sites) of `list-submissions`. **Read as the generated raw-client method set on both sides, because this is the shape where a client loses a method rather than failing — and the three witnesses do not agree.** AGCO declares 280 operations and Fern's raw clients carry **269** distinct `(method, path)` calls: one operation per duplicated id is dropped, and it is the *first* in document order, so `GET /api/v2/Clients`, `GET /api/v2/Users`, `GET /api/v2/Licenses`, `GET /api/v2/Vouchers`, `GET /api/v2/PackageTypes`, `GET /api/v2/UpdateGroups`, `GET /api/v2/AuthorizationCodeDefinitions`, `GET /api/v2/ContentReleases`, `GET /api/v2/Clients/{ClientID}/PackageReports`, `GET /api/v2/Users/Current/Permissions` and `PUT /api/v2/Roles/{id}/Users` reach no method at all, while the operation-scoped types the losing operation hoisted survive (`VouchersGetRequestType` comes from the dropped `GET /api/v2/Vouchers`). Svix loses one the same way: `GET /api/v1/health` and `HEAD /api/v1/health` share `v1.health.get` and its client carries a single `client.health.v1health_get`, the `HEAD` operation having vanished. Webflow does **not**: `GET /forms/{form_id}/submissions` and `GET /sites/{site_id}/forms/{form_id}/submissions` both survive, as `client.forms.list_submissions` and `client.sites.forms.list_submissions` under different sub-clients sharing one response type, because the two land in different sub-clients rather than colliding in one. Crozier reproduces rows 128 and 129 byte for byte — it drops the same 11 and the same `HEAD`, and keeps the same 269 — and row 132 is registered with a measured residual whose entries are environment threading and `oneOf` body-variant naming, not either `list-submissions` method. | | | |
 | non-identifier-operation-id | both | Operation Object.operationId containing punctuation or whitespace | golden | 2026-09-04 census: `operation-id-non-identifier` (2) |  |  |  |
 | nonascii-operationId | both | Operation Object.operationId containing a non-ASCII identifier | limitations | 2026-09-03 ledger `nonascii-operationId` — crashes + supply |  |  |  |
 | untagged-operation | both | Operation Object.tags omitted | golden | census arithmetic (method declarations minus `operation.tags`): `amazonaws.com-cloudformation` (132), `amazonaws.com-cloudfront` (27), `anchore.io` (7), `atlassian.com-jira` (2), `blackadi-oauth2` (84), `calorieninjas.com` (1), `color.pizza` (4), `crozier-sdk-extensions` (2), `digit-leading-property` (1), `electric-sql` (3), `eos.local` (4), `eos.local-extra-fields-forbid` (4), `eozilla` (1), `etherpad.local` (24), `etsi.local-mec010-2_apppkgmgmt` (1), `exa-gate` (29), `frankfurter` (5), `free5gc-pdu-session` (1), `helios-verifiable-api` (6), `khoainats` (2), `kytos-sdntrace-cp` (2), `livepeer-ai-runner` (3), `marimo` (86), `microcks.local` (2), `nimisampo` (14), `openfigi.com` (2), `query-parameters-openapi` (1), `redhat.com-catalog_inventory` (2), `servers-webhooks` (2), `tamoss` (8), `tlon-notes` (18), `twilio.com-twilio_messaging_v1` (45), `twilio.com-twilio_voice_v1` (32) |  |  |  |
@@ -193,9 +193,11 @@ members, `operation.operationId:duplicate` compares two declarations' values, an
 crozier's own `naming::field_name`. Each of the three rows those selectors are
 about is classified on what the selector measured rather than on the instrument's
 former blindness: `multi-tagged-operation` is `golden`, on eleven golden-bearing
-witnesses; `duplicate-operation-id` and `duplicate-normalized-paths` stay `gap`
-on a measured zero across all 140 registered sources, which is the evidence a
-`gap` row is defined to cite.
+witnesses; `duplicate-operation-id` and `duplicate-normalized-paths` are `golden`
+too, since corpus rows 127 and 128 registered the witnesses the search below
+recorded — the collision predicate now reads 6 sites in two golden-bearing
+sources and the duplicate-id predicate 22 in one, where the 2026-09-04 walk over
+140 sources read zero for both.
 
 The shape the grammar still cannot reach is the *templated path key itself* — a
 free-map name, not a field — which is why `templated-path-segment` and
@@ -220,7 +222,7 @@ the canonical join command read out of
 [`openapi-surface-coverage.md`](../openapi-surface-coverage.md) rather than
 re-deriving which keys that ledger owns — re-measures each `gap` row's site count
 against `src/`, and fails if one spec location is classified in two region files. It exits 0 with
-`document-paths evidence: ok (58 census rows, 8 ledger keys, 4 gap rows)`.
+`document-paths evidence: ok (60 census rows, 8 ledger keys, 2 gap rows)`.
 
 Run it after any change to this table, to `docs/fern-limitations.md`, or to the
 `src/` symbols the `gap` rows name. It is **not** wired into `just check`: its
@@ -347,21 +349,38 @@ CLI 5.114.0, `fern check` too — which is a screening failure of that document
 rather than a shape no corpus row could pin. That takes the `parameters` region to
 zero `PROBE` rows.
 
-`duplicate-operation-id` and `duplicate-normalized-paths` are `FIXTURE` gaps,
-not probes, and the census is their `gap` evidence rather than their settlement.
+**The change that settles this region's two collision rows registers six sources
+and does NOT re-derive the pin.** Corpus rows 127-132 (`torrentarr`, `agco-ats`,
+`svix-webhooks`, `komga`, `short-io`, `webflow-v2`) take the walk to **164**
+registered sources and **147** golden-bearing, and `just surface-census --json`
+over that tree hashes to `bbbb12f0…` on **2026-09-05**. The pin above stays `17b7125f…`, its 141-source
+value, for the same reason it has stayed there since corpus row 110: this file's
+per-fixture evidence cells are transcribed from that walk and refreshing them all
+is the explicit new measurement their own files describe, not a side effect of
+adding a source. The check therefore stops at `census drift` — as it has for
+every change since row 110 — and the two rows this change moves are reconciled
+against the measurement the check itself takes, which is what every other cell
+will be reconciled against on the day the pin is refreshed. The two rows'
+own transcriptions (`torrentarr` 4, `agco-ats` 2 and `short-io` 2 collision sites;
+`agco-ats` 22, `svix-webhooks` 2 and `webflow-v2` 2 duplicate-`operationId` sites)
+are that fresh walk's numbers.
+
+`duplicate-operation-id` and `duplicate-normalized-paths` were `FIXTURE` gaps,
+not probes, and the census was their `gap` evidence rather than their settlement.
 Both were `PROBE` while the census could not compare two values at all; the two
-predicate selectors closed that hole, and what is left is a measured zero over
-*registered* sources — which is a statement about this repository's sample, not
-about the world. Neither shape needs two documents to isolate: one document
-declaring the collision generates a golden whose raw-client methods say what Fern
+predicate selectors closed that hole, and what was left was a measured zero over
+*registered* sources — a statement about this repository's sample, not about the
+world. Corpus rows 127 and 128 settled both. Neither shape needed two documents
+to isolate: one document declaring the collision generates a golden whose
+raw-client methods say what Fern
 did with it, so a corpus row settles either outright and neither is a structural
 probe under
-[the index's definition](../openapi-surface-coverage.md#structural-probes). What
-the measured zero establishes is the weaker `gap` claim, that nothing registered
-declares the shape: their selectors exist, they are declared in the script's own
-`PREDICATES`, and they report no witness across all 140 sources. The check below
-asserts both halves of that — that each selector is one the script declares, and
-that it measures nothing — so a misspelling can never read as a zero.
+[the index's definition](../openapi-surface-coverage.md#structural-probes), and
+each corpus row's own record reads the surviving raw-client method set on both
+sides rather than an empty diff. The check below asserts both halves of what the
+selectors now say — that each is one the script declares, and that it reports the
+witness its row names — so a misspelling can never read as a zero, which is the
+same guard that made the former measured zero trustworthy.
 
 `just lint-llm-diff origin/main` checks this documented contract semantically.
 
@@ -446,15 +465,7 @@ path_row_sites = places("src/ir.rs", production["ir"].count("path_param_position
 site_cells = {
     "templated-path-segment": path_row_sites,
     "several-path-template-variables": path_row_sites,
-    "duplicate-normalized-paths": "none",
-    "duplicate-operation-id": "{}; {}".format(
-        places("src/openapi.rs", production["openapi"].count("pub operation_id")),
-        places("src/ir.rs", len(re.findall(r"\.operation_id\b", production["ir"]))),
-    ),
 }
-assert "normalize_path" not in production["ir"] + production["openapi"], (
-    "crozier now normalizes paths; duplicate-normalized-paths reads `none`"
-)
 assert {key for key, cells in rows.items() if cells[3] == "gap"} == set(site_cells)
 for key, expected_cell in site_cells.items():
     assert rows[key][5] == expected_cell, f"crozier-site drift: {key}"
@@ -491,8 +502,10 @@ prefixes = {
 pair = re.compile(r"`([^`]+)` \((\d+)\)")
 special = {
     "missing-operation-id", "non-identifier-operation-id", "untagged-operation",
-    # A predicate selector, reconciled below: its spec location is not a field name.
+    # Predicate selectors, reconciled below: their spec locations are not field names.
     "multi-tagged-operation",
+    "duplicate-operation-id",
+    "duplicate-normalized-paths",
 }
 census_rows = 0
 for key, cells in rows.items():
@@ -576,14 +589,29 @@ assert rows["multi-tagged-operation"][3] == "golden", (
 )
 census_rows += 1
 
+# Each is `golden` on the corpus rows that registered its witness, so what the
+# check asserts is the mirror of the former "measures nothing": that the selector
+# is one the script declares, that the row transcribes the measurement exactly,
+# and that every source it names really carries a committed golden.
 for key, selector in (
     ("duplicate-operation-id", "operation.operationId:duplicate"),
     ("duplicate-normalized-paths", "openapi.paths:normalized-collision"),
 ):
     assert selector in script.PREDICATES, f"{key} cites an undeclared selector: {selector}"
     assert f"`{selector}`" in rows[key][4], f"{key} no longer names the selector it rests on"
-    assert selector not in measured, f"{key} is `gap` but {selector} now has a witness"
-    assert rows[key][7].startswith("FIXTURE"), key
+    transcribed = {
+        name: int(count)
+        for name, count in re.findall(
+            r"`([a-z0-9.-]+)` \(corpus row \d+, \*\*(\d+)\*\* sites", rows[key][4]
+        )
+    }
+    assert transcribed, f"{key} no longer transcribes its own witnesses"
+    assert transcribed == measured.get(selector, {}), f"census row drift: {key}"
+    assert all(
+        (fixtures_root / alias.get(name, name) / "expected").is_dir() for name in transcribed
+    ), f"{key} is `golden` on a source carrying no committed golden"
+    assert rows[key][3] == "golden", key
+    census_rows += 1
 
 # --- the counts this document states are the ones just measured --------------
 stated = re.search(

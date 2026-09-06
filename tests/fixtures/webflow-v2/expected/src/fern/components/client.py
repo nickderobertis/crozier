@@ -1,0 +1,981 @@
+
+
+import typing
+
+from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.request_options import RequestOptions
+from .raw_client import AsyncRawComponentsClient, RawComponentsClient
+from .types.get_content_components_response import GetContentComponentsResponse
+from .types.get_properties_components_response import GetPropertiesComponentsResponse
+from .types.list_components_response import ListComponentsResponse
+from .types.update_content_components_request_nodes_item import UpdateContentComponentsRequestNodesItem
+from .types.update_content_components_response import UpdateContentComponentsResponse
+from .types.update_properties_components_request_properties_item import UpdatePropertiesComponentsRequestPropertiesItem
+from .types.update_properties_components_response import UpdatePropertiesComponentsResponse
+
+
+OMIT = typing.cast(typing.Any, ...)
+
+
+class ComponentsClient:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._raw_client = RawComponentsClient(client_wrapper=client_wrapper)
+
+    @property
+    def with_raw_response(self) -> RawComponentsClient:
+        """
+        Retrieves a raw implementation of this client that returns raw responses.
+
+        Returns
+        -------
+        RawComponentsClient
+        """
+        return self._raw_client
+
+    def list(
+        self,
+        site_id: str,
+        *,
+        branch_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ListComponentsResponse:
+        """
+        List of all components for a site.
+
+        Required scope | `components:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ListComponentsResponse
+            Request was successful
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.components.list(
+            site_id="580e63e98c9a982ac9b8b741",
+            branch_id="68026fa68ef6dc744c75b833",
+        )
+        """
+        _response = self._raw_client.list(
+            site_id, branch_id=branch_id, limit=limit, offset=offset, request_options=request_options
+        )
+        return _response.data
+
+    def get_content(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        translatable: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> GetContentComponentsResponse:
+        """
+        Get static content from a component definition. This includes text nodes, image nodes, select nodes, text input nodes, submit button nodes, and nested component instances.
+        To retrieve dynamic content set by component properties, use the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint.
+
+        <Note>If you do not provide a Locale ID in your request, the response will return any content that can be localized from the Primary locale.</Note>
+
+        Required scope | `components:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        translatable : typing.Optional[str]
+            Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+            This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+            `?localeId={primary locale id}&translatable={target locale id}`
+
+            Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+            Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        GetContentComponentsResponse
+            Request was successful
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.components.get_content(
+            site_id="580e63e98c9a982ac9b8b741",
+            component_id="8505ba55-ef72-629e-f85c-33e4b703d48b",
+            locale_id="65427cf400e02b306eaa04a0",
+            branch_id="68026fa68ef6dc744c75b833",
+            translatable="65427cf400e02b306eaa04a0",
+        )
+        """
+        _response = self._raw_client.get_content(
+            site_id,
+            component_id,
+            locale_id=locale_id,
+            branch_id=branch_id,
+            limit=limit,
+            offset=offset,
+            translatable=translatable,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def update_content(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        nodes: typing.Sequence[UpdateContentComponentsRequestNodesItem],
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> UpdateContentComponentsResponse:
+        """
+        This endpoint updates content within a component defintion for **secondary locales**. It supports updating up to 1000 nodes in a single request.
+
+        Before making updates:
+        1. Use the [get component content](/data/reference/pages-and-components/components/get-content) endpoint to identify available content nodes and their types.
+        2. If your component definition has a component instance nested within it, retrieve the nested component instance's properties that you'll override using the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint.
+        3. DOM elements may include a `data-w-id` attribute. This attribute is used by Webflow to maintain custom attributes and links across locales. Always include the original `data-w-id` value in your update requests to ensure consistent behavior across all locales.
+
+        <Note>
+          This endpoint is specifically for localizing component definitions. Ensure that the specified `localeId` is a valid **secondary locale** for the site otherwise the request will fail.
+        </Note>
+
+        Required scope | `components:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        nodes : typing.Sequence[UpdateContentComponentsRequestNodesItem]
+            List of DOM Nodes with the new content that will be updated in each node.
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        UpdateContentComponentsResponse
+            Request was successful
+
+        Examples
+        --------
+        from fern.components import (
+            UpdateContentComponentsRequestNodesItemChoices,
+            UpdateContentComponentsRequestNodesItemChoicesChoicesItem,
+            UpdateContentComponentsRequestNodesItemPlaceholder,
+            UpdateContentComponentsRequestNodesItemPropertyOverrides,
+            UpdateContentComponentsRequestNodesItemPropertyOverridesPropertyOverridesItem,
+            UpdateContentComponentsRequestNodesItemText,
+            UpdateContentComponentsRequestNodesItemWaitingText,
+        )
+
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.components.update_content(
+            site_id="580e63e98c9a982ac9b8b741",
+            component_id="8505ba55-ef72-629e-f85c-33e4b703d48b",
+            locale_id="65427cf400e02b306eaa04a0",
+            branch_id="68026fa68ef6dc744c75b833",
+            nodes=[
+                UpdateContentComponentsRequestNodesItemText(
+                    node_id="a245c12d-995b-55ee-5ec7-aa36a6cad623",
+                    text="<h1>The Hitchhiker's Guide to the Galaxy</h1>",
+                ),
+                UpdateContentComponentsRequestNodesItemText(
+                    node_id="a245c12d-995b-55ee-5ec7-aa36a6cad627",
+                    text="<div><h3>Don't Panic!</h3><p>Always know where your towel is.</p></div>",
+                ),
+                UpdateContentComponentsRequestNodesItemChoices(
+                    node_id="a245c12d-995b-55ee-5ec7-aa36a6cad635",
+                    choices=[
+                        UpdateContentComponentsRequestNodesItemChoicesChoicesItem(
+                            value="choice-1",
+                            text="First choice",
+                        ),
+                        UpdateContentComponentsRequestNodesItemChoicesChoicesItem(
+                            value="choice-2",
+                            text="Second choice",
+                        ),
+                    ],
+                ),
+                UpdateContentComponentsRequestNodesItemPlaceholder(
+                    node_id="a245c12d-995b-55ee-5ec7-aa36a6cad642",
+                    placeholder="Enter something here...",
+                ),
+                UpdateContentComponentsRequestNodesItemWaitingText(
+                    node_id="a245c12d-995b-55ee-5ec7-aa36a6cad671",
+                    value="Submit",
+                    waiting_text="Submitting...",
+                ),
+                UpdateContentComponentsRequestNodesItemPropertyOverrides(
+                    node_id="a245c12d-995b-55ee-5ec7-aa36a6cad629",
+                    property_overrides=[
+                        UpdateContentComponentsRequestNodesItemPropertyOverridesPropertyOverridesItem(
+                            property_id="7dd14c08-2e96-8d3d-2b19-b5c03642a0f0",
+                            text="<div><h1>Time is an <em>illusion</em></h1></div>",
+                        ),
+                        UpdateContentComponentsRequestNodesItemPropertyOverridesPropertyOverridesItem(
+                            property_id="7dd14c08-2e96-8d3d-2b19-b5c03642a0f1",
+                            text="Life, the Universe and Everything",
+                        ),
+                    ],
+                ),
+            ],
+        )
+        """
+        _response = self._raw_client.update_content(
+            site_id,
+            component_id,
+            nodes=nodes,
+            locale_id=locale_id,
+            branch_id=branch_id,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def get_properties(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        translatable: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> GetPropertiesComponentsResponse:
+        """
+        Get the default property values of a component definition.
+
+        <Note>If you do not include a `localeId` in your request, the response will return any properties that can be localized from the Primary locale.</Note>
+
+        Required scope | `components:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        translatable : typing.Optional[str]
+            Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+            This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+            `?localeId={primary locale id}&translatable={target locale id}`
+
+            Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+            Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        GetPropertiesComponentsResponse
+            Request was successful
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.components.get_properties(
+            site_id="580e63e98c9a982ac9b8b741",
+            component_id="8505ba55-ef72-629e-f85c-33e4b703d48b",
+            locale_id="65427cf400e02b306eaa04a0",
+            branch_id="68026fa68ef6dc744c75b833",
+            translatable="65427cf400e02b306eaa04a0",
+        )
+        """
+        _response = self._raw_client.get_properties(
+            site_id,
+            component_id,
+            locale_id=locale_id,
+            branch_id=branch_id,
+            limit=limit,
+            offset=offset,
+            translatable=translatable,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def update_properties(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        properties: typing.Sequence[UpdatePropertiesComponentsRequestPropertiesItem],
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> UpdatePropertiesComponentsResponse:
+        """
+        Update the default property values of a component definition in a specificed locale.
+
+        Before making updates:
+        1. Use the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint to identify properties that can be updated in a secondary locale.
+        2. Rich Text properties may include a `data-w-id` attribute. This attribute is used by Webflow to maintain links across locales. Always include the original `data-w-id` value in your update requests to ensure consistent behavior across all locales.
+
+        <Note>The request requires a secondary locale ID. If a `localeId` is missing, the request will not be processed and will result in an error.</Note>
+
+        Required scope | `components:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        properties : typing.Sequence[UpdatePropertiesComponentsRequestPropertiesItem]
+            A list of component properties to update within the specified secondary locale.
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        UpdatePropertiesComponentsResponse
+            Request was successful
+
+        Examples
+        --------
+        from fern.components import UpdatePropertiesComponentsRequestPropertiesItem
+
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.components.update_properties(
+            site_id="580e63e98c9a982ac9b8b741",
+            component_id="8505ba55-ef72-629e-f85c-33e4b703d48b",
+            locale_id="65427cf400e02b306eaa04a0",
+            branch_id="68026fa68ef6dc744c75b833",
+            properties=[
+                UpdatePropertiesComponentsRequestPropertiesItem(
+                    property_id="a245c12d-995b-55ee-5ec7-aa36a6cad623",
+                    text="The Hitchhiker’s Guide to the Galaxy",
+                ),
+                UpdatePropertiesComponentsRequestPropertiesItem(
+                    property_id="a245c12d-995b-55ee-5ec7-aa36a6cad627",
+                    text="<div><h3>Dont Panic!</h3><p>Always know where your towel is.</p></div>",
+                ),
+            ],
+        )
+        """
+        _response = self._raw_client.update_properties(
+            site_id,
+            component_id,
+            properties=properties,
+            locale_id=locale_id,
+            branch_id=branch_id,
+            request_options=request_options,
+        )
+        return _response.data
+
+
+class AsyncComponentsClient:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._raw_client = AsyncRawComponentsClient(client_wrapper=client_wrapper)
+
+    @property
+    def with_raw_response(self) -> AsyncRawComponentsClient:
+        """
+        Retrieves a raw implementation of this client that returns raw responses.
+
+        Returns
+        -------
+        AsyncRawComponentsClient
+        """
+        return self._raw_client
+
+    async def list(
+        self,
+        site_id: str,
+        *,
+        branch_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ListComponentsResponse:
+        """
+        List of all components for a site.
+
+        Required scope | `components:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ListComponentsResponse
+            Request was successful
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.components.list(
+                site_id="580e63e98c9a982ac9b8b741",
+                branch_id="68026fa68ef6dc744c75b833",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.list(
+            site_id, branch_id=branch_id, limit=limit, offset=offset, request_options=request_options
+        )
+        return _response.data
+
+    async def get_content(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        translatable: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> GetContentComponentsResponse:
+        """
+        Get static content from a component definition. This includes text nodes, image nodes, select nodes, text input nodes, submit button nodes, and nested component instances.
+        To retrieve dynamic content set by component properties, use the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint.
+
+        <Note>If you do not provide a Locale ID in your request, the response will return any content that can be localized from the Primary locale.</Note>
+
+        Required scope | `components:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        translatable : typing.Optional[str]
+            Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+            This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+            `?localeId={primary locale id}&translatable={target locale id}`
+
+            Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+            Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        GetContentComponentsResponse
+            Request was successful
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.components.get_content(
+                site_id="580e63e98c9a982ac9b8b741",
+                component_id="8505ba55-ef72-629e-f85c-33e4b703d48b",
+                locale_id="65427cf400e02b306eaa04a0",
+                branch_id="68026fa68ef6dc744c75b833",
+                translatable="65427cf400e02b306eaa04a0",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_content(
+            site_id,
+            component_id,
+            locale_id=locale_id,
+            branch_id=branch_id,
+            limit=limit,
+            offset=offset,
+            translatable=translatable,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def update_content(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        nodes: typing.Sequence[UpdateContentComponentsRequestNodesItem],
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> UpdateContentComponentsResponse:
+        """
+        This endpoint updates content within a component defintion for **secondary locales**. It supports updating up to 1000 nodes in a single request.
+
+        Before making updates:
+        1. Use the [get component content](/data/reference/pages-and-components/components/get-content) endpoint to identify available content nodes and their types.
+        2. If your component definition has a component instance nested within it, retrieve the nested component instance's properties that you'll override using the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint.
+        3. DOM elements may include a `data-w-id` attribute. This attribute is used by Webflow to maintain custom attributes and links across locales. Always include the original `data-w-id` value in your update requests to ensure consistent behavior across all locales.
+
+        <Note>
+          This endpoint is specifically for localizing component definitions. Ensure that the specified `localeId` is a valid **secondary locale** for the site otherwise the request will fail.
+        </Note>
+
+        Required scope | `components:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        nodes : typing.Sequence[UpdateContentComponentsRequestNodesItem]
+            List of DOM Nodes with the new content that will be updated in each node.
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        UpdateContentComponentsResponse
+            Request was successful
+
+        Examples
+        --------
+        import asyncio
+
+        from fern.components import (
+            UpdateContentComponentsRequestNodesItemChoices,
+            UpdateContentComponentsRequestNodesItemChoicesChoicesItem,
+            UpdateContentComponentsRequestNodesItemPlaceholder,
+            UpdateContentComponentsRequestNodesItemPropertyOverrides,
+            UpdateContentComponentsRequestNodesItemPropertyOverridesPropertyOverridesItem,
+            UpdateContentComponentsRequestNodesItemText,
+            UpdateContentComponentsRequestNodesItemWaitingText,
+        )
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.components.update_content(
+                site_id="580e63e98c9a982ac9b8b741",
+                component_id="8505ba55-ef72-629e-f85c-33e4b703d48b",
+                locale_id="65427cf400e02b306eaa04a0",
+                branch_id="68026fa68ef6dc744c75b833",
+                nodes=[
+                    UpdateContentComponentsRequestNodesItemText(
+                        node_id="a245c12d-995b-55ee-5ec7-aa36a6cad623",
+                        text="<h1>The Hitchhiker's Guide to the Galaxy</h1>",
+                    ),
+                    UpdateContentComponentsRequestNodesItemText(
+                        node_id="a245c12d-995b-55ee-5ec7-aa36a6cad627",
+                        text="<div><h3>Don't Panic!</h3><p>Always know where your towel is.</p></div>",
+                    ),
+                    UpdateContentComponentsRequestNodesItemChoices(
+                        node_id="a245c12d-995b-55ee-5ec7-aa36a6cad635",
+                        choices=[
+                            UpdateContentComponentsRequestNodesItemChoicesChoicesItem(
+                                value="choice-1",
+                                text="First choice",
+                            ),
+                            UpdateContentComponentsRequestNodesItemChoicesChoicesItem(
+                                value="choice-2",
+                                text="Second choice",
+                            ),
+                        ],
+                    ),
+                    UpdateContentComponentsRequestNodesItemPlaceholder(
+                        node_id="a245c12d-995b-55ee-5ec7-aa36a6cad642",
+                        placeholder="Enter something here...",
+                    ),
+                    UpdateContentComponentsRequestNodesItemWaitingText(
+                        node_id="a245c12d-995b-55ee-5ec7-aa36a6cad671",
+                        value="Submit",
+                        waiting_text="Submitting...",
+                    ),
+                    UpdateContentComponentsRequestNodesItemPropertyOverrides(
+                        node_id="a245c12d-995b-55ee-5ec7-aa36a6cad629",
+                        property_overrides=[
+                            UpdateContentComponentsRequestNodesItemPropertyOverridesPropertyOverridesItem(
+                                property_id="7dd14c08-2e96-8d3d-2b19-b5c03642a0f0",
+                                text="<div><h1>Time is an <em>illusion</em></h1></div>",
+                            ),
+                            UpdateContentComponentsRequestNodesItemPropertyOverridesPropertyOverridesItem(
+                                property_id="7dd14c08-2e96-8d3d-2b19-b5c03642a0f1",
+                                text="Life, the Universe and Everything",
+                            ),
+                        ],
+                    ),
+                ],
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.update_content(
+            site_id,
+            component_id,
+            nodes=nodes,
+            locale_id=locale_id,
+            branch_id=branch_id,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def get_properties(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        translatable: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> GetPropertiesComponentsResponse:
+        """
+        Get the default property values of a component definition.
+
+        <Note>If you do not include a `localeId` in your request, the response will return any properties that can be localized from the Primary locale.</Note>
+
+        Required scope | `components:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        translatable : typing.Optional[str]
+            Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+            This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+            `?localeId={primary locale id}&translatable={target locale id}`
+
+            Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+            Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        GetPropertiesComponentsResponse
+            Request was successful
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.components.get_properties(
+                site_id="580e63e98c9a982ac9b8b741",
+                component_id="8505ba55-ef72-629e-f85c-33e4b703d48b",
+                locale_id="65427cf400e02b306eaa04a0",
+                branch_id="68026fa68ef6dc744c75b833",
+                translatable="65427cf400e02b306eaa04a0",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_properties(
+            site_id,
+            component_id,
+            locale_id=locale_id,
+            branch_id=branch_id,
+            limit=limit,
+            offset=offset,
+            translatable=translatable,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def update_properties(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        properties: typing.Sequence[UpdatePropertiesComponentsRequestPropertiesItem],
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> UpdatePropertiesComponentsResponse:
+        """
+        Update the default property values of a component definition in a specificed locale.
+
+        Before making updates:
+        1. Use the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint to identify properties that can be updated in a secondary locale.
+        2. Rich Text properties may include a `data-w-id` attribute. This attribute is used by Webflow to maintain links across locales. Always include the original `data-w-id` value in your update requests to ensure consistent behavior across all locales.
+
+        <Note>The request requires a secondary locale ID. If a `localeId` is missing, the request will not be processed and will result in an error.</Note>
+
+        Required scope | `components:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        properties : typing.Sequence[UpdatePropertiesComponentsRequestPropertiesItem]
+            A list of component properties to update within the specified secondary locale.
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        UpdatePropertiesComponentsResponse
+            Request was successful
+
+        Examples
+        --------
+        import asyncio
+
+        from fern.components import UpdatePropertiesComponentsRequestPropertiesItem
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.components.update_properties(
+                site_id="580e63e98c9a982ac9b8b741",
+                component_id="8505ba55-ef72-629e-f85c-33e4b703d48b",
+                locale_id="65427cf400e02b306eaa04a0",
+                branch_id="68026fa68ef6dc744c75b833",
+                properties=[
+                    UpdatePropertiesComponentsRequestPropertiesItem(
+                        property_id="a245c12d-995b-55ee-5ec7-aa36a6cad623",
+                        text="The Hitchhiker’s Guide to the Galaxy",
+                    ),
+                    UpdatePropertiesComponentsRequestPropertiesItem(
+                        property_id="a245c12d-995b-55ee-5ec7-aa36a6cad627",
+                        text="<div><h3>Dont Panic!</h3><p>Always know where your towel is.</p></div>",
+                    ),
+                ],
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.update_properties(
+            site_id,
+            component_id,
+            properties=properties,
+            locale_id=locale_id,
+            branch_id=branch_id,
+            request_options=request_options,
+        )
+        return _response.data

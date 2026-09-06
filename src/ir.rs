@@ -433,14 +433,18 @@ fn auth_model(doc: &OpenApi) -> Auth {
     if doc.components.security_schemes.is_empty() {
         return Auth::None;
     }
-    // A scheme nothing selects reaches the wrapper only when it is a header api
-    // key. Fern imports a header `apiKey` as an SDK-wide credential whatever the
-    // requirements say (`byautomata.io` declares no `security` anywhere and still
-    // gets its `api_key`), but it takes an HTTP or OAuth2 scheme only from a
-    // declared Security Requirement Object — an empty root `security: []` counts,
-    // and so does one on a webhook operation. Selection order is untouched by
-    // this: the first supported scheme still wins, and the check is on what that
-    // scheme turned out to be.
+    // A scheme nothing selects still reaches the wrapper. Fern imports a header
+    // `apiKey` as an SDK-wide credential whatever the requirements say
+    // (`byautomata.io` declares no `security` anywhere and still gets its
+    // `api_key`), and it does the same for an `http` `bearer` scheme: svix
+    // declares `HTTPBearer` in `components.securitySchemes`, no `security` at the
+    // document level and none on any of its 44 operations, and its golden's client
+    // wrapper still takes an optional `token` and sends `Authorization: Bearer`.
+    // An `http` `basic` or an OAuth2 scheme is still taken only from a declared
+    // Security Requirement Object — an empty root `security: []` counts, and so
+    // does one on a webhook operation. Selection order is untouched by this: the
+    // first supported scheme still wins, and the check is on what that scheme
+    // turned out to be.
     let requirement_declared = doc.security.is_some()
         || doc
             .paths
@@ -459,7 +463,11 @@ fn auth_model(doc: &OpenApi) -> Auth {
             || scheme.ty == SecuritySchemeType::OAuth2
     });
     if !requirement_declared
-        && selected.is_none_or(|scheme| scheme.ty != SecuritySchemeType::ApiKey)
+        && selected.is_none_or(|scheme| {
+            scheme.ty != SecuritySchemeType::ApiKey
+                && !(scheme.ty == SecuritySchemeType::Http
+                    && scheme.scheme == Some(HttpAuthScheme::Bearer))
+        })
     {
         return Auth::None;
     }
@@ -822,6 +830,11 @@ pub struct Endpoint {
     /// Whether the body came through `components.requestBodies`, which Fern treats
     /// like a reusable declaration for content-type emission.
     pub body_component_ref: bool,
+    /// Whether the Request Body Object offers more than one media type. Fern will
+    /// not pin one of several offered encodings as the request's `content-type`
+    /// when the schema it selects survives in the public type layer (see
+    /// [`crate::emit`]); AGCO declares every body over five media types.
+    pub body_media_alternatives: bool,
     /// Whether Fern collapses the whole request to its bare body type, which
     /// carries no content type at all. Its `openapi-ir-to-fern` request
     /// converter writes the body type name alone — rather than a request object
@@ -980,7 +993,8 @@ pub struct QueryParam {
     /// Whether an array value is serialized as one comma-separated query value.
     pub comma_separated: bool,
     /// Whether Fern accepts a scalar item as shorthand for an array parameter.
-    /// Direct array schemas do; nullable unions containing an array do not.
+    /// Direct array schemas do; a nullable array does not, in either spelling —
+    /// a 3.1 union with a `null` member, or a 3.0 `nullable: true`.
     pub allow_multiple: bool,
     /// The parameter's `example` as a Python literal; when set, the parameter is
     /// shown in a worked snippet even if optional (`example_literal`).
@@ -1993,6 +2007,19 @@ fn endpoints(
             }
         }
     }
+    // Two Operation Objects sharing one `operationId` collapse to a single method
+    // above, but both were built, so both hoisted their own operation-scoped
+    // types. Fern declares such a type once — the first hoist takes the name and
+    // the second finds it taken — while still keeping the types the *losing*
+    // operation contributed on its own. AGCO's `Vouchers_Get` is declared on
+    // `/api/v2/Vouchers` and `/api/v2/Vouchers/{VoucherCode}`, each with a
+    // `Deleted` enum query parameter and only the first with a `Type` one, and
+    // its golden exports `VouchersGetRequestDeleted` once beside
+    // `VouchersGetRequestType`.
+    let mut declared = std::collections::HashSet::new();
+    tag_types.retain(|tag_type| {
+        declared.insert((tag_type.module.clone(), tag_type.decl.name().to_string()))
+    });
     (out, tag_types)
 }
 
@@ -2153,6 +2180,29 @@ fn build_endpoint(
             }),
         })
         .collect();
+    // A path template expression the operation never declares as a Parameter
+    // Object is still an argument: Fern synthesizes a required `str` for it, with
+    // no docstring and no example. Svix declares `app_id` on the `PUT` of
+    // `/api/v1/app/{app_id}` and on none of its `GET`, `DELETE` or `PATCH`, and
+    // its golden gives all four the same `app_id: str`. Without this the
+    // interpolation would name an argument the method does not take, which is not
+    // valid Python.
+    for name in path_template_expressions(path) {
+        if path_params
+            .iter()
+            .any(|declared| declared.wire_name == name)
+        {
+            continue;
+        }
+        path_params.push(PathParam {
+            wire_name: name.to_string(),
+            py_name: naming::field_name(name),
+            type_ref: TypeRef::Primitive(Prim::Str),
+            docstring: None,
+            example: None,
+            pattern_constrained: false,
+        });
+    }
     if !doc.openapi.starts_with("3.1")
         || op.path_level_parameters
         || op.parameters.iter().any(|parameter| {
@@ -2203,7 +2253,8 @@ fn build_endpoint(
             let convert = hoister.needs_convert(&type_ref) && !hoister.is_scalar(&type_ref);
             let required = p.required == Some(true);
             // The parameter's declared example, where Fern keeps it at all.
-            let without_declared_example = parameter_example_value(doc, p).is_none();
+            let without_declared_example =
+                parameter_example_value(doc, p).is_none() && array_item_example(p).is_none();
             // A synthesized sample needs a *body* on the success response, not a
             // response crozier can type: CloudFormation's `SignalResource` declares
             // `200` with no content at all and passes parameter names, while
@@ -2239,10 +2290,18 @@ fn build_endpoint(
                     .as_deref()
                     .and_then(|reference| resolve_ref(doc, reference))
                     .unwrap_or(schema);
-                matches!(
-                    schema.ty.as_ref().and_then(|ty| ty.primary()),
-                    Some("string" | "integer" | "number" | "boolean")
-                )
+                let scalar = |schema: &Schema| {
+                    matches!(
+                        schema.ty.as_ref().and_then(|ty| ty.primary()),
+                        Some("string" | "integer" | "number" | "boolean")
+                    )
+                };
+                // A list of scalars renders as a literal too, which is what carries
+                // an array parameter's item example into the worked call: svix's
+                // `event_types` reaches its golden as `event_types=["user.signup"]`.
+                scalar(schema)
+                    || schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
+                        && schema.items.as_deref().is_some_and(scalar)
             });
             let comma_separated = p.explode == Some(false)
                 && p.style.as_deref().is_none_or(|style| style == "form")
@@ -2261,6 +2320,12 @@ fn build_endpoint(
                     .and_then(|reference| resolve_ref(doc, reference))
                     .unwrap_or(schema);
                 schema.ty.as_ref().and_then(TypeField::primary) == Some("array")
+                    // A 3.0 `nullable: true` array is the same shape as the 3.1
+                    // `type: [array, "null"]` union the doc comment already
+                    // excludes, and Fern declines the scalar shorthand for both:
+                    // svix's `event_types` is `{type: array, nullable: true}` and
+                    // its golden takes `typing.Optional[typing.Sequence[str]]`.
+                    && !schema.nullable.unwrap_or(false)
             });
             let aliased_datetime = schema
                 .and_then(|schema| schema.reference.as_deref())
@@ -2510,7 +2575,17 @@ fn build_endpoint(
         .iter()
         .filter_map(|parameter| {
             let schema = parameter.schema.as_ref()?;
-            let members = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
+            // A structured inline OBJECT parameter goes to the root the same way:
+            // Webflow's `filter` is `{type: object, properties: {...}}` on five
+            // `analyze/reports` operations, and every type Fern hoists out of it —
+            // `TimeOnPageReportsRequestFilterAudienceIds` and 20 more per
+            // operation — is declared in the package root's `types/`, not in
+            // `analyze/reports/types/`.
+            let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) else {
+                return (schema.ty.as_ref().and_then(TypeField::primary) == Some("object")
+                    && !schema.properties.is_empty())
+                .then(|| format!("{request_ctx}{}", naming::class_name(&parameter.name)));
+            };
             let non_null: Vec<&Schema> = members
                 .iter()
                 .filter(|member| member.ty.as_ref().and_then(TypeField::primary) != Some("null"))
@@ -2690,6 +2765,10 @@ fn build_endpoint(
             .as_ref()
             .is_some_and(|body| body.required == Some(true)),
         body_component_ref: op.request_body.as_ref().is_some_and(|rb| rb.component_ref),
+        body_media_alternatives: op
+            .request_body
+            .as_ref()
+            .is_some_and(|body| body.content.len() > 1),
         body_collapses_to_type_reference,
         body_content_type_override: op
             .request_body
@@ -3005,7 +3084,27 @@ fn parameter_example_value<'a>(
         })
 }
 
+/// The example an *array* parameter takes from its item schema when its own
+/// schema declares none. Fern renders it as the one-element list of that value.
+fn array_item_example(parameter: &crate::openapi::Parameter) -> Option<&serde_json::Value> {
+    parameter
+        .schema
+        .as_ref()
+        .filter(|schema| schema.ty.as_ref().and_then(TypeField::primary) == Some("array"))
+        .and_then(|schema| schema.items.as_deref())
+        .and_then(schema_example)
+}
+
 fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
+    // An array parameter whose own schema declares no example takes its ITEM
+    // schema's, as the one-element list of it: svix's `event_types` declares
+    // `{type: array, items: {example: "user.signup", ...}}` and its golden's
+    // worked call passes `event_types=["user.signup"]`.
+    if parameter_example_value(doc, parameter).is_none() {
+        if let Some(item) = array_item_example(parameter) {
+            return example_literal(&serde_json::Value::Array(vec![item.clone()]));
+        }
+    }
     let value = parameter_example_value(doc, parameter)?;
     let schema = parameter.schema.as_ref();
     // Fern discards an example whose JSON kind contradicts the declared scalar
@@ -3243,6 +3342,16 @@ fn has_wildcard_binary_response(_doc: &OpenApi, op: &Operation) -> bool {
 }
 
 /// Position of a path parameter's placeholder for OpenAPI 3.0 importer ordering.
+/// The template expressions of a path, in the order the path writes them:
+/// `/a/{one}/b/{two}` yields `one` then `two`.
+fn path_template_expressions(path: &str) -> Vec<&str> {
+    path.split('{')
+        .skip(1)
+        .filter_map(|rest| rest.split_once('}'))
+        .map(|(name, _)| name)
+        .collect()
+}
+
 fn path_param_position(path: &str, name: &str) -> Option<usize> {
     path.find(&format!("{{{name}}}"))
 }
@@ -5387,7 +5496,7 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
         {
             naming::sanitize_identifier(&naming::to_snake_case(id))
         } else {
-            method_from_dotted_id(id)
+            method_from_dotted_id(id, first_tag(op))
         }
     } else if id.contains('_') {
         if first_tag(op).is_none() {
@@ -5435,12 +5544,26 @@ fn dotted_id_names_a_group(id: &str) -> bool {
     group.chars().all(|c| c.is_ascii_alphanumeric())
 }
 
-/// The method name for a dotted operationId (`Group.Method`). Fern treats the
-/// dotted prefix as the group and lowercases the final segment verbatim, without
-/// snake-casing camel boundaries (`App.GetUsage` → `getusage`).
-fn method_from_dotted_id(id: &str) -> String {
-    let method = id.rsplit_once('.').map_or(id, |(_, rest)| rest);
-    naming::sanitize_identifier(&method.to_ascii_lowercase())
+/// The method name for a dotted operationId (`Group.Method`). Fern treats
+/// everything before the final `.` as the group and lowercases the final segment
+/// verbatim, without snake-casing camel boundaries (`App.GetUsage` → `getusage`).
+///
+/// The group is *dropped* only when it names the operation's own tag, which is
+/// the client the method already hangs off: bungie's `App.GetApplicationApiUsage`
+/// under tag `App` and letta's `models.listEmbeddingModels` under `models` both
+/// reach their goldens as the bare method. A group that names something else is
+/// kept, snake-cased with its dots removed, and prefixed to the method — svix
+/// writes `v1.application.list` under tag `Application` and
+/// `v1.message-attempt.list-by-endpoint` under `Message Attempt`, and its golden
+/// carries `v1application_list` and `v1message_attempt_list_by_endpoint`.
+fn method_from_dotted_id(id: &str, tag: Option<&str>) -> String {
+    let (group, method) = id.rsplit_once('.').unwrap_or(("", id));
+    let method = naming::sanitize_identifier(&method.to_ascii_lowercase());
+    if group.is_empty() || tag.is_some_and(|tag| operation_id_matches_tag_spelling(group, tag)) {
+        return method;
+    }
+    let prefix = naming::sanitize_identifier(&naming::to_snake_case(&group.replace('.', "")));
+    format!("{prefix}_{method}")
 }
 
 /// The method name for a groupless camelCase operationId (no `_`). Fern drops a
@@ -5530,6 +5653,26 @@ fn stripped_suffix_has_acronym(id: &str, tag: Option<&str>) -> bool {
 /// `VerifyCode` — never prefixing the tag, so a tag-grouped operation's hoisted
 /// type stays `VerifyCodeResponse`, not `WidgetsVerifyCodeResponse`.
 fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &str) -> String {
+    // An SDK-shaped operation names its hoisted types from the shape it declares,
+    // not from its `operationId`: Fern joins the `x-fern-sdk-method-name` to the
+    // LAST `x-fern-sdk-group-name` segment. Webflow's `time-on-page` under
+    // `[analyze, reports]` hoists `TimeOnPageReportsRequestDeviceType`, its
+    // `create-item` under `[collections, items]` hoists
+    // `CreateItemItemsRequestBody`, and its `put` under `[sites, well_known]`
+    // hoists `PutWellKnownRequestContentType` — where the `operationId`s are
+    // `get-analyze-time-on-page-report`, `create-collection-item` and
+    // `put-site-well-known`.
+    if let Some(method) = op.sdk_method_name() {
+        let group = op
+            .sdk_group_name()
+            .and_then(|segments| segments.last().map(|segment| (*segment).to_string()))
+            .unwrap_or_default();
+        return naming::sanitize_identifier(&format!(
+            "{}{}",
+            naming::to_pascal_case(method),
+            naming::to_pascal_case(&group)
+        ));
+    }
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
     if id.is_empty() {
         let path = url
@@ -5650,8 +5793,12 @@ fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
                 return String::new();
             }
         }
+        // A declared tag titles the section verbatim, as it does for every other
+        // grouping: svix declares `Message Attempt` in `tags` and its golden's
+        // heading keeps the space, where letta declares no `tags` at all and its
+        // `agents` group is titled `Agents`.
         if let Some(tag) = first_tag(op) {
-            return naming::to_pascal_case(tag);
+            return title_from_tag(doc, tag);
         }
     }
     if id.contains('_') {
@@ -8664,7 +8811,11 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                 // `type: [object, null]` where a 3.0 document writes `nullable`,
                 // and its `name_localizations` map is
                 // `Dict[str, Optional[str]]` all the same.
-                if is_optional(schema) || (value.reference.is_some() && is_optional(value)) {
+                // An *inline* nullable value schema carries the same nullability:
+                // svix's `EndpointHeadersPatchIn.headers` declares
+                // `additionalProperties: {type: string, nullable: true}` and its
+                // golden types it `typing.Dict[str, typing.Optional[str]]`.
+                if is_optional(schema) || is_optional(value) {
                     val = optional_type_ref(val);
                 }
                 TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(val))
@@ -9015,6 +9166,11 @@ fn operation_doc(desc: Option<&str>) -> Option<String> {
                 && trimmed
                     .get(1..)
                     .is_some_and(|rest| rest.chars().next().is_some_and(|ch| !ch.is_whitespace()))
+            // A description that OPENS on a line break keeps it: svix's `logout`
+            // declares `"\nLogout an app token.\n\n…"` and Fern renders the blank
+            // line into both the method docstring and the `reference.md` entry.
+            || trimmed.starts_with('\n')
+            || trimmed.starts_with("\r\n")
         {
             trimmed
         } else {

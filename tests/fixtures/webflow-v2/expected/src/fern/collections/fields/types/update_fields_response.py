@@ -1,0 +1,79 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ....core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ....core.serialization import FieldMetadata
+from .update_fields_response_type import UpdateFieldsResponseType
+from .update_fields_response_validations import UpdateFieldsResponseValidations
+
+
+class UpdateFieldsResponse(UniversalBaseModel):
+    """
+    The details of a field in a collection
+    """
+
+    id: str = pydantic.Field()
+    """
+    Unique identifier for a Field
+    """
+
+    is_required: typing_extensions.Annotated[
+        bool,
+        FieldMetadata(alias="isRequired"),
+        pydantic.Field(alias="isRequired", description="define whether a field is required in a collection"),
+    ]
+    """
+    define whether a field is required in a collection
+    """
+
+    is_editable: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="isEditable"),
+        pydantic.Field(alias="isEditable", description="Define whether the field is editable"),
+    ] = None
+    """
+    Define whether the field is editable
+    """
+
+    type: UpdateFieldsResponseType = pydantic.Field()
+    """
+    Choose these appropriate field type for your collection data
+    """
+
+    slug: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Slug of Field in Site URL structure. Slugs should be all lowercase with no spaces. Any spaces will be converted to "-."
+    """
+
+    display_name: typing_extensions.Annotated[
+        str, FieldMetadata(alias="displayName"), pydantic.Field(alias="displayName", description="The name of a field")
+    ]
+    """
+    The name of a field
+    """
+
+    help_text: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="helpText"),
+        pydantic.Field(alias="helpText", description="Additional text to help anyone filling out this field"),
+    ] = None
+    """
+    Additional text to help anyone filling out this field
+    """
+
+    validations: typing.Optional[UpdateFieldsResponseValidations] = pydantic.Field(default=None)
+    """
+    The validations for the field
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

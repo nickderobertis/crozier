@@ -1,0 +1,130 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+
+
+class BatchCreateCustomFontsResponseCreatedItemUploadFields(UniversalBaseModel):
+    """
+    Form fields to include in the S3 multipart POST. Every key must be sent as a form field before the `file` field.
+    """
+
+    bucket: str = pydantic.Field()
+    """
+    The S3 bucket name
+    """
+
+    key: str = pydantic.Field()
+    """
+    The S3 object key
+    """
+
+    policy: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="Policy"),
+        pydantic.Field(alias="Policy", description="Base64-encoded S3 policy document"),
+    ]
+    """
+    Base64-encoded S3 policy document
+    """
+
+    x_amz_algorithm: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="X-Amz-Algorithm"),
+        pydantic.Field(alias="X-Amz-Algorithm", description="AWS Signature Version 4 algorithm identifier"),
+    ]
+    """
+    AWS Signature Version 4 algorithm identifier
+    """
+
+    x_amz_credential: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="X-Amz-Credential"),
+        pydantic.Field(alias="X-Amz-Credential", description="AWS credential string"),
+    ]
+    """
+    AWS credential string
+    """
+
+    x_amz_date: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="X-Amz-Date"),
+        pydantic.Field(alias="X-Amz-Date", description="Request date in ISO 8601 basic format"),
+    ]
+    """
+    Request date in ISO 8601 basic format
+    """
+
+    x_amz_signature: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="X-Amz-Signature"),
+        pydantic.Field(alias="X-Amz-Signature", description="AWS Signature Version 4 signature"),
+    ]
+    """
+    AWS Signature Version 4 signature
+    """
+
+    x_amz_security_token: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="X-Amz-Security-Token"),
+        pydantic.Field(
+            alias="X-Amz-Security-Token",
+            description="AWS security token (included when temporary credentials are used)",
+        ),
+    ] = None
+    """
+    AWS security token (included when temporary credentials are used)
+    """
+
+    content_md5: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="Content-MD5"),
+        pydantic.Field(
+            alias="Content-MD5",
+            description="Base64-encoded MD5 hash of the file binary, derived from the `fileHash` you supplied",
+        ),
+    ]
+    """
+    Base64-encoded MD5 hash of the file binary, derived from the `fileHash` you supplied
+    """
+
+    acl: str = pydantic.Field()
+    """
+    S3 ACL. Always `public-read`, which makes the uploaded font accessible to the Webflow CDN.
+    """
+
+    cache_control: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="Cache-Control"),
+        pydantic.Field(alias="Cache-Control", description="Cache-Control header value applied to the S3 object"),
+    ]
+    """
+    Cache-Control header value applied to the S3 object
+    """
+
+    content_type: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="Content-Type"),
+        pydantic.Field(alias="Content-Type", description="MIME type matched to the file extension"),
+    ]
+    """
+    MIME type matched to the file extension
+    """
+
+    success_action_status: str = pydantic.Field()
+    """
+    S3 returns this HTTP status code on a successful upload
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

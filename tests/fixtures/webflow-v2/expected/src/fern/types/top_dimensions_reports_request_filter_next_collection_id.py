@@ -1,0 +1,50 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+
+
+class TopDimensionsReportsRequestFilterNextCollectionId(UniversalBaseModel):
+    """
+    Operators for filtering a single dimension. Specify at least one of `eq`, `in`, `ne`, or `nin`.
+    """
+
+    eq: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Match values exactly equal to the provided value.
+    """
+
+    in_: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="in"),
+        pydantic.Field(
+            alias="in",
+            description="Match values in the provided list. Use indexed bracket notation — `filter[<dimension>][in][0]=value1&filter[<dimension>][in][1]=value2`. Comma-separated values (for example, `filter[<dimension>][in]=value1,value2`) are not supported.",
+        ),
+    ] = None
+    """
+    Match values in the provided list. Use indexed bracket notation — `filter[<dimension>][in][0]=value1&filter[<dimension>][in][1]=value2`. Comma-separated values (for example, `filter[<dimension>][in]=value1,value2`) are not supported.
+    """
+
+    ne: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Exclude values exactly equal to the provided value.
+    """
+
+    nin: typing.Optional[typing.List[str]] = pydantic.Field(default=None)
+    """
+    Exclude values in the provided list. Use indexed bracket notation — `filter[<dimension>][nin][0]=value1&filter[<dimension>][nin][1]=value2`. Comma-separated values (for example, `filter[<dimension>][nin]=value1,value2`) are not supported.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

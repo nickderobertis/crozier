@@ -1,0 +1,63 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+
+
+class GetFormsResponseResponseSettings(UniversalBaseModel):
+    """
+    Settings for form responses
+    """
+
+    redirect_url: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="redirectUrl"),
+        pydantic.Field(
+            alias="redirectUrl", description="The url or path to redirect the user to after form submission"
+        ),
+    ] = None
+    """
+    The url or path to redirect the user to after form submission
+    """
+
+    redirect_method: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="redirectMethod"),
+        pydantic.Field(
+            alias="redirectMethod", description="The HTTP request method to use for the redirectUrl (eg. POST or GET)"
+        ),
+    ] = None
+    """
+    The HTTP request method to use for the redirectUrl (eg. POST or GET)
+    """
+
+    redirect_action: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="redirectAction"),
+        pydantic.Field(alias="redirectAction", description="The action to take after form submission"),
+    ] = None
+    """
+    The action to take after form submission
+    """
+
+    send_email_confirmation: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="sendEmailConfirmation"),
+        pydantic.Field(alias="sendEmailConfirmation", description="Whether to send an email confirmation to the user"),
+    ] = None
+    """
+    Whether to send an email confirmation to the user
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

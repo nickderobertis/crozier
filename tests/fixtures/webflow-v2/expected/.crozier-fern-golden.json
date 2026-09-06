@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "webflow-v2",
+  "corpus_spec_ref": "f6db607359a412dd6aa6cd304674731d7f2dbe10",
+  "corpus_spec_url": "https://raw.githubusercontent.com/webflow/openapi-spec/f6db607359a412dd6aa6cd304674731d7f2dbe10/openapi/v2.yml"
+}

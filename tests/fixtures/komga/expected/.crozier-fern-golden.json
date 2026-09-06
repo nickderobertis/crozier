@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "komga",
+  "corpus_spec_ref": "656001eb03bf8b54ca909f3e74fe2ec1b95dac48",
+  "corpus_spec_url": "https://raw.githubusercontent.com/gotson/komga/656001eb03bf8b54ca909f3e74fe2ec1b95dac48/komga/docs/openapi.json"
+}

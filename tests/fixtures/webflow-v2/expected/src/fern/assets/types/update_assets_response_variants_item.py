@@ -1,0 +1,75 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+
+
+class UpdateAssetsResponseVariantsItem(UniversalBaseModel):
+    """
+    Asset variant details
+    """
+
+    hosted_url: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="hostedUrl"),
+        pydantic.Field(alias="hostedUrl", description="URL of where the asset variant is hosted"),
+    ]
+    """
+    URL of where the asset variant is hosted
+    """
+
+    original_file_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="originalFileName"),
+        pydantic.Field(alias="originalFileName", description="Original file name of the variant"),
+    ]
+    """
+    Original file name of the variant
+    """
+
+    display_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="displayName"),
+        pydantic.Field(alias="displayName", description="Display name of the variant"),
+    ]
+    """
+    Display name of the variant
+    """
+
+    format: str = pydantic.Field()
+    """
+    format of the variant
+    """
+
+    width: int = pydantic.Field()
+    """
+    Width in pixels
+    """
+
+    height: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    Height in pixels
+    """
+
+    quality: int = pydantic.Field()
+    """
+    Value between 0 and 100 representing the image quality
+    """
+
+    error: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Any associated validation errors
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

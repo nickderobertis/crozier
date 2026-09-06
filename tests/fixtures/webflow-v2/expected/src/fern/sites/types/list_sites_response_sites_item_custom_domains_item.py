@@ -1,0 +1,39 @@
+
+
+import datetime as dt
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+
+
+class ListSitesResponseSitesItemCustomDomainsItem(UniversalBaseModel):
+    id: str = pydantic.Field()
+    """
+    Unique identifier for the Domain
+    """
+
+    url: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The registered Domain name
+    """
+
+    last_published: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="lastPublished"),
+        pydantic.Field(alias="lastPublished", description="The date the custom domain was last published to"),
+    ] = None
+    """
+    The date the custom domain was last published to
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

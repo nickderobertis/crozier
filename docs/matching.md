@@ -1606,6 +1606,134 @@ exampled from the referenced schema, an array of such references is exampled as 
 one-element list of it, and a date/date-time field's declared example is used
 rather than the synthesized placeholder.
 
+## Documents that collide with themselves (issue #188)
+
+Corpus rows 127 (`torrentarr`) and 128 (`agco-ats`) are the corpus's first
+sources that collide with *themselves* — two Paths Object keys that normalize to
+one, and one `operationId` written twice — plus its only source keying a response
+on a media type **range** other than `*/*`. All three shapes are settled inside a
+single document, so each golden's own raw clients, not a cross-document
+comparison, are what say what Fern did.
+
+**Fern keeps both members of a normalized path collision, and lets them render
+the same URL.** Torrentarr declares `/api/arr/{category}/open/{kind}/{entryId}`
+beside `…/{entry_id}` and the same pair under `/web/`; all four operations reach
+`client.web_ui`, and each pair interpolates one `entry_id`, so the two methods of
+a pair issue byte-identical requests. AGCO's pair sits on different HTTP methods
+(`GET /api/v2/Releases/{ReleaseId}`, `PUT …/{releaseId}`) and reaches
+`client.release` as `getrelease(release_id)` and
+`putcontentdefinition(release_id_, …)` — the trailing underscore being the
+ordinary body-versus-path deconfliction, since the `PUT`'s flattened body carries
+a `release_id` field. Crozier needed no change for either: nothing in it
+normalizes a path key, so two keys stay two endpoints.
+
+**A duplicated `operationId` costs the document a method, and it is the FIRST
+declaration that goes.** AGCO writes 11 ids twice each and declares 280
+operations; Fern's raw clients carry 269 distinct `(method, path)` calls.
+Crozier already collapsed two endpoints sharing a module and method name (the
+later replacing the earlier in the earlier's position), which reproduces that.
+What it did not reproduce is the *type* side: both operations were built, so both
+hoisted their operation-scoped request types, and `VouchersGetRequestDeleted`
+was exported twice. Fern declares such a type once — the first hoist takes the
+name — while keeping the types the losing operation contributed alone
+(`VouchersGetRequestType` comes from the dropped `GET /api/v2/Vouchers`). The
+endpoint builder now dedupes `tag_types` by `(module, name)`, keeping the first.
+
+**A range-keyed response is a binary stream, and `float` is a reserved name.**
+Torrentarr's six `image/*` responses over `{type: string, format: binary}` reach
+`is_binary_response` through its `starts_with("image/")` test and come out as
+`httpx_client.stream(...)` methods returning `typing.Iterator[bytes]` — which
+crozier already matched. AGCO's enums cost one naming rule: Fern safe-names the
+`visit` parameter of a `FLOAT` member to `float_`, so `float` joins
+`naming::is_reserved`'s builtin set beside `bool`, `int`, `list` and the rest.
+`scripts/openapi-surface-census.py` mirrors that set for its normalized-path
+predicate and gains the same word.
+
+**A body whose referenced schema survives the public type layer sends no explicit
+JSON `content-type` — when the body offers several media types.** AGCO declares
+every request body over five media types (`application/json`,
+`application/x-www-form-urlencoded`, `application/xml`, `text/json`, `text/xml`).
+Of the 36 such bodies that ride no path parameter, the 28 whose `$ref`'d schema
+Fern keeps as a public model send no header, and the 7 whose schema Fern drops —
+`API.Models.Credentials`, `DealerDB.Models.LicenseActivationCreate` and five more
+that exist only to be flattened into one request — send it. The 36th,
+`POST /api/v2/GlobalImages`, keeps the header on a surviving schema because it
+rides a query parameter, which is the same exception the shared-schema drop
+already recorded for Palo Alto's crypto profiles. The drop is scoped to
+several-media bodies (`Endpoint::body_media_alternatives`) because exhaustive's
+`postJsonPatchContentType` and `getAndReturnOptional` — each a lone
+`application/json` over a surviving schema — keep their header.
+
+## What the collision goldens' alternates cost (issue #188)
+
+Corpus rows 129-132 register the remaining witnesses the issue #188 searches
+recorded — `svix-webhooks`, `komga`, `short-io` and `webflow-v2`. Svix reaches
+byte parity; the other three are registered with a measured residual
+([`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md)'s batch 14). These
+are the rules the four of them settled.
+
+**A path template expression nobody declares is still an argument.** Svix
+declares `app_id` on the `PUT` of `/api/v1/app/{app_id}` and on none of its
+`GET`, `DELETE` or `PATCH`, and Fern gives all four the same required `app_id:
+str`. Crozier was interpolating `{app_id}` into the request URL while declaring
+no such parameter — a `NameError` in generated code, not merely a mismatch — so
+`build_endpoint` now synthesizes a `str` path parameter for every template
+expression the operation leaves undeclared, in path order, with no docstring and
+no example.
+
+**A declared `http` `bearer` scheme wires the client even with no Security
+Requirement Object anywhere.** Svix declares `HTTPBearer` in
+`components.securitySchemes`, no document-level `security`, and none on any of
+its 44 operations; its golden's client wrapper still takes an optional `token`
+and sends `Authorization: Bearer`. That is the treatment a header `apiKey`
+already had. `basic` and OAuth2 still need a requirement.
+
+**A dotted `operationId` keeps a group that is not the tag.** Everything before
+the final `.` is the group; it is dropped only when it names the operation's own
+tag — bungie's `App.GetApplicationApiUsage` under `App`, letta's
+`models.listEmbeddingModels` under `models`. Svix's `v1.application.list` under
+tag `Application` keeps it, snake-cased with its dots removed:
+`v1application_list`, and `v1.message-attempt.list-by-endpoint` →
+`v1message_attempt_list_by_endpoint`. A declared tag titles that section verbatim
+too, so svix's `Message Attempt` keeps its space where letta's undeclared
+`agents` is titled `Agents`.
+
+**An array parameter takes its item schema's example, as a one-element list.**
+Svix's `event_types` is `{type: array, items: {example: "user.signup", …}}` and
+its worked call passes `event_types=["user.signup"]`. The same array is *not*
+offered the scalar shorthand: a `nullable: true` array is the 3.0 spelling of the
+3.1 `type: [array, "null"]` union the shorthand already declined, so
+`typing.Optional[typing.Sequence[str]]`, not `Union[str, Sequence[str]]`.
+
+**Two more from svix's models and docs.** An *inline* nullable
+`additionalProperties` value type is `Optional` exactly as a `$ref` to a nullable
+component is (`EndpointHeadersPatchIn.headers` →
+`typing.Dict[str, typing.Optional[str]]`); and a description that opens on a line
+break keeps it, in both the method docstring and the `reference.md` entry.
+
+**Three at the document boundary, from Short.io and Webflow.** A bare string
+where a Schema Object was expected names the `type` it spells — short.io writes
+`{"schema": "object", "in": "header", "name": "type"}` and Fern types the
+argument `typing.Dict[str, typing.Any]`. A Schema Object's `examples` is read
+from a map of named Example Objects as well as from JSON Schema's sequence, each
+entry contributing its `value` in declaration order — Webflow's `well_known` body
+writes the map spelling and Fern's worked call carries the first entry's
+`file_name="apple-app-site-association.txt"`. And an explicit `properties: null`
+reads as the absent key rather than as the closed `properties: {}`. Crozier
+refused all three documents outright before these; refusing a document Fern
+accepts is a boundary defect whatever the parity outcome.
+
+**Two from Webflow's SDK-shaped operations.** When `x-fern-sdk-method-name` is
+declared, the hoisted `{Ctx}Request…`/`{Ctx}Response…` context is that method name
+joined to the *last* `x-fern-sdk-group-name` segment, not the `operationId`:
+`time-on-page` under `[analyze, reports]` hoists
+`TimeOnPageReportsRequestDeviceType` where the `operationId` is
+`get-analyze-time-on-page-report`. And a structured inline **object** query
+parameter hoists its nested types into the package root, as a `oneOf`/`anyOf`
+parameter already did — Webflow's `filter` is `{type: object, properties: {…}}`
+on five `analyze/reports` operations and every type Fern lifts out of it is
+declared in the root's `types/`.
+
 ## Coverage note
 
 The gate measures coverage with `cargo llvm-cov --fail-under-lines 95`, which

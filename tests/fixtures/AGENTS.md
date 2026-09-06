@@ -115,11 +115,19 @@ duplicate its batch ledger here.
 
 ## Shrinking `unmatched` — don't diff by hand
 
-The corpus is at full byte parity: every `unmatched` list is empty, so a
-non-empty one means work in flight, not an accepted state. `just fixtures-gaps`
-generates every available corpus and reports the exact divergent files as
-ready-to-paste `unmatched` arrays; land the generator fix and empty the list
-again. Every expected file outside that list is gated, including files newly
+Most of the corpus is at full byte parity, and an empty `unmatched` is the target
+for every row. Three rows are registered with a **measured residual** instead —
+`komga`, `short-io` and `webflow-v2`, `CORPUS.md`'s batch 14 — because Fern
+accepted each of those documents, so nothing removes them from the registration
+route, and a deleted tree would leave no measured reason for the gap. A residual
+is enumerated, never suppressed: every divergent file is named in that corpus's
+`unmatched`, every file crozier emits that its golden lacks is named in
+`tests/e2e.rs`'s `crozier_only_files`, and both lists fail the gate the moment one
+of their entries starts matching or stops being emitted. Outside those three, a
+non-empty list means work in flight rather than an accepted state.
+`just fixtures-gaps` generates every available corpus and reports the exact
+divergent files as ready-to-paste `unmatched` arrays; land the generator fix and
+shorten the list. Every expected file outside that list is gated, including files newly
 emitted by Fern, and the comparison also walks Crozier's output back, so nothing
 can be suppressed by omission. The reporter rejects stale entries that now match.
 `fixtures-candidates` is retained as an alias.

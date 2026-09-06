@@ -43,7 +43,7 @@ and of an Encoding is this region's, while the Header Object it holds is the
 | xml-request | both | Request Body Object.content `application/xml` key | limitations | Census map-key walk: zero declarations across every registered source. Ledger `xml-request`: `discards`. | | | |
 | xml-response | both | Response Object.content `application/xml` key | limitations | Census map-key walk: zero declarations across every registered source. Ledger `xml-response`: `discards`. | | | |
 | media-type-wildcard | both | Media Type Object content-map key | golden | Census map-key walk for `*/*`: 179 declarations in `6-dot-authentiqio.appspot.com` (3), `apache.org-qakka` (1), `apicurio.local-registry` (7), `apideck.com-file-storage` (3), `apideck.com-proxy` (3), `atlassian.com-jira` (20), `bintable.com` (1), `bungie.net` (134), and `openfigi.com` (7). | | | |
-| media-type-range | both | Media Type Object content-map key | gap | Census object-model map-key walk for a `type/*` range other than `*/*`: zero declarations across every registered source (the only other key holding a `*` is `eozilla`'s malformed `/*`, classified below); no `docs/fern-limitations.md` row names it. | `src/ir.rs`: 6 places — `is_binary_response` (where an `image/*` range matches its `starts_with("image/")` test), the binary-body scan in `resolve_request_body`, `reference_body_example`, `selected_json_request_media`, `request_body_ignored` and `has_dispatchable_media`; `src/emit.rs`: 1 place, the bytes-body `content-type` header in `append_request_call_args`. | A range-keyed binary request body is emitted into the raw client as `"content-type": "<range>"` verbatim, while a range-keyed JSON-ish body is dropped from the client method's signature altogether, and a range-keyed response reaches the method's return type in the types module and `reference.md` through `response_schema`'s key-agnostic first-media fallback. | FIXTURE — the world-wide witness search below found one, so what is short is the registration rather than the document. `gotson/komga`'s `komga/docs/openapi.json` at commit `656001eb03bf8b54ca909f3e74fe2ec1b95dac48` declares `image/*` on a response, is MIT, and Fern accepts it at the pin the corpus's provenance records — both `fern check` and a real generate at `fernapi/fern-python-sdk` 5.20.0, exit 0 each. `Feramance/Torrentarr`'s `docs/assets/openapi.json` at commit `b2b8bcec35b2d4bdb131b5bc0b326835982f6327` reaches the same bar with 6 declarations and additionally carries [`document-paths.md`](document-paths.md)'s `duplicate-normalized-paths`, so one registration would close a row in each of two regions. Register one and byte-compare its Fern golden; the outcome, the screening and the five near-misses are the `media-type-range` line of [Witness search (issue #188)](#witness-search-issue-188) below. |
+| media-type-range | both | Media Type Object content-map key | golden | Census object-model map-key walk for a `type/*` range other than `*/*`: **seven** declarations in two golden-bearing sources, all `image/*` and all on a response — `torrentarr` (corpus row 127, six: `…/artist/{artist_id}/thumbnail`, `…/movie/{id}/thumbnail` and `…/series/{id}/thumbnail`, each under both `/api` and `/web`) and `komga` (corpus row 130, one: the `default` response of `GET /api/v1/books/{bookId}/pages/{pageNumber}`), each over `{type: string, format: binary}` — against zero in every other registered source (the only other key holding a `*` is `eozilla`'s malformed `/*`, classified below). Fern emits each as a streamed `typing.Iterator[bytes]` method under a `httpx_client.stream(...)` call. **Crozier reproduces row 127's six byte for byte, and does not reproduce row 130's one**, so this row is `golden` on the `200`-response spelling and its residual is the `default`-response one. Komga declares the range on `default` beside a `400` of `*/*` and no `200` at all; crozier's `is_binary_response` never reaches it, so `get_book_page_by_number` comes out as `HttpResponse[None]` where Fern streams it — one of 12 streaming methods crozier misses on that document (6 `stream(...)` calls against Fern's 30, sync and async). That is inside row 130's declared 40-file residual and named there. **The witnesses reach the response side of the shape and not the request side, and this row is `golden` on what they reach.** They exercise `src/ir.rs`'s `is_binary_response`, where an `image/*` key matches the `starts_with("image/")` test, and `response_schema`'s key-agnostic first-media fallback into the method's return type and its `reference.md` entry. They reach none of the six request-side reads a range-keyed *body* would — the binary-body scan in `resolve_request_body`, `reference_body_example`, `selected_json_request_media`, `request_body_ignored` and `has_dispatchable_media`, and `src/emit.rs`'s bytes-body `content-type` header in `append_request_call_args` — because no registered source keys a request body on a range. | | | |
 | media-type-multipart | both | Media Type Object content-map key | golden | Census object-model map-key walk for `multipart/*`: 42 declarations in `form-bodies` (1), `anchore.io` (1), `appwrite.io-client` (1), `appwrite.io-server` (2), `asana.com` (1), `atlassian.com-jira` (4), `box.com` (3), `discourse.local` (1), `microcks.local` (2), `appng-rest-api` (1), `free5gc-pdu-session` (9), `letta` (3), `free5gc-namf-communication` (7), and `livepeer-ai-runner` (6). | | | |
 | media-type-form-urlencoded | both | Media Type Object content-map key | golden | Census object-model map-key walk for `application/x-www-form-urlencoded`: 42 declarations in `bracketed-property-names` (1), `form-bodies` (1), `anchore.io` (1), `box.com` (3), `conjur.local` (10), `traccar.org` (1), `twilio.com-twilio_voice_v1` (12), and `twilio.com-twilio_messaging_v1` (13). | | | |
 | media-type-octet-stream | both | Media Type Object content-map key | golden | Census map-key walk for `application/octet-stream`: six declarations in `exhaustive`, `apache.org-qakka`, `box.com` (2), `conjur.local`, and `github.com`. | | | |
@@ -120,12 +120,15 @@ document's media-type key — a comparison, a prefix or suffix test, a split, or
 propagation of the key into generated bytes — and not the key-agnostic loops
 that copy a content map through, nor a lookup by a literal key the feature can
 never match. Category precedence is `golden`, then `limitations`, then `gap`;
-applying it leaves one `gap` row in this region.
+applying it leaves **no** `gap` row in this region — `media-type-range`, the last
+one, is `golden` on corpus row 127.
 
 ### Witness search (issue #188)
 
-This region carried no witness-search subsection until this change. Its one `gap`
-row, `media-type-range`, rested on a census statement about the **registered**
+This region carried no witness-search subsection until this change. Its then-only
+`gap` row, `media-type-range` — `golden` since corpus row 127 registered the
+second of the two documents this table records — rested on a census statement
+about the **registered**
 corpus — an object-model map-key walk reporting zero `type/*` keys other than
 `*/*` across every registered source — which is a fact about that document set
 and not about the world, as the row's own `settlement` cell said. This table
@@ -141,7 +144,12 @@ Nothing in the table moves a `category` or a count on its own: the search record
 what is true of the world, and registering a document records what is true of the
 corpus. A row reading `witness-found` while its `settlement` above still says
 `FIXTURE` is the expected state until that registration lands, not an
-inconsistency.
+inconsistency. `media-type-range`'s registration has since landed, on **both** documents this
+table records: `Feramance/Torrentarr` (corpus row 127) declares the shape six
+times and additionally carries [`document-paths.md`](document-paths.md)'s
+`duplicate-normalized-paths`, so one corpus row closed a row in each of two
+regions, and `gotson/komga` (row 130) declares it once on an independent
+publisher. Neither was dropped for the other.
 
 `outcome` is one of the five words the index's [settlement rule](../openapi-surface-coverage.md#the-settlement-rule-as-amended)
 defines, spelled as the other regions' subsections spell them. No row here reads

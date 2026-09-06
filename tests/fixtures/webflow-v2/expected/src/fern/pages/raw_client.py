@@ -1,0 +1,1427 @@
+
+
+import typing
+from json.decoder import JSONDecodeError
+
+from ..core.api_error import ApiError
+from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.http_response import AsyncHttpResponse, HttpResponse
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
+from ..core.pydantic_utilities import parse_obj_as
+from ..core.request_options import RequestOptions
+from ..core.serialization import convert_and_respect_annotation_metadata
+from ..errors.bad_request_error import BadRequestError
+from ..errors.forbidden_error import ForbiddenError
+from ..errors.internal_server_error import InternalServerError
+from ..errors.not_found_error import NotFoundError
+from ..errors.too_many_requests_error import TooManyRequestsError
+from ..errors.unauthorized_error import UnauthorizedError
+from .types.get_content_pages_response import GetContentPagesResponse
+from .types.get_metadata_pages_response import GetMetadataPagesResponse
+from .types.list_pages_response import ListPagesResponse
+from .types.update_page_settings_request_open_graph import UpdatePageSettingsRequestOpenGraph
+from .types.update_page_settings_request_seo import UpdatePageSettingsRequestSeo
+from .types.update_page_settings_response import UpdatePageSettingsResponse
+from .types.update_static_content_request_nodes_item import UpdateStaticContentRequestNodesItem
+from .types.update_static_content_response import UpdateStaticContentResponse
+from pydantic import ValidationError
+
+
+OMIT = typing.cast(typing.Any, ...)
+
+
+class RawPagesClient:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    def list(
+        self,
+        site_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[ListPagesResponse]:
+        """
+        List of all pages for a site.
+
+        Required scope | `pages:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[ListPagesResponse]
+            Request was successful
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"sites/{encode_path_param(site_id)}/pages",
+            base_url=self._client_wrapper.get_environment().base,
+            method="GET",
+            params={
+                "localeId": locale_id,
+                "limit": limit,
+                "offset": offset,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ListPagesResponse,
+                    parse_obj_as(
+                        type_=ListPagesResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def get_metadata(
+        self,
+        page_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        translatable: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[GetMetadataPagesResponse]:
+        """
+        Get metadata information for a single page.
+
+        Required scope | `pages:read`
+
+        Parameters
+        ----------
+        page_id : str
+            Unique identifier for a Page
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        translatable : typing.Optional[str]
+            Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+            This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+            `?localeId={primary locale id}&translatable={target locale id}`
+
+            Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+            Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[GetMetadataPagesResponse]
+            Request was successful
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"pages/{encode_path_param(page_id)}",
+            base_url=self._client_wrapper.get_environment().base,
+            method="GET",
+            params={
+                "localeId": locale_id,
+                "translatable": translatable,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    GetMetadataPagesResponse,
+                    parse_obj_as(
+                        type_=GetMetadataPagesResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def update_page_settings(
+        self,
+        page_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        title: typing.Optional[str] = OMIT,
+        slug: typing.Optional[str] = OMIT,
+        seo: typing.Optional[UpdatePageSettingsRequestSeo] = OMIT,
+        open_graph: typing.Optional[UpdatePageSettingsRequestOpenGraph] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[UpdatePageSettingsResponse]:
+        """
+        Update Page-level metadata, including SEO and Open Graph fields.
+
+        Required scope | `pages:write`
+
+        Parameters
+        ----------
+        page_id : str
+            Unique identifier for a Page
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        title : typing.Optional[str]
+            Title for the page
+
+        slug : typing.Optional[str]
+            Slug for the page.
+
+            **Note:** The slug field is ignored in the following cases — all other fields in the same request still apply:
+            - The site's home page, collection template pages, and utility pages (e.g. 404, password, search).
+            - For secondary locales, updating the slug requires an <a href="https://webflow.com/feature/localization">Advanced or Enterprise localization add-on plan</a>.
+
+        seo : typing.Optional[UpdatePageSettingsRequestSeo]
+            SEO-related fields for the Page
+
+        open_graph : typing.Optional[UpdatePageSettingsRequestOpenGraph]
+            Open Graph fields for the Page
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[UpdatePageSettingsResponse]
+            Request was successful
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"pages/{encode_path_param(page_id)}",
+            base_url=self._client_wrapper.get_environment().base,
+            method="PUT",
+            params={
+                "localeId": locale_id,
+            },
+            json={
+                "title": title,
+                "slug": slug,
+                "seo": convert_and_respect_annotation_metadata(
+                    object_=seo, annotation=UpdatePageSettingsRequestSeo, direction="write"
+                ),
+                "openGraph": convert_and_respect_annotation_metadata(
+                    object_=open_graph, annotation=UpdatePageSettingsRequestOpenGraph, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    UpdatePageSettingsResponse,
+                    parse_obj_as(
+                        type_=UpdatePageSettingsResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def get_content(
+        self,
+        page_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        translatable: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[GetContentPagesResponse]:
+        """
+        Get text and component instance content from a static page.
+
+        <Badge intent="info">Localization</Badge>
+
+        Required scope | `pages:read`
+
+        Parameters
+        ----------
+        page_id : str
+            Unique identifier for a Page
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        translatable : typing.Optional[str]
+            Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+            This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+            `?localeId={primary locale id}&translatable={target locale id}`
+
+            Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+            Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[GetContentPagesResponse]
+            Request was successful
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"pages/{encode_path_param(page_id)}/dom",
+            base_url=self._client_wrapper.get_environment().base,
+            method="GET",
+            params={
+                "localeId": locale_id,
+                "limit": limit,
+                "offset": offset,
+                "translatable": translatable,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    GetContentPagesResponse,
+                    parse_obj_as(
+                        type_=GetContentPagesResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def update_static_content(
+        self,
+        page_id: str,
+        *,
+        locale_id: str,
+        nodes: typing.Sequence[UpdateStaticContentRequestNodesItem],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[UpdateStaticContentResponse]:
+        """
+        This endpoint updates content on a static page in **secondary locales**. It supports updating up to 1000 nodes in a single request.
+
+        Before making updates:
+        1. Use the [get page content](/data/reference/pages-and-components/pages/get-content) endpoint to identify available content nodes and their types.
+        2. If the page has component instances, retrieve the component's properties that you'll override using the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint.
+        3. DOM elements may include a `data-w-id` attribute. This attribute is used by Webflow to maintain custom attributes and links across locales. Always include the original `data-w-id` value in your update requests to ensure consistent behavior across all locales.
+
+        <Note>
+          This endpoint is specifically for localized pages. Ensure that the specified `localeId` is a valid **secondary locale** for the site otherwise the request will fail.
+        </Note>
+
+        Required scope | `pages:write`
+
+        Parameters
+        ----------
+        page_id : str
+            Unique identifier for a Page
+
+        locale_id : str
+            The locale identifier.
+
+        nodes : typing.Sequence[UpdateStaticContentRequestNodesItem]
+            List of DOM Nodes with the new content that will be updated in each node.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[UpdateStaticContentResponse]
+            Request was successful
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"pages/{encode_path_param(page_id)}/dom",
+            base_url=self._client_wrapper.get_environment().base,
+            method="POST",
+            params={
+                "localeId": locale_id,
+            },
+            json={
+                "nodes": convert_and_respect_annotation_metadata(
+                    object_=nodes, annotation=typing.Sequence[UpdateStaticContentRequestNodesItem], direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    UpdateStaticContentResponse,
+                    parse_obj_as(
+                        type_=UpdateStaticContentResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+
+class AsyncRawPagesClient:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    async def list(
+        self,
+        site_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[ListPagesResponse]:
+        """
+        List of all pages for a site.
+
+        Required scope | `pages:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[ListPagesResponse]
+            Request was successful
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"sites/{encode_path_param(site_id)}/pages",
+            base_url=self._client_wrapper.get_environment().base,
+            method="GET",
+            params={
+                "localeId": locale_id,
+                "limit": limit,
+                "offset": offset,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ListPagesResponse,
+                    parse_obj_as(
+                        type_=ListPagesResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def get_metadata(
+        self,
+        page_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        translatable: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[GetMetadataPagesResponse]:
+        """
+        Get metadata information for a single page.
+
+        Required scope | `pages:read`
+
+        Parameters
+        ----------
+        page_id : str
+            Unique identifier for a Page
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        translatable : typing.Optional[str]
+            Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+            This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+            `?localeId={primary locale id}&translatable={target locale id}`
+
+            Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+            Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[GetMetadataPagesResponse]
+            Request was successful
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"pages/{encode_path_param(page_id)}",
+            base_url=self._client_wrapper.get_environment().base,
+            method="GET",
+            params={
+                "localeId": locale_id,
+                "translatable": translatable,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    GetMetadataPagesResponse,
+                    parse_obj_as(
+                        type_=GetMetadataPagesResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def update_page_settings(
+        self,
+        page_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        title: typing.Optional[str] = OMIT,
+        slug: typing.Optional[str] = OMIT,
+        seo: typing.Optional[UpdatePageSettingsRequestSeo] = OMIT,
+        open_graph: typing.Optional[UpdatePageSettingsRequestOpenGraph] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[UpdatePageSettingsResponse]:
+        """
+        Update Page-level metadata, including SEO and Open Graph fields.
+
+        Required scope | `pages:write`
+
+        Parameters
+        ----------
+        page_id : str
+            Unique identifier for a Page
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        title : typing.Optional[str]
+            Title for the page
+
+        slug : typing.Optional[str]
+            Slug for the page.
+
+            **Note:** The slug field is ignored in the following cases — all other fields in the same request still apply:
+            - The site's home page, collection template pages, and utility pages (e.g. 404, password, search).
+            - For secondary locales, updating the slug requires an <a href="https://webflow.com/feature/localization">Advanced or Enterprise localization add-on plan</a>.
+
+        seo : typing.Optional[UpdatePageSettingsRequestSeo]
+            SEO-related fields for the Page
+
+        open_graph : typing.Optional[UpdatePageSettingsRequestOpenGraph]
+            Open Graph fields for the Page
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[UpdatePageSettingsResponse]
+            Request was successful
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"pages/{encode_path_param(page_id)}",
+            base_url=self._client_wrapper.get_environment().base,
+            method="PUT",
+            params={
+                "localeId": locale_id,
+            },
+            json={
+                "title": title,
+                "slug": slug,
+                "seo": convert_and_respect_annotation_metadata(
+                    object_=seo, annotation=UpdatePageSettingsRequestSeo, direction="write"
+                ),
+                "openGraph": convert_and_respect_annotation_metadata(
+                    object_=open_graph, annotation=UpdatePageSettingsRequestOpenGraph, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    UpdatePageSettingsResponse,
+                    parse_obj_as(
+                        type_=UpdatePageSettingsResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def get_content(
+        self,
+        page_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        translatable: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[GetContentPagesResponse]:
+        """
+        Get text and component instance content from a static page.
+
+        <Badge intent="info">Localization</Badge>
+
+        Required scope | `pages:read`
+
+        Parameters
+        ----------
+        page_id : str
+            Unique identifier for a Page
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        translatable : typing.Optional[str]
+            Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+            This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+            `?localeId={primary locale id}&translatable={target locale id}`
+
+            Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+            Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[GetContentPagesResponse]
+            Request was successful
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"pages/{encode_path_param(page_id)}/dom",
+            base_url=self._client_wrapper.get_environment().base,
+            method="GET",
+            params={
+                "localeId": locale_id,
+                "limit": limit,
+                "offset": offset,
+                "translatable": translatable,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    GetContentPagesResponse,
+                    parse_obj_as(
+                        type_=GetContentPagesResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def update_static_content(
+        self,
+        page_id: str,
+        *,
+        locale_id: str,
+        nodes: typing.Sequence[UpdateStaticContentRequestNodesItem],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[UpdateStaticContentResponse]:
+        """
+        This endpoint updates content on a static page in **secondary locales**. It supports updating up to 1000 nodes in a single request.
+
+        Before making updates:
+        1. Use the [get page content](/data/reference/pages-and-components/pages/get-content) endpoint to identify available content nodes and their types.
+        2. If the page has component instances, retrieve the component's properties that you'll override using the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint.
+        3. DOM elements may include a `data-w-id` attribute. This attribute is used by Webflow to maintain custom attributes and links across locales. Always include the original `data-w-id` value in your update requests to ensure consistent behavior across all locales.
+
+        <Note>
+          This endpoint is specifically for localized pages. Ensure that the specified `localeId` is a valid **secondary locale** for the site otherwise the request will fail.
+        </Note>
+
+        Required scope | `pages:write`
+
+        Parameters
+        ----------
+        page_id : str
+            Unique identifier for a Page
+
+        locale_id : str
+            The locale identifier.
+
+        nodes : typing.Sequence[UpdateStaticContentRequestNodesItem]
+            List of DOM Nodes with the new content that will be updated in each node.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[UpdateStaticContentResponse]
+            Request was successful
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"pages/{encode_path_param(page_id)}/dom",
+            base_url=self._client_wrapper.get_environment().base,
+            method="POST",
+            params={
+                "localeId": locale_id,
+            },
+            json={
+                "nodes": convert_and_respect_annotation_metadata(
+                    object_=nodes, annotation=typing.Sequence[UpdateStaticContentRequestNodesItem], direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    UpdateStaticContentResponse,
+                    parse_obj_as(
+                        type_=UpdateStaticContentResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

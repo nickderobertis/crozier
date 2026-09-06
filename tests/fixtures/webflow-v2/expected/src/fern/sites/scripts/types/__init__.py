@@ -1,0 +1,87 @@
+
+
+
+
+import typing
+from importlib import import_module
+
+if typing.TYPE_CHECKING:
+    from .get_custom_code_scripts_response import GetCustomCodeScriptsResponse
+    from .get_custom_code_scripts_response_scripts_item import GetCustomCodeScriptsResponseScriptsItem
+    from .get_custom_code_scripts_response_scripts_item_location import GetCustomCodeScriptsResponseScriptsItemLocation
+    from .list_custom_code_blocks_scripts_response import ListCustomCodeBlocksScriptsResponse
+    from .list_custom_code_blocks_scripts_response_blocks_item import ListCustomCodeBlocksScriptsResponseBlocksItem
+    from .list_custom_code_blocks_scripts_response_blocks_item_scripts_item import (
+        ListCustomCodeBlocksScriptsResponseBlocksItemScriptsItem,
+    )
+    from .list_custom_code_blocks_scripts_response_blocks_item_scripts_item_location import (
+        ListCustomCodeBlocksScriptsResponseBlocksItemScriptsItemLocation,
+    )
+    from .list_custom_code_blocks_scripts_response_blocks_item_type import (
+        ListCustomCodeBlocksScriptsResponseBlocksItemType,
+    )
+    from .list_custom_code_blocks_scripts_response_pagination import ListCustomCodeBlocksScriptsResponsePagination
+    from .upsert_custom_code_scripts_request_scripts_item import UpsertCustomCodeScriptsRequestScriptsItem
+    from .upsert_custom_code_scripts_request_scripts_item_location import (
+        UpsertCustomCodeScriptsRequestScriptsItemLocation,
+    )
+    from .upsert_custom_code_scripts_response import UpsertCustomCodeScriptsResponse
+    from .upsert_custom_code_scripts_response_scripts_item import UpsertCustomCodeScriptsResponseScriptsItem
+    from .upsert_custom_code_scripts_response_scripts_item_location import (
+        UpsertCustomCodeScriptsResponseScriptsItemLocation,
+    )
+_dynamic_imports: typing.Dict[str, str] = {
+    "GetCustomCodeScriptsResponse": ".get_custom_code_scripts_response",
+    "GetCustomCodeScriptsResponseScriptsItem": ".get_custom_code_scripts_response_scripts_item",
+    "GetCustomCodeScriptsResponseScriptsItemLocation": ".get_custom_code_scripts_response_scripts_item_location",
+    "ListCustomCodeBlocksScriptsResponse": ".list_custom_code_blocks_scripts_response",
+    "ListCustomCodeBlocksScriptsResponseBlocksItem": ".list_custom_code_blocks_scripts_response_blocks_item",
+    "ListCustomCodeBlocksScriptsResponseBlocksItemScriptsItem": ".list_custom_code_blocks_scripts_response_blocks_item_scripts_item",
+    "ListCustomCodeBlocksScriptsResponseBlocksItemScriptsItemLocation": ".list_custom_code_blocks_scripts_response_blocks_item_scripts_item_location",
+    "ListCustomCodeBlocksScriptsResponseBlocksItemType": ".list_custom_code_blocks_scripts_response_blocks_item_type",
+    "ListCustomCodeBlocksScriptsResponsePagination": ".list_custom_code_blocks_scripts_response_pagination",
+    "UpsertCustomCodeScriptsRequestScriptsItem": ".upsert_custom_code_scripts_request_scripts_item",
+    "UpsertCustomCodeScriptsRequestScriptsItemLocation": ".upsert_custom_code_scripts_request_scripts_item_location",
+    "UpsertCustomCodeScriptsResponse": ".upsert_custom_code_scripts_response",
+    "UpsertCustomCodeScriptsResponseScriptsItem": ".upsert_custom_code_scripts_response_scripts_item",
+    "UpsertCustomCodeScriptsResponseScriptsItemLocation": ".upsert_custom_code_scripts_response_scripts_item_location",
+}
+
+
+def __getattr__(attr_name: str) -> typing.Any:
+    module_name = _dynamic_imports.get(attr_name)
+    if module_name is None:
+        raise AttributeError(f"No {attr_name} found in _dynamic_imports for module name -> {__name__}")
+    try:
+        module = import_module(module_name, __package__)
+        if module_name == f".{attr_name}":
+            return module
+        else:
+            return getattr(module, attr_name)
+    except ImportError as e:
+        raise ImportError(f"Failed to import {attr_name} from {module_name}: {e}") from e
+    except AttributeError as e:
+        raise AttributeError(f"Failed to get {attr_name} from {module_name}: {e}") from e
+
+
+def __dir__():
+    lazy_attrs = list(_dynamic_imports.keys())
+    return sorted(lazy_attrs)
+
+
+__all__ = [
+    "GetCustomCodeScriptsResponse",
+    "GetCustomCodeScriptsResponseScriptsItem",
+    "GetCustomCodeScriptsResponseScriptsItemLocation",
+    "ListCustomCodeBlocksScriptsResponse",
+    "ListCustomCodeBlocksScriptsResponseBlocksItem",
+    "ListCustomCodeBlocksScriptsResponseBlocksItemScriptsItem",
+    "ListCustomCodeBlocksScriptsResponseBlocksItemScriptsItemLocation",
+    "ListCustomCodeBlocksScriptsResponseBlocksItemType",
+    "ListCustomCodeBlocksScriptsResponsePagination",
+    "UpsertCustomCodeScriptsRequestScriptsItem",
+    "UpsertCustomCodeScriptsRequestScriptsItemLocation",
+    "UpsertCustomCodeScriptsResponse",
+    "UpsertCustomCodeScriptsResponseScriptsItem",
+    "UpsertCustomCodeScriptsResponseScriptsItemLocation",
+]

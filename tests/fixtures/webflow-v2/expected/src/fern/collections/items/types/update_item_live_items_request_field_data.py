@@ -1,0 +1,27 @@
+
+
+import typing
+
+import pydantic
+from ....core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class UpdateItemLiveItemsRequestFieldData(UniversalBaseModel):
+    name: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Name of the Item
+    """
+
+    slug: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    URL structure of the Item in your site. Note: Updates to an item slug will break all links referencing the old slug.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

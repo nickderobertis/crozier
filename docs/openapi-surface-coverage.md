@@ -59,7 +59,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 32 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 126 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 132 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -252,9 +252,9 @@ The six region files, read as one body of work. Two measurements feed it:
   snapshot is the one every region file's evidence was taken from, pinned by
   digest in
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
-  rather than restated here; the seventeen sources corpus rows 110-126 added since
-  are walked into the counts below. It reads **158** registered sources, of which
-  **141** carry a committed golden.
+  rather than restated here; the twenty-three sources corpus rows 110-132 added
+  since are walked into the counts below. It reads **164** registered sources, of which
+  **147** carry a committed golden.
 - **`just fixtures-coverage`**, for criterion 2 alone. That recipe is outside
   `just check` — it needs network and runs the corpus instrumented — so its
   per-file counts are a dated snapshot (2026-08-25), stated once, in the join
@@ -278,24 +278,24 @@ for either; each bullet below says where its number comes from.
 |---|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 70 | 49 | 14 | 7 | 7 | 0 | 0 |
 | [`schemas`](openapi-surface/schemas.md) | 116 | 92 | 5 | 19 | 13 | 3 | 3 |
-| [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 35 | 11 | 1 | 1 | 0 | 0 |
+| [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 36 | 11 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 37 | 4 | 9 | 5 | 4 | 0 |
-| [`document-paths`](openapi-surface/document-paths.md) | 67 | 58 | 5 | 4 | 4 | 0 | 0 |
+| [`document-paths`](openapi-surface/document-paths.md) | 67 | 60 | 5 | 2 | 2 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 33 | 1 | 18 | 1 | 0 | 17 |
-| **total** | **402** | **304** | **40** | **58** | **31** | **7** | **20** |
+| **total** | **402** | **307** | **40** | **55** | **28** | **7** | **20** |
 
 The walk enumerated **402** features and landed each in exactly one category:
-**304** `golden`, **40** `limitations`, **58** `gap`. The `gap` column splits by
-settlement class into **31** `FIXTURE`, **7** `PROBE` and **20** `UNREACHABLE`.
+**307** `golden`, **40** `limitations`, **55** `gap`. The `gap` column splits by
+settlement class into **28** `FIXTURE`, **7** `PROBE` and **20** `UNREACHABLE`.
 
-**What the `gap` count means.** 58 is the number of OpenAPI shapes for which
+**What the `gap` count means.** 55 is the number of OpenAPI shapes for which
 crozier's behaviour is vouched for by nothing but crozier: no committed golden's
 source declares the shape, so no byte comparison against Fern touches it, and
 [`fern-limitations.md`](fern-limitations.md) has never measured Fern on it, so
-nothing contradicts whatever crozier does. `just check` is green over all 58
+nothing contradicts whatever crozier does. `just check` is green over all 55
 either way. It is not a defect count — 20 of them (`UNREACHABLE`) have no
 position in a generated Python SDK at all, and saying so is their settlement.
-The two backlogs below are the other 38.
+The two backlogs below are the other 35.
 
 ### Reconciliation
 
@@ -493,17 +493,52 @@ in this backlog rather than the probe one. Under
 licenses a probe that would settle the row as `limitations`; this row has not
 taken that route.
 
-[`duplicate-normalized-paths`](openapi-surface/document-paths.md) (#4) and
-[`duplicate-operation-id`](openapi-surface/document-paths.md) (#32) arrive from
-the probe backlog with no witness found either way. Both were `PROBE` while the
-census could not compare two values at all, and stayed there afterwards on a
-measured zero over the registered sources. Neither is a
-[structural probe](#structural-probes): the settling comparison is not between
-two documents, because one document declaring the collision generates a golden
-whose raw-client methods say what Fern did with it. No world-wide witness search
-has been run for either, so what each needs is that search and then a corpus row.
+**The last three `FIXTURE` rows of this backlog's tail left it together**, on the
+witnesses the issue #188 searches recorded as `witness-found` for them and the
+change that registered two of those witnesses as corpus rows 127 and 128.
+[`media-type-range`](openapi-surface/bodies-media.md) went on `torrentarr` (row
+127), whose six `image/*` responses are the corpus's only `type/*` key other than
+`*/*`; that row's own cell records which of crozier's seven reads of a media-type
+range the witness reaches — the two response-side ones — and which five it does
+not, so a row settled on one document does not read as covering handling sites it
+never touched. [`duplicate-normalized-paths`](openapi-surface/document-paths.md)
+went on the same `torrentarr` (4 collision sites), on `agco-ats` (row 128, 2) and
+on `short-io` (row 131, 2), and
+[`duplicate-operation-id`](openapi-surface/document-paths.md) on `agco-ats` (22
+sites over 11 ids), `svix-webhooks` (row 129, 2) and `webflow-v2` (row 132, 2). Both were `PROBE` while the census could not
+compare two values at all, and became `FIXTURE` on a measured zero over the
+registered sources; neither was ever a [structural probe](#structural-probes),
+because one document declaring the collision generates a golden whose raw-client
+methods say what Fern did with it — and each row's record now names that method
+set on both sides, which is what makes a method lost to a collision visible
+rather than hidden behind an empty diff. **Every alternate those searches
+recorded is registered too**, because a witness is not dropped for being
+redundant, inconvenient or already covered by another document: `gotson/komga`
+(row 130) declares `media-type-range` once against Torrentarr's six,
+`jentic`'s short.io redistribution (row 131) declares `duplicate-normalized-paths`
+where two registered rows already do, and `svix/svix-webhooks` (row 129) and
+`webflow/openapi-spec` (row 132) declare `duplicate-operation-id` twice each
+against AGCO's 22. Fern accepted all six, so none took the `fern-rejected` route.
+Three of the six reach full byte parity and three are registered with a **measured
+residual** — every divergent file named in that corpus's `unmatched`, and for
+`webflow-v2` every crozier-only module named beside it — which
+[`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md)'s batch 14 records
+along with what each residual is. The six goldens between them cost a run of
+repairs in `src/`, from a `float`-named enum `visit` parameter to an undeclared
+path template expression crozier was interpolating without declaring, recorded in
+[`matching.md`](matching.md).
 
-All 31 `FIXTURE` gaps remaining across the six regions, in one total order, by [the ranking
+[`reference-summary`](openapi-surface/oas31-extensions.md) (#3) is the one row of
+that tail that stayed, and it stayed on the searches' own outcome rather than on
+anything this repository could do: `fern-rejected`. Five documents declaring a
+non-Schema Reference Object `summary` are known — `lomiafrica/pi-spi-sdk`, two
+independently-published Okta documents, the Tailscale API as `jaxxstorm/tscli`
+vendors it, and `api-evangelist/barclays`' Rewards Earn profile — and Fern
+refuses four of them at the pin the corpus's provenance records while the fifth
+carries no redistributable licence. Its region-file cell carries that evidence
+with each refusal's error count, so `probe-backlog` works from it.
+
+All 28 `FIXTURE` gaps remaining across the six regions, in one total order, by [the ranking
 rubric](#the-ranking-rubric) — crozier sites ascending, then blind-spot reach
 descending, then artifact breadth descending, then witness supply descending,
 then key. Each row publishes the measured value of all four, so the order can be
@@ -523,10 +558,10 @@ checked rather than trusted.
 - **Criterion 4**, witness supply: registered sources the census reports
   declaring the shape, read off the row's own `evidence` cell. A `FIXTURE` gap
   can only score above zero here from a source with no committed golden, which is
-what makes it a gap — 30 of the 31 score zero, and the one that does not names
+what makes it a gap — 27 of the 28 score zero, and the one that does not names
   its one source in that cell.
 
-**The median blind-spot count of this list is 0** — 20 of the 31 entries name no
+**The median blind-spot count of this list is 0** — 19 of the 28 entries name no
 `src/` file at all, which is also why they win criterion 1 outright.
 
 | # | key | region | 1. crozier sites | 2. blind spots | 3. artifacts | 4. witnesses |
@@ -534,34 +569,31 @@ what makes it a gap — 30 of the 31 score zero, and the one that does not names
 | 1 | [`header-allow-reserved`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **3** (client.py, raw_client.py, reference.md) | **0** |
 | 2 | [`header-deprecated`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **3** (client.py, raw_client.py, reference.md) | **0** |
 | 3 | [`reference-summary`](openapi-surface/oas31-extensions.md) | `oas31-extensions` | **0** (none) | **0** (no `src/` file) | **3** (types/, client.py, reference.md) | **0** |
-| 4 | [`duplicate-normalized-paths`](openapi-surface/document-paths.md) | `document-paths` | **0** (none) | **0** (no `src/` file) | **2** (raw_client.py, reference.md) | **0** |
-| 5 | [`securityscheme-ref`](openapi-surface/security.md) | `security` | **0** (none) | **0** (no `src/` file) | **2** (client.py, core/) | **0** |
-| 6 | [`parameter-style-matrix-path-scalar`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **1** (raw_client.py) | **1** |
-| 7 | [`contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 8 | [`dependent-schemas`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 9 | [`dollar-anchor`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 10 | [`format-idn-email`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 11 | [`format-idn-hostname`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 12 | [`format-ipv6`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 13 | [`format-iri`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 14 | [`format-iri-reference`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 15 | [`format-relative-json-pointer`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 16 | [`max-contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 17 | [`min-contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 18 | [`multiple-of`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 19 | [`parameter-style-simple-path-object`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **1** (raw_client.py) | **0** |
-| 20 | [`unevaluated-items`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 21 | [`parameter-style-form-cookie-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
-| 22 | [`parameter-style-pipedelimited-query-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
-| 23 | [`parameter-style-spacedelimited-query-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
-| 24 | [`http-hoba`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
-| 25 | [`http-oauth`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
-| 26 | [`http-scram-sha-1`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
-| 27 | [`http-scram-sha-256`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
-| 28 | [`templated-path-segment`](openapi-surface/document-paths.md) | `document-paths` | **3** (`src/ir.rs` 3) | **201** (`src/ir.rs` 201) | **3** (client.py, raw_client.py, reference.md) | **0** |
-| 29 | [`several-path-template-variables`](openapi-surface/document-paths.md) | `document-paths` | **3** (`src/ir.rs` 3) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
-| 30 | [`duplicate-operation-id`](openapi-surface/document-paths.md) | `document-paths` | **7** (`src/openapi.rs` 1, `src/ir.rs` 6) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **2** (client.py, reference.md) | **0** |
-| 31 | [`media-type-range`](openapi-surface/bodies-media.md) | `bodies-media` | **7** (`src/emit.rs` 1, `src/ir.rs` 6) | **462** (`src/emit.rs` 261 + `src/ir.rs` 201) | **4** (types/, client.py, raw_client.py, reference.md) | **0** |
+| 4 | [`securityscheme-ref`](openapi-surface/security.md) | `security` | **0** (none) | **0** (no `src/` file) | **2** (client.py, core/) | **0** |
+| 5 | [`parameter-style-matrix-path-scalar`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **1** (raw_client.py) | **1** |
+| 6 | [`contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 7 | [`dependent-schemas`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 8 | [`dollar-anchor`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 9 | [`format-idn-email`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 10 | [`format-idn-hostname`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 11 | [`format-ipv6`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 12 | [`format-iri`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 13 | [`format-iri-reference`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 14 | [`format-relative-json-pointer`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 15 | [`max-contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 16 | [`min-contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 17 | [`multiple-of`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 18 | [`parameter-style-simple-path-object`](openapi-surface/parameters.md) | `parameters` | **0** (none) | **0** (no `src/` file) | **1** (raw_client.py) | **0** |
+| 19 | [`unevaluated-items`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
+| 20 | [`parameter-style-form-cookie-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 21 | [`parameter-style-pipedelimited-query-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 22 | [`parameter-style-spacedelimited-query-scalar`](openapi-surface/parameters.md) | `parameters` | **1** (`src/ir.rs` 1) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
+| 23 | [`http-hoba`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
+| 24 | [`http-oauth`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
+| 25 | [`http-scram-sha-1`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
+| 26 | [`http-scram-sha-256`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
+| 27 | [`templated-path-segment`](openapi-surface/document-paths.md) | `document-paths` | **3** (`src/ir.rs` 3) | **201** (`src/ir.rs` 201) | **3** (client.py, raw_client.py, reference.md) | **0** |
+| 28 | [`several-path-template-variables`](openapi-surface/document-paths.md) | `document-paths` | **3** (`src/ir.rs` 3) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
 
 ### The ranked list against `golden blind spots`
 
@@ -578,10 +610,10 @@ functions named in each verdict are counted from that union.
 | `src/` file | printed | by tier | ranked gaps pointing at it | verdict |
 |---|---:|---:|---|---|
 | `src/settings.rs` | 864 | all-e2e 434, non-e2e 430 | none | **Neither.** `explain` 148, `resolve` 44, `merge` 37, `merge_generator` 28, `load` 21, `read_config` 20: the CLI > env > `crozier.yml` layering behind `crozier config`. No OpenAPI shape reaches it and no Fern golden can — Fern reads a different config format — so neither a corpus row nor a Fern probe is the instrument. The journeys are, and they already reach 434 of the 448. |
-| `src/openapi.rs` | 511 | all-e2e 221, non-e2e 290 | 5 — #25 `http-hoba`, #26 `http-oauth`, #27 `http-scram-sha-1`, #28 `http-scram-sha-256`, #32 `duplicate-operation-id` | **Agrees, and accounts for the rest.** #25–#28 — `http-hoba`, `http-oauth`, `http-scram-sha-1` and `http-scram-sha-256` — are one `#[serde(other)]` scheme fallback arm, four IANA scheme members that collapse through it; and #32 is the `operation_id` field declaration this file's one production read of the value is. `normalize_parameters`, 3 regions, was a sixth until corpus row 122 settled `operation-overrides-path-item-parameter` `golden` and it left the ranked list. The largest block, `filter_ignored` 72, is the walk's `x-fern-or-crozier-ignore` — now `golden`, on corpus row 108's four `x-fern-ignore` operations, though golden-classified is not golden-*exhausted*: one witness reaches the Operation-Object arm and leaves the schema arm and the `x-crozier-*` precedence to unit tests. `filter_by_audience` 47 + `audiences` 8 belong to `audience-dual-header-policy`, classified `golden`: golden-classified is not golden-*exhausted*, since the two audience goldens declare 8 sites between them and leave the rest of the branch space to unit tests. `collect_schema_refs` 46 + `expand_schema_closure` 32 + `operation_schema_seed` 24 is `$ref`-closure pruning under `reference-ref` (`golden`); `load` 26 + `visit_seq` 7 + `de_composition` 5 are malformed-document deserialization paths the corpus excludes by taking only documents Fern generates. |
+| `src/openapi.rs` | 511 | all-e2e 221, non-e2e 290 | 4 — #23 `http-hoba`, #24 `http-oauth`, #25 `http-scram-sha-1`, #26 `http-scram-sha-256` | **Agrees, and accounts for the rest.** #23–#26 — `http-hoba`, `http-oauth`, `http-scram-sha-1` and `http-scram-sha-256` — are one `#[serde(other)]` scheme fallback arm, four IANA scheme members that collapse through it. `normalize_parameters`, 3 regions, was a fifth until corpus row 122 settled `operation-overrides-path-item-parameter` `golden` and it left the ranked list, and the `operation_id` field declaration was a sixth until corpus row 128 settled `duplicate-operation-id` the same way. The largest block, `filter_ignored` 72, is the walk's `x-fern-or-crozier-ignore` — now `golden`, on corpus row 108's four `x-fern-ignore` operations, though golden-classified is not golden-*exhausted*: one witness reaches the Operation-Object arm and leaves the schema arm and the `x-crozier-*` precedence to unit tests. `filter_by_audience` 47 + `audiences` 8 belong to `audience-dual-header-policy`, classified `golden`: golden-classified is not golden-*exhausted*, since the two audience goldens declare 8 sites between them and leave the rest of the branch space to unit tests. `collect_schema_refs` 46 + `expand_schema_closure` 32 + `operation_schema_seed` 24 is `$ref`-closure pruning under `reference-ref` (`golden`); `load` 26 + `visit_seq` 7 + `de_composition` 5 are malformed-document deserialization paths the corpus excludes by taking only documents Fern generates. |
 | `src/cli.rs` | 292 | all-e2e 133, non-e2e 159 | none | **Neither**, as `src/settings.rs`: `do_config` 60, `run` 43, `do_init` 26, `do_generate` 12 are the command surface, not document behaviour. |
-| `src/emit.rs` | 261 | all-e2e 29, non-e2e 232 | 1 — #33 `media-type-range` | **A shape the walk missed.** #33 names `append_request_call_args`, which is not among the blind regions at all. Those are example rendering — `raw_type_str_ctx` 40, `example_matches_type` 24, `build_example_inner` 23, `named_value_inner` 13, `value_from_example` 12, `example_from_json` 6 — and streaming docstrings, `client_stream_docstring` 11 + `raw_stream_docstring` 10. Every `example`/`examples` field is classified `golden`, but the walk enumerates the *field*; those branches switch on the JSON value *kind* an example holds, and example values are not in the grammar's closed list of valued selectors, so no `gap` row could have named them. |
-| `src/ir.rs` | 201 | all-e2e 9, non-e2e 192 | 11 — #21–#31 | **Agrees on the file, misses the shapes.** The blind regions are type-lowering conjunctions: `resolve_schema_pointer` 25, `nested_array_element` 25, `hoist_union_variant` 24, `ref_to_class` 22, `prop_type_ref` 20, `path_group` 15. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own; it is their *combinations* that no golden reaches, and the census emits one selector per field and none per conjunction. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); nobody ran one over schema-composition combinations. |
+| `src/emit.rs` | 261 | all-e2e 29, non-e2e 232 | none | **A shape the walk missed.** The one ranked gap that pointed here, `media-type-range`, named `append_request_call_args` — which is not among the blind regions at all — and corpus row 127 has since settled it `golden`. The blind regions are example rendering — `raw_type_str_ctx` 40, `example_matches_type` 24, `build_example_inner` 23, `named_value_inner` 13, `value_from_example` 12, `example_from_json` 6 — and streaming docstrings, `client_stream_docstring` 11 + `raw_stream_docstring` 10. Every `example`/`examples` field is classified `golden`, but the walk enumerates the *field*; those branches switch on the JSON value *kind* an example holds, and example values are not in the grammar's closed list of valued selectors, so no `gap` row could have named them. |
+| `src/ir.rs` | 201 | all-e2e 9, non-e2e 192 | 9 — #20–#28 | **Agrees on the file, misses the shapes.** The blind regions are type-lowering conjunctions: `resolve_schema_pointer` 25, `nested_array_element` 25, `hoist_union_variant` 24, `ref_to_class` 22, `prop_type_ref` 20, `path_group` 15. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own; it is their *combinations* that no golden reaches, and the census emits one selector per field and none per conjunction. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); nobody ran one over schema-composition combinations. |
 | `src/refs.rs` | 74 | all-e2e 17, non-e2e 57 | none | **Only a probe can settle it.** `resolve_reference` 16, `document` 10, `pointer` 9, `error` 7, `curl_fetch` 7 are the cross-document `$ref` path. The corpus is single-document by construction ([`matching.md`](matching.md#cross-document-ref-resolution-issue-77)), and the ledger's `relative-file-ref` row is already `discards + pipeline` — its own note being that crozier's fixture pipeline cannot register the tree that would make the reference resolve. No corpus row is in reach. |
 | `src/schema.rs` | 46 | all-e2e 23, non-e2e 23 | none | **Neither.** `build` 20 emits crozier's own config JSON Schema. |
 | `src/lib.rs` | 33 | all-e2e 1, non-e2e 32 | none | **Neither.** `render_files` 29 is the filesystem write path. |
@@ -590,12 +622,13 @@ functions named in each verdict are counted from that union.
 | `src/pyfmt.rs` | 24 | all-e2e 0, non-e2e 24 | none | **Neither.** `format_source` 24 is the `ruff format` shell-out and its failure paths. |
 | `src/main.rs` | 6 | all-e2e 6, non-e2e 0 | none | **Neither.** The binary entry point; `just test-fixtures-coverage` asserts it is reachable at all. |
 
-**Where the two backlogs agree.** Both name `src/ir.rs`, `src/openapi.rs` and
-`src/emit.rs` — every `src/` file any ranked gap points at is one the blind-spot
-block also lists, and in the same order of size (`openapi.rs` 511 > `emit.rs` 261
-> `ir.rs` 201). Ranking on criterion 2 therefore does not fight the repository's
-own measurement; it refines it, because 20 of the 31 ranked entries reach no
-`src/` file at all and so are invisible to a per-file view.
+**Where the two backlogs agree.** Both name `src/ir.rs` and `src/openapi.rs` —
+every `src/` file any ranked gap points at is one the blind-spot block also
+lists, and in the same order of size (`openapi.rs` 511 > `ir.rs` 201). `emit.rs`
+was a third until corpus row 127 settled `media-type-range`. Ranking on criterion
+2 therefore does not fight the repository's own measurement; it refines it,
+because 19 of the 28 ranked entries reach no `src/` file at all and so are
+invisible to a per-file view.
 
 **Where they do not.** The two largest files no ranked gap points at,
 `src/settings.rs` and `src/cli.rs`, together 1,156 of the block's 2,374 printed

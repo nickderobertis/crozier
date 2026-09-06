@@ -1,0 +1,37 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+
+
+class ListOrdersResponseOrdersItemCustomerInfo(UniversalBaseModel):
+    """
+    An object with the keys `fullName` and `email`.
+    """
+
+    full_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="fullName"),
+        pydantic.Field(alias="fullName", description="The full name of the Customer"),
+    ] = None
+    """
+    The full name of the Customer
+    """
+
+    email: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The Customer's email address
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "torrentarr",
+  "corpus_spec_ref": "b2b8bcec35b2d4bdb131b5bc0b326835982f6327",
+  "corpus_spec_url": "https://raw.githubusercontent.com/Feramance/Torrentarr/b2b8bcec35b2d4bdb131b5bc0b326835982f6327/docs/assets/openapi.json"
+}

@@ -1,0 +1,777 @@
+
+
+import typing
+
+from ...core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ...core.request_options import RequestOptions
+from .raw_client import AsyncRawCommentsClient, RawCommentsClient
+from .types.create_comment_reply_comments_response import CreateCommentReplyCommentsResponse
+from .types.get_comment_thread_comments_request_sort_by import GetCommentThreadCommentsRequestSortBy
+from .types.get_comment_thread_comments_request_sort_order import GetCommentThreadCommentsRequestSortOrder
+from .types.get_comment_thread_comments_response import GetCommentThreadCommentsResponse
+from .types.list_comment_replies_comments_request_sort_by import ListCommentRepliesCommentsRequestSortBy
+from .types.list_comment_replies_comments_request_sort_order import ListCommentRepliesCommentsRequestSortOrder
+from .types.list_comment_replies_comments_response import ListCommentRepliesCommentsResponse
+from .types.list_comment_threads_comments_request_sort_by import ListCommentThreadsCommentsRequestSortBy
+from .types.list_comment_threads_comments_request_sort_order import ListCommentThreadsCommentsRequestSortOrder
+from .types.list_comment_threads_comments_response import ListCommentThreadsCommentsResponse
+from .types.resolve_comment_thread_comments_response import ResolveCommentThreadCommentsResponse
+
+
+OMIT = typing.cast(typing.Any, ...)
+
+
+class CommentsClient:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._raw_client = RawCommentsClient(client_wrapper=client_wrapper)
+
+    @property
+    def with_raw_response(self) -> RawCommentsClient:
+        """
+        Retrieves a raw implementation of this client that returns raw responses.
+
+        Returns
+        -------
+        RawCommentsClient
+        """
+        return self._raw_client
+
+    def list_comment_threads(
+        self,
+        site_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        offset: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        sort_by: typing.Optional[ListCommentThreadsCommentsRequestSortBy] = None,
+        sort_order: typing.Optional[ListCommentThreadsCommentsRequestSortOrder] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ListCommentThreadsCommentsResponse:
+        """
+        List all comment threads for a site.
+
+        <Note title="Timing of comment threads">
+          There may be a delay of up to 5 minutes before new comments appear in the system.
+        </Note>
+
+        Required scope | `comments:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        sort_by : typing.Optional[ListCommentThreadsCommentsRequestSortBy]
+            Sort results by the provided value. Only allowed when sortOrder is provided.
+
+        sort_order : typing.Optional[ListCommentThreadsCommentsRequestSortOrder]
+            Sorts the results by asc or desc
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ListCommentThreadsCommentsResponse
+            Request was successful
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.sites.comments.list_comment_threads(
+            site_id="580e63e98c9a982ac9b8b741",
+            locale_id="65427cf400e02b306eaa04a0",
+        )
+        """
+        _response = self._raw_client.list_comment_threads(
+            site_id,
+            locale_id=locale_id,
+            offset=offset,
+            limit=limit,
+            sort_by=sort_by,
+            sort_order=sort_order,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def get_comment_thread(
+        self,
+        site_id: str,
+        comment_thread_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        offset: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        sort_by: typing.Optional[GetCommentThreadCommentsRequestSortBy] = None,
+        sort_order: typing.Optional[GetCommentThreadCommentsRequestSortOrder] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> GetCommentThreadCommentsResponse:
+        """
+        Get details of a specific comment thread.
+
+          <Note title="Timing of comment threads">
+            There may be a delay of up to 5 minutes before new comments appear in the system.
+          </Note>
+
+        Required scope | `comments:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        comment_thread_id : str
+            Unique identifier for a Comment Thread
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        sort_by : typing.Optional[GetCommentThreadCommentsRequestSortBy]
+            Sort results by the provided value. Only allowed when sortOrder is provided.
+
+        sort_order : typing.Optional[GetCommentThreadCommentsRequestSortOrder]
+            Sorts the results by asc or desc
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        GetCommentThreadCommentsResponse
+            Request was successful
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.sites.comments.get_comment_thread(
+            site_id="580e63e98c9a982ac9b8b741",
+            comment_thread_id="580e63e98c9a982ac9b8b741",
+            locale_id="65427cf400e02b306eaa04a0",
+        )
+        """
+        _response = self._raw_client.get_comment_thread(
+            site_id,
+            comment_thread_id,
+            locale_id=locale_id,
+            offset=offset,
+            limit=limit,
+            sort_by=sort_by,
+            sort_order=sort_order,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def resolve_comment_thread(
+        self,
+        site_id: str,
+        comment_thread_id: str,
+        *,
+        resolved: bool,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ResolveCommentThreadCommentsResponse:
+        """
+        Resolve or unresolve a comment thread.
+
+        <Note>
+          This endpoint is rate limited to 60 requests per minute per site.
+        </Note>
+
+        Required scope | `comments:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        comment_thread_id : str
+            Unique identifier for a Comment Thread
+
+        resolved : bool
+            Set to `true` to resolve the thread, or `false` to unresolve it
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ResolveCommentThreadCommentsResponse
+            Request was successful
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.sites.comments.resolve_comment_thread(
+            site_id="580e63e98c9a982ac9b8b741",
+            comment_thread_id="580e63e98c9a982ac9b8b741",
+            resolved=True,
+        )
+        """
+        _response = self._raw_client.resolve_comment_thread(
+            site_id, comment_thread_id, resolved=resolved, request_options=request_options
+        )
+        return _response.data
+
+    def list_comment_replies(
+        self,
+        site_id: str,
+        comment_thread_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        offset: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        sort_by: typing.Optional[ListCommentRepliesCommentsRequestSortBy] = None,
+        sort_order: typing.Optional[ListCommentRepliesCommentsRequestSortOrder] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ListCommentRepliesCommentsResponse:
+        """
+        List all replies to a specific comment thread.
+
+        <Note title="Timing of comment threads">
+          There may be a delay of up to 5 minutes before new comments appear in the system.
+        </Note>
+
+        Required scope | `comments:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        comment_thread_id : str
+            Unique identifier for a Comment Thread
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        sort_by : typing.Optional[ListCommentRepliesCommentsRequestSortBy]
+            Sort results by the provided value. Only allowed when sortOrder is provided.
+
+        sort_order : typing.Optional[ListCommentRepliesCommentsRequestSortOrder]
+            Sorts the results by asc or desc
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ListCommentRepliesCommentsResponse
+            Request was successful
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.sites.comments.list_comment_replies(
+            site_id="580e63e98c9a982ac9b8b741",
+            comment_thread_id="580e63e98c9a982ac9b8b741",
+            locale_id="65427cf400e02b306eaa04a0",
+        )
+        """
+        _response = self._raw_client.list_comment_replies(
+            site_id,
+            comment_thread_id,
+            locale_id=locale_id,
+            offset=offset,
+            limit=limit,
+            sort_by=sort_by,
+            sort_order=sort_order,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def create_comment_reply(
+        self,
+        site_id: str,
+        comment_thread_id: str,
+        *,
+        content: str,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> CreateCommentReplyCommentsResponse:
+        """
+        Create a reply to an existing comment thread.
+
+        The reply author is always the user who authorized the OAuth token.
+        To @mention a user in the reply, include their user ID in double square brackets in the `content` field, as in `[[userId]]`.
+
+        <Note>
+          The `comment_created` webhook fires automatically when a reply is created.
+        </Note>
+
+        Required scope | `comments:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        comment_thread_id : str
+            Unique identifier for a Comment Thread
+
+        content : str
+            The text content of the reply. To @mention a user, include their user ID in double square brackets, as in `[[userId]]`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        CreateCommentReplyCommentsResponse
+            Reply created successfully
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+        )
+        client.sites.comments.create_comment_reply(
+            site_id="580e63e98c9a982ac9b8b741",
+            comment_thread_id="580e63e98c9a982ac9b8b741",
+            content="Thanks for the feedback [[6287ec36a841b25637c663df]]!",
+        )
+        """
+        _response = self._raw_client.create_comment_reply(
+            site_id, comment_thread_id, content=content, request_options=request_options
+        )
+        return _response.data
+
+
+class AsyncCommentsClient:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._raw_client = AsyncRawCommentsClient(client_wrapper=client_wrapper)
+
+    @property
+    def with_raw_response(self) -> AsyncRawCommentsClient:
+        """
+        Retrieves a raw implementation of this client that returns raw responses.
+
+        Returns
+        -------
+        AsyncRawCommentsClient
+        """
+        return self._raw_client
+
+    async def list_comment_threads(
+        self,
+        site_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        offset: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        sort_by: typing.Optional[ListCommentThreadsCommentsRequestSortBy] = None,
+        sort_order: typing.Optional[ListCommentThreadsCommentsRequestSortOrder] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ListCommentThreadsCommentsResponse:
+        """
+        List all comment threads for a site.
+
+        <Note title="Timing of comment threads">
+          There may be a delay of up to 5 minutes before new comments appear in the system.
+        </Note>
+
+        Required scope | `comments:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        sort_by : typing.Optional[ListCommentThreadsCommentsRequestSortBy]
+            Sort results by the provided value. Only allowed when sortOrder is provided.
+
+        sort_order : typing.Optional[ListCommentThreadsCommentsRequestSortOrder]
+            Sorts the results by asc or desc
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ListCommentThreadsCommentsResponse
+            Request was successful
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.sites.comments.list_comment_threads(
+                site_id="580e63e98c9a982ac9b8b741",
+                locale_id="65427cf400e02b306eaa04a0",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.list_comment_threads(
+            site_id,
+            locale_id=locale_id,
+            offset=offset,
+            limit=limit,
+            sort_by=sort_by,
+            sort_order=sort_order,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def get_comment_thread(
+        self,
+        site_id: str,
+        comment_thread_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        offset: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        sort_by: typing.Optional[GetCommentThreadCommentsRequestSortBy] = None,
+        sort_order: typing.Optional[GetCommentThreadCommentsRequestSortOrder] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> GetCommentThreadCommentsResponse:
+        """
+        Get details of a specific comment thread.
+
+          <Note title="Timing of comment threads">
+            There may be a delay of up to 5 minutes before new comments appear in the system.
+          </Note>
+
+        Required scope | `comments:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        comment_thread_id : str
+            Unique identifier for a Comment Thread
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        sort_by : typing.Optional[GetCommentThreadCommentsRequestSortBy]
+            Sort results by the provided value. Only allowed when sortOrder is provided.
+
+        sort_order : typing.Optional[GetCommentThreadCommentsRequestSortOrder]
+            Sorts the results by asc or desc
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        GetCommentThreadCommentsResponse
+            Request was successful
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.sites.comments.get_comment_thread(
+                site_id="580e63e98c9a982ac9b8b741",
+                comment_thread_id="580e63e98c9a982ac9b8b741",
+                locale_id="65427cf400e02b306eaa04a0",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_comment_thread(
+            site_id,
+            comment_thread_id,
+            locale_id=locale_id,
+            offset=offset,
+            limit=limit,
+            sort_by=sort_by,
+            sort_order=sort_order,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def resolve_comment_thread(
+        self,
+        site_id: str,
+        comment_thread_id: str,
+        *,
+        resolved: bool,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ResolveCommentThreadCommentsResponse:
+        """
+        Resolve or unresolve a comment thread.
+
+        <Note>
+          This endpoint is rate limited to 60 requests per minute per site.
+        </Note>
+
+        Required scope | `comments:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        comment_thread_id : str
+            Unique identifier for a Comment Thread
+
+        resolved : bool
+            Set to `true` to resolve the thread, or `false` to unresolve it
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ResolveCommentThreadCommentsResponse
+            Request was successful
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.sites.comments.resolve_comment_thread(
+                site_id="580e63e98c9a982ac9b8b741",
+                comment_thread_id="580e63e98c9a982ac9b8b741",
+                resolved=True,
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.resolve_comment_thread(
+            site_id, comment_thread_id, resolved=resolved, request_options=request_options
+        )
+        return _response.data
+
+    async def list_comment_replies(
+        self,
+        site_id: str,
+        comment_thread_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        offset: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        sort_by: typing.Optional[ListCommentRepliesCommentsRequestSortBy] = None,
+        sort_order: typing.Optional[ListCommentRepliesCommentsRequestSortOrder] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ListCommentRepliesCommentsResponse:
+        """
+        List all replies to a specific comment thread.
+
+        <Note title="Timing of comment threads">
+          There may be a delay of up to 5 minutes before new comments appear in the system.
+        </Note>
+
+        Required scope | `comments:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        comment_thread_id : str
+            Unique identifier for a Comment Thread
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        sort_by : typing.Optional[ListCommentRepliesCommentsRequestSortBy]
+            Sort results by the provided value. Only allowed when sortOrder is provided.
+
+        sort_order : typing.Optional[ListCommentRepliesCommentsRequestSortOrder]
+            Sorts the results by asc or desc
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ListCommentRepliesCommentsResponse
+            Request was successful
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.sites.comments.list_comment_replies(
+                site_id="580e63e98c9a982ac9b8b741",
+                comment_thread_id="580e63e98c9a982ac9b8b741",
+                locale_id="65427cf400e02b306eaa04a0",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.list_comment_replies(
+            site_id,
+            comment_thread_id,
+            locale_id=locale_id,
+            offset=offset,
+            limit=limit,
+            sort_by=sort_by,
+            sort_order=sort_order,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def create_comment_reply(
+        self,
+        site_id: str,
+        comment_thread_id: str,
+        *,
+        content: str,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> CreateCommentReplyCommentsResponse:
+        """
+        Create a reply to an existing comment thread.
+
+        The reply author is always the user who authorized the OAuth token.
+        To @mention a user in the reply, include their user ID in double square brackets in the `content` field, as in `[[userId]]`.
+
+        <Note>
+          The `comment_created` webhook fires automatically when a reply is created.
+        </Note>
+
+        Required scope | `comments:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        comment_thread_id : str
+            Unique identifier for a Comment Thread
+
+        content : str
+            The text content of the reply. To @mention a user, include their user ID in double square brackets, as in `[[userId]]`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        CreateCommentReplyCommentsResponse
+            Reply created successfully
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.sites.comments.create_comment_reply(
+                site_id="580e63e98c9a982ac9b8b741",
+                comment_thread_id="580e63e98c9a982ac9b8b741",
+                content="Thanks for the feedback [[6287ec36a841b25637c663df]]!",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.create_comment_reply(
+            site_id, comment_thread_id, content=content, request_options=request_options
+        )
+        return _response.data

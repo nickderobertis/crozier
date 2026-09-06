@@ -1,0 +1,1480 @@
+
+
+import typing
+from json.decoder import JSONDecodeError
+
+from ..core.api_error import ApiError
+from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.http_response import AsyncHttpResponse, HttpResponse
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
+from ..core.pydantic_utilities import parse_obj_as
+from ..core.request_options import RequestOptions
+from ..core.serialization import convert_and_respect_annotation_metadata
+from ..errors.bad_request_error import BadRequestError
+from ..errors.forbidden_error import ForbiddenError
+from ..errors.internal_server_error import InternalServerError
+from ..errors.not_found_error import NotFoundError
+from ..errors.too_many_requests_error import TooManyRequestsError
+from ..errors.unauthorized_error import UnauthorizedError
+from .types.get_content_components_response import GetContentComponentsResponse
+from .types.get_properties_components_response import GetPropertiesComponentsResponse
+from .types.list_components_response import ListComponentsResponse
+from .types.update_content_components_request_nodes_item import UpdateContentComponentsRequestNodesItem
+from .types.update_content_components_response import UpdateContentComponentsResponse
+from .types.update_properties_components_request_properties_item import UpdatePropertiesComponentsRequestPropertiesItem
+from .types.update_properties_components_response import UpdatePropertiesComponentsResponse
+from pydantic import ValidationError
+
+
+OMIT = typing.cast(typing.Any, ...)
+
+
+class RawComponentsClient:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    def list(
+        self,
+        site_id: str,
+        *,
+        branch_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[ListComponentsResponse]:
+        """
+        List of all components for a site.
+
+        Required scope | `components:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[ListComponentsResponse]
+            Request was successful
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"sites/{encode_path_param(site_id)}/components",
+            base_url=self._client_wrapper.get_environment().base,
+            method="GET",
+            params={
+                "branchId": branch_id,
+                "limit": limit,
+                "offset": offset,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ListComponentsResponse,
+                    parse_obj_as(
+                        type_=ListComponentsResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def get_content(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        translatable: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[GetContentComponentsResponse]:
+        """
+        Get static content from a component definition. This includes text nodes, image nodes, select nodes, text input nodes, submit button nodes, and nested component instances.
+        To retrieve dynamic content set by component properties, use the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint.
+
+        <Note>If you do not provide a Locale ID in your request, the response will return any content that can be localized from the Primary locale.</Note>
+
+        Required scope | `components:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        translatable : typing.Optional[str]
+            Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+            This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+            `?localeId={primary locale id}&translatable={target locale id}`
+
+            Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+            Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[GetContentComponentsResponse]
+            Request was successful
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"sites/{encode_path_param(site_id)}/components/{encode_path_param(component_id)}/dom",
+            base_url=self._client_wrapper.get_environment().base,
+            method="GET",
+            params={
+                "localeId": locale_id,
+                "branchId": branch_id,
+                "limit": limit,
+                "offset": offset,
+                "translatable": translatable,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    GetContentComponentsResponse,
+                    parse_obj_as(
+                        type_=GetContentComponentsResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def update_content(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        nodes: typing.Sequence[UpdateContentComponentsRequestNodesItem],
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[UpdateContentComponentsResponse]:
+        """
+        This endpoint updates content within a component defintion for **secondary locales**. It supports updating up to 1000 nodes in a single request.
+
+        Before making updates:
+        1. Use the [get component content](/data/reference/pages-and-components/components/get-content) endpoint to identify available content nodes and their types.
+        2. If your component definition has a component instance nested within it, retrieve the nested component instance's properties that you'll override using the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint.
+        3. DOM elements may include a `data-w-id` attribute. This attribute is used by Webflow to maintain custom attributes and links across locales. Always include the original `data-w-id` value in your update requests to ensure consistent behavior across all locales.
+
+        <Note>
+          This endpoint is specifically for localizing component definitions. Ensure that the specified `localeId` is a valid **secondary locale** for the site otherwise the request will fail.
+        </Note>
+
+        Required scope | `components:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        nodes : typing.Sequence[UpdateContentComponentsRequestNodesItem]
+            List of DOM Nodes with the new content that will be updated in each node.
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[UpdateContentComponentsResponse]
+            Request was successful
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"sites/{encode_path_param(site_id)}/components/{encode_path_param(component_id)}/dom",
+            base_url=self._client_wrapper.get_environment().base,
+            method="POST",
+            params={
+                "localeId": locale_id,
+                "branchId": branch_id,
+            },
+            json={
+                "nodes": convert_and_respect_annotation_metadata(
+                    object_=nodes,
+                    annotation=typing.Sequence[UpdateContentComponentsRequestNodesItem],
+                    direction="write",
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    UpdateContentComponentsResponse,
+                    parse_obj_as(
+                        type_=UpdateContentComponentsResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def get_properties(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        translatable: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[GetPropertiesComponentsResponse]:
+        """
+        Get the default property values of a component definition.
+
+        <Note>If you do not include a `localeId` in your request, the response will return any properties that can be localized from the Primary locale.</Note>
+
+        Required scope | `components:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        translatable : typing.Optional[str]
+            Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+            This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+            `?localeId={primary locale id}&translatable={target locale id}`
+
+            Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+            Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[GetPropertiesComponentsResponse]
+            Request was successful
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"sites/{encode_path_param(site_id)}/components/{encode_path_param(component_id)}/properties",
+            base_url=self._client_wrapper.get_environment().base,
+            method="GET",
+            params={
+                "localeId": locale_id,
+                "branchId": branch_id,
+                "limit": limit,
+                "offset": offset,
+                "translatable": translatable,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    GetPropertiesComponentsResponse,
+                    parse_obj_as(
+                        type_=GetPropertiesComponentsResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def update_properties(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        properties: typing.Sequence[UpdatePropertiesComponentsRequestPropertiesItem],
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[UpdatePropertiesComponentsResponse]:
+        """
+        Update the default property values of a component definition in a specificed locale.
+
+        Before making updates:
+        1. Use the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint to identify properties that can be updated in a secondary locale.
+        2. Rich Text properties may include a `data-w-id` attribute. This attribute is used by Webflow to maintain links across locales. Always include the original `data-w-id` value in your update requests to ensure consistent behavior across all locales.
+
+        <Note>The request requires a secondary locale ID. If a `localeId` is missing, the request will not be processed and will result in an error.</Note>
+
+        Required scope | `components:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        properties : typing.Sequence[UpdatePropertiesComponentsRequestPropertiesItem]
+            A list of component properties to update within the specified secondary locale.
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[UpdatePropertiesComponentsResponse]
+            Request was successful
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"sites/{encode_path_param(site_id)}/components/{encode_path_param(component_id)}/properties",
+            base_url=self._client_wrapper.get_environment().base,
+            method="POST",
+            params={
+                "localeId": locale_id,
+                "branchId": branch_id,
+            },
+            json={
+                "properties": convert_and_respect_annotation_metadata(
+                    object_=properties,
+                    annotation=typing.Sequence[UpdatePropertiesComponentsRequestPropertiesItem],
+                    direction="write",
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    UpdatePropertiesComponentsResponse,
+                    parse_obj_as(
+                        type_=UpdatePropertiesComponentsResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+
+class AsyncRawComponentsClient:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    async def list(
+        self,
+        site_id: str,
+        *,
+        branch_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[ListComponentsResponse]:
+        """
+        List of all components for a site.
+
+        Required scope | `components:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[ListComponentsResponse]
+            Request was successful
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"sites/{encode_path_param(site_id)}/components",
+            base_url=self._client_wrapper.get_environment().base,
+            method="GET",
+            params={
+                "branchId": branch_id,
+                "limit": limit,
+                "offset": offset,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ListComponentsResponse,
+                    parse_obj_as(
+                        type_=ListComponentsResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def get_content(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        translatable: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[GetContentComponentsResponse]:
+        """
+        Get static content from a component definition. This includes text nodes, image nodes, select nodes, text input nodes, submit button nodes, and nested component instances.
+        To retrieve dynamic content set by component properties, use the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint.
+
+        <Note>If you do not provide a Locale ID in your request, the response will return any content that can be localized from the Primary locale.</Note>
+
+        Required scope | `components:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        translatable : typing.Optional[str]
+            Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+            This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+            `?localeId={primary locale id}&translatable={target locale id}`
+
+            Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+            Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[GetContentComponentsResponse]
+            Request was successful
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"sites/{encode_path_param(site_id)}/components/{encode_path_param(component_id)}/dom",
+            base_url=self._client_wrapper.get_environment().base,
+            method="GET",
+            params={
+                "localeId": locale_id,
+                "branchId": branch_id,
+                "limit": limit,
+                "offset": offset,
+                "translatable": translatable,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    GetContentComponentsResponse,
+                    parse_obj_as(
+                        type_=GetContentComponentsResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def update_content(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        nodes: typing.Sequence[UpdateContentComponentsRequestNodesItem],
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[UpdateContentComponentsResponse]:
+        """
+        This endpoint updates content within a component defintion for **secondary locales**. It supports updating up to 1000 nodes in a single request.
+
+        Before making updates:
+        1. Use the [get component content](/data/reference/pages-and-components/components/get-content) endpoint to identify available content nodes and their types.
+        2. If your component definition has a component instance nested within it, retrieve the nested component instance's properties that you'll override using the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint.
+        3. DOM elements may include a `data-w-id` attribute. This attribute is used by Webflow to maintain custom attributes and links across locales. Always include the original `data-w-id` value in your update requests to ensure consistent behavior across all locales.
+
+        <Note>
+          This endpoint is specifically for localizing component definitions. Ensure that the specified `localeId` is a valid **secondary locale** for the site otherwise the request will fail.
+        </Note>
+
+        Required scope | `components:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        nodes : typing.Sequence[UpdateContentComponentsRequestNodesItem]
+            List of DOM Nodes with the new content that will be updated in each node.
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[UpdateContentComponentsResponse]
+            Request was successful
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"sites/{encode_path_param(site_id)}/components/{encode_path_param(component_id)}/dom",
+            base_url=self._client_wrapper.get_environment().base,
+            method="POST",
+            params={
+                "localeId": locale_id,
+                "branchId": branch_id,
+            },
+            json={
+                "nodes": convert_and_respect_annotation_metadata(
+                    object_=nodes,
+                    annotation=typing.Sequence[UpdateContentComponentsRequestNodesItem],
+                    direction="write",
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    UpdateContentComponentsResponse,
+                    parse_obj_as(
+                        type_=UpdateContentComponentsResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def get_properties(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        translatable: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[GetPropertiesComponentsResponse]:
+        """
+        Get the default property values of a component definition.
+
+        <Note>If you do not include a `localeId` in your request, the response will return any properties that can be localized from the Primary locale.</Note>
+
+        Required scope | `components:read`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        limit : typing.Optional[int]
+            Maximum number of records to be returned (max limit: 100)
+
+        offset : typing.Optional[int]
+            Offset used for pagination if the results have more than limit records
+
+        translatable : typing.Optional[str]
+            Unique identifier for the secondary Locale you're translating **into**. Returns only content that hasn't been excluded from translation for that locale.
+
+            This is independent of `localeId`, which selects which version of the content is returned. To fetch the source text to translate, request the primary locale's content and set `translatable` to the locale you're translating into:
+
+            `?localeId={primary locale id}&translatable={target locale id}`
+
+            Only exclusion rules scoped to manual translation are respected — rules scoped only to automatic translation don't affect this parameter's response.
+
+            Omitting `translatable` returns the same response as if this parameter didn't exist. The value must be the id of one of the site's secondary locales — the primary locale id, or any other value, returns a `400` error. Requires translation exclusions to be enabled for the site; if they aren't, the request returns a `403` error.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[GetPropertiesComponentsResponse]
+            Request was successful
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"sites/{encode_path_param(site_id)}/components/{encode_path_param(component_id)}/properties",
+            base_url=self._client_wrapper.get_environment().base,
+            method="GET",
+            params={
+                "localeId": locale_id,
+                "branchId": branch_id,
+                "limit": limit,
+                "offset": offset,
+                "translatable": translatable,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    GetPropertiesComponentsResponse,
+                    parse_obj_as(
+                        type_=GetPropertiesComponentsResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def update_properties(
+        self,
+        site_id: str,
+        component_id: str,
+        *,
+        properties: typing.Sequence[UpdatePropertiesComponentsRequestPropertiesItem],
+        locale_id: typing.Optional[str] = None,
+        branch_id: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[UpdatePropertiesComponentsResponse]:
+        """
+        Update the default property values of a component definition in a specificed locale.
+
+        Before making updates:
+        1. Use the [get component properties](/data/reference/pages-and-components/components/get-properties) endpoint to identify properties that can be updated in a secondary locale.
+        2. Rich Text properties may include a `data-w-id` attribute. This attribute is used by Webflow to maintain links across locales. Always include the original `data-w-id` value in your update requests to ensure consistent behavior across all locales.
+
+        <Note>The request requires a secondary locale ID. If a `localeId` is missing, the request will not be processed and will result in an error.</Note>
+
+        Required scope | `components:write`
+
+        Parameters
+        ----------
+        site_id : str
+            Unique identifier for a Site
+
+        component_id : str
+            Unique identifier for a Component
+
+        properties : typing.Sequence[UpdatePropertiesComponentsRequestPropertiesItem]
+            A list of component properties to update within the specified secondary locale.
+
+        locale_id : typing.Optional[str]
+            Unique identifier for a specific Locale.
+
+            [Learn more about localization.](/data/v2.0.0/docs/working-with-localization)
+
+        branch_id : typing.Optional[str]
+            Scope the operation to work on a specific branch.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[UpdatePropertiesComponentsResponse]
+            Request was successful
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"sites/{encode_path_param(site_id)}/components/{encode_path_param(component_id)}/properties",
+            base_url=self._client_wrapper.get_environment().base,
+            method="POST",
+            params={
+                "localeId": locale_id,
+                "branchId": branch_id,
+            },
+            json={
+                "properties": convert_and_respect_annotation_metadata(
+                    object_=properties,
+                    annotation=typing.Sequence[UpdatePropertiesComponentsRequestPropertiesItem],
+                    direction="write",
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    UpdatePropertiesComponentsResponse,
+                    parse_obj_as(
+                        type_=UpdatePropertiesComponentsResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
