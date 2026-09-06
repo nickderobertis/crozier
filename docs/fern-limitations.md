@@ -3521,10 +3521,10 @@ The cause was a load-time normalization in `src/openapi.rs`,
 `normalize_response_alias_refs`, which followed a component schema that is
 nothing but a `$ref` when it typed an operation response. Its stated warrant was
 `helios-verifiable-api`'s `BlockResponse: {$ref: Block}` generating
-`get_block_information` as returning `Block` — which Fern does, but for a
-different reason: helios' aliases are the residue of **remote** `$ref`
-registration, and [`crate::refs`] rewrites every reference to the local key
-before any normalization runs, so the pass was never what made that row match.
+`get_block_information` as returning `Block` — which Fern does, but only where
+the alias target is the residue of a **remote** `$ref`: helios declares
+`Block: {$ref: <execution-apis URL>#/Block}`, and it is that fetched schema the
+alias points at.
 
 Probed directly, Fern does not follow a **local** alias in a response. Four
 spellings, one operation each, all `fern check` 0 and `fern generate` 0:
@@ -3536,14 +3536,19 @@ spellings, one operation each, all `fern check` 0 and `fern generate` 0:
 | `… , description: an alias` | `AliasOfThing` |
 | `… , unevaluatedProperties: false` | `AliasOfThing` |
 
-The pass is removed. `tests/e2e.rs`'s
+The alias was declared before and after its target and with the target
+referenced elsewhere as well, and none of that moved the answer either. So the
+pass is confined to alias targets `src/refs.rs` reports as remotely declared, and
+is `normalize_fetched_response_alias_refs` now. `tests/e2e.rs`'s
 `a_pure_ref_component_names_the_response_it_types` drives the real binary over a
-document of that shape and holds the response to the alias name, and
-`src/openapi.rs`'s `a_pure_ref_component_keeps_its_name_in_a_response` holds the
-load-time model to leaving the reference alone. With the pass gone, all seven
-cleanly-generating probes byte-match Fern and the registered corpus still
-byte-matches. **This is a crozier repair, not a Fern limitation**: it changes no
-row's category and appears in no region file.
+local-alias document and holds the response to the alias name;
+`src/openapi.rs` holds the load-time model to both halves —
+`a_local_ref_alias_keeps_its_name_in_a_response` and
+`a_response_alias_of_a_fetched_schema_resolves_to_the_fetched_name`. With the
+narrowing in place all seven cleanly-generating probes byte-match Fern, and `just
+test-corpus-match` is green over the whole registered corpus, helios included.
+**This is a crozier repair, not a Fern limitation**: it changes no row's category
+and appears in no region file.
 
 ### Round 5 — what the round measured
 
