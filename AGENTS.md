@@ -205,6 +205,10 @@ Use the `just` recipes; do not hand-roll equivalents.
 - Fixtures are comment-stripped (Fern-vs-crozier comments differ by design); the
   same string-safe stripper produces the committed fixtures and normalizes
   crozier's output in the e2e.
+- **Which licences the corpus admits** — and which it refuses, and why each half
+  was decided that way — is stated once, in
+  [`docs/corpus-licensing.md`](docs/corpus-licensing.md). No other document
+  lists licence names; `just lint-corpus-licensing` fails if one starts to.
 - Maintain numbered corpus goldens one row at a time through the manually
   dispatched **Fern goldens** workflow. It records exact generator/spec
   provenance and safely publishes complete results even while comparison is red;

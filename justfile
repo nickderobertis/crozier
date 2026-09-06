@@ -20,7 +20,7 @@ bootstrap:
     @echo "enabled .githooks (shared sccache + visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
-check: fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins supply-chain doc
+check: fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins lint-corpus-licensing test-corpus-licensing supply-chain doc
     @echo "check: ok"
 
 # Format check (does not modify files).
@@ -341,6 +341,21 @@ surface-census *args:
 # above is not). Same split as test-fixtures-coverage vs fixtures-coverage.
 test-surface-census:
     "$(./scripts/census-python.sh)" tests/surface_census_test.py
+
+# The corpus's admissible-licence rule is stated in ONE file,
+# docs/corpus-licensing.md. This fails when any other tracked Markdown document
+# enumerates the admissible licences again — the drift that left a dozen copies
+# of the old set and no source. Prose that REFERS to the rule is fine; a second
+# list of licence names is not. Part of `check`.
+lint-corpus-licensing:
+    python3 scripts/corpus-licensing-drift.py
+
+# Boundary coverage for that gate: drives the REAL script over the REAL tree,
+# and over the real tree with a second enumeration planted in it, so a check
+# that had stopped discriminating fails here instead of passing silently.
+# Part of `check`.
+test-corpus-licensing:
+    python3 tests/corpus_licensing_test.py
 
 # Install/refresh the llmlint toolchain (oneharness + llmlint). Idempotent.
 setup-llmlint:

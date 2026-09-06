@@ -827,7 +827,8 @@ grounds, however unusable that document turns out to be. What it leaves *as*
 depends on why it is unusable, and a search returns one of five outcomes.
 
 1. **`witness-found`** — a real-world document declares the shape, at an
-   immutable ref, under a redistribution-compatible licence, and Fern accepts it.
+   immutable ref, under a [redistribution-compatible](corpus-licensing.md)
+   licence, and Fern accepts it.
    The row becomes `FIXTURE`, and retires outright to `golden` the moment that
    document is registered: `dollar-comment` did exactly that, as corpus row 109.
 2. **`witness-blocked`** or **`fern-rejected`** — such a document exists and this

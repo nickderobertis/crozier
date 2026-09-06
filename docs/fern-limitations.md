@@ -3396,8 +3396,9 @@ recorded below. `src/openapi.rs`'s `Schema` declares no `$dynamicAnchor`,
 *What a registrable witness would be:* an OpenAPI 3.1 document a real API
 publishes as its own description, declaring `$dynamicRef` and the
 `$dynamicAnchor` it resolves to, at a credential-free HTTPS URL ending `.json`,
-`.yaml` or `.yml`, pinned to an immutable ref, under a redistribution-compatible
-licence, and accepted by `fern check`. Its golden would pin exactly the
+`.yaml` or `.yml`, pinned to an immutable ref, under a
+[redistribution-compatible](corpus-licensing.md) licence, and accepted by
+`fern check`. Its golden would pin exactly the
 `typing.Any` above; one turning up promotes both rows to `golden`.
 
 ### Round 5 — `$vocabulary`
