@@ -1,0 +1,36 @@
+openapi: 3.1.0
+info:
+  title: dependent-schemas
+  version: 1.0.0
+servers:
+  - url: https://probe.invalid
+paths:
+  /payment:
+    get:
+      operationId: getPayment
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+components:
+  schemas:
+    Payment:
+      title: Payment
+      type: object
+      properties:
+        amount:
+          type: number
+        card:
+          type: boolean
+      required:
+        - amount
+      dependentSchemas:
+        card:
+          properties:
+            cardNumber:
+              type: string
+          required:
+            - cardNumber

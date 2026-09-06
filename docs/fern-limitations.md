@@ -3615,7 +3615,196 @@ probe buys and the whole of what it costs.
 
 ### Round 6 — schemas
 
-*No measurement recorded yet.*
+Thirteen `schemas` rows of the ranked `FIXTURE` backlog are measured here, on
+2026-09-06, under the pins this section's preamble declares. Twelve of them reach
+this subsection by
+[route 2](openapi-surface-coverage.md#the-settlement-rule-as-amended) — their own
+[witness search](openapi-surface/schemas.md#witness-search-issue-188) found a
+real-world witness this corpus cannot use, and each row's cell names that
+witness's blocker. The thirteenth, `dependent-schemas`, reaches it by **route 3**,
+the open-search probe: its search found no usable witness — every
+`dependentSchemas` declaration the six sources produced is a meta-schema, a
+tooling fixture or a Petstore sample, and the one candidate that is neither
+describes an API whose only `servers` entry is an RFC 2606 `.invalid` placeholder
+— *and* it left a required source unanswered, so its record reads
+`search-incomplete` and claims nothing about the world. The outstanding source is
+the SwaggerHub public registry: the enumerated 3.1/3.2 sweep answered **0**, while
+that registry's `openapi-3.0.x` family, **414,968** specs, exposes no body search
+and those bodies went unread rather than answering the query. A probe claims
+nothing about the world either, which is exactly why an unread source does not bar
+one.
+
+**Every one of the thirteen is `discards`.** Fern accepts each shape and emits
+nothing derived from it. The two stages are run and recorded separately for every
+probe, and on all fourteen documents they returned the same pair: `fern check`
+**exit 0**, printing `All checks passed`, and `fern generate` **exit 0**, printing
+`[api]: python-sdk fernapi/fern-python-sdk Finished.` after `Wrote files to
+…/preview/fern-python-sdk`. Neither stage returned any other status, and neither
+printed a diagnostic naming the shape under test on any of the fourteen.
+
+**Each probe isolates its own shape, and most carry their control inside the same
+document.** A keyword that could narrow an annotation is declared on one property
+and omitted on a second property of the same model, so the measurement is a
+difference between two fields of one generated class rather than a comparison
+across documents. Where the shape is not a property-level one — the two
+`contains` bounds, and `$anchor` — the control is a second document that differs
+by exactly the keyword under test.
+
+**`contains`.** [`contains.yml`](openapi-surface/probes/contains.yml) declares
+`contains: {type: string}` on `Basket.withContains` and nothing on
+`Basket.withoutContains`. Fern emits the two identically:
+
+```python
+class Basket(UniversalBaseModel):
+    with_contains: typing_extensions.Annotated[
+        typing.List[typing.Any], FieldMetadata(alias="withContains"), pydantic.Field(alias="withContains")
+    ]
+    without_contains: typing_extensions.Annotated[
+        typing.List[typing.Any], FieldMetadata(alias="withoutContains"), pydantic.Field(alias="withoutContains")
+    ]
+```
+
+`typing.List[typing.Any]` is the no-element-schema default, so the keyword
+narrows nothing. Verdict: **discards**.
+
+**`max-contains` and `min-contains`.**
+[`contains-bounds.yml`](openapi-surface/probes/contains-bounds.yml) is
+`contains.yml` with `maxContains: 3` and `minContains: 1` added beside the same
+`contains`, and `contains.yml` is its control. The two SDKs Fern writes are
+**byte-identical across all 39 files**, `.fern/metadata.json` included: adding
+both bounds moves not one byte. Neither `maxContains`/`minContains` nor any
+snake_case rendering of either occurs anywhere in the tree. Verdict for both
+rows: **discards**.
+
+**`multiple-of`.** [`multiple-of.yml`](openapi-surface/probes/multiple-of.yml)
+declares `multipleOf: 0.5` on a `number`, `multipleOf: 10` on an `integer`, and a
+third `number` property with no bound. Fern annotates the bounded fields exactly
+as the unbounded one — `stepped: float`, `stepped_integer: int`, `plain: float` —
+and neither `multipleOf` nor `multiple_of` occurs anywhere in the 39-file SDK.
+Verdict: **discards**.
+
+**`unevaluated-items`.**
+[`unevaluated-items.yml`](openapi-surface/probes/unevaluated-items.yml) declares
+the keyword in the position the row is about — the tail a `prefixItems` schema
+leaves unevaluated — on `Tuple.withUnevaluatedItems`, whose two-member
+`prefixItems` is followed by `unevaluatedItems: {type: boolean}`, and
+`Tuple.withoutUnevaluatedItems` carries the same `prefixItems` and no tail
+schema. Both emit `typing.List[typing.Any]`: the tail schema reaches no byte, and
+the only occurrences of the string `Unevaluated` in the tree are the two
+`withoutUnevaluatedItems` field aliases. Verdict: **discards**.
+
+**`dependent-schemas`.**
+[`dependent-schemas.yml`](openapi-surface/probes/dependent-schemas.yml) declares
+`dependentSchemas` on `Payment`, keyed by its own `card` property and adding a
+required `cardNumber` under it. Fern emits the two declared properties and
+nothing else:
+
+```python
+class Payment(UniversalBaseModel):
+    amount: float
+    card: typing.Optional[bool] = None
+```
+
+`cardNumber` and `card_number` occur nowhere in the 39-file SDK, so the
+conditional properties change no generated model. Verdict: **discards**.
+
+**`$anchor`, in both halves the row's search left open.** The
+[entry row](openapi-surface/schemas.md) records that the blocked Inkeep witness
+declares two anchors and `$ref`s neither, so the *declaration* and the
+*resolution* are two questions and one probe answers each.
+[`dollar-anchor.yml`](openapi-surface/probes/dollar-anchor.yml) declares
+`$anchor: anchored` on a component schema and references that schema only by
+JSON pointer; its control
+[`dollar-anchor-control.yml`](openapi-surface/probes/dollar-anchor-control.yml)
+is the same document with the `$anchor` line removed. The two SDKs are
+**byte-identical across all 40 files**, so the declaration alone reaches no byte.
+[`dollar-anchor-ref.yml`](openapi-surface/probes/dollar-anchor-ref.yml) then puts
+a plain-name `$ref: "#anchored"` beside the pointer `$ref` in one model, and Fern
+resolves only the pointer:
+
+```python
+class Holder(UniversalBaseModel):
+    via_anchor: typing_extensions.Annotated[
+        typing.Any, FieldMetadata(alias="viaAnchor"), pydantic.Field(alias="viaAnchor")
+    ]
+    via_pointer: typing_extensions.Annotated[
+        Anchored, FieldMetadata(alias="viaPointer"), pydantic.Field(alias="viaPointer")
+    ]
+```
+
+So the anchor is neither recorded nor resolvable through: `typing.Any` is the
+unresolved-reference default the same document's `Anchored` shows Fern would
+otherwise have emitted. Verdict: **discards**.
+
+**The six `format` values.** One probe each —
+[`format-idn-email.yml`](openapi-surface/probes/format-idn-email.yml),
+[`format-idn-hostname.yml`](openapi-surface/probes/format-idn-hostname.yml),
+[`format-ipv6.yml`](openapi-surface/probes/format-ipv6.yml),
+[`format-iri.yml`](openapi-surface/probes/format-iri.yml),
+[`format-iri-reference.yml`](openapi-surface/probes/format-iri-reference.yml) and
+[`format-relative-json-pointer.yml`](openapi-surface/probes/format-relative-json-pointer.yml)
+— each declaring the value on one `type: string` property of `ProbeResult` and
+leaving a second `type: string` property beside it unannotated. On all six, Fern
+emits the pair identically:
+
+```python
+class ProbeResult(UniversalBaseModel):
+    formatted: str
+    plain: str
+```
+
+No narrowing type of the kind `date` and `date-time` get, and the format string
+itself occurs nowhere in any of the six trees. Verdict for all six:
+**discards**.
+
+**Beside crozier.** Every one of the fourteen documents — the thirteen rows'
+probes and the two controls — was generated by crozier from the *same* document
+and compared file by file under the gate's own normalization: comments stripped
+from both sides, SDK-identity headers normalized, `__init__.py` import order
+canonicalized with `ruff` isort, `.fern/metadata.json`'s `generatorConfig`
+dropped, exactly as `tests/e2e.rs` compares a corpus golden. **crozier
+byte-matches Fern on every file of all fourteen** — 39 files each for the eleven
+single-model documents and 40 each for the three `dollar-anchor*` ones, with no
+file missing from either side. **This round found no divergence and made no
+`src/` repair**, which is the one thing the comparison could have produced that
+this section would not be where it is recorded: a divergence is repaired in
+`src/` and written up in [`matching.md`](matching.md), never written down as a
+Fern limitation. The comparison corroborates the verdicts and moves no row's
+category — a probe produces no parity evidence the coverage index counts.
+
+**What a registrable witness would be**, for each of the thirteen: an OpenAPI
+document a real API publishes as its own description, declaring the row's own
+keyword or `format` value on a Schema Object, at a credential-free HTTPS URL
+ending `.json`, `.yaml` or `.yml`, pinned to an immutable ref, under a
+[redistribution-compatible](corpus-licensing.md) licence, and accepted by
+`fern check` at the corpus's pins — 3.1 for the eight keywords 3.1 added, either
+version for the five `format` rows that carry `both`. Its golden would pin
+exactly the annotations above. One turning up promotes that row from
+`limitations` to `golden` under
+[the classification precedence](openapi-surface-coverage.md#the-category-rules),
+which is what `dollar-comment` did as corpus row 109.
+
+**The thirteen keys this round adds to the ledger.** `eligible` and `verified`
+are the witness search's own counts and are `0` and `0` on every row: twelve of
+the thirteen found a witness the corpus cannot use, and the thirteenth found no
+usable one and left a source unread, so no row has a candidate this corpus could
+register.
+
+| gap | eligible | verified | verdict | what the probe measured |
+|---|---:|---:|---|---|
+| `contains` | 0 | 0 | discards | an array's `contains` narrows nothing: `withContains` and `withoutContains` both emit `typing.List[typing.Any]`. Probe [`contains.yml`](openapi-surface/probes/contains.yml), `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 39 files. Measured in [Round 6](#round-6--schemas) |
+| `max-contains` | 0 | 0 | discards | adding `maxContains: 3` beside the same `contains` changes no byte: [`contains-bounds.yml`](openapi-surface/probes/contains-bounds.yml) and its control [`contains.yml`](openapi-surface/probes/contains.yml) generate byte-identical 39-file SDKs. `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 39 files. Measured in [Round 6](#round-6--schemas) |
+| `min-contains` | 0 | 0 | discards | as `max-contains`, on the same probe and control: `minContains: 1` moves no byte and no rendering of the keyword appears in the tree. Measured in [Round 6](#round-6--schemas) |
+| `multiple-of` | 0 | 0 | discards | a numeric bound reaches no annotation: `stepped: float` and `stepped_integer: int` are what the unbounded `plain: float` gets, and `multipleOf` occurs nowhere in the SDK. Probe [`multiple-of.yml`](openapi-surface/probes/multiple-of.yml), `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 39 files. Measured in [Round 6](#round-6--schemas) |
+| `unevaluated-items` | 0 | 0 | discards | the tail a `prefixItems` schema leaves unevaluated is not typed: the property carrying `unevaluatedItems: {type: boolean}` and the one carrying the same `prefixItems` without it both emit `typing.List[typing.Any]`. Probe [`unevaluated-items.yml`](openapi-surface/probes/unevaluated-items.yml), `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 39 files. Measured in [Round 6](#round-6--schemas) |
+| `dependent-schemas` | 0 | 0 | discards | the conditional properties reach no model: `Payment` emits `amount: float` and `card: typing.Optional[bool]`, and `cardNumber` occurs nowhere in the SDK. Probe [`dependent-schemas.yml`](openapi-surface/probes/dependent-schemas.yml), `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 39 files. Settled by **route 3**, the open-search probe, on a `search-incomplete` record whose outstanding source is SwaggerHub's unread `openapi-3.0.x` family. Measured in [Round 6](#round-6--schemas) |
+| `dollar-anchor` | 0 | 0 | discards | the anchor is neither recorded nor resolvable through: [`dollar-anchor.yml`](openapi-surface/probes/dollar-anchor.yml) and its control [`dollar-anchor-control.yml`](openapi-surface/probes/dollar-anchor-control.yml) generate byte-identical 40-file SDKs, and in [`dollar-anchor-ref.yml`](openapi-surface/probes/dollar-anchor-ref.yml) a plain-name `$ref: "#anchored"` emits `typing.Any` where the pointer `$ref` beside it emits `Anchored`. `fern check` 0 `All checks passed`, `fern generate` 0 on all three; crozier byte-matches on all 40 files of each. Measured in [Round 6](#round-6--schemas) |
+| `format-idn-email` | 0 | 0 | discards | the registered format narrows nothing: the annotated property and the plain `type: string` beside it both emit `str`, and the format value occurs nowhere in the SDK. Probe [`format-idn-email.yml`](openapi-surface/probes/format-idn-email.yml), `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 39 files. Measured in [Round 6](#round-6--schemas) |
+| `format-idn-hostname` | 0 | 0 | discards | as `format-idn-email`, on [`format-idn-hostname.yml`](openapi-surface/probes/format-idn-hostname.yml): `formatted: str` beside `plain: str`, 0/0, crozier byte-matching on all 39 files. Measured in [Round 6](#round-6--schemas) |
+| `format-ipv6` | 0 | 0 | discards | as `format-idn-email`, on [`format-ipv6.yml`](openapi-surface/probes/format-ipv6.yml): `formatted: str` beside `plain: str`, 0/0, crozier byte-matching on all 39 files. Measured in [Round 6](#round-6--schemas) |
+| `format-iri` | 0 | 0 | discards | as `format-idn-email`, on [`format-iri.yml`](openapi-surface/probes/format-iri.yml): `formatted: str` beside `plain: str`, 0/0, crozier byte-matching on all 39 files. Measured in [Round 6](#round-6--schemas) |
+| `format-iri-reference` | 0 | 0 | discards | as `format-idn-email`, on [`format-iri-reference.yml`](openapi-surface/probes/format-iri-reference.yml): `formatted: str` beside `plain: str`, 0/0, crozier byte-matching on all 39 files. Measured in [Round 6](#round-6--schemas) |
+| `format-relative-json-pointer` | 0 | 0 | discards | as `format-idn-email`, on [`format-relative-json-pointer.yml`](openapi-surface/probes/format-relative-json-pointer.yml): `formatted: str` beside `plain: str`, 0/0, crozier byte-matching on all 39 files. Measured in [Round 6](#round-6--schemas) |
 
 ### Round 6 — security
 

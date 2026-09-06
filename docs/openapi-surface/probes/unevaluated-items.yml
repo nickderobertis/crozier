@@ -1,0 +1,38 @@
+openapi: 3.1.0
+info:
+  title: unevaluated-items
+  version: 1.0.0
+servers:
+  - url: https://probe.invalid
+paths:
+  /tuple:
+    get:
+      operationId: getTuple
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tuple"
+components:
+  schemas:
+    Tuple:
+      title: Tuple
+      type: object
+      properties:
+        withUnevaluatedItems:
+          type: array
+          prefixItems:
+            - type: string
+            - type: integer
+          unevaluatedItems:
+            type: boolean
+        withoutUnevaluatedItems:
+          type: array
+          prefixItems:
+            - type: string
+            - type: integer
+      required:
+        - withUnevaluatedItems
+        - withoutUnevaluatedItems
