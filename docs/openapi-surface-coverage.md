@@ -297,25 +297,25 @@ for either; each bullet below says where its number comes from.
 | region | features | `golden` | `limitations` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 70 | 49 | 14 | 7 | 7 | 0 | 0 |
-| [`schemas`](openapi-surface/schemas.md) | 117 | 93 | 5 | 19 | 13 | 3 | 3 |
+| [`schemas`](openapi-surface/schemas.md) | 117 | 93 | 8 | 16 | 13 | 0 | 3 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 36 | 11 | 0 | 0 | 0 | 0 |
-| [`security`](openapi-surface/security.md) | 50 | 37 | 4 | 9 | 5 | 4 | 0 |
+| [`security`](openapi-surface/security.md) | 50 | 37 | 8 | 5 | 5 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 67 | 62 | 5 | 0 | 0 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 33 | 1 | 18 | 1 | 0 | 17 |
-| **total** | **403** | **310** | **40** | **53** | **26** | **7** | **20** |
+| **total** | **403** | **310** | **47** | **46** | **26** | **0** | **20** |
 
 The walk enumerated **403** features and landed each in exactly one category:
-**310** `golden`, **40** `limitations`, **53** `gap`. The `gap` column splits by
-settlement class into **26** `FIXTURE`, **7** `PROBE` and **20** `UNREACHABLE`.
+**310** `golden`, **47** `limitations`, **46** `gap`. The `gap` column splits by
+settlement class into **26** `FIXTURE`, **0** `PROBE` and **20** `UNREACHABLE`.
 
-**What the `gap` count means.** 53 is the number of OpenAPI shapes for which
+**What the `gap` count means.** 46 is the number of OpenAPI shapes for which
 crozier's behaviour is vouched for by nothing but crozier: no committed golden's
 source declares the shape, so no byte comparison against Fern touches it, and
 [`fern-limitations.md`](fern-limitations.md) has never measured Fern on it, so
-nothing contradicts whatever crozier does. `just check` is green over all 53
+nothing contradicts whatever crozier does. `just check` is green over all 46
 either way. It is not a defect count — 20 of them (`UNREACHABLE`) have no
 position in a generated Python SDK at all, and saying so is their settlement.
-The two backlogs below are the other 33.
+The two backlogs below are the other 26.
 
 ### Reconciliation
 
@@ -334,12 +334,12 @@ emits `schema.format` and `schema.format=uuid` as two selectors.
 `golden`, `limitations`, `gap`, and every `gap` row's `settlement` cell holds one
 of `FIXTURE`, `PROBE`, `UNREACHABLE`.
 
-**Every ledger key is accounted for.** The canonical join reports 56 keys, of
-which 52 are a region row's key verbatim. The other four:
+**Every ledger key is accounted for.** The canonical join reports 63 keys, of
+which 59 are a region row's key verbatim. The other four:
 
 | ledger key | how it is accounted for |
 |---|---|
-| `status_code` | **Not a feature key.** It is a row label inside the ledger's 407/421 probe table, which the join's `\| key \| N \|` shape matches by accident — the `bodies-media` region's method notes say the same. The join's real yield is 55. |
+| `status_code` | **Not a feature key.** It is a row label inside the ledger's 407/421 probe table, which the join's `\| key \| N \|` shape matches by accident — the `bodies-media` region's method notes say the same. The join's real yield is 62. |
 | `encoding-explode-or-allowReserved` | One ledger row covering two fields; `bodies-media` splits it into `encoding-explode` and `encoding-allow-reserved`, both `limitations`, both citing that verdict. |
 | `servers-multiple-path-or-operation` | One ledger row covering two levels; `document-paths` splits it into `pathitem-servers` and `operation-servers`, both `golden`. |
 | `relative-file-ref` | A *target form* of `Path Item Object.$ref`, which `document-paths` classifies once as `pathitem-ref` (`golden` since corpus row 99 declares 36 of them, citing verdict `discards`). The walk enumerates the field; the ledger additionally rules on one form of what it points at. |
@@ -705,7 +705,7 @@ against the six region files, and the two tables' agreement with each other — 
 
 ## The probe backlog
 
-The other 7 `gap` rows whose settlement is not a fixture. **These are probe
+The other 0 `gap` rows whose settlement is not a fixture. **These are probe
 work, not fixture work** — the corpus takes real-world specifications only, and a
 probe is never proposed as a fixture
 ([`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md)). When one is
@@ -714,6 +714,16 @@ row with a verdict, at which point the feature's category here becomes
 `limitations` and it leaves this list. Nothing below is ranked: a probe costs one
 Fern run, so the order to do them in is whichever the next Fern session has
 loaded.
+
+**The backlog is empty, and both parts below say why.** It is empty because every
+row that stood in it has been settled rather than because the classes were
+retired: the last seven were measured in
+[`fern-limitations.md`'s Round 5](fern-limitations.md#round-5--the-seven-witness-supply-probes),
+each on a committed probe document, and each is `limitations` on the verdict that
+round recorded. The two classes remain live, and the rules below are what a new
+row entering either is held to — a shape whose settling measurement is a
+difference between two documents lands in the first, and a shape whose world-wide
+search returns `none-found` lands in the second.
 
 **What a row here records, and what it does not.** This section used to justify
 the whole list in one sentence — that each row asks what Fern does with a shape
@@ -780,7 +790,7 @@ so a corpus row settles either outright. Both are `FIXTURE` gaps above, ranked
 
 ### Witness-supply probes
 
-**7 rows.** A witness-supply probe's shape is perfectly isolable in a single
+**0 rows.** A witness-supply probe's shape is perfectly isolable in a single
 document. Nothing about the shape prevents a corpus row; the supply of documents
 does — the authoritative issue #188 search found **no witness at all**, and the
 row's own region file records that search as a line of its `### Witness search
@@ -788,6 +798,26 @@ row's own region file records that search as a line of its `### Witness search
 against each. What becomes of a row when that search *does* find a witness is
 [the settlement rule](#the-settlement-rule-as-amended) below, which every region
 file follows rather than restating.
+
+**The seven that stood here are measured, and the class is not.** `$dynamicAnchor`
+and `$dynamicRef` (one probe, because the reference and the anchor it resolves to
+are only exercisable together), `$vocabulary` under a custom schema dialect, and
+the four IANA HTTP schemes `concealed`, `gnap`, `privatetoken` and `vapid` (two
+documents each, the scheme alone and the scheme beside one Fern supports) were all
+carried through `fern check` and a real `fern generate` and recorded in
+[`fern-limitations.md`'s Round 5](fern-limitations.md#round-5--the-seven-witness-supply-probes),
+every one of them `discards`. Each is `limitations` in its region file now, citing
+that key and verdict, and each records what a registrable witness would have to
+be, so a document found later promotes the row to `golden` under
+[the classification precedence](#the-category-rules) rather than leaving it closed.
+Their probe documents are committed under
+[`openapi-surface/probes/`](openapi-surface/probes/) so the measurements can be
+re-run; none is a corpus fixture and no corpus row came out of the round. Round 5
+also generated each cleanly-generating probe with crozier and byte-compared it
+with Fern under the gate's own normalization, repairing the one divergence it
+found in `src/` — corroborating evidence beside the verdicts, which moves no row's
+category and is counted nowhere here, because this document credits registered
+corpus goldens rather than probes.
 
 #### The settlement rule, as amended
 
@@ -920,7 +950,11 @@ grep -h 'witness.supply' docs/openapi-surface/*.md | grep -oP '^\| `?\K[a-z0-9-]
 ```
 
 the same way the ledger keys do above, and that command is what the table below
-is built from.
+is built from. It returns nothing today, and `grep` exits 1 on no match:
+`RankedBacklogTests` runs it and holds its answer — empty or not — to the same
+derivation taken off the `settlement` cells, so an emptied backlog is checked
+rather than assumed and a row that keeps the marker phrase while moving to
+`FIXTURE` still fails the gate.
 
 **So this backlog's membership is provisional in a way the fixture backlog's is
 not.** A row can leave it without any Fern run at all — `dollar-anchor` did,
@@ -931,14 +965,8 @@ over-count the probe work by however many are waiting on a document rather than
 on a probe. A row can also leave it *straight to `golden`*, which `dollar-comment`
 did: its witness was redistributable, Fern accepted it, and registering it as
 corpus row 109 settled the shape with a byte-matching golden rather than with a
-probe.
+probe. The last seven left it the third way, by being measured: Round 5 carried
+each through Fern and recorded a verdict, and each is `limitations` today.
 
 | key | region | spec location | the Fern measurement that settles it |
 |---|---|---|---|
-| [`dollar-dynamic-anchor`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$dynamicAnchor` | Generate a `$dynamicAnchor`/`$dynamicRef` recursion and record what Fern emits. |
-| [`dollar-dynamic-ref`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$dynamicRef` | As `dollar-dynamic-anchor`: the pair is only exercisable together. |
-| [`dollar-vocabulary`](openapi-surface/schemas.md) | `schemas` | `Schema Object.$vocabulary` | Generate a schema under a custom dialect declaring `$vocabulary`. |
-| [`http-concealed`](openapi-surface/security.md) | `security` | `Security Scheme Object.scheme` = `concealed` (RFC 9729) | Run `fern check` and `fern generate` on a document declaring `scheme: concealed` alone, and again beside a supported scheme, and record both outcomes. |
-| [`http-gnap`](openapi-surface/security.md) | `security` | `Security Scheme Object.scheme` = `gnap` (RFC 9635) | Run `fern check` and `fern generate` on a document declaring `scheme: gnap` alone, and again beside a supported scheme, and record both outcomes. |
-| [`http-privatetoken`](openapi-surface/security.md) | `security` | `Security Scheme Object.scheme` = `privatetoken` (RFC 9577) | Run `fern check` and `fern generate` on a document declaring `scheme: privatetoken` alone, and again beside a supported scheme, and record both outcomes. |
-| [`http-vapid`](openapi-surface/security.md) | `security` | `Security Scheme Object.scheme` = `vapid` (RFC 8292) | Run `fern check` and `fern generate` on a document declaring `scheme: vapid` alone, and again beside a supported scheme, and record both outcomes. |

@@ -419,6 +419,21 @@ selectors now say — that each is one the script declares, and that it reports 
 witness its row names — so a misspelling can never read as a zero, which is the
 same guard that made the former measured zero trustworthy.
 
+**The change that settles the seven witness-supply probe rows re-derived this pin
+and it reproduced.** That change registers no source and declares no selector —
+its seven rows (`dollar-dynamic-anchor`, `dollar-dynamic-ref`,
+`dollar-vocabulary`, `http-concealed`, `http-gnap`, `http-privatetoken` and
+`http-vapid`) are settled by locally authored Fern probes, and a probe is never a
+corpus fixture — so the census input is unchanged, and running the check below
+over its finished tree on **2026-09-05** reads the same **164** registered sources
+and **147** golden-bearing and hashes to `11faecc0…` again. It exits 0 with
+`document-paths evidence: ok (62 census rows, 8 ledger keys, 0 gap rows)`, so this
+file's own rows, cited verdicts and site counts are unmoved. The seven
+reclassifications are [`schemas.md`](schemas.md)'s and
+[`security.md`](security.md)'s, and all seven are the same move: `gap`/`PROBE` to
+`limitations` on a measured `discards` verdict, which empties the index's probe
+backlog. Nothing here becomes a corpus row.
+
 `just lint-llm-diff origin/main` checks this documented contract semantically.
 
 ```bash

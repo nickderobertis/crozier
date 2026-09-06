@@ -1869,6 +1869,17 @@ class RankedBacklogTests(unittest.TestCase):
         while moving to `FIXTURE` — which is what `dollar-anchor` did — reads as a
         probe in this list and as fixture work everywhere else, and nothing but
         this assertion would say so.
+
+        **An empty answer is a legitimate one, and is checked rather than
+        assumed.** This used to require the command to exit 0, on the reading that
+        a `grep` finding nothing meant the marker had been reworded out from under
+        it. Round 5 measured the last seven witness-supply rows into
+        `limitations`, so the true answer is now the empty set and `grep` exits 1
+        on it. What replaces the exit-status assertion is stricter, not looser:
+        the command's answer must equal the derivation taken off the `settlement`
+        cells here, and the two are compared whichever way they come out — so a
+        marker reworded while a row still settles `PROBE` gives a non-empty
+        derivation against an empty command answer and fails, exactly as before.
         """
         command = re.search(
             r"^grep -h '[^']+' docs/openapi-surface/\*\.md \| grep -oP '[^']+'$",
@@ -1883,7 +1894,6 @@ class RankedBacklogTests(unittest.TestCase):
             for key, (_region, cells) in self.entries.items()
             if re.search(marker, cells[7])
         }
-        self.assertTrue(derived, "the documented marker matches no settlement cell")
 
         if not grep_speaks_pcre():
             self.skipTest("this grep has no PCRE support, so the command cannot run here")
@@ -1891,8 +1901,10 @@ class RankedBacklogTests(unittest.TestCase):
             ["bash", "-c", command.group(0)], cwd=REPO, capture_output=True, text=True
         )
         # A pipeline's exit status is its last command's, and `grep` exits 1 on no
-        # match, so an empty answer has to be a red rather than a quiet zero.
-        self.assertEqual(0, run.returncode, run.stderr)
+        # match — the correct status for an empty backlog. Any other non-zero is a
+        # broken command rather than an empty answer, and stays a red.
+        self.assertIn(run.returncode, (0, 1), run.stderr)
+        self.assertEqual((run.returncode == 0), bool(derived), run.stderr)
         self.assertEqual(derived, set(run.stdout.split()))
         self.assertEqual(
             set(),
