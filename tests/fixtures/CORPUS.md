@@ -1,10 +1,13 @@
 # Canonical real-world OpenAPI corpus (issue #77)
 
-This manifest tracks the real-world OpenAPI specs with redistribution-compatible
-license metadata. `decision` is `link-ok` when the permissively licensed source
-is fetched at generation time rather than vendored. Add or change one numbered
-row per feature branch and maintain its golden through the manually dispatched
-**Fern goldens** workflow; see
+This manifest tracks the real-world OpenAPI specs whose licence permits the
+redistribution of a golden generated from them. Which licences those are — and
+which are refused, and why each half was decided that way — is stated once, in
+[`../../docs/corpus-licensing.md`](../../docs/corpus-licensing.md); no row of
+this manifest restates it. `decision` is `link-ok` when the source is fetched at
+generation time rather than vendored. Add or change one numbered row per feature
+branch and maintain its golden through the manually dispatched **Fern goldens**
+workflow; see
 [`../../docs/fern-goldens.md`](../../docs/fern-goldens.md).
 
 Every row registered in `tests/e2e.rs` reproduces its Fern 5.20.0 golden
@@ -318,7 +321,7 @@ workflow-owned goldens are committed and all three are byte-matched.
 | `pnp-agents-finder` / `pnp-qna` | **DROPPED** — Fern check rejected their invalid `allOf` object extensions (do not retry these refs) |
 | `ably-connector` | **DROPPED** — Fern check rejected three invalid integer defaults (do not retry this ref) |
 | `azure-aro-hcp` | **DROPPED** — Fern check failed with three discriminant and example errors (do not retry this ref) |
-| `assemblyai-autosdk` | **REJECTED** — source license is revenue-limited rather than Apache-2.0/MIT/BSD/CC0 |
+| `assemblyai-autosdk` | **REJECTED** — the source license caps redistribution at a revenue ceiling this repository cannot undertake to honour, which the [licence rule](../../docs/corpus-licensing.md) refuses whatever else a licence grants |
 | `sumup` | **DROPPED** — its `readOnly` and `writeOnly` fields occur in separate models, so it does not prove same-model interplay |
 | `titiler-openeo` | **DROPPED** — its ranged responses do not include literal `2XX` or `default`; `smart-edge-af` consolidates `not`, `default`, and nested composition |
 | `apigee-registry` | **DROPPED** — its read/write-only coverage overlapped `sigstore-rekor`, which also consolidates literal `2XX`/`default` and implicit-discriminator coverage |

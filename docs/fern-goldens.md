@@ -24,6 +24,12 @@ Both events use the selected branch ref for checkout, concurrency, and normal
 fast-forward publication. Runs for one branch queue instead of cancelling a
 writer midway; different branches remain independent.
 
+Publishing a golden redistributes generated output derived from somebody else's
+API document, so the source's licence has to permit it. Which licences do —
+and which do not, and why each half was decided that way — is stated once, in
+[`corpus-licensing.md`](corpus-licensing.md). Screen a candidate against it
+before Route A or Route B spends a generate.
+
 ## Add or change a fixture
 
 Before spending a generate on a shape, check

@@ -200,8 +200,8 @@ defines. No row below reads `search-incomplete`; the other four, at this
 region's bar, are these. `witness-found` — a named real-world document
 declares the feature, at a credential-free HTTPS URL ending `.json`, `.yaml` or
 `.yml` (the direct-spec-URL rule [`fern-goldens.md`](../fern-goldens.md) states),
-pinned to an immutable ref, under a redistribution-compatible license, and Fern
-accepts the raw document there. `fern-rejected` — such a document exists and
+pinned to an immutable ref, under a [redistribution-compatible](../corpus-licensing.md)
+license, and Fern accepts the raw document there. `fern-rejected` — such a document exists and
 `fern check` refuses it, with what it reported. `witness-blocked` — a declaring
 document exists but is not redistributable, or is reachable at no immutable ref
 or no accepted URL. `none-found` — every source named in the last column was

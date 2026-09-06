@@ -1157,7 +1157,8 @@ grounds, however unusable that document turns out to be. What it leaves *as*
 depends on why it is unusable, and a search returns one of five outcomes.
 
 1. **`witness-found`** — a real-world document declares the shape, at an
-   immutable ref, under a redistribution-compatible licence, and Fern accepts it.
+   immutable ref, under a [redistribution-compatible](corpus-licensing.md)
+   licence, and Fern accepts it.
    The row becomes `FIXTURE`, and retires outright to `golden` the moment that
    document is registered: `dollar-comment` did exactly that, as corpus row 109.
 2. **`witness-blocked`** or **`fern-rejected`** — such a document exists and this
@@ -1179,12 +1180,15 @@ depends on why it is unusable, and a search returns one of five outcomes.
    that source's own segment of its `sources searched and the exact query used
    against each` cell, with the word `unanswered` beside what the source did
    instead of answering, so the record names what is outstanding. It says the
-   world was not fully asked and therefore leaves the row's question **open**: it
-   is the one outcome that settles nothing and licenses no route above. A record
-   marking a required source `unanswered` reads `search-incomplete` rather than
-   `none-found`, and the reconciliation refuses that pairing — which is what
-   keeps an unread source from becoming evidence of absence. No row in the tree
-   reads it today.
+   world was not fully asked and therefore leaves the row's question **open**:
+   it is the one outcome that licenses neither route 1 nor route 2, because both
+   of those rest on what the search found. A record marking a required source
+   `unanswered` reads `search-incomplete` rather than `none-found`, and the
+   reconciliation refuses that pairing — which is what keeps an unread source
+   from becoming evidence of absence. **Amended a second time:** such a row may
+   nonetheless be settled by a locally authored Fern probe, because a probe
+   claims nothing about the world — that is route 3 below. No row in the tree
+   reads this outcome today.
 
 **This is an amendment, and this is what it replaced.** The rule used to close
 with one sentence covering outcomes 1 and 2 together: a witness-supply probe
@@ -1246,18 +1250,77 @@ have to change for the witness to become registrable. Each form's label with
 everything but its payload is the shape that failure takes, which is why the
 payload rather than the label is what is checked.
 
-**How a row says it took this route.** Its `evidence` cell carries what every
+**How a row says it took route 2.** Its `evidence` cell carries what every
 `limitations` row carries — the [`fern-limitations.md`](fern-limitations.md) key
 and its verdict — and beside it the words **`blocked-witness probe`**, the
 outcome its own region file's search recorded, and the blocker after
 **`blocker:`**.
 
+**Route 3, the open-search probe, and the second thing this amends.** Outcome 4
+licenses neither route above, on the sound ground that an unread source must
+never become evidence of absence — and that leaves a row whose search found no
+usable witness *and* left a required source unanswered settleable by nothing at
+all: no corpus row may pin it, because no witness was found, and no probe may
+settle it, because a source went unread. The amendment separates the two things
+`search-incomplete` conflates. A row may not claim *the world* has no witness
+while a source is unread — that stays, unchanged, and it is the whole point of
+the outcome. But a locally authored probe claims nothing about the world: it
+records what Fern does, and every row settled by one stays convertible, leaving
+`limitations` for `golden` under
+[the classification precedence](#the-category-rules) the day a witness turns up.
+So a probe settlement never rests on absence, and an outstanding source does not
+bar it. **Such a row may therefore be settled by a locally authored Fern probe
+recorded in [`fern-limitations.md`](fern-limitations.md), at which point its
+category here becomes `limitations`.** Two rows of the ranked backlog stand in
+exactly that state — `header-allow-reserved`, whose only two declaring documents
+anywhere are synthetic, and `parameter-style-form-cookie-scalar`, whose eighteen
+declaring files are all tooling fixtures — and route 3 is what settles them.
+
+**What separates route 3 from the two routes above.** Route 1 settles a row whose
+search found a witness this corpus can register, and it settles it with a corpus
+golden rather than with a probe — so a recorded search reading `witness-found` is
+refused here, because route 1 is what settles that. Route 2 settles a row whose
+search found a real witness this corpus cannot use, and names that witness's
+**blocker** — the licence, the mutable reference, or Fern's refusal — as the
+thing that would have to change. Route 3 settles a row whose search found no
+usable witness and left a required source unanswered, and what it names in the
+blocker's place is the **outstanding source**: the one that did not answer,
+together with what it did instead of answering. That outstanding source, recorded
+as `unanswered` in the row's own witness-search line, is what licenses the route;
+so every outcome but `witness-found` is admissible under it, because what settles
+the row is the probe rather than the outcome word.
+
+**Why the largest unread source stays unread.** The source outstanding on both
+rows above is SwaggerHub's `openapi-3.0.x` family — **414,968** specs, over which
+the registry exposes no body search, so reading it means fetching and parsing
+every body. This repository's own record says twice that a SwaggerHub version
+reference is editable in place by its owner: the
+[`http-hoba` witness-search line](openapi-surface/security.md#witness-search-issue-188)
+records the `Auth Test` document's `1.0.0` reference that way, and
+[`schemas.md`](openapi-surface/schemas.md)'s SwaggerHub bulk-read row records the
+same of the registry as a whole. A witness found there therefore carries no
+immutable ref **by construction**, and is unregistrable whatever licence it
+declares. Reading the family can move a row from `search-incomplete` to
+`witness-blocked` on a mutable-ref blocker, or to `none-found`; both of those
+settle by a locally authored probe as `limitations`, which is what route 3
+already gives. So the read can change the prose of *why* a row is settled, and
+neither the row's category nor the instrument that settles it. The source is left
+unread on that judgement, rather than forgotten.
+
+**How a row says it took route 3.** Its `evidence` cell carries what every
+`limitations` row carries — the [`fern-limitations.md`](fern-limitations.md) key
+and its verdict, spelled from that file's own
+[verdict vocabulary](fern-limitations.md#how-to-read-a-verdict) — and beside it
+the words **`open-search probe`**, the outstanding source after
+**`outstanding:`** together with what it did instead of answering, and the
+statement that the row **stays convertible** to `golden`.
+
 **Nothing else moves.** `golden` still beats `limitations` still beats `gap`; the
 corpus still takes real-world specifications only; a probe is still never
 proposed as a corpus fixture; and a probe still produces no byte-comparison
-evidence. A row settled by route 2 therefore carries a measured Fern verdict and
-no crozier-versus-Fern parity evidence — that is the whole of what this route
-buys and the whole of what it costs.
+evidence. A row settled by route 2 or route 3 therefore carries a measured Fern
+verdict and no crozier-versus-Fern parity evidence — that is the whole of what
+these routes buy and the whole of what they cost.
 
 **The gate reads all of it.** `RankedBacklogTests` in
 [`../tests/surface_census_test.py`](../tests/surface_census_test.py) accepts a
@@ -1269,7 +1332,13 @@ corpus can use, or no witness at all — one naming no blocker in any of the thr
 forms or naming a form without its payload, and one for which
 [`fern-limitations.md`](fern-limitations.md) records no probe and no verdict,
 which is the gate that keeps a row from being reclassified without the
-measurement that settles it.
+measurement that settles it. It reads route 3 to the same standard, and refuses
+a row taking it that names no outstanding source — either because its own
+witness-search line records none as `unanswered`, or because its `evidence` cell
+names none after `outstanding:` with what that source did instead of answering —
+one that does not say the row stays convertible, one whose recorded search
+returned `witness-found`, since route 1 is what settles that, and one for which
+[`fern-limitations.md`](fern-limitations.md) records no probe and no verdict.
 
 #### The rows, and how they are derived
 

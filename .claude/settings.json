@@ -37,6 +37,8 @@
       "Bash(just fern-goldens-publish:*)",
       "Bash(just fern-goldens-result:*)",
       "Bash(just test-fern-goldens)",
+      "Bash(just lint-corpus-licensing)",
+      "Bash(just test-corpus-licensing)",
       "Bash(just setup-llmlint)",
       "Bash(just setup-fern)",
       "Bash(just lint-llm:*)",
