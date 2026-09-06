@@ -5312,10 +5312,11 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
         })
         .or_else(|| {
             let response = success_response_entry(op)?;
-            TEXT_RESPONSE_MEDIA
+            response
+                .content
                 .iter()
-                .find_map(|media_type| response.content.get(*media_type))
-                .and_then(|media| media.schema.as_ref())
+                .find(|(media_type, _)| is_text_response_media(media_type))
+                .and_then(|(_, media)| media.schema.as_ref())
                 .map(|_| TypeRef::Primitive(Prim::Str))
         })
         .or_else(|| {
@@ -5338,13 +5339,28 @@ const TEXT_RESPONSE_MEDIA: &[&str] = &[
     "text/csv",
 ];
 
+/// Whether a content-map key names one of [`TEXT_RESPONSE_MEDIA`], ignoring any
+/// media-type parameters after it: SFTPGo keys its `/healthz` body on
+/// `text/plain; charset=utf-8` and Fern reads it back as the same plain `str` it
+/// reads a bare `text/plain` as.
+fn is_text_response_media(media_type: &str) -> bool {
+    let base = media_type
+        .split_once(';')
+        .map_or(media_type, |(base, _)| base)
+        .trim();
+    TEXT_RESPONSE_MEDIA
+        .iter()
+        .any(|candidate| base.eq_ignore_ascii_case(candidate))
+}
+
 fn has_text_response(op: &Operation) -> bool {
     success_response_entry(op).is_some_and(|response| {
         !response.content.contains_key("application/json")
             && !response.content.contains_key("*/*")
-            && TEXT_RESPONSE_MEDIA
-                .iter()
-                .any(|media_type| response.content.contains_key(*media_type))
+            && response
+                .content
+                .keys()
+                .any(|media_type| is_text_response_media(media_type))
     })
 }
 

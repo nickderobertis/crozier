@@ -886,11 +886,16 @@ pub fn is_reserved(name: &str) -> bool {
 }
 
 /// A Python field identifier for a pydantic model. In addition to ordinary
-/// Python collisions, Fern protects names exposed by pydantic's model API.
+/// Python collisions, Fern protects names exposed by pydantic's model API —
+/// `copy` among them, which is `BaseModel.copy()`: SFTPGo's
+/// `EventActionFilesystemConfig.copy` is `copy_` under an `alias="copy"` in its
+/// golden. The protection is *model-scoped*, so an enum visitor's `copy` argument
+/// (otoroshi's `PatchItemOp`, komga's `BookImportBatchDtoCopyMode`) keeps its
+/// spelling.
 #[must_use]
 pub fn model_field_name(wire_name: &str) -> String {
     let name = field_name(wire_name);
-    if matches!(name.as_str(), "kwargs" | "schema" | "self") {
+    if matches!(name.as_str(), "copy" | "kwargs" | "schema" | "self") {
         format!("{name}_")
     } else {
         name
