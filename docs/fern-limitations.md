@@ -3619,13 +3619,161 @@ probe buys and the whole of what it costs.
 
 ### Round 6 — security
 
-*No measurement recorded yet.*
+**Five rows, all five settled by
+[route 2](openapi-surface-coverage.md#the-settlement-rule-as-amended), the
+blocked-witness probe.** Each one's recorded search found a real-world document
+declaring the shape and this corpus cannot use that document, so what is short is
+the document rather than the world: three of them share one witness, a
+registry-served document declaring no licence at a version reference its owner can
+edit in place; one is a bundle Fern refuses because the scheme under measurement is
+its only one; and one is a document Fern never parses. Each row's own
+[region-file cell](openapi-surface/security.md) names its own blocker, and every
+row stays convertible.
+
+**Four of the five are IANA HTTP authentication scheme values**, and each is
+measured on **two** committed documents, because the pair is what distinguishes a
+scheme Fern *refuses* from one it silently drops — the same pair
+[Round 5](#round-5--concealed-gnap-privatetoken-and-vapid) and
+[the four already-measured dropped schemes](#the-importer-drops-four-security-schemes-outright)
+rest on. A document declaring the scheme alone leaves Fern's importer with an
+empty scheme map under a secured service, and its refusal is downstream of the
+discard rather than a verdict on the scheme; the paired document is what says so.
+Each declares its scheme in the one place the feature lives:
+
+```yaml
+  securitySchemes:
+    ProbeScheme:
+      type: http
+      scheme: hoba            # oauth / scram-sha-1 / scram-sha-256 in the other three
+```
+
+| probe | `fern check` | what the check printed | `fern generate` | what the generate printed |
+|---|:--:|---|:--:|---|
+| [`http-hoba-alone`](openapi-surface/probes/http-hoba-alone.yml) | **1** | `[sdk] 1 error`, `path: __package__.yml -> service`, `issue: Service requires auth, but no auth is defined.`, `Found 1 error and 0 warnings in 0.001 seconds.` | **1** | `[api]: python-sdk __package__.yml -> service`, `[error] Service requires auth, but no auth is defined.`, `Found 1 errors and 0 warnings in 0.077 seconds.`, `python-sdk Failed.` — and no SDK written |
+| [`http-oauth-alone`](openapi-surface/probes/http-oauth-alone.yml) | **1** | the same four lines | **1** | the same, and no SDK written — the refusal `jentic`'s Noun Project bundle already met, reproduced on a document whose only other content is one operation |
+| [`http-scram-sha-1-alone`](openapi-surface/probes/http-scram-sha-1-alone.yml) | **1** | the same four lines | **1** | the same, and no SDK written |
+| [`http-scram-sha-256-alone`](openapi-surface/probes/http-scram-sha-256-alone.yml) | **1** | the same four lines | **1** | the same, and no SDK written |
+| [`http-hoba-beside-bearer`](openapi-surface/probes/http-hoba-beside-bearer.yml) | 0 | `All checks passed` | 0 | `python-sdk ✓ All checks passed`, `fernapi/fern-python-sdk:5.20.0`, `Wrote files to …/preview/fern-python-sdk`, `fernapi/fern-python-sdk Finished.` — a 39-file SDK generated from the **bearer** scheme, required `token: typing.Union[str, typing.Callable[[], str]]` → `Authorization`, with **zero occurrences of the string `hoba`** anywhere in the tree |
+| [`http-oauth-beside-bearer`](openapi-surface/probes/http-oauth-beside-bearer.yml) | 0 | `All checks passed` | 0 | the same, zero occurrences of `oauth` |
+| [`http-scram-sha-1-beside-bearer`](openapi-surface/probes/http-scram-sha-1-beside-bearer.yml) | 0 | `All checks passed` | 0 | the same, zero occurrences of `scram-sha-1` |
+| [`http-scram-sha-256-beside-bearer`](openapi-surface/probes/http-scram-sha-256-beside-bearer.yml) | 0 | `All checks passed` | 0 | the same, zero occurrences of `scram-sha-256` |
+
+Verdict for all four: **discards**. `http-oauth` is the one of the four whose
+sole-scheme refusal was already on the record against a real document — the Noun
+Project API 2.0.0 bundle, `exit 1` with that same `Service requires auth, but no
+auth is defined.` — and the paired probe is what separates that refusal from a
+verdict on `scheme: oauth`: paired, Fern accepts the document and the value leaves
+no trace at all.
+
+**The fifth row is a different shape and takes a different probe.**
+`securityscheme-ref` is `components.securitySchemes` holding a Reference Object
+where a Security Scheme Object belongs. Every witness the search found puts that
+reference **across** documents, which
+`resolveSecuritySchemeReference` will not follow — so reproducing that form would
+measure Fern's resolver rather than the feature. The probe therefore keeps the
+reference inside one document, and carries a control that declares the same scheme
+inline so the difference between them is the reference and nothing else:
+
+```yaml
+  # securityscheme-ref.yml            # securityscheme-ref-control.yml
+  securitySchemes:                    #   securitySchemes:
+    ProbeScheme:                      #     ProbeScheme:
+      $ref: "#/components/securitySchemes/ProbeApiKey"
+    ProbeApiKey:                      #       type: apiKey
+      type: apiKey                    #       name: X-Probe-Key
+      name: X-Probe-Key               #       in: header
+      in: header
+```
+
+| probe | `fern check` | what the check printed | `fern generate` | what the generate printed |
+|---|:--:|---|:--:|---|
+| [`securityscheme-ref`](openapi-surface/probes/securityscheme-ref.yml) | 0 | `All checks passed` | 0 | `python-sdk ✓ All checks passed`, `Wrote files to …/preview/fern-python-sdk`, `fernapi/fern-python-sdk Finished.` — a 39-file SDK whose client takes **two** credentials, `probe_key` from the referencing key and `api_key` from the target declared under its own name, and whose `core/client_wrapper.py` writes `headers["X-Probe-Key"] = self._probe_key` and then `headers["X-Probe-Key"] = self.api_key` |
+| [`securityscheme-ref-control`](openapi-surface/probes/securityscheme-ref-control.yml) | 0 | `All checks passed` | 0 | the same lines, and the same 39 files with **one** credential, `api_key`, and one `headers["X-Probe-Key"]` write |
+
+Verdict: **implements**. The control is what makes that reading sound. Had Fern
+discarded the unresolvable entry, the probe would have emitted exactly what the
+control emits — one credential, from the concretely declared `ProbeApiKey` — and
+it emits two. The second one exists only because Fern followed
+`#/components/securitySchemes/ProbeApiKey` and imported the scheme it names under
+the *referencing* key. The two writes to one header are Fern's own output and not
+a defect this file rules on; what is measured here is that the reference reaches
+bytes.
+
+*Beside crozier:* crozier generated each of the six documents Fern generated
+cleanly — the four paired schemes, the reference probe and its control — and
+**byte-matches Fern on all 39 files** of each under the gate's normalization. The
+four sole-scheme documents are not compared: Fern emitted no output to compare
+against. Reaching that on the reference probe took one repair in `src/`, recorded
+under [The one crozier divergence Round 6 found](#the-one-crozier-divergence-round-6-found);
+the four scheme probes matched unrepaired, because `src/openapi.rs`'s
+`HttpAuthScheme` collapses every scheme that is not `bearer` or `basic` into
+`Other` through its `#[serde(other)]` fallback and `auth_model` in `src/ir.rs`
+selects only `Bearer`/`Basic`, so crozier selects the bearer scheme exactly as Fern
+does.
+
+*What a registrable witness would be.* For each of the four schemes: a document a
+real API publishes as its own description, declaring `type: http` with that
+`scheme` value **beside** a scheme Fern's importer supports — the sole-scheme form
+cannot be registered, because Fern refuses it and a corpus row needs a golden — at
+a pinned credential-free direct spec URL under a redistribution-compatible licence.
+The SwaggerHub `Auth Test` document that carries `hoba`, `scram-sha-1` and
+`scram-sha-256` is exactly that shape and fails only the last two conditions, so a
+redistributable copy of it at a pinnable ref settles three rows at once. For
+`securityscheme-ref`: a document whose `components.securitySchemes` holds a
+reference **into its own document**, at a pinned credential-free direct spec URL
+under a redistribution-compatible licence — Fern parses that form, as this probe
+shows, so unlike the three cross-document candidates already screened it would
+generate a golden. One turning up promotes the row to `golden` under
+[the classification precedence](openapi-surface-coverage.md#the-category-rules).
+
+### The one crozier divergence Round 6 found
+
+The reference probe diverged from Fern in four files — `README.md`,
+`reference.md`, `src/fern/client.py` and `src/fern/core/client_wrapper.py` — and
+in one way: Fern emitted the `probe_key` credential the resolved reference names
+and crozier emitted nothing for it, so crozier's client took `api_key` alone and
+wrote one `X-Probe-Key` header where Fern wrote two. Its control matched on all 39
+files, which is what located the difference in the reference rather than anywhere
+else in the document.
+
+The cause was in the load-time model: `SecurityScheme` (`src/openapi.rs`) declared
+no `$ref` field, so a Reference Object in that position deserialized to the default
+scheme, its `type` became `SecuritySchemeType::Other`, and `auth_model` never
+selected it. `normalize_security_scheme_refs` now resolves the in-document
+spelling — `#/components/securitySchemes/<name>` — before anything reads the map,
+which is the only spelling Fern follows: a reference into another document is left
+as the unrecognized scheme it deserialized to, because that is what Fern leaves
+behind too, printing `Failed to resolve` out of `resolveSecuritySchemeReference`
+and parsing nothing. A reference naming another reference, or naming itself, is
+left alone for the same reason.
+
+`tests/e2e.rs`'s `a_security_scheme_reference_emits_the_credential_it_names`
+drives the real binary over a document holding the reference beside its target and
+holds the client to both credentials; `src/openapi.rs` holds the load-time model to
+both halves — `an_in_document_security_scheme_ref_resolves_to_the_scheme_it_names`
+and `a_security_scheme_ref_crozier_cannot_follow_is_left_alone`. With the
+resolution in place all six cleanly-generating probes byte-match Fern, and the
+whole e2e corpus byte-match is green. **This is a crozier repair, not a Fern
+limitation**: it changes no row's category and appears in no region file.
 
 ### Round 6 — what the round measured
 
-*No measurement recorded yet.* The keys this round adds to the ledger are listed
-here, one row each, in the column layout the
+The keys this round adds to the ledger, one row each, in the column layout the
 [documented join](openapi-surface-coverage.md#the-category-rules) reads.
+`verified` is how many documents the row's own recorded witness search verified as
+declaring the shape; `eligible` is how many of those this corpus could register.
+Every row here is `eligible` **0** with `verified` above zero, which is exactly
+what puts it on [route 2](openapi-surface-coverage.md#the-settlement-rule-as-amended)
+— a real witness exists and this corpus cannot use it — rather than on the
+`none-found` route Round 5's rows took.
+
+| gap | eligible | verified | verdict | what the probe measured |
+|---|---:|---:|---|---|
+| `http-hoba` | 0 | 1 | discards | the importer drops the scheme outright. Declared alone with every operation secured, `fern check` and `fern generate` both exit **1** with `Service requires auth, but no auth is defined.`; declared beside HTTP `bearer`, both exit 0 with `All checks passed` and the 39-file SDK is generated from the bearer scheme with zero occurrences of `hoba`. Probes [`http-hoba-alone.yml`](openapi-surface/probes/http-hoba-alone.yml) and [`http-hoba-beside-bearer.yml`](openapi-surface/probes/http-hoba-beside-bearer.yml); crozier byte-matches the paired document on all 39 files. Measured in [Round 6](#round-6--security) |
+| `http-oauth` | 0 | 3 | discards | as `http-hoba`, on [`http-oauth-alone.yml`](openapi-surface/probes/http-oauth-alone.yml) and [`http-oauth-beside-bearer.yml`](openapi-surface/probes/http-oauth-beside-bearer.yml): **1**/**1** with the same diagnostic alone — the refusal the Noun Project bundle already met, reproduced on a document that declares nothing else — 0/0 beside `bearer` with zero occurrences of `oauth`; crozier byte-matches the paired document on all 39 files. Measured in [Round 6](#round-6--security) |
+| `http-scram-sha-1` | 0 | 1 | discards | as `http-hoba`, on [`http-scram-sha-1-alone.yml`](openapi-surface/probes/http-scram-sha-1-alone.yml) and [`http-scram-sha-1-beside-bearer.yml`](openapi-surface/probes/http-scram-sha-1-beside-bearer.yml): **1**/**1** with the same diagnostic alone, 0/0 beside `bearer` with zero occurrences of `scram-sha-1`; crozier byte-matches the paired document on all 39 files. Measured in [Round 6](#round-6--security) |
+| `http-scram-sha-256` | 0 | 1 | discards | as `http-hoba`, on [`http-scram-sha-256-alone.yml`](openapi-surface/probes/http-scram-sha-256-alone.yml) and [`http-scram-sha-256-beside-bearer.yml`](openapi-surface/probes/http-scram-sha-256-beside-bearer.yml): **1**/**1** with the same diagnostic alone, 0/0 beside `bearer` with zero occurrences of `scram-sha-256`; crozier byte-matches the paired document on all 39 files. Measured in [Round 6](#round-6--security) |
+| `securityscheme-ref` | 0 | 3 | implements | Fern follows a `#/components/securitySchemes/<name>` reference and imports the scheme it names under the *referencing* key. [`securityscheme-ref.yml`](openapi-surface/probes/securityscheme-ref.yml) — the reference beside its target — checks 0 and generates 0 with `All checks passed`, and its 39-file SDK takes **two** credentials, `probe_key` and `api_key`, writing `X-Probe-Key` twice; its control [`securityscheme-ref-control.yml`](openapi-surface/probes/securityscheme-ref-control.yml), the same scheme declared inline, takes **one**. Only the in-document spelling is followed: Fern refuses a cross-document one, printing `Failed to resolve` out of `resolveSecuritySchemeReference`. crozier byte-matches both documents on all 39 files, after [the one repair this round found](#the-one-crozier-divergence-round-6-found). Measured in [Round 6](#round-6--security) |
 
 ## What Round 3 did not register, and why
 

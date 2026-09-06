@@ -6063,6 +6063,39 @@ fn generate_ok(spec: &str) -> (tempfile::TempDir, std::path::PathBuf) {
 }
 
 #[test]
+fn a_security_scheme_reference_emits_the_credential_it_names() {
+    // Measured at fernapi/fern-python-sdk:5.20.0 on
+    // docs/openapi-surface/probes/securityscheme-ref.yml and its control: a
+    // Reference Object in the `components.securitySchemes` position is resolved
+    // in-document, and the referenced scheme is imported under the REFERENCING key
+    // — so a document whose map holds a reference beside its target takes two
+    // credentials, where the control's single inline scheme takes one. crozier used
+    // to deserialize the reference to the default scheme and drop it, which diverged
+    // from Fern in `client.py`, `core/client_wrapper.py`, `reference.md` and
+    // `README.md` (openapi.rs's `normalize_security_scheme_refs`).
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\nsecurity:\n  \
+         - ProbeScheme: []\npaths:\n  /a:\n    get:\n      operationId: getA\n      \
+         responses:\n        '200': { description: OK, content: { application/json: { schema: \
+         { type: string } } } }\ncomponents:\n  securitySchemes:\n    ProbeScheme: \
+         { $ref: '#/components/securitySchemes/ProbeApiKey' }\n    ProbeApiKey: { type: apiKey, \
+         name: X-Probe-Key, in: header }\n",
+    );
+    let wrapper = std::fs::read_to_string(out.join("src/acme/core/client_wrapper.py"))
+        .expect("client_wrapper.py");
+    assert_eq!(
+        2,
+        wrapper.matches("headers[\"X-Probe-Key\"]").count(),
+        "the reference and its target each contribute a credential; wrapper has:\n{wrapper}"
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/client.py")).expect("client.py");
+    assert!(
+        client.contains("probe_key: str,") && client.contains("api_key: str,"),
+        "both credentials reach the client constructor; client.py has:\n{client}"
+    );
+}
+
+#[test]
 fn a_pure_ref_component_names_the_response_it_types() {
     // Measured at fernapi/fern-python-sdk:5.20.0 while probing the documents under
     // docs/openapi-surface/probes/: a component schema that is nothing but a LOCAL
