@@ -4933,6 +4933,11 @@ paths:
     );
 }
 
+/// The `title` on `Message` is load bearing, for the reason
+/// `anonymous_request_metadata_and_schema_examples_drive_fern_shapes` records: a
+/// flattened body over an untitled surviving schema loses its explicit
+/// `content-type` before either carve-out this test pins can reach it, which
+/// SFTPGo, Audiobookshelf and LORIS each measure against Fern 5.20.0.
 #[test]
 fn same_request_response_ref_omits_content_type_only_when_unauthenticated() {
     let files = render(
@@ -4997,6 +5002,7 @@ components:
   schemas:
     Message:
       type: object
+      title: Message
       description: An echo message.
       properties: { text: { type: string } }
 "##,
@@ -5321,6 +5327,12 @@ paths:
     assert!(client.contains("long_value=1000000"), "{client}");
 }
 
+/// The `title` on `Echo` is load bearing. A body whose referenced schema survives
+/// in the public type layer and declares no `title` loses its explicit
+/// `content-type` — SFTPGo's `Admin`, Audiobookshelf's `Podcast` and LORIS's
+/// `QueryObject` all measure that against Fern 5.20.0 — so an untitled echo would
+/// drop the header before the authenticated-echo carve-out this test pins could
+/// reach it. A titled one is the shape that carve-out still governs.
 #[test]
 fn anonymous_request_metadata_and_schema_examples_drive_fern_shapes() {
     let files = render(
@@ -5344,6 +5356,7 @@ components:
       required: [configuration, workspaceId]
     Echo:
       type: object
+      title: Echo
       properties: { text: { type: string } }
 paths:
   /one:

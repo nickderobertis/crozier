@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "loris-dataquery",
+  "corpus_spec_ref": "3305a00312178ea75f135be1564beaf222b25822",
+  "corpus_spec_url": "https://raw.githubusercontent.com/aces/Loris/3305a00312178ea75f135be1564beaf222b25822/modules/dataquery/static/schema.yml"
+}

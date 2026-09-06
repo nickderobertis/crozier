@@ -440,11 +440,14 @@ fn auth_model(doc: &OpenApi) -> Auth {
     // declares `HTTPBearer` in `components.securitySchemes`, no `security` at the
     // document level and none on any of its 44 operations, and its golden's client
     // wrapper still takes an optional `token` and sends `Authorization: Bearer`.
-    // An `http` `basic` or an OAuth2 scheme is still taken only from a declared
-    // Security Requirement Object — an empty root `security: []` counts, and so
-    // does one on a webhook operation. Selection order is untouched by this: the
-    // first supported scheme still wins, and the check is on what that scheme
-    // turned out to be.
+    // An OAuth2 scheme reads the same way: SteamInputDB declares one `oauth2`
+    // scheme, no `security` at the document level and none on any of its nine
+    // operations, and its golden's wrapper still takes an optional `token` and
+    // sends `Authorization: Bearer`. Only an `http` `basic` scheme is taken solely
+    // from a declared Security Requirement Object — an empty root `security: []`
+    // counts, and so does one on a webhook operation. Selection order is untouched
+    // by this: the first supported scheme still wins, and the check is on what
+    // that scheme turned out to be.
     let requirement_declared = doc.security.is_some()
         || doc
             .paths
@@ -465,6 +468,7 @@ fn auth_model(doc: &OpenApi) -> Auth {
     if !requirement_declared
         && selected.is_none_or(|scheme| {
             scheme.ty != SecuritySchemeType::ApiKey
+                && scheme.ty != SecuritySchemeType::OAuth2
                 && !(scheme.ty == SecuritySchemeType::Http
                     && scheme.scheme == Some(HttpAuthScheme::Bearer))
         })
@@ -632,15 +636,31 @@ fn referenced_type_names(
 }
 
 /// Class names of schemas used as an inlined (plain-object `$ref`) request body by
-/// **exactly one** operation — the candidates Fern omits from the type layer.
-/// Mirrors the `$ref`-object and form branches of [`resolve_request_body`]. A schema
-/// shared as the body of two or more operations (bunq's create+update pairs share
-/// `PermittedIp`, `CardGeneratedCvc2`, …) is kept as a standalone type even though it
-/// is still inlined into each method, so only single-use bodies are returned.
-fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
+/// **exactly one** surviving endpoint — the candidates Fern omits from the type
+/// layer. Mirrors the `$ref`-object and form branches of [`resolve_request_body`].
+/// A schema shared by two or more endpoints (bunq's create+update pairs share
+/// `PermittedIp`, `CardGeneratedCvc2`, …) is kept as a standalone type even though
+/// it is still inlined into each method, so only single-use bodies are returned.
+///
+/// The count is over the endpoints that survive method-name collapse, not over the
+/// document's operations: SteamInputDB's `GET` and `POST /v1/steam/login` declare
+/// no `operationId` and share the summary `Log in with Steam`, so both name
+/// `log_in_with_steam`, one method survives, and the `OpenIDBody` both bodies
+/// `$ref` is inlined into it and dropped from the type layer.
+fn inline_body_source_names(
+    doc: &OpenApi,
+    endpoints: &[Endpoint],
+) -> std::collections::HashSet<String> {
+    let surviving: std::collections::HashSet<(&str, &str)> = endpoints
+        .iter()
+        .map(|endpoint| (endpoint.path.as_str(), endpoint.http_method))
+        .collect();
     let mut counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
-    for item in doc.paths.values() {
-        for (_, op) in item.operations() {
+    for (path, item) in &doc.paths {
+        for (method, op) in item.operations() {
+            if !surviving.contains(&(path.as_str(), method)) {
+                continue;
+            }
             let Some(rb) = &op.request_body else { continue };
             let Some(schema) = rb
                 .content
@@ -888,6 +908,9 @@ pub struct Endpoint {
     pub reference_body_example: Option<serde_json::Value>,
     /// Whether the referenced request schema has a substantive description.
     pub body_schema_documented: bool,
+    /// Whether the referenced request schema declares a `title`. Fern's
+    /// surviving-schema content-type drop turns on it; see `emit.rs`.
+    pub body_schema_titled: bool,
     /// Whether the referenced request schema also contains server-populated fields.
     pub body_schema_is_response_heavy: bool,
     /// Whether the referenced request object leaves `additionalProperties` open.
@@ -1595,7 +1618,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
             TypeDecl::Enum(_) => {}
         }
     }
-    let inline_sources = inline_body_source_names(doc);
+    let inline_sources = inline_body_source_names(doc, &endpoints);
     let form_sources = form_body_source_names(doc);
     let urlencoded_sources = urlencoded_body_source_names(doc);
     // A `stream-condition` operation sends its body from two methods, and Fern
@@ -2584,7 +2607,7 @@ fn build_endpoint(
             let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) else {
                 return (schema.ty.as_ref().and_then(TypeField::primary) == Some("object")
                     && !schema.properties.is_empty())
-                .then(|| format!("{request_ctx}{}", naming::class_name(&parameter.name)));
+                .then(|| format!("{request_ctx}{}", naming::param_class_name(&parameter.name)));
             };
             let non_null: Vec<&Schema> = members
                 .iter()
@@ -2605,7 +2628,7 @@ fn build_endpoint(
                 && non_null.len() == members.len();
             ((non_null.len() != 1 || string_enum_values(non_null[0]).is_none())
                 && !titled_and_total)
-                .then(|| format!("{request_ctx}{}", naming::class_name(&parameter.name)))
+                .then(|| format!("{request_ctx}{}", naming::param_class_name(&parameter.name)))
         })
         .collect();
     // Register the hoisted inline types under this tag's `types/` package.
@@ -2899,6 +2922,22 @@ fn build_endpoint(
             .and_then(|reference| resolve_ref(doc, reference))
             .and_then(|schema| schema.description.as_deref())
             .is_some_and(|description| !description.trim().is_empty()),
+        body_schema_titled: op
+            .request_body
+            .as_ref()
+            .and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+            .and_then(|schema| schema.reference.as_deref())
+            .and_then(|reference| resolve_ref(doc, reference))
+            .is_some_and(|schema| {
+                schema
+                    .title
+                    .as_deref()
+                    .is_some_and(|title| !title.trim().is_empty())
+            }),
         body_schema_is_response_heavy: op
             .request_body
             .as_ref()
@@ -3033,13 +3072,20 @@ fn endpoint_pagination(
     })
 }
 
+/// Whether a property of a flattened request schema is server-populated, either
+/// on its own declaration or on the schema its `$ref` names. Fern drops such a
+/// property from the request it inlines: SteamInputDB's `$schema` is
+/// `{description, format: uri, readOnly: true, type: string}` on `OpenIDBody`,
+/// `SearchAllBody`, `SearchConfigsBody` and `SearchGamesBody`, and none of the
+/// four methods its golden writes takes it.
 fn schema_property_is_read_only(doc: &OpenApi, schema: &Schema, property: &str) -> bool {
     schema.properties.get(property).is_some_and(|property| {
-        property
-            .reference
-            .as_deref()
-            .and_then(|reference| resolve_ref(doc, reference))
-            .is_some_and(|schema| schema.read_only == Some(true))
+        property.read_only == Some(true)
+            || property
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref(doc, reference))
+                .is_some_and(|schema| schema.read_only == Some(true))
     })
 }
 
@@ -3678,7 +3724,7 @@ fn resolve_request_body(
             return Some(RequestBody::Form(FormBody { fields, multipart }));
         }
     }
-    if let Some((media_type, _)) = rb.content.iter().find(|(media_type, media)| {
+    let binary_media = |media_type: &&String, media: &&crate::openapi::MediaType| {
         *media_type != "*/*"
             && media.schema.as_ref().is_some_and(|schema| {
                 let schema = schema
@@ -3689,7 +3735,29 @@ fn resolve_request_body(
                 schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
                     && schema.format.as_deref() == Some("binary")
             })
-    }) {
+    };
+    // Where SEVERAL media types offer the same binary schema, the one Fern sends
+    // is the first whose top-level type is itself a binary family. SFTPGo's
+    // `create_user_file` and `upload_single_to_share` each declare
+    // `application/*`, `text/*`, `image/*`, `audio/*` and `video/*` over one
+    // `{type: string, format: binary}`, and both goldens send `image/*` — the
+    // `application` and `text` families are the ones Fern reads as JSON and text
+    // before it reaches the binary case, and neither carries an object or string
+    // body here. A document offering only `application/octet-stream` returned
+    // above; one offering a single range (Torrentarr, komga) has one candidate
+    // either way.
+    if let Some((media_type, _)) = rb
+        .content
+        .iter()
+        .find(|(media_type, media)| {
+            binary_media(media_type, media)
+                && matches!(
+                    media_type.split_once('/').map(|(top, _)| top),
+                    Some("image" | "audio" | "video")
+                )
+        })
+        .or_else(|| rb.content.iter().find(|(m, media)| binary_media(m, media)))
+    {
         return Some(RequestBody::Bytes {
             content_type: media_type.clone(),
         });
@@ -3776,6 +3844,26 @@ fn resolve_request_body(
         // alias, e.g. bunq's `AttachmentPublic`) is passed straight through as a
         // single `json=request` arg, like a map.
         if is_bare_object(target) {
+            return Some(single_with_override(
+                TypeRef::Named(class),
+                required,
+                false,
+                true,
+                content_type_override,
+            ));
+        }
+        // A `$ref` to a plain scalar — Audiobookshelf's `imageUrl`, a `type: string`
+        // with `format: uri` — is one `json=request` argument typed as the named
+        // alias, carrying the JSON content-type header like the enum and map cases
+        // above. (A binary-formatted string already returned as a bytes body.)
+        // Without this the operation falls outside the emittable subset and takes
+        // its whole tag's client down with it: Audiobookshelf's `addAuthorImageById`
+        // is one of eight `Authors` operations, and crozier emitted no
+        // `authors/client.py` at all.
+        if matches!(
+            target.ty.as_ref().and_then(|ty| ty.primary()),
+            Some("string" | "integer" | "number" | "boolean")
+        ) {
             return Some(single_with_override(
                 TypeRef::Named(class),
                 required,
@@ -4122,7 +4210,15 @@ fn hoist_inline_object(
             // beside a `$ref` is not that — 3.0 ignores a reference's siblings.
             nullable: is_optional(prop_schema) && prop_schema.reference.is_none(),
             spec_required,
-            example: schema_example_literal(prop_schema),
+            // A property written as a `$ref` takes its example from the schema
+            // it names, exactly as a parameter does: Audiobookshelf's
+            // `createLibrary` body declares `name: {$ref: libraryName}` and Fern
+            // documents `name="My Audiobooks"` off that component's own
+            // `example`.
+            example: schema_example_literal(prop_schema).or_else(|| {
+                let reference = prop_schema.reference.as_deref()?;
+                schema_example_literal(resolve_ref_from_schemas(hoister.schemas?, reference)?)
+            }),
             media_example: false,
             schema_body_example: false,
             docstring: clean_doc(prop_schema.description.as_deref()),
@@ -4339,7 +4435,18 @@ impl InlineHoister<'_> {
         siblings: &[Schema],
     ) -> TypeRef {
         if let Some(reference) = &variant.reference {
-            return TypeRef::Named(ref_to_class(reference));
+            // A `$ref` to a schema declared `nullable` carries that nullability
+            // into the union member, the same way it does at any other use site
+            // (see `openapi::normalize_nullable_schema_refs`): Audiobookshelf's
+            // `matchAuthorById` responds `oneOf: [author, authorUpdated]` and
+            // `authorUpdated` is a `nullable: true` boolean, so its golden's alias
+            // is `Union[Author, Optional[AuthorUpdated]]`.
+            let named = TypeRef::Named(ref_to_class(reference));
+            return if variant.nullable == Some(true) {
+                optional_type_ref(named)
+            } else {
+                named
+            };
         }
         if variant.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
             if let Some(item) = variant.items.as_deref() {
@@ -4446,7 +4553,7 @@ impl InlineHoister<'_> {
                 nullable: referenced_nullable
                     || (is_optional(prop_schema) && prop_schema.read_only == Some(true)),
                 spec_required,
-                docstring: declared_doc(property_description(prop_schema)),
+                docstring: declared_doc(property_description(prop_schema, optional)),
                 example: schema_example_literal(prop_schema).or_else(|| {
                     let reference = prop_schema.reference.as_deref().or_else(|| {
                         described_all_of_ref(prop_schema).map(|(reference, _)| reference)
@@ -4688,7 +4795,7 @@ impl InlineHoister<'_> {
     fn hoist_param_enum(&mut self, request_ctx: &str, param: &str, schema: &Schema) -> TypeRef {
         if schema.reference.is_none() {
             if let Some(values) = string_enum_values(schema) {
-                let name = format!("{request_ctx}{}", naming::class_name(param));
+                let name = format!("{request_ctx}{}", naming::param_class_name(param));
                 self.out.push(TypeDecl::Enum(build_enum(
                     schema,
                     &name,
@@ -4698,7 +4805,7 @@ impl InlineHoister<'_> {
                 return TypeRef::Named(name);
             }
             if let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
-                let name = format!("{request_ctx}{}", naming::class_name(param));
+                let name = format!("{request_ctx}{}", naming::param_class_name(param));
                 let non_null: Vec<&Schema> = members
                     .iter()
                     .filter(|member| {
@@ -4808,13 +4915,13 @@ impl InlineHoister<'_> {
                 return wrap(TypeRef::Named(name));
             }
             if let Some(array) = self.hoist_array_item_enum(
-                &format!("{request_ctx}{}", naming::class_name(param)),
+                &format!("{request_ctx}{}", naming::param_class_name(param)),
                 schema,
             ) {
                 return array;
             }
             if is_object_type(schema) && is_inline_struct(schema) {
-                let name = format!("{request_ctx}{}", naming::class_name(param));
+                let name = format!("{request_ctx}{}", naming::param_class_name(param));
                 self.hoist_object(&name, schema);
                 return TypeRef::Named(name);
             }
@@ -4885,8 +4992,18 @@ fn hoist_form_object(
         .enumerate()
         .map(|(reference_order, (prop, prop_schema))| {
             let spec_required = required.contains(&prop.as_str());
-            let is_file = prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
-                && prop_schema.format.as_deref() == Some("binary");
+            let binary_scalar = |schema: &Schema| {
+                schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
+                    && schema.format.as_deref() == Some("binary")
+            };
+            // A part is a file when it is a binary string, and equally when it is
+            // an ARRAY of them: SFTPGo's `filenames` is
+            // `{type: array, items: {type: string, format: binary}}` on both its
+            // multipart uploads, and Fern types it `Sequence[core.File]` and sends
+            // it through `files=` rather than JSON-encoding it into `data=`.
+            let is_file = binary_scalar(prop_schema)
+                || prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("array")
+                    && prop_schema.items.as_deref().is_some_and(binary_scalar);
             let resolved = prop_schema
                 .reference
                 .as_deref()
@@ -4961,6 +5078,20 @@ fn single_with_override(
 /// [`BodyField`]s, deciding per field whether it serializes through the convert
 /// wrapper. Returns `None` if the object is not among the built types.
 fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
+    // A body naming an alias of a model flattens the model it aliases: SFTPGo's
+    // `AdminTOTPConfig` is `allOf: [$ref BaseTOTPConfig]` and nothing else, so it
+    // is an alias in the type layer, and `save_admin_totp_config` still takes
+    // `BaseTOTPConfig`'s own `enabled`/`config_name`/`secret` field by field.
+    let class = types
+        .iter()
+        .find_map(|decl| match decl {
+            TypeDecl::Alias(alias) if alias.name == class => match &alias.target {
+                TypeRef::Named(target) => Some(target.as_str()),
+                _ => None,
+            },
+            _ => None,
+        })
+        .unwrap_or(class);
     let obj = types.iter().find_map(|d| match d {
         TypeDecl::Object(o) if o.name == class => Some(o),
         _ => None,
@@ -5254,10 +5385,11 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
         })
         .or_else(|| {
             let response = success_response_entry(op)?;
-            TEXT_RESPONSE_MEDIA
+            response
+                .content
                 .iter()
-                .find_map(|media_type| response.content.get(*media_type))
-                .and_then(|media| media.schema.as_ref())
+                .find(|(media_type, _)| is_text_response_media(media_type))
+                .and_then(|(_, media)| media.schema.as_ref())
                 .map(|_| TypeRef::Primitive(Prim::Str))
         })
         .or_else(|| {
@@ -5280,13 +5412,28 @@ const TEXT_RESPONSE_MEDIA: &[&str] = &[
     "text/csv",
 ];
 
+/// Whether a content-map key names one of [`TEXT_RESPONSE_MEDIA`], ignoring any
+/// media-type parameters after it: SFTPGo keys its `/healthz` body on
+/// `text/plain; charset=utf-8` and Fern reads it back as the same plain `str` it
+/// reads a bare `text/plain` as.
+fn is_text_response_media(media_type: &str) -> bool {
+    let base = media_type
+        .split_once(';')
+        .map_or(media_type, |(base, _)| base)
+        .trim();
+    TEXT_RESPONSE_MEDIA
+        .iter()
+        .any(|candidate| base.eq_ignore_ascii_case(candidate))
+}
+
 fn has_text_response(op: &Operation) -> bool {
     success_response_entry(op).is_some_and(|response| {
         !response.content.contains_key("application/json")
             && !response.content.contains_key("*/*")
-            && TEXT_RESPONSE_MEDIA
-                .iter()
-                .any(|media_type| response.content.contains_key(*media_type))
+            && response
+                .content
+                .keys()
+                .any(|media_type| is_text_response_media(media_type))
     })
 }
 
@@ -5551,19 +5698,30 @@ fn dotted_id_names_a_group(id: &str) -> bool {
 /// The group is *dropped* only when it names the operation's own tag, which is
 /// the client the method already hangs off: bungie's `App.GetApplicationApiUsage`
 /// under tag `App` and letta's `models.listEmbeddingModels` under `models` both
-/// reach their goldens as the bare method. A group that names something else is
-/// kept, snake-cased with its dots removed, and prefixed to the method — svix
-/// writes `v1.application.list` under tag `Application` and
-/// `v1.message-attempt.list-by-endpoint` under `Message Attempt`, and its golden
-/// carries `v1application_list` and `v1message_attempt_list_by_endpoint`.
+/// reach their goldens as the bare method.
+///
+/// A group that names something else is kept, and then the *whole* id — group
+/// and method together — snake-cases as one name, its dots reading as word
+/// separators. That is what joins `v2` to the segment after it without a
+/// separator, because [`naming::to_snake_case`] absorbs a word following one that
+/// ends in a digit: Google's Service Broker writes
+/// `servicebroker.projects.brokers.v2.service_instances.get` under tag `projects`
+/// and its golden carries `servicebroker_projects_brokers_v2service_instances_get`,
+/// where the `instances`/`service_bindings` pair in
+/// `servicebroker.projects.brokers.instances.service_bindings.list` keeps its
+/// separator. Svix's `v1.application.list` and
+/// `v1.message-attempt.list-by-endpoint` read the same way, giving
+/// `v1application_list` and `v1message_attempt_list_by_endpoint`. Snake-casing the
+/// whole id is also what splits the final segment's own camel boundaries, so
+/// `servicebroker.setIamPolicy` is `servicebroker_set_iam_policy`; a *dropped*
+/// group leaves the method lowercased verbatim instead (`App.GetUsage` →
+/// `getusage`), which is the branch above.
 fn method_from_dotted_id(id: &str, tag: Option<&str>) -> String {
     let (group, method) = id.rsplit_once('.').unwrap_or(("", id));
-    let method = naming::sanitize_identifier(&method.to_ascii_lowercase());
     if group.is_empty() || tag.is_some_and(|tag| operation_id_matches_tag_spelling(group, tag)) {
-        return method;
+        return naming::sanitize_identifier(&method.to_ascii_lowercase());
     }
-    let prefix = naming::sanitize_identifier(&naming::to_snake_case(&group.replace('.', "")));
-    format!("{prefix}_{method}")
+    naming::sanitize_identifier(&naming::to_snake_case(id))
 }
 
 /// The method name for a groupless camelCase operationId (no `_`). Fern drops a
@@ -6714,6 +6872,7 @@ impl Builder<'_> {
                 // indices are the source's, so dropping one never renames the
                 // inline classes the others hoist.
                 let dropped_null = variants.iter().any(is_null_variant);
+                let declared_members = variants.iter().filter(|v| !is_null_variant(v)).count();
                 let members: Vec<TypeRef> = variants
                     .iter()
                     .enumerate()
@@ -6724,6 +6883,24 @@ impl Builder<'_> {
                 let target = match (dropped_null, members.len()) {
                     (true, 1) => optional_type_ref(members.remove(0)),
                     (true, _) => TypeRef::Union(members),
+                    // A composition the DOCUMENT writes with exactly one member
+                    // is an alias to that member, not a one-armed `Union`:
+                    // Audiobookshelf's `mediaMinified` is `oneOf: [$ref
+                    // bookMinified]` and its golden is `MediaMinified =
+                    // BookMinified` under the schema's own description. Members
+                    // that merely *dedupe* to one are a different shape and keep
+                    // the `Union`, because Fern names the alternatives before
+                    // collapsing them: free5gc's `GlobalRanNodeId` is three
+                    // `required`-only alternatives, all of them `Any`, and its
+                    // golden is `typing.Union[typing.Any]`.
+                    (false, 1) if declared_members == 1 => {
+                        let sole = members.remove(0);
+                        if schema_accepts_none(schema, self.schemas) {
+                            optional_type_ref(sole)
+                        } else {
+                            sole
+                        }
+                    }
                     (false, _) => {
                         let target = TypeRef::Union(members);
                         if schema_accepts_none(schema, self.schemas) {
@@ -6875,6 +7052,28 @@ impl Builder<'_> {
                 docstring,
             );
             return;
+        }
+
+        // An `allOf` holding one `$ref` and NOTHING else is an annotated
+        // reference rather than inheritance: SFTPGo's `AdminTOTPConfig` is
+        // `allOf: [$ref BaseTOTPConfig]` alone and its golden is
+        // `AdminTotpConfig = BaseTotpConfig`, not a subclass. A sibling of any
+        // kind makes it a model that inherits — declared properties, an explicit
+        // `type: object`, or the `additionalProperties` that makes Strapi's
+        // `Entry` a `class Entry(DocumentMeta)`.
+        if schema.properties.is_empty()
+            && schema.additional_properties.is_none()
+            && !is_object_type(schema)
+        {
+            if let Some(reference) = single_all_of_ref(schema) {
+                self.push_alias(
+                    name,
+                    module,
+                    TypeRef::Named(ref_to_class(reference)),
+                    docstring,
+                );
+                return;
+            }
         }
 
         // Object with properties, an `allOf`, or an explicit `type: object`.
@@ -7232,7 +7431,7 @@ impl Builder<'_> {
                         && (prop_schema.reference.is_none()
                             || prop_schema.read_only == Some(true))),
                 spec_required,
-                docstring: declared_doc(property_description(prop_schema)),
+                docstring: declared_doc(property_description(prop_schema, optional)),
                 example: schema_example_literal(prop_schema)
                     .or_else(|| {
                         prop_schema
@@ -8869,6 +9068,19 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
             }
         }
         Some("object") => TypeRef::Primitive(Prim::Any),
+        // A schema with no `type` at all but an `enum` is a string to Fern's
+        // importer, whatever the members' own JSON kind: SFTPGo's
+        // `AdminGroupMappingOptions.add_to_users_as` and `GroupMapping.type` are
+        // `{enum: [0, 1, 2]}` and `{enum: [1, 2, 3]}` with no `type`, and its
+        // golden types both `Optional[str]` rather than the unknown a typeless
+        // schema otherwise becomes.
+        None if schema
+            .enum_values
+            .as_ref()
+            .is_some_and(|values| !values.is_empty()) =>
+        {
+            TypeRef::Primitive(Prim::Str)
+        }
         _ => TypeRef::Primitive(Prim::Any),
     }
 }
@@ -8970,15 +9182,17 @@ fn described_all_of_ref(schema: &Schema) -> Option<(&str, Option<&str>)> {
     reference.map(|reference| (reference, description))
 }
 
-fn property_description(schema: &Schema) -> Option<&str> {
+fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
     // Fern's *bare* unknown type carries no docs: its schema converter passes the
     // description to every other kind and to `unknown` passes nothing, so
-    // oSPARC's `ProjectInputGet.value` — a property declaring only a `title` and
-    // a `description` — is a bare `typing.Any` with no docstring beside it. A
-    // nullable one keeps its description, because the optional wrapper Fern puts
-    // around it carries the docs: Twilio's `cert_in_validation` is
-    // `{description, nullable: true}` and its golden documents it.
-    if is_unknown(schema) && !is_optional(schema) {
+    // oSPARC's `ProjectInputGet.value` — a required property declaring only a
+    // `title` and a `description` — is a bare `typing.Any` with no docstring
+    // beside it. What carries the docs is the optional *wrapper*, so the drop is
+    // scoped to a field Fern leaves unwrapped: Twilio's `cert_in_validation` is
+    // `{description, nullable: true}` and SteamInputDB's `ErrorDetail.value` is
+    // `{description}` absent from `required`, and both goldens document their
+    // `typing.Optional[typing.Any]`.
+    if is_unknown(schema) && !optional {
         return None;
     }
     schema
@@ -9176,7 +9390,12 @@ fn operation_doc(desc: Option<&str>) -> Option<String> {
         } else {
             trimmed.trim_start()
         };
-        Some(trimmed.replace('\t', "    "))
+        // Tabs are kept: `reference.md` carries the document's own bytes —
+        // SteamInputDB's `Log in with Steam` description indents its second line
+        // with three tabs and its golden's entry does too — and the Python
+        // docstring's tab expansion happens where `ruff format` performs it, in
+        // [`crate::emit`]'s `python_doc_line`.
+        Some(trimmed.to_string())
     }
 }
 
@@ -12902,7 +13121,7 @@ mod tests {
             described_all_of_ref(&valid),
             Some(("#/components/schemas/Target", Some("Use-site docs.")))
         );
-        assert_eq!(property_description(&valid), Some("Use-site docs."));
+        assert_eq!(property_description(&valid, false), Some("Use-site docs."));
 
         let outer_description = schema(serde_json::json!({
             "description": "Outer docs.",

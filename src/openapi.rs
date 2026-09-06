@@ -183,7 +183,7 @@ pub struct OAuthFlows {
 #[derive(Debug, Default, Clone, Deserialize)]
 pub struct OAuthFlow {
     /// Scope value → human description.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "de_oauth_scopes")]
     pub scopes: IndexMap<String, String>,
 }
 
@@ -1051,6 +1051,21 @@ where
             ))
         }
     }
+}
+
+/// Deserialize an OAuth Flow Object's `scopes`, tolerating an explicit `null`.
+///
+/// The specification makes the map required, but a real document writes
+/// `scopes: null` where it grants none — SteamInputDB's `Steam OpenID` implicit
+/// flow does — and Fern reads that document. An explicit `null` therefore reads
+/// as the absent key does: no scopes at all.
+fn de_oauth_scopes<'de, D>(
+    deserializer: D,
+) -> std::result::Result<IndexMap<String, String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Ok(Option::<IndexMap<String, String>>::deserialize(deserializer)?.unwrap_or_default())
 }
 
 /// Deserialize an object's `properties` map, tolerating a value that is not a

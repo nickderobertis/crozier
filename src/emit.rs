@@ -4017,7 +4017,13 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
                 // and documented with Fern's fixed pointer to `core.File`.
                 let base = if f.is_file {
                     imports.add_core_package();
-                    "core.File".to_string()
+                    if matches!(f.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
+                        imports.add_plain("typing");
+                        let container = if form.multipart { "List" } else { "Sequence" };
+                        format!("typing.{container}[core.File]")
+                    } else {
+                        "core.File".to_string()
+                    }
                 } else {
                     raw_type_str_ctx(&f.type_ref, imports, !form.multipart)
                 };
@@ -4346,8 +4352,13 @@ fn push_param_doc(lines: &mut Vec<String>, description: &str) {
     }));
 }
 
+/// One line of Python docstring prose. A backslash is escaped for the source
+/// literal, and a tab is expanded to four spaces: `ruff format` normalizes
+/// docstring indentation, so SteamInputDB's tab-indented second description line
+/// reaches its golden's `client.py` as spaces while `reference.md` — which no
+/// formatter touches — keeps the tabs the document wrote.
 fn python_doc_line(line: &str) -> String {
-    line.replace('\\', "\\\\")
+    line.replace('\\', "\\\\").replace('\t', "    ")
 }
 
 /// Push the `Returns` description under the return type: each line of the
@@ -4838,20 +4849,53 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // surviving-schema body that carries the header — which is
                         // the same query-parameter exception the shared-body drop
                         // above already records for Palo Alto's crypto profiles.
-                        // The drop is scoped to a body that offers SEVERAL media
-                        // types, which is the whole of AGCO's: a body declared over
-                        // one media type keeps the header through it, which is what
-                        // leaves exhaustive's `postJsonPatchContentType` and
-                        // `getAndReturnOptional` — each a lone `application/json`
-                        // over a surviving schema — their own.
-                        && !(ep.body_schema_ref
+                        // A schema declaring its own `title` escapes the drop.
+                        // The `title` is what Fern's importer names the request
+                        // model from, and every measured surviving-schema body
+                        // splits on it: SFTPGo's `Admin`, `APIKey`, `Role`,
+                        // `Share`, `AdminProfile` and `UserProfile`,
+                        // Audiobookshelf's `EmailSettings` and `Podcast`, LORIS's
+                        // `QueryObject` and all 28 of AGCO's are untitled and lose
+                        // the header, while letta's `CreateBlock`/`BlockUpdate` and
+                        // exhaustive's `typesObjectWithOptionalField` and
+                        // `typesObjectWithRequiredField` carry one and keep it. A
+                        // body offering SEVERAL media types drops it either way,
+                        // which is what AGCO measured first and what no titled
+                        // source has since contradicted. A `stream-condition`
+                        // request escapes the drop too: Fern augments that body
+                        // with the condition property itself (`"stream": True`),
+                        // so it is no longer just the referenced schema.
+                        // A documented resource envelope escapes this drop too,
+                        // exactly as it escapes the `allOf`/same-`$ref` one below:
+                        // corpus row 113's `Container` is untitled, and while its
+                        // own `createContainer` also rides an `id` query parameter,
+                        // the shape that measurement pinned is the envelope.
+                        // Every measured witness is a FLATTENED object body, so
+                        // the drop is scoped to one: a `$ref` to a scalar alias
+                        // (an integer enum, a `format: uri` string) rides as a
+                        // single `request` argument and keeps its header.
+                        && !(matches!(body, RequestBody::Inline(_))
+                            && ep.body_schema_ref
                             && !ep.body_schema_dropped
                             && ep.query_params.is_empty()
-                            && ep.body_media_alternatives)
-                        && !(matches!(body, RequestBody::Inline(_))
+                            && ep.stream_condition.is_none()
+                            && !resource_envelope
+                            && (ep.body_media_alternatives || !ep.body_schema_titled))
+                        // A query parameter beside the body keeps the header
+                        // through both drops below, the same exception the shared
+                        // and surviving-schema drops above already record: SFTPGo's
+                        // `add_event_rule` posts an `allOf` body beside a
+                        // `sanitize` query parameter and `loaddata_from_request_body`
+                        // posts an open, unnamed one beside two, and Fern keeps
+                        // both content types where the same bodies without a query
+                        // parameter (`update_event_rule` on a path parameter) are
+                        // unaffected.
+                        && !(ep.query_params.is_empty()
+                            && matches!(body, RequestBody::Inline(_))
                             && (ep.body_all_of || ep.body_response_same_ref)
                             && !resource_envelope)
-                        && !matches!(body, RequestBody::Inline(fields)
+                        && !(ep.query_params.is_empty()
+                            && matches!(body, RequestBody::Inline(fields)
                             if ep.body_schema_ref
                                 && (!ep.body_schema_dropped
                                     && ep.body_schema_metadata_missing
@@ -4861,7 +4905,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                         && ep.body_schema_is_open
                                         && ep.body_description_missing
                                         && !ep.body_schema_documented
-                                        && fields.iter().filter(|field| field.spec_required).count() == 1))
+                                        && fields.iter().filter(|field| field.spec_required).count() == 1)))
                         && (!(ep.body_description_empty
                             || ep.body_schema_has_example
                                 && ep.body_schema_documented
@@ -7628,6 +7672,20 @@ fn build_example_inner(
 
     ctx.documentation = documentation;
     ctx.reference = reference;
+    // A `*/*` binary download whose parameters carry a DECLARED example documents
+    // no arguments at all. Measured on the corpus's only two such endpoints:
+    // apideck's `filesDownload` takes a required `id` beside an optional `fields`
+    // exampled `id,updated_at`, and its golden is a bare `client.files.download()`,
+    // while SFTPGo's `get_share`, `download_share_file` and `download_user_file`
+    // declare no parameter example anywhere and document `id="id"`,
+    // `id="id", path="path"` and `path="path"`. A binary download ignores a
+    // declared example when it names a parameter (the `!ep.binary_response` filter
+    // on the path-parameter arm below), and where there is one to ignore Fern
+    // emits nothing rather than the substituted name.
+    let suppressed = ep.wildcard_binary_response
+        && (ep.path_params.iter().any(|param| param.example.is_some())
+            || ep.query_params.iter().any(|param| param.example.is_some())
+            || ep.header_params.iter().any(|param| param.example.is_some()));
     // The example call's keyword arguments, in signature order: path params,
     // required query/header params, then the request body (a single `request`, or
     // each required inlined field).
@@ -7644,7 +7702,7 @@ fn build_example_inner(
             wire.to_string()
         }
     };
-    if !ep.markdown_response && !ep.wildcard_binary_response {
+    if !ep.markdown_response && !suppressed {
         for pp in &ep.path_params {
             if reference && matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
                 continue;
@@ -7656,7 +7714,21 @@ fn build_example_inner(
             } else {
                 pp.example
                     .as_ref()
-                    .filter(|_| !ep.binary_response && ctx.example_is_scalar(&pp.type_ref))
+                    // Fern's example generator substitutes the parameter's own
+                    // name for a declared example on any endpoint whose success
+                    // body is not JSON — a binary download, and equally a
+                    // `text/*` one. Audiobookshelf declares one `id` parameter on
+                    // `/api/authors/{id}` and Fern splits its own path item on
+                    // this: `getAuthorById` and `updateAuthorById` answer
+                    // `application/json` and document
+                    // `id="e4bb1afb-4a4f-4dd6-8be0-e615d233185b"`, while
+                    // `deleteAuthorById` answers `text/plain` and documents
+                    // `id="id"`.
+                    .filter(|_| {
+                        !ep.binary_response
+                            && !ep.text_response
+                            && ctx.example_is_scalar(&pp.type_ref)
+                    })
                     .and_then(|example| ctx.value_from_example(&pp.type_ref, example))
                     .unwrap_or_else(|| ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)))
             };
@@ -7677,7 +7749,7 @@ fn build_example_inner(
     for qp in ep
         .query_params
         .iter()
-        .filter(|qp| !ep.wildcard_binary_response && !header_first_request && qp.required)
+        .filter(|qp| !suppressed && !header_first_request && qp.required)
     {
         // Fern omits required collections of referenced shapes from worked
         // examples; their query encoding has no inline scalar placeholder.
@@ -7719,7 +7791,7 @@ fn build_example_inner(
     for hp in ep
         .header_params
         .iter()
-        .filter(|header| !ep.wildcard_binary_response && header.required && !reference)
+        .filter(|header| !suppressed && header.required && !reference)
     {
         let v = hp
             .example
@@ -7733,9 +7805,11 @@ fn build_example_inner(
         args.push((Some(hp.py_name.clone()), v));
     }
     if header_first_request && !reference {
-        for hp in ep.header_params.iter().filter(|header| {
-            !ep.wildcard_binary_response && !header.required && header.example.is_some()
-        }) {
+        for hp in ep
+            .header_params
+            .iter()
+            .filter(|header| !suppressed && !header.required && header.example.is_some())
+        {
             let value = hp
                 .example
                 .as_ref()
@@ -7750,7 +7824,7 @@ fn build_example_inner(
         for qp in ep
             .query_params
             .iter()
-            .filter(|qp| !ep.wildcard_binary_response && qp.required)
+            .filter(|qp| !suppressed && qp.required)
         {
             args.push((
                 Some(qp.py_name.clone()),
@@ -7762,7 +7836,7 @@ fn build_example_inner(
         for qp in ep
             .query_params
             .iter()
-            .filter(|qp| !ep.wildcard_binary_response && qp.required)
+            .filter(|qp| !suppressed && qp.required)
         {
             args.push((
                 Some(qp.py_name.clone()),
@@ -7772,7 +7846,7 @@ fn build_example_inner(
         for hp in ep
             .header_params
             .iter()
-            .filter(|header| !ep.wildcard_binary_response && header.required)
+            .filter(|header| !suppressed && header.required)
         {
             let value = hp
                 .example
@@ -7785,9 +7859,11 @@ fn build_example_inner(
                 });
             args.push((Some(hp.py_name.clone()), value));
         }
-        for hp in ep.header_params.iter().filter(|header| {
-            !ep.wildcard_binary_response && !header.required && header.example.is_some()
-        }) {
+        for hp in ep
+            .header_params
+            .iter()
+            .filter(|header| !suppressed && !header.required && header.example.is_some())
+        {
             let value = hp
                 .example
                 .as_ref()
@@ -7803,7 +7879,7 @@ fn build_example_inner(
     for qp in ep
         .query_params
         .iter()
-        .filter(|qp| !ep.wildcard_binary_response && !qp.required)
+        .filter(|qp| !suppressed && !qp.required)
     {
         if qp.example.is_none() || !qp.example_is_scalar {
             continue;
@@ -7819,7 +7895,7 @@ fn build_example_inner(
         for hp in ep
             .header_params
             .iter()
-            .filter(|header| !ep.wildcard_binary_response && header.required)
+            .filter(|header| !suppressed && header.required)
         {
             let value = hp
                 .example
@@ -7834,10 +7910,7 @@ fn build_example_inner(
         }
     }
     for hp in ep.header_params.iter().filter(|header| {
-        !ep.wildcard_binary_response
-            && !header_first_request
-            && !header.required
-            && header.example.is_some()
+        !suppressed && !header_first_request && !header.required && header.example.is_some()
     }) {
         let value = hp
             .example
@@ -7852,7 +7925,7 @@ fn build_example_inner(
     }
     match &ep.request_body {
         Some(RequestBody::Single(s)) => {
-            let v = if let Some(example) = body_example {
+            let mut v = if let Some(example) = body_example {
                 ctx.value_from_example(&s.type_ref, &example.to_string())
                     .unwrap_or_else(|| ctx.value(&s.type_ref, Slot::Plain))
             } else {
@@ -7861,6 +7934,27 @@ fn build_example_inner(
                     .and_then(|example| ctx.value_from_example(&s.type_ref, example))
                     .unwrap_or_else(|| ctx.value(&s.type_ref, Slot::Plain))
             };
+            // A binary download's array body is exampled with TWO synthesized
+            // elements where every other endpoint's takes one. SFTPGo's
+            // `streamzip` posts `{type: array, items: {type: string}}` and streams
+            // a zip back, and its golden documents `request=["string", "string"]`;
+            // gambitcomm's `set_protocols` posts the same shape — its item is
+            // described too — and answers JSON, and its golden documents
+            // `request=["string"]`, as do audiobookshelf's `downloadEpisodes`,
+            // komga's `markAnnouncementsRead` and exhaustive's list-of-primitives.
+            if ep.binary_response && body_example.is_none() && s.example.is_none() {
+                v = match &v {
+                    Example::List(items) => match items.as_slice() {
+                        [only] => Example::List(vec![only.clone(), only.clone()]),
+                        _ => v,
+                    },
+                    Example::ReferenceList(items) => match items.as_slice() {
+                        [only] => Example::ReferenceList(vec![only.clone(), only.clone()]),
+                        _ => v,
+                    },
+                    _ => v,
+                };
+            }
             // An optional body Fern types `Optional[Any]` has nothing to show, in
             // either document version: letta declares the shape in 3.1 and
             // braintrust's proxy endpoints in 3.0.3, and neither golden passes
@@ -8046,7 +8140,15 @@ fn build_example_inner(
                     // not — DaniWeb's optional `csv` is the corpus's first — while
                     // the client docstring shows an optional one only when the
                     // media example or a per-part content type reaches it.
-                    (f.spec_required || f.media_example || ((related || reference) && f.is_file))
+                    (f.spec_required
+                        || f.media_example
+                        || ((related || reference) && f.is_file)
+                        // A part that is a LIST of files is shown wherever the
+                        // example is written, required or not: SFTPGo's optional
+                        // `filenames` reaches `README.md` and the client docstring
+                        // as well as `reference.md`, where DaniWeb's optional
+                        // scalar `csv` reaches only the reference writer.
+                        || f.is_file && matches!(f.type_ref, TypeRef::List(_) | TypeRef::Set(_)))
                         && (documentation || !f.is_file)
                 })
                 .collect();
@@ -8058,7 +8160,15 @@ fn build_example_inner(
             }
             for f in example_fields {
                 let v = if documentation && f.is_file {
-                    Example::Atom(format!("\"example_{}\"", f.wire_name))
+                    if matches!(f.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
+                        // A list of files is one flat placeholder list, not an
+                        // exploded one: SFTPGo's `filenames` documents
+                        // `filenames=["example_filenames"]` on a single line in
+                        // both `README.md` and `reference.md`.
+                        Example::Atom(format!("[\"example_{}\"]", f.wire_name))
+                    } else {
+                        Example::Atom(format!("\"example_{}\"", f.wire_name))
+                    }
                 } else {
                     f.example
                         .as_deref()
@@ -8454,6 +8564,11 @@ fn compact_documentation_values(lines: Vec<String>, reference: bool) -> Vec<Stri
             .strip_suffix("],")
             .and_then(|value| value.split_once("=["))
             .filter(|(_, items)| !items.is_empty())
+            // A multipart part that is a LIST of files is the one list the
+            // markdown writers leave on its own line: SFTPGo documents
+            // `filenames=["example_filenames"]` flat, where every other list
+            // argument of the same writers is exploded one item per line.
+            .filter(|(head, items)| *items != format!("\"example_{}\"", head.trim()))
         {
             let indent = line.len() - line.trim_start().len();
             compact.push(format!("{}{head}=[", " ".repeat(indent)));
@@ -9381,6 +9496,7 @@ mod tests {
             body_media_has_example: false,
             reference_body_example: None,
             body_schema_documented: false,
+            body_schema_titled: false,
             body_schema_is_response_heavy: false,
             body_schema_is_open: false,
             body_schema_implicit_object: false,

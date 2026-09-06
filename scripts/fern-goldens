@@ -156,6 +156,19 @@ def load_fixture_aliases(root: Path) -> dict[str, str]:
     return aliases
 
 
+MANIFEST_HEADER = [
+    "#",
+    "name",
+    "method",
+    "source",
+    "pinned ref",
+    "license",
+    "decision",
+    "shapes",
+]
+"""The canonical CORPUS.md manifest table's header, as `tests/fixtures/CORPUS.md` writes it."""
+
+
 def load_manifest(root: Path) -> list[CorpusRow]:
     manifest = root / "tests" / "fixtures" / "CORPUS.md"
     try:
@@ -167,8 +180,22 @@ def load_manifest(root: Path) -> list[CorpusRow]:
     rows: list[CorpusRow] = []
     names: set[str] = set()
     fixtures: set[str] = set()
+    # CORPUS.md carries per-batch STATUS tables after the canonical numbered
+    # manifest, and those are numbered too (`| 130 | `komga` | … |`, four cells).
+    # Only the canonical table — the one under the documented eight-column header
+    # — is the manifest, so a status row is skipped rather than read as a
+    # malformed manifest row, which is what `scripts/corpus-lib.sh` already does.
+    in_manifest = False
     for line_number, line in enumerate(lines, start=1):
         cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if cells == MANIFEST_HEADER:
+            in_manifest = True
+            continue
+        if not line.strip().startswith("|"):
+            in_manifest = False
+            continue
+        if not in_manifest:
+            continue
         if not cells or not cells[0].isdigit():
             continue
         if len(cells) != 8:

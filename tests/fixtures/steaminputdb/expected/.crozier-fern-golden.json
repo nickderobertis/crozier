@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "steaminputdb",
+  "corpus_spec_ref": "a2bd0c37fd3d22e6b9e153b49e9a6e7de5a00393",
+  "corpus_spec_url": "https://raw.githubusercontent.com/Alia5/steaminputdb.com/a2bd0c37fd3d22e6b9e153b49e9a6e7de5a00393/openapi.yaml"
+}

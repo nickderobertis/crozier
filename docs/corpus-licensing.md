@@ -68,6 +68,11 @@ anywhere), `format-idn-email`'s `wttw/aboutmyemail` (no licence) and
 `format-relative-json-pointer`'s `geo-engine/BioIS` (`NOASSERTION`) are the
 worked examples.
 
+Every candidate those records block on a licence has since been rescreened
+against the rule as it now stands — one line per document, in
+[`licence-rescreening.md`](licence-rescreening.md): which the widening admits,
+what a real Fern run returned for it, and which coverage rows it declares.
+
 ## Screening a candidate against it
 
 Read the document's own `info.license` **and** the licence of the repository or

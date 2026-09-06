@@ -209,6 +209,11 @@ Use the `just` recipes; do not hand-roll equivalents.
   was decided that way — is stated once, in
   [`docs/corpus-licensing.md`](docs/corpus-licensing.md). No other document
   lists licence names; `just lint-corpus-licensing` fails if one starts to.
+  Which blocked candidates that rule admits, one line per document screened
+  against a real Fern run, is
+  [`docs/licence-rescreening.md`](docs/licence-rescreening.md);
+  `just lint-licence-rescreening` derives that candidate set from the region
+  ledgers itself, so a grouped or dropped line fails.
 - Maintain numbered corpus goldens one row at a time through the manually
   dispatched **Fern goldens** workflow. It records exact generator/spec
   provenance and safely publishes complete results even while comparison is red;
