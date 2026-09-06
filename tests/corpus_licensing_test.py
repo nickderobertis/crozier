@@ -19,6 +19,7 @@ Run: `just test-corpus-licensing` (part of `just check`).
 
 from __future__ import annotations
 
+import importlib.util
 import re
 import subprocess
 import sys
@@ -29,6 +30,14 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts" / "corpus-licensing-drift.py"
 RULE = "docs/corpus-licensing.md"
+
+
+def load_gate():
+    """The gate as a module, for the cases that read its path constants."""
+    spec = importlib.util.spec_from_file_location("corpus_licensing_drift", SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def run_gate() -> subprocess.CompletedProcess[str]:
@@ -60,7 +69,7 @@ class TheGateHoldsTheFinishedTree(unittest.TestCase):
 class TheGateStillDiscriminates(unittest.TestCase):
     """Plant a second enumeration in the real tree; require a named failure."""
 
-    def plant(self, body: str) -> Path:
+    def plant(self, body: str) -> str:
         handle = tempfile.NamedTemporaryFile(
             dir=REPO / "docs",
             prefix="corpus-licensing-drift-probe-",
@@ -89,7 +98,9 @@ class TheGateStillDiscriminates(unittest.TestCase):
             check=False,
             capture_output=True,
         )
-        return planted.relative_to(REPO)
+        # Git spells paths with forward slashes on every platform, and so does
+        # the gate; compare against that spelling, not the host's.
+        return planted.relative_to(REPO).as_posix()
 
     def test_a_planted_second_enumeration_fails_naming_the_file(self) -> None:
         planted = self.plant(
@@ -102,7 +113,7 @@ class TheGateStillDiscriminates(unittest.TestCase):
             1,
             "a document enumerating the admissible licences passed the gate",
         )
-        self.assertIn(str(planted), result.stderr)
+        self.assertIn(planted, result.stderr)
         self.assertIn("Apache-2.0/MIT/BSD/CC0", result.stderr)
         self.assertIn(RULE, result.stderr)
 
@@ -114,7 +125,7 @@ class TheGateStillDiscriminates(unittest.TestCase):
         )
         result = run_gate()
         self.assertEqual(result.returncode, 1)
-        self.assertIn(str(planted), result.stderr)
+        self.assertIn(planted, result.stderr)
 
     def test_naming_one_licence_as_provenance_is_not_drift(self) -> None:
         """A `CORPUS.md` row's own licence column must stay writable."""
@@ -174,6 +185,51 @@ class TheRuleFileIsWhereTheGateSaysItIs(unittest.TestCase):
         self.assertIn("no longer lists three or more", result.stderr)
 
 
+class TheGateSpellsPathsTheWayGitDoes(unittest.TestCase):
+    """`git ls-files` reports POSIX paths on Windows too, and so must the gate.
+
+    This is a regression guard with a history: the gate first excluded its own
+    rule file from its own walk by comparing the listing against
+    `str(Path("docs/corpus-licensing.md"))`. On a POSIX host that is the string
+    git reports and everything passed; on the Windows leg of `check` it is
+    `docs\\corpus-licensing.md`, which matches nothing git ever emits, so the
+    rule file was read as an ordinary document and the gate failed quoting the
+    canonical enumeration as its own drift. Every other case in this file runs
+    the gate as a subprocess on this host and cannot see that, so hold the
+    spelling directly.
+    """
+
+    def test_the_paths_it_matches_the_listing_against_are_posix_strings(self) -> None:
+        gate = load_gate()
+        compared = {"RULE": gate.RULE}
+        compared.update(
+            (f"SKIP_PREFIXES[{index}]", value)
+            for index, value in enumerate(gate.SKIP_PREFIXES)
+        )
+        compared.update(
+            (f"SKIP_FILES[{index}]", value)
+            for index, value in enumerate(gate.SKIP_FILES)
+        )
+        for name, value in compared.items():
+            self.assertIsInstance(
+                value,
+                str,
+                f"{name} is a {type(value).__name__}; a path compared against"
+                " `git ls-files` output must be the POSIX string git reports,"
+                " because `str(Path(...))` is backslash-spelled on Windows",
+            )
+            self.assertNotIn("\\", value, f"{name} is spelled with a backslash")
+
+    def test_the_walk_still_excludes_the_rule_file(self) -> None:
+        gate = load_gate()
+        self.assertNotIn(
+            RULE,
+            gate.tracked_markdown(REPO),
+            "the gate reads its own rule file as an ordinary document, so the"
+            " canonical enumeration counts as drift against itself",
+        )
+
+
 class TheGateAndItsTestsAreBothInTheDeterministicTier(unittest.TestCase):
     def test_check_runs_both(self) -> None:
         justfile = (REPO / "justfile").read_text(encoding="utf-8").splitlines()
@@ -182,7 +238,7 @@ class TheGateAndItsTestsAreBothInTheDeterministicTier(unittest.TestCase):
         self.assertIn("test-corpus-licensing", gate)
         self.assertEqual(
             justfile[justfile.index("lint-corpus-licensing:") + 1].strip(),
-            f"python3 {SCRIPT.relative_to(REPO)}",
+            f"python3 {SCRIPT.relative_to(REPO).as_posix()}",
         )
         self.assertEqual(
             justfile[justfile.index("test-corpus-licensing:") + 1].strip(),

@@ -31,7 +31,12 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-RULE = Path("docs/corpus-licensing.md")
+# Every path this script compares or prints is spelled the way `git ls-files`
+# reports one — POSIX separators, on every platform. Holding these as `Path`
+# instead is what broke the Windows leg once: `str(Path("docs/x.md"))` is
+# `docs\\x.md` there, so the rule file stopped excluding itself from its own
+# walk and the gate quoted it as its own drift.
+RULE = "docs/corpus-licensing.md"
 MARKER = "corpus-licence-set:"
 
 # Documents the walk skips, each because it is not this repository's prose about
@@ -82,7 +87,7 @@ def tracked_markdown(root: Path) -> list[str]:
         path
         for path in listing.stdout.split("\0")
         if path
-        and path != str(RULE)
+        and path != RULE
         and path not in SKIP_FILES
         and not path.startswith(SKIP_PREFIXES)
         and not SKIP_FIXTURE_OUTPUT.match(path)
