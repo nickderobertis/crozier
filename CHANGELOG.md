@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.66](https://github.com/nickderobertis/crozier/compare/v0.0.65...v0.0.66) - 2026-09-06
+
+### Added
+
+- *(fixtures)* register the witnesses the widened licence rule admits and settle the rows they pin ([#231](https://github.com/nickderobertis/crozier/pull/231))
+
 ## [0.0.65](https://github.com/nickderobertis/crozier/compare/v0.0.64...v0.0.65) - 2026-09-06
 
 ### Fixed
