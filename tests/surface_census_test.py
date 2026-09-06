@@ -941,15 +941,14 @@ class ConjunctionCensusTests(unittest.TestCase):
     kind expresses, and a selector ignoring it would count documents the generator
     sends elsewhere. The other forty-four cases are enumeration holes.
 
-    The numbers are the census's own. They agree with an independent count over
-    every vendored document except `schema.properties>schema.type=array` in
-    `query-parameters-openapi`, which declares two and is censused as one: that
-    document writes an unquoted `200:` status code, and the walk skips a free-map
-    key that is not a string, so the whole Response Object under it is unreached.
-    The defect predates conjunctions and costs the plain `schema.properties` and
-    `schema.type=array` selectors the same site; fixing it moves published
-    per-source evidence counts, so it belongs to a change that may edit the region
-    files.
+    The numbers are the census's own, and an independent count over every vendored
+    document agrees with all nine. It agrees only because none of the nine reaches
+    the one place this walk under-reports: `query-parameters-openapi` writes an
+    unquoted `200:` status code, the walk skips a free-map key that is not a
+    string, and so the whole Response Object under it goes unvisited — costing the
+    plain `schema.properties` and `schema.type=array` selectors a site each. The
+    defect predates conjunctions, and fixing it moves published per-source evidence
+    counts, so it belongs to a change that may edit the region files.
     """
 
     DECLARED = {
