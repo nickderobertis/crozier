@@ -1,0 +1,31 @@
+openapi: 3.1.0
+info:
+  title: format-iri
+  version: 1.0.0
+servers:
+  - url: https://probe.invalid
+paths:
+  /probe:
+    get:
+      operationId: probe
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProbeResult"
+components:
+  schemas:
+    ProbeResult:
+      title: ProbeResult
+      type: object
+      properties:
+        formatted:
+          type: string
+          format: iri
+        plain:
+          type: string
+      required:
+        - formatted
+        - plain
