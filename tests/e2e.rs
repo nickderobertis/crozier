@@ -5961,6 +5961,47 @@ fn generate_ok(spec: &str) -> (tempfile::TempDir, std::path::PathBuf) {
 }
 
 #[test]
+fn a_pure_ref_component_names_the_response_it_types() {
+    // Measured at fernapi/fern-python-sdk:5.20.0 while probing the documents under
+    // docs/openapi-surface/probes/: a component schema that is nothing but a LOCAL
+    // `$ref` types an operation response under its OWN name, not its target's.
+    // crozier used to follow every such alias, which diverged from Fern on all
+    // four spellings probed — the bare `$ref`, and the same `$ref` beside a
+    // `title`, a `description` or an `unevaluatedProperties`. The rewrite is now
+    // confined to an alias of a *remotely* declared schema, which is the form
+    // helios-verifiable-api's `BlockResponse` over its fetched `Block` carries and
+    // the only form Fern was measured to follow (openapi.rs's
+    // `normalize_fetched_response_alias_refs`).
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /a:\n    \
+         get:\n      operationId: getA\n      responses:\n        '200': { description: OK, \
+         content: { application/json: { schema: { $ref: '#/components/schemas/AliasOfThing' } } } }\n\
+         components:\n  schemas:\n    Thing: { type: object, properties: { value: { type: string } } }\n    \
+         AliasOfThing: { $ref: '#/components/schemas/Thing', title: AliasOfThing }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/client.py")).expect("client.py");
+    assert!(
+        client.contains("-> AliasOfThing:"),
+        "the response keeps the alias name Fern emits; client.py has:\n{client}"
+    );
+    assert!(
+        !client.contains("-> Thing:"),
+        "the alias target must not stand in for the alias at the response"
+    );
+    assert_eq!(
+        "AliasOfThing = Thing\n",
+        std::fs::read_to_string(out.join("src/acme/types/alias_of_thing.py"))
+            .expect("alias module")
+            .lines()
+            .filter(|line| !line.trim_start().starts_with('#') && !line.trim().is_empty())
+            .filter(|line| !line.starts_with("from "))
+            .map(|line| format!("{line}\n"))
+            .collect::<String>(),
+        "the alias module itself still declares the alias"
+    );
+}
+
+#[test]
 fn hyphenated_operation_id_generates_valid_python() {
     // Issue #40 case 1a: a hyphen in the operationId once produced a module dir
     // and identifiers that failed to parse. It must sanitize to a legal name.
