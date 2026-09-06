@@ -379,8 +379,11 @@ The six region files, read as one body of work. Two measurements feed it:
   It reads **164** registered sources, of which
   **147** carry a committed golden. `document-paths`'s own evidence cells are
   transcribed from that walk; the other five region files' cells are still dated
-  to the earlier walks each was taken on, and refreshing them is each file's own
-  measurement against this same pin. No classification in this section depends on
+  to the earlier walks each was taken on, except that `schemas`, `bodies-media`
+  and `parameters` have had the twenty-eight cells the free-map-key walk repair
+  moved republished against it, each as that repair's own difference rather than
+  as a re-transcription. Refreshing the rest is each file's own measurement
+  against this same pin. No classification in this section depends on
   which walk a cell was taken from — a category moves only when a source is
   registered or a selector is added, and both are recorded in that section's own
   history.
@@ -406,15 +409,15 @@ for either; each bullet below says where its number comes from.
 | region | features | `golden` | `limitations` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 70 | 49 | 14 | 7 | 7 | 0 | 0 |
-| [`schemas`](openapi-surface/schemas.md) | 117 | 93 | 8 | 16 | 13 | 0 | 3 |
+| [`schemas`](openapi-surface/schemas.md) | 126 | 102 | 8 | 16 | 13 | 0 | 3 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 36 | 11 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 37 | 8 | 5 | 5 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 67 | 62 | 5 | 0 | 0 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 33 | 1 | 18 | 1 | 0 | 17 |
-| **total** | **403** | **310** | **47** | **46** | **26** | **0** | **20** |
+| **total** | **412** | **319** | **47** | **46** | **26** | **0** | **20** |
 
-The walk enumerated **403** features and landed each in exactly one category:
-**310** `golden`, **47** `limitations`, **46** `gap`. The `gap` column splits by
+The walk enumerated **412** features and landed each in exactly one category:
+**319** `golden`, **47** `limitations`, **46** `gap`. The `gap` column splits by
 settlement class into **26** `FIXTURE`, **0** `PROBE` and **20** `UNREACHABLE`.
 
 **What the `gap` count means.** 46 is the number of OpenAPI shapes for which
@@ -428,7 +431,7 @@ The two backlogs below are the other 26.
 
 ### Reconciliation
 
-**Each feature is classified exactly once.** The 403 rows carry 403 distinct
+**Each feature is classified exactly once.** The 412 rows carry 412 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
 already runs over all six files, re-run here and passing. Thirteen spec
@@ -497,6 +500,50 @@ field is classified exactly once, and the uniqueness check above passes — so t
 partition holds. It is recorded rather than corrected because a later scope edit
 should know the two regions disagreed about which side of that line the
 `parameters` field falls on.
+
+**The nine conjunctions are classified, and every one of them is `golden`.** The
+[conjunction selectors](#the-selector-grammar) were declared without being run;
+running them over all 164 registered sources is what takes the walk's total from
+403 to 412. Every one of the nine is declared by at least one registered source
+carrying a byte-matching committed golden, so under
+[the precedence](#the-category-rules) none is `limitations` (no
+[`fern-limitations.md`](fern-limitations.md) key names any of them) and none is a
+`gap`. **Zero of the nine are gaps**, which is the number the next node's work is
+sized by: there is nothing here to settle. The measured range runs from
+`schema.items>schema.$ref` (4,151 sites in 114 sources, 3,328 of them in the 102
+that carry a golden) to `schema.anyOf>schema.allOf` (4 sites in `braintrust-dev`
+alone). All nine anchor on a Schema Object, so all nine are
+[`schemas.md`](openapi-surface/schemas.md)'s: that region moves from 117 features
+to 126 and from 93 `golden` to 102, and neither backlog below changes, since a
+`golden` row is in neither. The prediction the blind-spot count invited — that
+combinations of golden fields would be where the goldens stop reaching — is the
+one the measurement refutes: the corpus was never blind to these shapes, only the
+census was. What the rows preserve is the part of that reading that survives, and
+each says it in its own evidence cell: a golden pinning a conjunction pins the
+bytes for the shapes its own document sends down the branch, not the branch's
+whole behaviour.
+
+**The instrument was repaired first, and the classification is the repaired
+walk's.** The census used to skip a map key that is not a string *and* the
+free-map descent under it, so a Responses Object keyed by an unquoted YAML
+integer (`200:`) lost its entire subtree. Six registered sources write their
+status codes that way — `free5gc-namf-communication`, `free5gc-pdu-session`,
+`kytos-sdntrace-cp`, `marimo`, `query-parameters-openapi` and
+`worldcoin-signup-sequencer`, one more than the change that found the defect had
+counted. Over the 164 sources the repair moves **89** per-source counts across 35 selectors and adds
+**2,584** declaration sites; it takes no selector from zero to non-zero
+corpus-wide, and **no conjunction count moves under it**, so the classification
+above is the same either way and is nonetheless taken from the repaired walk.
+Twenty-eight evidence cells across
+[`schemas.md`](openapi-surface/schemas.md) (ten),
+[`bodies-media.md`](openapi-surface/bodies-media.md) (twelve) and
+[`parameters.md`](openapi-surface/parameters.md) (six) are republished, each as
+the difference the repair makes to the walk its cell was taken on, so a reader
+can tell a count that moved because the instrument was repaired from one that
+moved because the corpus did. No category moves with them. The repair also closes
+a discrepancy the ledger had recorded: `fern-limitations.md`'s `encoding-object`
+row counted 99 `contentType` and 58 `headers` off `free5gc-pdu-session`'s raw
+source against the census's 22 and 13, and the repaired walk reaches 99 and 58.
 
 **No region's category is overturned.** This node re-derived the census join, the
 ledger join and the site counts it ranks on, and found no row whose `category` or
@@ -756,7 +803,7 @@ functions named in each verdict are counted from that union.
 | `src/openapi.rs` | 511 | all-e2e 221, non-e2e 290 | 4 — #23 `http-hoba`, #24 `http-oauth`, #25 `http-scram-sha-1`, #26 `http-scram-sha-256` | **Agrees, and accounts for the rest.** #23–#26 — `http-hoba`, `http-oauth`, `http-scram-sha-1` and `http-scram-sha-256` — are one `#[serde(other)]` scheme fallback arm, four IANA scheme members that collapse through it. `normalize_parameters`, 3 regions, was a fifth until corpus row 122 settled `operation-overrides-path-item-parameter` `golden` and it left the ranked list, and the `operation_id` field declaration was a sixth until corpus row 128 settled `duplicate-operation-id` the same way. The largest block, `filter_ignored` 72, is the walk's `x-fern-or-crozier-ignore` — now `golden`, on corpus row 108's four `x-fern-ignore` operations, though golden-classified is not golden-*exhausted*: one witness reaches the Operation-Object arm and leaves the schema arm and the `x-crozier-*` precedence to unit tests. `filter_by_audience` 47 + `audiences` 8 belong to `audience-dual-header-policy`, classified `golden`: golden-classified is not golden-*exhausted*, since the two audience goldens declare 8 sites between them and leave the rest of the branch space to unit tests. `collect_schema_refs` 46 + `expand_schema_closure` 32 + `operation_schema_seed` 24 is `$ref`-closure pruning under `reference-ref` (`golden`); `load` 26 + `visit_seq` 7 + `de_composition` 5 are malformed-document deserialization paths the corpus excludes by taking only documents Fern generates. |
 | `src/cli.rs` | 292 | all-e2e 133, non-e2e 159 | none | **Neither**, as `src/settings.rs`: `do_config` 60, `run` 43, `do_init` 26, `do_generate` 12 are the command surface, not document behaviour. |
 | `src/emit.rs` | 261 | all-e2e 29, non-e2e 232 | none | **A shape the walk missed.** The one ranked gap that pointed here, `media-type-range`, named `append_request_call_args` — which is not among the blind regions at all — and corpus row 127 has since settled it `golden`. The blind regions are example rendering — `raw_type_str_ctx` 40, `example_matches_type` 24, `build_example_inner` 23, `named_value_inner` 13, `value_from_example` 12, `example_from_json` 6 — and streaming docstrings, `client_stream_docstring` 11 + `raw_stream_docstring` 10. Every `example`/`examples` field is classified `golden`, but the walk enumerates the *field*; those branches switch on the JSON value *kind* an example holds, and example values are not in the grammar's closed list of valued selectors, so no `gap` row could have named them. |
-| `src/ir.rs` | 201 | all-e2e 9, non-e2e 192 | 7 — #20–#26 | **Agrees on the file, misses the shapes.** The blind regions are type-lowering conjunctions: `resolve_schema_pointer` 25, `nested_array_element` 25, `hoist_union_variant` 24, `ref_to_class` 22, `prop_type_ref` 20, `path_group` 15. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own; it is their *combinations* that no golden reaches, and the census emitted one selector per field and none per conjunction until the [conjunction selectors](#the-selector-grammar) were declared off these six functions' own branches ([case by case](#the-six-blind-regions-of-srcirrs-case-by-case)) — naming the shapes, which is what makes them classifiable, not what classifies them. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); nobody ran one over schema-composition combinations. |
+| `src/ir.rs` | 201 | all-e2e 9, non-e2e 192 | 7 — #20–#26 | **Agrees on the file, misses the shapes.** The blind regions are type-lowering conjunctions: `resolve_schema_pointer` 25, `nested_array_element` 25, `hoist_union_variant` 24, `ref_to_class` 22, `prop_type_ref` 20, `path_group` 15. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own, and this verdict used to go on: *"it is their combinations that no golden reaches."* **That was a statement about the instrument, and the measurement contradicts it.** The [conjunction selectors](#the-selector-grammar) were declared off these six functions' own branches ([case by case](#the-six-blind-regions-of-srcirrs-case-by-case)), the census was run over all 164 registered sources, and all nine came back `golden` — every one declared by at least one source whose committed golden byte-matches, from `schema.items>schema.$ref` at 4,151 sites in 114 sources down to `schema.anyOf>schema.allOf` at 4 in one. The `schemas` region carries the nine rows and the split each rests on. What stays true of this file is the *branch* reading: a golden pinning a conjunction pins the bytes for the shapes its own document sends down the arm, not the arm's whole behaviour, and the forty-four cases of these six functions that no selector kind can express are still unmeasured. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); the third is now the census's own. |
 | `src/refs.rs` | 74 | all-e2e 17, non-e2e 57 | none | **Only a probe can settle it.** `resolve_reference` 16, `document` 10, `pointer` 9, `error` 7, `curl_fetch` 7 are the cross-document `$ref` path. The corpus is single-document by construction ([`matching.md`](matching.md#cross-document-ref-resolution-issue-77)), and the ledger's `relative-file-ref` row is already `discards + pipeline` — its own note being that crozier's fixture pipeline cannot register the tree that would make the reference resolve. No corpus row is in reach. |
 | `src/schema.rs` | 46 | all-e2e 23, non-e2e 23 | none | **Neither.** `build` 20 emits crozier's own config JSON Schema. |
 | `src/lib.rs` | 33 | all-e2e 1, non-e2e 32 | none | **Neither.** `render_files` 29 is the filesystem write path. |
@@ -949,11 +996,14 @@ which is the only thing this function reads.
 | 2 | the same `find` returning a later segment, having skipped a templated one | **H-key-segment-position** |
 | 3 | `.unwrap_or("service")` — every segment is templated, or the URL has none | **H-key-all-templated** |
 
-**What this section does not do.** It declares selectors and adds no row to any
-region file: every category, every settlement and every published total is what
-it was. Naming a shape is what makes it classifiable, not what classifies it —
-the census can now answer for these conjunctions, and what the answers mean for
-the six region files is the next node's work.
+**What this section did not do, and what has since been done.** The change that
+wrote it declared selectors and added no row to any region file: naming a shape
+is what makes it classifiable, not what classifies it. The classification has
+since been taken. All nine conjunctions were run over the 164 registered sources
+and all nine are `golden`; [`schemas.md`](openapi-surface/schemas.md) owns the
+nine rows, since every one of them anchors on a Schema Object, and that region's
+own counts move with them. The sixteen holes are untouched — each still names the
+predicate or valued selector that would close it, and none is a row anywhere.
 
 ### Refreshing the coverage snapshot
 
