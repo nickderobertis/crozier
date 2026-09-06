@@ -95,15 +95,30 @@ splits the value kinds it merges. Its evidence cells are marked
 proves its parts add back up to the census's totals are in
 [Method notes](#method-notes).
 
+Nor does the census record anything about the *names* that key a free-form map —
+that exclusion is what keeps a schema property called `type` from scoring a
+`schema.type`. One row of this region is about such a name rather than about a
+keyword: `normalization-collision`, two `components.schemas` names that fold to
+one generated class. A **predicate selector** is the grammar's answer to that,
+and `components.schemas:normalized-collision` is the one this region needed;
+[the index's selector grammar](../openapi-surface-coverage.md#the-selector-grammar)
+declares it beside the other five and that row cites it.
+
 #### What belongs to another region
 
 Cross-linked rather than duplicated, because every feature belongs to exactly one
 region file:
 
-- `components.schemas` and the collision behaviour of the names that key it
-  (`docs/fern-limitations.md` `normalization-collision`) belong to
+- The `components.schemas` **field** belongs to
   [`document-paths.md`](document-paths.md) with the Components Object, as does a
-  Path Item `$ref` (`pathitem-ref`, `relative-file-ref`).
+  Path Item `$ref` (`pathitem-ref`, `relative-file-ref`). What the *schema names*
+  keying that map do when two of them fold to one class
+  (`docs/fern-limitations.md` `normalization-collision`) is classified **here**,
+  as `normalization-collision`: it is a property of a schema's own name, and the
+  index records it as the shape this region needed a selector for. The two are
+  separate features and neither cell is a copy of the other — the field row counts
+  documents that write `components.schemas`, this row counts the keys inside it
+  that collide.
 - The `schema` field of a Parameter, Header, Media Type, Request Body or Response
   belongs to that object's region ([`parameters.md`](parameters.md),
   [`bodies-media.md`](bodies-media.md)); the Schema Object it holds is classified
@@ -240,6 +255,7 @@ appears, including the ones 3.1 added.
 | xml-prefix | both | XML Object.prefix | gap | census `schema.xml.prefix`: 0 declarations across all 126 registered sources; no `docs/fern-limitations.md` row names it | `none` — crozier never deserializes the XML Object: `src/openapi.rs`'s `Schema` has no `xml` field and `grep -rF '"xml"' src/` finds no production read | No generated artifact: `docs/fern-limitations.md` `xml-request` and `xml-response` (both `discards`, both `bodies-media` rows) measure Fern dropping XML payloads whole, so element metadata reaches no emitted Python. | UNREACHABLE — recording that the generated Python SDK has no XML serializer for the prefix to shape is the settlement. |
 | xml-attribute | both | XML Object.attribute | golden | census `schema.xml.attribute`: 28 declarations in 1 fixture — `atlassian.com-jira` (28) |  |  |  |
 | xml-wrapped | both | XML Object.wrapped | gap | census `schema.xml.wrapped`: 0 declarations across all 126 registered sources; no `docs/fern-limitations.md` row names it | `none` — as `xml-prefix`; the one hit `grep -rF '"wrapped"' src/` returns is a test document inside `src/ir.rs` | No generated artifact, for the reason `xml-prefix` gives: the measured Fern behaviour is to drop the XML payload that `wrapped` would shape. | UNREACHABLE — as `xml-prefix`. |
+| normalization-collision | both | Components Object.schemas names colliding under class-name normalization | golden | census `components.schemas:normalized-collision`: 8 declaration sites in 3 registered sources, every one of them carrying a committed golden — `openbanking.org.uk-account-info-openapi` (4: `OBRate1_0` beside `OB_Rate1_0`, and `OBRate1_1` beside `OB_Rate1_1`, each pair folding to one `ObRate10`/`ObRate11`), `amazonaws.com-cloudformation` (2: `RoleArn` beside `RoleARN`, folding to `RoleArn`) and `daniweb-connect` (2: `Endpoint-get-users` beside `Endpoint-get-users--`, folding to `EndpointGetUsers`) — under crozier's own `naming::class_name`. Ledger key `normalization-collision`, verdict `discards`: Fern does not resolve the collision, it emits one module per folded name and loses the other side, and all three sources byte-match with no exclusions, so crozier reproduces the loss |  |  |  |
 
 ## Method notes
 
@@ -252,6 +268,13 @@ Every `census …` evidence cell is a slice of that output; a single selector ca
 be re-checked without the whole run:
 
     just surface-census --selector schema.patternProperties
+
+One row is measured by a **predicate selector** rather than by a field selector,
+and its evidence was taken over the whole 164-source registered set rather than
+over the 145-source walk above, because the predicate did not exist when that walk
+was taken:
+
+    just surface-census --selector components.schemas:normalized-collision
 
 The joins on the measured-Fern ledger are against the key list that
 
@@ -467,8 +490,15 @@ retires the split entirely by teaching the script to emit these selectors itself
 
 ### What the classification rests on, row by row
 
-- **`golden`** (92 rows) — a registered source declares the feature. The evidence
+- **`golden`** (93 rows) — a registered source declares the feature. The evidence
   is the census, or the variant scan for the variants it cannot see. The last is
+  `normalization-collision`, the row this region had no selector for until
+  `components.schemas:normalized-collision` was declared; it enters the table
+  already `golden`, on three registered sources that each carry a byte-matching
+  committed golden, and the ledger verdict it also cites (`discards`) is recorded
+  beside that rather than instead of it, as
+  [the classification precedence](../openapi-surface-coverage.md#the-category-rules)
+  requires. Before it is
   `format-json-pointer`, which corpus row 113
   (`k8s-container-service-provider`) moved here from the `FIXTURE` backlog on the
   witness the issue #188 search found it. The six before it are the JSON Schema

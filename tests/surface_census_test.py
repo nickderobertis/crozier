@@ -2480,15 +2480,38 @@ def document(name: str, routes: list[tuple[str, list[str]]]) -> str:
     return DOCUMENT.format(name=name, paths="\n".join(paths))
 
 
+COMPONENTS_DOCUMENT = """openapi: 3.0.3
+info: {{title: {name}, version: "1"}}
+paths:
+  /widgets:
+    get:
+      responses:
+        "200":
+          description: ok
+components:
+  schemas:
+{schemas}
+"""
+
+
+def component_document(name: str, schema_names: list[str]) -> str:
+    """One source document whose `components.schemas` declares `schema_names`."""
+    schemas = "\n".join(
+        f"    {json.dumps(key)}: {{type: object}}" for key in schema_names
+    )
+    return COMPONENTS_DOCUMENT.format(name=name, schemas=schemas)
+
+
 class PredicateSelectorTests(unittest.TestCase):
     """The third kind of selector: a shape the field selector cannot express.
 
     `operation.tags` counts the field and not its members, `operation.operationId`
-    records declarations and not values, and a Paths Object key is a *name* the
-    grammar excludes — so three real shapes were invisible to the instrument that
-    is supposed to say whether the corpus has ever seen them. These drive the real
-    script over real documents on the real filesystem, once for a document that
-    declares each shape and once for one that does not.
+    records declarations and not values, and a Paths Object key — like a
+    `components.schemas` key — is a *name* the grammar excludes, so nothing about
+    its own shape can be read off a field selector. Six real shapes were invisible
+    to the instrument that is supposed to say whether the corpus has ever seen
+    them. These drive the real script over real documents on the real filesystem,
+    once for a document that declares each shape and once for one that does not.
     """
 
     def census(self, sources: dict[str, str], *selectors: str) -> subprocess.CompletedProcess:
@@ -2640,10 +2663,135 @@ class PredicateSelectorTests(unittest.TestCase):
             counted,
         )
 
+    def test_a_templated_path_key_is_read_apart_from_a_multiply_templated_one(self) -> None:
+        """The two Paths Object key predicates, and the case that tells them apart.
+
+        A key carrying exactly one template expression is what separates them:
+        `openapi.paths:templated-key` reports it and
+        `openapi.paths:several-template-expressions` does not, so an
+        implementation where both mean *carries any template expression* fails
+        the second assertion on `one-template` and on `mixed`.
+        """
+        sources = {
+            "no-template": document("no-template", [
+                ("/widgets", ["operationId: a"]),
+                ("/gadgets", ["operationId: b"]),
+            ]),
+            "one-template": document("one-template", [
+                ("/widgets/{id}", ["operationId: a"]),
+                ("/gadgets", ["operationId: b"]),
+            ]),
+            "several-templates": document("several-templates", [
+                ("/users/{userId}/roles/{roleId}", ["operationId: a"]),
+            ]),
+            "mixed": document("mixed", [
+                ("/widgets", ["operationId: a"]),
+                ("/widgets/{id}", ["operationId: b"]),
+                ("/users/{userId}/roles/{roleId}", ["operationId: c"]),
+                ("/a/{x}/b/{y}/c/{z}", ["operationId: d"]),
+            ]),
+        }
+        self.assertEqual(
+            {"one-template": 1, "several-templates": 1, "mixed": 3},
+            self.counts(sources, "openapi.paths:templated-key"),
+        )
+        self.assertEqual(
+            {"several-templates": 1, "mixed": 2},
+            self.counts(sources, "openapi.paths:several-template-expressions"),
+        )
+
+    def test_a_callback_expression_is_not_a_templated_path_key(self) -> None:
+        """The object-model rule holds for these two predicates as well.
+
+        `{$request.body#/callbackUrl}` keys a Callback Object and carries braces
+        exactly the way a path template does, so a predicate reading every
+        free-keyed map's keys would score it as a templated route. Only the Paths
+        Object's own keys are routes.
+        """
+        source = """\
+            openapi: 3.0.3
+            info: {title: callbacks, version: "1"}
+            paths:
+              /subscribe:
+                post:
+                  operationId: subscribe
+                  callbacks:
+                    onEvent:
+                      "{$request.body#/callbackUrl}":
+                        post:
+                          responses:
+                            "200":
+                              description: ok
+                  responses:
+                    "200":
+                      description: ok
+            """
+        for selector in (
+            "openapi.paths:templated-key",
+            "openapi.paths:several-template-expressions",
+        ):
+            with self.subTest(selector=selector):
+                self.assertEqual({}, self.counts({"callbacks": source}, selector))
+        self.assertEqual(
+            {"callbacks": 1}, self.counts({"callbacks": source}, "operation.callbacks")
+        )
+
+    def test_a_component_name_collision_counts_every_colliding_key(self) -> None:
+        """`components.schemas:normalized-collision`: the other excluded map key."""
+        sources = {
+            "colliding-names": component_document(
+                "colliding-names", ["OBRate1_0", "OB_Rate1_0", "Widget"]
+            ),
+            "three-colliding-names": component_document(
+                "three-colliding-names", ["ob_rate1_0", "OBRate1_0", "obRate1-0"]
+            ),
+            "distinct-names": component_document(
+                "distinct-names", ["OBRate1_0", "OBRate2_0"]
+            ),
+        }
+        self.assertEqual(
+            {"colliding-names": 2, "three-colliding-names": 3},
+            self.counts(sources, "components.schemas:normalized-collision"),
+        )
+        # The field selector still counts the one `schemas` declaration each
+        # document writes: the predicate adds a reading of that map's keys rather
+        # than replacing one.
+        self.assertEqual(
+            {"colliding-names": 1, "three-colliding-names": 1, "distinct-names": 1},
+            self.counts(sources, "components.schemas"),
+        )
+
+    # Names spanning what crozier's `naming::class_name` folds together and what it
+    # keeps apart: case and punctuation, an underscore run, a leading digit spelled
+    # out as an English word, a character `sanitize_identifier` coerces, and the
+    # digit boundary a class name — unlike a field name — does not collapse. Each
+    # expectation is what crozier's own transform implies; `NamingMirrorTests` below
+    # pins the transform against `src/naming.rs`'s own expectations.
+    CLASS_NAME_CASES: tuple[tuple[str, list[str], int], ...] = (
+        ("case-and-punctuation", ["OBRate1_0", "OB_Rate1_0"], 2),
+        ("underscore-run-folds", ["ob_rate_1_0", "OBRate1_0"], 2),
+        ("camel-and-snake", ["nested_user", "NestedUser"], 2),
+        ("digit-leading-name-spelled-out", ["9lives", "NineLives"], 2),
+        ("sanitized-character-folds", ["filter[name]", "filter(name)"], 2),
+        ("digit-suffix-control", ["OBRate1", "OBRate1_0"], 0),
+        ("distinct-names-control", ["Widget", "Gadget"], 0),
+    )
+
+    def test_the_class_name_normalization_is_croziers_own(self) -> None:
+        """Every case crozier's `naming::class_name` distinguishes, in one run."""
+        sources = {
+            name: component_document(name, names)
+            for name, names, _expected in self.CLASS_NAME_CASES
+        }
+        self.assertEqual(
+            {name: expected for name, _n, expected in self.CLASS_NAME_CASES if expected},
+            self.counts(sources, "components.schemas:normalized-collision"),
+        )
+
     def test_a_document_declaring_none_of_them_reports_each_as_absent(self) -> None:
         """Absent, not missing: the phrase a `gap` row cites as its evidence."""
         plain = {"plain": document("plain", [
-            ("/widgets/{id}", ["tags: [alpha]\noperationId: listWidgets"]),
+            ("/widgets", ["tags: [alpha]\noperationId: listWidgets"]),
             ("/gadgets", ["operationId: listGadgets"]),
         ])}
         completed = self.census(plain, *sorted(census.PREDICATES))
@@ -2684,23 +2832,22 @@ class NamingMirrorTests(unittest.TestCase):
     """
 
     NAMING = REPO / "src" / "naming.rs"
-    CASE = re.compile(
-        r'assert_eq!\(\s*field_name\("((?:[^"\\]|\\.)*)"\),\s*"((?:[^"\\]|\\.)*)"\s*,?\s*\)'
-    )
 
     @staticmethod
     def unescape(literal: str) -> str:
         return literal.replace('\\"', '"').replace("\\\\", "\\")
 
-    def cases(self) -> list[tuple[str, str]]:
+    def cases(self, function: str = "field_name", minimum: int = 25) -> list[tuple[str, str]]:
+        pattern = re.compile(
+            rf'assert_eq!\(\s*{function}\("((?:[^"\\]|\\.)*)"\),'
+            r'\s*"((?:[^"\\]|\\.)*)"\s*,?\s*\)'
+        )
         found = [
             (self.unescape(wire), self.unescape(expected))
-            for wire, expected in self.CASE.findall(
-                self.NAMING.read_text(encoding="utf-8")
-            )
+            for wire, expected in pattern.findall(self.NAMING.read_text(encoding="utf-8"))
         ]
         self.assertGreater(
-            len(found), 25, "src/naming.rs no longer pins field_name case by case"
+            len(found), minimum, f"src/naming.rs no longer pins {function} case by case"
         )
         return found
 
@@ -2708,6 +2855,24 @@ class NamingMirrorTests(unittest.TestCase):
         for wire, expected in self.cases():
             with self.subTest(wire=wire):
                 self.assertEqual(expected, census.field_name(wire))
+
+    def test_the_port_reproduces_croziers_own_class_name_expectations(self) -> None:
+        """The class-name side of the same mirror.
+
+        `components.schemas:normalized-collision` folds two component names the
+        way `naming::class_name` does, so the port is pinned against that
+        function's own expectations and against those of the two helpers it
+        composes — a change to crozier's casing fails here rather than silently
+        moving a census count.
+        """
+        for function, port, minimum in (
+            ("class_name", census.class_name, 1),
+            ("to_pascal_case", census.to_pascal_case, 3),
+            ("sanitize_identifier", census.sanitize_identifier, 3),
+        ):
+            for wire, expected in self.cases(function, minimum):
+                with self.subTest(function=function, wire=wire):
+                    self.assertEqual(expected, port(wire))
 
     def test_the_reserved_set_is_croziers_own(self) -> None:
         """The trailing-`_` rule is only right if the reserved set is the same one.
