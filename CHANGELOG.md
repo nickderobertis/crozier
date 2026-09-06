@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.64](https://github.com/nickderobertis/crozier/compare/v0.0.63...v0.0.64) - 2026-09-06
+
+### Added
+
+- *(fixtures)* register the Torrentarr golden, settling media-type-range and duplicate-normalized-paths ([#222](https://github.com/nickderobertis/crozier/pull/222))
+
 ## [0.0.63](https://github.com/nickderobertis/crozier/compare/v0.0.62...v0.0.63) - 2026-09-06
 
 ### Added
