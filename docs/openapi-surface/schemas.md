@@ -579,8 +579,13 @@ retires the split entirely by teaching the script to emit these selectors itself
 
 ### What the classification rests on, row by row
 
-- **`golden`** (93 rows) — a registered source declares the feature. The evidence
-  is the census, or the variant scan for the variants it cannot see. The last is
+- **`golden`** (102 rows) — a registered source declares the feature. The
+  evidence is the census, or the variant scan for the variants it cannot see. The
+  last nine are the conjunction rows, which arrive `golden` together and are
+  described in [their own section](#the-conjunction-pass-and-what-it-found): each
+  is declared by at least one registered source whose committed golden
+  byte-matches, and each says in its own cell what a golden over a *branch* does
+  not prove. Before them is
   `normalization-collision`, the row this region had no selector for until
   `components.schemas:normalized-collision` was declared; it enters the table
   already `golden`, on three registered sources that each carry a byte-matching
@@ -600,11 +605,13 @@ retires the split entirely by teaching the script to emit these selectors itself
   probe backlog, on corpus row 109 (`volview-backend-contract`);
   `format-duration` before that from the `FIXTURE` backlog, on corpus row 97
   (`mosip-esignet`).
-- **`limitations`** (5 rows) — no registered source declares it and the ledger
+- **`limitations`** (8 rows) — no registered source declares it and the ledger
   rules on it: `const-boolean`, `const-integer`, `enum-member-float`,
-  `enum-member-object`, and `boolean-schema-true` outside the
-  `additionalProperties` position.
-- **`gap`** (19 rows) — neither. How those 19 split across the three settlement
+  `enum-member-object`, `boolean-schema-true` outside the
+  `additionalProperties` position, and the three the witness-supply probes
+  measured — `dollar-vocabulary`, `dollar-dynamic-anchor` and
+  `dollar-dynamic-ref`.
+- **`gap`** (16 rows) — neither. How those 16 split across the three settlement
   classes is not written down a second time here: it is
   [`openapi-surface-coverage.md`](../openapi-surface-coverage.md#what-the-walk-enumerated)'s
   summary table, which `RankedBacklogTests` recomputes from this file's own rows,
