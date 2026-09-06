@@ -4142,7 +4142,15 @@ fn hoist_inline_object(
             // beside a `$ref` is not that — 3.0 ignores a reference's siblings.
             nullable: is_optional(prop_schema) && prop_schema.reference.is_none(),
             spec_required,
-            example: schema_example_literal(prop_schema),
+            // A property written as a `$ref` takes its example from the schema
+            // it names, exactly as a parameter does: Audiobookshelf's
+            // `createLibrary` body declares `name: {$ref: libraryName}` and Fern
+            // documents `name="My Audiobooks"` off that component's own
+            // `example`.
+            example: schema_example_literal(prop_schema).or_else(|| {
+                let reference = prop_schema.reference.as_deref()?;
+                schema_example_literal(resolve_ref_from_schemas(hoister.schemas?, reference)?)
+            }),
             media_example: false,
             schema_body_example: false,
             docstring: clean_doc(prop_schema.description.as_deref()),

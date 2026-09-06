@@ -7656,7 +7656,21 @@ fn build_example_inner(
             } else {
                 pp.example
                     .as_ref()
-                    .filter(|_| !ep.binary_response && ctx.example_is_scalar(&pp.type_ref))
+                    // Fern's example generator substitutes the parameter's own
+                    // name for a declared example on any endpoint whose success
+                    // body is not JSON — a binary download, and equally a
+                    // `text/*` one. Audiobookshelf declares one `id` parameter on
+                    // `/api/authors/{id}` and Fern splits its own path item on
+                    // this: `getAuthorById` and `updateAuthorById` answer
+                    // `application/json` and document
+                    // `id="e4bb1afb-4a4f-4dd6-8be0-e615d233185b"`, while
+                    // `deleteAuthorById` answers `text/plain` and documents
+                    // `id="id"`.
+                    .filter(|_| {
+                        !ep.binary_response
+                            && !ep.text_response
+                            && ctx.example_is_scalar(&pp.type_ref)
+                    })
                     .and_then(|example| ctx.value_from_example(&pp.type_ref, example))
                     .unwrap_or_else(|| ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)))
             };
