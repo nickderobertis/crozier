@@ -4860,10 +4860,21 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // request escapes the drop too: Fern augments that body
                         // with the condition property itself (`"stream": True`),
                         // so it is no longer just the referenced schema.
-                        && !(ep.body_schema_ref
+                        // A documented resource envelope escapes this drop too,
+                        // exactly as it escapes the `allOf`/same-`$ref` one below:
+                        // corpus row 113's `Container` is untitled, and while its
+                        // own `createContainer` also rides an `id` query parameter,
+                        // the shape that measurement pinned is the envelope.
+                        // Every measured witness is a FLATTENED object body, so
+                        // the drop is scoped to one: a `$ref` to a scalar alias
+                        // (an integer enum, a `format: uri` string) rides as a
+                        // single `request` argument and keeps its header.
+                        && !(matches!(body, RequestBody::Inline(_))
+                            && ep.body_schema_ref
                             && !ep.body_schema_dropped
                             && ep.query_params.is_empty()
                             && ep.stream_condition.is_none()
+                            && !resource_envelope
                             && (ep.body_media_alternatives || !ep.body_schema_titled))
                         // A query parameter beside the body keeps the header
                         // through both drops below, the same exception the shared
@@ -7789,9 +7800,11 @@ fn build_example_inner(
         args.push((Some(hp.py_name.clone()), v));
     }
     if header_first_request && !reference {
-        for hp in ep.header_params.iter().filter(|header| {
-            !suppressed && !header.required && header.example.is_some()
-        }) {
+        for hp in ep
+            .header_params
+            .iter()
+            .filter(|header| !suppressed && !header.required && header.example.is_some())
+        {
             let value = hp
                 .example
                 .as_ref()
@@ -7841,9 +7854,11 @@ fn build_example_inner(
                 });
             args.push((Some(hp.py_name.clone()), value));
         }
-        for hp in ep.header_params.iter().filter(|header| {
-            !suppressed && !header.required && header.example.is_some()
-        }) {
+        for hp in ep
+            .header_params
+            .iter()
+            .filter(|header| !suppressed && !header.required && header.example.is_some())
+        {
             let value = hp
                 .example
                 .as_ref()
@@ -9476,6 +9491,7 @@ mod tests {
             body_media_has_example: false,
             reference_body_example: None,
             body_schema_documented: false,
+            body_schema_titled: false,
             body_schema_is_response_heavy: false,
             body_schema_is_open: false,
             body_schema_implicit_object: false,
