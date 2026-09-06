@@ -3697,7 +3697,7 @@ fn resolve_request_body(
             return Some(RequestBody::Form(FormBody { fields, multipart }));
         }
     }
-    if let Some((media_type, _)) = rb.content.iter().find(|(media_type, media)| {
+    let binary_media = |media_type: &&String, media: &&crate::openapi::MediaType| {
         *media_type != "*/*"
             && media.schema.as_ref().is_some_and(|schema| {
                 let schema = schema
@@ -3708,7 +3708,29 @@ fn resolve_request_body(
                 schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
                     && schema.format.as_deref() == Some("binary")
             })
-    }) {
+    };
+    // Where SEVERAL media types offer the same binary schema, the one Fern sends
+    // is the first whose top-level type is itself a binary family. SFTPGo's
+    // `create_user_file` and `upload_single_to_share` each declare
+    // `application/*`, `text/*`, `image/*`, `audio/*` and `video/*` over one
+    // `{type: string, format: binary}`, and both goldens send `image/*` — the
+    // `application` and `text` families are the ones Fern reads as JSON and text
+    // before it reaches the binary case, and neither carries an object or string
+    // body here. A document offering only `application/octet-stream` returned
+    // above; one offering a single range (Torrentarr, komga) has one candidate
+    // either way.
+    if let Some((media_type, _)) = rb
+        .content
+        .iter()
+        .find(|(media_type, media)| {
+            binary_media(media_type, media)
+                && matches!(
+                    media_type.split_once('/').map(|(top, _)| top),
+                    Some("image" | "audio" | "video")
+                )
+        })
+        .or_else(|| rb.content.iter().find(|(m, media)| binary_media(m, media)))
+    {
         return Some(RequestBody::Bytes {
             content_type: media_type.clone(),
         });

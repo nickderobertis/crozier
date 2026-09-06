@@ -7650,6 +7650,20 @@ fn build_example_inner(
 
     ctx.documentation = documentation;
     ctx.reference = reference;
+    // A `*/*` binary download whose parameters carry a DECLARED example documents
+    // no arguments at all. Measured on the corpus's only two such endpoints:
+    // apideck's `filesDownload` takes a required `id` beside an optional `fields`
+    // exampled `id,updated_at`, and its golden is a bare `client.files.download()`,
+    // while SFTPGo's `get_share`, `download_share_file` and `download_user_file`
+    // declare no parameter example anywhere and document `id="id"`,
+    // `id="id", path="path"` and `path="path"`. A binary download ignores a
+    // declared example when it names a parameter (the `!ep.binary_response` filter
+    // on the path-parameter arm below), and where there is one to ignore Fern
+    // emits nothing rather than the substituted name.
+    let suppressed = ep.wildcard_binary_response
+        && (ep.path_params.iter().any(|param| param.example.is_some())
+            || ep.query_params.iter().any(|param| param.example.is_some())
+            || ep.header_params.iter().any(|param| param.example.is_some()));
     // The example call's keyword arguments, in signature order: path params,
     // required query/header params, then the request body (a single `request`, or
     // each required inlined field).
@@ -7666,7 +7680,7 @@ fn build_example_inner(
             wire.to_string()
         }
     };
-    if !ep.markdown_response && !ep.wildcard_binary_response {
+    if !ep.markdown_response && !suppressed {
         for pp in &ep.path_params {
             if reference && matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
                 continue;
@@ -7713,7 +7727,7 @@ fn build_example_inner(
     for qp in ep
         .query_params
         .iter()
-        .filter(|qp| !ep.wildcard_binary_response && !header_first_request && qp.required)
+        .filter(|qp| !suppressed && !header_first_request && qp.required)
     {
         // Fern omits required collections of referenced shapes from worked
         // examples; their query encoding has no inline scalar placeholder.
@@ -7755,7 +7769,7 @@ fn build_example_inner(
     for hp in ep
         .header_params
         .iter()
-        .filter(|header| !ep.wildcard_binary_response && header.required && !reference)
+        .filter(|header| !suppressed && header.required && !reference)
     {
         let v = hp
             .example
@@ -7770,7 +7784,7 @@ fn build_example_inner(
     }
     if header_first_request && !reference {
         for hp in ep.header_params.iter().filter(|header| {
-            !ep.wildcard_binary_response && !header.required && header.example.is_some()
+            !suppressed && !header.required && header.example.is_some()
         }) {
             let value = hp
                 .example
@@ -7786,7 +7800,7 @@ fn build_example_inner(
         for qp in ep
             .query_params
             .iter()
-            .filter(|qp| !ep.wildcard_binary_response && qp.required)
+            .filter(|qp| !suppressed && qp.required)
         {
             args.push((
                 Some(qp.py_name.clone()),
@@ -7798,7 +7812,7 @@ fn build_example_inner(
         for qp in ep
             .query_params
             .iter()
-            .filter(|qp| !ep.wildcard_binary_response && qp.required)
+            .filter(|qp| !suppressed && qp.required)
         {
             args.push((
                 Some(qp.py_name.clone()),
@@ -7808,7 +7822,7 @@ fn build_example_inner(
         for hp in ep
             .header_params
             .iter()
-            .filter(|header| !ep.wildcard_binary_response && header.required)
+            .filter(|header| !suppressed && header.required)
         {
             let value = hp
                 .example
@@ -7822,7 +7836,7 @@ fn build_example_inner(
             args.push((Some(hp.py_name.clone()), value));
         }
         for hp in ep.header_params.iter().filter(|header| {
-            !ep.wildcard_binary_response && !header.required && header.example.is_some()
+            !suppressed && !header.required && header.example.is_some()
         }) {
             let value = hp
                 .example
@@ -7839,7 +7853,7 @@ fn build_example_inner(
     for qp in ep
         .query_params
         .iter()
-        .filter(|qp| !ep.wildcard_binary_response && !qp.required)
+        .filter(|qp| !suppressed && !qp.required)
     {
         if qp.example.is_none() || !qp.example_is_scalar {
             continue;
@@ -7855,7 +7869,7 @@ fn build_example_inner(
         for hp in ep
             .header_params
             .iter()
-            .filter(|header| !ep.wildcard_binary_response && header.required)
+            .filter(|header| !suppressed && header.required)
         {
             let value = hp
                 .example
@@ -7870,10 +7884,7 @@ fn build_example_inner(
         }
     }
     for hp in ep.header_params.iter().filter(|header| {
-        !ep.wildcard_binary_response
-            && !header_first_request
-            && !header.required
-            && header.example.is_some()
+        !suppressed && !header_first_request && !header.required && header.example.is_some()
     }) {
         let value = hp
             .example
