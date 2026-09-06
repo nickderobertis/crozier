@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.68](https://github.com/nickderobertis/crozier/compare/v0.0.67...v0.0.68) - 2026-09-06
+
+### Added
+
+- *(surface)* settle the parameters and 3.1 rows no registrable witness reaches ([#236](https://github.com/nickderobertis/crozier/pull/236))
+
 ## [0.0.67](https://github.com/nickderobertis/crozier/compare/v0.0.66...v0.0.67) - 2026-09-06
 
 ### Added
