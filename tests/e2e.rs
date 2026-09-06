@@ -1918,6 +1918,7 @@ const CORPORA: &[&Corpus] = &[
     &API_OPENVERSE_ORG,
     &DISCORD_COM,
     &BRAINTRUST_DEV,
+    &TORRENTARR,
 ];
 
 #[test]
@@ -3436,6 +3437,23 @@ const BRAINTRUST_DEV: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `torrentarr`: the Torrentarr automation API is the corpus's only source
+/// declaring a media type range other than `*/*` — six `200` responses keyed on
+/// `image/*` over `{type: string, format: binary}`, which Fern emits as streamed
+/// `typing.Iterator[bytes]` methods — and its second declarer of
+/// normalized-equivalent path templates, where all four colliding operations
+/// survive as two methods per normalized route.
+const TORRENTARR: Corpus = Corpus {
+    api: "torrentarr",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3810,6 +3828,11 @@ fn discord_com_matches_fern_output() {
 #[test]
 fn braintrust_dev_matches_fern_output() {
     assert_link_ok_corpus_matches(&BRAINTRUST_DEV);
+}
+
+#[test]
+fn torrentarr_matches_fern_output() {
+    assert_link_ok_corpus_matches(&TORRENTARR);
 }
 
 #[test]

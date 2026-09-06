@@ -59,7 +59,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 32 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 126 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 127 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -252,9 +252,9 @@ The six region files, read as one body of work. Two measurements feed it:
   snapshot is the one every region file's evidence was taken from, pinned by
   digest in
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
-  rather than restated here; the seventeen sources corpus rows 110-126 added since
-  are walked into the counts below. It reads **158** registered sources, of which
-  **141** carry a committed golden.
+  rather than restated here; the eighteen sources corpus rows 110-127 added since
+  are walked into the counts below. It reads **159** registered sources, of which
+  **142** carry a committed golden.
 - **`just fixtures-coverage`**, for criterion 2 alone. That recipe is outside
   `just check` — it needs network and runs the corpus instrumented — so its
   per-file counts are a dated snapshot (2026-08-25), stated once, in the join
