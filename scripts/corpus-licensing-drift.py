@@ -75,6 +75,21 @@ ENUMERATION = re.compile(
 )
 
 
+def is_read(path: str) -> bool:
+    """Whether the walk reads this document, given the path `git ls-files` gave.
+
+    Every comparison here is against the POSIX spelling git reports on every
+    platform — never one built from `Path`, which spells itself with the host's
+    separator. See the note on `RULE`.
+    """
+    return (
+        path != RULE
+        and path not in SKIP_FILES
+        and not path.startswith(SKIP_PREFIXES)
+        and not SKIP_FIXTURE_OUTPUT.match(path)
+    )
+
+
 def tracked_markdown(root: Path) -> list[str]:
     listing = subprocess.run(
         ["git", "ls-files", "-z", "--", "*.md"],
@@ -83,15 +98,7 @@ def tracked_markdown(root: Path) -> list[str]:
         text=True,
         check=True,
     )
-    return [
-        path
-        for path in listing.stdout.split("\0")
-        if path
-        and path != RULE
-        and path not in SKIP_FILES
-        and not path.startswith(SKIP_PREFIXES)
-        and not SKIP_FIXTURE_OUTPUT.match(path)
-    ]
+    return [path for path in listing.stdout.split("\0") if path and is_read(path)]
 
 
 def enumerations_in(text: str) -> list[tuple[int, str]]:

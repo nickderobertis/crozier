@@ -210,6 +210,7 @@ class TheGateSpellsPathsTheWayGitDoes(unittest.TestCase):
             (f"SKIP_FILES[{index}]", value)
             for index, value in enumerate(gate.SKIP_FILES)
         )
+        compared["SKIP_FIXTURE_OUTPUT"] = gate.SKIP_FIXTURE_OUTPUT.pattern
         for name, value in compared.items():
             self.assertIsInstance(
                 value,
@@ -219,6 +220,38 @@ class TheGateSpellsPathsTheWayGitDoes(unittest.TestCase):
                 " because `str(Path(...))` is backslash-spelled on Windows",
             )
             self.assertNotIn("\\", value, f"{name} is spelled with a backslash")
+
+    def test_every_skip_is_decided_on_the_spelling_git_reports(self) -> None:
+        """Drive the walk's own decision on git-spelled paths, not this host's.
+
+        `tracked_markdown` shells out to git, so on a POSIX host it can only
+        ever see POSIX paths and cannot tell a sound comparison from a
+        separator-dependent one. `is_read` is the same predicate the walk
+        applies, so feed it the paths git reports directly: each exclusion must
+        fire on that spelling, and the documents this repository writes about
+        its own corpus must still be read.
+        """
+        gate = load_gate()
+        excluded = (
+            RULE,
+            "CHANGELOG.md",
+            "llmlint-plugins/llmlint-rules/rules/some-rule.md",
+            "licenses/fern-APACHE-2.0.md",
+            "tests/fixtures/adyen-capital/expected/README.md",
+        )
+        for path in excluded:
+            self.assertFalse(
+                gate.is_read(path),
+                f"the walk reads {path}, which it is meant to skip; a skip that"
+                " misses the spelling `git ls-files` reports skips nothing",
+            )
+        read = ("tests/fixtures/CORPUS.md", "tests/fixtures/AGENTS.md", "AGENTS.md")
+        for path in read:
+            self.assertTrue(
+                gate.is_read(path),
+                f"the walk skips {path}, which is exactly where the rule used"
+                " to be restated",
+            )
 
     def test_the_walk_still_excludes_the_rule_file(self) -> None:
         gate = load_gate()
