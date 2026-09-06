@@ -1258,6 +1258,22 @@ identically in a table that carries neither row: what this section reports is
 that the question was put to the corpus and came back answered, nine times out
 of nine.
 
+**And a re-measurement over the corpus as it now stands confirms it.** The nine
+were run again for this restatement, over all 169 registered sources rather than
+the 164 the classification walk read, and every one is still declared by at least
+one source carrying a byte-matching committed golden — from
+`schema.items>schema.$ref` (119 sources, 107 of them golden-carrying) down to
+`schema.anyOf>schema.allOf`, still `braintrust-dev` alone and still 4 sites, which
+is the thin end the paragraph above says a withdrawn corpus row would take to
+`gap`. Two selectors' arithmetic moved with the newly registered sources —
+`schema.items>schema.$ref` from 4,151 sites in 114 sources to 4,301 in 119, and
+`schema.oneOf>schema.$ref` from 676 in 28 to 684 in 31 — and no category moves
+with them. [`schemas.md`](openapi-surface/schemas.md)'s cells therefore stay
+dated to the walk they were transcribed from, which is the rule
+[the measurement bullet](#ranked-gap-backlog) already states for every region
+file; re-transcribing two of them here would leave the region file and this index
+disagreeing about a number neither classification depends on.
+
 **What it would take for a future conjunction to land as a `gap`.** By the same
 precedence, a conjunction is a `gap` exactly when no registered source *carrying
 a committed golden* declares it and no [`fern-limitations.md`](fern-limitations.md)
