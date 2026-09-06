@@ -5019,6 +5019,20 @@ fn single_with_override(
 /// [`BodyField`]s, deciding per field whether it serializes through the convert
 /// wrapper. Returns `None` if the object is not among the built types.
 fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
+    // A body naming an alias of a model flattens the model it aliases: SFTPGo's
+    // `AdminTOTPConfig` is `allOf: [$ref BaseTOTPConfig]` and nothing else, so it
+    // is an alias in the type layer, and `save_admin_totp_config` still takes
+    // `BaseTOTPConfig`'s own `enabled`/`config_name`/`secret` field by field.
+    let class = types
+        .iter()
+        .find_map(|decl| match decl {
+            TypeDecl::Alias(alias) if alias.name == class => match &alias.target {
+                TypeRef::Named(target) => Some(target.as_str()),
+                _ => None,
+            },
+            _ => None,
+        })
+        .unwrap_or(class);
     let obj = types.iter().find_map(|d| match d {
         TypeDecl::Object(o) if o.name == class => Some(o),
         _ => None,
@@ -6979,6 +6993,28 @@ impl Builder<'_> {
                 docstring,
             );
             return;
+        }
+
+        // An `allOf` holding one `$ref` and NOTHING else is an annotated
+        // reference rather than inheritance: SFTPGo's `AdminTOTPConfig` is
+        // `allOf: [$ref BaseTOTPConfig]` alone and its golden is
+        // `AdminTotpConfig = BaseTotpConfig`, not a subclass. A sibling of any
+        // kind makes it a model that inherits — declared properties, an explicit
+        // `type: object`, or the `additionalProperties` that makes Strapi's
+        // `Entry` a `class Entry(DocumentMeta)`.
+        if schema.properties.is_empty()
+            && schema.additional_properties.is_none()
+            && !is_object_type(schema)
+        {
+            if let Some(reference) = single_all_of_ref(schema) {
+                self.push_alias(
+                    name,
+                    module,
+                    TypeRef::Named(ref_to_class(reference)),
+                    docstring,
+                );
+                return;
+            }
         }
 
         // Object with properties, an `allOf`, or an explicit `type: object`.
@@ -8973,6 +9009,19 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
             }
         }
         Some("object") => TypeRef::Primitive(Prim::Any),
+        // A schema with no `type` at all but an `enum` is a string to Fern's
+        // importer, whatever the members' own JSON kind: SFTPGo's
+        // `AdminGroupMappingOptions.add_to_users_as` and `GroupMapping.type` are
+        // `{enum: [0, 1, 2]}` and `{enum: [1, 2, 3]}` with no `type`, and its
+        // golden types both `Optional[str]` rather than the unknown a typeless
+        // schema otherwise becomes.
+        None if schema
+            .enum_values
+            .as_ref()
+            .is_some_and(|values| !values.is_empty()) =>
+        {
+            TypeRef::Primitive(Prim::Str)
+        }
         _ => TypeRef::Primitive(Prim::Any),
     }
 }
