@@ -1734,6 +1734,134 @@ parameter already did — Webflow's `filter` is `{type: object, properties: {…
 on five `analyze/reports` operations and every type Fern lifts out of it is
 declared in the root's `types/`.
 
+## What the widened licence rule's witnesses cost (issue #188)
+
+Corpus rows 133-136 register the four candidates the rescreening
+([`licence-rescreening.md`](licence-rescreening.md)) admitted and Fern accepted —
+`loris-dataquery`, `sftpgo`, `googleapis-servicebroker` and `audiobookshelf`.
+All four reach byte parity with an empty `unmatched`. These are the rules they
+settled.
+
+**A dotted `operationId`'s group reads as words, not as a run-together name.**
+Google's Service Broker writes
+`servicebroker.projects.brokers.v2.service_instances.get` under tag `projects`,
+and Fern's method is `servicebroker_projects_brokers_v2service_instances_get`:
+where the group is kept, the *whole* id snake-cases as one name with its dots as
+word separators. That is what joins `v2` to the segment after it — `to_snake_case`
+absorbs a word following one that ends in a digit — while the
+`instances`/`service_bindings` pair of
+`servicebroker.projects.brokers.instances.service_bindings.list` keeps its
+separator, and what splits the final segment's own camel boundaries, so
+`servicebroker.setIamPolicy` is `servicebroker_set_iam_policy`. Svix's
+`v1.application.list` reads the same way and still gives `v1application_list`. A
+*dropped* group leaves the method lowercased verbatim, which is bungie's
+`App.GetUsage` → `getusage`.
+
+**A parameter's leading punctuation drops out of the class it hoists.** The same
+document's `$.xgafv` query parameter hoists to `…RequestXgafv`, where crozier
+sanitized the `$` into `…Request_Xgafv`. The dot was already a word separator;
+the `$` is what this drops.
+
+**A request body `$ref`ing a plain scalar is one argument.** Audiobookshelf's
+`addAuthorImageById` posts `{$ref: imageUrl}` over a `type: string` with
+`format: uri`, and Fern takes `request: ImageUrl`. Crozier lowered that shape
+nowhere, which put the operation outside the emittable subset and took all eight
+`Authors` operations' client down with it — the whole `authors/client.py` and
+`authors/raw_client.py` went unwritten while `reference.md` still documented the
+methods.
+
+**A composition the document writes with one member is an alias to it.**
+`mediaMinified` is `oneOf: [$ref bookMinified]` and its golden is
+`MediaMinified = BookMinified` under the schema's own description, not
+`typing.Union[BookMinified]`. Members that merely *dedupe* to one keep the
+`Union`: free5gc's `GlobalRanNodeId` is three `required`-only alternatives, all of
+them `Any`, and its golden is `typing.Union[typing.Any]`. An `allOf` holding one
+`$ref` and nothing else is the same shape one keyword along — SFTPGo's
+`AdminTOTPConfig` is `AdminTotpConfig = BaseTotpConfig`, not a subclass — and a
+body naming such an alias still flattens the model it aliases, so
+`save_admin_totp_config` takes `enabled`/`config_name`/`secret` field by field. A
+sibling of any kind makes it a model that inherits, which is Strapi's `Entry`.
+
+**A union member `$ref`ing a nullable schema carries that nullability.**
+`matchAuthorById` responds `oneOf: [author, authorUpdated]` where `authorUpdated`
+is a `nullable: true` boolean, and its alias is
+`Union[Author, Optional[AuthorUpdated]]`.
+
+**A schema with an `enum` and no `type` is a string.** SFTPGo's
+`AdminGroupMappingOptions.add_to_users_as` and `GroupMapping.type` enumerate
+integers with no `type` beside them, and Fern types both `Optional[str]` rather
+than the unknown a typeless schema otherwise becomes.
+
+**`copy` is a pydantic model method, so it is a protected field name.**
+`EventActionFilesystemConfig.copy` is `copy_` under an `alias="copy"`, exactly as
+`kwargs`, `schema` and `self` already were. The protection is model-scoped: an
+enum visitor's `copy` argument keeps its spelling, which is otoroshi's
+`PatchItemOp` and komga's `BookImportBatchDtoCopyMode`.
+
+**A content-map key is matched on its type/subtype, with its parameters
+ignored.** SFTPGo keys `/healthz`'s body on `text/plain; charset=utf-8`, which the
+exact-match media list never saw, so `healthz` came back `None` where Fern reads a
+plain `str` off `_response.text`.
+
+**A multipart part that is an ARRAY of binary strings is a list of files.**
+`filenames` is `{type: array, items: {type: string, format: binary}}` on both of
+SFTPGo's multipart uploads; Fern types it `Sequence[core.File]` and sends it
+through `files=`, where crozier typed it `List[bytes]` and JSON-encoded it into
+`data=`. It is shown wherever the example is written — `README.md` and the
+reference alike — and is the one list argument the markdown writers leave flat.
+Where several media types offer one binary schema, the one Fern sends is the first
+whose top-level type is itself a binary family: `create_user_file` declares
+`application/*`, `text/*`, `image/*`, `audio/*` and `video/*` and its golden sends
+`image/*`.
+
+**A JSON body's explicit `content-type` turns on the schema's own `title`.** The
+surviving-schema drop AGCO measured was scoped to a body offering several media
+types, on the reading that a lone `application/json` keeps the header. SFTPGo's
+`Admin`, `APIKey`, `Role`, `Share`, `AdminProfile` and `UserProfile`,
+Audiobookshelf's `EmailSettings` and `Podcast` and LORIS's `QueryObject` are each
+one media type over a surviving component and Fern leaves every one of their
+content types to httpx. What separates them from the flattened bodies that keep
+the header is the `title` — the name Fern's importer takes the request model from
+— which letta's `CreateBlock`/`BlockUpdate` and exhaustive's
+`typesObjectWithOptionalField` and `typesObjectWithRequiredField` carry and none
+of the drops do. The drop is scoped to a flattened object body, so a `$ref` to a
+scalar alias keeps its header; a `stream-condition` request keeps it because Fern
+augments that body with the condition property; and a documented resource
+envelope escapes it as it already escapes the request/response drop. A query
+parameter beside the body defeats the `allOf` and open-schema drops as well,
+which is `add_event_rule` and `loaddata_from_request_body`.
+
+**Two example rules, both keyed on what the endpoint answers with.** A declared
+example is substituted by the parameter's own name on any endpoint whose success
+body is not JSON — the binary download crozier already modelled, and equally a
+`text/*` one. Audiobookshelf declares one `id` parameter on `/api/authors/{id}`
+and Fern splits its own path item on it: `getAuthorById` and `updateAuthorById`
+answer `application/json` and document
+`id="e4bb1afb-4a4f-4dd6-8be0-e615d233185b"`, while `deleteAuthorById` answers
+`text/plain` and documents `id="id"`. And a body property written as a `$ref`
+takes its example from the schema it names, exactly as a parameter does:
+`createLibrary` writes `name: {$ref: libraryName}` and Fern documents
+`name="My Audiobooks"`.
+
+**A `*/*` binary download documents its own arguments.** Suppressing every one of
+them was measured on apideck's `filesDownload` alone; SFTPGo's `get_share`,
+`download_share_file` and `download_user_file` are the same shape and their
+goldens document `id="id"`, `id="id", path="path"` and `path="path"`. What
+separates them is a declared parameter example — apideck's endpoint carries an
+exampled `fields`, and none of SFTPGo's three declares one anywhere. A binary
+download's array body is also exampled with two synthesized elements where every
+other endpoint's takes one: `streamzip` posts `{type: array, items: {type:
+string}}` and streams a zip back, and its golden documents
+`request=["string", "string"]`, where gambitcomm's `set_protocols` posts the same
+shape, answers JSON, and gets `request=["string"]`.
+
+**What the untitled-schema rule cost two synthetic tests.** Two
+`tests/generation.rs` cases pinned the authenticated-echo content-type carve-outs
+on an *untitled* schema, which the three real documents above now measure Fern as
+dropping the header for. Their echo schemas carry a `title` — the shape those
+carve-outs still govern — and each test says why in its own doc comment. No
+committed golden's expectation moved.
+
 ## Coverage note
 
 The gate measures coverage with `cargo llvm-cov --fail-under-lines 95`, which

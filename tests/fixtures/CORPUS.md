@@ -152,7 +152,7 @@ re-measure with `just fixtures-gaps`.
 | 127 | `torrentarr` | github-raw | https://raw.githubusercontent.com/Feramance/Torrentarr/b2b8bcec35b2d4bdb131b5bc0b326835982f6327/docs/assets/openapi.json | `b2b8bcec35b2d4bdb131b5bc0b326835982f6327` | MIT (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | The Torrentarr automation API, the corpus's only source declaring a **media type range** other than `*/*`: six `200` responses key their content on `image/*` over `{type: string, format: binary}` (`…/artist/{artist_id}/thumbnail`, `…/movie/{id}/thumbnail` and `…/series/{id}/thumbnail`, each under both `/api` and `/web`), which Fern emits as streamed `typing.Iterator[bytes]` methods, so this row pins what a range-keyed binary response becomes. It is also the corpus's first source declaring **two path templates that normalize to one**: `/api/arr/{category}/open/{kind}/{entryId}` beside `…/{entry_id}`, and the same pair under `/web/`, four keys in two groups that crozier's own `naming::field_name` folds to two. The collision is inside one document, so the golden's own raw clients say what Fern did with it — all four operations survive, as `redirect_to_arr_ui_for_movie_series_artist_author_api`, `api_arr_open_item`, `redirect_to_arr_ui_for_movie_series_artist_author_web` and `web_arr_open_item`, each pair rendering the identical request URL. Over 88 paths and a `bearerAuth` scheme |
 | 128 | `agco-ats` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/agco-ats.com/main/v1/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | link-ok | AGCO's Advanced Technical Support API, the corpus's first source that **collides with itself** in two independent ways. Its Paths Object declares `/api/v2/Releases/{ReleaseId}` beside `/api/v2/Releases/{releaseId}`, two keys crozier's own `naming::field_name` normalizes to one `/api/v2/Releases/{release_id}`; and 22 of its Operation Objects share 11 `operationId` values, each written exactly twice (`Clients_Get` on `/api/v2/Clients` and `/api/v2/Clients/{ID}`, `Users_Get`, `Licenses_Get`, `PackageTypes_Get`, `UpdateGroups_Get`, `Vouchers_Get`, `ContentRelease_GetContentReleaseVersion`, `AuthorizationCodeDefinitions_GetAuthorizationCodeDefinition`, `PackageReports_Default`, `UserPermissions_Put` and `UserPermissions_GetPermissions`). Both collisions are inside one document, so the golden's own raw-client method set is what says what Fern did with them — it keeps both colliding routes, deconflicting the second's path parameter as `release_id_`, and it collapses each duplicated `operationId` to a single method. Over 163 paths and an `apiKey` header scheme |
 | 129 | `svix-webhooks` | github-raw | https://raw.githubusercontent.com/svix/svix-webhooks/ee528fb27439a298da69c628fa1fabd70e9d55b9/server/openapi.json | `ee528fb27439a298da69c628fa1fabd70e9d55b9` | MIT (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | The Svix webhook-sending API, the second registered declarer of a duplicated `operationId` beside row 128 — `GET /api/v1/health` and `HEAD /api/v1/health` both carry `operationId: v1.health.get` — and the sharpest small illustration of what the collision costs, since the two operations differ only in HTTP method and one of them reaches no client method at all. Over 27 paths |
-| 130 | `komga` | github-raw | https://raw.githubusercontent.com/gotson/komga/656001eb03bf8b54ca909f3e74fe2ec1b95dac48/komga/docs/openapi.json | `656001eb03bf8b54ca909f3e74fe2ec1b95dac48` | MIT (declared by the document's `info.license` and by the repository's own `LICENSE`) | link-ok | The API the Komga comics server publishes for itself, the second registered declarer of a **media type range** other than `*/*` beside row 127 — one `image/*` `default` response over `{type: string, format: binary}` on `GET /api/v1/books/{bookId}/pages/{pageNumber}`, against Torrentarr's six, and on the same response side — so the two goldens pin the range on an independent publisher each, over 139 paths of an `openapi: 3.1.0` document. **Registered with a measured `unmatched` set of 40 of its 338 files, not at full parity.** The measured cause is the *binary/streaming response*: Fern makes **30** `httpx_client.stream(...)` calls returning `typing.Iterator[bytes]` under a `@contextlib.contextmanager`, and crozier makes **6**. Komga keys its ranges on `default` — `GET /api/v1/books/{bookId}/pages/{pageNumber}` declares `400` of `*/*` and `default` of `image/*`, and no `200` at all — which crozier's `is_binary_response` never reaches, so `get_book_page_by_number` comes out as `HttpResponse[None]` where Fern streams it, and its `request_options` docstring loses Fern's `chunk_size` note. Two smaller causes ride along: crozier emits `content-type: application/json` on 13 request bodies Fern leaves to httpx, and types an array header parameter `typing.List` where Fern writes `typing.Sequence`. The `media-type-range` classification this row is registered for rests on row 127, which pins the `200` spelling byte for byte; this residual is the `default` spelling |
+| 130 | `komga` | github-raw | https://raw.githubusercontent.com/gotson/komga/656001eb03bf8b54ca909f3e74fe2ec1b95dac48/komga/docs/openapi.json | `656001eb03bf8b54ca909f3e74fe2ec1b95dac48` | MIT (declared by the document's `info.license` and by the repository's own `LICENSE`) | link-ok | The API the Komga comics server publishes for itself, the second registered declarer of a **media type range** other than `*/*` beside row 127 — one `image/*` `default` response over `{type: string, format: binary}` on `GET /api/v1/books/{bookId}/pages/{pageNumber}`, against Torrentarr's six, and on the same response side — so the two goldens pin the range on an independent publisher each, over 139 paths of an `openapi: 3.1.0` document. **Registered with a measured `unmatched` set of 32 of its 338 files, not at full parity.** The measured cause is the *binary/streaming response*: Fern makes **30** `httpx_client.stream(...)` calls returning `typing.Iterator[bytes]` under a `@contextlib.contextmanager`, and crozier makes **6**. Komga keys its ranges on `default` — `GET /api/v1/books/{bookId}/pages/{pageNumber}` declares `400` of `*/*` and `default` of `image/*`, and no `200` at all — which crozier's `is_binary_response` never reaches, so `get_book_page_by_number` comes out as `HttpResponse[None]` where Fern streams it, and its `request_options` docstring loses Fern's `chunk_size` note. Two smaller causes ride along: crozier emits `content-type: application/json` on 13 request bodies Fern leaves to httpx, and types an array header parameter `typing.List` where Fern writes `typing.Sequence`. The `media-type-range` classification this row is registered for rests on row 127, which pins the `200` spelling byte for byte; this residual is the `default` spelling |
 | 131 | `short-io` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/short.io/main/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | link-ok | The Short.io link API, the third registered declarer of two path templates that normalize to one — `/links/{link_id}` beside `/links/{linkId}`, folding to one `/links/{link_id}` under crozier's `naming::field_name` — and the first whose two colliding keys carry an *uneven* set of operations: `{link_id}` declares only `DELETE` while `{linkId}` declares `POST` and `GET`, and Fern keeps all three, across `client.link_management` and `client.link_queries`. Over 45 paths. **Registered with a measured `unmatched` set of 77 of its 198 files, not at full parity.** The measured cause is *hoisted per-operation models*: 68 of the 77 sit under a `types/` package. Two effects, both readable in the diff. Fern declares a module per `anyOf` member of a hoisted response type — `post_links_duplicate_link_id_response_ttl`, `…_expires_at`, `…_source` and 31 more — which crozier folds inline and never emits, so those entries report *"Crozier did not emit this Fern file"*. And where both emit a model, crozier carries the document's full declared property set while Fern narrows it: `BadRequestErrorBody` is `error` plus an optional `message` in the golden, against crozier's `error`, `success`, `message`, `field`, `link_id`, `code` and `status_code`. Neither effect touches the colliding `links` methods this row is registered for — all three survive on both sides |
 | 132 | `webflow-v2` | github-raw | https://raw.githubusercontent.com/webflow/openapi-spec/f6db607359a412dd6aa6cd304674731d7f2dbe10/openapi/v2.yml | `f6db607359a412dd6aa6cd304674731d7f2dbe10` | MIT (declared by the document's `info.license` and by the repository's own `LICENSE`) | link-ok | Webflow's Data API v2, the third registered declarer of a duplicated `operationId` and the one where Fern's answer differs from rows 128 and 129's: `GET /forms/{form_id}/submissions` and `GET /sites/{site_id}/forms/{form_id}/submissions` both carry `operationId: list-submissions` and **both** survive, under different sub-clients sharing one response type, where AGCO and Svix each lose an operation. Over 75 paths of an `openapi: 3.1.0` document. **Registered with a measured `unmatched` set of 365 of its 1,495 files, and 148 crozier-only modules declared beside it in `tests/e2e.rs`'s `crozier_only_files`, not at full parity.** Two measured causes, independent of each other. Its `servers` carry `x-fern-server-name: Data API`, so Fern names the environment member `FernApiEnvironment.DATA_API` and threads `base_url=self._client_wrapper.get_environment().base` through every raw-client call — 127 and 252 divergent lines respectively — where crozier writes `DEFAULT` and no `base_url`. And Fern names a `oneOf` request body's hoisted variants differently from crozier's `…_request_body_zero`/`…_one`, which is exactly what the 148 declared crozier-only modules under `collections/fields`, `collections/items` and the package root are. Neither cause touches the two `list-submissions` methods this row is registered for — both survive on both sides |
 | 133 | `loris-dataquery` | github-raw | https://raw.githubusercontent.com/aces/Loris/3305a00312178ea75f135be1564beaf222b25822/modules/dataquery/static/schema.yml | `3305a00312178ea75f135be1564beaf222b25822` | GPL-3.0 (declared by the document's `info.license`, `GNU Public License, Version 3`, and by the repository's own `LICENSE`) | link-ok | The Data Query Tool API the LORIS neuroimaging platform ships inside its own source tree, the corpus's only source declaring **`style: spaceDelimited`** over a query parameter — `share` and `star` on `PATCH /queries/{QueryID}`, each over `{type: boolean}` — and its densest declarer of **`style: pipeDelimited`** over one, at four (`adminname`, `dashboardname`, `loginpagename` and `name`, each over `{type: string}`, on that same operation). Both are the specification's array-only serialisations declared over a *scalar* schema, the crossing it leaves undefined, so this golden pins what Fern emits for a style the schema cannot satisfy. It redeclares `style: simple` over an `in: path` scalar five times besides, across four path items. Over six paths, nine component schemas and an `apiKey` header scheme |
@@ -530,7 +530,7 @@ accepted all six at `fernapi/fern-python-sdk:5.20.0`, so none took the
 | 127 | `torrentarr` | `media-type-range`, `duplicate-normalized-paths` | ✅ byte-matched, no generator change |
 | 128 | `agco-ats` | `duplicate-normalized-paths`, `duplicate-operation-id` | ✅ byte-matched after three repairs |
 | 129 | `svix-webhooks` | `duplicate-operation-id` | ✅ byte-matched after six repairs |
-| 130 | `komga` | `media-type-range` | ⚠️ registered with 40 of 338 files in `unmatched` |
+| 130 | `komga` | `media-type-range` | ⚠️ registered with 32 of 338 files in `unmatched` (40 when batch 14 registered it) |
 | 131 | `short-io` | `duplicate-normalized-paths` | ⚠️ registered with 77 of 198 files in `unmatched` |
 | 132 | `webflow-v2` | `duplicate-operation-id` | ⚠️ registered with 365 of 1,495 files in `unmatched` and 148 crozier-only modules declared |
 
@@ -562,7 +562,7 @@ would have left no measured reason for the gap, which is the opposite of what th
 backlog is for. Each residual is a distinct body of work, named here so the next
 change has an exact set to shorten:
 
-- **`komga` (40 files).** Binary/streaming responses. Fern makes **30**
+- **`komga` (32 files, 40 when this batch registered it).** Binary/streaming responses. Fern makes **30**
   `httpx_client.stream(...)` calls returning `typing.Iterator[bytes]` under a
   `@contextlib.contextmanager`; crozier makes **6**. Komga keys its ranges on
   `default` — `GET /api/v1/books/{bookId}/pages/{pageNumber}` declares `400` of
@@ -593,4 +593,56 @@ Licences were verified at each source repository at the pinned ref rather than
 copied from the screening notes: `gotson/komga`, `svix/svix-webhooks`,
 `webflow/openapi-spec` and `Feramance/Torrentarr` each carry an MIT `LICENSE`, and
 the two `jentic/jentic-public-apis` redistributions are CC0-1.0 by the aggregating
-repository.
+
+
+## Batch 15 — the candidates a widened licence rule admitted (issue #188)
+
+Four documents, from the rescreening
+[`../../docs/licence-rescreening.md`](../../docs/licence-rescreening.md) ran after
+the corpus's admissible-licence rule widened
+([`../../docs/corpus-licensing.md`](../../docs/corpus-licensing.md)). **Every
+candidate that record admits, Fern accepts and the corpus's other two screens
+allow is registered** — a witness is not dropped for being redundant, and rows 134
+and 136 are each a further declarer of a shape another row already pins.
+
+| # | name | settles | state |
+|---:|---|---|---|
+| 133 | `loris-dataquery` | `parameter-style-spacedelimited-query-scalar`, `parameter-style-pipedelimited-query-scalar` | ✅ byte-matched after one repair |
+| 134 | `sftpgo` | `media-type-range`, `operation-overrides-path-item-parameter` | ✅ byte-matched after eleven repairs |
+| 135 | `googleapis-servicebroker` | `duplicate-normalized-paths` | ✅ byte-matched after two repairs |
+| 136 | `audiobookshelf` | `media-type-range` | ✅ byte-matched after six repairs |
+
+**The one candidate this batch does not register.** Eclipse Ditto's HTTP API is
+admitted by the widened rule, publisher-owned and immutably pinned, and is the
+only such declarer of `format-iri-reference` anywhere the issue #188 searches
+reached. Fern's Python generator **refuses it at the CLI version this corpus
+generates at**: exit 1 on `Multiple request properties have the name thingId`,
+where the rescreening measured exit 0 at Fern CLI 5.114.1. It is logged in
+[`AGENTS.md`](AGENTS.md)'s REJECTED table with that diagnostic and the version it
+belongs to, and `format-iri-reference` stays a `gap`.
+
+**What the four rows cost.** Google's Service Broker: a dotted `operationId`'s
+kept group snake-cases as one name with its dots as word separators, and a
+parameter's leading punctuation drops out of the class it hoists. LORIS: a
+flattened body over an untitled surviving schema loses its explicit
+`content-type`, which is also what SFTPGo's six such bodies and Audiobookshelf's
+two measure. Audiobookshelf: a request body `$ref`ing a plain scalar is one
+argument (without it, eight `Authors` operations had no client at all); a
+one-member composition is an alias to that member; a union member `$ref`ing a
+`nullable` schema stays `Optional`; a declared example is substituted by the
+parameter's own name on a `text/*` endpoint as well as a binary one; and a body
+property follows its `$ref` for an example. SFTPGo: an untyped `enum` is a string,
+`copy` is a protected pydantic field name, a content-map key is matched with its
+parameters ignored, a multipart array of binary strings is a list of `core.File`,
+an `allOf` of one `$ref` is an alias, and a `*/*` binary download documents its own
+arguments. All are recorded in
+[`../../docs/matching.md`](../../docs/matching.md#what-the-widened-licence-rules-witnesses-cost-issue-188).
+
+Two of those repairs also shortened a batch-14 residual: `komga`'s `unmatched` is
+re-measured from 40 of its 338 files to 32.
+
+Licences were verified at each source repository at the pinned ref rather than
+copied from the screening record: `aces/Loris` and `advplyr/audiobookshelf` each
+carry a `GPL-3.0` `LICENSE`, `drakkan/sftpgo` an `AGPL-3.0` one, and the Google
+Service Broker document carries its own `Creative Commons Attribution 3.0`
+`info.license` inside the CC0-1.0 `APIs-guru/openapi-directory` aggregation.
