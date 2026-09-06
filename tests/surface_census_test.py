@@ -1959,7 +1959,11 @@ class RankedBacklogTests(unittest.TestCase):
                 4, len(measured), f"{row.group(2)} does not publish four measured criteria"
             )
             out.append((int(row.group(1)), row.group(2), tuple(measured), line))
-        self.assertTrue(out, "the ranked backlog table no longer parses")
+        self.assertEqual(
+            bool(self.gaps("FIXTURE")),
+            bool(out),
+            "the ranked backlog table does not parse to the `FIXTURE` gaps there are",
+        )
         return out
 
     def blind_spot_table(self) -> dict[str, tuple[int, str, str]]:
@@ -2187,14 +2191,22 @@ class RankedBacklogTests(unittest.TestCase):
                 self.assertEqual(set(), set(listed) - vocabulary, "an artifact kind is not one of the six")
 
     def test_the_ranked_backlog_publishes_its_own_median_blind_spot_count(self) -> None:
-        """The number the extension rule is stated in, recomputed from the rows."""
+        """The number the extension rule is stated in, recomputed from the rows.
+
+        An exhausted backlog has no median, so the index must publish none — the
+        `FIXTURE` gaps having all been settled, a number here could only be a
+        leftover from the last list that had rows.
+        """
         blind = sorted(measured[1] for _n, _key, measured, _line in self.ranked_rows())
-        median = blind[len(blind) // 2] if len(blind) % 2 else (
-            blind[len(blind) // 2 - 1] + blind[len(blind) // 2]
-        ) // 2
         stated = re.search(
             r"\*\*The median blind-spot count of this list is (\d+)\*\*", self.doc
         )
+        if not blind:
+            self.assertIsNone(stated, "an empty ranked list has no median to publish")
+            return
+        median = blind[len(blind) // 2] if len(blind) % 2 else (
+            blind[len(blind) // 2 - 1] + blind[len(blind) // 2]
+        ) // 2
         self.assertIsNotNone(stated, "the ranked backlog no longer publishes its median")
         self.assertEqual(median, int(stated.group(1)))
 
@@ -2281,12 +2293,20 @@ class RankedBacklogTests(unittest.TestCase):
         )
 
     def test_the_ranked_backlog_counts_its_own_populations(self) -> None:
-        """The "N of the 39" figures the criteria list and the join narrate."""
+        """The "N of the 39" figures the criteria list and the join narrate.
+
+        An exhausted backlog has no population to narrate, so the index must
+        narrate none rather than restate the last list's shares against zero.
+        """
         ranked = self.ranked_rows()
         zero_witness = sum(1 for _n, _key, measured, _line in ranked if measured[3] == 0)
         no_file = sum(1 for _n, _key, measured, _line in ranked if measured[0] == 0)
         flat = " ".join(self.doc.split())
-        for population, total in re.findall(r"(\d+) of the (\d+)(?= ranked| entries| score)", flat):
+        populations = re.findall(r"(\d+) of the (\d+)(?= ranked| entries| score)", flat)
+        if not ranked:
+            self.assertEqual([], populations, "an empty ranked list narrates no population")
+            return
+        for population, total in populations:
             self.assertEqual(len(ranked), int(total), "a population is stated against the wrong total")
             self.assertIn(
                 int(population), (zero_witness, no_file), "a stated population is neither count"

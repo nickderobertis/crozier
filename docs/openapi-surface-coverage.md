@@ -398,7 +398,8 @@ The six region files, read as one body of work. Two measurements feed it:
 What this section takes from the six region files, `RankedBacklogTests` in
 `tests/surface_census_test.py` takes back from them — the per-region counts and
 the totals narrated from them, both backlogs' membership and their stated sizes, each ranked row's
-owning region, criterion 1 and the rubric order and median it produces. `just
+owning region, criterion 1, and — while the ranked list has rows — the rubric
+order and the median it produces. `just
 check` runs it offline, so a region row added, reclassified or re-measured fails
 the gate here rather than leaving this section quietly stale. Criteria 3 and 4
 are the two the gate cannot take back, because the region files publish no number
@@ -409,25 +410,25 @@ for either; each bullet below says where its number comes from.
 | region | features | `golden` | `limitations` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 70 | 51 | 19 | 0 | 0 | 0 | 0 |
-| [`schemas`](openapi-surface/schemas.md) | 126 | 102 | 8 | 16 | 13 | 0 | 3 |
+| [`schemas`](openapi-surface/schemas.md) | 126 | 102 | 21 | 3 | 0 | 0 | 3 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 36 | 11 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 38 | 12 | 0 | 0 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 67 | 62 | 5 | 0 | 0 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 33 | 2 | 17 | 0 | 0 | 17 |
-| **total** | **412** | **322** | **57** | **33** | **13** | **0** | **20** |
+| **total** | **412** | **322** | **70** | **20** | **0** | **0** | **20** |
 
 The walk enumerated **412** features and landed each in exactly one category:
-**322** `golden`, **57** `limitations`, **33** `gap`. The `gap` column splits by
-settlement class into **13** `FIXTURE`, **0** `PROBE` and **20** `UNREACHABLE`.
+**322** `golden`, **70** `limitations`, **20** `gap`. The `gap` column splits by
+settlement class into **0** `FIXTURE`, **0** `PROBE` and **20** `UNREACHABLE`.
 
-**What the `gap` count means.** 33 is the number of OpenAPI shapes for which
+**What the `gap` count means.** 20 is the number of OpenAPI shapes for which
 crozier's behaviour is vouched for by nothing but crozier: no committed golden's
 source declares the shape, so no byte comparison against Fern touches it, and
 [`fern-limitations.md`](fern-limitations.md) has never measured Fern on it, so
-nothing contradicts whatever crozier does. `just check` is green over all 33
-either way. It is not a defect count — 20 of them (`UNREACHABLE`) have no
+nothing contradicts whatever crozier does. `just check` is green over all 20
+either way. It is not a defect count — all 20 of them (`UNREACHABLE`) have no
 position in a generated Python SDK at all, and saying so is their settlement.
-The two backlogs below are the other 13.
+That leaves 0 for the two backlogs below, which is why both are now empty.
 
 ### Reconciliation
 
@@ -446,12 +447,12 @@ emits `schema.format` and `schema.format=uuid` as two selectors.
 `golden`, `limitations`, `gap`, and every `gap` row's `settlement` cell holds one
 of `FIXTURE`, `PROBE`, `UNREACHABLE`.
 
-**Every ledger key is accounted for.** The canonical join reports 74 keys, of
-which 70 are a region row's key verbatim. The other four:
+**Every ledger key is accounted for.** The canonical join reports 87 keys, of
+which 83 are a region row's key verbatim. The other four:
 
 | ledger key | how it is accounted for |
 |---|---|
-| `status_code` | **Not a feature key.** It is a row label inside the ledger's 407/421 probe table, which the join's `\| key \| N \|` shape matches by accident — the `bodies-media` region's method notes say the same. The join's real yield is 73. |
+| `status_code` | **Not a feature key.** It is a row label inside the ledger's 407/421 probe table, which the join's `\| key \| N \|` shape matches by accident — the `bodies-media` region's method notes say the same. The join's real yield is 86. |
 | `encoding-explode-or-allowReserved` | One ledger row covering two fields; `bodies-media` splits it into `encoding-explode` and `encoding-allow-reserved`, both `limitations`, both citing that verdict. |
 | `servers-multiple-path-or-operation` | One ledger row covering two levels; `document-paths` splits it into `pathitem-servers` and `operation-servers`, both `golden`. |
 | `relative-file-ref` | A *target form* of `Path Item Object.$ref`, which `document-paths` classifies once as `pathitem-ref` (`golden` since corpus row 99 declares 36 of them, citing verdict `discards`). The walk enumerates the field; the ledger additionally rules on one form of what it points at. |
@@ -690,13 +691,38 @@ a `PROBE` until the issue #188 search found it a publisher-owned, Apache-2.0
 witness, and the change that settled it registered that witness as corpus row 109,
 `volview-backend-contract`, whose two `$comment` declarations and byte-matching
 Fern 5.20.0 golden make the row `golden` outright.
-[`format-relative-json-pointer`](openapi-surface/schemas.md) arrives here from the
+[`format-relative-json-pointer`](openapi-surface/schemas.md) arrived here from the
 other direction: the same search found it a publisher-owned witness Fern accepts
-whose licence is proprietary, and a witness blocked on redistribution puts the row
+whose licence is proprietary, and a witness blocked on redistribution puts a row
 in this backlog rather than the probe one. Under
-[the amended rule](#the-settlement-rule-as-amended) a blocked witness now also
-licenses a probe that would settle the row as `limitations`; this row has not
-taken that route.
+[the amended rule](#the-settlement-rule-as-amended) a blocked witness also
+licenses a probe that settles the row as `limitations`, and this row has now taken
+that route — with the other twelve `schemas` rows below.
+
+**The thirteen `schemas` rows of this backlog left it together**, measured rather
+than registered. Twelve took [route 2](#the-settlement-rule-as-amended) on their
+own searches' `witness-blocked` or `fern-rejected` outcomes —
+[`contains`](openapi-surface/schemas.md),
+[`dollar-anchor`](openapi-surface/schemas.md),
+[`format-idn-email`](openapi-surface/schemas.md),
+[`format-idn-hostname`](openapi-surface/schemas.md),
+[`format-ipv6`](openapi-surface/schemas.md),
+[`format-iri`](openapi-surface/schemas.md),
+[`format-iri-reference`](openapi-surface/schemas.md),
+[`format-relative-json-pointer`](openapi-surface/schemas.md),
+[`max-contains`](openapi-surface/schemas.md),
+[`min-contains`](openapi-surface/schemas.md),
+[`multiple-of`](openapi-surface/schemas.md) and
+[`unevaluated-items`](openapi-surface/schemas.md) — and the thirteenth,
+[`dependent-schemas`](openapi-surface/schemas.md), took [route 3](#the-settlement-rule-as-amended),
+the open-search probe: its search found no usable witness *and* left SwaggerHub's
+unread `openapi-3.0.x` family outstanding, so its record reads
+`search-incomplete` and its cell names that source rather than a blocker.
+All thirteen are `discards` on the fourteen probe documents
+[Round 6](fern-limitations.md#round-6--schemas) measures, and every one of them
+stays convertible: a registrable witness found later promotes it to `golden`
+under [the classification precedence](#the-category-rules), which is what
+`dollar-comment` did as corpus row 109.
 
 **The last three `FIXTURE` rows of this backlog's tail left it together**, on the
 witnesses the issue #188 searches recorded as `witness-found` for them and the
@@ -771,9 +797,10 @@ Fern 5.20.0 goldens byte-matches; between them they cost a run of repairs in
 `src/`, recorded in [`matching.md`](matching.md). The rescreening's fifth
 registrable candidate, Eclipse Ditto — the only admitted `format-iri-reference`
 declarer — is **not** registered: Fern's Python generator refuses it at the CLI
-version the corpus's goldens are pinned to, so
-[`format-iri-reference`](openapi-surface/schemas.md) stays a `gap` and its own
-cell carries that refusal.
+version the corpus's goldens are pinned to, which is why
+[`format-iri-reference`](openapi-surface/schemas.md) left this backlog on a
+measured probe rather than on a corpus row. Its own cell carries that refusal, and
+a document Fern's 5.20.0 generator accepts still promotes it to `golden`.
 
 #### The six rows a round of probes settled
 
@@ -804,7 +831,20 @@ parameter, a shape **no** registered source declares, diverged in four files and
 [the repair went into `src/`](fern-limitations.md#the-crozier-divergence-this-rounds-parameters-measurement-found)
 rather than into a region file.
 
-All 13 `FIXTURE` gaps remaining across the six regions, in one total order, by [the ranking
+#### The thirteen rows the `schemas` round of probes settled
+
+The thirteen `schemas` rows [named above](#the-ranked-fixture-backlog) left this
+backlog the same way and in the same round, on the fourteen probe documents
+[Round 6](fern-limitations.md#round-6--schemas) records — twelve on
+[route 2](#the-settlement-rule-as-amended) and `dependent-schemas` on route 3.
+That round generated every cleanly-generating probe with crozier too and
+byte-compared it with Fern under the gate's normalization, finding no differing
+file; like the round above, that is corroborating evidence counted nowhere here.
+
+**With them the `FIXTURE` backlog is exhausted.** All 0 `FIXTURE` gaps remain
+across the six regions, so the table below carries no rows. The rubric and its
+four criteria stay stated because the next `FIXTURE` gap the walk enumerates is
+ranked by them, and a row that returns is ranked by [the ranking
 rubric](#the-ranking-rubric) — crozier sites ascending, then blind-spot reach
 descending, then artifact breadth descending, then witness supply descending,
 then key. Each row publishes the measured value of all four, so the order can be
@@ -824,28 +864,15 @@ checked rather than trusted.
 - **Criterion 4**, witness supply: registered sources the census reports
   declaring the shape, read off the row's own `evidence` cell. A `FIXTURE` gap
   can only score above zero here from a source with no committed golden, which is
-what makes it a gap — 13 of the 13 score zero. The one that did not,
+what makes it a gap. The last row to score above zero,
   `parameter-style-matrix-path-scalar` on the golden-less `appng-rest-api`, left
   this list [settled by probe](#the-six-rows-a-round-of-probes-settled).
 
-**The median blind-spot count of this list is 0** — 13 of the 13 entries name no
-`src/` file at all, which is also why they win criterion 1 outright.
+With the list empty there is no median blind-spot count to publish and no
+population to narrate; both return with the first row that returns.
 
 | # | key | region | 1. crozier sites | 2. blind spots | 3. artifacts | 4. witnesses |
 |---|---|---|---|---|---|---|
-| 1 | [`contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 2 | [`dependent-schemas`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 3 | [`dollar-anchor`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 4 | [`format-idn-email`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 5 | [`format-idn-hostname`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 6 | [`format-ipv6`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 7 | [`format-iri`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 8 | [`format-iri-reference`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 9 | [`format-relative-json-pointer`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 10 | [`max-contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 11 | [`min-contains`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 12 | [`multiple-of`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
-| 13 | [`unevaluated-items`](openapi-surface/schemas.md) | `schemas` | **0** (none) | **0** (no `src/` file) | **1** (types/) | **0** |
 
 ### The ranked list against `golden blind spots`
 
@@ -874,29 +901,31 @@ functions named in each verdict are counted from that union.
 | `src/pyfmt.rs` | 24 | all-e2e 0, non-e2e 24 | none | **Neither.** `format_source` 24 is the `ruff format` shell-out and its failure paths. |
 | `src/main.rs` | 6 | all-e2e 6, non-e2e 0 | none | **Neither.** The binary entry point; `just test-fixtures-coverage` asserts it is reachable at all. |
 
-**Where the two backlogs agree.** One file is now named by both, `src/ir.rs` —
-every `src/` file any ranked gap points at is one the blind-spot block also
-lists. `emit.rs` was a second until corpus row 127 settled `media-type-range`,
-and `openapi.rs` a third until [Round 6](fern-limitations.md#round-6--security)
-settled the five `security` rows that pointed at it as `limitations`.
+**Where the two backlogs agree.** They no longer meet anywhere: the ranked
+backlog is empty, so no `src/` file is named by both. `src/ir.rs` was the last
+file both named, until [Round 6](fern-limitations.md#round-6--parameters-and-the-31-tail)
+settled `parameter-style-form-cookie-scalar`; `emit.rs` stopped being one when
+corpus row 127 settled `media-type-range`, and `openapi.rs` when
+[Round 6](fern-limitations.md#round-6--security) settled the five `security`
+rows that pointed at it as `limitations`.
 Ranking on criterion 2 therefore does not fight the repository's own
-measurement; it refines it, because 13 of the 13 ranked entries reach no `src/`
-file at all and so are invisible to a per-file view. **The two largest files'
-order of size has flipped since these cells were last taken** — `ir.rs` 235 >
+measurement; it no longer refines it either, because no ranked entry is left to
+refine it with. **The two largest files' order of size has flipped since these
+cells were last taken** — `ir.rs` 235 >
 `openapi.rs` 184, where it used to be `openapi.rs` 511 > `ir.rs` 201 — which
-changes no ranked row now that no ranked row names `openapi.rs` at all.
+changes no ranked row now that there is no ranked row at all.
 
 **Where they do not.** The two largest files no ranked gap points at,
 `src/settings.rs` and `src/cli.rs`, together 1,156 of the block's 1,995 printed
 regions — more than half of it — hold no OpenAPI-derived code, so the fixture
 backlog can never shorten
 them and a reader taking the block at face value as "the fixture backlog" will
-mis-prioritise. Eleven of the twelve files have no ranked gap pointing at them:
-one (`src/refs.rs`) is a region only a probe can settle, two (`src/naming.rs`,
-`src/emit.rs`) are shapes the walk missed, one (`src/openapi.rs`) is a region a
-probe has now settled, and the remaining seven are outside the walk's subject
-entirely — they carry no OpenAPI-derived code, so neither a fixture nor a probe
-is their instrument.
+mis-prioritise. All twelve files now have no ranked gap pointing at them, the
+backlog being exhausted: one (`src/refs.rs`) is a region only a probe can settle,
+two (`src/naming.rs`, `src/emit.rs`) are shapes the walk missed, two
+(`src/openapi.rs`, `src/ir.rs`) are regions probes have now settled, and the
+remaining seven are outside the walk's subject entirely — they carry no
+OpenAPI-derived code, so neither a fixture nor a probe is their instrument.
 
 ### The six blind regions of `src/ir.rs`, case by case
 
@@ -1435,8 +1464,10 @@ depends on why it is unusable, and a search returns one of five outcomes.
    reconciliation refuses that pairing — which is what keeps an unread source
    from becoming evidence of absence. **Amended a second time:** such a row may
    nonetheless be settled by a locally authored Fern probe, because a probe
-   claims nothing about the world — that is route 3 below. No row in the tree
-   reads this outcome today.
+   claims nothing about the world — that is route 3 below. One row in the tree
+   reads this outcome: [`schemas`](openapi-surface/schemas.md)'s
+   `dependent-schemas`, whose search found no usable witness and left SwaggerHub's
+   `openapi-3.0.x` family unread, and which route 3 settles.
 
 **This is an amendment, and this is what it replaced.** The rule used to close
 with one sentence covering outcomes 1 and 2 together: a witness-supply probe
