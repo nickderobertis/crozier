@@ -3647,16 +3647,16 @@ Each declares its scheme in the one place the feature lives:
       scheme: hoba            # oauth / scram-sha-1 / scram-sha-256 in the other three
 ```
 
-| probe | `fern check` | `fern generate` | what Fern did |
-|---|:--:|:--:|---|
-| [`http-hoba-alone`](openapi-surface/probes/http-hoba-alone.yml) | **1** | **1** | `path: __package__.yml -> service`, `issue: Service requires auth, but no auth is defined.`, `Found 1 error and 0 warnings in 0.001 seconds.`; the generate fails the same way, `[error] Service requires auth, but no auth is defined.` then `Found 1 errors and 0 warnings`, and writes no SDK |
-| [`http-oauth-alone`](openapi-surface/probes/http-oauth-alone.yml) | **1** | **1** | the same diagnostic at both stages — which is the refusal `jentic`'s Noun Project bundle already met, reproduced on a document whose only other content is one operation |
-| [`http-scram-sha-1-alone`](openapi-surface/probes/http-scram-sha-1-alone.yml) | **1** | **1** | the same diagnostic at both stages |
-| [`http-scram-sha-256-alone`](openapi-surface/probes/http-scram-sha-256-alone.yml) | **1** | **1** | the same diagnostic at both stages |
-| [`http-hoba-beside-bearer`](openapi-surface/probes/http-hoba-beside-bearer.yml) | 0 | 0 | `All checks passed`; a 39-file SDK generated from the **bearer** scheme — required `token: typing.Union[str, typing.Callable[[], str]]` → `Authorization` — with **zero occurrences of the string `hoba`** anywhere in the tree |
-| [`http-oauth-beside-bearer`](openapi-surface/probes/http-oauth-beside-bearer.yml) | 0 | 0 | the same, zero occurrences of `oauth` |
-| [`http-scram-sha-1-beside-bearer`](openapi-surface/probes/http-scram-sha-1-beside-bearer.yml) | 0 | 0 | the same, zero occurrences of `scram-sha-1` |
-| [`http-scram-sha-256-beside-bearer`](openapi-surface/probes/http-scram-sha-256-beside-bearer.yml) | 0 | 0 | the same, zero occurrences of `scram-sha-256` |
+| probe | `fern check` | what the check printed | `fern generate` | what the generate printed |
+|---|:--:|---|:--:|---|
+| [`http-hoba-alone`](openapi-surface/probes/http-hoba-alone.yml) | **1** | `[sdk] 1 error`, `path: __package__.yml -> service`, `issue: Service requires auth, but no auth is defined.`, `Found 1 error and 0 warnings in 0.001 seconds.` | **1** | `[api]: python-sdk __package__.yml -> service`, `[error] Service requires auth, but no auth is defined.`, `Found 1 errors and 0 warnings in 0.077 seconds.`, `python-sdk Failed.` — and no SDK written |
+| [`http-oauth-alone`](openapi-surface/probes/http-oauth-alone.yml) | **1** | the same four lines | **1** | the same, and no SDK written — the refusal `jentic`'s Noun Project bundle already met, reproduced on a document whose only other content is one operation |
+| [`http-scram-sha-1-alone`](openapi-surface/probes/http-scram-sha-1-alone.yml) | **1** | the same four lines | **1** | the same, and no SDK written |
+| [`http-scram-sha-256-alone`](openapi-surface/probes/http-scram-sha-256-alone.yml) | **1** | the same four lines | **1** | the same, and no SDK written |
+| [`http-hoba-beside-bearer`](openapi-surface/probes/http-hoba-beside-bearer.yml) | 0 | `All checks passed` | 0 | `python-sdk ✓ All checks passed`, `fernapi/fern-python-sdk:5.20.0`, `Wrote files to …/preview/fern-python-sdk`, `fernapi/fern-python-sdk Finished.` — a 39-file SDK generated from the **bearer** scheme, required `token: typing.Union[str, typing.Callable[[], str]]` → `Authorization`, with **zero occurrences of the string `hoba`** anywhere in the tree |
+| [`http-oauth-beside-bearer`](openapi-surface/probes/http-oauth-beside-bearer.yml) | 0 | `All checks passed` | 0 | the same, zero occurrences of `oauth` |
+| [`http-scram-sha-1-beside-bearer`](openapi-surface/probes/http-scram-sha-1-beside-bearer.yml) | 0 | `All checks passed` | 0 | the same, zero occurrences of `scram-sha-1` |
+| [`http-scram-sha-256-beside-bearer`](openapi-surface/probes/http-scram-sha-256-beside-bearer.yml) | 0 | `All checks passed` | 0 | the same, zero occurrences of `scram-sha-256` |
 
 Verdict for all four: **discards**. `http-oauth` is the one of the four whose
 sole-scheme refusal was already on the record against a real document — the Noun
@@ -3685,10 +3685,10 @@ inline so the difference between them is the reference and nothing else:
       in: header
 ```
 
-| probe | `fern check` | `fern generate` | what Fern did |
-|---|:--:|:--:|---|
-| [`securityscheme-ref`](openapi-surface/probes/securityscheme-ref.yml) | 0 | 0 | `All checks passed`; a 39-file SDK whose client takes **two** credentials — `probe_key` from the referencing key and `api_key` from the target declared under its own name — and whose `core/client_wrapper.py` writes `headers["X-Probe-Key"] = self._probe_key` and then `headers["X-Probe-Key"] = self.api_key` |
-| [`securityscheme-ref-control`](openapi-surface/probes/securityscheme-ref-control.yml) | 0 | 0 | `All checks passed`; the same 39 files with **one** credential, `api_key`, and one `headers["X-Probe-Key"]` write |
+| probe | `fern check` | what the check printed | `fern generate` | what the generate printed |
+|---|:--:|---|:--:|---|
+| [`securityscheme-ref`](openapi-surface/probes/securityscheme-ref.yml) | 0 | `All checks passed` | 0 | `python-sdk ✓ All checks passed`, `Wrote files to …/preview/fern-python-sdk`, `fernapi/fern-python-sdk Finished.` — a 39-file SDK whose client takes **two** credentials, `probe_key` from the referencing key and `api_key` from the target declared under its own name, and whose `core/client_wrapper.py` writes `headers["X-Probe-Key"] = self._probe_key` and then `headers["X-Probe-Key"] = self.api_key` |
+| [`securityscheme-ref-control`](openapi-surface/probes/securityscheme-ref-control.yml) | 0 | `All checks passed` | 0 | the same lines, and the same 39 files with **one** credential, `api_key`, and one `headers["X-Probe-Key"]` write |
 
 Verdict: **implements**. The control is what makes that reading sound. Had Fern
 discarded the unresolvable entry, the probe would have emitted exactly what the
