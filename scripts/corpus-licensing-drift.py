@@ -34,7 +34,7 @@ REPO = Path(__file__).resolve().parent.parent
 # Every path this script compares or prints is spelled the way `git ls-files`
 # reports one — POSIX separators, on every platform. Holding these as `Path`
 # instead is what broke the Windows leg once: `str(Path("docs/x.md"))` is
-# `docs\\x.md` there, so the rule file stopped excluding itself from its own
+# `docs\x.md` there, so the rule file stopped excluding itself from its own
 # walk and the gate quoted it as its own drift.
 RULE = "docs/corpus-licensing.md"
 MARKER = "corpus-licence-set:"
