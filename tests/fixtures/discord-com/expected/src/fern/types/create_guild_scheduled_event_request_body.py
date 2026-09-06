@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .external_scheduled_event_create_request import ExternalScheduledEventCreateRequest
+from .stage_scheduled_event_create_request import StageScheduledEventCreateRequest
+from .voice_scheduled_event_create_request import VoiceScheduledEventCreateRequest
+
+CreateGuildScheduledEventRequestBody = typing.Union[
+    ExternalScheduledEventCreateRequest, StageScheduledEventCreateRequest, VoiceScheduledEventCreateRequest
+]

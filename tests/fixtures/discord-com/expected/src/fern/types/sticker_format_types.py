@@ -1,0 +1,3 @@
+
+
+StickerFormatTypes = int

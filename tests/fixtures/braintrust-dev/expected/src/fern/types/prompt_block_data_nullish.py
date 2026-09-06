@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .prompt_block_data_nullish_content import PromptBlockDataNullishContent
+from .prompt_block_data_nullish_messages import PromptBlockDataNullishMessages
+
+PromptBlockDataNullish = typing.Union[PromptBlockDataNullishMessages, PromptBlockDataNullishContent]

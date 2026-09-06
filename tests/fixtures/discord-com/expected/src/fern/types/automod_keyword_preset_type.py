@@ -1,0 +1,3 @@
+
+
+AutomodKeywordPresetType = int

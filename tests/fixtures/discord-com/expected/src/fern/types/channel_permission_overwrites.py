@@ -1,0 +1,3 @@
+
+
+ChannelPermissionOverwrites = int

@@ -1,0 +1,13 @@
+
+
+import typing
+
+from .model_params_frequency_penalty_function_call_name import ModelParamsFrequencyPenaltyFunctionCallName
+from .model_params_frequency_penalty_function_call_one import ModelParamsFrequencyPenaltyFunctionCallOne
+from .model_params_frequency_penalty_function_call_zero import ModelParamsFrequencyPenaltyFunctionCallZero
+
+ModelParamsFrequencyPenaltyFunctionCall = typing.Union[
+    ModelParamsFrequencyPenaltyFunctionCallZero,
+    ModelParamsFrequencyPenaltyFunctionCallOne,
+    ModelParamsFrequencyPenaltyFunctionCallName,
+]

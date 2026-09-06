@@ -1,0 +1,3 @@
+
+
+ApplicationIdentityProviderAuthType = str

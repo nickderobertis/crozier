@@ -1,0 +1,13 @@
+
+
+import typing
+
+from .create_message_interaction_callback_response import CreateMessageInteractionCallbackResponse
+from .launch_activity_interaction_callback_response import LaunchActivityInteractionCallbackResponse
+from .update_message_interaction_callback_response import UpdateMessageInteractionCallbackResponse
+
+InteractionCallbackResponseResource = typing.Union[
+    CreateMessageInteractionCallbackResponse,
+    LaunchActivityInteractionCallbackResponse,
+    UpdateMessageInteractionCallbackResponse,
+]

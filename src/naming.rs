@@ -100,6 +100,21 @@ pub fn prose_identifier(input: &str) -> String {
     sanitize_identifier(&collapse_digit_boundaries(&to_snake_case(&folded)))
 }
 
+/// The identifier Fern derives from an operation **summary**, which is
+/// [`prose_identifier`] with full stops deleted rather than treated as word
+/// boundaries. Sentence punctuation is not a word break on this path: corpus row
+/// 123's `… CertificateOrKeyId e.g. revoke reason` names the method
+/// `…_certificate_or_key_id_eg_revoke_reason`, not `…_e_g_revoke_reason`. Every
+/// other separator still breaks — the same corpus derives `read/unread` as
+/// `read_unread` and `re-enabled` as `re_enabled` — and the URL path Fern falls
+/// back to when there is no summary keeps the full stop as a boundary
+/// (`/_proxy/openapi.json` → `get_proxy_openapi_json`), which is why this is a
+/// separate transform rather than a change to [`prose_identifier`].
+#[must_use]
+pub fn summary_identifier(input: &str) -> String {
+    prose_identifier(&input.replace('.', ""))
+}
+
 /// `PascalCase` of an identifier.
 #[must_use]
 pub fn to_pascal_case(input: &str) -> String {
@@ -1235,6 +1250,29 @@ mod tests {
         assert_eq!(
             sanitize_identifier("endpoints_container"),
             "endpoints_container"
+        );
+    }
+
+    #[test]
+    fn summary_identifier_deletes_full_stops_but_keeps_other_separators() {
+        // Sentence punctuation inside a summary is deleted, not broken on.
+        assert_eq!(
+            summary_identifier("Update a software statement certificate with the given CertificateOrKeyId e.g. revoke reason"),
+            "update_a_software_statement_certificate_with_the_given_certificate_or_key_id_eg_revoke_reason"
+        );
+        // Every other separator still breaks a word, and a trailing stop is a no-op.
+        assert_eq!(
+            summary_identifier("Mark a conversation read/unread"),
+            "mark_a_conversation_read_unread"
+        );
+        assert_eq!(
+            summary_identifier("Disable vacation mode. All listings will be re-enabled."),
+            "disable_vacation_mode_all_listings_will_be_re_enabled"
+        );
+        // The URL fallback keeps the full stop as a boundary, so the two differ.
+        assert_eq!(
+            prose_identifier("_proxy_openapi.json"),
+            "proxy_openapi_json"
         );
     }
 }

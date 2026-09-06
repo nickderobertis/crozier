@@ -1965,17 +1965,18 @@ fn readme_endpoint_eligible(ep: &Endpoint) -> bool {
                 && !form.fields.iter().any(|field| field.form_content_type.is_some()))
 }
 
+/// The endpoint Fern's README and `reference.md` anchor their worked example on:
+/// the first eligible `POST`, else the first argument-free non-`GET`, else the
+/// first eligible operation in the README's own module order. A request body does
+/// **not** promote a non-`POST` operation ahead of that order — corpus row 123
+/// anchors its README on the document's first `GET` even though a later `PUT`
+/// carries a flattened JSON body.
 fn select_readme_endpoint<'a>(
     endpoints: impl Clone + Iterator<Item = &'a Endpoint>,
 ) -> Option<&'a Endpoint> {
     endpoints
         .clone()
         .find(|e| e.emittable && e.http_method == "POST" && readme_endpoint_eligible(e))
-        .or_else(|| {
-            endpoints
-                .clone()
-                .find(|e| e.emittable && e.request_body.is_some() && readme_endpoint_eligible(e))
-        })
         .or_else(|| {
             endpoints.clone().find(|e| {
                 e.emittable
@@ -4783,24 +4784,40 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     || !ep.header_params.is_empty()
                     || !ep.path_params.is_empty()
                     || (body.content_type_header()
-                        // A body schema more than one operation posts, which
-                        // says nothing about itself anywhere — no `description` on
-                        // the `requestBody` and none on the schema, no `required:
-                        // true`, and not every field required — drops the header:
-                        // the Open Integration Hub's `MutableSecret` and
-                        // `MutableAuthClient` are each the body of a create and an
-                        // update. Every other way to be shared keeps it — Palo
-                        // Alto's `requestBody`s carry a description, the echo
-                        // `Message` of the same-`$ref` case carries one on the
-                        // schema, exhaustive's carry `required: true` or are sent
-                        // whole, and Adyen's `GrantInfo` is posted by one
-                        // operation.
+                        // A body schema more than one operation posts, which is
+                        // neither `required: true` nor sent whole, drops the
+                        // header two ways. It drops it when the body says nothing
+                        // about itself anywhere — no `description` on the
+                        // `requestBody` and none on the schema: the Open
+                        // Integration Hub's `MutableSecret` and `MutableAuthClient`
+                        // are each the body of a create and an update. And it drops
+                        // it when the `requestBody` *is* described, the operation
+                        // sends nothing but that body, and the body declares
+                        // required members — some of them, since all of them is the
+                        // sent-whole case above: braintrust's `CreateView`,
+                        // `AclItem` and twelve more are each the body of two
+                        // argument-free operations under a described `requestBody`,
+                        // and a description on the *schema* does not save
+                        // `AclItem`. Both halves of that second drop are load
+                        // bearing across the corpus. A query parameter beside the
+                        // body keeps the header — Palo Alto's `IkeCryptoProfiles`
+                        // and `IpsecCryptoProfiles` are shared, described and
+                        // partly required, and each rides a `SubTenantName` — and
+                        // so does a body with no required member at all, which is
+                        // what leaves the echo `Message` of the same-`$ref` case
+                        // (one optional field) its header under Basic auth's
+                        // documented body. Every other way to be shared keeps it:
+                        // exhaustive's bodies carry `required: true` or are sent
+                        // whole, and Adyen's `GrantInfo` is posted by one operation.
                         && !(ep.body_schema_shared
-                            && ep.body_description_missing
-                            && !ep.body_schema_documented
                             && !ep.body_declared_required
                             && !body.all_fields_required()
-                            && !ep.body_schema_dropped)
+                            && !ep.body_schema_dropped
+                            && (ep.body_description_missing && !ep.body_schema_documented
+                                || !ep.body_description_missing
+                                    && ep.query_params.is_empty()
+                                    && matches!(body, RequestBody::Inline(fields)
+                                        if fields.iter().any(|field| field.spec_required))))
                         && (!ep.basic_auth
                             || !ep.body_description_missing
                             || !ep.body_schema_ref && matches!(body, RequestBody::Inline(_)))
@@ -5538,11 +5555,13 @@ fn root_client_class(
             let cls = tag_client_name(m, is_async);
             // The lazy `from .{attr}.client import {cls}` sits at 12 spaces of indent.
             // Fern's printer wraps this single-name import into the parenthesized,
-            // trailing-comma form once the flat line passes 107 columns; ruff (run at
+            // trailing-comma form once the flat line reaches 107 columns; ruff (run at
             // `line-length = 120`) then preserves that shape via its magic trailing
             // comma, and leaves the shorter flat lines untouched. crozier must make the
-            // same call itself — ruff will not split a single-name import for it.
-            let wrap = 12 + "from .".len() + m.len() + ".client import ".len() + cls.len() > 107;
+            // same call itself — ruff will not split a single-name import for it. The
+            // boundary is exact: corpus row 123 wraps at 107 and the corpus's widest
+            // flat import is 106.
+            let wrap = 12 + "from .".len() + m.len() + ".client import ".len() + cls.len() >= 107;
             RootModuleView {
                 attr: (*m).clone(),
                 cls,
@@ -7817,11 +7836,14 @@ fn build_example_inner(
                     .and_then(|example| ctx.value_from_example(&s.type_ref, example))
                     .unwrap_or_else(|| ctx.value(&s.type_ref, Slot::Plain))
             };
+            // An optional body Fern types `Optional[Any]` has nothing to show, in
+            // either document version: letta declares the shape in 3.1 and
+            // braintrust's proxy endpoints in 3.0.3, and neither golden passes
+            // `request=`.
             if s.required
                 || body_example.is_some()
                 || s.example.is_some()
                 || !is_any_type(&s.type_ref)
-                || !ep.openapi_31
             {
                 args.push((Some("request".to_string()), v));
             }
@@ -8458,6 +8480,15 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
             .all(|param| matches!(param.type_ref, TypeRef::List(_)))
         && ep.header_params.is_empty()
         && ep.request_body.is_none();
+    // A binary download substitutes the parameter's own name for each path
+    // placeholder — it ignores the schema's declared example, see
+    // `build_example_inner` — so a `pattern` the name cannot satisfy costs the
+    // endpoint its whole example. discord's `get_guild_widget_png` takes
+    // `guild_id: SnowflakeType`, whose `^(0|[1-9][0-9]*)$` rejects `"guild_id"`,
+    // and Fern's golden documents no example; apicurio's `get_latest_artifact`
+    // takes two unconstrained named path parameters and keeps one.
+    let binary_path_placeholder_rejected =
+        ep.path_params.iter().any(|param| param.pattern_constrained);
     let opaque_multipart_example = ep.body_media_has_example
         && matches!(&ep.request_body, Some(RequestBody::Form(form)) if form.fields.iter().any(|field| field.is_file));
     // A list-typed path parameter beside a request body defeats Fern's example
@@ -8467,12 +8498,22 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
     // and `/searches`, and `POST /groups/{ID}/schedules`). Either half alone still
     // gets one — `GET /apps/{ID}` shows the bogus `id="ID"`, and every scalar-path
     // body endpoint of the same document keeps its example.
+    // …and only when that body is one the example actually passes: braintrust's
+    // catch-all proxy takes a `Sequence[str]` path parameter beside an optional
+    // unknown body the example omits, and Fern documents it.
+    let body_shown = match &ep.request_body {
+        Some(RequestBody::Single(single)) => {
+            single.required || single.example.is_some() || !is_any_type(&single.type_ref)
+        }
+        _ => true,
+    };
     let list_path_param_with_body = ep.request_body.is_some()
+        && body_shown
         && ep
             .path_params
             .iter()
             .any(|param| matches!(param.type_ref, TypeRef::List(_)));
-    !(ep.binary_response && binary_has_no_required_arguments
+    !(ep.binary_response && (binary_has_no_required_arguments || binary_path_placeholder_rejected)
         || opaque_multipart_example
         || list_path_param_with_body)
 }
@@ -9109,6 +9150,11 @@ mod tests {
         assert!(!rendered.contains("annotation=typing.Optional[typing.Sequence"));
     }
 
+    /// An optional body Fern types `Optional[Any]` carries nothing a worked
+    /// example could show, and the document version does not change that: letta
+    /// declares the shape in `openapi: 3.1` and braintrust's proxy endpoints
+    /// declare it in `3.0.3` (corpus row 126), and neither golden passes
+    /// `request=`.
     #[test]
     fn optional_unknown_body_is_omitted_from_worked_example() {
         let mut ep = endpoint("/projects/{id}", Vec::new(), None);
@@ -9131,6 +9177,16 @@ mod tests {
         let mut ctx = example_ctx(&[], &[], &auth);
         let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx, false)
             .expect("legacy endpoint has an example")
+            .join("\n");
+        assert!(!rendered.contains("request="), "{rendered}");
+        // A *required* unknown body is still shown, which is what keeps the
+        // exclusion keyed on optionality rather than on the unknown type.
+        if let Some(RequestBody::Single(body)) = ep.request_body.as_mut() {
+            body.required = true;
+        }
+        let mut ctx = example_ctx(&[], &[], &auth);
+        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx, false)
+            .expect("required unknown body has an example")
             .join("\n");
         assert!(
             rendered.contains("request={\"key\": \"value\"}"),
@@ -9352,6 +9408,34 @@ mod tests {
     }
 
     #[test]
+    fn readme_endpoint_does_not_promote_a_non_post_body_over_the_first_endpoint() {
+        // Corpus row 123 declares no POST at all, and Fern anchors its README on
+        // the document's first GET rather than on the later PUT that carries a
+        // flattened JSON body.
+        let mut first_get = endpoint("/organisations", Vec::new(), None);
+        first_get.method_name = "get_all_organisations".to_string();
+        first_get.module = "organisations".to_string();
+        let mut put_with_body = endpoint("/softwarestatements", Vec::new(), None);
+        put_with_body.http_method = "PUT";
+        put_with_body.method_name = "update_a_software_statement_by_id".to_string();
+        put_with_body.module = "software_statements".to_string();
+        put_with_body.request_body = Some(RequestBody::Single(SingleBody {
+            type_ref: TypeRef::Primitive(Prim::Str),
+            required: true,
+            convert: false,
+            content_type: true,
+            content_type_override: None,
+            example: None,
+        }));
+
+        let ir = ir_with(vec![first_get, put_with_body]);
+        assert_eq!(
+            readme_endpoint(&ir).map(|e| e.method_name.as_str()),
+            Some("get_all_organisations")
+        );
+    }
+
+    #[test]
     fn readme_endpoint_prefers_the_first_non_binary_post() {
         let mut first_get = endpoint(
             "/one/{id}",
@@ -9361,6 +9445,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Int),
                 docstring: None,
                 example: None,
+                pattern_constrained: false,
             }],
             None,
         );
@@ -9628,6 +9713,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 docstring: None,
                 example: None,
+                pattern_constrained: false,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
         );
@@ -9926,6 +10012,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 docstring: None,
                 example: None,
+                pattern_constrained: false,
             }],
             Some(TypeRef::Named("Resp".to_string())),
         );
@@ -10729,6 +10816,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 docstring: Some("Widget identifier.".to_string()),
                 example: None,
+                pattern_constrained: false,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
         );
@@ -10887,6 +10975,7 @@ mod tests {
                     type_ref,
                     docstring: None,
                     example: None,
+                    pattern_constrained: false,
                 }],
                 Some(TypeRef::Primitive(Prim::Str)),
             );
@@ -11196,6 +11285,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 docstring: Some("Event identifier.\nSecond line.".to_string()),
                 example: None,
+                pattern_constrained: false,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
         );

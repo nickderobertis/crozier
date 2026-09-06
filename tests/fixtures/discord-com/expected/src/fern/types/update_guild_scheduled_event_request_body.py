@@ -1,0 +1,13 @@
+
+
+import typing
+
+from .external_scheduled_event_patch_request_partial import ExternalScheduledEventPatchRequestPartial
+from .stage_scheduled_event_patch_request_partial import StageScheduledEventPatchRequestPartial
+from .voice_scheduled_event_patch_request_partial import VoiceScheduledEventPatchRequestPartial
+
+UpdateGuildScheduledEventRequestBody = typing.Union[
+    ExternalScheduledEventPatchRequestPartial,
+    StageScheduledEventPatchRequestPartial,
+    VoiceScheduledEventPatchRequestPartial,
+]

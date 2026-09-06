@@ -1,0 +1,3 @@
+
+
+GuildScheduledEventStatuses = int

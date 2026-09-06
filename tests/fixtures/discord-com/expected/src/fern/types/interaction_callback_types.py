@@ -1,0 +1,3 @@
+
+
+InteractionCallbackTypes = int

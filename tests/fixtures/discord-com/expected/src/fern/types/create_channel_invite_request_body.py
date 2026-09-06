@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .create_group_dm_invite_request import CreateGroupDmInviteRequest
+from .create_guild_invite_request import CreateGuildInviteRequest
+
+CreateChannelInviteRequestBody = typing.Union[CreateGroupDmInviteRequest, CreateGuildInviteRequest]

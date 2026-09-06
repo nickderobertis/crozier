@@ -1,0 +1,3 @@
+
+
+WidgetImageStyles = str

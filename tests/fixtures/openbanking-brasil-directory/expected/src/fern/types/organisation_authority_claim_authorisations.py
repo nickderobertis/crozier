@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .organisation_authority_claim_authorisation import OrganisationAuthorityClaimAuthorisation
+
+OrganisationAuthorityClaimAuthorisations = typing.List[OrganisationAuthorityClaimAuthorisation]

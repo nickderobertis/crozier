@@ -1,0 +1,19 @@
+
+
+import typing
+
+from .button_component_for_message_request import ButtonComponentForMessageRequest
+from .channel_select_component_for_message_request import ChannelSelectComponentForMessageRequest
+from .mentionable_select_component_for_message_request import MentionableSelectComponentForMessageRequest
+from .role_select_component_for_message_request import RoleSelectComponentForMessageRequest
+from .string_select_component_for_message_request import StringSelectComponentForMessageRequest
+from .user_select_component_for_message_request import UserSelectComponentForMessageRequest
+
+ActionRowComponentForMessageRequestComponentsItem = typing.Union[
+    ButtonComponentForMessageRequest,
+    ChannelSelectComponentForMessageRequest,
+    MentionableSelectComponentForMessageRequest,
+    RoleSelectComponentForMessageRequest,
+    StringSelectComponentForMessageRequest,
+    UserSelectComponentForMessageRequest,
+]

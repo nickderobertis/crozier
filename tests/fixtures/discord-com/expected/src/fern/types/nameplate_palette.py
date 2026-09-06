@@ -1,0 +1,3 @@
+
+
+NameplatePalette = str

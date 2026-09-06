@@ -1,0 +1,29 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .channel_select_default_value_response import ChannelSelectDefaultValueResponse
+from .channel_types import ChannelTypes
+
+
+class ChannelSelectComponentResponse(UniversalBaseModel):
+    type: int
+    id: int
+    custom_id: str
+    placeholder: typing.Optional[str] = None
+    min_values: typing.Optional[int] = None
+    max_values: typing.Optional[int] = None
+    disabled: typing.Optional[bool] = None
+    channel_types: typing.Optional[typing.List[ChannelTypes]] = None
+    default_values: typing.Optional[typing.List[ChannelSelectDefaultValueResponse]] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

@@ -1,0 +1,19 @@
+
+
+import typing
+
+from .application_command_autocomplete_callback_request import ApplicationCommandAutocompleteCallbackRequest
+from .create_message_interaction_callback_request import CreateMessageInteractionCallbackRequest
+from .launch_activity_interaction_callback_request import LaunchActivityInteractionCallbackRequest
+from .modal_interaction_callback_request import ModalInteractionCallbackRequest
+from .pong_interaction_callback_request import PongInteractionCallbackRequest
+from .update_message_interaction_callback_request import UpdateMessageInteractionCallbackRequest
+
+CreateInteractionResponseRequestBody = typing.Union[
+    ApplicationCommandAutocompleteCallbackRequest,
+    CreateMessageInteractionCallbackRequest,
+    LaunchActivityInteractionCallbackRequest,
+    ModalInteractionCallbackRequest,
+    PongInteractionCallbackRequest,
+    UpdateMessageInteractionCallbackRequest,
+]

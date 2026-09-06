@@ -1,0 +1,3 @@
+
+
+SnowflakeSelectDefaultValueTypes = str

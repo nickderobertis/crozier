@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .facet_data_preprocessor_function_type import FacetDataPreprocessorFunctionType
+from .facet_data_preprocessor_id import FacetDataPreprocessorId
+
+FacetDataPreprocessor = typing.Union[FacetDataPreprocessorId, FacetDataPreprocessorFunctionType]

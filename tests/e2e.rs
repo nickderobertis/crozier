@@ -1914,6 +1914,10 @@ const CORPORA: &[&Corpus] = &[
     &LISTENNOTES,
     &VTEX_PRICING,
     &AWS_IMPORTEXPORT,
+    &OPENBANKING_BRASIL_DIRECTORY,
+    &API_OPENVERSE_ORG,
+    &DISCORD_COM,
+    &BRAINTRUST_DEV,
 ];
 
 #[test]
@@ -3366,6 +3370,72 @@ const AWS_IMPORTEXPORT: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `openbanking-brasil-directory`: Open Banking Brasil's participant directory is
+/// the corpus's only source whose OAuth Flows Object declares more than one flow —
+/// `components.securitySchemes.oAuth` names `clientCredentials` (scopes
+/// `directory:admin`, `directory:software`) and `authorizationCode` (scope
+/// `directory:website`) — and the two scope sets are disjoint, so this row pins
+/// which flow Fern reads a scope enum out of where the corpus's other ten Flows
+/// Objects each name exactly one.
+const OPENBANKING_BRASIL_DIRECTORY: Corpus = Corpus {
+    api: "openbanking-brasil-directory",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `api-openverse-org`: the Openverse media-search API is the corpus's first
+/// golden-bearing declarer of an operation-level optional security requirement —
+/// six Operation Objects whose `security` array holds `{}` — so this row pins
+/// whether an operation that opts authentication out still reaches the generated
+/// client's constructor.
+const API_OPENVERSE_ORG: Corpus = Corpus {
+    api: "api-openverse-org",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `discord-com`: Discord's API v10 is the corpus's second declarer of an
+/// operation-level optional security requirement (22 `{}` requirements) and its
+/// second whose OAuth Flows Object declares more than one flow — three, whose
+/// scope sets differ pairwise — so one `openapi: 3.1.0` document witnesses both
+/// of this batch's shapes beside corpus rows 123 and 124's separate ones.
+const DISCORD_COM: Corpus = Corpus {
+    api: "discord-com",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `braintrust-dev`: the Braintrust API is the corpus's densest declarer of an
+/// operation-level optional security requirement — 148 Operation Objects whose
+/// `security` array holds `{}` — against the single `bearerAuth` scheme Fern's
+/// importer supports, so it witnesses corpus row 124's shape at 25 times the
+/// density on an independent publisher.
+const BRAINTRUST_DEV: Corpus = Corpus {
+    api: "braintrust-dev",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -3720,6 +3790,26 @@ fn vtex_pricing_matches_fern_output() {
 #[test]
 fn aws_importexport_matches_fern_output() {
     assert_link_ok_corpus_matches(&AWS_IMPORTEXPORT);
+}
+
+#[test]
+fn openbanking_brasil_directory_matches_fern_output() {
+    assert_link_ok_corpus_matches(&OPENBANKING_BRASIL_DIRECTORY);
+}
+
+#[test]
+fn api_openverse_org_matches_fern_output() {
+    assert_link_ok_corpus_matches(&API_OPENVERSE_ORG);
+}
+
+#[test]
+fn discord_com_matches_fern_output() {
+    assert_link_ok_corpus_matches(&DISCORD_COM);
+}
+
+#[test]
+fn braintrust_dev_matches_fern_output() {
+    assert_link_ok_corpus_matches(&BRAINTRUST_DEV);
 }
 
 #[test]

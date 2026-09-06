@@ -1,0 +1,3 @@
+
+
+AfkTimeouts = int

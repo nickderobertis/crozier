@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .organisation_authority_domain_claim import OrganisationAuthorityDomainClaim
+
+OrganisationAuthorityDomainClaims = typing.List[OrganisationAuthorityDomainClaim]

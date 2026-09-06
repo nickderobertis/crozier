@@ -1,0 +1,3 @@
+
+
+UserNotificationSettings = int

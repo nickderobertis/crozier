@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .view_options_chart_annotations_time_range_filter_from import ViewOptionsChartAnnotationsTimeRangeFilterFrom
+
+ViewOptionsChartAnnotationsTimeRangeFilter = typing.Union[str, ViewOptionsChartAnnotationsTimeRangeFilterFrom]

@@ -473,7 +473,8 @@ stay byte-identical — none of them exercised these paths):
   `attachment-public`), else the PascalCase tag (`Widgets`, `Companies`) or, untagged,
   the PascalCase operationId group (`EndpointsContainer`) — `module_title`. The root
   `client.py` wraps a lazy sub-client import into ruff's parenthesized, trailing-comma
-  form past 107 columns (ruff won't split a single-name import itself); the `README.md`
+  form at 107 columns and wider (ruff won't split a single-name import itself) — corpus
+  row 123 wraps at exactly 107 and the corpus's widest flat import is 106; the `README.md`
   worked-example calls and their tag imports are laid out at Fern's 80-column example
   width ([`emit::Example::render_at`]), not the project `line-length` of 120 — the
   abbreviated error-handling snippets use ruff's 88 instead.
@@ -518,6 +519,94 @@ corpora stay byte-identical — none of them exercised these paths):
 
 Future Bungie source changes or Fern upgrades follow the standard
 [`Fern golden lifecycle`](fern-goldens.md).
+
+### Braintrust's API (corpus row 126)
+
+Braintrust's own API — 71 paths, 3.0.3, and the corpus's densest optional
+operation-level security requirement — exposed a further run of divergences, also
+all repaired in `src/`. The four that generalize furthest:
+
+1. **A media whose schema says nothing loses to one that says something.** Every
+   braintrust error response offers `text/plain` as `{type: string}` beside
+   `application/json` as the bare `{nullable: true}`, and Fern types the error
+   body `str` — so [`ir::response_schema`] filters the preference order to media
+   with a non-unknown schema before falling back to it.
+2. **`allOf` composition is a *copy*, not inheritance, wherever it names a
+   union.** A referenced union is a type alias by the time the model is emitted,
+   so `TopicMapFunctionAutomation.function` — `allOf: [$ref SavedFunctionId,
+   anyOf: [function, global]]` — flattens the branches' properties into one
+   all-optional object rather than extending anything, and an annotated `$ref`
+   whose target is a union is re-declared under the annotating name
+   (`FacetDataPreprocessor`, `RunEvalScoresItem`) rather than pointed at.
+3. **A structured map value is named.** A *nullable* map hoists its value the
+   same way a plain one does — `CrossObjectInsertRequest.experiment` is
+   `Dict[str, Optional[CrossObjectInsertRequestExperimentValue]]` — and a map of
+   *arrays* names the element (`…TopicMapsValueItem`).
+4. **Two rules for naming an undiscriminated union's variants**, both measured
+   here and both fallbacks from the alphabetically-first property no sibling
+   declares:
+   - a variant whose properties are `$ref`s beside exactly one plain scalar is
+     named by that scalar (`FunctionIdName`), even though a sibling declares it;
+   - the alphabetically-first property *every* variant declares names only the
+     **last** of them, because every earlier one would compute the same name and
+     Fern gives those the ordinal (`ModelParamsReasoningBudget` beside
+     `ModelParamsThree`; `ResponseFormatNullishType` beside
+     `ResponseFormatNullishZero`). A `type: null` alternative does not vote.
+
+The rest are local: a shared request body under a *described* `requestBody` drops
+its `content-type` header when the operation carries no query parameter either
+and the body declares some (not all) required members (`CreateView`, `AclItem`) —
+both qualifiers measured against the rest of the corpus, where Palo Alto's shared
+crypto profiles keep the header on a query parameter and the Petstore's `User`
+keeps it with no required member at all; an
+`operationId` carrying a path-template expression is named by that expression
+(`proxy{path+}` → `path`); an optional unknown body is omitted from a worked
+example in *either* document version, and a list-typed path parameter beside such
+a body no longer suppresses the example; a nullable unknown keeps its `Optional`
+in a response body and in a `{nullable: true}` array element (but not in 3.1's
+`{type: ['null']}` one); an inlined body field's convert annotation reads its
+nullability off the property rather than off the alias its type resolves to; and
+a discriminated union's standalone member models move into a tag's `types/`
+package with the union that names them.
+
+### Discord's 3.1 API (corpus row 125)
+
+Registering Discord's own API v10 — an `openapi: 3.1.0` document over 128 paths —
+exposed a run of divergences, all repaired in `src/`. They fall into three groups.
+
+1. **A `type` beside a composition wins.** A schema declaring a scalar `type`
+   *and* a `oneOf`/`anyOf`/`allOf` generates the scalar and discards the
+   composition: `AvailableLocalesEnum` is `{type: string, oneOf: [23 consts]}` and
+   Fern emits `= str`, and `UpdateGuildChannelRequestPartial.type` is `{type:
+   integer, enum: […], allOf: [$ref ChannelTypes]}` and generates `Optional[int]`.
+   An *empty* `oneOf: []` is discarded the same way (`ApplicationCommandHandler`),
+   which also stops crozier emitting the `typing.Union[]` that `ruff` refuses to
+   parse. Both live in `openapi::normalize_empty_compositions`.
+2. **`type: null` is nullability, everywhere.** A union member declaring
+   `type: null` states that what is left may be absent rather than adding an `Any`
+   alternative — as an element (`roles` is `List[Optional[SnowflakeType]]`), as a
+   map value, as a response (`get_entitlements`), and on the whole success body
+   (`list_my_connections` declares `type: [array, null]` and returns
+   `Optional[List[…]]`). The same holds for 3.1's `type: [object, null]` on a map,
+   whose *value* becomes `Optional` exactly as 3.0's `nullable` does, and for an
+   inline request field, whose convert-wrapper annotation carries the `Optional`.
+   A `nullable` beside a `$ref` is **not** that: 3.0 ignores a reference's
+   siblings, which is why `exhaustive`'s `getAndReturnOptional` still returns a
+   bare model.
+3. **Two selection rules the corpus had never crossed.** A request body offering
+   `multipart/form-data` beside a JSON representation is sent as JSON, so its model
+   is flattened and dropped like any other inlined one (`MessageCreateRequest`),
+   and a body that is a bare `anyOf` of two `$ref`s becomes the
+   `{Ctx}RequestBody` union alias. A *binary download* documents no worked example
+   when a path parameter's schema declares a `pattern`: Fern substitutes the
+   parameter's own name for the placeholder there rather than the schema's example,
+   and `SnowflakeType`'s `^(0|[1-9][0-9]*)$` rejects `"guild_id"` — while
+   apicurio's unconstrained named path parameters keep theirs.
+
+Discord also pins the fifth shape of the synthesized query-parameter placeholder
+(`ir::query_parameter_example`): the four the table already recorded all
+*document* the parameter, and an undocumented one takes the parameter's own name
+however constrained its schema is.
 
 ### Five more real-world corpora (issue #77): the harder batch
 
@@ -606,8 +695,12 @@ SDK. All three are closed byte-for-byte against Fern goldens.
    method docstrings retain the worked iteration loop and the README retains a
    separate `## Streaming` section.
 
-The generated **README/reference** pick the first endpoint with a request body
-for the worked example and abbreviate the error-handling/advanced snippets,
+The generated **README/reference** pick the first eligible `POST` for the worked
+example, else the first argument-free non-`GET`, else the first eligible operation
+in the README's own module order — a request body does *not* promote a non-`POST`
+operation ahead of that order (corpus row 123 declares no `POST` and anchors its
+README on the document's first `GET`, not on the later `PUT` that carries a
+flattened JSON body). They abbreviate the error-handling/advanced snippets,
 ruff-wrapped at the 88-col snippet width. At 5.20 the abbreviation is purely
 arity-driven — `(...)` whenever the demonstrated method takes any argument, `()`
 only for an argument-free method — which is refresh rule 1 above; the earlier
@@ -964,11 +1057,17 @@ corpus (`digit-leading-property`, `operation-id-non-identifier`,
 
 - **Missing `operationId`** (optional in OpenAPI). Instead of hard-erroring,
   [`ir::endpoint_method_name`] falls back to the operation's `summary`, run
-  through [`naming::prose_identifier`] (`List widgets` → `list_widgets`) — which
-  is what the corpus pins, byte-for-byte against Fern. With no summary either,
-  [`ir::synthesized_method_name`] joins the HTTP method and the full route,
+  through [`naming::summary_identifier`] (`List widgets` → `list_widgets`) — which
+  is what the corpus pins, byte-for-byte against Fern. On that path a full stop is
+  sentence punctuation Fern **deletes** rather than breaks on, so corpus row 123's
+  `… CertificateOrKeyId e.g. revoke reason` names the method
+  `…_certificate_or_key_id_eg_revoke_reason`; every other separator still breaks a
+  word (`read/unread` → `read_unread`, `re-enabled` → `re_enabled`). With no summary
+  either, [`ir::synthesized_method_name`] joins the HTTP method and the full route,
   brace-stripped (`GET /widgets` → `get_widgets`, `GET /widgets/{id}` →
-  `get_widgets_id`).
+  `get_widgets_id`), and there the full stop stays a boundary — corpus row 88's
+  `/_proxy/openapi.json` names `get_proxy_openapi_json` — which is why the two paths
+  use different transforms.
 
 ### Tag-based client grouping
 

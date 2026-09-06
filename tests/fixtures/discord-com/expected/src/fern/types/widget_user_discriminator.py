@@ -1,0 +1,3 @@
+
+
+WidgetUserDiscriminator = str
