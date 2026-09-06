@@ -995,6 +995,12 @@ pub struct PathParam {
     /// name as the placeholder and drops the whole example when the schema
     /// rejects it, so this is what decides whether such an endpoint documents one.
     pub pattern_constrained: bool,
+    /// Whether the value serializes through `convert_and_respect_annotation_metadata`
+    /// inside the URL f-string — true for an object/union type carrying field
+    /// aliases, as Fern wraps an object-typed *path* parameter exactly as it wraps
+    /// an object-typed query one (measured on
+    /// `docs/openapi-surface/probes/parameter-style-simple-path-object.yml`).
+    pub convert: bool,
 }
 
 /// A resolved query parameter, rendered as a keyword-only method argument and a
@@ -2182,25 +2188,31 @@ fn build_endpoint(
         .parameters
         .iter()
         .filter(|p| p.location == Some(ParameterLocation::Path))
-        .map(|p| PathParam {
-            wire_name: p.name.clone(),
-            py_name: naming::field_name(&p.name),
-            type_ref: p
+        .map(|p| {
+            let type_ref = p
                 .schema
                 .as_ref()
                 .map_or(TypeRef::Primitive(Prim::Any), |schema| {
                     hoister.hoist_param_enum(&request_ctx, &p.name, schema)
+                });
+            PathParam {
+                wire_name: p.name.clone(),
+                py_name: naming::field_name(&p.name),
+                // A path value that reaches nothing but scalars is interpolated as
+                // text, the same guard the query arm applies.
+                convert: hoister.needs_convert(&type_ref) && !hoister.is_scalar(&type_ref),
+                type_ref,
+                docstring: declared_doc(p.description.as_deref()),
+                example: parameter_example(doc, p),
+                pattern_constrained: p.schema.as_ref().is_some_and(|schema| {
+                    schema.pattern.is_some()
+                        || schema
+                            .reference
+                            .as_deref()
+                            .and_then(|reference| resolve_ref(doc, reference))
+                            .is_some_and(|target| target.pattern.is_some())
                 }),
-            docstring: declared_doc(p.description.as_deref()),
-            example: parameter_example(doc, p),
-            pattern_constrained: p.schema.as_ref().is_some_and(|schema| {
-                schema.pattern.is_some()
-                    || schema
-                        .reference
-                        .as_deref()
-                        .and_then(|reference| resolve_ref(doc, reference))
-                        .is_some_and(|target| target.pattern.is_some())
-            }),
+            }
         })
         .collect();
     // A path template expression the operation never declares as a Parameter
@@ -2224,6 +2236,7 @@ fn build_endpoint(
             docstring: None,
             example: None,
             pattern_constrained: false,
+            convert: false,
         });
     }
     if !doc.openapi.starts_with("3.1")

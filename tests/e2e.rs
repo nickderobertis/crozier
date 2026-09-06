@@ -6104,6 +6104,80 @@ fn a_pure_ref_component_names_the_response_it_types() {
 }
 
 #[test]
+fn an_object_typed_path_parameter_is_converted_into_the_url_and_documented_by_its_type() {
+    // Measured at fernapi/fern-python-sdk:5.20.0 on
+    // docs/openapi-surface/probes/parameter-style-simple-path-object.yml, the
+    // probe that settles the `parameter-style-simple-path-object` row: no
+    // registered corpus source declares a path parameter over an object schema,
+    // so nothing else holds crozier to Fern here. Three behaviours in one
+    // document, because they are one shape: the URL segment wraps the model in
+    // `convert_and_respect_annotation_metadata`, the Markdown writers construct
+    // the model with values read off each field's TYPE (`role="string"`, not the
+    // `role="role"` a request body's field takes), and the docstring writer keeps
+    // the plain name placeholder a scalar parameter would show.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  \
+         /probe/{probeParam}:\n    get:\n      operationId: probe\n      parameters:\n        \
+         - { name: probeParam, in: path, required: true, style: simple, schema: { $ref: '#/components/schemas/ProbeParam' } }\n      \
+         responses:\n        '200': { description: OK, content: { application/json: { schema: \
+         { $ref: '#/components/schemas/ProbeResult' } } } }\ncomponents:\n  schemas:\n    \
+         ProbeParam: { title: ProbeParam, type: object, properties: { role: { type: string }, \
+         level: { type: integer } }, required: [role] }\n    \
+         ProbeResult: { title: ProbeResult, type: object, properties: { ok: { type: boolean } }, required: [ok] }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/raw_client.py")).expect("raw_client.py");
+    assert!(
+        raw.contains(
+            "f\"probe/{encode_path_param(convert_and_respect_annotation_metadata(object_=probe_param, annotation=ProbeParam, direction='write'))}\""
+        ),
+        "the object-typed path parameter is serialized through the converter; raw_client.py has:\n{raw}"
+    );
+    let readme = std::fs::read_to_string(out.join("README.md")).expect("README.md");
+    assert!(
+        readme.contains("        role=\"string\",\n"),
+        "the README example reads the field's value off its type; README.md has:\n{readme}"
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/client.py")).expect("client.py");
+    assert!(
+        client.contains("            probe_param=\"probeParam\",\n"),
+        "the docstring example keeps the name placeholder; client.py has:\n{client}"
+    );
+    assert!(
+        !client.contains("from acme import AcmeApi, ProbeParam"),
+        "a docstring that documents the placeholder imports no model into its example; client.py has:\n{client}"
+    );
+}
+
+#[test]
+fn a_path_parameter_object_with_a_model_field_documents_no_example_at_all() {
+    // The other half of the same measurement: Fern renders the constructed model
+    // only where every required field is one its writer can render — an array is
+    // `[]` and a map `{}`, and a required field that is itself a generated model
+    // costs the endpoint its whole example, in all three writers at once.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  \
+         /probe/{probeParam}:\n    get:\n      operationId: probe\n      parameters:\n        \
+         - { name: probeParam, in: path, required: true, schema: { $ref: '#/components/schemas/ProbeParam' } }\n      \
+         responses:\n        '200': { description: OK, content: { application/json: { schema: \
+         { $ref: '#/components/schemas/ProbeResult' } } } }\ncomponents:\n  schemas:\n    \
+         Inner: { title: Inner, type: object, properties: { label: { type: string } }, required: [label] }\n    \
+         ProbeParam: { title: ProbeParam, type: object, properties: { role: { type: string }, \
+         nested: { $ref: '#/components/schemas/Inner' } }, required: [role, nested] }\n    \
+         ProbeResult: { title: ProbeResult, type: object, properties: { ok: { type: boolean } }, required: [ok] }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/client.py")).expect("client.py");
+    assert!(
+        !client.contains("\n        client.probe("),
+        "the method documents no worked example; client.py has:\n{client}"
+    );
+    let reference = std::fs::read_to_string(out.join("reference.md")).expect("reference.md");
+    assert!(
+        reference.contains("```python\nclient.probe(...)\n```"),
+        "reference.md abbreviates the call with no snippet gap; it has:\n{reference}"
+    );
+}
+
+#[test]
 fn hyphenated_operation_id_generates_valid_python() {
     // Issue #40 case 1a: a hyphen in the operationId once produced a module dir
     // and identifiers that failed to parse. It must sanitize to a legal name.
