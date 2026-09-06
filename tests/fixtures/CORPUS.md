@@ -605,10 +605,17 @@ the corpus's admissible-licence rule widened
 candidate that record admits, Fern accepts and the corpus's other two screens
 allow is registered** — a witness is not dropped for being redundant, and rows 134
 and 136 are each a further declarer of a shape another row already pins, while row
-137 declares no enumerated coverage row that was open when it was screened and is
-registered all the same: a byte-matching golden is parity evidence in its own
-right, and *"it settles no backlog row"* is not one of this corpus's three
-admission screens.
+137 was passed over once for declaring no enumerated coverage row and is registered
+all the same: a byte-matching golden is parity evidence in its own right, and
+*"it settles no backlog row"* is not one of this corpus's three admission screens.
+It settles one in the end, jointly — `oauth2-implicit`, whose evidence cell read
+*(declared by no registered source)* off a 124-source walk and now names five
+golden-bearing declarers, this row among them. Its other two census firsts,
+`securityScheme.scheme=OAuth` and a golden-bearing `securityScheme.in=query`, are
+**strays on an `oauth2` Security Scheme Object** rather than the `http`- and
+`apiKey`-shaped rows that carry those selectors, so `http-oauth` stays a `gap` and
+`apiKey-query` stays `limitations`; each row's evidence cell now records the
+declaration and why it is not that row's shape.
 
 | # | name | settles | state |
 |---:|---|---|---|
@@ -616,7 +623,7 @@ admission screens.
 | 134 | `sftpgo` | `media-type-range`, `operation-overrides-path-item-parameter` | ✅ byte-matched after eleven repairs |
 | 135 | `googleapis-servicebroker` | `duplicate-normalized-paths` | ✅ byte-matched after two repairs |
 | 136 | `audiobookshelf` | `media-type-range` | ✅ byte-matched after six repairs |
-| 137 | `steaminputdb` | `apiKey-query`, `http-oauth`, `oauth2-implicit` | ✅ byte-matched after six repairs |
+| 137 | `steaminputdb` | `oauth2-implicit` (jointly — one of five declarers) | ✅ byte-matched after six repairs |
 
 **The two candidates this batch does not register, and the rule that excludes
 each.** Both are admitted by the widened rule and both are accepted by Fern at the

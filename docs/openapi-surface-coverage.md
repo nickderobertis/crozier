@@ -59,7 +59,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 32 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 136 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 137 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -376,8 +376,8 @@ The six region files, read as one body of work. Two measurements feed it:
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
   rather than restated here, and that pin is now the current walk, so the check it
   guards runs to completion rather than halting on it.
-  It reads **168** registered sources, of which
-  **151** carry a committed golden. `document-paths`'s own evidence cells are
+  It reads **169** registered sources, of which
+  **152** carry a committed golden. `document-paths`'s own evidence cells are
   transcribed from that walk; the other five region files' cells are still dated
   to the earlier walks each was taken on, except that `schemas`, `bodies-media`
   and `parameters` have had the twenty-eight cells the free-map-key walk repair
@@ -411,13 +411,13 @@ for either; each bullet below says where its number comes from.
 | [`parameters`](openapi-surface/parameters.md) | 70 | 51 | 14 | 5 | 5 | 0 | 0 |
 | [`schemas`](openapi-surface/schemas.md) | 126 | 102 | 8 | 16 | 13 | 0 | 3 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 36 | 11 | 0 | 0 | 0 | 0 |
-| [`security`](openapi-surface/security.md) | 50 | 37 | 8 | 5 | 5 | 0 | 0 |
+| [`security`](openapi-surface/security.md) | 50 | 38 | 7 | 5 | 5 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 67 | 62 | 5 | 0 | 0 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 33 | 1 | 18 | 1 | 0 | 17 |
-| **total** | **412** | **321** | **47** | **44** | **24** | **0** | **20** |
+| **total** | **412** | **322** | **46** | **44** | **24** | **0** | **20** |
 
 The walk enumerated **412** features and landed each in exactly one category:
-**321** `golden`, **47** `limitations`, **44** `gap`. The `gap` column splits by
+**322** `golden`, **46** `limitations`, **44** `gap`. The `gap` column splits by
 settlement class into **24** `FIXTURE`, **0** `PROBE` and **20** `UNREACHABLE`.
 
 **What the `gap` count means.** 44 is the number of OpenAPI shapes for which
