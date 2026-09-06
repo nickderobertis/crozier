@@ -1022,6 +1022,44 @@ and **no witness search was run**, so this node put no source to any query. The
 settlement of the conjunction backlog is that the measurement had already
 emptied it.
 
+**That is a measured outcome, not an unrun check.** The nine were not assumed
+`golden` and skipped. `just surface-census --json` was re-run over all 164
+registered sources — 532 selectors, 817,028 declaration sites — and every one of
+the nine came back declared by at least one source whose committed golden
+byte-matches: 102 such sources for `schema.items>schema.$ref` at the wide end,
+one (`braintrust-dev`) for `schema.anyOf>schema.allOf` at the narrow one. That
+is condition 1 of [the precedence](#the-category-rules), so `limitations` is
+never reached and `gap` never reached either. The distinction is worth the
+sentence because a `gap` nobody found and a shape nobody measured read
+identically in a table that carries neither row: what this section reports is
+that the question was put to the corpus and came back answered, nine times out
+of nine.
+
+**What it would take for a future conjunction to land as a `gap`.** By the same
+precedence, a conjunction is a `gap` exactly when no registered source *carrying
+a committed golden* declares it and no [`fern-limitations.md`](fern-limitations.md)
+row names it. Two things put one there, and neither is far-fetched:
+
+- **A conjunction whose shape the corpus never writes.** The closed list of nine
+  is read off the six blind functions' own cases, and the sixteen holes
+  [the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case) names are
+  shapes no selector kind can express *yet*. Extend the grammar to express one —
+  each hole says which kind it would take — and the census can report the new
+  selector absent across all 164 sources, which is a `gap` carrying `FIXTURE` or
+  `PROBE` in its settlement cell like any other row in the two backlogs below.
+- **A conjunction only the goldenless half of the corpus declares.** Registration
+  and golden are two different things: twelve of the 114 sources declaring
+  `schema.items>schema.$ref` carry no committed golden, and four of the seventeen
+  declaring `schema.anyOf>schema.$ref` carry none. A conjunction declared *only*
+  by sources like those is a `gap` whose route is the cheapest of the four —
+  register the golden for a document the corpus already holds.
+
+That none of the nine is in either position is a fact about this corpus at this
+commit rather than a property of conjunctions, and the margin at the thin end is
+one document: `schema.anyOf>schema.allOf` rests on a single golden-carrying
+source and `schema.oneOf>schema.allOf` on two, so a corpus row withdrawn there
+would take a `golden` row to `gap` without anything in `src/` changing.
+
 #### What the conjunction pass moved in those six regions
 
 Nothing, and the measurement is published here rather than left to be inferred
