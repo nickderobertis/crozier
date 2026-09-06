@@ -643,6 +643,40 @@ generator has earned.
 
 ### The ranked `FIXTURE` backlog
 
+**Where this list stands, and the three ways a row left it.** It is empty. No
+region file carries a `FIXTURE` gap, so the ranking table at the end of this
+section has no rows, no median blind-spot count is published for it, and there is
+no population to narrate. That is a change of state rather than a change of rule:
+every row that ever stood here left by one of three routes, and which route a row
+took is what decides the evidence the tree now holds for it. The paragraphs below
+walk them in the order they happened; this is the shape they add up to.
+
+- **By a registered witness.** A real-world document was screened for licence and
+  immutable ref, put to Fern at 5.20.0, and committed as a corpus row with its
+  golden. The row is `golden`, and crozier's bytes are compared against Fern's
+  over that document on every `just check`. This is the only route that produces
+  parity evidence, and it is the route most of this list took — on the corpus
+  rows the paragraphs below name one by one, from row 94 through row 136.
+- **By a probe measurement.** No document this corpus could register was to be
+  had, so Fern's behaviour was measured on a locally authored probe and recorded
+  in [`fern-limitations.md`](fern-limitations.md). The row is `limitations`: it
+  carries a Fern verdict and **no** crozier-versus-Fern byte comparison. Twenty-four
+  rows left this way — twenty-one on
+  [route 2](#the-settlement-rule-as-amended), each naming the blocker that stops
+  its real witness being registered, and three on route 3, each naming the source
+  its search left unanswered. Every one of them stays convertible: a registrable
+  witness found later promotes it to `golden` under
+  [the classification precedence](#the-category-rules).
+- **By a measurement over goldens already registered.** Two rows needed neither a
+  new document nor a probe. `templated-path-segment` and
+  `several-path-template-variables` rested on the census being unable to read a
+  Paths Object key at all; two predicate selectors closed that, and the registered
+  corpus turned out to have been declaring both shapes all along — 93
+  golden-bearing sources declare a templated key and 53 a key carrying more than
+  one expression. Both are `golden`, on goldens that were already committed. What
+  moved was the instrument, not the corpus, which is why this route settles a row
+  with parity evidence and costs no document at all.
+
 **Pinned from this backlog:** [`header-allow-empty-value`](openapi-surface/parameters.md)
 is pinned by corpus row 94, `ndw-accessibility-map`; its two Header Objects declare
 the field and its Fern 5.20.0 golden byte-matches with no exclusions.
@@ -1429,6 +1463,25 @@ row entering either is held to — a shape whose settling measurement is a
 difference between two documents lands in the first, and a shape whose world-wide
 search returns `none-found` lands in the second.
 
+**What the two parts mean now that a third settlement route exists.** When the
+split was drawn, a `PROBE` row was the only kind of row a probe could settle: a
+`FIXTURE` row whose only real witness turned out to be unregistrable had no
+instrument at all, and nine rows stood in exactly that state.
+[The settlement rule](#the-settlement-rule-as-amended) now gives that row route 2,
+and a row whose search left a required source unanswered route 3, so a locally
+authored probe settles rows in three different places rather than one. That does
+not merge the two parts, and it does change what the split is *about*. It is no
+longer the line between rows a probe can settle and rows it cannot. It is the
+line between a probe that is the last word and a probe that is provisional: a
+structural row's measurement is permanent, because no corpus row could ever
+settle it however many documents were searched, while a witness-supply row's is
+not — and neither is a route 2 or route 3 row's. All three of those stay
+convertible, and a registrable witness found later promotes any of them to
+`golden` under [the classification precedence](#the-category-rules). Both parts
+being empty, the whole of that provisional set stands in the `limitations` column
+today rather than in this list, which is where a reader counting outstanding
+probe work should look for it and would otherwise find nothing.
+
 **What a row here records, and what it does not.** This section used to justify
 the whole list in one sentence — that each row asks what Fern does with a shape
 *no real-world document can isolate*. That was always a stronger claim than the
@@ -1489,8 +1542,11 @@ Two rows left this part rather than being counted in it. `duplicate-operation-id
 and `duplicate-normalized-paths` sat here reading as collisions inside one
 document, which is not a difference between two: one document declaring the
 collision generates a golden whose raw-client methods say what Fern did with it,
-so a corpus row settles either outright. Both are `FIXTURE` gaps above, ranked
-#40 and #5.
+so a corpus row settles either outright. Both became `FIXTURE` gaps, were ranked
+in the list above, and are `golden` now — `duplicate-normalized-paths` on corpus
+rows 127, 128 and 131 and `duplicate-operation-id` on rows 128, 129 and 132 —
+which is a row leaving this part by being reclassified and then settled by a
+registered witness, the longest of the three routes a row can take out of here.
 
 ### Witness-supply probes
 
