@@ -558,6 +558,116 @@ class GrammarContractTests(unittest.TestCase):
         documented = set(re.findall(r"`([A-Za-z][A-Za-z.]*:[a-z-]+)`", body))
         self.assertEqual(set(census.PREDICATES), documented)
 
+    # ------------------------------------------------------------------
+    # The fourth kind of selector: `<member>&<member>` and `<group>><group>`
+    # ------------------------------------------------------------------
+
+    CONJUNCTION_LIST = (
+        "The conjunctions are themselves a closed list of",
+        "A conjunction selector is a selector like any other",
+    )
+    CASE_ANALYSIS = (
+        "### The six blind regions of `src/ir.rs`, case by case",
+        "### Refreshing the coverage snapshot",
+    )
+
+    def documented_conjunctions(self) -> dict[str, str]:
+        """The closed list as the grammar section restates it: spelling -> sentence."""
+        text = self.DOC.read_text(encoding="utf-8")
+        start, end = self.CONJUNCTION_LIST
+        self.assertIn(start, text, "the grammar section documents no conjunction selector")
+        body = text.split(start, 1)[1].split(end, 1)[0]
+        found: dict[str, str] = {}
+        for bullet in body.split("\n- `")[1:]:
+            spelling, _, sentence = " ".join(bullet.split()).partition("` — ")
+            self.assertTrue(sentence, f"the {spelling!r} bullet says nothing about what it counts")
+            found[spelling] = sentence.rstrip(".")
+        return found
+
+    def case_rows(self) -> dict[str, list[list[str]]]:
+        """The case analysis as `#### function` -> its numbered rows' cells."""
+        text = self.DOC.read_text(encoding="utf-8")
+        start, end = self.CASE_ANALYSIS
+        self.assertIn(start, text, "the index carries no case analysis of the blind regions")
+        body = text.split(start, 1)[1].split(end, 1)[0]
+        found: dict[str, list[list[str]]] = {}
+        function = None
+        for line in body.splitlines():
+            heading = re.match(r"^#### `([a-z_]+)`$", line)
+            if heading:
+                function = heading.group(1)
+                found[function] = []
+                continue
+            row = re.match(r"^\| \d+ \| ", line.replace("\\|", "\x00"))
+            if row and function is not None:
+                cells = [c.replace("\x00", "\\|").strip() for c in
+                         line.replace("\\|", "\x00").strip().strip("|").split("|")]
+                self.assertEqual(3, len(cells), f"{function}: {line}")
+                found[function].append(cells)
+        return found
+
+    def documented_holes(self) -> set[str]:
+        text = self.DOC.read_text(encoding="utf-8")
+        start, end = self.CASE_ANALYSIS
+        body = text.split(start, 1)[1].split(end, 1)[0]
+        return set(re.findall(r"^\| \*\*(H-[a-z-]+)\*\* \|", body, re.M))
+
+    def test_the_documented_conjunction_selectors_are_the_ones_the_script_declares(self) -> None:
+        """The fourth kind of selector: a combination of fields, not one field.
+
+        Declared in the script and restated in the grammar section, spelling *and*
+        sentence, so an entry added to one and not the other fails here — the way
+        the valued-field and predicate lists above are already reconciled.
+        """
+        self.assertEqual(census.CONJUNCTIONS, self.documented_conjunctions())
+        stated = re.search(
+            r"closed list of (\d+), declared in", self.DOC.read_text(encoding="utf-8")
+        )
+        self.assertIsNotNone(stated, "the grammar no longer states how many conjunctions there are")
+        self.assertEqual(len(census.CONJUNCTIONS), int(stated.group(1)))
+
+    def test_every_conjunction_is_spelled_in_its_one_canonical_order(self) -> None:
+        """One shape, one name: two spellings of one conjunction would be two rows."""
+        for spelling in census.CONJUNCTIONS:
+            with self.subTest(spelling=spelling):
+                self.assertEqual(spelling, census.canonical_conjunction(spelling))
+
+    def test_the_case_analysis_covers_the_six_blind_functions_of_the_rule(self) -> None:
+        """The rule names six functions; the derivation has to work all six."""
+        rule = self.DOC.read_text(encoding="utf-8").split(
+            "> A conjunction is worth enumerating", 1
+        )[1].split("\n\n", 1)[0]
+        named = set(re.findall(r"`([a-z_]+)`", rule))
+        self.assertEqual(6, len(named), f"the rule names {sorted(named)}")
+        self.assertEqual(named, set(self.case_rows()))
+
+    def test_every_case_carries_one_declared_selector_or_one_declared_hole(self) -> None:
+        """No case in neither state, and none in both."""
+        holes = self.documented_holes()
+        self.assertTrue(holes, "the case analysis declares no enumeration hole")
+        for function, rows_of in self.case_rows().items():
+            self.assertTrue(rows_of, f"{function} lists no case")
+            for cells in rows_of:
+                with self.subTest(function=function, case=cells[0]):
+                    verdict = cells[2]
+                    hole = re.fullmatch(r"\*\*(H-[a-z-]+)\*\*", verdict)
+                    selector = re.fullmatch(r"`(.+)`", verdict)
+                    self.assertTrue(hole or selector, f"{verdict!r} is neither")
+                    if hole:
+                        self.assertIn(hole.group(1), holes)
+                    else:
+                        self.assertIn(selector.group(1), census.CONJUNCTIONS)
+
+    def test_every_declared_conjunction_is_read_off_a_case_of_a_blind_region(self) -> None:
+        """The list is bounded by the generator's branches, not by what `&` can spell."""
+        derived = {
+            re.fullmatch(r"`(.+)`", cells[2]).group(1)
+            for rows_of in self.case_rows().values()
+            for cells in rows_of
+            if re.fullmatch(r"`(.+)`", cells[2])
+        }
+        self.assertEqual(set(census.CONJUNCTIONS), derived)
+
     def test_each_region_file_repeats_the_index_s_boundary_verbatim(self) -> None:
         """Six copies of the region boundaries; the index's table is the original."""
         text = self.DOC.read_text(encoding="utf-8")
@@ -808,6 +918,170 @@ class CensusReportTests(unittest.TestCase):
             {"selector": "openapi.webhooks", "fixture": WEBHOOKS, "count": 1},
             payload["rows"],
         )
+
+
+class ConjunctionCensusTests(unittest.TestCase):
+    """What the fourth kind of selector answers, driven end to end over the corpus.
+
+    A conjunction has no counting logic of its own — the census composes its
+    members under `&` and `>` as it walks — so the only way to know a spelling
+    counts what it says is to run the real script over the real vendored documents
+    and assert every entry's number. One exemplar would leave the other eight
+    unproven, which is exactly how a mis-composed member would survive.
+
+    Each map below is the whole answer for one selector: every registered vendored
+    source that declares it and how many times. An empty map is the other answer
+    the instrument must be able to give — a shape the corpus has never seen — and
+    it is the evidence a `gap` row would cite.
+
+    Nine selectors and not more: a case carries one only where the arm's own
+    condition is that a field is written, because anything else the arm reads —
+    an example's JSON kind, a `properties` map's emptiness, an `enum`'s value
+    types, which member of a `type` array comes first — is a condition no selector
+    kind expresses, and a selector ignoring it would count documents the generator
+    sends elsewhere. The other forty-four cases are enumeration holes.
+
+    The numbers are the census's own, and an independent count over every vendored
+    document agrees with all nine. It agrees only because none of the nine reaches
+    the one place this walk under-reports: `query-parameters-openapi` writes an
+    unquoted `200:` status code, the walk skips a free-map key that is not a
+    string, and so the whole Response Object under it goes unvisited — costing the
+    plain `schema.properties` and `schema.type=array` selectors a site each. The
+    defect predates conjunctions, and fixing it moves published per-source evidence
+    counts, so it belongs to a change that may edit the region files.
+    """
+
+    DECLARED = {
+        "schema.anyOf>schema.$ref": {},
+        "schema.anyOf>schema.allOf": {},
+        "schema.items>schema.$ref": {
+            "audience-filter": 1, "audience-filter-strict": 1,
+            "crozier-sdk-extensions": 1, "exhaustive": 7, "inline-array-request": 1,
+            "inline-request-response": 1, "oauth-client-credentials": 1,
+            "query-parameters-openapi": 2, "recursive-types": 2,
+        },
+        "schema.items>schema.anyOf": {},
+        "schema.items>schema.oneOf": {},
+        "schema.oneOf>schema.$ref": {
+            "discriminated-unions": 1, "query-parameters-openapi": 2,
+            "recursive-types": 1,
+        },
+        "schema.oneOf>schema.allOf": {"exhaustive": 1},
+        "schema.properties>schema.anyOf": {},
+        "schema.properties>schema.oneOf": {},
+    }
+
+    # A conjunction no vendored source declares, asserted as absent rather than as
+    # silence — the other half of what `--selector` has to answer.
+    ABSENT = "schema.items>schema.anyOf"
+
+    def test_the_closed_list_is_the_one_this_case_answers_for(self) -> None:
+        """An entry added to the script and not here would go unmeasured."""
+        self.assertEqual(set(census.CONJUNCTIONS), set(self.DECLARED))
+
+    def test_every_conjunction_counts_what_its_own_composition_implies(self) -> None:
+        completed = run("--vendored-only", "--json")
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        reported: dict[str, dict[str, int]] = {selector: {} for selector in census.CONJUNCTIONS}
+        for row in json.loads(completed.stdout)["rows"]:
+            if row["selector"] in census.CONJUNCTIONS:
+                reported[row["selector"]][row["fixture"]] = row["count"]
+        for selector, expected in self.DECLARED.items():
+            with self.subTest(selector=selector):
+                self.assertEqual(expected, reported[selector], census.CONJUNCTIONS[selector])
+
+    def test_a_conjunction_reports_one_row_per_source_declaring_it(self) -> None:
+        """`--selector` takes a conjunction like any other selector."""
+        selector = "schema.oneOf>schema.$ref"
+        completed = run("--vendored-only", "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(
+            {(selector, fixture): count for fixture, count in self.DECLARED[selector].items()},
+            rows(completed),
+        )
+
+    def test_an_any_of_only_document_is_counted_by_its_own_spelling(self) -> None:
+        """The correction the `anyOf` half of the closed list exists for.
+
+        `nested_array_element`, `hoist_union_variant` and `prop_type_ref` all reach
+        their union arms through `one_of.as_ref().or(any_of.as_ref())`, so a
+        document that writes only `anyOf` selects those branches exactly as one
+        writing `oneOf` does. A closed list naming only the `oneOf` spelling would
+        report this document as declaring none of them — silence that reads as
+        "the corpus has never seen this shape" when the corpus is looking at it.
+        """
+        document = """\
+            openapi: 3.0.3
+            info: {title: any-of-only, version: "1"}
+            paths: {}
+            components:
+              schemas:
+                Bag:
+                  type: object
+                  properties:
+                    choice:
+                      anyOf:
+                        - type: string
+                        - type: integer
+                    many:
+                      type: array
+                      items:
+                        anyOf:
+                          - type: string
+                          - type: integer
+            """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_fixture(root, "any-of-only", document)
+            completed = run("--vendored-only", "--fixtures-root", str(root))
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        counted = rows(completed)
+        for selector in ("schema.items>schema.anyOf", "schema.properties>schema.anyOf"):
+            with self.subTest(selector=selector):
+                self.assertEqual(1, counted.get((selector, "any-of-only")))
+        for selector in ("schema.items>schema.oneOf", "schema.properties>schema.oneOf"):
+            with self.subTest(selector=selector):
+                self.assertNotIn((selector, "any-of-only"), counted)
+
+    def test_a_misspelling_of_a_conjunction_is_refused_by_name(self) -> None:
+        for selector, expected in (
+            ("schema.items>schema.oneof", "Did you mean: schema.items>schema.oneOf"),
+            ("schema.oneOf&schema.discriminator", "is not one of the conjunction selectors"),
+            ("schema.items>schema.maxLength", "is not one of the conjunction selectors"),
+            # Withdrawn as inexact: the arm also reads the example's JSON kind and
+            # rejects a schema-shaped object, so this spelling counted documents
+            # `hoist_union_variant` sends to `base_type_ref`. H-example-value now.
+            (
+                "schema.oneOf>schema.example&schema.type=object",
+                "is not one of the conjunction selectors",
+            ),
+            # Withdrawn as inexact: `is_inline_struct` needs `properties` to be
+            # non-empty, so a declared-empty `properties: {}` was counted and is
+            # not an inline object at all. H-empty-collection now.
+            (
+                "schema.properties>schema.properties",
+                "is not one of the conjunction selectors",
+            ),
+        ):
+            with self.subTest(selector=selector):
+                completed = run("--vendored-only", "--selector", selector)
+                self.assertEqual(1, completed.returncode, completed.stdout)
+                self.assertIn(repr(selector), completed.stderr)
+                self.assertIn(expected, completed.stderr)
+                self.assertNotIn("declared by no registered source", completed.stdout)
+
+    def test_a_conjunction_no_registered_source_declares_is_reported_as_absent(self) -> None:
+        self.assertEqual({}, self.DECLARED[self.ABSENT], "the corpus now declares the absent case")
+        completed = run("--vendored-only", "--selector", self.ABSENT)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({}, rows(completed))
+        self.assertIn(self.ABSENT, completed.stdout)
+        self.assertIn("(declared by no registered source)", completed.stdout)
+
+        as_json = run("--vendored-only", "--json", "--selector", self.ABSENT)
+        payload = json.loads(as_json.stdout)
+        self.assertEqual([], payload["rows"])
+        self.assertEqual([self.ABSENT], payload["absent_selectors"])
 
 
 class ObjectModelWalkTests(unittest.TestCase):

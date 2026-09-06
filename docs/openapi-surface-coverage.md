@@ -152,6 +152,115 @@ A predicate selector is a selector like any other everywhere else: `--selector`
 accepts one, refuses a misspelling of one by name, and reports an undeclared one
 as absent.
 
+A shape that is a **combination** of fields rather than one field emits a
+**conjunction selector**, the fourth and last kind. The three kinds above each
+name one thing about one node and are all position-insensitive, so `$ref`,
+`items`, `oneOf` and `properties` are each `golden` on their own while every
+combination of them is unnamed, unmeasured and unclassifiable — which is why the
+six blind regions of `src/ir.rs`
+[the join table names](#the-ranked-list-against-golden-blind-spots) appear in
+neither the feature denominator nor the gaps. Two composition operators over the
+selectors already defined close that:
+
+- **`&` joins members declared at one object-model node.** Each member is a
+  field, valued or predicate selector the grammar already accepts, written in its
+  own spelling.
+- **`>` descends into the object a field's value is**, so the members after it
+  are read against that object rather than the one before it. It composes left to
+  right, and a group joined by `&` sits at one position.
+
+A conjunction has exactly one name: a group's members are written in
+lexicographic order, except that the member a following `>` descends through is
+written last, since that is the member the operator binds to. So an array schema
+whose `items` declare a `oneOf` is `schema.type=array&schema.items>schema.oneOf`
+and nothing else.
+
+The **count rule is the one the grammar already has**: one per node at the
+*leftmost* position — one per place the shape is written. So
+`schema.items>schema.type=array` counts one per Schema Object whose `items` value
+declares an array type, and `schema.discriminator&schema.oneOf` would count one
+per Schema Object declaring both. A field holding several objects (a `oneOf`
+list, a `properties` map) satisfies the members after the `>` when any one of
+those objects does, which is what keeps the count one per leftmost node rather
+than one per member.
+
+**Which conjunctions are enumerable.** The operators can spell an unbounded set —
+four schema fields alone make fifteen non-empty combinations before nesting, and
+unbounded with it — so what bounds the list is not the grammar but the generator:
+
+> A conjunction is worth enumerating **iff two source documents differing only in
+> it take different paths through one of the six blind functions** of
+> `src/ir.rs` — `resolve_schema_pointer`, `nested_array_element`,
+> `hoist_union_variant`, `ref_to_class`, `prop_type_ref`, `path_group`.
+
+The list is therefore read off those functions' own branch structure, one
+selector per branch a document can select, and never off the cross-product of the
+grammar: `nested_array_element` distinguishes nine cases a document can reach,
+where the cross-product of the four fields driving it would offer fifteen
+combinations before nesting and unboundedly many with it. The code is the bound, and
+[the case analysis below](#the-six-blind-regions-of-srcirrs-case-by-case) is the
+derivation, branch by branch, of every entry and of every branch no selector kind
+can express. Three conventions that derivation applies, stated once:
+
+- **A function's entry gate is the leftmost member of each of its cases**, not a
+  case of its own: two documents differing only in whether they write `items`
+  differ in a *field*, which the grammar already names, rather than in a
+  conjunction.
+- **A branch reached through `x.or(y)` is two cases, not one.**
+  `one_of.as_ref().or(&any_of)` is selected identically by a document that writes
+  only `anyOf`, and a selector naming `schema.oneOf` does not count that document,
+  so both spellings are declared. Where a second `or` sits inside the first the
+  cases are their product; where the callee narrows one spelling away, only the
+  surviving spelling is declared.
+- **A case carries a selector only when that selector is exact; otherwise it is a
+  hole.** Exact means the nodes the census counts and the nodes that select the
+  branch differ *only* where another case of the same table claims them. Arms in a
+  chain overlap by construction — a later arm runs only because the earlier ones
+  did not — and an overlap between two listed cases is visible to a reader,
+  because both are in the table. What disqualifies a selector is the arm's **own**
+  condition reading something no selector kind can express: a JSON value's kind or
+  content, a collection's emptiness or length, a boolean field's value, which
+  member of a `type` array comes first, or a negation. Then the count silently
+  includes documents that select *no* case of the table, and nothing says so.
+
+  This rules out a selector **narrower** than its case — one continuation of
+  `resolve_schema_pointer`'s `"allOf"` arm, leaving every other pointer form
+  uncounted — and equally one **broader** than it: `schema.oneOf>schema.example&schema.type=object`
+  would count a variant declaring `type: object` beside a scalar example, an empty
+  `examples`, or an object whose values are themselves schema declarations, and
+  `hoist_union_variant` sends all three to `base_type_ref`. Nine of the
+  fifty-three cases below survive this test; the other forty-four name the
+  extension that would close them.
+
+Every case whose own condition is the presence of a field and nothing more, and
+no other, earns one. The conjunctions are themselves a closed list of 9, declared in
+`scripts/openapi-surface-census.py` beside the predicate table and restated here,
+with a drift gate over the pair:
+
+- `schema.anyOf>schema.$ref` — one per Schema Object one of whose `anyOf`
+  members is a Reference Object.
+- `schema.anyOf>schema.allOf` — one per Schema Object one of whose `anyOf`
+  members declares `allOf`.
+- `schema.items>schema.$ref` — one per Schema Object whose `items` value is a
+  Reference Object.
+- `schema.items>schema.anyOf` — one per Schema Object whose `items` value
+  declares `anyOf`.
+- `schema.items>schema.oneOf` — one per Schema Object whose `items` value
+  declares `oneOf`.
+- `schema.oneOf>schema.$ref` — one per Schema Object one of whose `oneOf`
+  members is a Reference Object.
+- `schema.oneOf>schema.allOf` — one per Schema Object one of whose `oneOf`
+  members declares `allOf`.
+- `schema.properties>schema.anyOf` — one per Schema Object one of whose
+  properties declares `anyOf`.
+- `schema.properties>schema.oneOf` — one per Schema Object one of whose
+  properties declares `oneOf`.
+
+A conjunction selector is a selector like any other everywhere else: `--selector`
+accepts one, refuses a misspelling of one by name — and refuses a well-formed
+combination nobody declared, because the list is closed by the code rather than
+by the operators — and reports an undeclared one as absent.
+
 **A selector absent from the census output for every registered source is a
 feature no registered source declares.** That absence is the evidence a `gap` row
 cites, and `--selector` prints it as such rather than printing nothing.
@@ -647,7 +756,7 @@ functions named in each verdict are counted from that union.
 | `src/openapi.rs` | 511 | all-e2e 221, non-e2e 290 | 4 — #23 `http-hoba`, #24 `http-oauth`, #25 `http-scram-sha-1`, #26 `http-scram-sha-256` | **Agrees, and accounts for the rest.** #23–#26 — `http-hoba`, `http-oauth`, `http-scram-sha-1` and `http-scram-sha-256` — are one `#[serde(other)]` scheme fallback arm, four IANA scheme members that collapse through it. `normalize_parameters`, 3 regions, was a fifth until corpus row 122 settled `operation-overrides-path-item-parameter` `golden` and it left the ranked list, and the `operation_id` field declaration was a sixth until corpus row 128 settled `duplicate-operation-id` the same way. The largest block, `filter_ignored` 72, is the walk's `x-fern-or-crozier-ignore` — now `golden`, on corpus row 108's four `x-fern-ignore` operations, though golden-classified is not golden-*exhausted*: one witness reaches the Operation-Object arm and leaves the schema arm and the `x-crozier-*` precedence to unit tests. `filter_by_audience` 47 + `audiences` 8 belong to `audience-dual-header-policy`, classified `golden`: golden-classified is not golden-*exhausted*, since the two audience goldens declare 8 sites between them and leave the rest of the branch space to unit tests. `collect_schema_refs` 46 + `expand_schema_closure` 32 + `operation_schema_seed` 24 is `$ref`-closure pruning under `reference-ref` (`golden`); `load` 26 + `visit_seq` 7 + `de_composition` 5 are malformed-document deserialization paths the corpus excludes by taking only documents Fern generates. |
 | `src/cli.rs` | 292 | all-e2e 133, non-e2e 159 | none | **Neither**, as `src/settings.rs`: `do_config` 60, `run` 43, `do_init` 26, `do_generate` 12 are the command surface, not document behaviour. |
 | `src/emit.rs` | 261 | all-e2e 29, non-e2e 232 | none | **A shape the walk missed.** The one ranked gap that pointed here, `media-type-range`, named `append_request_call_args` — which is not among the blind regions at all — and corpus row 127 has since settled it `golden`. The blind regions are example rendering — `raw_type_str_ctx` 40, `example_matches_type` 24, `build_example_inner` 23, `named_value_inner` 13, `value_from_example` 12, `example_from_json` 6 — and streaming docstrings, `client_stream_docstring` 11 + `raw_stream_docstring` 10. Every `example`/`examples` field is classified `golden`, but the walk enumerates the *field*; those branches switch on the JSON value *kind* an example holds, and example values are not in the grammar's closed list of valued selectors, so no `gap` row could have named them. |
-| `src/ir.rs` | 201 | all-e2e 9, non-e2e 192 | 7 — #20–#26 | **Agrees on the file, misses the shapes.** The blind regions are type-lowering conjunctions: `resolve_schema_pointer` 25, `nested_array_element` 25, `hoist_union_variant` 24, `ref_to_class` 22, `prop_type_ref` 20, `path_group` 15. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own; it is their *combinations* that no golden reaches, and the census emits one selector per field and none per conjunction. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); nobody ran one over schema-composition combinations. |
+| `src/ir.rs` | 201 | all-e2e 9, non-e2e 192 | 7 — #20–#26 | **Agrees on the file, misses the shapes.** The blind regions are type-lowering conjunctions: `resolve_schema_pointer` 25, `nested_array_element` 25, `hoist_union_variant` 24, `ref_to_class` 22, `prop_type_ref` 20, `path_group` 15. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own; it is their *combinations* that no golden reaches, and the census emitted one selector per field and none per conjunction until the [conjunction selectors](#the-selector-grammar) were declared off these six functions' own branches ([case by case](#the-six-blind-regions-of-srcirrs-case-by-case)) — naming the shapes, which is what makes them classifiable, not what classifies them. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); nobody ran one over schema-composition combinations. |
 | `src/refs.rs` | 74 | all-e2e 17, non-e2e 57 | none | **Only a probe can settle it.** `resolve_reference` 16, `document` 10, `pointer` 9, `error` 7, `curl_fetch` 7 are the cross-document `$ref` path. The corpus is single-document by construction ([`matching.md`](matching.md#cross-document-ref-resolution-issue-77)), and the ledger's `relative-file-ref` row is already `discards + pipeline` — its own note being that crozier's fixture pipeline cannot register the tree that would make the reference resolve. No corpus row is in reach. |
 | `src/schema.rs` | 46 | all-e2e 23, non-e2e 23 | none | **Neither.** `build` 20 emits crozier's own config JSON Schema. |
 | `src/lib.rs` | 33 | all-e2e 1, non-e2e 32 | none | **Neither.** `render_files` 29 is the filesystem write path. |
@@ -674,6 +783,177 @@ mis-prioritise. Nine of the twelve files have no ranked gap pointing at them: on
 shape the walk missed, and the remaining seven are outside the walk's subject
 entirely — they carry no OpenAPI-derived code, so neither a fixture nor a probe
 is their instrument.
+
+### The six blind regions of `src/ir.rs`, case by case
+
+The join table's `src/ir.rs` verdict names six functions the goldens never reach
+and says why the walk could not name them: *"it is their combinations that no
+golden reaches, and the census emits one selector per field and none per
+conjunction."* It now emits one per conjunction, and this is the derivation —
+every branch of each of those six functions a source document can select, under
+[the enumeration rule](#the-selector-grammar), quoting the function and the case
+it distinguishes.
+
+**Every case below is in exactly one of two states.** It carries exactly one
+selector from the closed list of 9 — and only where that selector is *exact*,
+counting the nodes the branch is selected by and no others — or it is recorded as
+one of sixteen enumeration holes naming the property no selector kind can express
+and what closing it would take —
+the way `normalization-collision` was recorded before `components.schemas:normalized-collision`
+existed. No case is in neither, and none is in both.
+
+| hole | what no selector kind can express | what closing it would take |
+|---|---|---|
+| **H-residual** | a function's residual arm is selected by the *absence* of every case above it | a negation operator over a group's members, deliberately absent: a complement is not a shape a document declares |
+| **H-negated-value** | that a value was *not* written — `is_inline_struct`'s `!declares_scalar_type(schema)`, which excludes a schema whose `type` is `string`, `number`, `integer` or `boolean` | the same negation operator H-residual names; the four positive spellings are valued selectors the grammar already has, and only their complement is missing |
+| **H-arity** | the *number* of members a composition field declares — `let [member] = schema.all_of…as_slice()`, `non_null.len() == 1`, `members.len() == 1` | a predicate over a composition field's length (`schema.allOf:sole-member`, `schema.oneOf:sole-non-null-member`), of the family `operation.tags:multiple` already is |
+| **H-empty-collection** | whether a map- or list-valued field is *non-empty* — `is_inline_object` and `is_inline_struct` both read `!schema.properties.is_empty()`, so a declared-but-empty `properties: {}` is not an inline object at all | a predicate `schema.properties:non-empty`, again a length predicate of the `operation.tags:multiple` family |
+| **H-boolean-value** | which *boolean* a schema-or-boolean field was written with — `is_inline_struct`'s `AdditionalProperties::Bool(false)` arm | `schema.additionalProperties` added to the closed list of valued fields for its boolean spelling |
+| **H-type-multiplicity** | *which* member of a `type` array is the one a branch reads: `TypeField::primary()` takes the first non-`null` member, while `schema.type=array` counts a schema declaring `array` anywhere among its types, so a 3.1 `type: [string, array]` is counted and takes the string path | a valued selector reading a member's *position* rather than its presence (`schema.type:primary=array`), which is a predicate over the `type` field's array |
+| **H-example-value** | the JSON *kind and content* of an `example` or `examples` value — `hoist_union_variant`'s bare-object arm needs `schema_example(variant)` to yield an object that `example_is_schema_definition` does not reject, so a `type: object` variant beside a scalar example, an empty `examples`, or an object whose every value is itself a schema declaration is counted and takes `base_type_ref` | a valued selector over an example's JSON kind (`schema.example=object`) *and* a predicate `schema.example:schema-shaped` for the rejection half — one new member of the valued-field list and one new predicate, since neither alone decides the arm |
+| **H-enum-value-kind** | that an `enum`'s or `const`'s values are *strings* — `string_enum_values` returns `None` for `enum: [1, 2, 3]` on a schema that is not `type: string`, and for a `type: string` enum whose values are all non-strings | a predicate `schema.enum:string-valued`, of the same value-reading family as H-example-value |
+| **H-discriminant-value** | that a union's members each carry a discriminable value for the discriminant property — `discriminated_union` requires `discriminant_value` (a one-member string `enum`, or a string `example`) on every member when no `mapping` is written, and every `mapping` target to resolve when one is; a `discriminator` beside a `oneOf` is therefore not enough to select the arm, and the inferred spelling reads the same member values with no `discriminator` written at all | a predicate comparing the members of one `oneOf` against each other and against a named property's value, of the family `operation.operationId:duplicate` already is |
+| **H-annotated-ref** | that an `allOf` holds exactly one `$ref` beside members that add nothing but a description — `described_all_of_ref` requires at least two members, exactly one of them a reference, and every other `is_unknown` | the length predicate H-arity names, plus a predicate over what the remaining members declare; `schema.allOf` alone counts every `allOf` there is |
+| **H-ref-target** | the shape of the schema a `$ref` *points at*: the walk counts a Reference Object and never descends | a resolving walk, which is a different instrument — the target's own declaration site is already counted where it is written |
+| **H-pointer-form** | the segment structure of a `$ref` *value*, as in `#/components/schemas/A/allOf/0/properties/b` | a predicate family over `schema.$ref` (`:components-schemas-pointer`, `:nested-properties`, `:nested-items`, `:composition-index`, `:foreign-pointer`), of the family the three `openapi.paths:` predicates already are over a key's shape |
+| **H-pointer-nesting** | that a `$ref` value's segment sequence addresses the nesting a schema declares: each arm's schema-side half is already named by a plain field selector (`schema.allOf`, `schema.properties`, `schema.items`), and what no kind can express is the *correspondence* between the two, which is a joint property of a value and the document it points into | the `schema.$ref` pointer-form predicate family H-pointer-form names, evaluated against the resolving walk H-ref-target names — both together, and neither is a conjunction over one node's declared fields |
+| **H-pointer-target** | whether a `$ref` value names a key `components.schemas` declares | a predicate comparing one document's `$ref` values against its own component names, of the family `components.schemas:normalized-collision` already is |
+| **H-key-segment-position** | *which* segment of a Paths Object key carries a template expression | a predicate `openapi.paths:leading-template-segment`, of the family the three `openapi.paths:` predicates already are |
+| **H-key-all-templated** | that *every* segment of a Paths Object key is a template expression | a predicate `openapi.paths:all-segments-templated`, same family |
+
+Declaring any of those predicates is a change to the *predicate* list, not to the
+conjunction list this section derives; each hole says which one it would take, so
+the next node reads the work off the row rather than rediscovering it.
+
+#### `resolve_schema_pointer`
+
+Every branch here is selected by the pointer *string* — `match part` reads a
+segment of the `$ref` value, never a field of the document — and each arm then
+resolves only where the schema at that position declares the field that segment
+names, with that index or key. The schema-side half of every arm is therefore a
+single field the grammar already names (`schema.allOf`, `schema.oneOf`,
+`schema.anyOf`, `schema.properties`, `schema.items`); what is unnamed is the
+correspondence between a `$ref` value's segments and the nesting they address,
+which is a joint property of a value and the document it points into rather than
+a combination of fields at one node. A conjunction such as
+`schema.allOf>schema.properties` would name *one* continuation of the `"allOf"`
+arm — the pointer that goes on to `properties` — and would leave
+`allOf/{i}/items`, `allOf/{i}/oneOf/{j}`, a bare `allOf/{i}` and every deeper form
+uncounted, so this region is recorded as holes rather than covered by a narrower
+shape.
+
+| # | the branch it distinguishes | selector or hole |
+|---|---|---|
+| 1 | `reference.strip_prefix("#/components/schemas/")?` — the reference is not a component-schema pointer | **H-pointer-form** |
+| 2 | `schemas.get(parts.next()?)?` — the pointer's head names no declared component | **H-pointer-target** |
+| 3 | `"allOf" => schema.all_of.as_ref()?.get(parts.next()?.parse::<usize>().ok()?)?` — schema-side half `schema.allOf`, entered for any continuation | **H-pointer-nesting** |
+| 4 | `"oneOf" => schema.one_of.as_ref()?.get(…)?` — schema-side half `schema.oneOf` | **H-pointer-nesting** |
+| 5 | `"anyOf" => schema.any_of.as_ref()?.get(…)?` — schema-side half `schema.anyOf` | **H-pointer-nesting** |
+| 6 | `"properties" => schema.properties.get(parts.next()?)?` — schema-side half `schema.properties`, keyed by a property *name*, which the count rule excludes | **H-pointer-nesting** |
+| 7 | `"items" => schema.items.as_deref()?` — schema-side half `schema.items` | **H-pointer-nesting** |
+| 8 | `_ => return None` — a segment none of the five names | **H-pointer-form** |
+
+#### `nested_array_element`
+
+Its entry gate is `let items = array.items.as_deref()?`, carried as the leftmost
+member `schema.items` of every case rather than listed as a case of its own.
+
+| # | the branch it distinguishes | selector or hole |
+|---|---|---|
+| 1 | `items.reference.is_none() && items.ty…primary() == Some("array")` — the recursive nested-array descent | **H-type-multiplicity** |
+| 2 | `self.discriminated_union(&name, &module, items, …)` returning `Some`, in either the written-`discriminator` spelling or the inferred one | **H-discriminant-value** |
+| 3 | `if items.reference.is_some() { return None; }` — the arm's own condition is that the field is written, and nothing more | `schema.items>schema.$ref` |
+| 4 | `is_inline_struct(items)` → `add_object`, on an `items` whose `properties` are non-empty | **H-empty-collection** |
+| 5 | the same arm on an `items` declaring `allOf`, which `is_inline_struct` takes only for a schema declaring no scalar `type` | **H-negated-value** |
+| 6 | the same arm on `type: object` with `additionalProperties: false` | **H-boolean-value** |
+| 7 | `items.one_of.as_ref().or(items.any_of.as_ref())` → the hoisted union alias, `oneOf` spelling; the gate is `Option::is_some`, so an empty `oneOf: []` selects it too | `schema.items>schema.oneOf` |
+| 8 | the same arm, `anyOf` spelling: an `items` declaring only `anyOf` reaches it identically | `schema.items>schema.anyOf` |
+| 9 | the closing `None` | **H-residual** |
+
+#### `hoist_union_variant`
+
+Every caller reaches it through `one_of.as_ref().or(any_of.as_ref())` — the
+named-schema, response and request-body hoisters, `prop_type_ref`, and its own
+recursion — so a document declaring only `anyOf` selects every case below exactly
+as one declaring `oneOf` does, and each case that survives the exactness test is
+two. Cases 4 to 7 all sit inside `if variant.ty…primary() == Some("array")`, so
+each carries H-type-multiplicity on top of the condition its own row names; the
+row names the narrower one.
+
+| # | the branch it distinguishes | selector or hole |
+|---|---|---|
+| 1 | `if let Some(reference) = &variant.reference` — the variant is a Reference Object, `oneOf` head; the first arm, so nothing precedes it | `schema.oneOf>schema.$ref` |
+| 2 | the same arm, `anyOf` head | `schema.anyOf>schema.$ref` |
+| 3 | `if let Some(member) = simple_nullable_member(item)` — one element member beside `type: null`, typed `List[Optional[…]]` | **H-arity** |
+| 4 | an array variant whose item composes, `hoist_discriminated_union(&item_name, item, …)` returning `Some` | **H-discriminant-value** |
+| 5 | the same item falling through to the `TypeDecl::Alias` union over `item.one_of.as_ref().or(item.any_of.as_ref())`; the inner gate is exact, the `type: array` guard around it is not | **H-type-multiplicity** |
+| 6 | `described_all_of_ref(item)` resolving → `hoist_named_copy` of the annotated `$ref` | **H-annotated-ref** |
+| 7 | `item.reference.is_none() && is_inline_struct(item)` → `hoist_object` | **H-empty-collection** |
+| 8 | `is_inline_object(variant)` → `hoist_object` on a variant whose `properties` are non-empty, either head | **H-empty-collection** |
+| 9 | the same arm on a variant declaring `allOf` — `is_inline_object` is a disjunction and carries no scalar-type guard, so `all_of.is_some()` is the whole of it; `oneOf` head | `schema.oneOf>schema.allOf` |
+| 10 | the same arm, `anyOf` head | `schema.anyOf>schema.allOf` |
+| 11 | `is_bare_object(variant) && schema_example(variant).is_some_and(…)` — the arm reads the example's JSON kind and rejects a schema-shaped object | **H-example-value** |
+| 12 | the closing `base_type_ref(variant)` | **H-residual** |
+
+#### `prop_type_ref`
+
+It is called on each member of `properties`, so `schema.properties` is the
+leftmost member of every case.
+
+| # | the branch it distinguishes | selector or hole |
+|---|---|---|
+| 1 | the outer `if let (Some(schemas), Some((reference, description))) = (self.schemas, described_all_of_ref(prop_schema))` gate | **H-annotated-ref** |
+| 2 | inside it, `if let Some(values) = string_enum_values(&target)` → a hoisted enum | **H-ref-target** |
+| 3 | inside it, `if target.one_of.is_some() \|\| target.any_of.is_some()` → `hoist_named_copy` | **H-ref-target** |
+| 4 | inside it, `!is_map(&target) && !is_bare_object(&target) && …` → `hoist_object_with_doc` | **H-ref-target** |
+| 5 | inside it, the closing `full_type_ref_resolved(&target, schemas)` | **H-ref-target** |
+| 6 | `if let Some(member) = sole_inline_all_of(prop_schema)` — one inline `allOf` member and nothing else declared | **H-arity** |
+| 7 | `string_enum_values(prop_schema)` → a hoisted enum, which the helper refuses unless the values are strings | **H-enum-value-kind** |
+| 8 | `prop_schema.reference.is_none() && is_inline_struct(prop_schema)` → `hoist_object` | **H-empty-collection** |
+| 9 | `if let Some(members) = prop_schema.one_of.as_ref().or(prop_schema.any_of.as_ref())` — the composition gate, whose own condition is that the field is written; `oneOf` spelling | `schema.properties>schema.oneOf` |
+| 10 | the same gate, `anyOf` spelling: a property declaring only `anyOf` reaches every arm below it identically | `schema.properties>schema.anyOf` |
+| 11 | inside it, `non_null.len() == 1 && non_null.len() != members.len()` — the nullable pair collapsing to its one member | **H-arity** |
+| 12 | inside it, `members.len() == 1 && is_inline_struct(&members[0])` | **H-arity** |
+| 13 | inside it, `if let Some(union) = self.hoist_discriminated_union(&name, prop_schema, …)` | **H-discriminant-value** |
+| 14 | inside it, the closing alias over the members left after `is_null_variant` filtering | **H-residual** |
+| 15 | `prop_schema.ty…primary() == Some("array")` → `hoist_array_item_type` | **H-type-multiplicity** |
+| 16 | the closing `base_type_ref(prop_schema)` | **H-residual** |
+
+#### `ref_to_class`
+
+Wholly an enumeration hole, and routed there rather than left underived: the
+function opens no schema — it reads the reference *string* and nothing else — so
+no conjunction over declared fields changes its path, and every one of its cases
+is decided by the pointer's segment structure, which is what a predicate selector
+is for and which the grammar declares none over.
+
+| # | the branch it distinguishes | selector or hole |
+|---|---|---|
+| 1 | `let Some(pointer) = reference.strip_prefix("#/components/schemas/") else { … }` — a foreign pointer, named off its last segment | **H-pointer-form** |
+| 2 | `"properties" if index + 1 < parts.len() => name.push_str(&naming::class_name(parts[index + 1]))` | **H-pointer-form** |
+| 3 | `"items" => name.push_str("Item")` | **H-pointer-form** |
+| 4 | `"allOf" \| "oneOf" \| "anyOf" => index += 2` — a composition index contributes no name | **H-pointer-form** |
+| 5 | `_ => index += 1` | **H-pointer-form** |
+
+#### `path_group`
+
+Wholly an enumeration hole for the same reason: it reads the request URL and
+opens no schema. `openapi.paths:templated-key` says a key carries a template
+expression and `openapi.paths:several-template-expressions` says it carries more
+than one; neither says *which* segment carries it or whether all of them do,
+which is the only thing this function reads.
+
+| # | the branch it distinguishes | selector or hole |
+|---|---|---|
+| 1 | `.find(\|s\| !(s.starts_with('{') && s.ends_with('}')))` returning the key's first segment | **H-key-segment-position** |
+| 2 | the same `find` returning a later segment, having skipped a templated one | **H-key-segment-position** |
+| 3 | `.unwrap_or("service")` — every segment is templated, or the URL has none | **H-key-all-templated** |
+
+**What this section does not do.** It declares selectors and adds no row to any
+region file: every category, every settlement and every published total is what
+it was. Naming a shape is what makes it classifiable, not what classifies it —
+the census can now answer for these conjunctions, and what the answers mean for
+the six region files is the next node's work.
 
 ### Refreshing the coverage snapshot
 
