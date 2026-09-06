@@ -263,12 +263,18 @@ deciding and the last being a total tiebreak:
 The six region files, read as one body of work. Two measurements feed it:
 
 - **`just surface-census`**, for the classifications and for criterion 4. The
-  snapshot is the one every region file's evidence was taken from, pinned by
-  digest in
+  snapshot is pinned by digest in
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
-  rather than restated here; the twenty-three sources corpus rows 110-132 added
-  since are walked into the counts below. It reads **164** registered sources, of which
-  **147** carry a committed golden.
+  rather than restated here, and that pin is now the current walk, so the check it
+  guards runs to completion rather than halting on it.
+  It reads **164** registered sources, of which
+  **147** carry a committed golden. `document-paths`'s own evidence cells are
+  transcribed from that walk; the other five region files' cells are still dated
+  to the earlier walks each was taken on, and refreshing them is each file's own
+  measurement against this same pin. No classification in this section depends on
+  which walk a cell was taken from — a category moves only when a source is
+  registered or a selector is added, and both are recorded in that section's own
+  history.
 - **`just fixtures-coverage`**, for criterion 2 alone. That recipe is outside
   `just check` — it needs network and runs the corpus instrumented — so its
   per-file counts are a dated snapshot (2026-08-25), stated once, in the join
