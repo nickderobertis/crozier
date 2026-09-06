@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.63](https://github.com/nickderobertis/crozier/compare/v0.0.62...v0.0.63) - 2026-09-06
+
+### Added
+
+- *(fixtures)* settle the security region's fixture backlog against real-world witnesses ([#220](https://github.com/nickderobertis/crozier/pull/220))
+
 ## [0.0.62](https://github.com/nickderobertis/crozier/compare/v0.0.61...v0.0.62) - 2026-09-05
 
 ### Fixed
