@@ -419,6 +419,32 @@ selectors now say — that each is one the script declares, and that it reports 
 witness its row names — so a misspelling can never read as a zero, which is the
 same guard that made the former measured zero trustworthy.
 
+**The change that classifies the nine conjunctions refreshes the pin twice over,
+and neither refresh touches a cell in this file.** Two things moved census output
+since the pin above was taken, and both are the instrument rather than the
+corpus. First, the change that declared the nine
+[conjunction selectors](../openapi-surface-coverage.md#the-selector-grammar)
+added nine selectors to the walk without refreshing the digest, which left the
+check below halting at `11faecc0…` again. Second, this change repairs a walk
+defect: a free-keyed map was not descended into through a key that is not a
+string, so a Responses Object written `200:` lost its whole subtree. The two
+together take the walk to `14c26286…`, over the same **164** registered sources
+and **147** golden-bearing, on **2026-09-06**.
+
+**No evidence cell in this file moves under either.** The repair moves 89
+per-source counts across six sources, and not one of them is an `openapi.*`,
+`info.*`, `pathItem.*`, `operation.*`, `tag.*`, `externalDocs.*`, `components.*`,
+`server.*` or `reference.*` selector — the Response-side subtree it restores is
+`bodies-media`'s, the Header and Example Objects inside it are `parameters`', and
+the Schema Objects are `schemas`'. The three predicate rows this file rests on
+are unmoved too: `openapi.paths:templated-key` still reads 3421 sites across 104
+sources, `openapi.paths:several-template-expressions` 1265 across 60, and
+`operation.tags:multiple` 239 across 17. So this section refreshes the digest and
+nothing else, and the check below runs to completion on the new pin. The
+twenty-eight cells the repair does move are republished in the three region files
+that own them, and [the index's reconciliation](../openapi-surface-coverage.md#reconciliation)
+records which.
+
 **The change that settles the seven witness-supply probe rows re-derived this pin
 and it reproduced.** That change registers no source and declares no selector —
 its seven rows (`dollar-dynamic-anchor`, `dollar-dynamic-ref`,
@@ -516,7 +542,7 @@ for key, cells in rows.items():
         assert not cells[5], f"{key} is not a gap row but publishes a crozier-site count"
 
 # --- every transcribed fixture count is the census's own ---------------------
-expected_digest = "11faecc096a851e695588aa1e7c4c2047698c1058df226725e69dd75c039830d"
+expected_digest = "14c262865685b2c35ecdfe9038065dd12e2be096d0d32ba56ee237d16098c488"
 census = subprocess.run(
     ["just", "surface-census", "--json"], check=True, stdout=subprocess.PIPE
 ).stdout

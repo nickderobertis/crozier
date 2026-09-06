@@ -1371,7 +1371,15 @@ class Census:
             return
         for key, value in node.items():
             if not isinstance(key, str):
-                continue  # an unquoted status code or a numeric map key: a name
+                # An unquoted status code or a numeric map key: a name, never a
+                # field — so it declares no selector, exactly as `declared_here`
+                # has it. But the object it *names* is still part of the surface,
+                # so a free-keyed map is descended into here as it is below: a
+                # Responses Object writing `200:` contributes what it would
+                # contribute writing `"200":`, rather than losing its subtree.
+                if kind.free_map is not None:
+                    self.descend(value, kind.free_map, prefix, seen)
+                continue
             if key.startswith("x-"):
                 continue
             if key not in kind.fields:
