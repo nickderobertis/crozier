@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "audiobookshelf",
+  "corpus_spec_ref": "0a797ab8bee15dc3ca92d1d76155259c46dbec62",
+  "corpus_spec_url": "https://raw.githubusercontent.com/advplyr/audiobookshelf/0a797ab8bee15dc3ca92d1d76155259c46dbec62/docs/openapi.json"
+}

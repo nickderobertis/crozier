@@ -2114,6 +2114,10 @@ const CORPORA: &[&Corpus] = &[
     &KOMGA,
     &SHORT_IO,
     &WEBFLOW_V2,
+    &LORIS_DATAQUERY,
+    &SFTPGO,
+    &GOOGLEAPIS_SERVICEBROKER,
+    &AUDIOBOOKSHELF,
 ];
 
 #[test]
@@ -3730,16 +3734,8 @@ const KOMGA: Corpus = Corpus {
         "src/fern/series_poster/client.py",
         "src/fern/series_poster/raw_client.py",
         "src/fern/server_settings/raw_client.py",
-        "src/fern/types/search_condition_complete.py",
-        "src/fern/types/search_condition_deleted.py",
-        "src/fern/types/search_condition_one_shot.py",
-        "src/fern/types/search_condition_release_date.py",
         "src/fern/types/search_operator_boolean.py",
         "src/fern/types/search_operator_date.py",
-        "src/fern/types/search_operator_is_false.py",
-        "src/fern/types/search_operator_is_not_null.py",
-        "src/fern/types/search_operator_is_null.py",
-        "src/fern/types/search_operator_is_true.py",
         "src/fern/user_session/client.py",
         "src/fern/user_session/raw_client.py",
         "src/fern/users/raw_client.py",
@@ -4221,6 +4217,71 @@ const WEBFLOW_V2: Corpus = Corpus {
     ],
 };
 
+/// `loris-dataquery`: the LORIS Data Query Tool API is the corpus's only source
+/// declaring `style: spaceDelimited` over a query parameter — `share` and `star`
+/// on `PATCH /queries/{QueryID}`, each over `{type: boolean}` — and its densest
+/// declarer of `style: pipeDelimited` over one, at four. Both are the
+/// specification's array-only serialisations declared over a *scalar* schema, so
+/// the golden says what Fern emits for a style the schema cannot satisfy.
+const LORIS_DATAQUERY: Corpus = Corpus {
+    api: "loris-dataquery",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `sftpgo`: SFTPGo's own administration API is the corpus's densest declarer of
+/// a media type range other than `*/*` — ten content-map keys over five distinct
+/// ranges — and the first to declare one on the *request* side, where rows 127
+/// and 130 declare theirs on responses. It is also the corpus's second declarer
+/// of a parameter redeclared at both Path Item and Operation level.
+const SFTPGO: Corpus = Corpus {
+    api: "sftpgo",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `googleapis-servicebroker`: Google's Service Broker API is the corpus's fourth
+/// declarer of two path templates that normalize to one, and the first whose two
+/// colliding groups nest — `…/service_instances/{instanceId}` beside
+/// `…/{instance_id}`, and one segment deeper `…/service_bindings/{bindingId}`
+/// beside `…/{binding_id}`.
+const GOOGLEAPIS_SERVICEBROKER: Corpus = Corpus {
+    api: "googleapis-servicebroker",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `audiobookshelf`: the Audiobookshelf server's own API is the corpus's fourth
+/// declarer of a media type range other than `*/*`, and the only source declaring
+/// one beside two concrete media types of its own type — the `200` of
+/// `GET /api/authors/{id}/image` is keyed `image/webp`, `image/jpeg` and
+/// `image/*`, all three over `{type: string, format: binary}`.
+const AUDIOBOOKSHELF: Corpus = Corpus {
+    api: "audiobookshelf",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `exa-gate`: the Exa Gate API declares both `423` and `426` responses, pinning
 /// Fern's `LockedError` and `UpgradeRequiredError` names for those statuses.
 const EXA_GATE: Corpus = Corpus {
@@ -4625,6 +4686,26 @@ fn short_io_matches_fern_output() {
 #[test]
 fn webflow_v2_matches_fern_output() {
     assert_link_ok_corpus_matches(&WEBFLOW_V2);
+}
+
+#[test]
+fn loris_dataquery_matches_fern_output() {
+    assert_link_ok_corpus_matches(&LORIS_DATAQUERY);
+}
+
+#[test]
+fn sftpgo_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SFTPGO);
+}
+
+#[test]
+fn googleapis_servicebroker_matches_fern_output() {
+    assert_link_ok_corpus_matches(&GOOGLEAPIS_SERVICEBROKER);
+}
+
+#[test]
+fn audiobookshelf_matches_fern_output() {
+    assert_link_ok_corpus_matches(&AUDIOBOOKSHELF);
 }
 
 #[test]

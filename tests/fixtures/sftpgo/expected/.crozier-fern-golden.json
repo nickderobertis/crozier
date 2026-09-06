@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "sftpgo",
+  "corpus_spec_ref": "c737df6cd42ef375bf51a2d0a04ea2b1ab9f8842",
+  "corpus_spec_url": "https://raw.githubusercontent.com/drakkan/sftpgo/c737df6cd42ef375bf51a2d0a04ea2b1ab9f8842/openapi/openapi.yaml"
+}

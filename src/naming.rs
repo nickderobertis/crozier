@@ -153,6 +153,17 @@ pub fn class_name(schema_key: &str) -> String {
     sanitize_identifier(&expanded)
 }
 
+/// The class segment a *parameter* name contributes to a hoisted type
+/// (`{RequestCtx}{Param}`). Identical to [`class_name`] except that punctuation
+/// leading the wire name is dropped rather than sanitized into an underscore:
+/// Google's discovery-derived documents declare the query parameter `$.xgafv`,
+/// and Fern names its hoisted enum `…RequestXgafv`, not `…Request_Xgafv`. The
+/// dot is already a word separator; the `$` is the character this drops.
+#[must_use]
+pub fn param_class_name(param: &str) -> String {
+    class_name(param.trim_start_matches(|c: char| !c.is_ascii_alphanumeric() && c != '_'))
+}
+
 /// Join a parent class name and a child segment the way Fern's namer does: the
 /// concatenation is re-cased as one identifier, so a parent ending in a capital
 /// absorbs a single-letter segment into one word — the `e` property of
@@ -875,11 +886,16 @@ pub fn is_reserved(name: &str) -> bool {
 }
 
 /// A Python field identifier for a pydantic model. In addition to ordinary
-/// Python collisions, Fern protects names exposed by pydantic's model API.
+/// Python collisions, Fern protects names exposed by pydantic's model API —
+/// `copy` among them, which is `BaseModel.copy()`: SFTPGo's
+/// `EventActionFilesystemConfig.copy` is `copy_` under an `alias="copy"` in its
+/// golden. The protection is *model-scoped*, so an enum visitor's `copy` argument
+/// (otoroshi's `PatchItemOp`, komga's `BookImportBatchDtoCopyMode`) keeps its
+/// spelling.
 #[must_use]
 pub fn model_field_name(wire_name: &str) -> String {
     let name = field_name(wire_name);
-    if matches!(name.as_str(), "kwargs" | "schema" | "self") {
+    if matches!(name.as_str(), "copy" | "kwargs" | "schema" | "self") {
         format!("{name}_")
     } else {
         name

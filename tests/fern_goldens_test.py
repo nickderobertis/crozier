@@ -1161,6 +1161,57 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             {"CI": "true", "GITHUB_ACTIONS": "true"},
         )
 
+    def test_numbered_status_rows_below_the_manifest_are_skipped(self) -> None:
+        """CORPUS.md's per-batch STATUS tables are numbered too, and are not rows.
+
+        The real manifest ends with `| 130 | `komga` | `media-type-range` | ⚠️ … |`
+        and a dozen like it: four cells, a leading number, and no part of the
+        canonical table. Reading one as a malformed manifest row made every
+        `fern-goldens` subcommand exit before it fetched anything.
+        """
+        manifest = "\n".join(
+            [
+                "# Corpus",
+                "",
+                "| # | name | method | source | pinned ref | license | decision | shapes |",
+                "|---:|---|---|---|---|---|---|---|",
+                "| 1 | `alpha` | test | https://example.test/alpha/openapi.json | `1` | MIT | link-ok | alpha |",
+                "",
+                "## Batch 2 — status",
+                "",
+                "| # | name | settles | state |",
+                "|---:|---|---|---|",
+                "| 1 | `alpha` | some-shape | ✅ byte-matched |",
+                "",
+            ]
+        )
+        (self.root / "tests" / "fixtures" / "CORPUS.md").write_text(
+            manifest, encoding="utf-8"
+        )
+        generated = self.run_tool(
+            "generate", "--version", "4.9.0", "--fixture", "alpha", check=True
+        )
+        self.assertIn("generated alpha", generated.stdout)
+        self.assertEqual([call.split()[0] for call in self.calls()], ["alpha"])
+
+    def test_the_manifest_header_anchor_is_the_one_corpus_md_writes(self) -> None:
+        """The tool anchors the whole walk on that header; drift would read zero rows."""
+        header = next(
+            line
+            for line in (REPO / "tests" / "fixtures" / "CORPUS.md")
+            .read_text(encoding="utf-8")
+            .splitlines()
+            if line.startswith("| # |")
+        )
+        cells = [cell.strip() for cell in header.strip().strip("|").split("|")]
+        declared = TOOL.read_text(encoding="utf-8").split("MANIFEST_HEADER = [", 1)[1]
+        declared = declared.split("]", 1)[0]
+        self.assertEqual(
+            cells,
+            [value.strip().strip('"') for value in declared.split(",") if value.strip()],
+            "scripts/fern-goldens no longer anchors on tests/fixtures/CORPUS.md's header",
+        )
+
     def test_invalid_inputs_fail_before_generation_or_publication(self) -> None:
         cases = [
             ("generate", "--version", "latest", "--fixture", "alpha"),

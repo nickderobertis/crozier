@@ -20,7 +20,7 @@ bootstrap:
     @echo "enabled .githooks (shared sccache + visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
-check: fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins lint-corpus-licensing test-corpus-licensing supply-chain doc
+check: fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins lint-corpus-licensing test-corpus-licensing lint-licence-rescreening test-licence-rescreening supply-chain doc
     @echo "check: ok"
 
 # Format check (does not modify files).
@@ -188,6 +188,10 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e komga_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e short_io_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e webflow_v2_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e loris_dataquery_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e sftpgo_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e googleapis_servicebroker_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e audiobookshelf_matches_fern_output
 
 # Format the codebase in place.
 format:
@@ -356,6 +360,20 @@ lint-corpus-licensing:
 # Part of `check`.
 test-corpus-licensing:
     python3 tests/corpus_licensing_test.py
+
+# The screening record for the widened admissible-licence rule,
+# docs/licence-rescreening.md: one line per candidate the six region files
+# record as blocked on a licence. This fails when a line omits its admission
+# verdict, the reason behind it, the ref it was screened at, either half of the
+# Fern screen, or names a coverage row no region file carries. Part of `check`.
+lint-licence-rescreening:
+    python3 scripts/licence-rescreening-check.py
+
+# Boundary coverage for that gate: drives the REAL script over the REAL record,
+# then over a record breaking each demand in turn, so a gate that had stopped
+# discriminating fails here instead of passing silently. Part of `check`.
+test-licence-rescreening:
+    python3 tests/licence_rescreening_test.py
 
 # Install/refresh the llmlint toolchain (oneharness + llmlint). Idempotent.
 setup-llmlint:
