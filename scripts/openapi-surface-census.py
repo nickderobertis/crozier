@@ -866,6 +866,118 @@ PREDICATES = {
     ),
 }
 
+# The closed list of *conjunction* selectors, the fourth kind — a shape that is a
+# combination of fields rather than one field, written with the two composition
+# operators over the selectors above: `&` joins members declared at one
+# object-model node, `>` descends into the object a field's value is. A count is
+# one per node at the leftmost position, exactly the count rule the three kinds
+# above already have.
+#
+# The list is closed because the cross-product of the grammar is not: four schema
+# fields already spell fifteen non-empty combinations before nesting, and
+# unbounded with it. What bounds this list instead is the branch structure of the
+# six functions of `src/ir.rs` the goldens are blind to — a conjunction is worth
+# enumerating iff two source documents differing only in it take different paths
+# through one of `resolve_schema_pointer`, `nested_array_element`,
+# `hoist_union_variant`, `ref_to_class`, `prop_type_ref` or `path_group`. Each
+# entry below is read off one branch of one of those functions; the case analysis
+# deriving them, and the enumeration holes for the branches no selector kind can
+# express, are `docs/openapi-surface-coverage.md`'s
+# `### The six blind regions of src/ir.rs, case by case`, which restates this
+# table for a reader. `tests/surface_census_test.py` reconciles the two the way it
+# already reconciles `VALUED` and `PREDICATES`.
+#
+# A branch earns a row only when a conjunction names it *exactly* — when the nodes
+# this census counts and the nodes the generator sends down that branch differ
+# only where another case of the same function claims them. That is why there are
+# nine rows and forty-four holes: an arm whose own condition reads a JSON value's
+# kind, a collection's emptiness, an `enum`'s value types or which member of a
+# `type` array comes first is not named by the presence of the field carrying it,
+# and a row that pretended otherwise would count documents the generator sends
+# elsewhere. Every surviving row's condition is "this field is written".
+#
+# Nothing here counts: an entry is its spelling and one sentence saying what it
+# counts. The count is composed from the entry's own members under the `&` and `>`
+# rules, by `Census.conjunction_holds` below, so adding a row adds no code.
+CONJUNCTIONS = {
+    "schema.anyOf>schema.$ref": "one per Schema Object one of whose `anyOf` members is a Reference Object",
+    "schema.anyOf>schema.allOf": "one per Schema Object one of whose `anyOf` members declares `allOf`",
+    "schema.items>schema.$ref": "one per Schema Object whose `items` value is a Reference Object",
+    "schema.items>schema.anyOf": "one per Schema Object whose `items` value declares `anyOf`",
+    "schema.items>schema.oneOf": "one per Schema Object whose `items` value declares `oneOf`",
+    "schema.oneOf>schema.$ref": "one per Schema Object one of whose `oneOf` members is a Reference Object",
+    "schema.oneOf>schema.allOf": "one per Schema Object one of whose `oneOf` members declares `allOf`",
+    "schema.properties>schema.anyOf": "one per Schema Object one of whose properties declares `anyOf`",
+    "schema.properties>schema.oneOf": "one per Schema Object one of whose properties declares `oneOf`",
+}
+
+
+def conjunction_parts(text: str) -> list[list[str]]:
+    """One conjunction as its `>`-separated groups, each a list of `&` members."""
+    return [group.split("&") for group in text.split(">")]
+
+
+def is_conjunction(text: str) -> bool:
+    """Whether this selector text uses either composition operator."""
+    return ">" in text or "&" in text
+
+
+def descent_field(member: str) -> str | None:
+    """The field a group descends through: the last member, which must be a field."""
+    if "=" in member or ":" in member:
+        return None
+    _, _, field = member.rpartition(".")
+    return field or None
+
+
+def compile_conjunction(text: str) -> tuple[tuple[frozenset[str], str | None], ...]:
+    """One conjunction as the groups `Census.conjunction_holds` evaluates.
+
+    Each group is the set of members that must hold at one node, paired with the
+    field the following `>` descends through — the group's last member, since that
+    is the member the operator binds to.
+    """
+    groups = conjunction_parts(text)
+    return tuple(
+        (
+            frozenset(members),
+            None if index == len(groups) - 1 else descent_field(members[-1]),
+        )
+        for index, members in enumerate(groups)
+    )
+
+
+def canonical_conjunction(text: str) -> str:
+    """This conjunction's one name: members sorted, the descended member last.
+
+    A conjunction that could be written two ways would be two names for one shape,
+    so a group's members are ordered — lexicographically, except that the member a
+    following `>` descends through is written last, since that is the member the
+    operator binds to.
+    """
+    groups = conjunction_parts(text)
+    spelled = []
+    for index, members in enumerate(groups):
+        if index == len(groups) - 1:
+            spelled.append("&".join(sorted(members)))
+        else:
+            head, last = members[:-1], members[-1]
+            spelled.append("&".join([*sorted(head), last]))
+    return ">".join(spelled)
+
+
+COMPILED_CONJUNCTIONS = {text: compile_conjunction(text) for text in CONJUNCTIONS}
+
+
+def is_reference_node(node: dict[Any, Any], kind_name: str) -> bool:
+    """Whether this node is a Reference Object rather than the kind that holds it.
+
+    `$ref` inside a `REF_TRANSPARENT` kind is a declared field of the kind itself;
+    anywhere else it makes the node a Reference Object, counted as one and not
+    descended into.
+    """
+    return "$ref" in node and kind_name not in REF_TRANSPARENT
+
 
 # ---------------------------------------------------------------------------
 # crozier's own name normalization
@@ -1129,6 +1241,20 @@ def grammar() -> tuple[set[str], set[str]]:
 def selector_error(text: str) -> str | None:
     """Why this `--selector` names nothing the grammar can emit, or None."""
     selectors, prefixes = grammar()
+    if is_conjunction(text):
+        # The conjunction list is closed by the branch structure of the six blind
+        # functions, not by what the operators can spell, so a well-formed
+        # combination nobody declared is refused exactly as a typo is.
+        if text in CONJUNCTIONS:
+            return None
+        close = difflib.get_close_matches(text, sorted(CONJUNCTIONS), n=3)
+        suggestion = f" Did you mean: {', '.join(close)}?" if close else ""
+        return (
+            f"{text!r} is not one of the conjunction selectors the census declares."
+            f"{suggestion} The closed list of {len(CONJUNCTIONS)} is declared in "
+            "scripts/openapi-surface-census.py and restated in "
+            "docs/openapi-surface-coverage.md."
+        )
     base, equals, value = text.partition("=")
     if not equals and ":" in base:
         if base in PREDICATES:
@@ -1170,9 +1296,62 @@ class Census:
         # each other, so it cannot be decided at the declaration site the way every
         # other selector is; the values are gathered here and counted by `finish`.
         self.operation_ids: list[str] = []
+        # One node's own selectors are asked for twice — once to record them, once
+        # per conjunction group matched against them — and a document's objects
+        # live for the whole walk, so `id()` keys a stable cache.
+        self.declared_cache: dict[tuple[int, str, str], list[str]] = {}
 
     def record(self, selector: str) -> None:
         self.counts[selector] += 1
+
+    def declared_here(self, node: dict[Any, Any], kind_name: str, prefix: str) -> list[str]:
+        """Every selector this one node declares, with repetition.
+
+        The node's own reading of the grammar, and the only thing a conjunction
+        group is ever matched against: a field it writes, the valued selector that
+        field emits, an `x-` extension it carries, and the predicates this node
+        alone decides. A Reference Object shadows its host's fields, exactly as the
+        walk below reports it.
+        """
+        key = (id(node), kind_name, prefix)
+        cached = self.declared_cache.get(key)
+        if cached is not None:
+            return cached
+        kind = OBJECTS[kind_name]
+        found: list[str] = []
+        if kind_name == "paths":
+            found += self.normalized_collisions(node)
+            found += self.path_key_templates(node)
+        if kind_name == "components":
+            found += self.class_name_collisions(node.get("schemas"))
+        if is_reference_node(node, kind_name):
+            reference = OBJECTS["reference"]
+            found += [
+                f"reference.{name}"
+                for name in node
+                if isinstance(name, str) and name in reference.fields
+            ]
+            self.declared_cache[key] = found
+            return found
+        for name, value in node.items():
+            if not isinstance(name, str):
+                continue  # an unquoted status code or a numeric map key: a name
+            if name.startswith("x-"):
+                found.append(f"{prefix}.{name}")
+                continue
+            if name not in kind.fields:
+                continue
+            selector = f"{prefix}.{name}"
+            found.append(selector)
+            if kind_name == "operation" and name == "tags":
+                if isinstance(value, list) and len(value) > 1:
+                    found.append("operation.tags:multiple")
+            if selector in VALUED:
+                for member in value if isinstance(value, list) else [value]:
+                    if isinstance(member, (str, int, float)) and not isinstance(member, bool):
+                        found.append(f"{selector}={self.value_of(selector, member)}")
+        self.declared_cache[key] = found
+        return found
 
     def walk(self, node: Any, kind_name: str, prefix: str, seen: frozenset[int]) -> None:
         if not isinstance(node, dict):
@@ -1181,22 +1360,19 @@ class Census:
             return
         seen = seen | {id(node)}
         kind = OBJECTS[kind_name]
-        if kind_name == "paths":
-            self.record_normalized_collisions(node)
-            self.record_path_key_templates(node)
-        if kind_name == "components":
-            self.record_class_name_collisions(node.get("schemas"))
-        if "$ref" in node and kind_name not in REF_TRANSPARENT:
-            reference = OBJECTS["reference"]
-            for key in node:
-                if isinstance(key, str) and key in reference.fields:
-                    self.record(f"reference.{key}")
+        for selector in self.declared_here(node, kind_name, prefix):
+            self.record(selector)
+        for selector, groups in COMPILED_CONJUNCTIONS.items():
+            # A fresh alias guard: a conjunction's descent is its own path from
+            # this node, and the ancestors `seen` already holds are not on it.
+            if self.conjunction_holds(node, kind_name, prefix, groups, 0, frozenset()):
+                self.record(selector)
+        if is_reference_node(node, kind_name):
             return
         for key, value in node.items():
             if not isinstance(key, str):
                 continue  # an unquoted status code or a numeric map key: a name
             if key.startswith("x-"):
-                self.record(f"{prefix}.{key}")
                 continue
             if key not in kind.fields:
                 # Not a field of this object: either a name in a free-keyed map
@@ -1206,30 +1382,64 @@ class Census:
                 if kind.free_map is not None:
                     self.descend(value, kind.free_map, prefix, seen)
                 continue
-            selector = f"{prefix}.{key}"
-            self.record(selector)
             if kind_name == "operation":
                 self.note_operation(key, value)
-            if selector in VALUED:
-                for member in value if isinstance(value, list) else [value]:
-                    if isinstance(member, (str, int, float)) and not isinstance(member, bool):
-                        self.record(f"{selector}={self.value_of(selector, member)}")
             child = kind.fields[key]
             if child is not None:
-                self.descend(value, child, selector, seen)
+                self.descend(value, child, f"{prefix}.{key}", seen)
+
+    def conjunction_holds(
+        self,
+        node: Any,
+        kind_name: str,
+        prefix: str,
+        groups: tuple[tuple[frozenset[str], str | None], ...],
+        index: int,
+        seen: frozenset[int],
+    ) -> bool:
+        """Whether this conjunction's remaining groups hold from this node.
+
+        The whole of what `&` and `>` mean, and the only place either is
+        interpreted: a group holds when every one of its members is a selector the
+        node itself declares, and `>` hands the groups after it to the objects the
+        group's last member's value is. A field holding several objects (a `oneOf`
+        list, a `properties` map) satisfies the rest if any one of them does, which
+        is what keeps the count one per node at the leftmost position.
+        """
+        if not isinstance(node, dict) or id(node) in seen:
+            return False
+        members, descend = groups[index]
+        if not members.issubset(self.declared_here(node, kind_name, prefix)):
+            return False
+        if descend is None:
+            return True
+        child = OBJECTS[kind_name].fields.get(descend)
+        if child is None:
+            return False
+        value = node[descend]
+        if child.container == MAP:
+            entries: Iterable[Any] = value.values() if isinstance(value, dict) else []
+        else:
+            entries = value if isinstance(value, list) else [value]
+        target = OBJECTS[child.kind]
+        inner = target.name if target.anchor else f"{prefix}.{descend}"
+        return any(
+            self.conjunction_holds(
+                entry, child.kind, inner, groups, index + 1, seen | {id(node)}
+            )
+            for entry in entries
+        )
 
     def note_operation(self, key: str, value: Any) -> None:
-        """The predicate selectors one Operation Object's own fields decide."""
-        if key == "tags" and isinstance(value, list) and len(value) > 1:
-            self.record("operation.tags:multiple")
-        elif key == "operationId" and isinstance(value, (str, int, float)) and not isinstance(
+        """The document-scoped predicate one Operation Object's own fields feed."""
+        if key == "operationId" and isinstance(value, (str, int, float)) and not isinstance(
             value, bool
         ):
             # Compared as written: a document that spells one id `1` and another
             # `"1"` has written the same value twice, and Fern reads both as a name.
             self.operation_ids.append(str(value))
 
-    def record_normalized_collisions(self, node: dict[Any, Any]) -> None:
+    def normalized_collisions(self, node: dict[Any, Any]) -> list[str]:
         """`openapi.paths:normalized-collision`: keys crozier would render as one URL.
 
         One per colliding key rather than one per collision, so a document that
@@ -1240,11 +1450,13 @@ class Census:
         collisions: dict[str, int] = defaultdict(int)
         for key in keys:
             collisions[normalized_path(key)] += 1
-        for key in keys:
-            if collisions[normalized_path(key)] > 1:
-                self.record("openapi.paths:normalized-collision")
+        return [
+            "openapi.paths:normalized-collision"
+            for key in keys
+            if collisions[normalized_path(key)] > 1
+        ]
 
-    def record_path_key_templates(self, node: dict[Any, Any]) -> None:
+    def path_key_templates(self, node: dict[Any, Any]) -> list[str]:
         """The two predicates the *shape* of a Paths Object key decides.
 
         `openapi.paths:templated-key` is one per key carrying a template
@@ -1253,14 +1465,16 @@ class Census:
         with three expressions contributes one to each and a key with one
         contributes to the first alone.
         """
+        found: list[str] = []
         for key in self.route_keys(node):
             expressions = len(_TEMPLATE_EXPRESSION.findall(key))
             if expressions:
-                self.record("openapi.paths:templated-key")
+                found.append("openapi.paths:templated-key")
             if expressions > 1:
-                self.record("openapi.paths:several-template-expressions")
+                found.append("openapi.paths:several-template-expressions")
+        return found
 
-    def record_class_name_collisions(self, node: Any) -> None:
+    def class_name_collisions(self, node: Any) -> list[str]:
         """`components.schemas:normalized-collision`: names crozier renders as one class.
 
         The Paths Object counterpart above, on the other side of the same
@@ -1269,14 +1483,16 @@ class Census:
         under `naming::class_name`. One per colliding key, as there.
         """
         if not isinstance(node, dict):
-            return
+            return []
         keys = [key for key in node if isinstance(key, str) and not key.startswith("x-")]
         collisions: dict[str, int] = defaultdict(int)
         for key in keys:
             collisions[class_name(key)] += 1
-        for key in keys:
-            if collisions[class_name(key)] > 1:
-                self.record("components.schemas:normalized-collision")
+        return [
+            "components.schemas:normalized-collision"
+            for key in keys
+            if collisions[class_name(key)] > 1
+        ]
 
     @staticmethod
     def route_keys(node: dict[Any, Any]) -> list[str]:
