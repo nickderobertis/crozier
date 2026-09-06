@@ -188,6 +188,10 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e komga_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e short_io_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e webflow_v2_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e loris_dataquery_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e sftpgo_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e googleapis_servicebroker_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e audiobookshelf_matches_fern_output
 
 # Format the codebase in place.
 format:
