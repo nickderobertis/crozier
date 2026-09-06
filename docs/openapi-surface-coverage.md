@@ -600,9 +600,10 @@ declares the feature and its committed Fern golden byte-matches — so the bytes
 that document's own shapes produce are pinned, and nothing else is. Three
 measured examples already in the tree: `audience-dual-header-policy` is `golden`
 on two audience goldens declaring 8 sites between them, leaving the rest of the
-branch space to unit tests; `filter_ignored` is `golden` on corpus row 108's four
-`x-fern-ignore` operations, one witness that reaches the Operation-Object arm and
-leaves the schema arm and the `x-crozier-*` precedence untouched; and
+branch space to unit tests; `x-fern-or-crozier-ignore` is `golden` on corpus row
+108's four `x-fern-ignore` operations, one witness that reaches `filter_ignored`'s
+Operation-Object arm and leaves its schema arm and the `x-crozier-*` precedence
+untouched; and
 `media-type-range` is `golden` on a witness reaching two of crozier's seven reads
 of a media-type range, which that row's own cell names against the five it does
 not. Every conjunction row says the same thing in its own evidence cell, because
