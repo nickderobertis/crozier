@@ -2203,6 +2203,126 @@ class RankedBacklogTests(unittest.TestCase):
         for _count, name in unranked[-2:]:
             self.assertIn(f"`{name}`", paragraph, f"{name} is not one of the two named")
 
+    # ------------------------------------------------------------------
+    # The conjunction rows: one per declared conjunction, in the region that
+    # owns the object it anchors on.
+    # ------------------------------------------------------------------
+
+    BLIND_FUNCTIONS = (
+        "resolve_schema_pointer", "nested_array_element", "hoist_union_variant",
+        "ref_to_class", "prop_type_ref", "path_group",
+    )
+    NOT_EXHAUSTED = "does not pin\nthe whole of the branch's behaviour"
+
+    def conjunction_rows(self) -> dict[str, tuple[str, list[str]]]:
+        """selector -> the one region row whose evidence cell cites it."""
+        found: dict[str, tuple[str, list[str]]] = {}
+        for selector in census.CONJUNCTIONS:
+            citing = [
+                (region, cells)
+                for region, cells in self.entries.values()
+                if f"`{selector}`" in cells[4]
+            ]
+            self.assertEqual(
+                1, len(citing),
+                f"{selector}: {len(citing)} region rows cite it; exactly one must",
+            )
+            found[selector] = citing[0]
+        return found
+
+    def test_every_declared_conjunction_carries_exactly_one_classified_row(self) -> None:
+        """The closed list is the row set: a selector declared and never classified
+        is a measurement nobody took, and two rows for one shape are two answers."""
+        rows = self.conjunction_rows()
+        self.assertEqual(set(census.CONJUNCTIONS), set(rows))
+        for selector, (region, cells) in sorted(rows.items()):
+            with self.subTest(selector=selector):
+                self.assertEqual(
+                    "schemas", region,
+                    "every conjunction anchors on a Schema Object, so the "
+                    "`schemas` region owns its row",
+                )
+                self.assertIn(cells[3].strip("`"), self.CATEGORIES)
+
+    def test_every_conjunction_row_names_the_branch_it_is_about(self) -> None:
+        """What a conjunction row carries that an ordinary row does not.
+
+        A field row is about a field; a conjunction row is about a *branch*, so it
+        names the generator function and the case, which is what tells a reader it
+        is a live code path rather than a shape somebody thought of.
+        """
+        for selector, (_region, cells) in sorted(self.conjunction_rows().items()):
+            with self.subTest(selector=selector):
+                named = [fn for fn in self.BLIND_FUNCTIONS if f"`{fn}`" in cells[4]]
+                self.assertEqual(
+                    1, len(named),
+                    "a conjunction row names exactly one of the six blind functions "
+                    f"of `src/ir.rs`; this one names {named}",
+                )
+                self.assertRegex(
+                    cells[4], r"case \d+",
+                    "a conjunction row names the case of that function it distinguishes",
+                )
+
+    def test_every_golden_conjunction_row_says_it_is_not_golden_exhausted(self) -> None:
+        """The document's own caveat, stated where it bites hardest.
+
+        A golden pins the bytes for the shapes its own document sends down the
+        branch, not the branch's whole behaviour — and the branch is what the row
+        is about, so a `golden` conjunction row that omits this reads as a stronger
+        claim than the measurement supports.
+        """
+        caveat = " ".join(self.NOT_EXHAUSTED.split())
+        for selector, (_region, cells) in sorted(self.conjunction_rows().items()):
+            if cells[3].strip("`") != "golden":
+                continue
+            with self.subTest(selector=selector):
+                self.assertIn(caveat, " ".join(cells[4].split()))
+
+    def test_every_conjunction_rows_evidence_is_the_census_own_output(self) -> None:
+        """The counts a row publishes, against the census this gate can run.
+
+        The rows are classified off the whole 164-source walk, which needs the
+        network; what is checkable offline is every vendored source a row names —
+        its published count has to be that source's own, measured here by the real
+        script over the real documents. A transposed digit or a source named under
+        the wrong selector fails here rather than in a reader's head.
+        """
+        reported: dict[str, dict[str, int]] = {s: {} for s in census.CONJUNCTIONS}
+        payload = json.loads(run("--vendored-only", "--json").stdout)
+        for row in payload["rows"]:
+            if row["selector"] in reported:
+                reported[row["selector"]][row["fixture"]] = row["count"]
+        vendored = {source["fixture"] for source in payload["sources"]}
+        checked = 0
+        for selector, (_region, cells) in sorted(self.conjunction_rows().items()):
+            for name, count in re.findall(r"`([a-z0-9][a-z0-9.\-_]*)` \((\d+)\)", cells[4]):
+                if name not in vendored:
+                    continue
+                checked += 1
+                with self.subTest(selector=selector, fixture=name):
+                    self.assertEqual(reported[selector].get(name, 0), int(count))
+        self.assertTrue(checked, "no conjunction row names a vendored source to check")
+
+    def test_every_conjunction_row_rests_on_a_source_carrying_a_golden(self) -> None:
+        """A `golden` row names a witness whose golden really is committed."""
+        fixtures_root = REPO / "tests" / "fixtures"
+        alias = census.corpus_aliases(fixtures_root)
+        for selector, (_region, cells) in sorted(self.conjunction_rows().items()):
+            if cells[3].strip("`") != "golden":
+                continue
+            with self.subTest(selector=selector):
+                named = re.findall(r"`([a-z0-9][a-z0-9.\-_]*)` \(\d+\)", cells[4])
+                backed = [
+                    name for name in named
+                    if (fixtures_root / alias.get(name, name) / "expected").is_dir()
+                ]
+                self.assertTrue(
+                    backed,
+                    f"{selector}: the row is `golden` but names no source carrying "
+                    f"a committed golden (named {named})",
+                )
+
     def test_the_probe_backlog_is_every_probe_gap_and_nothing_else(self) -> None:
         """The other backlog: probe work, listed apart from the fixture work."""
         listed = set(

@@ -530,11 +530,11 @@ integer (`200:`) lost its entire subtree. Six registered sources write their
 status codes that way — `free5gc-namf-communication`, `free5gc-pdu-session`,
 `kytos-sdntrace-cp`, `marimo`, `query-parameters-openapi` and
 `worldcoin-signup-sequencer`, one more than the change that found the defect had
-counted. Over the 164 sources the repair moves **89** per-source counts across 35 selectors and adds
-**2,584** declaration sites; it takes no selector from zero to non-zero
-corpus-wide, and **no conjunction count moves under it**, so the classification
-above is the same either way and is nonetheless taken from the repaired walk.
-Twenty-eight evidence cells across
+counted. Over the 164 sources the repair moves **89** per-source counts, across
+35 selectors, and adds **2,584** declaration sites; it takes no selector from
+zero to non-zero corpus-wide, and **no conjunction count moves under it**, so
+the classification above is the same either way and is nonetheless taken from
+the repaired walk. Twenty-eight evidence cells across
 [`schemas.md`](openapi-surface/schemas.md) (ten),
 [`bodies-media.md`](openapi-surface/bodies-media.md) (twelve) and
 [`parameters.md`](openapi-surface/parameters.md) (six) are republished, each as
