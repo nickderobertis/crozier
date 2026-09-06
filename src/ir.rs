@@ -3784,6 +3784,26 @@ fn resolve_request_body(
                 content_type_override,
             ));
         }
+        // A `$ref` to a plain scalar — Audiobookshelf's `imageUrl`, a `type: string`
+        // with `format: uri` — is one `json=request` argument typed as the named
+        // alias, carrying the JSON content-type header like the enum and map cases
+        // above. (A binary-formatted string already returned as a bytes body.)
+        // Without this the operation falls outside the emittable subset and takes
+        // its whole tag's client down with it: Audiobookshelf's `addAuthorImageById`
+        // is one of eight `Authors` operations, and crozier emitted no
+        // `authors/client.py` at all.
+        if matches!(
+            target.ty.as_ref().and_then(|ty| ty.primary()),
+            Some("string" | "integer" | "number" | "boolean")
+        ) {
+            return Some(single_with_override(
+                TypeRef::Named(class),
+                required,
+                false,
+                true,
+                content_type_override,
+            ));
+        }
         return None;
     }
     if let Some(member) = simple_nullable_member(schema) {
@@ -4339,7 +4359,18 @@ impl InlineHoister<'_> {
         siblings: &[Schema],
     ) -> TypeRef {
         if let Some(reference) = &variant.reference {
-            return TypeRef::Named(ref_to_class(reference));
+            // A `$ref` to a schema declared `nullable` carries that nullability
+            // into the union member, the same way it does at any other use site
+            // (see `openapi::normalize_nullable_schema_refs`): Audiobookshelf's
+            // `matchAuthorById` responds `oneOf: [author, authorUpdated]` and
+            // `authorUpdated` is a `nullable: true` boolean, so its golden's alias
+            // is `Union[Author, Optional[AuthorUpdated]]`.
+            let named = TypeRef::Named(ref_to_class(reference));
+            return if variant.nullable == Some(true) {
+                optional_type_ref(named)
+            } else {
+                named
+            };
         }
         if variant.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
             if let Some(item) = variant.items.as_deref() {
@@ -6725,6 +6756,7 @@ impl Builder<'_> {
                 // indices are the source's, so dropping one never renames the
                 // inline classes the others hoist.
                 let dropped_null = variants.iter().any(is_null_variant);
+                let declared_members = variants.iter().filter(|v| !is_null_variant(v)).count();
                 let members: Vec<TypeRef> = variants
                     .iter()
                     .enumerate()
@@ -6735,6 +6767,24 @@ impl Builder<'_> {
                 let target = match (dropped_null, members.len()) {
                     (true, 1) => optional_type_ref(members.remove(0)),
                     (true, _) => TypeRef::Union(members),
+                    // A composition the DOCUMENT writes with exactly one member
+                    // is an alias to that member, not a one-armed `Union`:
+                    // Audiobookshelf's `mediaMinified` is `oneOf: [$ref
+                    // bookMinified]` and its golden is `MediaMinified =
+                    // BookMinified` under the schema's own description. Members
+                    // that merely *dedupe* to one are a different shape and keep
+                    // the `Union`, because Fern names the alternatives before
+                    // collapsing them: free5gc's `GlobalRanNodeId` is three
+                    // `required`-only alternatives, all of them `Any`, and its
+                    // golden is `typing.Union[typing.Any]`.
+                    (false, 1) if declared_members == 1 => {
+                        let sole = members.remove(0);
+                        if schema_accepts_none(schema, self.schemas) {
+                            optional_type_ref(sole)
+                        } else {
+                            sole
+                        }
+                    }
                     (false, _) => {
                         let target = TypeRef::Union(members);
                         if schema_accepts_none(schema, self.schemas) {
