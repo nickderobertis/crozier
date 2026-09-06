@@ -926,14 +926,20 @@ class ConjunctionCensusTests(unittest.TestCase):
     A conjunction has no counting logic of its own — the census composes its
     members under `&` and `>` as it walks — so the only way to know a spelling
     counts what it says is to run the real script over the real vendored documents
-    and assert every entry's number. One exemplar would leave the other
-    thirty-three unproven, which is exactly how a mis-composed member would
-    survive.
+    and assert every entry's number. One exemplar would leave the other eight
+    unproven, which is exactly how a mis-composed member would survive.
 
     Each map below is the whole answer for one selector: every registered vendored
     source that declares it and how many times. An empty map is the other answer
     the instrument must be able to give — a shape the corpus has never seen — and
     it is the evidence a `gap` row would cite.
+
+    Nine selectors and not more: a case carries one only where the arm's own
+    condition is that a field is written, because anything else the arm reads —
+    an example's JSON kind, a `properties` map's emptiness, an `enum`'s value
+    types, which member of a `type` array comes first — is a condition no selector
+    kind expresses, and a selector ignoring it would count documents the generator
+    sends elsewhere. The other forty-four cases are enumeration holes.
 
     The numbers are the census's own. They agree with an independent count over
     every vendored document except `schema.properties>schema.type=array` in
@@ -949,54 +955,26 @@ class ConjunctionCensusTests(unittest.TestCase):
     DECLARED = {
         "schema.anyOf>schema.$ref": {},
         "schema.anyOf>schema.allOf": {},
-        "schema.anyOf>schema.example&schema.type=object": {},
-        "schema.anyOf>schema.examples&schema.type=object": {},
-        "schema.anyOf>schema.properties": {},
-        "schema.anyOf>schema.type=array&schema.items>schema.allOf": {},
-        "schema.anyOf>schema.type=array&schema.items>schema.anyOf": {},
-        "schema.anyOf>schema.type=array&schema.items>schema.discriminator&schema.oneOf":
-            {},
-        "schema.anyOf>schema.type=array&schema.items>schema.oneOf": {},
-        "schema.anyOf>schema.type=array&schema.items>schema.properties": {},
-        "schema.items>schema.$ref": {"audience-filter": 1, "audience-filter-strict": 1,
+        "schema.items>schema.$ref": {
+            "audience-filter": 1, "audience-filter-strict": 1,
             "crozier-sdk-extensions": 1, "exhaustive": 7, "inline-array-request": 1,
             "inline-request-response": 1, "oauth-client-credentials": 1,
-            "query-parameters-openapi": 2, "recursive-types": 2},
-        "schema.items>schema.allOf": {},
+            "query-parameters-openapi": 2, "recursive-types": 2,
+        },
         "schema.items>schema.anyOf": {},
-        "schema.items>schema.discriminator&schema.oneOf": {},
         "schema.items>schema.oneOf": {},
-        "schema.items>schema.properties": {"inline-array-request": 1},
-        "schema.items>schema.type=array": {},
-        "schema.oneOf>schema.$ref": {"discriminated-unions": 1,
-            "query-parameters-openapi": 2, "recursive-types": 1},
+        "schema.oneOf>schema.$ref": {
+            "discriminated-unions": 1, "query-parameters-openapi": 2,
+            "recursive-types": 1,
+        },
         "schema.oneOf>schema.allOf": {"exhaustive": 1},
-        "schema.oneOf>schema.example&schema.type=object": {},
-        "schema.oneOf>schema.examples&schema.type=object": {},
-        "schema.oneOf>schema.properties": {},
-        "schema.oneOf>schema.type=array&schema.items>schema.allOf": {},
-        "schema.oneOf>schema.type=array&schema.items>schema.anyOf": {},
-        "schema.oneOf>schema.type=array&schema.items>schema.discriminator&schema.oneOf":
-            {},
-        "schema.oneOf>schema.type=array&schema.items>schema.oneOf": {},
-        "schema.oneOf>schema.type=array&schema.items>schema.properties": {},
-        "schema.properties>schema.allOf": {},
         "schema.properties>schema.anyOf": {},
-        "schema.properties>schema.discriminator&schema.oneOf": {},
-        "schema.properties>schema.enum": {"discriminated-unions": 2, "exhaustive": 2,
-            "recursive-types": 2},
         "schema.properties>schema.oneOf": {},
-        "schema.properties>schema.properties": {"inline-request-response": 2,
-            "nested-core-imports": 1},
-        "schema.properties>schema.type=array": {"crozier-sdk-extensions": 1,
-            "exhaustive": 3, "inline-request-response": 1, "malformed-property-schema":
-            1, "query-parameters-openapi": 1, "recursive-types": 2,
-            "schema-constraints": 1},
     }
 
     # A conjunction no vendored source declares, asserted as absent rather than as
     # silence — the other half of what `--selector` has to answer.
-    ABSENT = "schema.items>schema.discriminator&schema.oneOf"
+    ABSENT = "schema.items>schema.anyOf"
 
     def test_the_closed_list_is_the_one_this_case_answers_for(self) -> None:
         """An entry added to the script and not here would go unmeasured."""
@@ -1015,7 +993,7 @@ class ConjunctionCensusTests(unittest.TestCase):
 
     def test_a_conjunction_reports_one_row_per_source_declaring_it(self) -> None:
         """`--selector` takes a conjunction like any other selector."""
-        selector = "schema.properties>schema.properties"
+        selector = "schema.oneOf>schema.$ref"
         completed = run("--vendored-only", "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual(
@@ -1071,6 +1049,20 @@ class ConjunctionCensusTests(unittest.TestCase):
             ("schema.items>schema.oneof", "Did you mean: schema.items>schema.oneOf"),
             ("schema.oneOf&schema.discriminator", "is not one of the conjunction selectors"),
             ("schema.items>schema.maxLength", "is not one of the conjunction selectors"),
+            # Withdrawn as inexact: the arm also reads the example's JSON kind and
+            # rejects a schema-shaped object, so this spelling counted documents
+            # `hoist_union_variant` sends to `base_type_ref`. H-example-value now.
+            (
+                "schema.oneOf>schema.example&schema.type=object",
+                "is not one of the conjunction selectors",
+            ),
+            # Withdrawn as inexact: `is_inline_struct` needs `properties` to be
+            # non-empty, so a declared-empty `properties: {}` was counted and is
+            # not an inline object at all. H-empty-collection now.
+            (
+                "schema.properties>schema.properties",
+                "is not one of the conjunction selectors",
+            ),
         ):
             with self.subTest(selector=selector):
                 completed = run("--vendored-only", "--selector", selector)

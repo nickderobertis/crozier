@@ -887,92 +887,28 @@ PREDICATES = {
 # table for a reader. `tests/surface_census_test.py` reconciles the two the way it
 # already reconciles `VALUED` and `PREDICATES`.
 #
+# A branch earns a row only when a conjunction names it *exactly* — when the nodes
+# this census counts and the nodes the generator sends down that branch differ
+# only where another case of the same function claims them. That is why there are
+# nine rows and forty-four holes: an arm whose own condition reads a JSON value's
+# kind, a collection's emptiness, an `enum`'s value types or which member of a
+# `type` array comes first is not named by the presence of the field carrying it,
+# and a row that pretended otherwise would count documents the generator sends
+# elsewhere. Every surviving row's condition is "this field is written".
+#
 # Nothing here counts: an entry is its spelling and one sentence saying what it
 # counts. The count is composed from the entry's own members under the `&` and `>`
 # rules, by `Census.conjunction_holds` below, so adding a row adds no code.
 CONJUNCTIONS = {
     "schema.anyOf>schema.$ref": "one per Schema Object one of whose `anyOf` members is a Reference Object",
     "schema.anyOf>schema.allOf": "one per Schema Object one of whose `anyOf` members declares `allOf`",
-    "schema.anyOf>schema.example&schema.type=object": (
-        "one per Schema Object one of whose `anyOf` members declares both an "
-        "`example` and `type: object`"
-    ),
-    "schema.anyOf>schema.examples&schema.type=object": (
-        "one per Schema Object one of whose `anyOf` members declares both "
-        "`examples` and `type: object`"
-    ),
-    "schema.anyOf>schema.properties": "one per Schema Object one of whose `anyOf` members declares `properties`",
-    "schema.anyOf>schema.type=array&schema.items>schema.allOf": (
-        "one per Schema Object one of whose `anyOf` members declares `type: array` "
-        "with an `items` value declaring `allOf`"
-    ),
-    "schema.anyOf>schema.type=array&schema.items>schema.anyOf": (
-        "one per Schema Object one of whose `anyOf` members declares `type: array` "
-        "with an `items` value declaring `anyOf`"
-    ),
-    "schema.anyOf>schema.type=array&schema.items>schema.discriminator&schema.oneOf": (
-        "one per Schema Object one of whose `anyOf` members declares `type: array` "
-        "with an `items` value declaring both a `discriminator` and a `oneOf`"
-    ),
-    "schema.anyOf>schema.type=array&schema.items>schema.oneOf": (
-        "one per Schema Object one of whose `anyOf` members declares `type: array` "
-        "with an `items` value declaring `oneOf`"
-    ),
-    "schema.anyOf>schema.type=array&schema.items>schema.properties": (
-        "one per Schema Object one of whose `anyOf` members declares `type: array` "
-        "with an `items` value declaring `properties`"
-    ),
     "schema.items>schema.$ref": "one per Schema Object whose `items` value is a Reference Object",
-    "schema.items>schema.allOf": "one per Schema Object whose `items` value declares `allOf`",
     "schema.items>schema.anyOf": "one per Schema Object whose `items` value declares `anyOf`",
-    "schema.items>schema.discriminator&schema.oneOf": (
-        "one per Schema Object whose `items` value declares both a `discriminator` "
-        "and a `oneOf`"
-    ),
     "schema.items>schema.oneOf": "one per Schema Object whose `items` value declares `oneOf`",
-    "schema.items>schema.properties": "one per Schema Object whose `items` value declares `properties`",
-    "schema.items>schema.type=array": "one per Schema Object whose `items` value declares `type: array`",
     "schema.oneOf>schema.$ref": "one per Schema Object one of whose `oneOf` members is a Reference Object",
     "schema.oneOf>schema.allOf": "one per Schema Object one of whose `oneOf` members declares `allOf`",
-    "schema.oneOf>schema.example&schema.type=object": (
-        "one per Schema Object one of whose `oneOf` members declares both an "
-        "`example` and `type: object`"
-    ),
-    "schema.oneOf>schema.examples&schema.type=object": (
-        "one per Schema Object one of whose `oneOf` members declares both "
-        "`examples` and `type: object`"
-    ),
-    "schema.oneOf>schema.properties": "one per Schema Object one of whose `oneOf` members declares `properties`",
-    "schema.oneOf>schema.type=array&schema.items>schema.allOf": (
-        "one per Schema Object one of whose `oneOf` members declares `type: array` "
-        "with an `items` value declaring `allOf`"
-    ),
-    "schema.oneOf>schema.type=array&schema.items>schema.anyOf": (
-        "one per Schema Object one of whose `oneOf` members declares `type: array` "
-        "with an `items` value declaring `anyOf`"
-    ),
-    "schema.oneOf>schema.type=array&schema.items>schema.discriminator&schema.oneOf": (
-        "one per Schema Object one of whose `oneOf` members declares `type: array` "
-        "with an `items` value declaring both a `discriminator` and a `oneOf`"
-    ),
-    "schema.oneOf>schema.type=array&schema.items>schema.oneOf": (
-        "one per Schema Object one of whose `oneOf` members declares `type: array` "
-        "with an `items` value declaring `oneOf`"
-    ),
-    "schema.oneOf>schema.type=array&schema.items>schema.properties": (
-        "one per Schema Object one of whose `oneOf` members declares `type: array` "
-        "with an `items` value declaring `properties`"
-    ),
-    "schema.properties>schema.allOf": "one per Schema Object one of whose properties declares `allOf`",
     "schema.properties>schema.anyOf": "one per Schema Object one of whose properties declares `anyOf`",
-    "schema.properties>schema.discriminator&schema.oneOf": (
-        "one per Schema Object one of whose properties declares both a "
-        "`discriminator` and a `oneOf`"
-    ),
-    "schema.properties>schema.enum": "one per Schema Object one of whose properties declares `enum`",
     "schema.properties>schema.oneOf": "one per Schema Object one of whose properties declares `oneOf`",
-    "schema.properties>schema.properties": "one per Schema Object one of whose properties declares `properties`",
-    "schema.properties>schema.type=array": "one per Schema Object one of whose properties declares `type: array`",
 }
 
 

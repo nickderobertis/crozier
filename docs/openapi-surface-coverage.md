@@ -195,9 +195,9 @@ unbounded with it — so what bounds the list is not the grammar but the generat
 
 The list is therefore read off those functions' own branch structure, one
 selector per branch a document can select, and never off the cross-product of the
-grammar: `nested_array_element` distinguishes seven shapes an `items` value can
-be, where the cross-product of the four fields driving it would offer fifteen
-before nesting. The code is the bound, and
+grammar: `nested_array_element` distinguishes nine cases a document can reach,
+where the cross-product of the four fields driving it would offer fifteen
+combinations before nesting and unboundedly many with it. The code is the bound, and
 [the case analysis below](#the-six-blind-regions-of-srcirrs-case-by-case) is the
 derivation, branch by branch, of every entry and of every branch no selector kind
 can express. Three conventions that derivation applies, stated once:
@@ -206,27 +206,34 @@ can express. Three conventions that derivation applies, stated once:
   case of its own: two documents differing only in whether they write `items`
   differ in a *field*, which the grammar already names, rather than in a
   conjunction.
-- **A branch's negative conjuncts are not spelled.** `items.reference.is_none()
-  && items.ty == "array"` is named by its positive half; the negation is the
-  complement of another case of the same function, and no selector kind can
-  express a complement.
 - **A branch reached through `x.or(y)` is two cases, not one.**
   `one_of.as_ref().or(&any_of)` is selected identically by a document that writes
   only `anyOf`, and a selector naming `schema.oneOf` does not count that document,
   so both spellings are declared. Where a second `or` sits inside the first the
-  cases are their product; where the callee narrows one spelling away —
-  `discriminated_union` returns `None` for a `discriminator` beside an `any_of` —
-  only the surviving spelling is declared.
-- **A selector is never narrower than the case it names.** A case is named by the
-  positive shape a document writes, and where the branch narrows that shape by
-  something no kind can express — an arity, a value's form — the selector stays
-  the shape and the case row says what it does not carry. A selector *narrower*
-  than its case would leave documents that select the branch uncounted, which is
-  the same defect as naming only the `oneOf` spelling of an `or`; it is why
-  `resolve_schema_pointer` is recorded as holes rather than covered by one
-  continuation of each of its arms.
+  cases are their product; where the callee narrows one spelling away, only the
+  surviving spelling is declared.
+- **A case carries a selector only when that selector is exact; otherwise it is a
+  hole.** Exact means the nodes the census counts and the nodes that select the
+  branch differ *only* where another case of the same table claims them. Arms in a
+  chain overlap by construction — a later arm runs only because the earlier ones
+  did not — and an overlap between two listed cases is visible to a reader,
+  because both are in the table. What disqualifies a selector is the arm's **own**
+  condition reading something no selector kind can express: a JSON value's kind or
+  content, a collection's emptiness or length, a boolean field's value, which
+  member of a `type` array comes first, or a negation. Then the count silently
+  includes documents that select *no* case of the table, and nothing says so.
 
-The conjunctions are themselves a closed list of 34, declared in
+  This rules out a selector **narrower** than its case — one continuation of
+  `resolve_schema_pointer`'s `"allOf"` arm, leaving every other pointer form
+  uncounted — and equally one **broader** than it: `schema.oneOf>schema.example&schema.type=object`
+  would count a variant declaring `type: object` beside a scalar example, an empty
+  `examples`, or an object whose values are themselves schema declarations, and
+  `hoist_union_variant` sends all three to `base_type_ref`. Nine of the
+  fifty-three cases below survive this test; the other forty-four name the
+  extension that would close them.
+
+Every case whose own condition is the presence of a field and nothing more, and
+no other, earns one. The conjunctions are themselves a closed list of 9, declared in
 `scripts/openapi-surface-census.py` beside the predicate table and restated here,
 with a drift gate over the pair:
 
@@ -234,80 +241,20 @@ with a drift gate over the pair:
   members is a Reference Object.
 - `schema.anyOf>schema.allOf` — one per Schema Object one of whose `anyOf`
   members declares `allOf`.
-- `schema.anyOf>schema.example&schema.type=object` — one per Schema Object one
-  of whose `anyOf` members declares both an `example` and `type: object`.
-- `schema.anyOf>schema.examples&schema.type=object` — one per Schema Object one
-  of whose `anyOf` members declares both `examples` and `type: object`.
-- `schema.anyOf>schema.properties` — one per Schema Object one of whose `anyOf`
-  members declares `properties`.
-- `schema.anyOf>schema.type=array&schema.items>schema.allOf` — one per Schema
-  Object one of whose `anyOf` members declares `type: array` with an `items`
-  value declaring `allOf`.
-- `schema.anyOf>schema.type=array&schema.items>schema.anyOf` — one per Schema
-  Object one of whose `anyOf` members declares `type: array` with an `items`
-  value declaring `anyOf`.
-- `schema.anyOf>schema.type=array&schema.items>schema.discriminator&schema.oneOf`
-  — one per Schema Object one of whose `anyOf` members declares `type: array`
-  with an `items` value declaring both a `discriminator` and a `oneOf`.
-- `schema.anyOf>schema.type=array&schema.items>schema.oneOf` — one per Schema
-  Object one of whose `anyOf` members declares `type: array` with an `items`
-  value declaring `oneOf`.
-- `schema.anyOf>schema.type=array&schema.items>schema.properties` — one per
-  Schema Object one of whose `anyOf` members declares `type: array` with an
-  `items` value declaring `properties`.
 - `schema.items>schema.$ref` — one per Schema Object whose `items` value is a
   Reference Object.
-- `schema.items>schema.allOf` — one per Schema Object whose `items` value
-  declares `allOf`.
 - `schema.items>schema.anyOf` — one per Schema Object whose `items` value
   declares `anyOf`.
-- `schema.items>schema.discriminator&schema.oneOf` — one per Schema Object
-  whose `items` value declares both a `discriminator` and a `oneOf`.
 - `schema.items>schema.oneOf` — one per Schema Object whose `items` value
   declares `oneOf`.
-- `schema.items>schema.properties` — one per Schema Object whose `items` value
-  declares `properties`.
-- `schema.items>schema.type=array` — one per Schema Object whose `items` value
-  declares `type: array`.
 - `schema.oneOf>schema.$ref` — one per Schema Object one of whose `oneOf`
   members is a Reference Object.
 - `schema.oneOf>schema.allOf` — one per Schema Object one of whose `oneOf`
   members declares `allOf`.
-- `schema.oneOf>schema.example&schema.type=object` — one per Schema Object one
-  of whose `oneOf` members declares both an `example` and `type: object`.
-- `schema.oneOf>schema.examples&schema.type=object` — one per Schema Object one
-  of whose `oneOf` members declares both `examples` and `type: object`.
-- `schema.oneOf>schema.properties` — one per Schema Object one of whose `oneOf`
-  members declares `properties`.
-- `schema.oneOf>schema.type=array&schema.items>schema.allOf` — one per Schema
-  Object one of whose `oneOf` members declares `type: array` with an `items`
-  value declaring `allOf`.
-- `schema.oneOf>schema.type=array&schema.items>schema.anyOf` — one per Schema
-  Object one of whose `oneOf` members declares `type: array` with an `items`
-  value declaring `anyOf`.
-- `schema.oneOf>schema.type=array&schema.items>schema.discriminator&schema.oneOf`
-  — one per Schema Object one of whose `oneOf` members declares `type: array`
-  with an `items` value declaring both a `discriminator` and a `oneOf`.
-- `schema.oneOf>schema.type=array&schema.items>schema.oneOf` — one per Schema
-  Object one of whose `oneOf` members declares `type: array` with an `items`
-  value declaring `oneOf`.
-- `schema.oneOf>schema.type=array&schema.items>schema.properties` — one per
-  Schema Object one of whose `oneOf` members declares `type: array` with an
-  `items` value declaring `properties`.
-- `schema.properties>schema.allOf` — one per Schema Object one of whose
-  properties declares `allOf`.
 - `schema.properties>schema.anyOf` — one per Schema Object one of whose
   properties declares `anyOf`.
-- `schema.properties>schema.discriminator&schema.oneOf` — one per Schema Object
-  one of whose properties declares both a `discriminator` and a `oneOf`.
-- `schema.properties>schema.enum` — one per Schema Object one of whose
-  properties declares `enum`.
 - `schema.properties>schema.oneOf` — one per Schema Object one of whose
   properties declares `oneOf`.
-- `schema.properties>schema.properties` — one per Schema Object one of whose
-  properties declares `properties`.
-- `schema.properties>schema.type=array` — one per Schema Object one of whose
-  properties declares `type: array`.
 
 A conjunction selector is a selector like any other everywhere else: `--selector`
 accepts one, refuses a misspelling of one by name — and refuses a well-formed
@@ -848,17 +795,25 @@ every branch of each of those six functions a source document can select, under
 it distinguishes.
 
 **Every case below is in exactly one of two states.** It carries exactly one
-selector from the closed list of 34, or it is recorded as an enumeration hole
-naming the property no selector kind can express and what closing it would take —
+selector from the closed list of 9 — and only where that selector is *exact*,
+counting the nodes the branch is selected by and no others — or it is recorded as
+one of sixteen enumeration holes naming the property no selector kind can express
+and what closing it would take —
 the way `normalization-collision` was recorded before `components.schemas:normalized-collision`
 existed. No case is in neither, and none is in both.
 
 | hole | what no selector kind can express | what closing it would take |
 |---|---|---|
 | **H-residual** | a function's residual arm is selected by the *absence* of every case above it | a negation operator over a group's members, deliberately absent: a complement is not a shape a document declares |
-| **H-arity** | the *number* of members a composition field declares — `let [member] = schema.all_of…as_slice()`, `non_null.len() == 1` | a predicate over a composition field's length (`schema.allOf:sole-member`, `schema.oneOf:sole-non-null-member`), of the family `operation.tags:multiple` already is |
+| **H-negated-value** | that a value was *not* written — `is_inline_struct`'s `!declares_scalar_type(schema)`, which excludes a schema whose `type` is `string`, `number`, `integer` or `boolean` | the same negation operator H-residual names; the four positive spellings are valued selectors the grammar already has, and only their complement is missing |
+| **H-arity** | the *number* of members a composition field declares — `let [member] = schema.all_of…as_slice()`, `non_null.len() == 1`, `members.len() == 1` | a predicate over a composition field's length (`schema.allOf:sole-member`, `schema.oneOf:sole-non-null-member`), of the family `operation.tags:multiple` already is |
+| **H-empty-collection** | whether a map- or list-valued field is *non-empty* — `is_inline_object` and `is_inline_struct` both read `!schema.properties.is_empty()`, so a declared-but-empty `properties: {}` is not an inline object at all | a predicate `schema.properties:non-empty`, again a length predicate of the `operation.tags:multiple` family |
 | **H-boolean-value** | which *boolean* a schema-or-boolean field was written with — `is_inline_struct`'s `AdditionalProperties::Bool(false)` arm | `schema.additionalProperties` added to the closed list of valued fields for its boolean spelling |
-| **H-inferred-discriminant** | that a union's members each carry a property whose value is a one-member `enum`, which is the discriminant `inferred_union_discriminant_property` finds with no `discriminator` field written | a predicate comparing the members of one `oneOf` against each other, of the family `operation.operationId:duplicate` already is |
+| **H-type-multiplicity** | *which* member of a `type` array is the one a branch reads: `TypeField::primary()` takes the first non-`null` member, while `schema.type=array` counts a schema declaring `array` anywhere among its types, so a 3.1 `type: [string, array]` is counted and takes the string path | a valued selector reading a member's *position* rather than its presence (`schema.type:primary=array`), which is a predicate over the `type` field's array |
+| **H-example-value** | the JSON *kind and content* of an `example` or `examples` value — `hoist_union_variant`'s bare-object arm needs `schema_example(variant)` to yield an object that `example_is_schema_definition` does not reject, so a `type: object` variant beside a scalar example, an empty `examples`, or an object whose every value is itself a schema declaration is counted and takes `base_type_ref` | a valued selector over an example's JSON kind (`schema.example=object`) *and* a predicate `schema.example:schema-shaped` for the rejection half — one new member of the valued-field list and one new predicate, since neither alone decides the arm |
+| **H-enum-value-kind** | that an `enum`'s or `const`'s values are *strings* — `string_enum_values` returns `None` for `enum: [1, 2, 3]` on a schema that is not `type: string`, and for a `type: string` enum whose values are all non-strings | a predicate `schema.enum:string-valued`, of the same value-reading family as H-example-value |
+| **H-discriminant-value** | that a union's members each carry a discriminable value for the discriminant property — `discriminated_union` requires `discriminant_value` (a one-member string `enum`, or a string `example`) on every member when no `mapping` is written, and every `mapping` target to resolve when one is; a `discriminator` beside a `oneOf` is therefore not enough to select the arm, and the inferred spelling reads the same member values with no `discriminator` written at all | a predicate comparing the members of one `oneOf` against each other and against a named property's value, of the family `operation.operationId:duplicate` already is |
+| **H-annotated-ref** | that an `allOf` holds exactly one `$ref` beside members that add nothing but a description — `described_all_of_ref` requires at least two members, exactly one of them a reference, and every other `is_unknown` | the length predicate H-arity names, plus a predicate over what the remaining members declare; `schema.allOf` alone counts every `allOf` there is |
 | **H-ref-target** | the shape of the schema a `$ref` *points at*: the walk counts a Reference Object and never descends | a resolving walk, which is a different instrument — the target's own declaration site is already counted where it is written |
 | **H-pointer-form** | the segment structure of a `$ref` *value*, as in `#/components/schemas/A/allOf/0/properties/b` | a predicate family over `schema.$ref` (`:components-schemas-pointer`, `:nested-properties`, `:nested-items`, `:composition-index`, `:foreign-pointer`), of the family the three `openapi.paths:` predicates already are over a key's shape |
 | **H-pointer-nesting** | that a `$ref` value's segment sequence addresses the nesting a schema declares: each arm's schema-side half is already named by a plain field selector (`schema.allOf`, `schema.properties`, `schema.items`), and what no kind can express is the *correspondence* between the two, which is a joint property of a value and the document it points into | the `schema.$ref` pointer-form predicate family H-pointer-form names, evaluated against the resolving walk H-ref-target names — both together, and neither is a conjunction over one node's declared fields |
@@ -905,50 +860,40 @@ member `schema.items` of every case rather than listed as a case of its own.
 
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
-| 1 | `items.reference.is_none() && items.ty…primary() == Some("array")` — the recursive nested-array descent | `schema.items>schema.type=array` |
-| 2 | `self.discriminated_union(&name, &module, items, …)` returning `Some` on an `items` writing an explicit `discriminator`; the callee returns `None` for a `discriminator` beside an `any_of`, so only the `oneOf` spelling survives | `schema.items>schema.discriminator&schema.oneOf` |
-| 3 | the same arm on an `items` writing no `discriminator`, either spelling, where the discriminant is inferred from the members | **H-inferred-discriminant** |
-| 4 | `if items.reference.is_some() { return None; }` | `schema.items>schema.$ref` |
-| 5 | `is_inline_struct(items)` → `add_object`, on an `items` declaring `properties` | `schema.items>schema.properties` |
-| 6 | the same arm on an `items` declaring `allOf` | `schema.items>schema.allOf` |
-| 7 | the same arm on an `items` declaring `additionalProperties: false` | **H-boolean-value** |
-| 8 | `items.one_of.as_ref().or(items.any_of.as_ref())` → the hoisted union alias, `oneOf` spelling | `schema.items>schema.oneOf` |
-| 9 | the same arm, `anyOf` spelling: an `items` declaring only `anyOf` reaches it identically | `schema.items>schema.anyOf` |
-| 10 | the closing `None` | **H-residual** |
+| 1 | `items.reference.is_none() && items.ty…primary() == Some("array")` — the recursive nested-array descent | **H-type-multiplicity** |
+| 2 | `self.discriminated_union(&name, &module, items, …)` returning `Some`, in either the written-`discriminator` spelling or the inferred one | **H-discriminant-value** |
+| 3 | `if items.reference.is_some() { return None; }` — the arm's own condition is that the field is written, and nothing more | `schema.items>schema.$ref` |
+| 4 | `is_inline_struct(items)` → `add_object`, on an `items` whose `properties` are non-empty | **H-empty-collection** |
+| 5 | the same arm on an `items` declaring `allOf`, which `is_inline_struct` takes only for a schema declaring no scalar `type` | **H-negated-value** |
+| 6 | the same arm on `type: object` with `additionalProperties: false` | **H-boolean-value** |
+| 7 | `items.one_of.as_ref().or(items.any_of.as_ref())` → the hoisted union alias, `oneOf` spelling; the gate is `Option::is_some`, so an empty `oneOf: []` selects it too | `schema.items>schema.oneOf` |
+| 8 | the same arm, `anyOf` spelling: an `items` declaring only `anyOf` reaches it identically | `schema.items>schema.anyOf` |
+| 9 | the closing `None` | **H-residual** |
 
 #### `hoist_union_variant`
 
 Every caller reaches it through `one_of.as_ref().or(any_of.as_ref())` — the
 named-schema, response and request-body hoisters, `prop_type_ref`, and its own
 recursion — so a document declaring only `anyOf` selects every case below exactly
-as one declaring `oneOf` does. Each case is therefore two, `schema.oneOf` and
-`schema.anyOf` at the head, and where the arm reads a second `or` the cases are
-the product of the two.
+as one declaring `oneOf` does, and each case that survives the exactness test is
+two. Cases 4 to 7 all sit inside `if variant.ty…primary() == Some("array")`, so
+each carries H-type-multiplicity on top of the condition its own row names; the
+row names the narrower one.
 
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
-| 1 | `if let Some(reference) = &variant.reference` — the variant is a Reference Object, `oneOf` head | `schema.oneOf>schema.$ref` |
+| 1 | `if let Some(reference) = &variant.reference` — the variant is a Reference Object, `oneOf` head; the first arm, so nothing precedes it | `schema.oneOf>schema.$ref` |
 | 2 | the same arm, `anyOf` head | `schema.anyOf>schema.$ref` |
-| 3 | `if let Some(member) = simple_nullable_member(item)` — one element member beside `type: null`, typed `List[Optional[…]]`; either head, and the callee reads its own `any_of.as_ref().or(one_of.as_ref())` | **H-arity** |
-| 4 | an array variant whose item composes, `hoist_discriminated_union(&item_name, item, …)` returning `Some`; the callee needs the item's `one_of`, so the inner spelling is fixed — `oneOf` head | `schema.oneOf>schema.type=array&schema.items>schema.discriminator&schema.oneOf` |
-| 5 | the same arm, `anyOf` head | `schema.anyOf>schema.type=array&schema.items>schema.discriminator&schema.oneOf` |
-| 6 | the same item falling through to the `TypeDecl::Alias` union over `item.one_of.as_ref().or(item.any_of.as_ref())` — `oneOf` head, `oneOf` item | `schema.oneOf>schema.type=array&schema.items>schema.oneOf` |
-| 7 | the same arm, `oneOf` head, `anyOf` item | `schema.oneOf>schema.type=array&schema.items>schema.anyOf` |
-| 8 | the same arm, `anyOf` head, `oneOf` item | `schema.anyOf>schema.type=array&schema.items>schema.oneOf` |
-| 9 | the same arm, `anyOf` head, `anyOf` item | `schema.anyOf>schema.type=array&schema.items>schema.anyOf` |
-| 10 | `described_all_of_ref(item)` resolving → `hoist_named_copy` of the annotated `$ref`, `oneOf` head | `schema.oneOf>schema.type=array&schema.items>schema.allOf` |
-| 11 | the same arm, `anyOf` head | `schema.anyOf>schema.type=array&schema.items>schema.allOf` |
-| 12 | `item.reference.is_none() && is_inline_struct(item)` → `hoist_object`, `oneOf` head | `schema.oneOf>schema.type=array&schema.items>schema.properties` |
-| 13 | the same arm, `anyOf` head | `schema.anyOf>schema.type=array&schema.items>schema.properties` |
-| 14 | `is_inline_object(variant)` → `hoist_object`, on a variant declaring `properties`, `oneOf` head | `schema.oneOf>schema.properties` |
-| 15 | the same arm, `anyOf` head | `schema.anyOf>schema.properties` |
-| 16 | the same arm on a variant declaring `allOf`, `oneOf` head | `schema.oneOf>schema.allOf` |
-| 17 | the same arm, `anyOf` head | `schema.anyOf>schema.allOf` |
-| 18 | `is_bare_object(variant) && schema_example(variant).is_some_and(…)` where `schema_example` reads `schema.example`, `oneOf` head | `schema.oneOf>schema.example&schema.type=object` |
-| 19 | the same arm, `anyOf` head | `schema.anyOf>schema.example&schema.type=object` |
-| 20 | the same arm where `schema_example` falls to its `.or_else(… schema.examples.first())`, `oneOf` head | `schema.oneOf>schema.examples&schema.type=object` |
-| 21 | the same arm, `anyOf` head | `schema.anyOf>schema.examples&schema.type=object` |
-| 22 | the closing `base_type_ref(variant)` | **H-residual** |
+| 3 | `if let Some(member) = simple_nullable_member(item)` — one element member beside `type: null`, typed `List[Optional[…]]` | **H-arity** |
+| 4 | an array variant whose item composes, `hoist_discriminated_union(&item_name, item, …)` returning `Some` | **H-discriminant-value** |
+| 5 | the same item falling through to the `TypeDecl::Alias` union over `item.one_of.as_ref().or(item.any_of.as_ref())`; the inner gate is exact, the `type: array` guard around it is not | **H-type-multiplicity** |
+| 6 | `described_all_of_ref(item)` resolving → `hoist_named_copy` of the annotated `$ref` | **H-annotated-ref** |
+| 7 | `item.reference.is_none() && is_inline_struct(item)` → `hoist_object` | **H-empty-collection** |
+| 8 | `is_inline_object(variant)` → `hoist_object` on a variant whose `properties` are non-empty, either head | **H-empty-collection** |
+| 9 | the same arm on a variant declaring `allOf` — `is_inline_object` is a disjunction and carries no scalar-type guard, so `all_of.is_some()` is the whole of it; `oneOf` head | `schema.oneOf>schema.allOf` |
+| 10 | the same arm, `anyOf` head | `schema.anyOf>schema.allOf` |
+| 11 | `is_bare_object(variant) && schema_example(variant).is_some_and(…)` — the arm reads the example's JSON kind and rejects a schema-shaped object | **H-example-value** |
+| 12 | the closing `base_type_ref(variant)` | **H-residual** |
 
 #### `prop_type_ref`
 
@@ -957,21 +902,21 @@ leftmost member of every case.
 
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
-| 1 | the outer `if let (Some(schemas), Some((reference, description))) = (self.schemas, described_all_of_ref(prop_schema))` gate | `schema.properties>schema.allOf` |
+| 1 | the outer `if let (Some(schemas), Some((reference, description))) = (self.schemas, described_all_of_ref(prop_schema))` gate | **H-annotated-ref** |
 | 2 | inside it, `if let Some(values) = string_enum_values(&target)` → a hoisted enum | **H-ref-target** |
 | 3 | inside it, `if target.one_of.is_some() \|\| target.any_of.is_some()` → `hoist_named_copy` | **H-ref-target** |
 | 4 | inside it, `!is_map(&target) && !is_bare_object(&target) && …` → `hoist_object_with_doc` | **H-ref-target** |
 | 5 | inside it, the closing `full_type_ref_resolved(&target, schemas)` | **H-ref-target** |
 | 6 | `if let Some(member) = sole_inline_all_of(prop_schema)` — one inline `allOf` member and nothing else declared | **H-arity** |
-| 7 | `string_enum_values(prop_schema)` → a hoisted enum | `schema.properties>schema.enum` |
-| 8 | `prop_schema.reference.is_none() && is_inline_struct(prop_schema)` → `hoist_object` | `schema.properties>schema.properties` |
-| 9 | `if let Some(members) = prop_schema.one_of.as_ref().or(prop_schema.any_of.as_ref())` — the composition gate, `oneOf` spelling | `schema.properties>schema.oneOf` |
+| 7 | `string_enum_values(prop_schema)` → a hoisted enum, which the helper refuses unless the values are strings | **H-enum-value-kind** |
+| 8 | `prop_schema.reference.is_none() && is_inline_struct(prop_schema)` → `hoist_object` | **H-empty-collection** |
+| 9 | `if let Some(members) = prop_schema.one_of.as_ref().or(prop_schema.any_of.as_ref())` — the composition gate, whose own condition is that the field is written; `oneOf` spelling | `schema.properties>schema.oneOf` |
 | 10 | the same gate, `anyOf` spelling: a property declaring only `anyOf` reaches every arm below it identically | `schema.properties>schema.anyOf` |
 | 11 | inside it, `non_null.len() == 1 && non_null.len() != members.len()` — the nullable pair collapsing to its one member | **H-arity** |
 | 12 | inside it, `members.len() == 1 && is_inline_struct(&members[0])` | **H-arity** |
-| 13 | inside it, `if let Some(union) = self.hoist_discriminated_union(&name, prop_schema, …)`; the callee returns `None` for a `discriminator` beside an `any_of`, so only the `oneOf` spelling survives | `schema.properties>schema.discriminator&schema.oneOf` |
+| 13 | inside it, `if let Some(union) = self.hoist_discriminated_union(&name, prop_schema, …)` | **H-discriminant-value** |
 | 14 | inside it, the closing alias over the members left after `is_null_variant` filtering | **H-residual** |
-| 15 | `prop_schema.ty…primary() == Some("array")` → `hoist_array_item_type` | `schema.properties>schema.type=array` |
+| 15 | `prop_schema.ty…primary() == Some("array")` → `hoist_array_item_type` | **H-type-multiplicity** |
 | 16 | the closing `base_type_ref(prop_schema)` | **H-residual** |
 
 #### `ref_to_class`
