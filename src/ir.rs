@@ -888,6 +888,9 @@ pub struct Endpoint {
     pub reference_body_example: Option<serde_json::Value>,
     /// Whether the referenced request schema has a substantive description.
     pub body_schema_documented: bool,
+    /// Whether the referenced request schema declares a `title`. Fern's
+    /// surviving-schema content-type drop turns on it; see `emit.rs`.
+    pub body_schema_titled: bool,
     /// Whether the referenced request schema also contains server-populated fields.
     pub body_schema_is_response_heavy: bool,
     /// Whether the referenced request object leaves `additionalProperties` open.
@@ -2899,6 +2902,22 @@ fn build_endpoint(
             .and_then(|reference| resolve_ref(doc, reference))
             .and_then(|schema| schema.description.as_deref())
             .is_some_and(|description| !description.trim().is_empty()),
+        body_schema_titled: op
+            .request_body
+            .as_ref()
+            .and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+            .and_then(|schema| schema.reference.as_deref())
+            .and_then(|reference| resolve_ref(doc, reference))
+            .is_some_and(|schema| {
+                schema
+                    .title
+                    .as_deref()
+                    .is_some_and(|title| !title.trim().is_empty())
+            }),
         body_schema_is_response_heavy: op
             .request_body
             .as_ref()

@@ -4838,16 +4838,27 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // surviving-schema body that carries the header — which is
                         // the same query-parameter exception the shared-body drop
                         // above already records for Palo Alto's crypto profiles.
-                        // The drop is scoped to a body that offers SEVERAL media
-                        // types, which is the whole of AGCO's: a body declared over
-                        // one media type keeps the header through it, which is what
-                        // leaves exhaustive's `postJsonPatchContentType` and
-                        // `getAndReturnOptional` — each a lone `application/json`
-                        // over a surviving schema — their own.
+                        // A schema declaring its own `title` escapes the drop.
+                        // The `title` is what Fern's importer names the request
+                        // model from, and every measured surviving-schema body
+                        // splits on it: SFTPGo's `Admin`, `APIKey`, `Role`,
+                        // `Share`, `AdminProfile` and `UserProfile`,
+                        // Audiobookshelf's `EmailSettings` and `Podcast`, LORIS's
+                        // `QueryObject` and all 28 of AGCO's are untitled and lose
+                        // the header, while letta's `CreateBlock`/`BlockUpdate` and
+                        // exhaustive's `typesObjectWithOptionalField` and
+                        // `typesObjectWithRequiredField` carry one and keep it. A
+                        // body offering SEVERAL media types drops it either way,
+                        // which is what AGCO measured first and what no titled
+                        // source has since contradicted. A `stream-condition`
+                        // request escapes the drop too: Fern augments that body
+                        // with the condition property itself (`"stream": True`),
+                        // so it is no longer just the referenced schema.
                         && !(ep.body_schema_ref
                             && !ep.body_schema_dropped
                             && ep.query_params.is_empty()
-                            && ep.body_media_alternatives)
+                            && ep.stream_condition.is_none()
+                            && (ep.body_media_alternatives || !ep.body_schema_titled))
                         && !(matches!(body, RequestBody::Inline(_))
                             && (ep.body_all_of || ep.body_response_same_ref)
                             && !resource_envelope)
