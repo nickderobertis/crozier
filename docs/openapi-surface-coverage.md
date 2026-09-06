@@ -117,7 +117,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-three, declared in `scripts/openapi-surface-census.py` and restated here, with a
+six, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `operation.tags:multiple` — one per Operation Object whose `tags` array holds
@@ -133,6 +133,20 @@ drift gate over the pair:
   `src/emit.rs` renders as one URL — applied to each `{expression}` and to
   nothing else, so `/users/{userId}` and `/users/{user_id}` collide while
   `/{id}/users` and `/users/{id}` do not.
+- `openapi.paths:templated-key` — one per Paths Object key carrying at least one
+  `{expression}` template expression, so a key with two counts one.
+- `openapi.paths:several-template-expressions` — one per Paths Object key
+  carrying more than one `{expression}` template expression, so a key with one
+  counts none and a key with three counts one. The two are separate readings of
+  the same key rather than one selector and a refinement of it: a key with
+  exactly one expression is what tells them apart.
+- `components.schemas:normalized-collision` — one per `components.schemas` key
+  that collides with at least one other key of the same document after
+  class-name normalization, so a two-key collision counts two. The normalization
+  is again crozier's own — `naming::class_name` of `src/naming.rs`, the transform
+  `src/ir.rs`'s `ref_to_class` gives a named schema and so the one that decides
+  which components generate as one class — so `OBRate1_0` and `OB_Rate1_0`
+  collide while `OBRate1` and `OBRate1_0` do not.
 
 A predicate selector is a selector like any other everywhere else: `--selector`
 accepts one, refuses a misspelling of one by name, and reports an undeclared one
@@ -277,29 +291,29 @@ for either; each bullet below says where its number comes from.
 | region | features | `golden` | `limitations` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 70 | 49 | 14 | 7 | 7 | 0 | 0 |
-| [`schemas`](openapi-surface/schemas.md) | 116 | 92 | 5 | 19 | 13 | 3 | 3 |
+| [`schemas`](openapi-surface/schemas.md) | 117 | 93 | 5 | 19 | 13 | 3 | 3 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 36 | 11 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 37 | 4 | 9 | 5 | 4 | 0 |
-| [`document-paths`](openapi-surface/document-paths.md) | 67 | 60 | 5 | 2 | 2 | 0 | 0 |
+| [`document-paths`](openapi-surface/document-paths.md) | 67 | 62 | 5 | 0 | 0 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 33 | 1 | 18 | 1 | 0 | 17 |
-| **total** | **402** | **307** | **40** | **55** | **28** | **7** | **20** |
+| **total** | **403** | **310** | **40** | **53** | **26** | **7** | **20** |
 
-The walk enumerated **402** features and landed each in exactly one category:
-**307** `golden`, **40** `limitations`, **55** `gap`. The `gap` column splits by
-settlement class into **28** `FIXTURE`, **7** `PROBE` and **20** `UNREACHABLE`.
+The walk enumerated **403** features and landed each in exactly one category:
+**310** `golden`, **40** `limitations`, **53** `gap`. The `gap` column splits by
+settlement class into **26** `FIXTURE`, **7** `PROBE` and **20** `UNREACHABLE`.
 
-**What the `gap` count means.** 55 is the number of OpenAPI shapes for which
+**What the `gap` count means.** 53 is the number of OpenAPI shapes for which
 crozier's behaviour is vouched for by nothing but crozier: no committed golden's
 source declares the shape, so no byte comparison against Fern touches it, and
 [`fern-limitations.md`](fern-limitations.md) has never measured Fern on it, so
-nothing contradicts whatever crozier does. `just check` is green over all 55
+nothing contradicts whatever crozier does. `just check` is green over all 53
 either way. It is not a defect count — 20 of them (`UNREACHABLE`) have no
 position in a generated Python SDK at all, and saying so is their settlement.
-The two backlogs below are the other 35.
+The two backlogs below are the other 33.
 
 ### Reconciliation
 
-**Each feature is classified exactly once.** The 402 rows carry 402 distinct
+**Each feature is classified exactly once.** The 403 rows carry 403 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
 already runs over all six files, re-run here and passing. Thirteen spec
@@ -315,7 +329,7 @@ emits `schema.format` and `schema.format=uuid` as two selectors.
 of `FIXTURE`, `PROBE`, `UNREACHABLE`.
 
 **Every ledger key is accounted for.** The canonical join reports 56 keys, of
-which 51 are a region row's key verbatim. The other five:
+which 52 are a region row's key verbatim. The other four:
 
 | ledger key | how it is accounted for |
 |---|---|
@@ -323,25 +337,41 @@ which 51 are a region row's key verbatim. The other five:
 | `encoding-explode-or-allowReserved` | One ledger row covering two fields; `bodies-media` splits it into `encoding-explode` and `encoding-allow-reserved`, both `limitations`, both citing that verdict. |
 | `servers-multiple-path-or-operation` | One ledger row covering two levels; `document-paths` splits it into `pathitem-servers` and `operation-servers`, both `golden`. |
 | `relative-file-ref` | A *target form* of `Path Item Object.$ref`, which `document-paths` classifies once as `pathitem-ref` (`golden` since corpus row 99 declares 36 of them, citing verdict `discards`). The walk enumerates the field; the ledger additionally rules on one form of what it points at. |
-| `normalization-collision` | **The walk's one enumeration hole** — see below. |
 
-**The one correction this node records.** `normalization-collision` is the shape
-of two `components.schemas` names that collide after identifier normalization
-(`OBRate1_0` beside `OB_Rate1_0`). No region row carries it, because the selector
-grammar excludes map keys that are *names* by design, so no selector can reach
-it. The path-side counterpart, `document-paths`'s `duplicate-normalized-paths`,
-is both enumerated **and** measured — by the `openapi.paths:normalized-collision`
-predicate selector, which normalizes each path key's template expressions and
-reports zero across all 140 registered sources. So the inconsistency between the
-two regions is now only that the schema-name side has no counterpart predicate:
-what the `schemas` region needs is a selector over `components.schemas` keys under
-`naming::class_name`, not a hand measurement. Were the row written it would be
-`limitations`, citing
-ledger `normalization-collision`, verdict `discards`, with two byte-matching
-golden witnesses (`openbanking.org.uk-account-info-openapi`,
-`amazonaws.com-cloudformation`), so it moves no count in either backlog below.
-Writing it belongs to a change that owns [`schemas.md`](openapi-surface/schemas.md);
-recording it is this node's part, and no region file is edited here.
+**The one correction this change records, and the enumeration hole it closes.**
+The paragraph this replaces recorded `normalization-collision` — two
+`components.schemas` names that collide after identifier normalization
+(`OBRate1_0` beside `OB_Rate1_0`) — as *the walk's one enumeration hole*: no
+region row carried it, because the selector grammar excludes map keys that are
+*names* by design, and it named exactly what closing it would take, a selector
+over `components.schemas` keys under `naming::class_name`. That selector is now
+declared: `components.schemas:normalized-collision`, in the grammar above beside
+the path-side predicate it mirrors. [`schemas.md`](openapi-surface/schemas.md)
+carries the row, which is why the walk's total moves from 402 to 403.
+
+**Its category is what the new measurement reports, not what that paragraph
+predicted.** The prediction was `limitations`, on the reading that the row's
+evidence would be the ledger verdict. The measurement outranks it: the predicate
+reports **8** declaration sites in **3** registered sources —
+`openbanking.org.uk-account-info-openapi` (4), `amazonaws.com-cloudformation` (2)
+and `daniweb-connect` (2), a third witness the old prediction did not know about —
+and all three carry a byte-matching committed golden, so under
+[the classification precedence](#the-category-rules) the row is `golden`, with the
+ledger key `normalization-collision` and its verdict `discards` recorded beside
+that evidence rather than instead of it. It moves the `schemas` region's `golden`
+count and neither backlog below, since a `golden` row is in neither.
+
+**The same paragraph's reasoning applied to two more rows, and they moved too.**
+`document-paths`'s `templated-path-segment` and `several-path-template-variables`
+each rested on the same kind of sentence — *path keys are free-map names, so no
+selector reports a declaration* — which is a statement about this instrument's
+reach rather than about the world, and this document already rules that such a
+row's measurement has not been made. Two more predicates over Paths Object keys,
+`openapi.paths:templated-key` and `openapi.paths:several-template-expressions`,
+make them measurable; 93 golden-bearing sources declare a templated key and 53 a
+key carrying more than one expression, so both rows are `golden` and both leave
+the ranked `FIXTURE` backlog. That is the whole of the movement in the counts
+above.
 
 **One scope boundary is read two ways, and no row is lost to it.** The index's
 rule is that the *containing* object's region owns a field while the *held*
@@ -538,7 +568,7 @@ refuses four of them at the pin the corpus's provenance records while the fifth
 carries no redistributable licence. Its region-file cell carries that evidence
 with each refusal's error count, so `probe-backlog` works from it.
 
-All 28 `FIXTURE` gaps remaining across the six regions, in one total order, by [the ranking
+All 26 `FIXTURE` gaps remaining across the six regions, in one total order, by [the ranking
 rubric](#the-ranking-rubric) — crozier sites ascending, then blind-spot reach
 descending, then artifact breadth descending, then witness supply descending,
 then key. Each row publishes the measured value of all four, so the order can be
@@ -558,10 +588,10 @@ checked rather than trusted.
 - **Criterion 4**, witness supply: registered sources the census reports
   declaring the shape, read off the row's own `evidence` cell. A `FIXTURE` gap
   can only score above zero here from a source with no committed golden, which is
-what makes it a gap — 27 of the 28 score zero, and the one that does not names
+what makes it a gap — 25 of the 26 score zero, and the one that does not names
   its one source in that cell.
 
-**The median blind-spot count of this list is 0** — 19 of the 28 entries name no
+**The median blind-spot count of this list is 0** — 19 of the 26 entries name no
 `src/` file at all, which is also why they win criterion 1 outright.
 
 | # | key | region | 1. crozier sites | 2. blind spots | 3. artifacts | 4. witnesses |
@@ -592,8 +622,6 @@ what makes it a gap — 27 of the 28 score zero, and the one that does not names
 | 24 | [`http-oauth`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
 | 25 | [`http-scram-sha-1`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
 | 26 | [`http-scram-sha-256`](openapi-surface/security.md) | `security` | **2** (`src/openapi.rs` 1, `src/ir.rs` 1) | **712** (`src/openapi.rs` 511 + `src/ir.rs` 201) | **3** (client.py, core/, reference.md) | **0** |
-| 27 | [`templated-path-segment`](openapi-surface/document-paths.md) | `document-paths` | **3** (`src/ir.rs` 3) | **201** (`src/ir.rs` 201) | **3** (client.py, raw_client.py, reference.md) | **0** |
-| 28 | [`several-path-template-variables`](openapi-surface/document-paths.md) | `document-paths` | **3** (`src/ir.rs` 3) | **201** (`src/ir.rs` 201) | **2** (client.py, raw_client.py) | **0** |
 
 ### The ranked list against `golden blind spots`
 
@@ -613,11 +641,11 @@ functions named in each verdict are counted from that union.
 | `src/openapi.rs` | 511 | all-e2e 221, non-e2e 290 | 4 — #23 `http-hoba`, #24 `http-oauth`, #25 `http-scram-sha-1`, #26 `http-scram-sha-256` | **Agrees, and accounts for the rest.** #23–#26 — `http-hoba`, `http-oauth`, `http-scram-sha-1` and `http-scram-sha-256` — are one `#[serde(other)]` scheme fallback arm, four IANA scheme members that collapse through it. `normalize_parameters`, 3 regions, was a fifth until corpus row 122 settled `operation-overrides-path-item-parameter` `golden` and it left the ranked list, and the `operation_id` field declaration was a sixth until corpus row 128 settled `duplicate-operation-id` the same way. The largest block, `filter_ignored` 72, is the walk's `x-fern-or-crozier-ignore` — now `golden`, on corpus row 108's four `x-fern-ignore` operations, though golden-classified is not golden-*exhausted*: one witness reaches the Operation-Object arm and leaves the schema arm and the `x-crozier-*` precedence to unit tests. `filter_by_audience` 47 + `audiences` 8 belong to `audience-dual-header-policy`, classified `golden`: golden-classified is not golden-*exhausted*, since the two audience goldens declare 8 sites between them and leave the rest of the branch space to unit tests. `collect_schema_refs` 46 + `expand_schema_closure` 32 + `operation_schema_seed` 24 is `$ref`-closure pruning under `reference-ref` (`golden`); `load` 26 + `visit_seq` 7 + `de_composition` 5 are malformed-document deserialization paths the corpus excludes by taking only documents Fern generates. |
 | `src/cli.rs` | 292 | all-e2e 133, non-e2e 159 | none | **Neither**, as `src/settings.rs`: `do_config` 60, `run` 43, `do_init` 26, `do_generate` 12 are the command surface, not document behaviour. |
 | `src/emit.rs` | 261 | all-e2e 29, non-e2e 232 | none | **A shape the walk missed.** The one ranked gap that pointed here, `media-type-range`, named `append_request_call_args` — which is not among the blind regions at all — and corpus row 127 has since settled it `golden`. The blind regions are example rendering — `raw_type_str_ctx` 40, `example_matches_type` 24, `build_example_inner` 23, `named_value_inner` 13, `value_from_example` 12, `example_from_json` 6 — and streaming docstrings, `client_stream_docstring` 11 + `raw_stream_docstring` 10. Every `example`/`examples` field is classified `golden`, but the walk enumerates the *field*; those branches switch on the JSON value *kind* an example holds, and example values are not in the grammar's closed list of valued selectors, so no `gap` row could have named them. |
-| `src/ir.rs` | 201 | all-e2e 9, non-e2e 192 | 9 — #20–#28 | **Agrees on the file, misses the shapes.** The blind regions are type-lowering conjunctions: `resolve_schema_pointer` 25, `nested_array_element` 25, `hoist_union_variant` 24, `ref_to_class` 22, `prop_type_ref` 20, `path_group` 15. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own; it is their *combinations* that no golden reaches, and the census emits one selector per field and none per conjunction. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); nobody ran one over schema-composition combinations. |
+| `src/ir.rs` | 201 | all-e2e 9, non-e2e 192 | 7 — #20–#26 | **Agrees on the file, misses the shapes.** The blind regions are type-lowering conjunctions: `resolve_schema_pointer` 25, `nested_array_element` 25, `hoist_union_variant` 24, `ref_to_class` 22, `prop_type_ref` 20, `path_group` 15. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own; it is their *combinations* that no golden reaches, and the census emits one selector per field and none per conjunction. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); nobody ran one over schema-composition combinations. |
 | `src/refs.rs` | 74 | all-e2e 17, non-e2e 57 | none | **Only a probe can settle it.** `resolve_reference` 16, `document` 10, `pointer` 9, `error` 7, `curl_fetch` 7 are the cross-document `$ref` path. The corpus is single-document by construction ([`matching.md`](matching.md#cross-document-ref-resolution-issue-77)), and the ledger's `relative-file-ref` row is already `discards + pipeline` — its own note being that crozier's fixture pipeline cannot register the tree that would make the reference resolve. No corpus row is in reach. |
 | `src/schema.rs` | 46 | all-e2e 23, non-e2e 23 | none | **Neither.** `build` 20 emits crozier's own config JSON Schema. |
 | `src/lib.rs` | 33 | all-e2e 1, non-e2e 32 | none | **Neither.** `render_files` 29 is the filesystem write path. |
-| `src/naming.rs` | 31 | all-e2e 8, non-e2e 23 | none | **A shape the walk missed — and the same hole as `normalization-collision` above.** `digit_word` 10, `enum_words` 7, `numeric_enum_identifier` 2, `finalize_enum_ident` 2, `sanitize_identifier` 1 are driven by OpenAPI *names* — schema names, enum member spellings — which the grammar excludes as map keys that are names, so no selector reaches them. |
+| `src/naming.rs` | 31 | all-e2e 8, non-e2e 23 | none | **A shape the walk missed, and the half of it that is now enumerated.** `digit_word` 10, `enum_words` 7, `numeric_enum_identifier` 2, `finalize_enum_ident` 2, `sanitize_identifier` 1 are driven by OpenAPI *names* — schema names, enum member spellings — which the grammar excludes as map keys that are names. The schema-name half is no longer unreachable: `components.schemas:normalized-collision` is a predicate selector over exactly those keys, and it is what made `normalization-collision` enumerable above. What still has no selector is the enum-member spellings, which is where four of these five regions sit — a predicate over `schema.enum` members would reach them, and none is declared. |
 | `src/config.rs` | 31 | all-e2e 13, non-e2e 18 | none | **Neither.** `default_package_name` 10 and `new` 8 are generator-config defaults. |
 | `src/pyfmt.rs` | 24 | all-e2e 0, non-e2e 24 | none | **Neither.** `format_source` 24 is the `ruff format` shell-out and its failure paths. |
 | `src/main.rs` | 6 | all-e2e 6, non-e2e 0 | none | **Neither.** The binary entry point; `just test-fixtures-coverage` asserts it is reachable at all. |
@@ -627,7 +655,7 @@ every `src/` file any ranked gap points at is one the blind-spot block also
 lists, and in the same order of size (`openapi.rs` 511 > `ir.rs` 201). `emit.rs`
 was a third until corpus row 127 settled `media-type-range`. Ranking on criterion
 2 therefore does not fight the repository's own measurement; it refines it,
-because 19 of the 28 ranked entries reach no `src/` file at all and so are
+because 19 of the 26 ranked entries reach no `src/` file at all and so are
 invisible to a per-file view.
 
 **Where they do not.** The two largest files no ranked gap points at,

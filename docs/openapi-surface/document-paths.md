@@ -162,8 +162,8 @@ would not pass a refresh unnoticed.
 | external-docs-url | both | External Documentation Object.url | golden | 2026-09-04 census: `adyen-capital` (1), `airbyte.local-config` (1), `amazonaws.com-cloudformation` (1), `amazonaws.com-cloudfront` (1), `apache.org` (1), `apache.org-airflow` (1), `apideck.com-accounting` (1), `apideck.com-ats` (1), `apideck.com-connector` (1), `apideck.com-crm` (1), `apideck.com-customer-support` (1), `apideck.com-ecommerce` (1), `apideck.com-ecosystem` (1), `apideck.com-file-storage` (1), `apideck.com-hris` (1), `apideck.com-issue-tracking` (1), `apideck.com-lead` (1), `apideck.com-pos` (1), `apideck.com-proxy` (1), `apideck.com-sms` (1), `apideck.com-vault` (1), `apideck.com-webhook` (1), `apis.guru` (1), `appwrite.io-client` (1), `appwrite.io-server` (1), `atlassian.com-jira` (1), `axesso.de` (2), `bbci.co.uk` (1), `box.com` (1), `bungie.net` (1), `byautomata.io` (1), `calorieninjas.com` (2), `codesearch.debian.net` (1), `conjur.local` (1), `cyberark-conjur-api` (1), `cyclonedx-transparency-exchange` (1), `etsi.local-mec010-2_apppkgmgmt` (1), `free5gc-namf-communication` (1), `free5gc-pdu-session` (1), `gambitcomm.local-mimic` (1), `github.com` (846), `maif.local-otoroshi` (1), `ndw-accessibility-map` (8), `portfoliooptimizer.io` (1), `prometheus-x-edge-computing` (1), `reverb.com` (1), `squareup.com` (1), `swagger-petstore` (3), `tamoss` (2), `withsecure-gdpr-subject-rights` (1), `xero.com-xero-payroll-au` (1) |  |  |  |
 | components-schemas | both | Components Object.schemas | golden | 2026-09-04 census: `6-dot-authentiqio.appspot.com` (1), `adyen-capital` (1), `adyen-managed-risk-notification` (1), `adyen-report-notification` (1), `airbyte.local-config` (1), `amazonaws.com-cloudformation` (1), `amazonaws.com-cloudfront` (1), `anchore.io` (1), `apache.org` (1), `apache.org-airflow` (1), `apache.org-qakka` (1), `apicurio.local-registry` (1), `apideck.com-accounting` (1), `apideck.com-ats` (1), `apideck.com-connector` (1), `apideck.com-crm` (1), `apideck.com-customer-support` (1), `apideck.com-ecommerce` (1), `apideck.com-ecosystem` (1), `apideck.com-file-storage` (1), `apideck.com-hris` (1), `apideck.com-issue-tracking` (1), `apideck.com-lead` (1), `apideck.com-pos` (1), `apideck.com-sms` (1), `apideck.com-vault` (1), `apideck.com-webhook` (1), `apis.guru` (1), `apivideo-android-uploader` (1), `appng-rest-api` (1), `appwrite.io-client` (1), `appwrite.io-server` (1), `asana.com` (1), `atlassian.com-jira` (1), `audience-filter` (1), `audience-filter-strict` (1), `auth-schemes` (1), `axesso.de` (1), `bbci.co.uk` (1), `bintable.com` (1), `box.com` (1), `buildrelay` (1), `bungie.net` (1), `bunq.com` (1), `byautomata.io` (1), `calorieninjas.com` (1), `canada-holidays.ca` (1), `client-class-name` (1), `codesearch.debian.net` (1), `color.pizza` (1), `conjur.local` (1), `cookie-parameters` (1), `corrently.io` (1), `crozier-sdk-extensions` (1), `cyberark-conjur-api` (1), `cyclonedx-transparency-exchange` (1), `descope-authzcache` (1), `digit-leading-property` (1), `discourse.local` (1), `discriminated-unions` (1), `dnd5eapi.co` (1), `enum-name-sanitization` (1), `enum-receiver-collision` (1), `eos.local` (1), `eos.local-extra-fields-forbid` (1), `eozilla` (1), `error-responses` (1), `etherpad.local` (1), `etsi.local-mec010-2_apppkgmgmt` (1), `exa-gate` (1), `exhaustive` (1), `form-bodies` (1), `frankfurter` (1), `free5gc-namf-communication` (1), `free5gc-pdu-session` (1), `gambitcomm.local-mimic` (1), `github.com` (1), `go-kratos-casbin-admin` (1), `gov.bc.ca-news` (1), `groundhog-day.com` (1), `helios-verifiable-api` (1), `http-toolkit` (1), `inline-array-request` (1), `inline-request-response` (1), `integer-enums` (1), `khoainats` (1), `letta` (1), `livepeer-ai-runner` (1), `maif.local-otoroshi` (1), `marimo` (1), `med-anvisa-price` (1), `microcks.local` (1), `mosip-esignet` (1), `ndw-accessibility-map` (1), `netbox.dev` (1), `oauth-client-credentials` (1), `openbanking.org.uk-account-info-openapi` (1), `openbankingproject-ch-kundenbeziehung` (1), `openepcis-dpp-ready` (1), `openfigi.com` (1), `prometheus-x-edge-computing` (1), `pydantic-extra-fields` (1), `query-parameters-openapi` (1), `recursive-types` (1), `redhat.com-catalog_inventory` (1), `redocly.com-museum` (1), `sac-backend` (1), `schema-constraints` (1), `servers-webhooks` (1), `sigstore-rekor` (1), `slurmdb-rest` (1), `squareup.com` (1), `sse-streaming` (1), `swagger-petstore` (1), `tamoss` (1), `tlon-notes` (1), `traccar.org` (1), `truefoundry-trueforge` (1), `twilio.com-twilio_messaging_v1` (1), `twilio.com-twilio_voice_v1` (1), `volview-backend-contract` (1), `withsecure-gdpr-subject-rights` (1), `worldcoin-signup-sequencer` (1), `writeonly-fields` (1), `xero.com-xero-payroll-au` (1) |  |  |  |
 | reference-ref | both | Reference Object.$ref | golden | 2026-09-04 census: `6-dot-authentiqio.appspot.com` (27), `adyen-report-notification` (2), `airbyte.local-config` (148), `amazonaws.com-cloudformation` (462), `amazonaws.com-cloudfront` (119), `anchore.io` (52), `apache.org` (376), `apache.org-airflow` (376), `apicurio.local-registry` (115), `apideck.com-accounting` (675), `apideck.com-ats` (66), `apideck.com-connector` (65), `apideck.com-crm` (505), `apideck.com-customer-support` (62), `apideck.com-ecommerce` (95), `apideck.com-ecosystem` (44), `apideck.com-file-storage` (403), `apideck.com-hris` (345), `apideck.com-issue-tracking` (216), `apideck.com-lead` (64), `apideck.com-pos` (574), `apideck.com-proxy` (48), `apideck.com-sms` (62), `apideck.com-vault` (206), `apideck.com-webhook` (86), `apis.guru` (6), `apivideo-android-uploader` (1), `asana.com` (1333), `bbci.co.uk` (110), `bunq.com` (4634), `conjur.local` (209), `cyclonedx-transparency-exchange` (91), `dnd5eapi.co` (48), `electric-sql` (6), `etsi.local-mec010-2_apppkgmgmt` (105), `exa-gate` (101), `frankfurter` (16), `github.com` (4204), `med-anvisa-price` (1), `microcks.local` (1), `ndw-accessibility-map` (5), `netbox.dev` (452), `openbanking.org.uk-account-info-openapi` (428), `openbankingproject-ch-kundenbeziehung` (27), `openepcis-dpp-ready` (87), `redhat.com-catalog_inventory` (106), `redocly.com-museum` (40), `reverb.com` (6), `sac-backend` (64), `squareup.com` (8), `tamoss` (51), `xero.com-xero-payroll-au` (16) |  |  |  |
-| templated-path-segment | both | Paths Object templated path key | gap | 2026-09-04 census: path keys are deliberately free-map names, so zero declaration selector; no ledger row names it | src/ir.rs (3 places) | A disagreement could change raw-client URL strings, path-argument order, and `reference.md` examples. | FIXTURE — register a real-world specification with a templated path and byte-compare its generated methods. |
-| several-path-template-variables | both | Paths Object path key with several template expressions | gap | 2026-09-04 census: path keys are deliberately names and per-document path-parameter totals cannot prove several variables occur in one path; no ledger row names it | src/ir.rs (3 places) | A disagreement could reorder or omit generated method path arguments and change raw-client URL interpolation. | FIXTURE — register a real-world specification with two template variables on one path and byte-compare its client methods. |
+| templated-path-segment | both | Paths Object templated path key | golden | census `openapi.paths:templated-key`: 3421 declaration sites across 104 registered sources — the predicate this change added, where the earlier walk could report nothing at all because a path key is a free-map *name* rather than a field. The 93 sources that carry a committed golden declare 2470 of them; the eight largest are `gambitcomm.local-mimic` (310), `bunq.com` (239), `letta` (150), `osparc-simcore-webserver` (134), `netbox.dev` (111), `discord-com` (109), `bungie.net` (96), `squareup.com` (85). The 11 registered sources with no golden — `github.com` (486), `atlassian.com-jira` (180), `asana.com` (106), `box.com` (99), `conjur.local` (28), `bbci.co.uk` (18), `gov.bc.ca-news` (16), `apideck.com-pos` (10), `appng-rest-api` (5), `canada-holidays.ca` (2), `groundhog-day.com` (1) — declare the other 951. No ledger row names it |  |  |  |
+| several-path-template-variables | both | Paths Object path key with several template expressions | golden | census `openapi.paths:several-template-expressions`: 1265 declaration sites across 60 registered sources, read apart from `openapi.paths:templated-key` above — a key carrying exactly one expression counts for that selector and not for this one. The 53 sources that carry a committed golden declare 830 of them; the eight largest are `bunq.com` (177), `gambitcomm.local-mimic` (160), `osparc-simcore-webserver` (54), `bungie.net` (53), `letta` (49), `discord-com` (42), `openbanking-brasil-directory` (29), `webflow-v2` (21). The 7 registered sources with no golden — `github.com` (357), `atlassian.com-jira` (43), `conjur.local` (19), `box.com` (6), `appng-rest-api` (5), `gov.bc.ca-news` (4), `bbci.co.uk` (1) — declare the other 435. No ledger row names it |  |  |  |
 | duplicate-normalized-paths | both | Paths Object paths equal after template-name normalization | golden | Census `openapi.paths:normalized-collision`: **eight** declaration sites in three golden-bearing sources, where the 2026-09-04 walk read zero across all 140 registered sources — `torrentarr` (corpus row 127, **4** sites: `/api/arr/{category}/open/{kind}/{entryId}` beside `…/{entry_id}`, and the same pair under `/web/`), `agco-ats` (corpus row 128, **2** sites: `/api/v2/Releases/{ReleaseId}` beside `/api/v2/Releases/{releaseId}`) and `short-io` (corpus row 131, **2** sites: `/links/{link_id}` beside `/links/{linkId}`), each folding under crozier's own `naming::field_name`. **Read as the generated raw-client method set on both sides rather than as an empty diff, because a collision is where a client loses a method silently.** Torrentarr declares four colliding operations and Fern emits four methods, all on `client.web_ui` — `redirect_to_arr_ui_for_movie_series_artist_author_api` and `api_arr_open_item` for the `/api` pair, `redirect_to_arr_ui_for_movie_series_artist_author_web` and `web_arr_open_item` for the `/web` one — each pair rendering the identical request URL, since both members of a pair interpolate one `entry_id`. AGCO declares two, on different HTTP methods, and Fern emits both on `client.release`: `getrelease(release_id)` for the `GET` and `putcontentdefinition(release_id_, …)` for the `PUT`, whose path argument takes the trailing underscore because its flattened body carries a `release_id` field of its own. Short.io's two keys carry an *uneven* set — `/links/{link_id}` declares only `DELETE`, `/links/{linkId}` declares `POST` and `GET` — and Fern keeps all three, as `client.link_management.delete_link`, `client.link_management.update_existing_url` and `client.link_queries.get_link_info_by_link_id`, all three interpolating the same `link_id`. So no registered witness shows Fern losing a method to a path collision: what a normalized-path collision costs is that two methods can address one URL, not that one of them disappears. Crozier reproduces rows 127 and 128 byte for byte; row 131 is registered with a measured residual whose entries are model bodies and `reference.md` blocks rather than either colliding method. | | | |
 | pathitem-ref | both | Path Item Object.$ref | golden | 2026-09-04 census: `cyberark-conjur-api` (36); 2026-08-25 ledger `pathitem-ref` — discards |  |  |  |
 | trace-operation | both | Path Item Object.trace | limitations | 2026-09-03 ledger `trace-operation` — discards + supply |  |  |  |
@@ -185,30 +185,42 @@ The census's field and valued selectors intentionally exclude free-map names and
 array members. For omitted `operationId` and `tags`, the evidence subtracts each
 fixture’s corresponding field count from its sum of HTTP-method selectors.
 
-Three shapes neither of those kinds can express are measured by the **predicate
+Five shapes neither of those kinds can express are measured by the **predicate
 selectors** [`openapi-surface-coverage.md`](../openapi-surface-coverage.md)'s
 `### The selector grammar` declares: `operation.tags:multiple` reads the array's
-members, `operation.operationId:duplicate` compares two declarations' values, and
+members, `operation.operationId:duplicate` compares two declarations' values,
 `openapi.paths:normalized-collision` compares two Paths Object keys under
-crozier's own `naming::field_name`. Each of the three rows those selectors are
-about is classified on what the selector measured rather than on the instrument's
-former blindness: `multi-tagged-operation` is `golden`, on eleven golden-bearing
-witnesses; `duplicate-operation-id` and `duplicate-normalized-paths` are `golden`
+crozier's own `naming::field_name`, and `openapi.paths:templated-key` and
+`openapi.paths:several-template-expressions` read the shape of one Paths Object
+key. Each of the five rows those selectors are about is classified on what the
+selector measured rather than on the instrument's former blindness:
+`multi-tagged-operation` is `golden`, on eleven golden-bearing witnesses;
+`duplicate-operation-id` and `duplicate-normalized-paths` are `golden`
 too, since corpus rows 127 and 128 registered the witnesses the search below
 recorded — the collision predicate now reads 6 sites in two golden-bearing
 sources and the duplicate-id predicate 22 in one, where the 2026-09-04 walk over
 140 sources read zero for both.
 
-The shape the grammar still cannot reach is the *templated path key itself* — a
-free-map name, not a field — which is why `templated-path-segment` and
-`several-path-template-variables` cite no selector and are `FIXTURE` rather than
-`PROBE`: a real-world document plainly declares them, so the settlement is a
-corpus row and not a probe.
+`templated-path-segment` and `several-path-template-variables` are the two rows
+the last of those predicates settle, and they moved on the measurement rather
+than on any new document. Both read `gap` while their evidence cell said only
+that a path key is a free-map name and so no selector could report a
+declaration — a statement about the reach of this repository's own instrument,
+not about the world. Two predicates over Paths Object keys close that: 93
+golden-bearing sources declare a templated key (2470 sites) and 53 declare a key
+carrying more than one expression (830), so under
+[the classification precedence](../openapi-surface-coverage.md#the-category-rules)
+both rows are `golden` outright. The two selectors are separate readings of the
+same key and not one selector and a refinement of it — a key with exactly one
+expression is reported by the first and not the second — which is why the second
+row is not simply the first one's subset count.
 
-Source site counts for the `gap` rows come from exact raw-occurrence searches
-over each `src/` file before its `#[cfg(test)]` module; the reconciliation below
-records the searched strings and re-measures them. No Fern command or probe was
-run.
+This file now carries no `gap` row, so it publishes no `crozier sites` count
+either: those cells are required on a `gap` row and empty otherwise. The
+reconciliation below keeps the rule that produced them — a site count is an exact
+raw-occurrence search over each `src/` file before its `#[cfg(test)]` module — and
+asserts the empty set, so the day a row returns to `gap` the check demands its
+measurement again. No Fern command or probe was run.
 
 ### Snapshot reconciliation
 
@@ -222,7 +234,7 @@ the canonical join command read out of
 [`openapi-surface-coverage.md`](../openapi-surface-coverage.md) rather than
 re-deriving which keys that ledger owns — re-measures each `gap` row's site count
 against `src/`, and fails if one spec location is classified in two region files. It exits 0 with
-`document-paths evidence: ok (60 census rows, 8 ledger keys, 2 gap rows)`.
+`document-paths evidence: ok (62 census rows, 8 ledger keys, 0 gap rows)`.
 
 Run it after any change to this table, to `docs/fern-limitations.md`, or to the
 `src/` symbols the `gap` rows name. It is **not** wired into `just check`: its
@@ -382,6 +394,27 @@ selectors now say — that each is one the script declares, and that it reports 
 witness its row names — so a misspelling can never read as a zero, which is the
 same guard that made the former measured zero trustworthy.
 
+**The change that closes this region's two path-key rows registers no source and
+does NOT re-derive the pin either.** It adds three predicate selectors to
+`scripts/openapi-surface-census.py` — `openapi.paths:templated-key`,
+`openapi.paths:several-template-expressions` and
+`components.schemas:normalized-collision` — and the census input is otherwise
+unchanged: the same **164** registered sources, **147** golden-bearing. Adding a
+selector changes the walk's output, so `just surface-census --json` over that tree
+hashes to `11faecc0…` on **2026-09-05**, and the pin above deliberately stays
+`17b7125f…` for the same reason it has stayed there since corpus row 110 — this
+file's per-fixture cells are transcribed from that 141-source walk, and refreshing
+them all is a measurement of its own rather than a side effect of extending the
+instrument. So the check again stops at `census drift`, and the two rows this
+change moves carry the fresh 164-source walk's own numbers
+(`openapi.paths:templated-key` 3421 sites over 104 sources, 2470 of them in the 93
+that carry a golden; `openapi.paths:several-template-expressions` 1265 over 60,
+830 in 53), reconciled by the block the check gained for them. Two `gap` rows
+become `golden`, which takes this file to **62** census rows and **zero** `gap`
+rows; the third new selector settles
+[`schemas.md`](schemas.md)'s new `normalization-collision` row, which is that
+file's own.
+
 `just lint-llm-diff origin/main` checks this documented contract semantically.
 
 ```bash
@@ -451,24 +484,17 @@ for key, verdict in cited.items():
     )
 
 # --- every gap row's site count is a measurement of src/ ----------------------
-production = {
-    name: Path(f"src/{name}.rs").read_text().split("#[cfg(test)]", 1)[0]
-    for name in ("ir", "openapi")
-}
-
-
-def places(path, count):
-    return f"{path} ({count} {'place' if count == 1 else 'places'})"
-
-
-path_row_sites = places("src/ir.rs", production["ir"].count("path_param_position"))
-site_cells = {
-    "templated-path-segment": path_row_sites,
-    "several-path-template-variables": path_row_sites,
-}
+# This file's two `gap` rows became `golden` on the two Paths Object key
+# predicates, so the mapping is empty and what is asserted is that it stays the
+# whole of the `gap` set: a row returning to `gap` has to bring a measured site
+# count with it, and a `golden` row must publish none.
+site_cells = {}
 assert {key for key, cells in rows.items() if cells[3] == "gap"} == set(site_cells)
 for key, expected_cell in site_cells.items():
     assert rows[key][5] == expected_cell, f"crozier-site drift: {key}"
+for key, cells in rows.items():
+    if cells[3] != "gap":
+        assert not cells[5], f"{key} is not a gap row but publishes a crozier-site count"
 
 # --- every transcribed fixture count is the census's own ---------------------
 expected_digest = "17b7125fb308afc5b659a8b54a0a2a9525e69fe9f4de2b9d64acd6bf0393e743"
@@ -506,6 +532,8 @@ special = {
     "multi-tagged-operation",
     "duplicate-operation-id",
     "duplicate-normalized-paths",
+    "templated-path-segment",
+    "several-path-template-variables",
 }
 census_rows = 0
 for key, cells in rows.items():
@@ -542,7 +570,7 @@ assert non_identifier == {"operation-id-non-identifier": 2}
 assert measured["operation.operationId"]["operation-id-non-identifier"] == 2
 census_rows += 1
 
-# --- the three predicate selectors, each row read against its own measurement -
+# --- the five predicate selectors, each row read against its own measurement --
 # The script's own `PREDICATES` is the closed list, so a misspelled selector
 # cannot be mistaken here for a selector that measured nothing.
 spec = importlib.util.spec_from_file_location(
@@ -613,6 +641,54 @@ for key, selector in (
     assert rows[key][3] == "golden", key
     census_rows += 1
 
+# The two Paths Object key predicates settle the last two `gap` rows of this file
+# on the measurement alone. Each row publishes the same split
+# `multi-tagged-operation` publishes — total sites and sources, the golden-bearing
+# subtotal with its largest members named, and the complete list of registered
+# sources carrying no golden — so the category rests on numbers a reader can
+# recompute rather than on the sentence that used to say the census could not
+# reach the shape.
+for key, selector in (
+    ("templated-path-segment", "openapi.paths:templated-key"),
+    ("several-path-template-variables", "openapi.paths:several-template-expressions"),
+):
+    assert selector in script.PREDICATES, f"{key} cites an undeclared selector: {selector}"
+    assert f"`{selector}`" in rows[key][4], f"{key} no longer names the selector it rests on"
+    reported = measured[selector]
+    backed = {
+        name: count
+        for name, count in reported.items()
+        if (fixtures_root / alias.get(name, name) / "expected").is_dir()
+    }
+    unbacked = {name: count for name, count in reported.items() if name not in backed}
+    stated = re.search(
+        r"(\d+) declaration sites across (\d+) registered sources.*?"
+        r"The (\d+) sources that carry a committed golden declare (\d+) of them; the "
+        r"eight largest are (.+?)\. The (\d+) registered sources with no golden — (.+?) — "
+        r"declare the other (\d+)\.",
+        rows[key][4],
+    )
+    assert stated, f"{key} no longer states the split its category rests on"
+    assert (int(stated.group(1)), int(stated.group(2))) == (
+        sum(reported.values()), len(reported)
+    ), f"{key} totals drift: the cell's sites/sources are not the measurement's"
+    assert (int(stated.group(3)), int(stated.group(4))) == (
+        len(backed), sum(backed.values())
+    ), f"{key}'s golden-bearing split is not those sources' own counts"
+    named = {name: int(count) for name, count in pair.findall(stated.group(5))}
+    largest = dict(sorted(backed.items(), key=lambda item: (-item[1], item[0]))[:8])
+    assert named == largest, f"{key} does not name the eight largest golden-bearing sources"
+    assert {n: int(c) for n, c in pair.findall(stated.group(7))} == unbacked, (
+        f"{key} does not name every registered source carrying no golden"
+    )
+    assert int(stated.group(6)) == len(unbacked), f"{key}'s no-golden source count drifts"
+    assert int(stated.group(8)) == sum(unbacked.values()), (
+        f"{key}'s no-golden subtotal is not those sources' own counts"
+    )
+    assert backed, f"{key} is `golden` on no golden-bearing witness"
+    assert rows[key][3] == "golden", key
+    census_rows += 1
+
 # --- the counts this document states are the ones just measured --------------
 stated = re.search(
     r"document-paths evidence: ok \((\d+) census rows, (\d+) ledger keys, (\d+) gap rows\)",
@@ -634,11 +710,15 @@ PY
 
 ### Witness search (issue #188)
 
-This region carried no witness-search subsection until this change. Its two
-collision rows — `duplicate-normalized-paths` and `duplicate-operation-id` — are
-the only rows in this file measured by a **census predicate** rather than by a
-field selector, and both predicates report zero across every registered source.
-That is a fact about the registered document set and not about the world, as each
+This region carried no witness-search subsection until the change that wrote it.
+At that point its two collision rows — `duplicate-normalized-paths` and
+`duplicate-operation-id` — were the only rows in this file whose evidence was a
+**census predicate** rather than a field selector, and both predicates reported
+zero across every registered source. (Two more have since joined them:
+`templated-path-segment` and `several-path-template-variables`, on the two Paths
+Object key predicates, and neither needed a search — the registered corpus
+already declares both shapes in the hundreds.) A predicate reporting zero is a
+fact about the registered document set and not about the world, as each collision
 row's own `settlement` cell said: *"the measured zero is over registered sources
 only and no world-wide witness search has ever been run for it."* This table is
 that search, in the shape [`security.md`](security.md#witness-search-issue-188),

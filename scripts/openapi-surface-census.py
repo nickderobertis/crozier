@@ -833,7 +833,7 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 # says a field was written and a valued selector says which member of a closed set
 # it was written with; neither can express a property of a field's array members,
 # a comparison between two documents' worth of one field's values, or anything at
-# all about the map keys the grammar deliberately excludes as *names*. The three
+# all about the map keys the grammar deliberately excludes as *names*. The six
 # below are exactly those shapes. `docs/openapi-surface-coverage.md`'s
 # `### The selector grammar` restates them for a reader, and
 # `tests/surface_census_test.py` reconciles the two lists the way it already
@@ -851,26 +851,50 @@ PREDICATES = {
         "same document after path-template-name normalization, so a two-key collision "
         "counts two"
     ),
+    "openapi.paths:templated-key": (
+        "one per Paths Object key carrying at least one `{expression}` template "
+        "expression, so a key with two counts one"
+    ),
+    "openapi.paths:several-template-expressions": (
+        "one per Paths Object key carrying more than one `{expression}` template "
+        "expression, so a key with one counts none and a key with three counts one"
+    ),
+    "components.schemas:normalized-collision": (
+        "one per `components.schemas` key that collides with at least one other key of "
+        "the same document after class-name normalization, so a two-key collision "
+        "counts two"
+    ),
 }
 
 
 # ---------------------------------------------------------------------------
-# crozier's own path-template-name normalization
+# crozier's own name normalization
 # ---------------------------------------------------------------------------
 #
+# Two predicates ask which *names* crozier would render as one Python identifier,
+# so the normalizations below are not invented here.
+#
 # `openapi.paths:normalized-collision` asks which Paths Object keys crozier would
-# render as one request URL, so the normalization below is not invented here: it
-# is `naming::field_name` of `src/naming.rs`, the transform `src/ir.rs` gives a
-# path parameter's `py_name` and `src/emit.rs`'s `url_arg` interpolates back into
-# the URL — `/users/{userId}` and `/users/{user_id}` both emit
-# `f"users/{encode_path_param(user_id)}"`. What is mirrored is that function and
-# the four helpers it calls, case for case, including the cases it treats
-# specially: a reserved name takes a trailing `_`, a digit-leading one takes an
-# `f_` prefix, a non-identifier character is a word boundary, whitespace is a hard
-# boundary, and a digit-bearing word joins its neighbour without an underscore.
-# `tests/surface_census_test.py` reconciles this port against the `field_name`
-# expectations `src/naming.rs`'s own unit tests pin, so crozier's casing cannot
-# change without failing a check here.
+# render as one request URL: that is `naming::field_name` of `src/naming.rs`, the
+# transform `src/ir.rs` gives a path parameter's `py_name` and `src/emit.rs`'s
+# `url_arg` interpolates back into the URL — `/users/{userId}` and
+# `/users/{user_id}` both emit `f"users/{encode_path_param(user_id)}"`. What is
+# mirrored is that function and the four helpers it calls, case for case,
+# including the cases it treats specially: a reserved name takes a trailing `_`, a
+# digit-leading one takes an `f_` prefix, a non-identifier character is a word
+# boundary, whitespace is a hard boundary, and a digit-bearing word joins its
+# neighbour without an underscore.
+#
+# `components.schemas:normalized-collision` asks which `components.schemas` keys
+# crozier would render as one generated class: that is `naming::class_name`, the
+# transform `src/ir.rs`'s `ref_to_class` gives a named schema — `OBRate1_0` and
+# `OB_Rate1_0` both name `ObRate10`. It is `to_pascal_case` plus the two cases
+# `class_name` treats specially: a leading digit is spelled out as an English word,
+# and every remaining non-identifier character folds to `_`.
+#
+# `tests/surface_census_test.py` reconciles both ports against the expectations
+# `src/naming.rs`'s own unit tests pin, so crozier's casing cannot change without
+# failing a check here.
 
 _PYTHON_KEYWORDS = frozenset({
     "False", "None", "True", "and", "as", "assert", "async", "await", "break",
@@ -1020,6 +1044,47 @@ def field_name(wire_name: str) -> str:
     return snake
 
 
+def to_pascal_case(text: str) -> str:
+    """`naming::to_pascal_case`: each word capitalized, and a letter after a digit."""
+    out = ""
+    for word in split_words(text):
+        after_digit = False
+        for index, char in enumerate(word):
+            if index == 0 or (after_digit and _is_alpha(char)):
+                # `to_ascii_uppercase` in Rust: a non-ASCII letter is unchanged.
+                out += char.upper() if _is_lower(char) else char
+            else:
+                out += char
+            after_digit = _is_digit(char)
+    return out
+
+
+# `naming::class_name` spells a leading digit out, so a schema name that starts
+# with one still yields a legal class name (`5GmmCause` -> `FiveGmmCause`).
+_DIGIT_WORDS = (
+    "Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+)
+
+
+def sanitize_identifier(name: str) -> str:
+    """`naming::sanitize_identifier`: every other character becomes `_`."""
+    out = "".join(
+        char if (_is_alpha(char) or _is_digit(char) or char == "_") else "_"
+        for char in name
+    )
+    if out and _is_digit(out[0]):
+        out = f"_{out}"
+    return out
+
+
+def class_name(schema_key: str) -> str:
+    """`naming::class_name`: the Python class name crozier gives a named schema."""
+    pascal = to_pascal_case(schema_key)
+    if pascal and _is_digit(pascal[0]):
+        pascal = _DIGIT_WORDS[int(pascal[0])] + pascal[1:]
+    return sanitize_identifier(pascal)
+
+
 def normalized_path(template: str) -> str:
     """One Paths Object key with every template expression's name normalized.
 
@@ -1118,6 +1183,9 @@ class Census:
         kind = OBJECTS[kind_name]
         if kind_name == "paths":
             self.record_normalized_collisions(node)
+            self.record_path_key_templates(node)
+        if kind_name == "components":
+            self.record_class_name_collisions(node.get("schemas"))
         if "$ref" in node and kind_name not in REF_TRANSPARENT:
             reference = OBJECTS["reference"]
             for key in node:
@@ -1168,15 +1236,52 @@ class Census:
         writes the same normalized route twice contributes two and one that writes
         it three times contributes three. `x-` keys are extensions, not routes.
         """
-        keys = [
-            key for key in node if isinstance(key, str) and not key.startswith("x-")
-        ]
+        keys = self.route_keys(node)
         collisions: dict[str, int] = defaultdict(int)
         for key in keys:
             collisions[normalized_path(key)] += 1
         for key in keys:
             if collisions[normalized_path(key)] > 1:
                 self.record("openapi.paths:normalized-collision")
+
+    def record_path_key_templates(self, node: dict[Any, Any]) -> None:
+        """The two predicates the *shape* of a Paths Object key decides.
+
+        `openapi.paths:templated-key` is one per key carrying a template
+        expression at all, and `openapi.paths:several-template-expressions` one
+        per key carrying more than one — two readings of the same key, so a key
+        with three expressions contributes one to each and a key with one
+        contributes to the first alone.
+        """
+        for key in self.route_keys(node):
+            expressions = len(_TEMPLATE_EXPRESSION.findall(key))
+            if expressions:
+                self.record("openapi.paths:templated-key")
+            if expressions > 1:
+                self.record("openapi.paths:several-template-expressions")
+
+    def record_class_name_collisions(self, node: Any) -> None:
+        """`components.schemas:normalized-collision`: names crozier renders as one class.
+
+        The Paths Object counterpart above, on the other side of the same
+        exclusion: a component name is a map key the grammar keeps out of the
+        census as a *name*, so only a predicate can say two of them fold together
+        under `naming::class_name`. One per colliding key, as there.
+        """
+        if not isinstance(node, dict):
+            return
+        keys = [key for key in node if isinstance(key, str) and not key.startswith("x-")]
+        collisions: dict[str, int] = defaultdict(int)
+        for key in keys:
+            collisions[class_name(key)] += 1
+        for key in keys:
+            if collisions[class_name(key)] > 1:
+                self.record("components.schemas:normalized-collision")
+
+    @staticmethod
+    def route_keys(node: dict[Any, Any]) -> list[str]:
+        """The Paths Object keys that are routes: `x-` keys are extensions."""
+        return [key for key in node if isinstance(key, str) and not key.startswith("x-")]
 
     def finish(self) -> None:
         """Record the predicates only the whole document decides."""
