@@ -1,0 +1,32 @@
+openapi: 3.1.0
+info:
+  title: contains
+  version: 1.0.0
+servers:
+  - url: https://probe.invalid
+paths:
+  /basket:
+    get:
+      operationId: getBasket
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Basket"
+components:
+  schemas:
+    Basket:
+      title: Basket
+      type: object
+      properties:
+        withContains:
+          type: array
+          contains:
+            type: string
+        withoutContains:
+          type: array
+      required:
+        - withContains
+        - withoutContains

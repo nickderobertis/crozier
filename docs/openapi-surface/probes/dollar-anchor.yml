@@ -1,0 +1,36 @@
+openapi: 3.1.0
+info:
+  title: dollar-anchor
+  version: 1.0.0
+servers:
+  - url: https://probe.invalid
+paths:
+  /holder:
+    get:
+      operationId: getHolder
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Holder"
+components:
+  schemas:
+    Anchored:
+      $anchor: anchored
+      title: Anchored
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+    Holder:
+      title: Holder
+      type: object
+      properties:
+        viaPointer:
+          $ref: "#/components/schemas/Anchored"
+      required:
+        - viaPointer
