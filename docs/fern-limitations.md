@@ -3570,10 +3570,9 @@ construction: these are exactly the rows whose world-wide search returned
 
 ## Round 6 — the probe-settled rows of the coverage backlog
 
-**Nothing is measured here yet.** This section is opened ahead of the rounds that
-write into it, so that the measurements land in one place with their pins and
-their reading rules already stated rather than each restating them. Every
-subsection below is empty by design; a subsection carrying no row means no
+**This section is opened ahead of the rounds that write into it**, so that the
+measurements land in one place with their pins and their reading rules already
+stated rather than each restating them. A subsection carrying no row means no
 measurement has been recorded for that region, never that a measurement came back
 blank.
 
@@ -3611,7 +3610,159 @@ probe buys and the whole of what it costs.
 
 ### Round 6 — parameters and the 3.1 tail
 
-*No measurement recorded yet.*
+Six rows, measured on 2026-09-06 under the pins this section declares — five of
+the `parameters` region and one of `oas31-extensions`. Every one of them was a
+`FIXTURE` gap of
+[the ranked backlog](openapi-surface-coverage.md#the-ranked-fixture-backlog), and
+none of them was blocked on a Fern question: four have a real-world witness this
+corpus cannot use and two have a search a required source never answered. What
+had never been done for any of the six is the measurement — nothing anywhere
+recorded what Fern *does* with the shape — so each is settled here on a probe and
+each is `limitations` on the verdict below.
+
+**Each measurement is one probe document and, beside it, its control.** The probe
+declares the row's own shape and nothing else that could account for the verdict;
+the control is the same document with that shape's one line removed — the `style`
+token, the Header Object field, the Reference Object's `summary` sibling — so a
+byte-identical pair is the shape reaching no byte, rather than an argument from
+the absence of a string. Both halves are committed under
+[`openapi-surface/probes/`](openapi-surface/probes/), the control under the
+`…-control.yml` name [that directory's own note](openapi-surface/probes/AGENTS.md)
+gives it. The one row whose control cannot be spelled that way is
+`parameter-style-simple-path-object`, where the shape is a conjunction of a style
+token *and* an object schema: its control drops the `style` token, and what the
+object schema reaches is read off the probe's own emitted bytes.
+
+**The census confirms each probe declares its row's selector**, rather than that
+being taken on trust: run over the probe documents as if they were sources,
+`just surface-census` counts `header.allowReserved` = **1** in
+`header-allow-reserved.yml`, `header.deprecated` = **1** in `header-deprecated.yml`
+and `reference.summary` = **1** in `reference-summary.yml`, and **0** of each in
+the controls. The three style conjunctions are a crossing the selector grammar
+cannot express ([the census's own note](openapi-surface-coverage.md#the-selector-grammar)),
+so each of those probes declares its `(style, in, schema shape)` triple on the one
+Parameter Object it carries.
+
+| probe | `fern check` | `fern generate` | what Fern did |
+|---|:--:|:--:|---|
+| [`header-allow-reserved`](openapi-surface/probes/header-allow-reserved.yml) | **0** `All checks passed` | **0**, no diagnostic | a 39-file SDK **byte-identical** to its control's |
+| [`header-deprecated`](openapi-surface/probes/header-deprecated.yml) | **0** `All checks passed` | **0**, no diagnostic | a 39-file SDK **byte-identical** to its control's |
+| [`parameter-style-matrix-path-scalar`](openapi-surface/probes/parameter-style-matrix-path-scalar.yml) | **0** `All checks passed` | **0**, no diagnostic | a 39-file SDK **byte-identical** to its control's; the segment is `f"probe/{encode_path_param(probe_param)}"` |
+| [`parameter-style-simple-path-object`](openapi-surface/probes/parameter-style-simple-path-object.yml) | **0** `All checks passed` | **0**, no diagnostic | a 40-file SDK **byte-identical** to its control's, and the object schema reaches the segment: `f"probe/{encode_path_param(convert_and_respect_annotation_metadata(object_=probe_param, annotation=ProbeParam, direction='write'))}"` |
+| [`parameter-style-form-cookie-scalar`](openapi-surface/probes/parameter-style-form-cookie-scalar.yml) | **0** `All checks passed`, and `Skipping cookie parameter, probeParam, in GET /probe` | **0**, the same `Skipping cookie parameter, probeParam, in GET /probe` | a 39-file SDK **byte-identical** to its control's, with the parameter in none of it |
+| [`reference-summary`](openapi-surface/probes/reference-summary.yml) | **0** `All checks passed` | **0**, no diagnostic | a 39-file SDK **byte-identical** to its control's |
+
+**The two Header Object fields — `allowReserved` and `deprecated` — reach no
+byte.** Each probe declares one Header Object on the success response of its one
+operation, carrying the field and a `schema`, and each generates a 39-file SDK
+byte-identical to the control that declares the same header without the field.
+Neither `allowReserved` nor `deprecated` appears anywhere in either tree, and
+neither does the header itself: Fern's Python SDK models a *response* header
+nowhere at all, so the field's own carrier is already outside the output. Verdict
+for both: **discards**.
+
+**The three style conjunctions.** `matrix` on a path parameter over a scalar
+schema is discarded exactly as
+[the ledger's `matrix-array` and `matrix-object` rows](#what-round-3-did-not-register-and-why)
+already record for the other two schema shapes: the request URL is
+`f"probe/{encode_path_param(probe_param)}"`, the plain segment, with no `;`
+prefix and no `probeParam=` pair, and dropping the `style` line moves no byte.
+`simple` on a path parameter over an *object* schema is discarded the same way —
+its control, the same document without the token, is byte-identical — while the
+object schema itself is emphatically read: the parameter types as `ProbeParam`,
+the segment serializes it through
+`convert_and_respect_annotation_metadata(..., direction='write')`, and what
+reaches the URL is that serialization rather than the specification's
+`role=admin,level=3` pair form. `form` on a cookie parameter over a scalar schema
+is discarded with the parameter that carries it: Fern reports `Skipping cookie
+parameter, probeParam, in GET /probe` at both stages, exits 0 at both, and the
+name reaches no file — which is
+[the `cookie-parameter` row's](#what-round-3-did-not-register-and-why) own finding
+met one style along. Verdict for all three: **discards**.
+
+**The Reference Object's `summary` sibling reaches no byte.** The probe is a 3.1
+document whose operation references `components.parameters.ProbeFilter` and
+carries a `summary` beside the `$ref`; the control is the same reference without
+it. The trees are byte-identical, the summary's text appears in neither, and the
+referenced parameter is emitted in both — `probe_filter: typing.Optional[str]`,
+with the referenced Parameter Object's own name and type. Verdict: **discards**.
+
+**Beside crozier.** All twelve documents — six probes and six controls — were then
+generated by crozier and compared file by file under the gate's own normalization
+(`crozier internal-strip` on both sides, SDK-identity headers normalized,
+`__init__.py` import order canonicalized with `ruff` isort, `.fern/metadata.json`'s
+`generatorConfig` dropped), which is what `tests/e2e.rs` does to a corpus golden.
+Eleven byte-matched on first run. The twelfth,
+`parameter-style-simple-path-object`, diverged in four files and is repaired
+below. That comparison moves no row's category: a probe produces no parity
+evidence [`openapi-surface-coverage.md`](openapi-surface-coverage.md) counts, and
+every row here is `limitations` on its Fern verdict.
+
+#### The crozier divergence this round's `parameters` measurement found
+
+`parameter-style-simple-path-object` diverged from Fern in four files —
+`README.md`, `reference.md`, `src/fern/client.py` and `src/fern/raw_client.py` —
+in two ways, both of them about a path parameter whose schema is an object. No
+registered source declares that shape (the census reports **0** across every one),
+so nothing in the corpus had ever held crozier to Fern here.
+
+1. **The URL segment.** Fern wraps the model in
+   `convert_and_respect_annotation_metadata(object_=probe_param,
+   annotation=ProbeParam, direction='write')` inside `encode_path_param`, the same
+   wrapper it gives an object-typed *query* parameter; crozier passed the model
+   straight to `encode_path_param`. `src/ir.rs`'s `PathParam` now carries the
+   `convert` flag its `QueryParam` already had, under the same scalar guard, and
+   `src/emit.rs`'s `url_arg` renders the wrapper and registers its import.
+2. **The documented example.** Fern's two example writers disagree with each other
+   on this shape, and crozier agreed with neither. The Markdown writers construct
+   the model and read each field's value off its **type** — `role="string"`, not
+   the `role="role"` a request body's field takes — while the docstring writer
+   keeps the plain name placeholder a scalar parameter would show,
+   `probe_param="probeParam"`. Crozier rendered the constructed model in both,
+   with field-name values.
+
+Which field kinds the Markdown writer can render was measured on nine further
+variants of the same probe, each carried through the same `fern check` and
+`fern generate` (all `0`/`0`) and none of them committed, since what they settle is
+crozier's repair rather than a row: a string renders `"string"`, an integer `1`, a
+`date-time` `datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00")` and an
+enum its first member; an array renders `[]` and a map `{}`, populated in neither
+case; and a required field that is itself a generated model costs the endpoint its
+**whole** example — no `Examples` docstring, no README call, and a bare
+`client.probe(...)` in `reference.md`, with the README anchoring its usage snippet
+on a different operation instead. `src/emit.rs`'s `path_field_render` states that
+rule once, and `path_object_documented` is what the README's endpoint selection
+and the `reference.md` snippet gap read. `tests/e2e.rs`'s
+`an_object_typed_path_parameter_is_converted_into_the_url_and_documented_by_its_type`
+and `a_path_parameter_object_with_a_model_field_documents_no_example_at_all` drive
+the real binary over both halves. With the repair in place all twelve documents
+byte-match Fern. **This is a crozier repair, not a Fern limitation**: it changes no
+row's category and appears in no region file.
+
+One further divergence the same variants exposed is **not** repaired here and is
+not this round's shape: a path parameter typed by a *named alias of an array*
+(`{$ref: Tags}` where `Tags` is `type: array`) is documented `other_param="otherParam"`
+by Fern's docstring writer and omitted from its Markdown writers entirely, where
+crozier renders `["otherParam"]` in all three. It predates this round — crozier
+behaved identically before the repair above — and it belongs to the array-schema
+row rather than the object-schema one, so it is recorded here as found and left
+for a change that owns it.
+
+*What a registrable witness would be, for each of the six.* For
+`header-allow-reserved` and `header-deprecated`: a document a real API publishes as
+its own description, declaring the field on a Header Object — in
+`components.headers` or in a Response Object's `headers` map — at a pinned
+credential-free direct spec URL under a
+[redistribution-compatible](corpus-licensing.md) licence, accepted by Fern. For
+the three style conjunctions: the same, declaring that exact `(style, in, schema
+shape)` crossing on one Parameter Object — and for `parameter-style-matrix-path-scalar`
+one that does not pair the style with a security scheme Fern's importer drops,
+which is what makes appNG unusable. For `reference-summary`: a 3.1 document
+carrying a non-Schema Reference Object with a `summary` sibling that Fern accepts.
+Each row's own region-file cell names the witness its search already found, where
+it found one, and what stands between that document and registration; the day the
+blocker lifts, the row leaves `limitations` for `golden` under
+[the classification precedence](openapi-surface-coverage.md#the-category-rules).
 
 ### Round 6 — schemas
 
@@ -3623,9 +3774,24 @@ probe buys and the whole of what it costs.
 
 ### Round 6 — what the round measured
 
-*No measurement recorded yet.* The keys this round adds to the ledger are listed
-here, one row each, in the column layout the
+The keys this round adds to the ledger, one row each, in the column layout the
 [documented join](openapi-surface-coverage.md#the-category-rules) reads.
+`eligible` and `verified` are the row's own witness search's counts, and they mean
+here what they mean everywhere in this file: `verified` is how many real-world
+documents the search confirmed declare the shape, `eligible` how many of those
+this corpus could register. Every row below is `0` eligible by construction —
+that is why each is settled by a probe rather than by a corpus row — while
+`verified` separates the rows whose witness exists and cannot be used from the
+rows whose search found no real-world declarer at all.
+
+| gap | eligible | verified | verdict | what the probe measured |
+|---|---:|---:|---|---|
+| `header-allow-reserved` | 0 | 0 | discards | a Header Object's `allowReserved` reaches no byte: the 39-file SDK is byte-identical to the one the same document without the field generates, and Fern's Python SDK models a response header nowhere at all. Probe [`header-allow-reserved.yml`](openapi-surface/probes/header-allow-reserved.yml) and control [`header-allow-reserved-control.yml`](openapi-surface/probes/header-allow-reserved-control.yml), `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 39 files. Measured in [Round 6](#round-6--parameters-and-the-31-tail) |
+| `header-deprecated` | 0 | 2 | discards | as `header-allow-reserved`, for a Header Object's `deprecated`: byte-identical to its control on all 39 files. Probe [`header-deprecated.yml`](openapi-surface/probes/header-deprecated.yml) and control [`header-deprecated-control.yml`](openapi-surface/probes/header-deprecated-control.yml), `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 39 files. Measured in [Round 6](#round-6--parameters-and-the-31-tail) |
+| `parameter-style-matrix-path-scalar` | 0 | 1 | discards | `style: matrix` on a path parameter over a scalar schema reaches no byte: the request URL is `f"probe/{encode_path_param(probe_param)}"`, the plain segment with no `;` prefix and no `probeParam=` pair, and dropping the token leaves the 39-file tree byte-identical — the `matrix-array`/`matrix-object` finding one schema shape along. Probe [`parameter-style-matrix-path-scalar.yml`](openapi-surface/probes/parameter-style-matrix-path-scalar.yml) and its control, `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 39 files. Measured in [Round 6](#round-6--parameters-and-the-31-tail) |
+| `parameter-style-simple-path-object` | 0 | 1 | discards | `style: simple` on a path parameter over an object schema reaches no byte — its control, the same document without the token, is byte-identical on all 40 files — while the object schema itself does: the parameter types as `ProbeParam` and the segment serializes it through `convert_and_respect_annotation_metadata(..., direction='write')` rather than as the specification's `role=admin,level=3` pair form. Probe [`parameter-style-simple-path-object.yml`](openapi-surface/probes/parameter-style-simple-path-object.yml) and its control, `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 40 files after [the repair this round made](#the-crozier-divergence-this-rounds-parameters-measurement-found). Measured in [Round 6](#round-6--parameters-and-the-31-tail) |
+| `parameter-style-form-cookie-scalar` | 0 | 0 | discards | `style: form` on a cookie parameter over a scalar schema is discarded with the parameter that carries it: Fern reports `Skipping cookie parameter, probeParam, in GET /probe` at both stages, exits 0 at both, and neither the parameter nor the style reaches any of the 39 files — the `cookie-parameter` finding one style along. Probe [`parameter-style-form-cookie-scalar.yml`](openapi-surface/probes/parameter-style-form-cookie-scalar.yml) and its control, byte-identical; crozier byte-matches on all 39 files. Measured in [Round 6](#round-6--parameters-and-the-31-tail) |
+| `reference-summary` | 0 | 5 | discards | a non-Schema Reference Object's `summary` sibling reaches no byte: the 39-file tree is byte-identical to the one the same reference without the sibling generates, the summary's text appears in neither, and the referenced parameter is emitted in both as `probe_filter: typing.Optional[str]`. Probe [`reference-summary.yml`](openapi-surface/probes/reference-summary.yml) and control [`reference-summary-control.yml`](openapi-surface/probes/reference-summary-control.yml), `fern check` 0 `All checks passed`, `fern generate` 0; crozier byte-matches on all 39 files. Measured in [Round 6](#round-6--parameters-and-the-31-tail) |
 
 ## What Round 3 did not register, and why
 
