@@ -236,8 +236,9 @@ this record measured exit 0 at CLI 5.114.1, and `curedao/curedao-monorepo` exits
 **0** at both while writing an empty SDK over a document it never parsed. Each
 line's own `generate` cell quotes that second measurement in full, and both are
 logged in [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md)'s REJECTED
-table; `format-iri-reference` stays a `gap` on Ditto. **The screening path above
-is unchanged and its measurements stand**; what these paragraphs add is that a
+table, so Ditto pins no golden and `format-iri-reference` is settled instead by
+the probe [Round 6](fern-limitations.md#round-6--schemas) measures. **The
+screening path above is unchanged and its measurements stand**; what these paragraphs add is that a
 Fern *exit status* on the preview path is not an acceptance, so a candidate this
 record admits still has to be put to the CLI the corpus generates at and the
 result read rather than counted.
