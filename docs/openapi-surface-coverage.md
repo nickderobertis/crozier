@@ -401,7 +401,13 @@ The six region files, read as one body of work. Two measurements feed it:
   against this same pin. No classification in this section depends on
   which walk a cell was taken from — a category moves only when a source is
   registered or a selector is added, and both are recorded in that section's own
-  history.
+  history. **Where a paragraph below says a walk read 164 sources, that is the
+  walk it was taken on and not a second count of the corpus**: the conjunction
+  classification and the free-map-key repair both ran before the widened licence
+  rule's registrations, the one batch that has landed since, which took the walk
+  from 164 sources to 169. A walk over more sources can promote a
+  row to `golden` and can never demote one, so those paragraphs' conclusions hold
+  over the 169 unchanged; only their arithmetic is dated.
 - **`just fixtures-coverage`**, for criterion 2 alone. That recipe is outside
   `just check` — it needs network and runs the corpus instrumented — so its
   per-file counts are a dated snapshot (2026-09-06), stated once, in the join
@@ -1261,7 +1267,7 @@ row names it. Two things put one there, and neither is far-fetched:
   [the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case) names are
   shapes no selector kind can express *yet*. Extend the grammar to express one —
   each hole says which kind it would take — and the census can report the new
-  selector absent across all 164 sources, which is a `gap` carrying `FIXTURE` or
+  selector absent across every registered source, which is a `gap` carrying `FIXTURE` or
   `PROBE` in its settlement cell like any other row in the two backlogs below.
 - **A conjunction only the goldenless half of the corpus declares.** Registration
   and golden are two different things: twelve of the 114 sources declaring
