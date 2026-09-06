@@ -157,6 +157,7 @@ def write_fixture(root: Path, name: str, document: str) -> Path:
 
 WITNESS_SEARCH_HEADING = "### Witness search (issue #188)"
 AMENDED_ROUTE = "blocked-witness probe"
+OPEN_SEARCH_ROUTE = "open-search probe"
 BLOCKED_OUTCOMES = ("witness-blocked", "fern-rejected")
 SEARCH_INCOMPLETE = "search-incomplete"
 UNANSWERED = "unanswered"
@@ -360,6 +361,50 @@ def blocker_form(evidence: str) -> str | None:
     return None
 
 
+# What a source did *instead* of answering, as a closed list rather than a word
+# count: an `evidence` cell naming an outstanding source has to say what happened
+# at it, and "SwaggerHub is outstanding" restates the label and says nothing. The
+# words are the ones the recorded searches in this tree actually use — a refusal,
+# an unreachable endpoint, an error, a cap, or a body nobody read.
+UNANSWERED_BEHAVIOUR = re.compile(
+    r"\b(?:refus\w*|declin\w*|unreachab\w*|unavailab\w*|error\w*|fail\w*|"
+    r"time[ds]?.?out|timeout\w*|rate.?limit\w*|limiter|unread|capp\w*|"
+    r"no body search|exposes no\b|went unread)",
+    re.I,
+)
+
+
+def outstanding_source_form(evidence: str, outstanding: list[str]) -> str | None:
+    """The outstanding source this `evidence` cell names, and what it did instead.
+
+    Route 3's counterpart to `blocker_form`. A route-3 row is licensed by a source
+    that did not answer, so the cell names one — joined to the row's own recorded
+    search, which is where `unanswered` is on the record — and says what happened
+    at it. Naming a source the record does not mark `unanswered` is not naming an
+    outstanding source, and naming one with no account of what it did instead of
+    answering leaves a reader nothing to act on.
+    """
+    named = re.search(r"\*\*outstanding:\*\*(.*)$", evidence, re.S | re.I)
+    if not named:
+        return None
+    text = named.group(1)
+    for label in outstanding:
+        hit = re.search(rf"\b{re.escape(source_key(label))}\b", text, re.I)
+        if hit and UNANSWERED_BEHAVIOUR.search(text[hit.end() :]):
+            return label
+    return None
+
+
+def states_convertible(evidence: str) -> bool:
+    """Whether the cell says the row stays convertible, and to what.
+
+    Both halves, because the word alone is a claim with no destination: a row
+    stays convertible *to `golden`*, which is the category the classification
+    precedence moves it to the day a witness turns up.
+    """
+    return bool(re.search(r"\bconvertible\b", evidence, re.I) and "`golden`" in evidence)
+
+
 def ledger_verdict(key: str, ledger: str) -> str | None:
     """The verdict `fern-limitations.md` records for `key`, or None if it records none."""
     for line in ledger.splitlines():
@@ -453,6 +498,73 @@ def blocked_witness_probe_failures(
             f"reference mutable, or Fern's refusal with its exit status and "
             f"diagnostic — so nothing says what would have to change for the "
             f"witness to become registrable"
+        )
+    if ledger_verdict(key, ledger) is None:
+        failures.append(
+            f"{key}: `docs/fern-limitations.md` records no probe and no verdict "
+            f"for it, so the measurement that settles it has not been taken"
+        )
+    return failures
+
+
+def open_search_probe_failures(
+    key: str, region: str, cells: list[str], region_text: str, ledger: str
+) -> list[str]:
+    """Every way one row fails route 3 of the settlement rule; empty means it conforms.
+
+    Route 3 settles a row whose recorded search found no usable witness and left a
+    required source unanswered. Its gates, in the order the index states them: a
+    recorded search, an outcome other than `witness-found` — a witness this corpus
+    can register is route 1's to settle — an outstanding source on that record and
+    named in the `evidence` cell with what it did instead of answering, the
+    statement that the row stays convertible, and a probe with a verdict in the
+    ledger.
+    """
+    searched = witness_search_table(region_text)
+    if key not in searched:
+        return [
+            f"{key}: settled as an {OPEN_SEARCH_ROUTE} with no line in "
+            f"{region}.md's `{WITNESS_SEARCH_HEADING}` table — the outstanding "
+            f"source this route rests on is recorded there, and nothing records "
+            f"a search for this row at all"
+        ]
+    row = searched[key]
+    failures = []
+    outcome = witness_search_outcome(row)
+    if outcome == "witness-found":
+        failures.append(
+            f"{key}: its recorded search returned `witness-found`, so the corpus "
+            f"can register that document; route 1 is what settles that, and an "
+            f"{OPEN_SEARCH_ROUTE} may not stand in for a golden"
+        )
+    declared = declared_witness_sources(region_text)
+    if not declared:
+        failures.append(
+            f"{key}: {region}.md's `{WITNESS_SEARCH_HEADING}` section declares no "
+            f"sources, so no source of its can be the outstanding one this route "
+            f"rests on"
+        )
+    else:
+        outstanding = unanswered_sources(row[6], declared)
+        if not outstanding:
+            failures.append(
+                f"{key}: its recorded search marks no required source "
+                f"`{UNANSWERED}`, so it names no outstanding source — a search "
+                f"every source answered licenses route 1 or route 2 on what it "
+                f"found, never an {OPEN_SEARCH_ROUTE}"
+            )
+        elif outstanding_source_form(cells[4], outstanding) is None:
+            failures.append(
+                f"{key}: its `evidence` cell names no outstanding source after "
+                f"`outstanding:` — one of {outstanding}, which its own recorded "
+                f"search marks `{UNANSWERED}`, together with what that source did "
+                f"instead of answering"
+            )
+    if not states_convertible(cells[4]):
+        failures.append(
+            f"{key}: its `evidence` cell does not say the row stays convertible "
+            f"to `golden`, so nothing says a witness found later reopens it "
+            f"rather than the probe closing it for good"
         )
     if ledger_verdict(key, ledger) is None:
         failures.append(
@@ -2122,6 +2234,69 @@ class RankedBacklogTests(unittest.TestCase):
                     ),
                 )
 
+    def test_every_open_search_probe_row_meets_the_amended_settlement_rule(self) -> None:
+        """Route 3, read over every region row in the tree that claims it.
+
+        No row claims it today either, so this observes nothing on its own — that
+        is what `OpenSearchProbeRuleTests` below is for. What it does is make the
+        first row that claims it meet the rule at the gate rather than at review,
+        over the real six region files and the real ledger.
+        """
+        ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
+        for key, (region, cells) in sorted(self.entries.items()):
+            if OPEN_SEARCH_ROUTE not in cells[4]:
+                continue
+            with self.subTest(key=key):
+                self.assertEqual(
+                    "limitations",
+                    cells[3].strip("`"),
+                    f"{key}: a row settled by route 3 is `limitations`",
+                )
+                self.assertEqual(
+                    [],
+                    open_search_probe_failures(
+                        key, region, cells, self.region_text(region), ledger
+                    ),
+                )
+
+    def test_the_rule_states_route_three_and_what_separates_it_from_the_others(self) -> None:
+        """The third settlement route, stated where the other two are.
+
+        A route the gate enforces and the index does not state is a rule nobody
+        can follow, so the words a conforming row carries are asserted here: the
+        route's own marker, where it names its outstanding source, and the
+        convertibility the route rests on.
+        """
+        flat = " ".join(self.section("#### The settlement rule, as amended", "\n#### ").split())
+        for demanded in (
+            f"**`{OPEN_SEARCH_ROUTE}`**",  # how a row says it took the route
+            "`outstanding:`",              # and where it names its outstanding source
+            "stays convertible",
+            "`witness-found`, since route 1 is what settles that",
+            "records no probe and no verdict",
+        ):
+            self.assertIn(demanded, flat, f"the rule no longer states {demanded!r}")
+
+    def test_the_rule_records_why_the_largest_unread_source_is_unread(self) -> None:
+        """A source left unread on a judgement, with the judgement's own grounds.
+
+        The 414,968-spec SwaggerHub family is the biggest thing neither settled
+        row's search read, and this repository's own record says its version
+        references are editable in place. What the rule has to carry is why that
+        makes the read unable to move either the row's category or the instrument
+        that settles it — otherwise a later reader sees a source somebody forgot.
+        """
+        flat = " ".join(self.section("#### The settlement rule, as amended", "\n#### ").split())
+        self.assertIn("414,968", flat, "the rule no longer names the unread family's size")
+        self.assertIn("editable in place", flat, "the rule no longer says why it is unregistrable")
+        for record in ("openapi-surface/security.md", "openapi-surface/schemas.md"):
+            self.assertIn(record, flat, f"the rule does not cite {record}'s own record")
+        self.assertIn(
+            "neither the row's category nor the instrument that settles it",
+            flat,
+            "the rule no longer says what reading the family could not change",
+        )
+
     def test_the_probe_backlog_splits_by_the_kind_each_region_row_declares(self) -> None:
         """The index's two named parts are the region files' own settlement cells."""
         kinds: dict[str, set[str]] = {kind: set() for kind in self.PROBE_KINDS}
@@ -2158,19 +2333,15 @@ class RankedBacklogTests(unittest.TestCase):
         )
 
 
-class AmendedSettlementRuleTests(unittest.TestCase):
-    """The amended settlement rule, driven over real region-file content.
+class RegionFixture:
+    """A real region file and a real ledger on disk, read back as the gate reads them.
 
-    No row in the tree takes the amended route today, so `RankedBacklogTests`
-    reading the real six region files observes nothing about it: a reconciliation
-    that has never met a conforming row and never met a non-conforming one is one
-    nobody has watched work, and it would pass just as green if it read nothing at
-    all. So these write real region-file content — the skeleton all six carry, a
-    witness-search preamble of bulleted bold sources and the seven-column table
-    under it, and an entry row in the eight-column shape — to a real temporary
-    tree, parse it back off disk with the parsers the gate itself uses, and run the
-    real reconciliation over it: once on a row that conforms to the rule, and once
-    per way of failing it.
+    The skeleton all six region files carry: a witness-search preamble of bulleted
+    bold sources and the seven-column table under it, and an entry row in the
+    eight-column shape. Both settlement-rule suites below write it to a real
+    temporary tree and parse it back with the parsers the gate itself uses, so
+    what they exercise is the reconciliation over region-file content rather than
+    a hand-built cell list.
     """
 
     REGION = """\
@@ -2202,6 +2373,36 @@ class AmendedSettlementRuleTests(unittest.TestCase):
 {search}
 """
 
+    def written(self, entry: str, search: str, ledger: str) -> tuple[str, list[str], str]:
+        """`entry`/`search`/`ledger` on the real filesystem, read back as the gate reads them."""
+        directory = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, directory)
+        root = Path(directory)
+        (root / "openapi-surface").mkdir()
+        region = root / "openapi-surface" / "sample.md"
+        region.write_text(self.REGION.format(entry=entry, search=search), encoding="utf-8")
+        (root / "fern-limitations.md").write_text(ledger, encoding="utf-8")
+        text = region.read_text(encoding="utf-8")
+        rows = RankedBacklogTests.region_rows(text)
+        self.assertEqual(1, len(rows), "the sample region file no longer parses as one entry row")
+        return text, rows[0], (root / "fern-limitations.md").read_text(encoding="utf-8")
+
+
+class AmendedSettlementRuleTests(RegionFixture, unittest.TestCase):
+    """The amended settlement rule, driven over real region-file content.
+
+    No row in the tree takes the amended route today, so `RankedBacklogTests`
+    reading the real six region files observes nothing about it: a reconciliation
+    that has never met a conforming row and never met a non-conforming one is one
+    nobody has watched work, and it would pass just as green if it read nothing at
+    all. So these write real region-file content — the skeleton all six carry, a
+    witness-search preamble of bulleted bold sources and the seven-column table
+    under it, and an entry row in the eight-column shape — to a real temporary
+    tree, parse it back off disk with the parsers the gate itself uses, and run the
+    real reconciliation over it: once on a row that conforms to the rule, and once
+    per way of failing it.
+    """
+
     ENTRY = (
         "| `sample-shape` | both | Schema Object.sample | limitations | ledger "
         "`sample-shape`, verdict `discards`; settled as a **blocked-witness probe** "
@@ -2231,20 +2432,6 @@ class AmendedSettlementRuleTests(unittest.TestCase):
         "| `sample-shape` | 1 | 0 | discards | the probe records that Fern accepts "
         "the shape and emits nothing derived from it |\n"
     )
-
-    def written(self, entry: str, search: str, ledger: str) -> tuple[str, list[str], str]:
-        """`entry`/`search`/`ledger` on the real filesystem, read back as the gate reads them."""
-        directory = tempfile.mkdtemp()
-        self.addCleanup(shutil.rmtree, directory)
-        root = Path(directory)
-        (root / "openapi-surface").mkdir()
-        region = root / "openapi-surface" / "sample.md"
-        region.write_text(self.REGION.format(entry=entry, search=search), encoding="utf-8")
-        (root / "fern-limitations.md").write_text(ledger, encoding="utf-8")
-        text = region.read_text(encoding="utf-8")
-        rows = RankedBacklogTests.region_rows(text)
-        self.assertEqual(1, len(rows), "the sample region file no longer parses as one entry row")
-        return text, rows[0], (root / "fern-limitations.md").read_text(encoding="utf-8")
 
     def reconcile(
         self,
@@ -2465,6 +2652,187 @@ class AmendedSettlementRuleTests(unittest.TestCase):
     def test_a_none_found_row_every_source_answered_is_accepted(self) -> None:
         """And a search that really did ask the world still reads `none-found`."""
         self.assertEqual([], self.unread("none-found", self.BOTH_SOURCES))
+
+
+class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
+    """Route 3, driven over real region-file content the same way route 2 is.
+
+    No row in the tree takes route 3 today either, so the reconciliation reading
+    the real six region files observes nothing about it. These write real
+    region-file content to a real temporary tree, parse it back off disk with the
+    parsers the gate itself uses, and run the real reconciliation over it: once on
+    a row that conforms to the route, and once per way of failing it.
+    """
+
+    ENTRY = (
+        "| `sample-shape` | both | Schema Object.sample | limitations | ledger "
+        "`sample-shape`, verdict `discards`; settled as an **open-search probe** on "
+        "the `{outcome}` outcome the search below records. {outstanding} "
+        "{convertible} |  |  |  |"
+    )
+    OUTSTANDING = (
+        "**outstanding:** GitHub code search — the secondary limiter refused every "
+        "attempt while `gh api rate_limit` still reported budget, so it answered "
+        "nothing."
+    )
+    CONVERTIBLE = (
+        "The row stays convertible: a registrable witness promotes it to `golden` "
+        "under the classification precedence."
+    )
+    SEARCH = (
+        "| `sample-shape` | {outcome} | none reached — every source that answered "
+        "declares it **0** times | — | — | — | {sources} |"
+    )
+    OUTSTANDING_SOURCES = (
+        "**APIs.guru** `grep -rlF '\"x-sample\"' APIs` → 0 hits. "
+        "**GitHub code search** `gh search code '\"x-sample\" filename:openapi.yaml'` "
+        "→ **unanswered**: refused with `HTTP 403: API rate limit exceeded for user "
+        "ID 19440155` on every attempt."
+    )
+    ANSWERED_SOURCES = (
+        "**APIs.guru** `grep -rlF '\"x-sample\"' APIs` → 0 hits. "
+        "**GitHub code search** `gh search code '\"x-sample\" filename:openapi.yaml'` "
+        "→ 3 hits, every one a synthetic fixture."
+    )
+    LEDGER = (
+        "| key | witnesses | goldens | verdict | finding |\n"
+        "|---|---|---|---|---|\n"
+        "| `sample-shape` | 0 | 0 | discards | the probe records that Fern accepts "
+        "the shape and emits nothing derived from it |\n"
+    )
+
+    def reconcile(
+        self,
+        *,
+        outcome: str = SEARCH_INCOMPLETE,
+        outstanding: str | None = None,
+        convertible: str | None = None,
+        sources: str | None = None,
+        search: str | None = None,
+        ledger: str | None = None,
+    ) -> list[str]:
+        entry = self.ENTRY.format(
+            outcome=outcome,
+            outstanding=self.OUTSTANDING if outstanding is None else outstanding,
+            convertible=self.CONVERTIBLE if convertible is None else convertible,
+        )
+        if search is None:
+            search = self.SEARCH.format(
+                outcome=outcome,
+                sources=self.OUTSTANDING_SOURCES if sources is None else sources,
+            )
+        text, cells, read_ledger = self.written(
+            entry, search, self.LEDGER if ledger is None else ledger
+        )
+        return open_search_probe_failures("sample-shape", "sample", cells, text, read_ledger)
+
+    def only_failure(self, failures: list[str]) -> str:
+        self.assertEqual(1, len(failures), failures)
+        self.assertTrue(failures[0].startswith("sample-shape: "), failures[0])
+        return failures[0]
+
+    def test_a_row_that_meets_the_route_is_accepted(self) -> None:
+        """The route the amendment opens, taken correctly: an unread source, a probe."""
+        self.assertEqual([], self.reconcile())
+
+    def test_a_row_with_no_recorded_search_is_refused(self) -> None:
+        """The outstanding source lives on the record, and this row records none."""
+        self.assertIn(
+            "no line in sample.md's `### Witness search (issue #188)` table",
+            self.only_failure(self.reconcile(search="")),
+        )
+
+    def test_a_row_whose_search_found_a_usable_witness_is_refused(self) -> None:
+        """`witness-found` is route 1's: the corpus can register that document."""
+        self.assertIn(
+            "its recorded search returned `witness-found`",
+            self.only_failure(self.reconcile(outcome="witness-found")),
+        )
+
+    def test_a_row_whose_evidence_names_no_outstanding_source_is_refused(self) -> None:
+        """The source that did not answer is what licenses the route, so it is named."""
+        self.assertIn(
+            "names no outstanding source after `outstanding:`",
+            self.only_failure(
+                self.reconcile(outstanding="The search left a source outstanding.")
+            ),
+        )
+
+    # Each of these carries the marker and everything but a source the record
+    # really marks `unanswered`, said with what it did instead of answering. The
+    # third and fourth are the deceptive ones: they name a source, which a check
+    # reading the label plus "some name" accepts, and neither names one this
+    # region's own search left outstanding.
+    VAGUE_OUTSTANDING = (
+        ("no marker at all", "GitHub code search was refused by the secondary limiter."),
+        ("a marker and no source", "**outstanding:** two of the three queries."),
+        (
+            "a source the record shows answered",
+            "**outstanding:** APIs.guru — the clone was refused.",
+        ),
+        (
+            "a source that is not one this region declares",
+            "**outstanding:** SwaggerHub public registry — it exposes no body search.",
+        ),
+        (
+            "the outstanding source with no account of what it did",
+            "**outstanding:** GitHub code search.",
+        ),
+    )
+
+    def test_an_outstanding_source_too_vague_to_act_on_is_refused(self) -> None:
+        """The marker alone is not a source: the cell names one and what it did."""
+        for missing, vague in self.VAGUE_OUTSTANDING:
+            with self.subTest(missing=missing):
+                self.assertIn(
+                    "names no outstanding source after `outstanding:`",
+                    self.only_failure(self.reconcile(outstanding=vague)),
+                )
+
+    def test_each_way_of_naming_what_the_source_did_instead_is_accepted(self) -> None:
+        """And the complete ones are, so the refusal above is about content."""
+        for good in (
+            "**outstanding:** GitHub code search, which the secondary limiter refused.",
+            "**outstanding:** GitHub code search — the endpoint was unreachable on "
+            "every attempt.",
+            "**outstanding:** GitHub code search — its index returned an error "
+            "rather than a result.",
+            "**outstanding:** GitHub code search — the 414,968 bodies behind it went "
+            "unread, since it exposes no body search.",
+        ):
+            with self.subTest(outstanding=good):
+                self.assertEqual([], self.reconcile(outstanding=good))
+
+    def test_a_row_whose_search_marks_no_source_unanswered_is_refused(self) -> None:
+        """A search every source answered settles on what it found, not on a probe."""
+        self.assertIn(
+            "marks no required source `unanswered`",
+            self.only_failure(self.reconcile(sources=self.ANSWERED_SOURCES)),
+        )
+
+    def test_a_row_that_does_not_say_it_stays_convertible_is_refused(self) -> None:
+        """A probe settles what Fern does; it must not read as closing the row."""
+        self.assertIn(
+            "does not say the row stays convertible to `golden`",
+            self.only_failure(
+                self.reconcile(convertible="The probe is the settlement available.")
+            ),
+        )
+
+    def test_a_row_promised_convertible_with_no_destination_is_refused(self) -> None:
+        """`convertible` on its own names no category to convert to."""
+        self.assertIn(
+            "does not say the row stays convertible to `golden`",
+            self.only_failure(self.reconcile(convertible="The row stays convertible.")),
+        )
+
+    def test_a_row_with_no_probe_recorded_in_the_ledger_is_refused(self) -> None:
+        """The probe is the measurement that settles it; without one nothing does."""
+        self.assertIn(
+            "records no probe and no verdict",
+            self.only_failure(self.reconcile(ledger="| key | witnesses |\n|---|---|\n")),
+        )
+
 
 
 DOCUMENT = """openapi: 3.0.3
