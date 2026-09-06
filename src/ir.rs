@@ -4965,8 +4965,18 @@ fn hoist_form_object(
         .enumerate()
         .map(|(reference_order, (prop, prop_schema))| {
             let spec_required = required.contains(&prop.as_str());
-            let is_file = prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
-                && prop_schema.format.as_deref() == Some("binary");
+            let binary_scalar = |schema: &Schema| {
+                schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
+                    && schema.format.as_deref() == Some("binary")
+            };
+            // A part is a file when it is a binary string, and equally when it is
+            // an ARRAY of them: SFTPGo's `filenames` is
+            // `{type: array, items: {type: string, format: binary}}` on both its
+            // multipart uploads, and Fern types it `Sequence[core.File]` and sends
+            // it through `files=` rather than JSON-encoding it into `data=`.
+            let is_file = binary_scalar(prop_schema)
+                || prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("array")
+                    && prop_schema.items.as_deref().is_some_and(binary_scalar);
             let resolved = prop_schema
                 .reference
                 .as_deref()

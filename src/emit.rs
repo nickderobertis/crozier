@@ -4017,7 +4017,13 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
                 // and documented with Fern's fixed pointer to `core.File`.
                 let base = if f.is_file {
                     imports.add_core_package();
-                    "core.File".to_string()
+                    if matches!(f.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
+                        imports.add_plain("typing");
+                        let container = if form.multipart { "List" } else { "Sequence" };
+                        format!("typing.{container}[core.File]")
+                    } else {
+                        "core.File".to_string()
+                    }
                 } else {
                     raw_type_str_ctx(&f.type_ref, imports, !form.multipart)
                 };
@@ -7899,7 +7905,7 @@ fn build_example_inner(
     }
     match &ep.request_body {
         Some(RequestBody::Single(s)) => {
-            let v = if let Some(example) = body_example {
+            let mut v = if let Some(example) = body_example {
                 ctx.value_from_example(&s.type_ref, &example.to_string())
                     .unwrap_or_else(|| ctx.value(&s.type_ref, Slot::Plain))
             } else {
@@ -7908,6 +7914,27 @@ fn build_example_inner(
                     .and_then(|example| ctx.value_from_example(&s.type_ref, example))
                     .unwrap_or_else(|| ctx.value(&s.type_ref, Slot::Plain))
             };
+            // A binary download's array body is exampled with TWO synthesized
+            // elements where every other endpoint's takes one. SFTPGo's
+            // `streamzip` posts `{type: array, items: {type: string}}` and streams
+            // a zip back, and its golden documents `request=["string", "string"]`;
+            // gambitcomm's `set_protocols` posts the same shape — its item is
+            // described too — and answers JSON, and its golden documents
+            // `request=["string"]`, as do audiobookshelf's `downloadEpisodes`,
+            // komga's `markAnnouncementsRead` and exhaustive's list-of-primitives.
+            if ep.binary_response && body_example.is_none() && s.example.is_none() {
+                v = match &v {
+                    Example::List(items) => match items.as_slice() {
+                        [only] => Example::List(vec![only.clone(), only.clone()]),
+                        _ => v,
+                    },
+                    Example::ReferenceList(items) => match items.as_slice() {
+                        [only] => Example::ReferenceList(vec![only.clone(), only.clone()]),
+                        _ => v,
+                    },
+                    _ => v,
+                };
+            }
             // An optional body Fern types `Optional[Any]` has nothing to show, in
             // either document version: letta declares the shape in 3.1 and
             // braintrust's proxy endpoints in 3.0.3, and neither golden passes
@@ -8093,7 +8120,15 @@ fn build_example_inner(
                     // not — DaniWeb's optional `csv` is the corpus's first — while
                     // the client docstring shows an optional one only when the
                     // media example or a per-part content type reaches it.
-                    (f.spec_required || f.media_example || ((related || reference) && f.is_file))
+                    (f.spec_required
+                        || f.media_example
+                        || ((related || reference) && f.is_file)
+                        // A part that is a LIST of files is shown wherever the
+                        // example is written, required or not: SFTPGo's optional
+                        // `filenames` reaches `README.md` and the client docstring
+                        // as well as `reference.md`, where DaniWeb's optional
+                        // scalar `csv` reaches only the reference writer.
+                        || f.is_file && matches!(f.type_ref, TypeRef::List(_) | TypeRef::Set(_)))
                         && (documentation || !f.is_file)
                 })
                 .collect();
@@ -8105,7 +8140,15 @@ fn build_example_inner(
             }
             for f in example_fields {
                 let v = if documentation && f.is_file {
-                    Example::Atom(format!("\"example_{}\"", f.wire_name))
+                    if matches!(f.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
+                        // A list of files is one flat placeholder list, not an
+                        // exploded one: SFTPGo's `filenames` documents
+                        // `filenames=["example_filenames"]` on a single line in
+                        // both `README.md` and `reference.md`.
+                        Example::Atom(format!("[\"example_{}\"]", f.wire_name))
+                    } else {
+                        Example::Atom(format!("\"example_{}\"", f.wire_name))
+                    }
                 } else {
                     f.example
                         .as_deref()
@@ -8501,6 +8544,11 @@ fn compact_documentation_values(lines: Vec<String>, reference: bool) -> Vec<Stri
             .strip_suffix("],")
             .and_then(|value| value.split_once("=["))
             .filter(|(_, items)| !items.is_empty())
+            // A multipart part that is a LIST of files is the one list the
+            // markdown writers leave on its own line: SFTPGo documents
+            // `filenames=["example_filenames"]` flat, where every other list
+            // argument of the same writers is exploded one item per line.
+            .filter(|(head, items)| *items != format!("\"example_{}\"", head.trim()))
         {
             let indent = line.len() - line.trim_start().len();
             compact.push(format!("{}{head}=[", " ".repeat(indent)));
