@@ -853,13 +853,14 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 #
 # Every member is **node-local**: it is decided from one object-model node's own
 # declared fields and their values, with no `$ref` resolution and no
-# document-scope comparison — except the three that were declared before the
-# family was named, `operation.operationId:duplicate` and the two
-# `normalized-collision` spellings, which compare one document's own values
-# against each other and say so in their own sentence. A predicate that would need the schema a `$ref` points
-# at is not a member of this family and is not declared here; those shapes are the
+# document-scope comparison — except four, which compare one document's own values
+# against each other and say so in their own sentence:
+# `operation.operationId:duplicate`, the two `normalized-collision` spellings, and
+# `schema.$ref:undeclared-component-head`, which reads the document context
+# `Census.__init__` holds. A predicate that would need the schema a `$ref` points
+# at is not a member of either kind and is not declared here; those shapes are the
 # enumeration holes `docs/openapi-surface-coverage.md`'s case analysis names
-# H-ref-target, H-pointer-target and H-pointer-nesting.
+# H-ref-target and H-pointer-nesting.
 PREDICATES = {
     "operation.tags:multiple": (
         "one per Operation Object whose `tags` array holds more than one member"
@@ -1418,6 +1419,81 @@ def path_segment_predicates(key: str) -> list[str]:
     return ["openapi.paths:leading-literal-segment"]
 
 
+# The prefix `ref_to_class` and `resolve_schema_pointer` both strip before they
+# read a pointer's segments; a `$ref` that does not carry it takes the first case
+# of either function, named off the value's last segment.
+_COMPONENT_SCHEMAS_PREFIX = "#/components/schemas/"
+# The three segments `ref_to_class` reads as a nesting step, and the composition
+# spelling whose index it skips.
+_COMPOSITION_SEGMENTS = ("allOf", "oneOf", "anyOf")
+
+
+def pointer_form_predicates(reference: str) -> list[str]:
+    """The predicates one `$ref` *value*'s own segment structure decides.
+
+    `ref_to_class` of `src/ir.rs` opens no schema — it reads the reference string
+    and nothing else — so its five cases are decided here, case for case, by
+    walking the segments the way it does: `properties` with a segment after it
+    consumes both, `items` consumes one, a composition keyword consumes its index,
+    and anything else consumes one and contributes no name. Those read positions
+    are `resolve_schema_pointer`'s too, which is why its case 8 (a segment none of
+    the five names) and its case 1 (the reference is no component-schema pointer)
+    are counted by the same spellings.
+
+    Nothing here opens the schema a pointer addresses. Whether the pointer's head
+    names a declared component is `Census.pointer_target_predicates`, which reads
+    the document context; whether its later segments address the nesting the
+    target declares is the resolving walk `docs/openapi-surface-coverage.md` names
+    H-pointer-nesting.
+    """
+    if not reference.startswith(_COMPONENT_SCHEMAS_PREFIX):
+        # Case 1 of both functions, split by which of two shapes reached it: a
+        # reference into another document, which no registrable source can carry,
+        # and one into this document outside `components.schemas`, which a Swagger
+        # conversion writes as `#/definitions/Foo`.
+        document, hash_mark, _ = reference.partition("#")
+        if document or not hash_mark:
+            return ["schema.$ref:cross-document"]
+        return ["schema.$ref:same-document-foreign-pointer"]
+    parts = reference[len(_COMPONENT_SCHEMAS_PREFIX):].split("/")
+    found: set[str] = set()
+    index = 1
+    while index < len(parts):
+        part = parts[index]
+        if part == "properties" and index + 1 < len(parts):
+            found.add("schema.$ref:nested-properties")
+            index += 2
+        elif part == "items":
+            found.add("schema.$ref:nested-items")
+            index += 1
+        elif part in _COMPOSITION_SEGMENTS:
+            found.add("schema.$ref:composition-index")
+            index += 2
+        else:
+            # `ref_to_class`'s residual arm, which a trailing `properties` takes
+            # too: with no segment after it there is no property name to append.
+            found.add("schema.$ref:unnamed-segment")
+            index += 1
+    # One per node, whatever the repetition: a pointer carrying two `items`
+    # segments selects the same arm twice and is one place the shape is written.
+    return sorted(found)
+
+
+def components_schemas(document: Any) -> dict[Any, Any]:
+    """One document's own `components.schemas` map, as the census reads it.
+
+    The document being censused and nothing else: a `$ref` naming another document
+    is a string to this instrument, never a fetch and never a second document.
+    """
+    if not isinstance(document, dict):
+        return {}
+    components = document.get("components")
+    if not isinstance(components, dict):
+        return {}
+    schemas = components.get("schemas")
+    return schemas if isinstance(schemas, dict) else {}
+
+
 def grammar() -> tuple[set[str], set[str]]:
     """Every selector the grammar allows, and every prefix that can carry an `x-`.
 
@@ -1503,8 +1579,20 @@ def selector_error(text: str) -> str | None:
 class Census:
     """One document's declaration-site counts, keyed by selector."""
 
-    def __init__(self) -> None:
+    def __init__(self, document: Any = None) -> None:
         self.counts: dict[str, int] = defaultdict(int)
+        # The document context, reachable from every node this census walks: the
+        # document's own `components.schemas` map and the set of its keys. It is
+        # the document being censused and nothing else — no fetch, no
+        # cross-document resolution, no second document — and a predicate may read
+        # it, the way `schema.$ref:undeclared-component-head` compares a pointer's
+        # head against the names below. A census built without one carries an
+        # empty context rather than failing, so a caller measuring one node's
+        # predicates in isolation still gets the node-local family.
+        self.component_schemas: dict[Any, Any] = components_schemas(document)
+        self.component_names: frozenset[str] = frozenset(
+            key for key in self.component_schemas if isinstance(key, str)
+        )
         # `operation.operationId:duplicate` compares one document's values against
         # each other, so it cannot be decided at the declaration site the way every
         # other selector is; the values are gathered here and counted by `finish`.
@@ -1692,7 +1780,9 @@ class Census:
         member of a `type` array `TypeField::primary` reads, whether a
         `properties` map holds anything, how many non-`null` members a composition
         field has, and whether an `enum` or a `const` yields strings. Nothing here
-        opens another node: a `$ref` is a string to this function.
+        opens another node: a `$ref` is a *string* to this function, read for its
+        own segment structure by `pointer_form_predicates` and for its head alone
+        by `pointer_target_predicates`, and never followed to what it addresses.
         """
         found: list[str] = []
         if primary_type(node.get("type")) == "array":
@@ -1718,7 +1808,29 @@ class Census:
             found.append("schema.enum:string-valued")
         if "const" in node and string_valued(node, [node.get("const")]):
             found.append("schema.const:string-valued")
+        reference = node.get("$ref")
+        if isinstance(reference, str):
+            found += pointer_form_predicates(reference)
+            found += self.pointer_target_predicates(reference)
         return found
+
+    def pointer_target_predicates(self, reference: str) -> list[str]:
+        """`schema.$ref:undeclared-component-head`: a head this document never declares.
+
+        The one member of the pointer-form family that is not decided by the value
+        alone. `resolve_schema_pointer`'s case 2 is `schemas.get(parts.next()?)?`
+        returning `None`, so what selects it is the pointer's head segment measured
+        against the document's own `components.schemas` keys — the same
+        document-scope comparison `components.schemas:normalized-collision` makes
+        over those keys, and the whole of what the document context is read for
+        here.
+        """
+        if not reference.startswith(_COMPONENT_SCHEMAS_PREFIX):
+            return []
+        head = reference[len(_COMPONENT_SCHEMAS_PREFIX):].split("/")[0]
+        if head in self.component_names:
+            return []
+        return ["schema.$ref:undeclared-component-head"]
 
     def path_key_templates(self, node: dict[Any, Any]) -> list[str]:
         """The five predicates the *shape* of a Paths Object key decides.
@@ -1807,7 +1919,7 @@ class Census:
 
 def census_document(document: Any) -> dict[str, int]:
     """Every `(selector, count)` one parsed source document declares."""
-    census = Census()
+    census = Census(document)
     census.walk(document, "openapi", "openapi", frozenset())
     census.finish()
     return dict(census.counts)

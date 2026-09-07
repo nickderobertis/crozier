@@ -673,11 +673,20 @@ class GrammarContractTests(unittest.TestCase):
         # A predicate spelling may carry a value of its own — `schema.type:primary=array`
         # names which member of a `type` array the arm reads, which is a position
         # rather than a presence — so the pattern admits one, and the `=` does not
-        # make the spelling a valued selector over a field nothing declares.
+        # make the spelling a valued selector over a field nothing declares. It
+        # admits a `$` too, because the field a pointer-form predicate reads is
+        # spelled `$ref`: the gate widens to the spelling rather than the spelling
+        # bending to the gate.
         documented = set(
-            re.findall(r"`([A-Za-z][A-Za-z.]*:[a-z-]+(?:=[A-Za-z0-9-]+)?)`", body)
+            re.findall(r"`([A-Za-z][A-Za-z.$]*:[a-z-]+(?:=[A-Za-z0-9-]+)?)`", body)
         )
         self.assertEqual(set(census.PREDICATES), documented)
+        stated = re.search(
+            r"The predicates are themselves a closed list of\s+(\d+)",
+            text,
+        )
+        self.assertIsNotNone(stated, "the grammar no longer states how many predicates there are")
+        self.assertEqual(len(census.PREDICATES), int(stated.group(1)))
 
     # ------------------------------------------------------------------
     # The fourth kind of selector: `<member>&<member>` and `<group>><group>`
@@ -807,7 +816,8 @@ class GrammarContractTests(unittest.TestCase):
         sentence moving fails here.
         """
         words = {
-            8: "eight", 9: "nine", 36: "thirty-six", 40: "forty", 76: "seventy-six",
+            7: "seven", 8: "eight", 9: "nine", 28: "twenty-eight", 36: "thirty-six",
+            40: "forty", 50: "fifty", 76: "seventy-six", 78: "seventy-eight",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -1345,6 +1355,21 @@ def write_json_fixture(root: Path, name: str, document: dict) -> None:
     )
 
 
+# The pointer-form family, declared by the pass after the node-local one and
+# discriminated by `PointerFormSelectorDiscriminationTests` below. Named here
+# because the node-local table's own completeness assertion is "every selector
+# that pass declared", and these are not its.
+POINTER_FORM_PREDICATES = frozenset({
+    "schema.$ref:cross-document",
+    "schema.$ref:same-document-foreign-pointer",
+    "schema.$ref:nested-properties",
+    "schema.$ref:nested-items",
+    "schema.$ref:composition-index",
+    "schema.$ref:unnamed-segment",
+    "schema.$ref:undeclared-component-head",
+})
+
+
 class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
     """What each node-local selector counts, over inputs that discriminate its branch.
 
@@ -1751,7 +1776,9 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         set(census.PREDICATES)
         | set(census.CONJUNCTIONS)
         | {"schema.additionalProperties=false", "schema.additionalProperties=true"}
-    ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(PRE_EXISTING_PREDICATES)
+    ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(
+        PRE_EXISTING_PREDICATES
+    ) - POINTER_FORM_PREDICATES
 
     @classmethod
     def setUpClass(cls) -> None:

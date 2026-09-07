@@ -144,7 +144,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-17, declared in `scripts/openapi-surface-census.py` and restated here, with a
+24, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `operation.tags:multiple` — one per Operation Object whose `tags` array
@@ -215,16 +215,54 @@ drift gate over the pair:
   `string_enum_values` falls back to when no `enum` is written. The two are
   two readings rather than one, because a schema writing both is read by its
   `enum` alone.
+- `schema.$ref:cross-document` — one per Schema Object whose `$ref` names
+  another document: the value carries a non-empty part before its `#`, or no
+  `#` at all, so `./other.yaml#/components/schemas/Author` and a bare
+  `common.yaml` count.
+- `schema.$ref:same-document-foreign-pointer` — one per Schema Object whose
+  `$ref` points inside its own document but outside `components.schemas`, so
+  `#/definitions/Foo` from a Swagger conversion and
+  `#/components/parameters/Page` count. The two above are the two shapes that
+  reach `ref_to_class`'s first case, which names a reference off its last
+  segment, and they are two selectors rather than one because only the first is
+  out of the corpus's reach.
+- `schema.$ref:nested-properties` — one per Schema Object whose `$ref` is a
+  `#/components/schemas/` pointer carrying a `properties` segment with a
+  segment after it, at a position the `ref_to_class` walk reads, so a pointer
+  carrying two counts one.
+- `schema.$ref:nested-items` — one per Schema Object whose `$ref` is such a
+  pointer carrying an `items` segment at a position that same walk reads.
+- `schema.$ref:composition-index` — one per Schema Object whose `$ref` is such
+  a pointer carrying an `allOf`, `oneOf` or `anyOf` segment at a position that
+  same walk reads, the segment whose index contributes no name.
+- `schema.$ref:unnamed-segment` — one per Schema Object whose `$ref` is such a
+  pointer carrying, at a position that same walk reads, a segment naming none
+  of those five — a trailing `properties` included, since with no segment after
+  it there is no property name to append. The four above are read off the four
+  arms of `ref_to_class`'s own loop, whose read positions are
+  `resolve_schema_pointer`'s too.
+- `schema.$ref:undeclared-component-head` — one per Schema Object whose `$ref`
+  is such a pointer whose head segment names no key of the same document's own
+  `components.schemas`, which is what `resolve_schema_pointer`'s
+  `schemas.get(parts.next()?)?` returns `None` on.
 
-**Fourteen of the 17 are node-local**, which is what makes them one family:
+**Twenty of the 24 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
-values, with no `$ref` resolution and no document-scope comparison. The other
-three — `operation.operationId:duplicate` and the two `normalized-collision`
-spellings — compare one document's own values against each other, and say so in
-their own sentence. A property that would need the schema a `$ref` points at is
-not a predicate of either kind and is declared nowhere: those shapes are the
-enumeration holes [the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case)
-names H-ref-target, H-pointer-target and H-pointer-nesting, and the resolving walk
+values, with no `$ref` resolution and no document-scope comparison. The six
+`schema.$ref:` spellings that read a pointer's segment structure are node-local
+in exactly that sense — a `$ref` *value* is one of the node's own declared
+fields, and reading its segments is not resolving it. The other
+four — `operation.operationId:duplicate`, the two `normalized-collision`
+spellings and `schema.$ref:undeclared-component-head` — compare one document's
+own values against each other, and say so in their own sentence. The last of
+them reads **the document context**: the census carries the document's own
+`components.schemas` map and the set of its keys, reachable from every node it
+walks, and it is the document being censused and nothing else — no fetch, no
+cross-document resolution, no second document. A property that would need the
+schema a `$ref` points at is still not a predicate of either kind and is
+declared nowhere: those shapes are the enumeration holes
+[the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case)
+names H-ref-target and H-pointer-nesting, and the resolving walk
 they would take is a different instrument.
 
 A predicate selector is a selector like any other everywhere else: `--selector`
@@ -307,8 +345,8 @@ can express. Three conventions that derivation applies, stated once:
   uncounted — and equally one **broader** than it: `schema.oneOf>schema.example&schema.type=object`
   would count a variant declaring `type: object` beside a scalar example, an empty
   `examples`, or an object whose values are themselves schema declarations, and
-  `hoist_union_variant` sends all three to `base_type_ref`. Forty of the
-  seventy-six cases below survive this test; the other thirty-six name the
+  `hoist_union_variant` sends all three to `base_type_ref`. Fifty of the
+  seventy-eight cases below survive this test; the other twenty-eight name the
   extension that would close them.
 
   What the test does **not** rule out is a node whose own declaration contradicts
@@ -1300,9 +1338,10 @@ it distinguishes.
 
 **Every case below is in exactly one of two states.** It carries exactly one
 selector the census declares — a conjunction, or, where the arm reads one Paths
-Object key and opens no schema, a predicate — and only where that selector is
+Object key or one `$ref` value and opens no schema, a predicate — and only where
+that selector is
 *exact*, counting the nodes the branch is selected by and no others. Otherwise it
-is recorded as one of nine enumeration holes naming the property no selector kind
+is recorded as one of seven enumeration holes naming the property no selector kind
 can express and what closing it would take — the way `normalization-collision` was
 recorded before `components.schemas:normalized-collision` existed. No case is in
 neither, and none is in both.
@@ -1324,11 +1363,9 @@ selector naming one disjunct would be narrower than the whole arm.
 | **H-discriminant-value** | that a union's members each carry a discriminable value for the discriminant property — `discriminated_union` requires `discriminant_value` (a one-member string `enum`, or a string `example`) on every member when no `mapping` is written, and every `mapping` target to resolve when one is; a `discriminator` beside a `oneOf` is therefore not enough to select the arm, and the inferred spelling reads the same member values with no `discriminator` written at all | a predicate comparing the members of one `oneOf` against each other and against a named property's value, of the family `operation.operationId:duplicate` already is |
 | **H-annotated-ref** | that an `allOf` holds exactly one `$ref` beside members that add nothing but a description, *and* that the reference resolves — `described_all_of_ref` requires at least two members, exactly one of them a reference, and every other `is_unknown`, and every arm reading it then resolves that reference against `components.schemas` | a predicate over an `allOf`'s length and over what its non-reference members declare, evaluated against the resolving walk H-ref-target names; `schema.allOf` alone counts every `allOf` there is |
 | **H-ref-target** | the shape of the schema a `$ref` *points at*: the walk counts a Reference Object and never descends | a resolving walk, which is a different instrument — the target's own declaration site is already counted where it is written |
-| **H-pointer-form** | the segment structure of a `$ref` *value*, as in `#/components/schemas/A/allOf/0/properties/b` | a predicate family over `schema.$ref` (`:components-schemas-pointer`, `:nested-properties`, `:nested-items`, `:composition-index`, `:foreign-pointer`), of the family the `openapi.paths:` predicates already are over a key's shape |
-| **H-pointer-nesting** | that a `$ref` value's segment sequence addresses the nesting a schema declares: each arm's schema-side half is already named by a plain field selector (`schema.allOf`, `schema.properties`, `schema.items`), and what no kind can express is the *correspondence* between the two, which is a joint property of a value and the document it points into | the `schema.$ref` pointer-form predicate family H-pointer-form names, evaluated against the resolving walk H-ref-target names — both together, and neither is a conjunction over one node's declared fields |
-| **H-pointer-target** | whether a `$ref` value names a key `components.schemas` declares | a predicate comparing one document's `$ref` values against its own component names, of the family `components.schemas:normalized-collision` already is |
+| **H-pointer-nesting** | that a `$ref` value's segment sequence addresses the nesting a schema declares: each arm's schema-side half is already named by a plain field selector (`schema.allOf`, `schema.properties`, `schema.items`), and what no kind can express is the *correspondence* between the two, which is a joint property of a value and the document it points into | the `schema.$ref` pointer-form predicate family — declared now, and enough on its own for the two arms `resolve_schema_pointer` decides from the string — evaluated against the resolving walk H-ref-target names, which is what says whether the segments before this one *resolved*. The document context that walk builds its resolver on is landed: the census carries the censused document's own `components.schemas` map and key set at every node |
 
-Every one of the nine turns on something outside the node in front of the walk —
+Every one of the seven turns on something outside the node in front of the walk —
 a `$ref` resolving, a comparison across the document, or the *absence* of a
 declaration — which is what separates them from the node-local predicate family
 [the grammar declares](#the-selector-grammar). Declaring one of them is a change
@@ -1350,19 +1387,34 @@ a combination of fields at one node. A conjunction such as
 `schema.allOf>schema.properties` would name *one* continuation of the `"allOf"`
 arm — the pointer that goes on to `properties` — and would leave
 `allOf/{i}/items`, `allOf/{i}/oneOf/{j}`, a bare `allOf/{i}` and every deeper form
-uncounted, so this region is recorded as holes rather than covered by a narrower
-shape.
+uncounted, so those five arms are recorded as holes rather than covered by a
+narrower shape.
+
+**Three of its arms are decided before any of that**, and the pointer-form
+predicate family counts them. Cases 1 and 8 read the string alone, so they are
+`ref_to_class`'s cases 1 and 5 under another name and take the same selectors;
+case 2 reads the pointer's head against the document's own `components.schemas`
+keys, which is the document context the census now carries and the comparison
+`components.schemas:normalized-collision` already makes over those same keys.
+Case 8 is the one that leans on [the exactness rule](#the-selector-grammar)'s
+chain-overlap allowance, and does so visibly: `schema.$ref:unnamed-segment` counts
+a pointer whose unknown segment sits behind a segment that did *not* resolve —
+`A/allOf/0/zzz` where `A` declares no `allOf` — and that pointer selects case 3,
+which is a case of this table carrying a row of its own. What the selector never
+counts is a document selecting no case here at all, which is the miscount the rule
+disqualifies.
 
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
-| 1 | `reference.strip_prefix("#/components/schemas/")?` — the reference is not a component-schema pointer | **H-pointer-form** |
-| 2 | `schemas.get(parts.next()?)?` — the pointer's head names no declared component | **H-pointer-target** |
+| 1a | `reference.strip_prefix("#/components/schemas/")?` — the reference is not a component-schema pointer; the cross-document spelling, which names another file | `schema.$ref:cross-document` |
+| 1b | the same arm, the same-document spelling: a pointer inside this document but outside `components.schemas` | `schema.$ref:same-document-foreign-pointer` |
+| 2 | `schemas.get(parts.next()?)?` — the pointer's head names no declared component | `schema.$ref:undeclared-component-head` |
 | 3 | `"allOf" => schema.all_of.as_ref()?.get(parts.next()?.parse::<usize>().ok()?)?` — schema-side half `schema.allOf`, entered for any continuation | **H-pointer-nesting** |
 | 4 | `"oneOf" => schema.one_of.as_ref()?.get(…)?` — schema-side half `schema.oneOf` | **H-pointer-nesting** |
 | 5 | `"anyOf" => schema.any_of.as_ref()?.get(…)?` — schema-side half `schema.anyOf` | **H-pointer-nesting** |
 | 6 | `"properties" => schema.properties.get(parts.next()?)?` — schema-side half `schema.properties`, keyed by a property *name*, which the count rule excludes | **H-pointer-nesting** |
 | 7 | `"items" => schema.items.as_deref()?` — schema-side half `schema.items` | **H-pointer-nesting** |
-| 8 | `_ => return None` — a segment none of the five names | **H-pointer-form** |
+| 8 | `_ => return None` — a segment none of the five names | `schema.$ref:unnamed-segment` |
 
 #### `nested_array_element`
 
@@ -1471,19 +1523,32 @@ helper read again, inside the one-member arity its own arm tests.
 
 #### `ref_to_class`
 
-Wholly an enumeration hole, and routed there rather than left underived: the
+Wholly a predicate region, and for the reason it was wholly a hole before: the
 function opens no schema — it reads the reference *string* and nothing else — so
 no conjunction over declared fields changes its path, and every one of its cases
 is decided by the pointer's segment structure, which is what a predicate selector
-is for and which the grammar declares none over.
+is for and which the grammar now declares six over. Nothing here can fail to be
+reached: the loop never returns early, so a pointer's segments alone decide which
+arms it takes and how often, and a selector read off one arm counts exactly the
+nodes that take it. That is why this table needs no chain-overlap allowance while
+`resolve_schema_pointer`'s case 8 does — the two read the same positions, and only
+the second can stop before reaching one.
+
+The first case takes two selectors rather than one, because two different shapes
+reach it and only one of them is out of the corpus's reach: a reference into
+another document, and a reference into this document outside `components.schemas`
+— `#/definitions/Foo` from a Swagger conversion, or a pointer into another
+component map. Recording both under one name would put a reachable branch behind
+an `UNREACHABLE` row.
 
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
-| 1 | `let Some(pointer) = reference.strip_prefix("#/components/schemas/") else { … }` — a foreign pointer, named off its last segment | **H-pointer-form** |
-| 2 | `"properties" if index + 1 < parts.len() => name.push_str(&naming::class_name(parts[index + 1]))` | **H-pointer-form** |
-| 3 | `"items" => name.push_str("Item")` | **H-pointer-form** |
-| 4 | `"allOf" \| "oneOf" \| "anyOf" => index += 2` — a composition index contributes no name | **H-pointer-form** |
-| 5 | `_ => index += 1` | **H-pointer-form** |
+| 1a | `let Some(pointer) = reference.strip_prefix("#/components/schemas/") else { … }` — a foreign pointer, named off its last segment; the cross-document spelling | `schema.$ref:cross-document` |
+| 1b | the same arm, the same-document spelling: a pointer outside `components.schemas` | `schema.$ref:same-document-foreign-pointer` |
+| 2 | `"properties" if index + 1 < parts.len() => name.push_str(&naming::class_name(parts[index + 1]))` | `schema.$ref:nested-properties` |
+| 3 | `"items" => name.push_str("Item")` | `schema.$ref:nested-items` |
+| 4 | `"allOf" \| "oneOf" \| "anyOf" => index += 2` — a composition index contributes no name | `schema.$ref:composition-index` |
+| 5 | `_ => index += 1` — a segment none of the four names, a trailing `properties` included | `schema.$ref:unnamed-segment` |
 
 #### `path_group`
 
@@ -1510,12 +1575,28 @@ those sixteen were holes only because the grammar had no *node-local* predicate 
 a property one object-model node's own declared fields and their values decide,
 with no `$ref` resolution and no comparison across the document. Eleven such
 predicates are now declared, plus the one valued field
-`schema.additionalProperties`, and with them the table above derives seventy-six
+`schema.additionalProperties`, and with them that pass derived seventy-six
 cases, forty carrying a selector and thirty-six recorded as one of nine holes.
 Seven hole kinds are gone: H-arity, H-empty-collection, H-type-multiplicity,
 H-boolean-value, H-enum-value-kind, H-key-segment-position and
 H-key-all-templated no longer name any case, because every arm they named is now
 counted by its own selector.
+
+**What the pointer-form family closed after it.** Two of those nine holes turned
+on a `$ref` *value* rather than on a node's declared fields — H-pointer-form, the
+segment structure of the value, and H-pointer-target, whether its head names a
+declared component — and both are gone. Seven predicates close them, six read off
+the value alone and one, `schema.$ref:undeclared-component-head`, off that value
+against the document context this change also lands. The table above therefore
+derives seventy-eight cases rather than seventy-six — `ref_to_class`'s first case
+and `resolve_schema_pointer`'s are each two rows now, one per shape reaching them
+— fifty carrying a selector and twenty-eight recorded as one of seven holes.
+`ref_to_class` was wholly a hole and is wholly counted; `resolve_schema_pointer`
+keeps five, the five whose arm resolves a segment against the schema at that
+position, and they are H-pointer-nesting as they always were. **What did not
+change is the walk**: these predicates read a `$ref` at the node that writes it,
+which the census already visited, so no count rule moved, no existing count moved
+and no snapshot digest was re-pinned.
 
 **Three of the arms this pass set out to close stayed holes, and each is a
 finding rather than an omission.** `prop_type_ref`'s case 6 was recorded as
