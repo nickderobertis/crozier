@@ -113,7 +113,7 @@ re-measure with `just fixtures-gaps`.
 | 88 | `exa-gate` | github-raw | https://raw.githubusercontent.com/apaidedie/exa-gate/37cf047d828665004b4900ce672aa3f27b0bb844/docs/openapi.json | `37cf047d828665004b4900ce672aa3f27b0bb844` | MIT | link-ok | Exa Gate API declaring `423` and `426`, pinning Fern's `LockedError` and `UpgradeRequiredError` names for two statuses no golden emitted |
 | 89 | `amazonaws.com-cloudfront` | api-guru | https://api.apis.guru/v2/specs/amazonaws.com/cloudfront/2016-11-25/openapi.json | `2016-11-25` | Apache 2.0 License | link-ok | AWS CloudFront API whose 27 operations declare `502`, `505`, `506`, `507`, `508`, `510` and `511`, pinning Fern's `BadGatewayError`, `HttpVersionNotSupportedError`, `VariantAlsoNegotiatesError`, `InsufficientStorageError`, `LoopDetectedError`, `NotExtendedError` and `NetworkAuthenticationRequiredError` names for seven statuses no golden emitted |
 | 90 | `khoainats` | github-raw | https://raw.githubusercontent.com/cukhoaimon/khoainats/e680e29affee221e3a6c379b1e51c98ef241da7a/api/generated/.docs/api/openapi.yaml | `e680e29affee221e3a6c379b1e51c98ef241da7a` | MIT | link-ok | Khoai NATS Admin API declaring an `openIdConnect` scheme (`Roles`) beside an HTTP bearer one, with `/v1/noauth` unsecured: `openIdConnect` is the one member of its scheme family Fern imports rather than drops, and this row pins the optional bearer `token` Fern emits for such a document |
-| 91 | `helios-verifiable-api` | github-raw | https://raw.githubusercontent.com/a16z/helios/43a8c9f3cdda41a6f383c4db41d9a83f102638b1/verifiable-api/server/openapi.yaml | `43a8c9f3cdda41a6f383c4db41d9a83f102638b1` | MIT | link-ok | 27 component schemas that are remote-URL `$ref`s into six `ethereum/execution-apis` documents, which Fern fetches and resolves transitively — the only reference form Fern was measured to follow rather than discard. Unlike every other row, the golden depends on a third-party fetch at generation time, and those URLs address `refs/heads/main` rather than an immutable ref, so an upstream edit to those six files breaks this row's reproduction for a reason unrelated to crozier |
+| 91 | `helios-verifiable-api` | github-raw | https://raw.githubusercontent.com/a16z/helios/43a8c9f3cdda41a6f383c4db41d9a83f102638b1/verifiable-api/server/openapi.yaml | `43a8c9f3cdda41a6f383c4db41d9a83f102638b1` | MIT | link-ok | 27 component schemas that are remote-URL `$ref`s into seven `ethereum/execution-apis` documents, which Fern fetches and resolves transitively — the only reference form Fern was measured to follow rather than discard. Unlike every other row, the golden depends on a third-party fetch at generation time. Upstream writes those seven references against `refs/heads/main`, so `tests/fixtures/corpus-remote-ref-pins.tsv` records a pinned commit URL and a SHA-256 for each, and `scripts/fetch-corpus.sh` substitutes them into the fetched document before publishing it: this row's inputs are upstream's bytes plus exactly that recorded substitution, and no longer whatever the branch serves today |
 | 92 | `eozilla` | github-raw | https://raw.githubusercontent.com/eo-tools/eozilla/70187a1bba9fe5a77001a623322f23bb30ea49c7/tools/openapi.yaml | `70187a1bba9fe5a77001a623322f23bb30ea49c7` | Apache-2.0 | link-ok | Eozilla OGC API - Processes server whose `Schema` component closes two cycles through `additionalProperties` (`Schema.properties.<k>` and `Schema.discriminator.mapping` both name `Schema`), the map-of-self form no other golden declares |
 | 93 | `openepcis-dpp-ready` | github-raw | https://raw.githubusercontent.com/openepcis/openepcis-dpp-ready/5c1f308d350cfcc9abb80aa6c70262c87141f201/extensions/common/interop/api/en18222-dpp-api.openapi.yaml | `5c1f308d350cfcc9abb80aa6c70262c87141f201` | Apache-2.0 | link-ok | EN 18222 Digital Product Passport API declaring two `type: [string, number, boolean]` arrays — two non-null members each, the multi-type form the other 498 `type` arrays in the corpus never take |
 | 94 | `ndw-accessibility-map` | github-raw | https://raw.githubusercontent.com/ndwnu/nls-accessibility-map/46fde7c8b36ac8776eba78079bb53bf42ae17c2b/specification/src/main/resources/nu/ndw/nls/accessibilitymap/specification/v2.yaml | `46fde7c8b36ac8776eba78079bb53bf42ae17c2b` | MIT | link-ok | NDW Location Services accessibility-map API whose two `components.headers` Header Objects (`Accept-encoding`, `Content-encoding`) each declare `allowEmptyValue`, the Header Object field no other registered source declares |
@@ -473,7 +473,7 @@ is the only one a golden can pin. One row closes it.
 
 | name | selected for | status |
 |---|---|---|
-| `helios-verifiable-api` | 27 component schemas that are remote-URL `$ref`s into six `ethereum/execution-apis` documents, fetched and resolved transitively | ✅ matched |
+| `helios-verifiable-api` | 27 component schemas that are remote-URL `$ref`s into seven `ethereum/execution-apis` documents, fetched and resolved transitively, each pinned to an immutable commit by `corpus-remote-ref-pins.tsv` | ✅ matched |
 
 Repairing crozier to reproduce it needed cross-document resolution
 ([`src/refs.rs`](../../src/refs.rs)) plus five rules the golden exposed along the
@@ -482,10 +482,14 @@ use-site nullability, and scalar query serialization — all recorded in
 [`../../docs/matching.md`](../../docs/matching.md#cross-document-ref-resolution-issue-77).
 
 **This row alone depends on a third-party fetch at generation time**, and the URLs
-it references address `refs/heads/main` rather than an immutable ref. An upstream
-edit to those six `ethereum/execution-apis` files breaks its reproduction for a
-reason unrelated to crozier; regenerate the golden through the standard workflow
-if that happens, rather than treating it as a generator regression.
+it references address `refs/heads/main` rather than an immutable ref. That is
+why it is also the only row with records in
+[`corpus-remote-ref-pins.tsv`](corpus-remote-ref-pins.tsv): the fetch substitutes
+an immutable commit URL for each of the seven `ethereum/execution-apis`
+references and verifies the SHA-256 it recorded for it, so an upstream edit to
+those files no longer reaches this row. Moving a pin forward is an ordinary
+regeneration —
+[`../../docs/fern-goldens.md`](../../docs/fern-goldens.md#moving-a-remote-ref-pin-forward).
 
 ## Batch 13 — the two shapes round 4 measured Fern to implement (issue #77)
 
