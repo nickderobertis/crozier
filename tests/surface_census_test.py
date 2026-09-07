@@ -1306,9 +1306,9 @@ class ResolvingDescentTests(unittest.TestCase):
     `>` descends into the object a field's value *is*; `~>` descends into the
     schema the Reference Object written at a group's last member *denotes*,
     resolved against the document being censused. No conjunction on the closed
-    list uses `~>` yet — the list is held to the cases the blind-region tables
-    derive, and deriving one is the next node's work — so these cases hand the
-    census their own compiled conjunction and run the **real** walk over it:
+    list uses `~>`, because the list is held to the cases the blind-region tables
+    derive, so these cases hand the census their own compiled conjunction and run
+    the **real** walk over it:
     `census_document` is the function the command line calls per document, and
     `load_document` is the loader it reads every source with. Nothing is a
     stand-in.
@@ -1565,8 +1565,8 @@ class ResolvingDescentTests(unittest.TestCase):
                 self.assertEqual(canonical, census.canonical_conjunction(spelling))
         self.assertEqual(canonical, census.canonical_conjunction(canonical))
 
-    def test_the_closed_list_declares_no_conjunction_using_the_operator_yet(self) -> None:
-        """This node landed the operator and no selector spelled with it.
+    def test_the_closed_list_declares_no_conjunction_using_the_operator(self) -> None:
+        """The operator exists and no declared selector is spelled with it.
 
         A conjunction is declared only where a case of a blind region is read off
         it, which `test_every_declared_conjunction_is_read_off_a_case_of_a_blind_region`
