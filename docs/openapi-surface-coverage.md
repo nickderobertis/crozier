@@ -288,21 +288,84 @@ selectors already defined close that:
 - **`>` descends into the object a field's value is**, so the members after it
   are read against that object rather than the one before it. It composes left to
   right, and a group joined by `&` sits at one position.
+- **`~>` descends into the schema the Reference Object written at the group's
+  last member *denotes*** — the one it resolves to against the document being
+  censused — so the members after it are read against that schema rather than
+  against the `$ref` node that names it. It composes exactly as `>` does: the
+  member it binds to is the group's last, and a group joined by `&` sits at one
+  position. `>` is untouched by it and keeps its one meaning everywhere: descend
+  into the object the value **is**, as written.
+
+**Which resolution `~>` performs.** `src/ir.rs` resolves a reference two ways and
+they are not interchangeable, so the operator says which of them it is, in terms
+a reader can apply to a reference value without opening the crate:
+
+- **`~>` performs the last-segment lookup.** It takes the reference's **last**
+  `/`-separated segment and looks that name up in the document's own
+  `components.schemas`. It traverses nothing, requires no prefix, and opens no
+  second document.
+- **`~>` does not perform the pointer walk.** That other resolution requires the
+  `#/components/schemas/` prefix, takes the component its **head** segment names,
+  and then walks the reference's remaining segments structurally through `allOf`,
+  `oneOf`, `anyOf`, `properties` and `items`.
+
+`#/components/schemas/A/properties/b` is a reference value the two answer
+differently, and the difference is not a detail: **`~>` yields the component
+named `b`** — the whole schema `components.schemas.b`, if the document declares
+one, and nothing at all if it does not — while the pointer walk yields `A`'s
+property `b`. They differ at the other end too: `#/definitions/Foo`, the shape a
+Swagger conversion writes, **`~>` yields the component named `Foo`** and the
+pointer walk yields nothing, because the prefix it requires is absent. `~>` is
+the last-segment lookup because that is the resolution the arms of
+`prop_type_ref`, `hoist_union_variant` and `nested_array_element` that read a
+`$ref`'s target actually call —
+[which arm performs which](#the-arms-an-observation-surface-answers-for) is
+stated per arm — and a descent mirroring the other one would count documents
+those arms never reach.
+
+**Reference depth is one.** A reference edge is traversed only from a node the
+walk reached *without* traversing one, so no chain of references is followed and
+a cycle among `components.schemas` entries cannot be walked round: each node of
+one is counted at most once, on its own resolution, and the census completes.
+A conjunction spelling a second `~>` therefore holds nowhere. The path-local
+re-entry guard `>` already has guards a resolved edge the same way, so a
+reference resolving back to a node already on the conjunction's own path does not
+hold either.
+
+**`~>` is a second operator rather than a redefinition of `>`, and that was
+settled against the code.** `schema.items>schema.$ref`, `schema.oneOf>schema.$ref`
+and `schema.anyOf>schema.$ref` all match by finding a Reference Object *at* the
+descended-into node, thousands of sites across the corpus; a `>` that resolved
+before matching would land on the target, which writes no `$ref`, and all three
+would count zero. And `prop_type_ref`'s composition gate is guarded by
+`prop_schema.reference.is_none()` while `nested_array_element`'s is preceded by
+`if items.reference.is_some() { return None; }`, so a property or an `items` that
+*is* a `$ref` to a `oneOf` schema never reaches either composition arm — a
+resolving `>` would count those documents under `schema.properties>schema.oneOf`
+and `schema.items>schema.oneOf`, which is evidence recorded against documents the
+generator sends elsewhere.
 
 A conjunction has exactly one name: a group's members are written in
-lexicographic order, except that the member a following `>` descends through is
-written last, since that is the member the operator binds to. So an array schema
-whose `items` declare a `oneOf` is `schema.type=array&schema.items>schema.oneOf`
-and nothing else.
+lexicographic order, except that the member a following descent operator descends
+through is written last, since that is the member the operator binds to. The rule
+reads the same across `>` and `~>` — what puts a member last is that *a* descent
+binds to it, not which one — so an array schema whose `items` declare a `oneOf` is
+`schema.type=array&schema.items>schema.oneOf` and nothing else, and a schema one
+of whose properties is a `$ref` to a `oneOf` is
+`schema.properties>schema.$ref~>schema.oneOf` and nothing else.
 
-The **count rule is the one the grammar already has**: one per node at the
-*leftmost* position — one per place the shape is written. So
-`schema.items>schema.type=array` counts one per Schema Object whose `items` value
-declares an array type, and `schema.discriminator&schema.oneOf` would count one
-per Schema Object declaring both. A field holding several objects (a `oneOf`
-list, a `properties` map) satisfies the members after the `>` when any one of
-those objects does, which is what keeps the count one per leftmost node rather
-than one per member.
+The **count rule is the one the grammar already has**, and it is the only count
+rule this grammar has: one per node at the *leftmost* position — one per place
+the shape is written — for both descent operators and every selector kind alike.
+So `schema.items>schema.type=array` counts one per Schema Object whose `items`
+value declares an array type, `schema.discriminator&schema.oneOf` would count one
+per Schema Object declaring both, and `schema.properties>schema.$ref~>schema.oneOf`
+counts one per Schema Object one of whose properties is a Reference Object whose
+target declares `oneOf` — one per *referencing* node, never one per target. A
+field holding several objects (a `oneOf` list, a `properties` map) satisfies the
+members after the `>` when any one of those objects does, which is what keeps the
+count one per leftmost node rather than one per member; a `~>` reaches exactly one
+schema, so there is nothing there to be satisfied by several.
 
 **Which conjunctions are enumerable.** The operators can spell an unbounded set —
 four schema fields alone make fifteen non-empty combinations before nesting, and
