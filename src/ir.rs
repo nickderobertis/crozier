@@ -14353,12 +14353,14 @@ mod tests {
         )
     }
 
-    /// One arm, a document that runs it, a document that does not, and how the
-    /// second shows it entered the arm's own function all the same.
+    /// The one-property inline schema every pointer document points *at*, so a
+    /// resolved pointer's target is the same shape whichever segment reached it.
     fn struct_member() -> serde_json::Value {
         serde_json::json!({ "properties": { "a": { "type": "string" } } })
     }
 
+    /// One arm, a document that runs it, a document that does not, and how the
+    /// second shows it entered the arm's own function all the same.
     fn observed_arm_cases() -> Vec<(&'static str, serde_json::Value, serde_json::Value, Entered)> {
         let all_of =
             || pointer_document(serde_json::json!({ "allOf": [struct_member()] }), "allOf/0");
