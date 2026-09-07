@@ -1,0 +1,2252 @@
+{
+ "envelope": {
+  "openapi": "3.0.3",
+  "info": {
+   "title": "observed",
+   "version": "1"
+  },
+  "paths": {
+   "/thing": {
+    "post": {
+     "operationId": "makeThing",
+     "requestBody": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": "{body}"
+        }
+       }
+      }
+     },
+     "responses": {
+      "200": {
+       "description": "ok",
+       "content": {
+        "application/json": {
+         "schema": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "components": {
+   "schemas": "{schemas}"
+  }
+ },
+ "note": "The documents both halves of one measurement are driven over, so what tests/surface_census_test.py establishes about a selector's extension and what src/ir.rs's own test module establishes about which arm ran compose onto the same inputs. Each case names one selector, the src/ir.rs arm it was read off, the documents the selector must count (where the arm must run), the documents it must count zero (where the arm must not run, each naming the one part of the selector's condition it drops), and the permitted overlap another case of the same table also claims. Every document is this check's own input: it is not a corpus row and not a probe. A document is its `schemas` and `body` substituted into `envelope` at the two placeholder strings `{schemas}` and `{body}`, so the OpenAPI envelope the two halves drive is one piece of shared data rather than two copies.",
+ "documents": {
+  "gate-ref-first": {
+   "schemas": {
+    "Target": {
+     "type": "integer"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "gate-ref-last": {
+   "schemas": {
+    "Target": {
+     "type": "integer"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "description": "annotated"
+      },
+      {
+       "$ref": "#/components/schemas/Target"
+      }
+     ]
+    }
+   }
+  },
+  "gate-bare-member": {
+   "schemas": {
+    "Target": {
+     "type": "integer"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {}
+     ]
+    }
+   }
+  },
+  "gate-three-members": {
+   "schemas": {
+    "Target": {
+     "type": "integer"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      },
+      {
+       "title": "t"
+      }
+     ]
+    }
+   }
+  },
+  "gate-dangling-ref": {
+   "schemas": {
+    "Other": {
+     "type": "integer"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "gate-not-a-property": {
+   "schemas": {
+    "Target": {
+     "type": "integer"
+    },
+    "Annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   },
+   "body": {}
+  },
+  "gate-no-all-of": {
+   "schemas": {
+    "Target": {
+     "type": "integer"
+    }
+   },
+   "body": {
+    "annotated": {
+     "$ref": "#/components/schemas/Target",
+     "description": "annotated"
+    }
+   }
+  },
+  "gate-one-member": {
+   "schemas": {
+    "Target": {
+     "type": "integer"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      }
+     ]
+    }
+   }
+  },
+  "gate-two-refs": {
+   "schemas": {
+    "Target": {
+     "type": "integer"
+    },
+    "Other": {
+     "type": "integer"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "$ref": "#/components/schemas/Other"
+      }
+     ]
+    }
+   }
+  },
+  "gate-no-ref": {
+   "schemas": {
+    "Target": {
+     "type": "integer"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "description": "annotated"
+      },
+      {
+       "title": "t"
+      }
+     ]
+    }
+   }
+  },
+  "gate-typed-member": {
+   "schemas": {
+    "Target": {
+     "type": "integer"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "type": "string"
+      }
+     ]
+    }
+   }
+  },
+  "overlap-enum-and-const": {
+   "schemas": {
+    "Target": {
+     "type": "string",
+     "enum": [
+      "red"
+     ],
+     "const": "red"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "overlap-one-of-and-any-of": {
+   "schemas": {
+    "Target": {
+     "oneOf": [
+      {
+       "type": "string"
+      }
+     ],
+     "anyOf": [
+      {
+       "type": "integer"
+      }
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "overlap-properties-and-all-of": {
+   "schemas": {
+    "Target": {
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     },
+     "allOf": [
+      {
+       "type": "object",
+       "properties": {
+        "a": {
+         "type": "string"
+        }
+       }
+      }
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "overlap-properties-and-closed": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     },
+     "additionalProperties": false
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "enum-select": {
+   "schemas": {
+    "Target": {
+     "type": "string",
+     "enum": [
+      "red",
+      "green"
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "enum-alt-gate": {
+   "schemas": {
+    "Target": {
+     "type": "string",
+     "enum": [
+      "red",
+      "green"
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "description": "annotated"
+      },
+      {
+       "$ref": "#/components/schemas/Target"
+      }
+     ]
+    }
+   }
+  },
+  "enum-alt-target": {
+   "schemas": {
+    "Target": {
+     "enum": [
+      "red",
+      "green"
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "enum-not-a-property": {
+   "schemas": {
+    "Target": {
+     "type": "string",
+     "enum": [
+      "red",
+      "green"
+     ]
+    },
+    "Annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   },
+   "body": {}
+  },
+  "enum-gate-broken": {
+   "schemas": {
+    "Target": {
+     "type": "string",
+     "enum": [
+      "red",
+      "green"
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "type": "string"
+      }
+     ]
+    }
+   }
+  },
+  "enum-dangling": {
+   "schemas": {
+    "Other": {
+     "type": "string",
+     "enum": [
+      "red",
+      "green"
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "enum-target-lacks": {
+   "schemas": {
+    "Target": {
+     "type": "string",
+     "enum": [
+      1,
+      2
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "const-select": {
+   "schemas": {
+    "Target": {
+     "type": "string",
+     "const": "red"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "const-alt-gate": {
+   "schemas": {
+    "Target": {
+     "type": "string",
+     "const": "red"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "description": "annotated"
+      },
+      {
+       "$ref": "#/components/schemas/Target"
+      }
+     ]
+    }
+   }
+  },
+  "const-alt-target": {
+   "schemas": {
+    "Target": {
+     "const": "red"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "const-not-a-property": {
+   "schemas": {
+    "Target": {
+     "type": "string",
+     "const": "red"
+    },
+    "Annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   },
+   "body": {}
+  },
+  "const-gate-broken": {
+   "schemas": {
+    "Target": {
+     "type": "string",
+     "const": "red"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "type": "string"
+      }
+     ]
+    }
+   }
+  },
+  "const-dangling": {
+   "schemas": {
+    "Other": {
+     "type": "string",
+     "const": "red"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "const-target-lacks": {
+   "schemas": {
+    "Target": {
+     "type": "string",
+     "const": 1
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "one-of-select": {
+   "schemas": {
+    "Target": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "integer"
+      }
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "one-of-alt-gate": {
+   "schemas": {
+    "Target": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "integer"
+      }
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "description": "annotated"
+      },
+      {
+       "$ref": "#/components/schemas/Target"
+      }
+     ]
+    }
+   }
+  },
+  "one-of-not-a-property": {
+   "schemas": {
+    "Target": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "integer"
+      }
+     ]
+    },
+    "Annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   },
+   "body": {}
+  },
+  "one-of-gate-broken": {
+   "schemas": {
+    "Target": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "integer"
+      }
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "type": "string"
+      }
+     ]
+    }
+   }
+  },
+  "one-of-dangling": {
+   "schemas": {
+    "Other": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "integer"
+      }
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "one-of-target-lacks": {
+   "schemas": {
+    "Target": {
+     "type": "string"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "any-of-select": {
+   "schemas": {
+    "Target": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "integer"
+      }
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "any-of-alt-gate": {
+   "schemas": {
+    "Target": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "integer"
+      }
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "description": "annotated"
+      },
+      {
+       "$ref": "#/components/schemas/Target"
+      }
+     ]
+    }
+   }
+  },
+  "any-of-not-a-property": {
+   "schemas": {
+    "Target": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "integer"
+      }
+     ]
+    },
+    "Annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   },
+   "body": {}
+  },
+  "any-of-gate-broken": {
+   "schemas": {
+    "Target": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "integer"
+      }
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "type": "string"
+      }
+     ]
+    }
+   }
+  },
+  "any-of-dangling": {
+   "schemas": {
+    "Other": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "integer"
+      }
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "any-of-target-lacks": {
+   "schemas": {
+    "Target": {
+     "type": "string"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "props-select": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "props-alt-gate": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "description": "annotated"
+      },
+      {
+       "$ref": "#/components/schemas/Target"
+      }
+     ]
+    }
+   }
+  },
+  "props-alt-target": {
+   "schemas": {
+    "Target": {
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "props-not-a-property": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    },
+    "Annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   },
+   "body": {}
+  },
+  "props-gate-broken": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "type": "string"
+      }
+     ]
+    }
+   }
+  },
+  "props-dangling": {
+   "schemas": {
+    "Other": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "props-target-lacks": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {}
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "target-all-of-select": {
+   "schemas": {
+    "Target": {
+     "allOf": [
+      {
+       "type": "object",
+       "properties": {
+        "a": {
+         "type": "string"
+        }
+       }
+      }
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "target-all-of-alt-gate": {
+   "schemas": {
+    "Target": {
+     "allOf": [
+      {
+       "type": "object",
+       "properties": {
+        "a": {
+         "type": "string"
+        }
+       }
+      }
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "description": "annotated"
+      },
+      {
+       "$ref": "#/components/schemas/Target"
+      }
+     ]
+    }
+   }
+  },
+  "target-all-of-not-a-property": {
+   "schemas": {
+    "Target": {
+     "allOf": [
+      {
+       "type": "object",
+       "properties": {
+        "a": {
+         "type": "string"
+        }
+       }
+      }
+     ]
+    },
+    "Annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   },
+   "body": {}
+  },
+  "target-all-of-gate-broken": {
+   "schemas": {
+    "Target": {
+     "allOf": [
+      {
+       "type": "object",
+       "properties": {
+        "a": {
+         "type": "string"
+        }
+       }
+      }
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "type": "string"
+      }
+     ]
+    }
+   }
+  },
+  "target-all-of-dangling": {
+   "schemas": {
+    "Other": {
+     "allOf": [
+      {
+       "type": "object",
+       "properties": {
+        "a": {
+         "type": "string"
+        }
+       }
+      }
+     ]
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "target-all-of-target-lacks": {
+   "schemas": {
+    "Target": {
+     "type": "string"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "closed-select": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "additionalProperties": false
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "closed-alt-gate": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "additionalProperties": false
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "description": "annotated"
+      },
+      {
+       "$ref": "#/components/schemas/Target"
+      }
+     ]
+    }
+   }
+  },
+  "closed-alt-target": {
+   "schemas": {
+    "Target": {
+     "additionalProperties": false
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "closed-not-a-property": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "additionalProperties": false
+    },
+    "Annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   },
+   "body": {}
+  },
+  "closed-gate-broken": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "additionalProperties": false
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "type": "string"
+      }
+     ]
+    }
+   }
+  },
+  "closed-dangling": {
+   "schemas": {
+    "Other": {
+     "type": "object",
+     "additionalProperties": false
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "closed-target-lacks": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "additionalProperties": true
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated"
+      }
+     ]
+    }
+   }
+  },
+  "variant-oneof-select": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "allOf": [
+         {
+          "$ref": "#/components/schemas/Target"
+         },
+         {
+          "description": "annotated"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "variant-oneof-alt-gate": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "allOf": [
+         {
+          "description": "annotated"
+         },
+         {
+          "$ref": "#/components/schemas/Target"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "variant-oneof-alt-type": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": [
+        "null",
+        "array"
+       ],
+       "items": {
+        "allOf": [
+         {
+          "$ref": "#/components/schemas/Target"
+         },
+         {
+          "description": "annotated"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "variant-oneof-alt-resolve": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "allOf": [
+         {
+          "$ref": "#/definitions/Target"
+         },
+         {
+          "description": "annotated"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "variant-oneof-not-a-union": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "type": "array",
+     "items": {
+      "allOf": [
+       {
+        "$ref": "#/components/schemas/Target"
+       },
+       {
+        "description": "annotated"
+       }
+      ]
+     }
+    }
+   }
+  },
+  "variant-oneof-not-array": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": [
+        "string",
+        "array"
+       ],
+       "items": {
+        "allOf": [
+         {
+          "$ref": "#/components/schemas/Target"
+         },
+         {
+          "description": "annotated"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "variant-oneof-gate-broken": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "allOf": [
+         {
+          "$ref": "#/components/schemas/Target"
+         },
+         {
+          "type": "string"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "variant-oneof-dangling": {
+   "schemas": {
+    "Other": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "allOf": [
+         {
+          "$ref": "#/components/schemas/Target"
+         },
+         {
+          "description": "annotated"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "variant-oneof-overlap": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "allOf": [
+         {
+          "$ref": "#/components/schemas/Target"
+         },
+         {
+          "description": "annotated"
+         }
+        ],
+        "properties": {
+         "a": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "variant-anyof-select": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "allOf": [
+         {
+          "$ref": "#/components/schemas/Target"
+         },
+         {
+          "description": "annotated"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "variant-anyof-alt-gate": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "allOf": [
+         {
+          "description": "annotated"
+         },
+         {
+          "$ref": "#/components/schemas/Target"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "variant-anyof-alt-type": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": [
+        "null",
+        "array"
+       ],
+       "items": {
+        "allOf": [
+         {
+          "$ref": "#/components/schemas/Target"
+         },
+         {
+          "description": "annotated"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "variant-anyof-alt-resolve": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "allOf": [
+         {
+          "$ref": "#/definitions/Target"
+         },
+         {
+          "description": "annotated"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "variant-anyof-not-a-union": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "type": "array",
+     "items": {
+      "allOf": [
+       {
+        "$ref": "#/components/schemas/Target"
+       },
+       {
+        "description": "annotated"
+       }
+      ]
+     }
+    }
+   }
+  },
+  "variant-anyof-not-array": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": [
+        "string",
+        "array"
+       ],
+       "items": {
+        "allOf": [
+         {
+          "$ref": "#/components/schemas/Target"
+         },
+         {
+          "description": "annotated"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "variant-anyof-gate-broken": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "allOf": [
+         {
+          "$ref": "#/components/schemas/Target"
+         },
+         {
+          "type": "string"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "variant-anyof-dangling": {
+   "schemas": {
+    "Other": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "allOf": [
+         {
+          "$ref": "#/components/schemas/Target"
+         },
+         {
+          "description": "annotated"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "variant-anyof-overlap": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "allOf": [
+         {
+          "$ref": "#/components/schemas/Target"
+         },
+         {
+          "description": "annotated"
+         }
+        ],
+        "properties": {
+         "a": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  }
+ },
+ "cases": [
+  {
+   "selector": "schema.properties>schema.allOf:annotated-ref",
+   "arm": "prop_type_ref:1",
+   "branch": "prop_type_ref case 1, the described_all_of_ref gate",
+   "select": {
+    "gate-ref-first": "the canonical form: the reference first, one member carrying only a description",
+    "gate-ref-last": "the reference written second, which described_all_of_ref reads identically",
+    "gate-bare-member": "a second member declaring nothing at all, which is_unknown accepts",
+    "gate-three-members": "three members: one reference and two that declare nothing",
+    "gate-dangling-ref": "the reference resolves to nothing, which the gate does not require"
+   },
+   "near": {
+    "gate-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
+    "gate-no-all-of": "schema.allOf:annotated-ref: a bare $ref beside a description, with no allOf at all",
+    "gate-one-member": "schema.allOf:annotated-ref: one member, which members.len() < 2 refuses",
+    "gate-two-refs": "schema.allOf:annotated-ref: two references, which reference.replace refuses",
+    "gate-no-ref": "schema.allOf:annotated-ref: no member is a Reference Object, so there is nothing annotated",
+    "gate-typed-member": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses"
+   },
+   "overlap": {
+    "enum-select": {
+     "why": "the gate holds and the target is a string enum, so case 2a claims it too",
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued"
+    }
+   }
+  },
+  {
+   "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued",
+   "arm": "prop_type_ref:2",
+   "branch": "prop_type_ref case 2a, string_enum_values over the target's enum",
+   "select": {
+    "enum-select": "the canonical form, over a target the arm's own condition accepts",
+    "enum-alt-gate": "the gate's other spelling: the reference written second",
+    "enum-alt-target": "string_enum_values' other form: no type at all, every member a string"
+   },
+   "near": {
+    "enum-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
+    "enum-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+    "enum-dangling": "the ~> resolution: the reference names no component, so no target is read",
+    "enum-target-lacks": "schema.enum:string-valued: an enum whose members are integers, which string_enum_values refuses"
+   },
+   "overlap": {
+    "overlap-enum-and-const": {
+     "why": "a target writing a string enum beside a string const",
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued"
+    }
+   }
+  },
+  {
+   "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued",
+   "arm": "prop_type_ref:2",
+   "branch": "prop_type_ref case 2b, string_enum_values falling back to the target's const",
+   "select": {
+    "const-select": "the canonical form, over a target the arm's own condition accepts",
+    "const-alt-gate": "the gate's other spelling: the reference written second",
+    "const-alt-target": "the same fallback with no type written, every value a string"
+   },
+   "near": {
+    "const-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
+    "const-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+    "const-dangling": "the ~> resolution: the reference names no component, so no target is read",
+    "const-target-lacks": "schema.const:string-valued: a const that is an integer, which string_enum_values refuses"
+   },
+   "overlap": {
+    "overlap-enum-and-const": {
+     "why": "a target writing a string const beside a string enum",
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued"
+    }
+   }
+  },
+  {
+   "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf",
+   "arm": "prop_type_ref:3",
+   "branch": "prop_type_ref case 3a, target.one_of.is_some()",
+   "select": {
+    "one-of-select": "the canonical form, over a target the arm's own condition accepts",
+    "one-of-alt-gate": "the gate's other spelling: the reference written second"
+   },
+   "near": {
+    "one-of-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
+    "one-of-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+    "one-of-dangling": "the ~> resolution: the reference names no component, so no target is read",
+    "one-of-target-lacks": "schema.oneOf: a target declaring no composition at all"
+   },
+   "overlap": {
+    "overlap-one-of-and-any-of": {
+     "why": "a target declaring both composition fields",
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf"
+    }
+   }
+  },
+  {
+   "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf",
+   "arm": "prop_type_ref:3",
+   "branch": "prop_type_ref case 3b, target.any_of.is_some()",
+   "select": {
+    "any-of-select": "the canonical form, over a target the arm's own condition accepts",
+    "any-of-alt-gate": "the gate's other spelling: the reference written second"
+   },
+   "near": {
+    "any-of-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
+    "any-of-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+    "any-of-dangling": "the ~> resolution: the reference names no component, so no target is read",
+    "any-of-target-lacks": "schema.anyOf: a target declaring no composition at all"
+   },
+   "overlap": {
+    "overlap-one-of-and-any-of": {
+     "why": "a target declaring both composition fields",
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf"
+    }
+   }
+  },
+  {
+   "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty",
+   "arm": "prop_type_ref:4",
+   "branch": "prop_type_ref case 4a, the !target.properties.is_empty() disjunct",
+   "select": {
+    "props-select": "the canonical form, over a target the arm's own condition accepts",
+    "props-alt-gate": "the gate's other spelling: the reference written second",
+    "props-alt-target": "the same disjunct with no type written, which is_object_type reads from the properties"
+   },
+   "near": {
+    "props-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
+    "props-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+    "props-dangling": "the ~> resolution: the reference names no component, so no target is read",
+    "props-target-lacks": "schema.properties:non-empty: a declared-but-empty properties map, which is_bare_object accepts"
+   },
+   "overlap": {
+    "overlap-properties-and-all-of": {
+     "why": "a target declaring properties beside an allOf",
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf"
+    }
+   }
+  },
+  {
+   "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf",
+   "arm": "prop_type_ref:4",
+   "branch": "prop_type_ref case 4b, the target.all_of.is_some() disjunct",
+   "select": {
+    "target-all-of-select": "the canonical form, over a target the arm's own condition accepts",
+    "target-all-of-alt-gate": "the gate's other spelling: the reference written second"
+   },
+   "near": {
+    "target-all-of-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
+    "target-all-of-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+    "target-all-of-dangling": "the ~> resolution: the reference names no component, so no target is read",
+    "target-all-of-target-lacks": "schema.allOf: a target declaring no allOf, which leaves the disjunct unsatisfied"
+   },
+   "overlap": {
+    "overlap-properties-and-all-of": {
+     "why": "a target declaring an allOf beside properties",
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty"
+    }
+   }
+  },
+  {
+   "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false",
+   "arm": "prop_type_ref:4",
+   "branch": "prop_type_ref case 4c, the is_object_type disjunct over a closed target",
+   "select": {
+    "closed-select": "the canonical form, over a target the arm's own condition accepts",
+    "closed-alt-gate": "the gate's other spelling: the reference written second",
+    "closed-alt-target": "the same disjunct with no type written, which is_object_type reads from additionalProperties"
+   },
+   "near": {
+    "closed-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
+    "closed-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+    "closed-dangling": "the ~> resolution: the reference names no component, so no target is read",
+    "closed-target-lacks": "schema.additionalProperties=false: the other boolean, which makes the target is_map"
+   },
+   "overlap": {
+    "overlap-properties-and-closed": {
+     "why": "a target closing itself beside a non-empty properties map",
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty"
+    }
+   }
+  },
+  {
+   "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component",
+   "arm": "hoist_union_variant:6",
+   "branch": "hoist_union_variant case 6a, the annotated $ref element under a oneOf head",
+   "select": {
+    "variant-oneof-select": "the canonical form under this head",
+    "variant-oneof-alt-gate": "the gate's other spelling: the reference written second",
+    "variant-oneof-alt-type": "schema.type:primary=array's other form: array is the first non-null member",
+    "variant-oneof-alt-resolve": "schema.$ref:resolves-to-component's other form: a pointer carrying no components.schemas prefix whose last segment names one"
+   },
+   "near": {
+    "variant-oneof-not-a-union": "schema.oneOf: the array is a property rather than a member of a composition, so hoist_union_variant is never called",
+    "variant-oneof-not-array": "schema.type:primary=array: array is not the first non-null member, so the variant's array guard fails",
+    "variant-oneof-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+    "variant-oneof-dangling": "schema.$ref:resolves-to-component: the reference names no component, so nothing resolves"
+   },
+   "overlap": {
+    "variant-oneof-overlap": {
+     "why": "an item that is an annotated $ref and declares properties of its own, which case 7 claims too",
+     "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty"
+    }
+   }
+  },
+  {
+   "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component",
+   "arm": "hoist_union_variant:6",
+   "branch": "hoist_union_variant case 6b, the annotated $ref element under a anyOf head",
+   "select": {
+    "variant-anyof-select": "the canonical form under this head",
+    "variant-anyof-alt-gate": "the gate's other spelling: the reference written second",
+    "variant-anyof-alt-type": "schema.type:primary=array's other form: array is the first non-null member",
+    "variant-anyof-alt-resolve": "schema.$ref:resolves-to-component's other form: a pointer carrying no components.schemas prefix whose last segment names one"
+   },
+   "near": {
+    "variant-anyof-not-a-union": "schema.anyOf: the array is a property rather than a member of a composition, so hoist_union_variant is never called",
+    "variant-anyof-not-array": "schema.type:primary=array: array is not the first non-null member, so the variant's array guard fails",
+    "variant-anyof-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+    "variant-anyof-dangling": "schema.$ref:resolves-to-component: the reference names no component, so nothing resolves"
+   },
+   "overlap": {
+    "variant-anyof-overlap": {
+     "why": "an item that is an annotated $ref and declares properties of its own, which case 7 claims too",
+     "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty"
+    }
+   }
+  }
+ ]
+}

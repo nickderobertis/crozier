@@ -816,8 +816,10 @@ class GrammarContractTests(unittest.TestCase):
         sentence moving fails here.
         """
         words = {
-            7: "seven", 8: "eight", 9: "nine", 28: "twenty-eight", 36: "thirty-six",
-            40: "forty", 50: "fifty", 76: "seventy-six", 78: "seventy-eight",
+            5: "five", 7: "seven", 8: "eight", 9: "nine", 23: "twenty-three",
+            28: "twenty-eight", 36: "thirty-six", 40: "forty", 50: "fifty",
+            60: "sixty", 76: "seventy-six", 78: "seventy-eight",
+            83: "eighty-three",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -1185,6 +1187,20 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty": {},
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false": {},
+        # The ten the annotated-`$ref` pass declared. Every one is zero over the
+        # vendored half: no vendored document writes an `allOf` of a `$ref` beside
+        # a description at all, which `AnnotatedRefSelectorDiscriminationTests`
+        # answers for by constructing the documents rather than borrowing them.
+        "schema.properties>schema.allOf:annotated-ref": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component": {},
     }
 
     # A conjunction no vendored source declares, asserted as absent rather than as
@@ -1305,10 +1321,12 @@ class ResolvingDescentTests(unittest.TestCase):
 
     `>` descends into the object a field's value *is*; `~>` descends into the
     schema the Reference Object written at a group's last member *denotes*,
-    resolved against the document being censused. No conjunction on the closed
-    list uses `~>`, because the list is held to the cases the blind-region tables
-    derive, so these cases hand the census their own compiled conjunction and run
-    the **real** walk over it:
+    resolved against the document being censused. The closed list carries seven
+    conjunctions spelled with `~>` — the annotated-`$ref` pass read them off
+    `prop_type_ref`'s cases 2 to 4 — and the exemplar below is deliberately not
+    one of them, because what these cases exercise is the *operator* rather than
+    any declared spelling: they hand the census their own compiled conjunction and
+    run the **real** walk over it:
     `census_document` is the function the command line calls per document, and
     `load_document` is the loader it reads every source with. Nothing is a
     stand-in.
@@ -1565,18 +1583,22 @@ class ResolvingDescentTests(unittest.TestCase):
                 self.assertEqual(canonical, census.canonical_conjunction(spelling))
         self.assertEqual(canonical, census.canonical_conjunction(canonical))
 
-    def test_the_closed_list_declares_no_conjunction_using_the_operator(self) -> None:
-        """The operator exists and no declared selector is spelled with it.
+    def test_an_undeclared_spelling_of_the_operator_is_still_refused(self) -> None:
+        """The closed list is closed by the generator's branches, not by the operators.
 
         A conjunction is declared only where a case of a blind region is read off
         it, which `test_every_declared_conjunction_is_read_off_a_case_of_a_blind_region`
-        holds the list to. So `--selector` refuses a `~>` spelling by name, the
-        way it refuses any well-formed combination nobody declared.
+        holds the list to. Seven declared spellings use `~>` now; the exemplar
+        these cases run the evaluator over is not one of them, and `--selector`
+        refuses it by name exactly as it refuses any well-formed combination
+        nobody declared.
         """
-        self.assertEqual(
-            [],
-            [selector for selector in census.CONJUNCTIONS if census.RESOLVING_DESCENT in selector],
-        )
+        using = [
+            selector for selector in census.CONJUNCTIONS
+            if census.RESOLVING_DESCENT in selector
+        ]
+        self.assertEqual(7, len(using), f"the closed list spells {len(using)} with `~>`")
+        self.assertNotIn(self.RESOLVING, census.CONJUNCTIONS)
         completed = run("--vendored-only", "--selector", self.RESOLVING)
         self.assertEqual(1, completed.returncode, completed.stdout)
         self.assertIn(repr(self.RESOLVING), completed.stderr)
@@ -1642,6 +1664,26 @@ def write_json_fixture(root: Path, name: str, document: dict) -> None:
 # discriminated by `PointerFormSelectorDiscriminationTests` below. Named here
 # because the node-local table's own completeness assertion is "every selector
 # that pass declared", and these are not its.
+# The twelve the annotated-`$ref` pass declared, kept apart the same way: they are
+# one path through `src/ir.rs` — `described_all_of_ref` resolving, and the arms
+# that read what it resolved to — and `AnnotatedRefSelectorDiscriminationTests`
+# is the case that answers for every one of them.
+ANNOTATED_REF_SELECTORS = frozenset({
+    "schema.properties>schema.allOf:annotated-ref",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false",
+    "schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component",
+    "schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component",
+    "schema.allOf:annotated-ref",
+    "schema.$ref:resolves-to-component",
+})
+
+
 POINTER_FORM_PREDICATES = frozenset({
     "schema.$ref:cross-document",
     "schema.$ref:same-document-foreign-pointer",
@@ -2061,7 +2103,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         | {"schema.additionalProperties=false", "schema.additionalProperties=true"}
     ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(
         PRE_EXISTING_PREDICATES
-    ) - POINTER_FORM_PREDICATES
+    ) - POINTER_FORM_PREDICATES - ANNOTATED_REF_SELECTORS
 
     @classmethod
     def setUpClass(cls) -> None:

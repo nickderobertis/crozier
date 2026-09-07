@@ -853,14 +853,16 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 #
 # Every member is **node-local**: it is decided from one object-model node's own
 # declared fields and their values, with no `$ref` resolution and no
-# document-scope comparison — except four, which compare one document's own values
+# document-scope comparison — except five, which compare one document's own values
 # against each other and say so in their own sentence:
 # `operation.operationId:duplicate`, the two `normalized-collision` spellings, and
-# `schema.$ref:undeclared-component-head`, which reads the document context
-# `Census.__init__` holds. A predicate that would need the schema a `$ref` points
-# at is not a member of either kind and is not declared here; those shapes are the
-# enumeration holes `docs/openapi-surface-coverage.md`'s case analysis names
-# H-ref-target and H-pointer-nesting.
+# the two `schema.$ref:` spellings that measure a reference against the document's
+# own `components.schemas` — `undeclared-component-head` and
+# `resolves-to-component` — both of which read the document context
+# `Census.__init__` holds. A predicate that would need the *shape* of the schema a
+# `$ref` points at is still not a member of either kind and is not declared here:
+# that is what the `~>` operator below descends for, and what
+# `docs/openapi-surface-coverage.md`'s case analysis names H-pointer-nesting.
 PREDICATES = {
     "operation.tags:multiple": (
         "one per Operation Object whose `tags` array holds more than one member"
@@ -986,14 +988,52 @@ PREDICATES = {
         "whose head segment names no key of the same document's own "
         "`components.schemas`"
     ),
+    "schema.$ref:resolves-to-component": (
+        "one per Schema Object whose `$ref` resolves under `resolve_ref_from_schemas` "
+        "of `src/ir.rs` — its **last** `/`-separated segment names a key of the same "
+        "document's own `components.schemas` — which is the resolution every arm "
+        "that reads an annotated `$ref`'s target performs, and the one the `~>` "
+        "operator mirrors. It requires no prefix and traverses nothing, so "
+        "`#/definitions/Author` resolves whenever this document declares a component "
+        "named `Author`, and `#/components/schemas/Order/properties/lines` resolves "
+        "to the component named `lines` or to nothing at all. It is neither the "
+        "negation of `schema.$ref:undeclared-component-head` nor a second spelling of "
+        "it: that one reads the *head* segment of a `#/components/schemas/` pointer, "
+        "which is what the other resolution `resolve_schema_pointer` performs takes, "
+        "and the two disagree on every pointer carrying a segment after its head. An "
+        "arm needing only that a reference resolve — `hoist_union_variant`'s case 6 — "
+        "reads this, where an arm that goes on to read the target's own fields "
+        "descends through `~>` instead"
+    ),
+    # `described_all_of_ref` is read by arms of two blind functions, and none of the
+    # three things it asks is a field's presence, so it is a predicate rather than a
+    # conjunction of members.
+    "schema.allOf:annotated-ref": (
+        "one per Schema Object whose `allOf` is the annotated-`$ref` shape "
+        "`described_all_of_ref` of `src/ir.rs` reads: an array of at least two "
+        "members, exactly one of which is a Reference Object, and every other of "
+        "which declares nothing that determines a type. A member declares nothing "
+        "when it writes none of the ten fields `is_unknown` reads — `$ref`, a `type` "
+        "with a non-`null` member, `oneOf`, `anyOf`, `allOf`, `enum`, `const`, a "
+        "non-empty `properties`, `additionalProperties` or `items` — so a member "
+        "carrying only a `description`, a `title`, a `format`, an `example` or "
+        "nothing at all is one, and `{type: string}` or `{properties: {a: {}}}` is "
+        "not. It is the 3.0 idiom for attaching documentation to a shared schema, and "
+        "a `$ref` beside a member declaring any shape of its own is deliberately not "
+        "counted: crozier reads that as a composition and sends it elsewhere. A "
+        "field written as JSON `null` is not written at all here, which is how "
+        "`serde` reads one into the `Option` fields `is_unknown` tests"
+    ),
 }
 
 # The closed list of *conjunction* selectors, the fourth kind — a shape that is a
-# combination of fields rather than one field, written with the two composition
+# combination of fields rather than one field, written with the composition
 # operators over the selectors above: `&` joins members declared at one
-# object-model node, `>` descends into the object a field's value is. A count is
-# one per node at the leftmost position, exactly the count rule the three kinds
-# above already have.
+# object-model node, `>` descends into the object a field's value is, and `~>`
+# descends into the schema the Reference Object at a group's last member denotes.
+# A count is one per node at the leftmost position, exactly the count rule the
+# three kinds above already have — one per *referencing* node under `~>`, never
+# one per target.
 #
 # The list is closed because the cross-product of the grammar is not: four schema
 # fields already spell fifteen non-empty combinations before nesting, and
@@ -1018,9 +1058,11 @@ PREDICATES = {
 # properties a member can say is `PREDICATES`' business, not this table's — a
 # collection's emptiness, an `enum`'s value types and which member of a `type`
 # array comes first each have a predicate now, so the conditions those arms read
-# compose here like any other member, and what is left a hole is an arm reading a
-# `$ref`'s target, a comparison across the document, or the *absence* of a
-# declaration.
+# compose here like any other member. An arm reading the *shape* of a `$ref`'s
+# target is no longer a hole either: `~>` resolves the reference and the members
+# after it read the target, which is what the ten entries at the end of this table
+# do. What is left a hole is an arm reading a JSON value's kind or content, a
+# comparison across the document, or the *absence* of a declaration.
 #
 # Nothing here counts: an entry is its spelling and one sentence saying what it
 # counts. The count is composed from the entry's own members under the `&` and `>`
@@ -1063,6 +1105,16 @@ CONJUNCTIONS = {
     "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty": "one per Schema Object one of whose properties declares a one-member `anyOf` whose member declares a non-empty `properties` map",
     "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false": "one per Schema Object one of whose properties declares a one-member `oneOf` whose member declares `additionalProperties: false`",
     "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false": "one per Schema Object one of whose properties declares a one-member `anyOf` whose member declares `additionalProperties: false`",
+    "schema.properties>schema.allOf:annotated-ref": "one per Schema Object one of whose properties is an annotated `$ref` — an `allOf` of at least two members, exactly one a Reference Object and every other declaring nothing",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares a string-valued `enum`",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares a string-valued `const`",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares `oneOf`",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares `anyOf`",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares a non-empty `properties` map",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares `allOf`",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares `additionalProperties: false`",
+    "schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component": "one per Schema Object one of whose `oneOf` members declares `array` as its primary type over `items` that are an annotated `$ref` resolving to a component of this document",
+    "schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component": "one per Schema Object one of whose `anyOf` members declares `array` as its primary type over `items` that are an annotated `$ref` resolving to a component of this document",
 }
 
 
@@ -1514,6 +1566,67 @@ def pointer_form_predicates(reference: str) -> list[str]:
     return sorted(found)
 
 
+# The ten fields `is_unknown` of `src/ir.rs` reads, and the whole of what it reads.
+# `type` is not among them because it is read through `TypeField::primary`, which a
+# `type: [null]` satisfies without naming a type; `properties` is not, because an
+# empty map is no declaration there.
+_TYPE_DETERMINING_FIELDS = (
+    "$ref", "oneOf", "anyOf", "allOf", "enum", "const", "additionalProperties", "items",
+)
+
+
+def written(node: dict[Any, Any], field: str) -> bool:
+    """Whether this field is declared, the way `serde` reads one into an `Option`.
+
+    A JSON `null` is not a declaration: `Option::<T>::deserialize` answers `None`
+    for it, so `{"const": null}` reaches `src/ir.rs` with no `const` at all.
+    """
+    return field in node and node[field] is not None
+
+
+def declares_nothing(node: Any) -> bool:
+    """`is_unknown` of `src/ir.rs`: a schema carrying nothing that determines a type.
+
+    Its ten conditions, case for case. A description, a title, a format, an
+    example or an emptiness are all invisible to it, which is why the annotated-
+    `$ref` shape accepts a member carrying any of them.
+    """
+    if not isinstance(node, dict):
+        return False
+    if any(written(node, field) for field in _TYPE_DETERMINING_FIELDS):
+        return False
+    if primary_type(node.get("type")) is not None:
+        return False
+    properties = node.get("properties")
+    return not (isinstance(properties, dict) and properties)
+
+
+def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
+    """`described_all_of_ref` of `src/ir.rs`, as a yes/no over one raw node.
+
+    Its three conditions, case for case: the `allOf` holds at least two members;
+    exactly one of them writes a `$ref` (a second returns `None` there, and none
+    leaves nothing to annotate); and every member that does not write one
+    `declares_nothing`. A member writing a `$ref` is read as the reference
+    whatever else it writes, exactly as the Rust reads it — the `$ref` arm is
+    tested first.
+    """
+    members = node.get("allOf")
+    if not isinstance(members, list) or len(members) < 2:
+        return False
+    found = False
+    for member in members:
+        if not isinstance(member, dict):
+            return False  # a document crozier refuses at the boundary
+        if isinstance(member.get("$ref"), str):
+            if found:
+                return False
+            found = True
+        elif not declares_nothing(member):
+            return False
+    return found
+
+
 def components_schemas(document: Any) -> dict[Any, Any]:
     """One document's own `components.schemas` map, as the census reads it.
 
@@ -1906,11 +2019,30 @@ class Census:
             found.append("schema.enum:string-valued")
         if "const" in node and string_valued(node, [node.get("const")]):
             found.append("schema.const:string-valued")
+        if annotated_all_of_ref(node):
+            found.append("schema.allOf:annotated-ref")
         reference = node.get("$ref")
         if isinstance(reference, str):
             found += pointer_form_predicates(reference)
             found += self.pointer_target_predicates(reference)
+            found += self.resolving_target_predicates(reference)
         return found
+
+    def resolving_target_predicates(self, reference: str) -> list[str]:
+        """`schema.$ref:resolves-to-component`: the last-segment lookup finding one.
+
+        The other of the two resolutions `src/ir.rs` performs, and the one `~>`
+        mirrors: `resolve_ref_from_schemas` takes the reference's last
+        `/`-separated segment and looks that name up in the document's own
+        `components.schemas`, requiring no prefix and traversing nothing. An arm
+        that needs only that a reference *resolve* — `hoist_union_variant`'s case
+        6, which copies the target under a name of its own without reading a field
+        of it — reads this; an arm that goes on to read the target's own fields is
+        spelled with `~>`, which performs the same lookup and then descends.
+        """
+        if reference.rsplit("/")[-1] in self.component_names:
+            return ["schema.$ref:resolves-to-component"]
+        return []
 
     def pointer_target_predicates(self, reference: str) -> list[str]:
         """`schema.$ref:undeclared-component-head`: a head this document never declares.
