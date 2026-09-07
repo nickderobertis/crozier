@@ -120,10 +120,18 @@ pub(crate) mod arm_trace {
 
 /// Record that the arm named `function:case` was entered, for
 /// [`arm_trace::observe`] to answer with. Nothing at all outside a test build.
+///
+/// The `#[cfg(test)]` guards a *block* rather than the bare call it wraps: the
+/// coverage reporter's `cfg_test_spans` bounds every `#[cfg(test)]` item by
+/// brace-matching from the attribute, so an attribute followed by a statement
+/// with no braces of its own desynchronizes that scan and swallows the
+/// production code after it into a test-only span.
 macro_rules! observed_arm {
     ($arm:literal) => {
         #[cfg(test)]
-        crate::ir::arm_trace::enter($arm);
+        {
+            crate::ir::arm_trace::enter($arm);
+        }
     };
 }
 
