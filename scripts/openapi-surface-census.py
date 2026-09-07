@@ -1448,9 +1448,12 @@ def pointer_form_predicates(reference: str) -> list[str]:
     """
     if not reference.startswith(_COMPONENT_SCHEMAS_PREFIX):
         # Case 1 of both functions, split by which of two shapes reached it: a
-        # reference into another document, which no registrable source can carry,
-        # and one into this document outside `components.schemas`, which a Swagger
-        # conversion writes as `#/definitions/Foo`.
+        # reference naming another document, which `helios-verifiable-api` writes
+        # as an absolute URL and `ndw-accessibility-map` as a sibling file, and one
+        # into this document outside `components.schemas`, which a Swagger
+        # conversion writes as `#/definitions/Foo`. Both are declared by registered
+        # sources; they are two spellings rather than one because only the first
+        # names a document this instrument does not read.
         document, hash_mark, _ = reference.partition("#")
         if document or not hash_mark:
             return ["schema.$ref:cross-document"]

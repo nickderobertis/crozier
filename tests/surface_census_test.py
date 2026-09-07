@@ -1894,6 +1894,131 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         self.assertIn("(declared by no registered source)", completed.stdout)
 
 
+class DocumentContextTests(unittest.TestCase):
+    """The document context every node of the walk can read, and its one boundary.
+
+    `Census` carries the censused document's own `components.schemas` map and the
+    set of its keys, so a predicate at any node can compare a value against them —
+    which is what `schema.$ref:undeclared-component-head` does and what a resolving
+    walk would build a resolver on. The boundary is that it is *this* document and
+    nothing else: a `$ref` naming another file is a string to this instrument, and
+    the last case here proves that by putting the other file on disk beside the
+    one being censused.
+    """
+
+    def test_the_context_is_the_documents_own_map_and_its_string_keys(self) -> None:
+        document = {
+            "openapi": "3.0.3",
+            "info": {"title": "context", "version": "1"},
+            "paths": {},
+            # A numeric key is a name the count rule excludes, so the key set holds
+            # the strings and the map holds everything the document wrote.
+            "components": {"schemas": {"Root": {"type": "string"}, 7: {}}},
+        }
+        built = census.Census(document)
+        self.assertIs(document["components"]["schemas"], built.component_schemas)
+        self.assertEqual(frozenset({"Root"}), built.component_names)
+
+    def test_a_document_declaring_no_component_schemas_carries_an_empty_context(
+        self,
+    ) -> None:
+        """Empty rather than absent, so a predicate reading it needs no guard."""
+        for document in (None, {}, {"components": None}, {"components": {"schemas": []}}):
+            with self.subTest(document=document):
+                built = census.Census(document)
+                self.assertEqual({}, built.component_schemas)
+                self.assertEqual(frozenset(), built.component_names)
+
+    def test_the_context_is_reachable_from_a_node_outside_components(self) -> None:
+        """A `$ref` deep in a Path Item is measured against the same names.
+
+        Driven through the real script: the two documents differ only in whether
+        the pointer's head is a key of `components.schemas`, and the head sits at a
+        response schema rather than beside the map it is compared with.
+        """
+        def source(title: str, head: str) -> dict:
+            return {
+                "openapi": "3.0.3",
+                "info": {"title": title, "version": "1"},
+                "paths": {
+                    "/widgets": {
+                        "get": {
+                            "operationId": "read",
+                            "responses": {
+                                "200": {
+                                    "description": "ok",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": f"#/components/schemas/{head}"
+                                            }
+                                        }
+                                    },
+                                }
+                            },
+                        }
+                    }
+                },
+                "components": {"schemas": {"Declared": {"type": "string"}}},
+            }
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_json_fixture(root, "deep-declared", source("deep-declared", "Declared"))
+            write_json_fixture(root, "deep-undeclared", source("deep-undeclared", "Missing"))
+            completed = run(
+                "--vendored-only", "--fixtures-root", str(root),
+                "--selector", "schema.$ref:undeclared-component-head",
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(
+            {("schema.$ref:undeclared-component-head", "deep-undeclared"): 1},
+            rows(completed),
+        )
+
+    def test_the_census_reads_no_document_but_the_one_it_is_censusing(self) -> None:
+        """The other file is on disk, beside the source, and is never opened.
+
+        `neighbour.yaml` declares `patternProperties`, a keyword the censused
+        document does not write, and the censused document's one `$ref` names it.
+        The real script reports the reference and nothing the neighbour declares —
+        no fetch, no cross-document resolution, no second document.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_json_fixture(
+                root,
+                "neighbouring-file",
+                {
+                    "openapi": "3.0.3",
+                    "info": {"title": "neighbouring-file", "version": "1"},
+                    "paths": {},
+                    "components": {
+                        "schemas": {
+                            "Root": {"$ref": "./neighbour.yaml#/components/schemas/Secret"}
+                        }
+                    },
+                },
+            )
+            (root / "neighbouring-file" / "neighbour.yaml").write_text(
+                "components:\n"
+                "  schemas:\n"
+                "    Secret:\n"
+                "      patternProperties:\n"
+                "        '^x-':\n"
+                "          type: string\n",
+                encoding="utf-8",
+            )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        counted = {
+            row["selector"]: row["count"] for row in json.loads(completed.stdout)["rows"]
+        }
+        self.assertEqual(1, counted.get("schema.$ref:cross-document"))
+        self.assertNotIn("schema.patternProperties", counted)
+
+
+
 class PointerFormSelectorDiscriminationTests(unittest.TestCase):
     """What each pointer-form selector counts, over inputs that discriminate its branch.
 
