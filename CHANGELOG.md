@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.70](https://github.com/nickderobertis/crozier/compare/v0.0.69...v0.0.70) - 2026-09-07
+
+### Added
+
+- *(census)* land the resolving descent operator and the arm-observation surface ([#243](https://github.com/nickderobertis/crozier/pull/243))
+
 ## [0.0.69](https://github.com/nickderobertis/crozier/compare/v0.0.68...v0.0.69) - 2026-09-07
 
 ### Added
