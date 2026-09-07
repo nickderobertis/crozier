@@ -1066,14 +1066,44 @@ CONJUNCTIONS = {
 }
 
 
-def conjunction_parts(text: str) -> list[list[str]]:
-    """One conjunction as its `>`-separated groups, each a list of `&` members."""
-    return [group.split("&") for group in text.split(">")]
+# The two descent operators, and the only place either spelling is written.
+#
+# `>` descends into the object a field's value **is**, as written. `~>` descends
+# into the schema the Reference Object written at the group's last member
+# **denotes**, resolved against the document being censused — the second half of
+# what a reader needs to name a branch of `src/ir.rs` that reads a `$ref`'s
+# target rather than the node in front of it. `docs/openapi-surface-coverage.md`'s
+# selector grammar states what `~>` means, which of `src/ir.rs`'s two resolutions
+# it performs, and that reference depth is bounded at one.
+DESCENT = ">"
+RESOLVING_DESCENT = "~>"
+# `~>` is matched first, so `a~>b` splits on the two-character operator rather
+# than on the `>` inside it.
+_DESCENT = re.compile(f"({re.escape(RESOLVING_DESCENT)}|{re.escape(DESCENT)})")
+
+
+def conjunction_parts(text: str) -> list[tuple[list[str], str | None]]:
+    """One conjunction as its descent-separated groups.
+
+    Each group is its list of `&` members paired with the operator that follows
+    it — `>`, `~>`, or `None` for the last group, which nothing descends from.
+    """
+    pieces = _DESCENT.split(text)
+    return [
+        (
+            pieces[index].split("&"),
+            pieces[index + 1] if index + 1 < len(pieces) else None,
+        )
+        for index in range(0, len(pieces), 2)
+    ]
 
 
 def is_conjunction(text: str) -> bool:
-    """Whether this selector text uses either composition operator."""
-    return ">" in text or "&" in text
+    """Whether this selector text uses any composition operator.
+
+    `~>` carries a `>`, so the descent test names both operators at once.
+    """
+    return DESCENT in text or "&" in text
 
 
 def descent_field(member: str) -> str | None:
@@ -1084,20 +1114,22 @@ def descent_field(member: str) -> str | None:
     return field or None
 
 
-def compile_conjunction(text: str) -> tuple[tuple[frozenset[str], str | None], ...]:
+def compile_conjunction(
+    text: str,
+) -> tuple[tuple[frozenset[str], tuple[str, str] | None], ...]:
     """One conjunction as the groups `Census.conjunction_holds` evaluates.
 
     Each group is the set of members that must hold at one node, paired with the
-    field the following `>` descends through — the group's last member, since that
-    is the member the operator binds to.
+    descent that leaves it: the field the operator descends through — the group's
+    last member, since that is the member either operator binds to — and which
+    operator it is. The last group descends nowhere and carries `None`.
     """
-    groups = conjunction_parts(text)
     return tuple(
         (
             frozenset(members),
-            None if index == len(groups) - 1 else descent_field(members[-1]),
+            None if operator is None else (descent_field(members[-1]), operator),
         )
-        for index, members in enumerate(groups)
+        for members, operator in conjunction_parts(text)
     )
 
 
@@ -1106,18 +1138,18 @@ def canonical_conjunction(text: str) -> str:
 
     A conjunction that could be written two ways would be two names for one shape,
     so a group's members are ordered — lexicographically, except that the member a
-    following `>` descends through is written last, since that is the member the
-    operator binds to.
+    following descent operator descends through is written last, since that is the
+    member the operator binds to. The rule reads the same across `>` and `~>`:
+    what puts a member last is that *a* descent binds to it, not which one.
     """
-    groups = conjunction_parts(text)
     spelled = []
-    for index, members in enumerate(groups):
-        if index == len(groups) - 1:
+    for members, operator in conjunction_parts(text):
+        if operator is None:
             spelled.append("&".join(sorted(members)))
         else:
             head, last = members[:-1], members[-1]
-            spelled.append("&".join([*sorted(head), last]))
-    return ">".join(spelled)
+            spelled.append("&".join([*sorted(head), last]) + operator)
+    return "".join(spelled)
 
 
 COMPILED_CONJUNCTIONS = {text: compile_conjunction(text) for text in CONJUNCTIONS}
@@ -1582,8 +1614,20 @@ def selector_error(text: str) -> str | None:
 class Census:
     """One document's declaration-site counts, keyed by selector."""
 
-    def __init__(self, document: Any = None) -> None:
+    def __init__(
+        self,
+        document: Any = None,
+        conjunctions: dict[str, tuple[tuple[frozenset[str], tuple[str, str] | None], ...]]
+        | None = None,
+    ) -> None:
         self.counts: dict[str, int] = defaultdict(int)
+        # The conjunctions this walk evaluates: the closed list every command
+        # line runs, unless a caller hands in its own. A caller doing that gets
+        # this same evaluator over this same walk — which is how a conjunction
+        # can be *proved* before the case it is read off has been derived, since
+        # `tests/surface_census_test.py` holds the closed list to the cases the
+        # blind-region tables carry.
+        self.conjunctions = COMPILED_CONJUNCTIONS if conjunctions is None else conjunctions
         # The document context, reachable from every node this census walks: the
         # document's own `components.schemas` map and the set of its keys. It is
         # the document being censused and nothing else — no fetch, no
@@ -1673,7 +1717,7 @@ class Census:
         kind = OBJECTS[kind_name]
         for selector in self.declared_here(node, kind_name, prefix):
             self.record(selector)
-        for selector, groups in COMPILED_CONJUNCTIONS.items():
+        for selector, groups in self.conjunctions.items():
             # A fresh alias guard: a conjunction's descent is its own path from
             # this node, and the ancestors `seen` already holds are not on it.
             if self.conjunction_holds(node, kind_name, prefix, groups, 0, frozenset()):
@@ -1712,18 +1756,27 @@ class Census:
         node: Any,
         kind_name: str,
         prefix: str,
-        groups: tuple[tuple[frozenset[str], str | None], ...],
+        groups: tuple[tuple[frozenset[str], tuple[str, str] | None], ...],
         index: int,
         seen: frozenset[int],
+        resolved: bool = False,
     ) -> bool:
         """Whether this conjunction's remaining groups hold from this node.
 
-        The whole of what `&` and `>` mean, and the only place either is
-        interpreted: a group holds when every one of its members is a selector the
-        node itself declares, and `>` hands the groups after it to the objects the
-        group's last member's value is. A field holding several objects (a `oneOf`
-        list, a `properties` map) satisfies the rest if any one of them does, which
-        is what keeps the count one per node at the leftmost position.
+        The whole of what `&`, `>` and `~>` mean, and the only place any of them
+        is interpreted: a group holds when every one of its members is a selector
+        the node itself declares, `>` hands the groups after it to the objects the
+        group's last member's value is, and `~>` hands them to the one schema the
+        Reference Object written at that member denotes. A field holding several
+        objects (a `oneOf` list, a `properties` map) satisfies the rest if any one
+        of them does, which is what keeps the count one per node at the leftmost
+        position — for both operators alike.
+
+        `resolved` carries the reference-depth bound: an edge `~>` traverses is
+        taken only from a node this descent reached *without* traversing one, so
+        no chain of references is followed and no cycle among them can be walked
+        round twice. The `seen | {id(node)}` guard below is the other half, and it
+        guards a resolved edge exactly as it guards a written one.
         """
         if not isinstance(node, dict) or id(node) in seen:
             return False
@@ -1732,6 +1785,9 @@ class Census:
             return False
         if descend is None:
             return True
+        descend, operator = descend
+        if operator == RESOLVING_DESCENT:
+            return self.resolving_descent_holds(node, descend, groups, index, seen, resolved)
         child = OBJECTS[kind_name].fields.get(descend)
         if child is None:
             return False
@@ -1744,9 +1800,48 @@ class Census:
         inner = target.name if target.anchor else f"{prefix}.{descend}"
         return any(
             self.conjunction_holds(
-                entry, child.kind, inner, groups, index + 1, seen | {id(node)}
+                entry, child.kind, inner, groups, index + 1, seen | {id(node)}, resolved
             )
             for entry in entries
+        )
+
+    def resolving_descent_holds(
+        self,
+        node: dict[Any, Any],
+        field: str,
+        groups: tuple[tuple[frozenset[str], tuple[str, str] | None], ...],
+        index: int,
+        seen: frozenset[int],
+        resolved: bool,
+    ) -> bool:
+        """Whether the rest of this conjunction holds at what `~>` resolves to.
+
+        The resolution is `resolve_ref_from_schemas` of `src/ir.rs` and not its
+        neighbour `resolve_schema_pointer`: the reference's **last**
+        `/`-separated segment, looked up in the document's own
+        `components.schemas`, traversing nothing. That is the resolution the nine
+        arms of `prop_type_ref`, `hoist_union_variant` and `nested_array_element`
+        that read a `$ref`'s target actually call, and a descent mirroring the
+        other one would count documents those arms never reach.
+
+        Nothing is memoized: resolving is one `rsplit` and one dict lookup, with
+        no traversal to repeat, so there is no work here to key by node identity
+        the way `declared_cache` keys a node's own selectors.
+        """
+        if resolved:
+            return False  # reference depth is one; see `conjunction_holds`
+        reference = node.get(field)
+        if not isinstance(reference, str):
+            return False
+        target = self.component_schemas.get(reference.rsplit("/")[-1])
+        return self.conjunction_holds(
+            target,
+            "schema",
+            OBJECTS["schema"].name,
+            groups,
+            index + 1,
+            seen | {id(node)},
+            True,
         )
 
     def note_operation(self, key: str, value: Any) -> None:
@@ -1920,9 +2015,13 @@ class Census:
             self.walk(entry, child.kind, prefix, seen)
 
 
-def census_document(document: Any) -> dict[str, int]:
+def census_document(
+    document: Any,
+    conjunctions: dict[str, tuple[tuple[frozenset[str], tuple[str, str] | None], ...]]
+    | None = None,
+) -> dict[str, int]:
     """Every `(selector, count)` one parsed source document declares."""
-    census = Census(document)
+    census = Census(document, conjunctions)
     census.walk(document, "openapi", "openapi", frozenset())
     census.finish()
     return dict(census.counts)

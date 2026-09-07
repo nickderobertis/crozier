@@ -1300,6 +1300,289 @@ class ConjunctionCensusTests(unittest.TestCase):
         self.assertEqual([self.ABSENT], payload["absent_selectors"])
 
 
+class ResolvingDescentTests(unittest.TestCase):
+    """The second descent operator, driven through the census's real evaluator.
+
+    `>` descends into the object a field's value *is*; `~>` descends into the
+    schema the Reference Object written at a group's last member *denotes*,
+    resolved against the document being censused. No conjunction on the closed
+    list uses `~>`, because the list is held to the cases the blind-region tables
+    derive, so these cases hand the census their own compiled conjunction and run
+    the **real** walk over it:
+    `census_document` is the function the command line calls per document, and
+    `load_document` is the loader it reads every source with. Nothing is a
+    stand-in.
+    """
+
+    # The exemplar: a Schema Object one of whose properties is a Reference
+    # Object whose target declares `oneOf`. Under `>` alone this shape has no
+    # name at all — `schema.properties>schema.oneOf` counts the node that
+    # *writes* `oneOf` inline, and `prop_type_ref`'s composition gate is guarded
+    # by `prop_schema.reference.is_none()`, so the two are different documents.
+    RESOLVING = "schema.properties>schema.$ref~>schema.oneOf"
+    WRITTEN = "schema.properties>schema.oneOf"
+
+    @staticmethod
+    def document(schemas: str) -> str:
+        return textwrap.dedent(
+            """\
+            openapi: 3.0.3
+            info: {title: resolving, version: "1"}
+            paths: {}
+            components:
+              schemas:
+            """
+        ) + textwrap.indent(textwrap.dedent(schemas), "    ")
+
+    def counts(self, schemas: str, *selectors: str) -> dict[str, int]:
+        """The real census over one constructed document, for these selectors.
+
+        The document is written to disk and read back by the census's own
+        loader, and walked by `census_document` — the whole of what the command
+        line does per source, with the conjunctions to evaluate handed in.
+        """
+        compiled = {selector: census.compile_conjunction(selector) for selector in selectors}
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "openapi.yml"
+            path.write_text(self.document(schemas), encoding="utf-8")
+            document = census.load_document(path)
+        counted = census.census_document(document, compiled)
+        return {selector: counted.get(selector, 0) for selector in selectors}
+
+    # Three documents alike in every respect but the one the operator reads.
+    TARGET_DECLARES_IT = """\
+        Bag:
+          type: object
+          properties:
+            pick: {$ref: '#/components/schemas/Choice'}
+        Choice:
+          oneOf: [{type: string}, {type: integer}]
+        """
+    TARGET_DOES_NOT = """\
+        Bag:
+          type: object
+          properties:
+            pick: {$ref: '#/components/schemas/Choice'}
+        Choice:
+          allOf: [{type: string}]
+        """
+    RESOLVES_TO_NOTHING = """\
+        Bag:
+          type: object
+          properties:
+            pick: {$ref: '#/components/schemas/Absent'}
+        Choice:
+          oneOf: [{type: string}, {type: integer}]
+        """
+
+    def test_the_operator_reads_the_target_and_not_the_referencing_node(self) -> None:
+        """One answer per document, and three different answers between them."""
+        self.assertEqual(
+            {self.RESOLVING: 1},
+            self.counts(self.TARGET_DECLARES_IT, self.RESOLVING),
+            "the referencing node is where the conjunction holds",
+        )
+        self.assertEqual(
+            {self.RESOLVING: 0},
+            self.counts(self.TARGET_DOES_NOT, self.RESOLVING),
+            "a target declaring `allOf` instead is a document it holds at no node of",
+        )
+        self.assertEqual(
+            {self.RESOLVING: 0},
+            self.counts(self.RESOLVES_TO_NOTHING, self.RESOLVING),
+            "a reference naming no component of this document resolves to nothing",
+        )
+
+    def test_a_document_whose_reference_resolves_to_nothing_is_completed_over(self) -> None:
+        """The unresolvable case is answered, not raised and not hung.
+
+        `--vendored-only --fixtures-root` runs the same document through the
+        command line, under the suite's own timeout, so a resolver that failed or
+        span on a dangling reference fails here rather than wedging the census.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_fixture(root, "dangling-reference", self.document(self.RESOLVES_TO_NOTHING))
+            completed = run("--vendored-only", "--fixtures-root", str(root))
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertIn(("schema.$ref", "dangling-reference"), rows(completed))
+
+    def test_the_written_descent_still_reads_the_node_it_descends_into(self) -> None:
+        """`>` is untouched: it never resolves, before this operator or after it.
+
+        A property — and an `items` — that *is* a `$ref` to a schema declaring
+        `oneOf` is counted by neither written spelling, which is the whole reason
+        `~>` is a second operator rather than a redefinition of the first:
+        `prop_type_ref`'s composition gate is guarded by
+        `prop_schema.reference.is_none()` and `nested_array_element`'s is
+        preceded by `if items.reference.is_some() { return None; }`, so the
+        generator sends both of these documents elsewhere.
+        """
+        self.assertEqual(
+            {self.WRITTEN: 0, self.RESOLVING: 1},
+            self.counts(self.TARGET_DECLARES_IT, self.WRITTEN, self.RESOLVING),
+        )
+        items = """\
+            Bag:
+              type: array
+              items: {$ref: '#/components/schemas/Choice'}
+            Choice:
+              oneOf: [{type: string}, {type: integer}]
+            """
+        self.assertEqual(
+            {"schema.items>schema.oneOf": 0, "schema.items>schema.$ref~>schema.oneOf": 1},
+            self.counts(items, "schema.items>schema.oneOf", "schema.items>schema.$ref~>schema.oneOf"),
+        )
+
+    def test_the_operator_performs_the_last_segment_lookup_and_not_the_pointer_walk(self) -> None:
+        """Which of `src/ir.rs`'s two resolutions `~>` is.
+
+        `#/components/schemas/Outer/properties/inner` is the reference value the
+        two answer differently. The last-segment lookup
+        (`resolve_ref_from_schemas`) yields the component named `inner`, which
+        declares `oneOf`; the prefixed pointer walk (`resolve_schema_pointer`)
+        yields `Outer`'s property `inner`, which declares `type: string` and no
+        `oneOf`. The operator counts the node, so it is the first.
+        """
+        self.assertEqual(
+            {self.RESOLVING: 1},
+            self.counts(
+                """\
+                Bag:
+                  type: object
+                  properties:
+                    pick: {$ref: '#/components/schemas/Outer/properties/inner'}
+                Outer:
+                  properties:
+                    inner: {type: string}
+                inner:
+                  oneOf: [{type: string}, {type: integer}]
+                """,
+                self.RESOLVING,
+            ),
+        )
+        self.assertEqual(
+            {self.RESOLVING: 0},
+            self.counts(
+                """\
+                Bag:
+                  type: object
+                  properties:
+                    pick: {$ref: '#/components/schemas/Outer/properties/inner'}
+                Outer:
+                  properties:
+                    inner:
+                      oneOf: [{type: string}, {type: integer}]
+                """,
+                self.RESOLVING,
+            ),
+            "the pointer walk's answer declares `oneOf` and the operator still counts nothing",
+        )
+
+    CYCLE = """\
+        A:
+          oneOf: [{type: string}, {type: integer}]
+          properties:
+            link: {$ref: '#/components/schemas/B'}
+        B:
+          oneOf: [{type: string}, {type: integer}]
+          properties:
+            link: {$ref: '#/components/schemas/A'}
+        """
+    CYCLE_WITHOUT_THE_SHAPE = """\
+        A:
+          properties:
+            link: {$ref: '#/components/schemas/B'}
+        B:
+          properties:
+            link: {$ref: '#/components/schemas/A'}
+        """
+
+    def test_a_cycle_of_references_terminates_and_is_counted_once_per_node(self) -> None:
+        """Reference depth is one, so a cycle is not walked round at all.
+
+        `A` and `B` reference each other and both declare `oneOf`, so each one's
+        own depth-one resolution declares the shape and each holds — exactly
+        twice between them. A node reached again by going round the cycle would
+        make it three or more, or would not terminate.
+        """
+        self.assertEqual({self.RESOLVING: 2}, self.counts(self.CYCLE, self.RESOLVING))
+        self.assertEqual(
+            {self.RESOLVING: 0},
+            self.counts(self.CYCLE_WITHOUT_THE_SHAPE, self.RESOLVING),
+            "neither node's depth-one resolution declares the shape",
+        )
+
+    def test_a_second_resolving_descent_is_the_bound_rather_than_a_longer_chain(self) -> None:
+        """The bound stated in the grammar, as something that fails.
+
+        `A` names `B` and `B` names `C`, which declares the shape. One resolving
+        descent reaches `B` and stops; the two-`~>` spelling would need the edge
+        out of a node this descent reached *by* traversing one, and holds nowhere.
+        """
+        chain = """\
+            A:
+              properties:
+                link: {$ref: '#/components/schemas/B'}
+            B:
+              properties:
+                link: {$ref: '#/components/schemas/C'}
+            C:
+              oneOf: [{type: string}, {type: integer}]
+            """
+        two = "schema.properties>schema.$ref~>schema.properties>schema.$ref~>schema.oneOf"
+        self.assertEqual(
+            {self.RESOLVING: 1, two: 0},
+            self.counts(chain, self.RESOLVING, two),
+        )
+
+    def test_a_conjunction_using_the_operator_has_exactly_one_name(self) -> None:
+        """The canonicalization rule reads the same across both operators.
+
+        Every writing below is the same shape: a Schema Object declaring
+        `title` and `description` beside a property that is a Reference Object
+        also declaring both, whose target declares `oneOf` beside
+        `discriminator`. What varies is the order of the members a descent does
+        *not* bind to — the member it does bind to is written last whichever
+        operator it is, which is the rule already stated for `>` and unchanged
+        across `~>`.
+        """
+        canonical = (
+            "schema.description&schema.title&schema.properties"
+            ">schema.description&schema.title&schema.$ref"
+            "~>schema.discriminator&schema.oneOf"
+        )
+        for spelling in (
+            canonical,
+            "schema.title&schema.description&schema.properties"
+            ">schema.title&schema.description&schema.$ref"
+            "~>schema.oneOf&schema.discriminator",
+            "schema.title&schema.description&schema.properties"
+            ">schema.description&schema.title&schema.$ref"
+            "~>schema.discriminator&schema.oneOf",
+        ):
+            with self.subTest(spelling=spelling):
+                self.assertEqual(canonical, census.canonical_conjunction(spelling))
+        self.assertEqual(canonical, census.canonical_conjunction(canonical))
+
+    def test_the_closed_list_declares_no_conjunction_using_the_operator(self) -> None:
+        """The operator exists and no declared selector is spelled with it.
+
+        A conjunction is declared only where a case of a blind region is read off
+        it, which `test_every_declared_conjunction_is_read_off_a_case_of_a_blind_region`
+        holds the list to. So `--selector` refuses a `~>` spelling by name, the
+        way it refuses any well-formed combination nobody declared.
+        """
+        self.assertEqual(
+            [],
+            [selector for selector in census.CONJUNCTIONS if census.RESOLVING_DESCENT in selector],
+        )
+        completed = run("--vendored-only", "--selector", self.RESOLVING)
+        self.assertEqual(1, completed.returncode, completed.stdout)
+        self.assertIn(repr(self.RESOLVING), completed.stderr)
+        self.assertIn("is not one of the conjunction selectors", completed.stderr)
+
+
 
 # --- the node-local selector family ----------------------------------------
 # The building blocks the discrimination table below composes. Each is one shape
