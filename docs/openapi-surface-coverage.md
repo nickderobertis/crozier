@@ -144,7 +144,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-17, declared in `scripts/openapi-surface-census.py` and restated here, with a
+24, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `operation.tags:multiple` — one per Operation Object whose `tags` array
@@ -215,16 +215,57 @@ drift gate over the pair:
   `string_enum_values` falls back to when no `enum` is written. The two are
   two readings rather than one, because a schema writing both is read by its
   `enum` alone.
+- `schema.$ref:cross-document` — one per Schema Object whose `$ref` names
+  another document: the value carries a non-empty part before its `#`, or no
+  `#` at all, so `./other.yaml#/components/schemas/Author` and a bare
+  `common.yaml` count.
+- `schema.$ref:same-document-foreign-pointer` — one per Schema Object whose
+  `$ref` points inside its own document but outside `components.schemas`, so
+  `#/definitions/Foo` from a Swagger conversion and
+  `#/components/parameters/Page` count. The two above are the two shapes that
+  reach `ref_to_class`'s first case, which names a reference off its last
+  segment, and they are two selectors rather than one because only the first
+  names a document other than the one being censused: crozier answers it by
+  fetching that document, where a same-document pointer is answered — or not —
+  inside the bytes already read. Both are declared by registered sources that
+  carry committed goldens.
+- `schema.$ref:nested-properties` — one per Schema Object whose `$ref` is a
+  `#/components/schemas/` pointer carrying a `properties` segment with a
+  segment after it, at a position the `ref_to_class` walk reads, so a pointer
+  carrying two counts one.
+- `schema.$ref:nested-items` — one per Schema Object whose `$ref` is such a
+  pointer carrying an `items` segment at a position that same walk reads.
+- `schema.$ref:composition-index` — one per Schema Object whose `$ref` is such
+  a pointer carrying an `allOf`, `oneOf` or `anyOf` segment at a position that
+  same walk reads, the segment whose index contributes no name.
+- `schema.$ref:unnamed-segment` — one per Schema Object whose `$ref` is such a
+  pointer carrying, at a position that same walk reads, a segment naming none
+  of those five — a trailing `properties` included, since with no segment after
+  it there is no property name to append. The four above are read off the four
+  arms of `ref_to_class`'s own loop, whose read positions are
+  `resolve_schema_pointer`'s too.
+- `schema.$ref:undeclared-component-head` — one per Schema Object whose `$ref`
+  is such a pointer whose head segment names no key of the same document's own
+  `components.schemas`, which is what `resolve_schema_pointer`'s
+  `schemas.get(parts.next()?)?` returns `None` on.
 
-**Fourteen of the 17 are node-local**, which is what makes them one family:
+**Twenty of the 24 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
-values, with no `$ref` resolution and no document-scope comparison. The other
-three — `operation.operationId:duplicate` and the two `normalized-collision`
-spellings — compare one document's own values against each other, and say so in
-their own sentence. A property that would need the schema a `$ref` points at is
-not a predicate of either kind and is declared nowhere: those shapes are the
-enumeration holes [the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case)
-names H-ref-target, H-pointer-target and H-pointer-nesting, and the resolving walk
+values, with no `$ref` resolution and no document-scope comparison. The six
+`schema.$ref:` spellings that read a pointer's segment structure are node-local
+in exactly that sense — a `$ref` *value* is one of the node's own declared
+fields, and reading its segments is not resolving it. The other
+four — `operation.operationId:duplicate`, the two `normalized-collision`
+spellings and `schema.$ref:undeclared-component-head` — compare one document's
+own values against each other, and say so in their own sentence. The last of
+them reads **the document context**: the census carries the document's own
+`components.schemas` map and the set of its keys, reachable from every node it
+walks, and it is the document being censused and nothing else — no fetch, no
+cross-document resolution, no second document. A property that would need the
+schema a `$ref` points at is still not a predicate of either kind and is
+declared nowhere: those shapes are the enumeration holes
+[the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case)
+names H-ref-target and H-pointer-nesting, and the resolving walk
 they would take is a different instrument.
 
 A predicate selector is a selector like any other everywhere else: `--selector`
@@ -307,8 +348,8 @@ can express. Three conventions that derivation applies, stated once:
   uncounted — and equally one **broader** than it: `schema.oneOf>schema.example&schema.type=object`
   would count a variant declaring `type: object` beside a scalar example, an empty
   `examples`, or an object whose values are themselves schema declarations, and
-  `hoist_union_variant` sends all three to `base_type_ref`. Forty of the
-  seventy-six cases below survive this test; the other thirty-six name the
+  `hoist_union_variant` sends all three to `base_type_ref`. Fifty of the
+  seventy-eight cases below survive this test; the other twenty-eight name the
   extension that would close them.
 
   What the test does **not** rule out is a node whose own declaration contradicts
@@ -596,41 +637,42 @@ for either; each bullet below says where its number comes from.
 | region | features | `golden` | `limitations` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 70 | 51 | 19 | 0 | 0 | 0 | 0 |
-| [`schemas`](openapi-surface/schemas.md) | 162 | 127 | 21 | 14 | 11 | 0 | 3 |
+| [`schemas`](openapi-surface/schemas.md) | 169 | 132 | 21 | 16 | 13 | 0 | 3 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 36 | 11 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 38 | 12 | 0 | 0 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 70 | 65 | 5 | 0 | 0 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 33 | 2 | 17 | 0 | 0 | 17 |
-| **total** | **451** | **350** | **70** | **31** | **11** | **0** | **20** |
+| **total** | **458** | **355** | **70** | **33** | **13** | **0** | **20** |
 
-The walk enumerated **451** features and landed each in exactly one category:
-**350** `golden`, **70** `limitations`, **31** `gap`. The `gap` column splits by
-settlement class into **11** `FIXTURE`, **0** `PROBE` and **20** `UNREACHABLE`.
+The walk enumerated **458** features and landed each in exactly one category:
+**355** `golden`, **70** `limitations`, **33** `gap`. The `gap` column splits by
+settlement class into **13** `FIXTURE`, **0** `PROBE` and **20** `UNREACHABLE`.
 
-**What the `golden` count means, and what it does not.** 350 of those 451
+**What the `golden` count means, and what it does not.** 355 of those 458
 features carry byte-match evidence: a registered source declares the feature and
 its committed Fern golden byte-matches, so crozier and Fern are compared over
-real bytes there and `just check` fails if they diverge. The other 101 do not. 70
-carry a Fern verdict measured on a probe and no byte comparison at all, and 31
+real bytes there and `just check` fails if they diverge. The other 103 do not. 70
+carry a Fern verdict measured on a probe and no byte comparison at all, and 33
 have neither. Neither
-column is a defect count, and neither 350 nor 451 is a claim of exhaustion —
+column is a defect count, and neither 355 nor 458 is a claim of exhaustion —
 [the section below](#golden-classified-is-not-golden-exhausted) states where the
 remaining distance lies, including the part of it this walk cannot enumerate.
 
-**What the `gap` count means.** 31 is the number of OpenAPI shapes for which
+**What the `gap` count means.** 33 is the number of OpenAPI shapes for which
 crozier's behaviour is vouched for by nothing but crozier: no committed golden's
 source declares the shape, so no byte comparison against Fern touches it, and
 [`fern-limitations.md`](fern-limitations.md) has never measured Fern on it, so
-nothing contradicts whatever crozier does. `just check` is green over all 31
+nothing contradicts whatever crozier does. `just check` is green over all 33
 either way. It is not a defect count — 20 of them (`UNREACHABLE`) have no
 position in a generated Python SDK at all, and saying so is their settlement.
-That leaves 11 for the two backlogs below, every one of them in the fixture one:
+That leaves 13 for the two backlogs below, every one of them in the fixture one:
 they are branches of `src/ir.rs` a real document can select and this corpus never
-writes, named for the first time by the node-local predicate family.
+writes, named for the first time by the node-local predicate family and by the
+pointer-form one after it.
 
 ### Reconciliation
 
-**Each feature is classified exactly once.** The 451 rows carry 451 distinct
+**Each feature is classified exactly once.** The 458 rows carry 458 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
 already runs over all six files, re-run here and passing. Thirteen spec
@@ -829,14 +871,15 @@ generator has earned.
 
 ### The ranked `FIXTURE` backlog
 
-**Where this list stands, and the three ways a row left it.** It carries eleven
+**Where this list stands, and the three ways a row left it.** It carries thirteen
 rows, and none of them is a row that ever stood here before: the list was
-exhausted, and the node-local predicate family refilled it from the one direction
-an exhausted backlog can be refilled from — the instrument, not the corpus.
-Eleven branches of `src/ir.rs`'s six blind functions now have a name, and no
+exhausted, and two instrument passes refilled it from the one direction an
+exhausted backlog can be refilled from — the instrument, not the corpus.
+Thirteen branches of `src/ir.rs`'s six blind functions now have a name, and no
 registered source declares any of them, which is what a `gap` is. They are
 [tabled at the end of this section](#the-ranked-fixture-backlog) and narrated in
-[the paragraph that added them](#the-eleven-rows-the-node-local-predicates-added).
+[the paragraph that added the first eleven](#the-eleven-rows-the-node-local-predicates-added)
+and [the one that added the last two](#the-two-rows-the-pointer-form-predicates-added).
 Everything below them is history: every row that ever stood here left by one of
 three routes, and which route a row took is what decides the evidence the tree
 now holds for it. The paragraphs below walk them in the order they happened; this
@@ -1171,12 +1214,62 @@ the new selector absent* — happening for the first time.
 **They rank as one block**, because their four criteria are identical: each names
 one place in `src/ir.rs`, that file's blind-spot count is one number, each moves
 the types module and the census reports no witness for any of them. So the total
-order among them is criterion 5, the key, and the table below is alphabetical.
+order among the eleven is criterion 5, the key, and they are alphabetical in the
+table below.
 Every one is `FIXTURE` rather than `PROBE`: the corpus already declares the
 sibling spelling of each, so a screened real-world document plausibly declares
 this one, and no structural measurement is involved.
 
-**All 11 `FIXTURE` gaps remain
+#### The two rows the pointer-form predicates added
+
+**Two more branches, and five that the same pass found the corpus had been
+declaring all along.** The pointer-form predicate family named the seven branches
+`ref_to_class` and `resolve_schema_pointer` decide from a `$ref` value's own
+segment structure, or from that value's head measured against the document's own
+`components.schemas` keys. Five of the seven came back `golden`: 29 cross-document
+pointers in `helios-verifiable-api` and `ndw-accessibility-map`, 50 same-document
+pointers outside `components.schemas` in `conjur.local`, `eos.local`,
+`eos.local-extra-fields-forbid` and `dnd5eapi.co`, and the three nesting segments
+`dnd5eapi.co` and `openbanking-brasil-directory` write. Two came back zero across
+all 169 registered sources and are the rows below — `ref-pointer-unnamed-segment`
+and `ref-pointer-undeclared-component-head`, both `FIXTURE`, both in
+[`schemas`](openapi-surface/schemas.md).
+
+**They do not rank as one block with the eleven, and one of them is why criterion
+1 decides an order here again.** `ref-pointer-undeclared-component-head` names one
+place in `src/ir.rs` and ties with the eleven on all four criteria, so it falls
+into their alphabetical run at rank 12. `ref-pointer-unnamed-segment` names
+**two** — the residual arm of each function, which read the same pointer positions
+— so criterion 1 puts it last, and it is the first row since the backlog refilled
+that the rubric separates from the block on anything but its key.
+
+**The plan this pass ran under expected the cross-document branch to be
+permanently `UNREACHABLE`, and the measurement contradicted it.** Registration is
+by direct single-document spec URL, and two screened candidates
+(`checkmarx-kics-compare-payload`, `alayacare-rating`) show what an unresolved
+external `$ref` does to Fern — but those are measurements of Fern on those two
+documents, not proof that no admissible document reaches the branch, and two
+registered sources carrying committed goldens do reach it. crozier resolves such a
+reference by fetching the named document
+([`matching.md`](matching.md#cross-document-ref-resolution-issue-77)), so the
+branch is reachable by construction. The row is `golden` on the census, and
+[`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
+is what re-measures the selector over the fetched `link-ok` corpus afterwards.
+**One existing cell reads against this and is left as it stands**: the
+`src/refs.rs` verdict in [the join table below](#the-ranked-list-against-golden-blind-spots)
+says *"the corpus is single-document by construction"*, and the census now reports
+two registered sources writing a cross-document schema `$ref`. That cell was taken
+by an earlier measurement and keeps what that measurement established; the
+discrepancy is recorded here rather than silently repaired, and re-measuring
+`src/refs.rs`'s golden reach is a `just fixtures-coverage` run this change did not
+take.
+
+**What did not move.** These predicates read a `$ref` at the node that writes it,
+which the census already visited, so no count rule changed, no existing row's
+category, settlement or evidence-cell count moved, and no snapshot digest was
+re-pinned.
+
+**All 13 `FIXTURE` gaps remain
 across the six regions: the gate recomputes that total off the region files
 themselves. The rubric and its
 four criteria are how they are ordered, and a row is ranked by [the ranking
@@ -1199,16 +1292,17 @@ checked rather than trusted.
 - **Criterion 4**, witness supply: registered sources the census reports
   declaring the shape, read off the row's own `evidence` cell. A `FIXTURE` gap
   can only score above zero here from a source with no committed golden, which
-  is what makes it a gap — 11 of the 11 score zero here, no registered source
+  is what makes it a gap — 13 of the 13 score zero here, no registered source
   declaring any of them at all. The last row to score above zero,
   `parameter-style-matrix-path-scalar` on the golden-less `appng-rest-api`, left
   this list [settled by probe](#the-six-rows-a-round-of-probes-settled).
 
 **The median blind-spot count of this list is 235** — every entry names
-`src/ir.rs` and nothing else, and 0 of the 11 entries name no `src/` file at all,
-which is the mirror image of the list this one replaced. 0 of the 11 ranked
-entries reach no blind region, so criterion 1 no longer decides the order and
-criterion 5 does.
+`src/ir.rs` and nothing else, and 0 of the 13 entries name no `src/` file at all,
+which is the mirror image of the list this one replaced. 0 of the 13 ranked
+entries reach no blind region, so criterion 2 separates nothing; criterion 1
+separates the last row from the other twelve, and among those twelve criterion 5
+decides.
 
 | # | key | region | 1. crozier sites | 2. blind spots | 3. artifacts | 4. witnesses |
 |---|---|---|---|---|---|---|
@@ -1223,6 +1317,8 @@ criterion 5 does.
 | 9 | [`property-sole-anyof-closed-object-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
 | 10 | [`property-sole-anyof-struct-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
 | 11 | [`property-sole-oneof-closed-object-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
+| 12 | [`ref-pointer-undeclared-component-head`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
+| 13 | [`ref-pointer-unnamed-segment`](openapi-surface/schemas.md) | `schemas` | **2** (`src/ir.rs` 2) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
 
 ### The ranked list against `golden blind spots`
 
@@ -1241,7 +1337,7 @@ functions named in each verdict are counted from that union.
 | `src/settings.rs` | 864 | all-e2e 434, non-e2e 430 | none | **Neither.** `explain` 148, `resolve` 44, `merge` 37, `merge_generator` 28, `load` 21, `read_config` 20: the CLI > env > `crozier.yml` layering behind `crozier config`. No OpenAPI shape reaches it and no Fern golden can — Fern reads a different config format — so neither a corpus row nor a Fern probe is the instrument. The journeys are, and they already reach 434 of the 448. |
 | `src/emit.rs` | 437 | all-e2e 137, non-e2e 300 | none | **A shape the walk missed, and now the sharpest measured price of settling a row by probe.** This file is where the block moved most since these cells were last taken — 175 printed to 437 — and the largest new block is one change's: the object-typed path parameter [Round 6](fern-limitations.md#round-6--parameters-and-the-31-tail) found crozier diverging on and repaired. `path_object_value` 39, `without_recording` 31, `path_object_required_fields` 26, `path_field_render` 19 and `path_object_documented` 10 are 125 of this file's 312-region union, and `build_example_inner` rose 7 to 19 beside them. The shape driving all of it is one **no registered source declares**, so no committed golden can reach a line of it: a probe settles a row's category and buys no byte-comparison evidence, and this is what that costs, in regions rather than in argument. `append_request_call_args` 10 — the function the one ranked gap that ever pointed here, `media-type-range`, named — was not among the blind regions when that row was ranked; corpus row 127 settled the row `golden` and the function is blind now. The rest is example rendering, as before: `example_matches_type` 24, `header_first_query_example` 16, `example_is_object` 14, `raw_type_str_ctx` 13, `value_from_example` 10, `named_value_inner` 10, `flat` 9. `type_serializes_as` 8 a committed golden reaches now, as the streaming docstrings `client_stream_docstring` 11 + `raw_stream_docstring` 10 already did. Every `example`/`examples` field is classified `golden`, but the walk enumerates the *field*; those branches switch on the JSON value *kind* an example holds, and example values are not in the grammar's closed list of valued selectors, so no `gap` row could have named them. |
 | `src/cli.rs` | 292 | all-e2e 133, non-e2e 159 | none | **Neither**, as `src/settings.rs`: `do_config` 60, `run` 43, `do_init` 26, `do_generate` 12 are the command surface, not document behaviour. |
-| `src/ir.rs` | 235 | all-e2e 6, non-e2e 229 | 11 (all of them, the eleven the node-local predicate family named) | **Still wholly unreached, and joined to a ranked gap again — eleven of them.** The old verdict opened *"agrees on the file, misses the shapes"*, then became *"no longer joined to a ranked gap at all"* when the backlog emptied. Both halves are answered now, and by the same change. The agreement is back: eleven ranked `FIXTURE` rows point here, every one of them a branch of this file's six blind functions that the node-local predicate family named and no registered source declares — [the eleven the predicates added](#the-eleven-rows-the-node-local-predicates-added). The other half is unchanged and is the answer to *are this file's regions still unreached?* — **yes, all 235 of them**, which is the count these cells carried before the conjunction pass and the count the refreshed run prints. The blind regions are type-lowering conjunctions: `hoist_union_variant` 43, `resolve_schema_pointer` 25, `nested_array_element` 23, `prop_type_ref` 22, `variant_ref` 21, `field_type_ref` 20, `path_group` 15, `hoist_array_item_type` 13, `error_class_name` 8 — six of them the six this file's [case analysis](#the-six-blind-regions-of-srcirrs-case-by-case) derives its selectors from, whose [before-and-after counts](#what-the-conjunction-pass-moved-in-those-six-regions) that section publishes. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own, and this verdict used to go on: *"it is their combinations that no golden reaches."* **That was a statement about the instrument, and the measurement contradicts it in one direction and confirms it in another.** The nine conjunctions the first pass declared all came back `golden`. The thirty-nine selectors the second pass declared did not: twenty-eight are `golden` and eleven are `gap`, so the corpus is blind to some of these combinations after all, and it took a finer instrument to say which. The `schemas` region carries thirty-six of the thirty-nine rows and `document-paths` the three `path_group` ones. What stays true of this file is the *branch* reading: a golden pinning a shape pins the bytes for the shapes its own document sends down the arm, not the arm's whole behaviour, and the thirty-six cases of these six functions that no selector kind can express are still unmeasured. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); the third is now the census's own. |
+| `src/ir.rs` | 235 | all-e2e 6, non-e2e 229 | 13 (all of them: the eleven the node-local predicate family named, and the two the pointer-form family did) | **Still wholly unreached, and joined to a ranked gap again — thirteen of them.** The old verdict opened *"agrees on the file, misses the shapes"*, then became *"no longer joined to a ranked gap at all"* when the backlog emptied. Both halves are answered now, and by the same change. The agreement is back: thirteen ranked `FIXTURE` rows point here, every one of them a branch of this file's six blind functions that no registered source declares — [the eleven the node-local predicates added](#the-eleven-rows-the-node-local-predicates-added), and [the two the pointer-form ones did](#the-two-rows-the-pointer-form-predicates-added). `resolve_schema_pointer` 25 is the second-largest blind block in this file and the one the pointer-form pass reads: five of its seven newly named branches came back `golden`, so the corpus had been sending documents down them all along. The other half is unchanged and is the answer to *are this file's regions still unreached?* — **yes, all 235 of them**, which is the count these cells carried before the conjunction pass and the count the refreshed run prints. The blind regions are type-lowering conjunctions: `hoist_union_variant` 43, `resolve_schema_pointer` 25, `nested_array_element` 23, `prop_type_ref` 22, `variant_ref` 21, `field_type_ref` 20, `path_group` 15, `hoist_array_item_type` 13, `error_class_name` 8 — six of them the six this file's [case analysis](#the-six-blind-regions-of-srcirrs-case-by-case) derives its selectors from, whose [before-and-after counts](#what-the-conjunction-pass-moved-in-those-six-regions) that section publishes. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own, and this verdict used to go on: *"it is their combinations that no golden reaches."* **That was a statement about the instrument, and the measurement contradicts it in one direction and confirms it in another.** The nine conjunctions the first pass declared all came back `golden`. The thirty-nine selectors the second pass declared did not: twenty-eight are `golden` and eleven are `gap`, so the corpus is blind to some of these combinations after all, and it took a finer instrument to say which. The `schemas` region carries thirty-six of the thirty-nine rows and `document-paths` the three `path_group` ones. What stays true of this file is the *branch* reading: a golden pinning a shape pins the bytes for the shapes its own document sends down the arm, not the arm's whole behaviour, and the thirty-six cases of these six functions that no selector kind can express are still unmeasured. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); the third is now the census's own. |
 | `src/openapi.rs` | 218 | all-e2e 84, non-e2e 134 | none | **Accounts for what is left, and no ranked gap points here any more.** The four that did — `http-hoba`, `http-oauth`, `http-scram-sha-1` and `http-scram-sha-256`, one `#[serde(other)]` scheme fallback arm and four IANA scheme members collapsing through it — are `limitations` since [Round 6](fern-limitations.md#round-6--security) measured Fern on all four, and the fifth ranked row this file ever carried, `securityscheme-ref`, is `limitations` on the same round; the `$ref` position it named is `normalize_security_scheme_refs` now, and it is reached by a probe rather than by a golden. `normalize_parameters` was a sixth until corpus row 122 settled `operation-overrides-path-item-parameter` `golden` and it left the ranked list, and the `operation_id` field declaration was a sixth until corpus row 128 settled `duplicate-operation-id` the same way; neither is blind at all now. The largest block, `filter_by_audience` 47 + `audiences` 8, belongs to `audience-dual-header-policy`, classified `golden`: golden-classified is not golden-*exhausted*, since the two audience goldens declare 8 sites between them and leave the rest of the branch space to unit tests. `load` 26 + `expecting` 5 + `de_composition` 5 + the four `visit_*` arms 12 between them are malformed-document deserialization paths the corpus excludes by taking only documents Fern generates. `filter_ignored` 13 is the walk's `x-fern-or-crozier-ignore` — now `golden`, on corpus row 108's four `x-fern-ignore` operations, though golden-classified is not golden-*exhausted*: one witness reaches the Operation-Object arm and leaves the schema arm and the `x-crozier-*` precedence to unit tests. **This file is where the corpus moved most.** `collect_schema_refs` 46, `expand_schema_closure` 32, `operation_schema_seed` 24, `visit_seq` 7 and `normalize_parameters` 3 were all blind two measurements ago and are reached by a committed golden now, and `filter_ignored` fell from 72; that is the whole of the file's 511 → 184. **The 184 has since risen to 218, and the rise is a probe's.** `normalize_security_scheme_refs` 18 is the `$ref` position `securityscheme-ref` named, written when [Round 6](fern-limitations.md#round-6--security) settled that row by probe — code a measurement drove into `src/` that no committed golden reaches, which is what `src/emit.rs` above now shows at four times the size. |
 | `src/refs.rs` | 74 | all-e2e 17, non-e2e 57 | none | **Only a probe can settle it.** `resolve_reference` 16, `document` 10, `pointer` 9, `error` 7, `curl_fetch` 7 are the cross-document `$ref` path. The corpus is single-document by construction ([`matching.md`](matching.md#cross-document-ref-resolution-issue-77)), and the ledger's `relative-file-ref` row is already `discards + pipeline` — its own note being that crozier's fixture pipeline cannot register the tree that would make the reference resolve. No corpus row is in reach. |
 | `src/schema.rs` | 46 | all-e2e 23, non-e2e 23 | none | **Neither.** `build` 20 emits crozier's own config JSON Schema. |
@@ -1259,12 +1355,13 @@ settled `parameter-style-form-cookie-scalar`; `emit.rs` stopped being one when
 corpus row 127 settled `media-type-range`, and `openapi.rs` when
 [Round 6](fern-limitations.md#round-6--security) settled the five `security`
 rows that pointed at it as `limitations`. It is back for a reason worth stating:
-the eleven rows that restored it were read off this file's own blind functions,
+the thirteen rows that restored it were read off this file's own blind functions,
 so the join is not a coincidence of two independent measurements agreeing but one
 measurement finding what the other pointed at.
 Ranking on criterion 2 therefore does not fight the repository's own
 measurement and does not refine it either, since every ranked row scores the same
-235: the order among them falls through to criterion 5. **The order of size at
+235: the order among them falls through to criterion 1, which separates only the
+one row naming two places, and then to criterion 5. **The order of size at
 the top has moved twice over** — it was
 `openapi.rs` 511 > `ir.rs` 201, then `ir.rs` 235 > `openapi.rs` 184, and the
 refreshed run makes it `emit.rs` 437 > `ir.rs` 235 > `openapi.rs` 218, on a rise
@@ -1300,9 +1397,10 @@ it distinguishes.
 
 **Every case below is in exactly one of two states.** It carries exactly one
 selector the census declares — a conjunction, or, where the arm reads one Paths
-Object key and opens no schema, a predicate — and only where that selector is
+Object key or one `$ref` value and opens no schema, a predicate — and only where
+that selector is
 *exact*, counting the nodes the branch is selected by and no others. Otherwise it
-is recorded as one of nine enumeration holes naming the property no selector kind
+is recorded as one of seven enumeration holes naming the property no selector kind
 can express and what closing it would take — the way `normalization-collision` was
 recorded before `components.schemas:normalized-collision` existed. No case is in
 neither, and none is in both.
@@ -1324,11 +1422,9 @@ selector naming one disjunct would be narrower than the whole arm.
 | **H-discriminant-value** | that a union's members each carry a discriminable value for the discriminant property — `discriminated_union` requires `discriminant_value` (a one-member string `enum`, or a string `example`) on every member when no `mapping` is written, and every `mapping` target to resolve when one is; a `discriminator` beside a `oneOf` is therefore not enough to select the arm, and the inferred spelling reads the same member values with no `discriminator` written at all | a predicate comparing the members of one `oneOf` against each other and against a named property's value, of the family `operation.operationId:duplicate` already is |
 | **H-annotated-ref** | that an `allOf` holds exactly one `$ref` beside members that add nothing but a description, *and* that the reference resolves — `described_all_of_ref` requires at least two members, exactly one of them a reference, and every other `is_unknown`, and every arm reading it then resolves that reference against `components.schemas` | a predicate over an `allOf`'s length and over what its non-reference members declare, evaluated against the resolving walk H-ref-target names; `schema.allOf` alone counts every `allOf` there is |
 | **H-ref-target** | the shape of the schema a `$ref` *points at*: the walk counts a Reference Object and never descends | a resolving walk, which is a different instrument — the target's own declaration site is already counted where it is written |
-| **H-pointer-form** | the segment structure of a `$ref` *value*, as in `#/components/schemas/A/allOf/0/properties/b` | a predicate family over `schema.$ref` (`:components-schemas-pointer`, `:nested-properties`, `:nested-items`, `:composition-index`, `:foreign-pointer`), of the family the `openapi.paths:` predicates already are over a key's shape |
-| **H-pointer-nesting** | that a `$ref` value's segment sequence addresses the nesting a schema declares: each arm's schema-side half is already named by a plain field selector (`schema.allOf`, `schema.properties`, `schema.items`), and what no kind can express is the *correspondence* between the two, which is a joint property of a value and the document it points into | the `schema.$ref` pointer-form predicate family H-pointer-form names, evaluated against the resolving walk H-ref-target names — both together, and neither is a conjunction over one node's declared fields |
-| **H-pointer-target** | whether a `$ref` value names a key `components.schemas` declares | a predicate comparing one document's `$ref` values against its own component names, of the family `components.schemas:normalized-collision` already is |
+| **H-pointer-nesting** | that a `$ref` value's segment sequence addresses the nesting a schema declares: each arm's schema-side half is already named by a plain field selector (`schema.allOf`, `schema.properties`, `schema.items`), and what no kind can express is the *correspondence* between the two, which is a joint property of a value and the document it points into | the `schema.$ref` pointer-form predicate family — declared now, and enough on its own for the two arms `resolve_schema_pointer` decides from the string — evaluated against the resolving walk H-ref-target names, which is what says whether the segments before this one *resolved*. The document context that walk builds its resolver on is landed: the census carries the censused document's own `components.schemas` map and key set at every node |
 
-Every one of the nine turns on something outside the node in front of the walk —
+Every one of the seven turns on something outside the node in front of the walk —
 a `$ref` resolving, a comparison across the document, or the *absence* of a
 declaration — which is what separates them from the node-local predicate family
 [the grammar declares](#the-selector-grammar). Declaring one of them is a change
@@ -1350,19 +1446,39 @@ a combination of fields at one node. A conjunction such as
 `schema.allOf>schema.properties` would name *one* continuation of the `"allOf"`
 arm — the pointer that goes on to `properties` — and would leave
 `allOf/{i}/items`, `allOf/{i}/oneOf/{j}`, a bare `allOf/{i}` and every deeper form
-uncounted, so this region is recorded as holes rather than covered by a narrower
-shape.
+uncounted, so those five arms are recorded as holes rather than covered by a
+narrower shape.
+
+**Three of its arms are decided before any of that**, and the pointer-form
+predicate family counts them. Cases 1 and 8 read the string alone, so they are
+`ref_to_class`'s cases 1 and 5 under another name and take the same selectors;
+case 2 reads the pointer's head against the document's own `components.schemas`
+keys, which is the document context the census now carries and the comparison
+`components.schemas:normalized-collision` already makes over those same keys.
+Case 8 is the one that leans on [the exactness rule](#the-selector-grammar)'s
+chain-overlap allowance, and does so visibly: `schema.$ref:unnamed-segment` counts
+a pointer whose unknown segment sits behind a segment that did *not* resolve —
+`A/allOf/0/zzz` where `A` declares no `allOf` — and that pointer selects case 3,
+which is a case of this table carrying a row of its own. It does the same at the
+other end: a trailing `properties`, which `ref_to_class` sends to its residual arm
+because there is no segment after it to name, this function sends to case 6, where
+`parts.next()?` returns `None` inside the arm. What the selector never counts is a
+document selecting no case here at all — every pointer it counts carries at least
+two segments, so the arity check before case 2 cannot be what stops it, and each
+segment either matches an arm or is case 8 — which is the miscount the rule
+disqualifies.
 
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
-| 1 | `reference.strip_prefix("#/components/schemas/")?` — the reference is not a component-schema pointer | **H-pointer-form** |
-| 2 | `schemas.get(parts.next()?)?` — the pointer's head names no declared component | **H-pointer-target** |
+| 1a | `reference.strip_prefix("#/components/schemas/")?` — the reference is not a component-schema pointer; the cross-document spelling, which names another file | `schema.$ref:cross-document` |
+| 1b | the same arm, the same-document spelling: a pointer inside this document but outside `components.schemas` | `schema.$ref:same-document-foreign-pointer` |
+| 2 | `schemas.get(parts.next()?)?` — the pointer's head names no declared component | `schema.$ref:undeclared-component-head` |
 | 3 | `"allOf" => schema.all_of.as_ref()?.get(parts.next()?.parse::<usize>().ok()?)?` — schema-side half `schema.allOf`, entered for any continuation | **H-pointer-nesting** |
 | 4 | `"oneOf" => schema.one_of.as_ref()?.get(…)?` — schema-side half `schema.oneOf` | **H-pointer-nesting** |
 | 5 | `"anyOf" => schema.any_of.as_ref()?.get(…)?` — schema-side half `schema.anyOf` | **H-pointer-nesting** |
 | 6 | `"properties" => schema.properties.get(parts.next()?)?` — schema-side half `schema.properties`, keyed by a property *name*, which the count rule excludes | **H-pointer-nesting** |
 | 7 | `"items" => schema.items.as_deref()?` — schema-side half `schema.items` | **H-pointer-nesting** |
-| 8 | `_ => return None` — a segment none of the five names | **H-pointer-form** |
+| 8 | `_ => return None` — a segment none of the five names | `schema.$ref:unnamed-segment` |
 
 #### `nested_array_element`
 
@@ -1471,19 +1587,40 @@ helper read again, inside the one-member arity its own arm tests.
 
 #### `ref_to_class`
 
-Wholly an enumeration hole, and routed there rather than left underived: the
+Wholly a predicate region, and for the reason it was wholly a hole before: the
 function opens no schema — it reads the reference *string* and nothing else — so
 no conjunction over declared fields changes its path, and every one of its cases
 is decided by the pointer's segment structure, which is what a predicate selector
-is for and which the grammar declares none over.
+is for and which the grammar now declares six over. Nothing here can fail to be
+reached: the loop never returns early, so a pointer's segments alone decide which
+arms it takes and how often, and a selector read off one arm counts exactly the
+nodes that take it. That is why this table needs no chain-overlap allowance while
+`resolve_schema_pointer`'s case 8 does — the two read the same positions, and only
+the second can stop before reaching one.
+
+The first case takes two selectors rather than one, because two different shapes
+reach it and only one of them names a document other than the one in hand: a
+reference into another document, which crozier answers by fetching that document
+([`matching.md`](matching.md#cross-document-ref-resolution-issue-77)), and a
+reference into this document outside `components.schemas` — `#/definitions/Foo`
+from a Swagger conversion, or a pointer into another component map — which is
+answered inside the bytes already read. The plan this pass ran under expected the
+first to be permanently `UNREACHABLE`, and asked for the split so that recording
+both under one name would not put a reachable branch behind that row. **The
+measurement contradicted the premise rather than the split**: both halves came
+back `golden` — the cross-document spelling at 29 declaration sites across two
+registered sources that both carry a committed golden, the same-document one at
+50 across four, three of them golden-bearing — and keeping them apart is what
+let the census say so of each separately.
 
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
-| 1 | `let Some(pointer) = reference.strip_prefix("#/components/schemas/") else { … }` — a foreign pointer, named off its last segment | **H-pointer-form** |
-| 2 | `"properties" if index + 1 < parts.len() => name.push_str(&naming::class_name(parts[index + 1]))` | **H-pointer-form** |
-| 3 | `"items" => name.push_str("Item")` | **H-pointer-form** |
-| 4 | `"allOf" \| "oneOf" \| "anyOf" => index += 2` — a composition index contributes no name | **H-pointer-form** |
-| 5 | `_ => index += 1` | **H-pointer-form** |
+| 1a | `let Some(pointer) = reference.strip_prefix("#/components/schemas/") else { … }` — a foreign pointer, named off its last segment; the cross-document spelling | `schema.$ref:cross-document` |
+| 1b | the same arm, the same-document spelling: a pointer outside `components.schemas` | `schema.$ref:same-document-foreign-pointer` |
+| 2 | `"properties" if index + 1 < parts.len() => name.push_str(&naming::class_name(parts[index + 1]))` | `schema.$ref:nested-properties` |
+| 3 | `"items" => name.push_str("Item")` | `schema.$ref:nested-items` |
+| 4 | `"allOf" \| "oneOf" \| "anyOf" => index += 2` — a composition index contributes no name | `schema.$ref:composition-index` |
+| 5 | `_ => index += 1` — a segment none of the four names, a trailing `properties` included | `schema.$ref:unnamed-segment` |
 
 #### `path_group`
 
@@ -1510,12 +1647,32 @@ those sixteen were holes only because the grammar had no *node-local* predicate 
 a property one object-model node's own declared fields and their values decide,
 with no `$ref` resolution and no comparison across the document. Eleven such
 predicates are now declared, plus the one valued field
-`schema.additionalProperties`, and with them the table above derives seventy-six
+`schema.additionalProperties`, and with them that pass derived seventy-six
 cases, forty carrying a selector and thirty-six recorded as one of nine holes.
 Seven hole kinds are gone: H-arity, H-empty-collection, H-type-multiplicity,
 H-boolean-value, H-enum-value-kind, H-key-segment-position and
 H-key-all-templated no longer name any case, because every arm they named is now
 counted by its own selector.
+
+**What the pointer-form family closed after it.** Two of those nine holes turned
+on a `$ref` *value* rather than on a node's declared fields — H-pointer-form, the
+segment structure of the value, and H-pointer-target, whether its head names a
+declared component — and both are gone. Seven predicates close them, six read off
+the value alone and one, `schema.$ref:undeclared-component-head`, off that value
+against the document context this change also lands. The table above therefore
+derives seventy-eight cases rather than seventy-six — `ref_to_class`'s first case
+and `resolve_schema_pointer`'s are each two rows now, one per shape reaching them
+— fifty carrying a selector and twenty-eight recorded as one of seven holes.
+`ref_to_class` was wholly a hole and is wholly counted; `resolve_schema_pointer`
+keeps five, the five whose arm resolves a segment against the schema at that
+position, and they are H-pointer-nesting as they always were. **Seven new rows
+landed, and all seven are [`schemas`](openapi-surface/schemas.md)'s: five `golden`
+and two `gap`, both of the two `FIXTURE`** — which is the size of the settlement
+work this pass added, readable off the region file rather than off a report. **What
+did not change is the walk**: these predicates read a `$ref` at the node that
+writes it, which the census already visited, so no count rule moved, no existing
+row's category, settlement or evidence-cell count moved, and no snapshot digest was
+re-pinned.
 
 **Three of the arms this pass set out to close stayed holes, and each is a
 finding rather than an omission.** `prop_type_ref`'s case 6 was recorded as

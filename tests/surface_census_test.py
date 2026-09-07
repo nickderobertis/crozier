@@ -673,11 +673,20 @@ class GrammarContractTests(unittest.TestCase):
         # A predicate spelling may carry a value of its own — `schema.type:primary=array`
         # names which member of a `type` array the arm reads, which is a position
         # rather than a presence — so the pattern admits one, and the `=` does not
-        # make the spelling a valued selector over a field nothing declares.
+        # make the spelling a valued selector over a field nothing declares. It
+        # admits a `$` too, because the field a pointer-form predicate reads is
+        # spelled `$ref`: the gate widens to the spelling rather than the spelling
+        # bending to the gate.
         documented = set(
-            re.findall(r"`([A-Za-z][A-Za-z.]*:[a-z-]+(?:=[A-Za-z0-9-]+)?)`", body)
+            re.findall(r"`([A-Za-z][A-Za-z.$]*:[a-z-]+(?:=[A-Za-z0-9-]+)?)`", body)
         )
         self.assertEqual(set(census.PREDICATES), documented)
+        stated = re.search(
+            r"The predicates are themselves a closed list of\s+(\d+)",
+            text,
+        )
+        self.assertIsNotNone(stated, "the grammar no longer states how many predicates there are")
+        self.assertEqual(len(census.PREDICATES), int(stated.group(1)))
 
     # ------------------------------------------------------------------
     # The fourth kind of selector: `<member>&<member>` and `<group>><group>`
@@ -807,7 +816,8 @@ class GrammarContractTests(unittest.TestCase):
         sentence moving fails here.
         """
         words = {
-            8: "eight", 9: "nine", 36: "thirty-six", 40: "forty", 76: "seventy-six",
+            7: "seven", 8: "eight", 9: "nine", 28: "twenty-eight", 36: "thirty-six",
+            40: "forty", 50: "fifty", 76: "seventy-six", 78: "seventy-eight",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -1345,6 +1355,21 @@ def write_json_fixture(root: Path, name: str, document: dict) -> None:
     )
 
 
+# The pointer-form family, declared by the pass after the node-local one and
+# discriminated by `PointerFormSelectorDiscriminationTests` below. Named here
+# because the node-local table's own completeness assertion is "every selector
+# that pass declared", and these are not its.
+POINTER_FORM_PREDICATES = frozenset({
+    "schema.$ref:cross-document",
+    "schema.$ref:same-document-foreign-pointer",
+    "schema.$ref:nested-properties",
+    "schema.$ref:nested-items",
+    "schema.$ref:composition-index",
+    "schema.$ref:unnamed-segment",
+    "schema.$ref:undeclared-component-head",
+})
+
+
 class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
     """What each node-local selector counts, over inputs that discriminate its branch.
 
@@ -1751,7 +1776,9 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         set(census.PREDICATES)
         | set(census.CONJUNCTIONS)
         | {"schema.additionalProperties=false", "schema.additionalProperties=true"}
-    ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(PRE_EXISTING_PREDICATES)
+    ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(
+        PRE_EXISTING_PREDICATES
+    ) - POINTER_FORM_PREDICATES
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1865,6 +1892,461 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({}, rows(completed))
         self.assertIn("(declared by no registered source)", completed.stdout)
+
+
+class DocumentContextTests(unittest.TestCase):
+    """The document context every node of the walk can read, and its one boundary.
+
+    `Census` carries the censused document's own `components.schemas` map and the
+    set of its keys, so a predicate at any node can compare a value against them —
+    which is what `schema.$ref:undeclared-component-head` does and what a resolving
+    walk would build a resolver on. The boundary is that it is *this* document and
+    nothing else: a `$ref` naming another file is a string to this instrument, and
+    the last case here proves that by putting the other file on disk beside the
+    one being censused.
+    """
+
+    def test_the_context_is_the_documents_own_map_and_its_string_keys(self) -> None:
+        document = {
+            "openapi": "3.0.3",
+            "info": {"title": "context", "version": "1"},
+            "paths": {},
+            # A numeric key is a name the count rule excludes, so the key set holds
+            # the strings and the map holds everything the document wrote.
+            "components": {"schemas": {"Root": {"type": "string"}, 7: {}}},
+        }
+        built = census.Census(document)
+        self.assertIs(document["components"]["schemas"], built.component_schemas)
+        self.assertEqual(frozenset({"Root"}), built.component_names)
+
+    def test_a_document_declaring_no_component_schemas_carries_an_empty_context(
+        self,
+    ) -> None:
+        """Empty rather than absent, so a predicate reading it needs no guard."""
+        for document in (None, {}, {"components": None}, {"components": {"schemas": []}}):
+            with self.subTest(document=document):
+                built = census.Census(document)
+                self.assertEqual({}, built.component_schemas)
+                self.assertEqual(frozenset(), built.component_names)
+
+    def test_the_context_is_reachable_from_a_node_outside_components(self) -> None:
+        """A `$ref` deep in a Path Item is measured against the same names.
+
+        Driven through the real script: the two documents differ only in whether
+        the pointer's head is a key of `components.schemas`, and the head sits at a
+        response schema rather than beside the map it is compared with.
+        """
+        def source(title: str, head: str) -> dict:
+            return {
+                "openapi": "3.0.3",
+                "info": {"title": title, "version": "1"},
+                "paths": {
+                    "/widgets": {
+                        "get": {
+                            "operationId": "read",
+                            "responses": {
+                                "200": {
+                                    "description": "ok",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": f"#/components/schemas/{head}"
+                                            }
+                                        }
+                                    },
+                                }
+                            },
+                        }
+                    }
+                },
+                "components": {"schemas": {"Declared": {"type": "string"}}},
+            }
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_json_fixture(root, "deep-declared", source("deep-declared", "Declared"))
+            write_json_fixture(root, "deep-undeclared", source("deep-undeclared", "Missing"))
+            completed = run(
+                "--vendored-only", "--fixtures-root", str(root),
+                "--selector", "schema.$ref:undeclared-component-head",
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(
+            {("schema.$ref:undeclared-component-head", "deep-undeclared"): 1},
+            rows(completed),
+        )
+
+    def test_the_census_reads_no_document_but_the_one_it_is_censusing(self) -> None:
+        """The other file is on disk, beside the source, and is never opened.
+
+        `neighbour.yaml` declares `patternProperties`, a keyword the censused
+        document does not write, and the censused document's one `$ref` names it.
+        The real script reports the reference and nothing the neighbour declares —
+        no fetch, no cross-document resolution, no second document.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_json_fixture(
+                root,
+                "neighbouring-file",
+                {
+                    "openapi": "3.0.3",
+                    "info": {"title": "neighbouring-file", "version": "1"},
+                    "paths": {},
+                    "components": {
+                        "schemas": {
+                            "Root": {"$ref": "./neighbour.yaml#/components/schemas/Secret"}
+                        }
+                    },
+                },
+            )
+            (root / "neighbouring-file" / "neighbour.yaml").write_text(
+                "components:\n"
+                "  schemas:\n"
+                "    Secret:\n"
+                "      patternProperties:\n"
+                "        '^x-':\n"
+                "          type: string\n",
+                encoding="utf-8",
+            )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        counted = {
+            row["selector"]: row["count"] for row in json.loads(completed.stdout)["rows"]
+        }
+        self.assertEqual(1, counted.get("schema.$ref:cross-document"))
+        self.assertNotIn("schema.patternProperties", counted)
+
+
+
+class PointerFormSelectorDiscriminationTests(unittest.TestCase):
+    """What each pointer-form selector counts, over inputs that discriminate its branch.
+
+    The same instrument `NodeLocalSelectorDiscriminationTests` applies to the
+    node-local family, applied to the seven `schema.$ref:` spellings: one selector
+    and up to three documents each — one whose node selects the `src/ir.rs` arm the
+    selector was read off, one *near miss* satisfying every part of the selector's
+    condition but one, and, where another case of the same function's table also
+    claims a node this branch permits, one exercising that permitted overlap.
+
+    Every document here is constructed rather than borrowed, because
+    `test_no_vendored_source_declares_a_pointer_form_selector` establishes that the
+    offline half of the corpus writes none of these `$ref` values. The census is
+    still driven for real, as its own process, over real documents on the real
+    filesystem, in one run over a fixtures root holding all of them.
+    """
+
+    # selector, slug, the branch it was read off, and the `$ref` values.
+    CASES: tuple[dict, ...] = (
+        {
+            "selector": "schema.$ref:cross-document",
+            "slug": "ref-cross-document",
+            "branch": "ref_to_class case 1a / resolve_schema_pointer case 1a",
+            "select": "./other.yaml#/components/schemas/Author",
+            "near": "#/definitions/Foo",
+        },
+        {
+            "selector": "schema.$ref:same-document-foreign-pointer",
+            "slug": "ref-same-document-foreign",
+            "branch": "ref_to_class case 1b / resolve_schema_pointer case 1b",
+            "select": "#/definitions/Foo",
+            "near": "#/components/schemas/Other",
+        },
+        {
+            "selector": "schema.$ref:nested-properties",
+            "slug": "ref-nested-properties",
+            "branch": "ref_to_class case 2",
+            "select": "#/components/schemas/Other/properties/name",
+            # `properties` with nothing after it fails `index + 1 < parts.len()`
+            # and takes the residual arm instead: one property short of the branch.
+            "near": "#/components/schemas/Other/properties",
+            "overlap": "#/components/schemas/Other/properties/name/items",
+            "overlap_selector": "schema.$ref:nested-items",
+        },
+        {
+            "selector": "schema.$ref:nested-items",
+            "slug": "ref-nested-items",
+            "branch": "ref_to_class case 3",
+            "select": "#/components/schemas/Other/items",
+            "near": "#/components/schemas/Other/item",
+            "overlap": "#/components/schemas/Other/allOf/0/items",
+            "overlap_selector": "schema.$ref:composition-index",
+        },
+        {
+            "selector": "schema.$ref:composition-index",
+            "slug": "ref-composition-index",
+            "branch": "ref_to_class case 4",
+            "select": "#/components/schemas/Other/allOf/0",
+            "near": "#/components/schemas/Other/allof/0",
+            "overlap": "#/components/schemas/Other/allOf/0/properties/name",
+            "overlap_selector": "schema.$ref:nested-properties",
+        },
+        {
+            "selector": "schema.$ref:unnamed-segment",
+            "slug": "ref-unnamed-segment",
+            "branch": "ref_to_class case 5 / resolve_schema_pointer case 8",
+            "select": "#/components/schemas/Other/zzz",
+            "near": "#/components/schemas/Other/items",
+            # The overlap `resolve_schema_pointer`'s case 8 leans on, and the one
+            # the coverage document names: `Other` declares no `allOf`, so this
+            # pointer stops in that function's case 3 and never reaches case 8,
+            # while `ref_to_class` reads the same positions and does reach its own
+            # residual arm. Both cases are in the same table and both carry rows.
+            "overlap": "#/components/schemas/Other/allOf/0/zzz",
+            "overlap_selector": "schema.$ref:composition-index",
+        },
+        {
+            "selector": "schema.$ref:undeclared-component-head",
+            "slug": "ref-undeclared-head",
+            "branch": "resolve_schema_pointer case 2",
+            "select": "#/components/schemas/Missing",
+            "near": "#/components/schemas/Other",
+            "overlap": "#/components/schemas/Missing/zzz",
+            "overlap_selector": "schema.$ref:unnamed-segment",
+        },
+    )
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """One census run over a root holding every document the table names."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for case in cls.CASES:
+                for role in ("select", "near", "overlap"):
+                    if role not in case:
+                        continue
+                    name = f"{case['slug']}-{role}"
+                    write_json_fixture(
+                        root, name, schema_source(name, {"$ref": case[role]})
+                    )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
+        assert completed.returncode == 0, completed.stderr
+        payload = json.loads(completed.stdout)
+        cls.reported = {
+            (row["selector"], row["fixture"]): row["count"] for row in payload["rows"]
+        }
+
+    def test_the_table_covers_every_pointer_form_selector(self) -> None:
+        """A selector declared and never discriminated is one nobody measured."""
+        self.assertEqual(
+            set(POINTER_FORM_PREDICATES), {case["selector"] for case in self.CASES}
+        )
+
+    def test_each_selector_counts_its_own_node_and_not_its_near_miss(self) -> None:
+        for case in self.CASES:
+            selector, slug = case["selector"], case["slug"]
+            with self.subTest(selector=selector, branch=case["branch"]):
+                self.assertEqual(
+                    1,
+                    self.reported.get((selector, f"{slug}-select")),
+                    f"{selector} does not count the node that selects {case['branch']}",
+                )
+                self.assertNotIn(
+                    (selector, f"{slug}-near"),
+                    self.reported,
+                    f"{selector} counts a node missing {case['branch']} by one property",
+                )
+
+    def test_each_permitted_overlap_is_counted_by_both_cases(self) -> None:
+        """The overlap this document permits, made visible rather than assumed."""
+        for case in self.CASES:
+            if "overlap" not in case:
+                continue
+            selector, slug = case["selector"], case["slug"]
+            with self.subTest(selector=selector):
+                self.assertEqual(1, self.reported.get((selector, f"{slug}-overlap")))
+                self.assertEqual(
+                    1,
+                    self.reported.get((case["overlap_selector"], f"{slug}-overlap")),
+                    "the overlap document is not counted by the case that claims it",
+                )
+
+    def test_the_two_entries_carrying_no_overlap_are_the_two_halves_of_one_arm(
+        self,
+    ) -> None:
+        """Which entries are exempt from the overlap assertion, and why both are.
+
+        `ref_to_class`'s first case and `resolve_schema_pointer`'s are each split
+        into a cross-document and a same-document row, and the two conditions
+        partition the references that reach the arm: a value carrying a non-empty
+        part before its `#`, or no `#` at all, is the first, and every other value
+        outside `#/components/schemas/` is the second. No node satisfies both, and
+        no later case of either table is reached by a reference that strips no
+        prefix, so neither half has an overlap to exercise.
+        """
+        self.assertEqual(
+            {
+                "schema.$ref:cross-document",
+                "schema.$ref:same-document-foreign-pointer",
+            },
+            {case["selector"] for case in self.CASES if "overlap" not in case},
+        )
+
+    def test_one_source_writing_a_foreign_pointer_and_an_undeclared_head(self) -> None:
+        """The two shapes a real document writes, in one source, counted apart.
+
+        A Swagger conversion's `#/definitions/Foo` and a pointer into another
+        component map both reach `ref_to_class`'s first case; a
+        `#/components/schemas/` pointer whose head names nothing this document
+        declares reaches `resolve_schema_pointer`'s second. No vendored source
+        writes either, so the source is constructed — and the real script is driven
+        over it, rather than the walk being stubbed.
+        """
+        document = {
+            "openapi": "3.0.3",
+            "info": {"title": "foreign-and-undeclared", "version": "1"},
+            "paths": {},
+            "components": {
+                "schemas": {
+                    "Other": {"type": "string"},
+                    "FromDefinitions": {"$ref": "#/definitions/Foo"},
+                    "FromParameters": {"$ref": "#/components/parameters/Page"},
+                    "Dangling": {"$ref": "#/components/schemas/NeverDeclared"},
+                    "Declared": {"$ref": "#/components/schemas/Other"},
+                }
+            },
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_json_fixture(root, "foreign-and-undeclared", document)
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        counts = {
+            row["selector"]: row["count"]
+            for row in json.loads(completed.stdout)["rows"]
+            if row["fixture"] == "foreign-and-undeclared"
+        }
+        self.assertEqual(2, counts.get("schema.$ref:same-document-foreign-pointer"))
+        self.assertEqual(1, counts.get("schema.$ref:undeclared-component-head"))
+        # The declared-head pointer is the control: it is a component-schema
+        # pointer whose head this document writes, so it selects no case of either
+        # function's table and no pointer-form selector counts it.
+        self.assertNotIn("schema.$ref:cross-document", counts)
+        self.assertNotIn("schema.$ref:unnamed-segment", counts)
+
+    def test_a_pointer_repeating_a_segment_kind_counts_once_for_that_node(self) -> None:
+        """The count rule the predicate sentences publish: one per node, not per segment.
+
+        `ref_to_class` takes the same arm twice for a pointer carrying two `items`
+        segments, and the census records one — a Schema Object is one place the
+        shape is written, however deep the pointer that writes it. The second
+        source is the control that keeps the de-duplication node-scoped rather than
+        source-scoped: two Schema Objects each writing one `items` pointer count
+        two. Driven through the real script, so a `sorted(set(...))` turned into a
+        list fails here.
+        """
+        def source(title: str, schemas: dict) -> dict:
+            return {
+                "openapi": "3.0.3",
+                "info": {"title": title, "version": "1"},
+                "paths": {},
+                "components": {"schemas": {"Other": {"type": "string"}, **schemas}},
+            }
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_json_fixture(
+                root,
+                "repeated-segments",
+                source(
+                    "repeated-segments",
+                    {
+                        "TwiceItems": {
+                            "$ref": "#/components/schemas/Other/items/items"
+                        },
+                        "TwiceProperties": {
+                            "$ref": "#/components/schemas/Other/properties/a/properties/b"
+                        },
+                    },
+                ),
+            )
+            write_json_fixture(
+                root,
+                "two-nodes-one-segment-each",
+                source(
+                    "two-nodes-one-segment-each",
+                    {
+                        "First": {"$ref": "#/components/schemas/Other/items"},
+                        "Second": {"$ref": "#/components/schemas/Other/items"},
+                    },
+                ),
+            )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        counted = {
+            (row["selector"], row["fixture"]): row["count"]
+            for row in json.loads(completed.stdout)["rows"]
+        }
+        self.assertEqual(
+            1,
+            counted.get(("schema.$ref:nested-items", "repeated-segments")),
+            "a pointer carrying two `items` segments is counted more than once",
+        )
+        self.assertEqual(
+            1,
+            counted.get(("schema.$ref:nested-properties", "repeated-segments")),
+            "a pointer carrying two `properties` segments is counted more than once",
+        )
+        self.assertEqual(
+            2,
+            counted.get(("schema.$ref:nested-items", "two-nodes-one-segment-each")),
+            "the de-duplication is source-scoped rather than node-scoped",
+        )
+
+    def test_no_vendored_source_declares_a_pointer_form_selector(self) -> None:
+        """Why every document above is constructed, asserted rather than assumed.
+
+        The offline half of the corpus writes none of these `$ref` values, so there
+        is no vendored source to drive the discriminating inputs off. Should one
+        arrive, this fails and the case above it takes that source instead.
+        """
+        completed = run(
+            "--vendored-only",
+            *[arg for s in sorted(POINTER_FORM_PREDICATES) for arg in ("--selector", s)],
+        )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({}, rows(completed))
+        for selector in sorted(POINTER_FORM_PREDICATES):
+            with self.subTest(selector=selector):
+                self.assertIn(
+                    f"{selector}", completed.stdout
+                )
+        self.assertEqual(
+            len(POINTER_FORM_PREDICATES),
+            completed.stdout.count("(declared by no registered source)"),
+        )
+
+    def test_a_misspelling_of_a_pointer_form_selector_is_refused_by_name(self) -> None:
+        """The refusal, driven through the real script rather than the module."""
+        for selector, expected in (
+            ("schema.$ref:nested-property", "Did you mean: schema.$ref:nested-properties"),
+            ("schema.$ref:crossdocument", "Did you mean: schema.$ref:cross-document"),
+            # The spelling the enumeration hole proposed, which the family split in
+            # two: it names no predicate, and the refusal says so rather than
+            # guessing which half was meant.
+            ("schema.$ref:foreign-pointer", "is not one of the predicate selectors"),
+        ):
+            with self.subTest(selector=selector):
+                completed = run("--vendored-only", "--selector", selector)
+                self.assertEqual(1, completed.returncode, completed.stdout)
+                self.assertIn(repr(selector), completed.stderr)
+                self.assertIn(expected, completed.stderr)
+
+    def test_a_pointer_form_selector_no_source_declares_is_reported_as_absent(
+        self,
+    ) -> None:
+        """Absent, not silent: the answer the two `gap` rows cite."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_json_fixture(root, "bare", schema_source("bare", {"type": "string"}))
+            completed = run(
+                "--vendored-only", "--fixtures-root", str(root),
+                "--selector", "schema.$ref:undeclared-component-head",
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({}, rows(completed))
+        self.assertIn("(declared by no registered source)", completed.stdout)
+
 
 class ObjectModelWalkTests(unittest.TestCase):
     """The distinction the whole instrument rests on: fields, not matching text."""
