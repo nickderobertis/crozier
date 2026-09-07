@@ -10,6 +10,123 @@ use crate::openapi::{
     AdditionalProperties, OpenApi, Operation, ParameterLocation, Response, Schema, TypeField,
 };
 
+/// Which arm of this module ran, asked of the generator rather than of its
+/// output.
+///
+/// Fourteen arms of this file decide a visible thing — whether a property
+/// becomes a hoisted enum, a copied union, a model of its own or a plain
+/// pass-through; whether a `oneOf` becomes a discriminated union or an untagged
+/// alias — by reading the schema a `$ref` *points at* rather than the one in
+/// front of them. `docs/openapi-surface-coverage.md`'s selector grammar names
+/// them with selectors read off their conditions, and a selector read off a
+/// *misreading* of an arm would be confirmed by fixtures chosen under the same
+/// misreading. This module breaks that circle: it answers **which arm ran**,
+/// observed at the arm's own site, so a misread arm fails a test rather than
+/// agreeing with one.
+///
+/// It is `#[cfg(test)]` throughout and every site records through
+/// [`observed_arm!`], which expands to nothing outside a test build — the
+/// generated Python cannot move because of anything here.
+#[cfg(test)]
+pub(crate) mod arm_trace {
+    use std::cell::RefCell;
+    use std::collections::BTreeSet;
+
+    /// The arms this surface answers for, by function and by the case number
+    /// [the case analysis](../docs/openapi-surface-coverage.md) gives each one.
+    ///
+    /// This is the one place the list is declared.
+    /// `docs/openapi-surface-coverage.md` restates it under
+    /// `#### The arms an observation surface answers for`, and
+    /// [`super::tests::the_documented_observed_arms_are_the_ones_this_module_declares`]
+    /// fails when the two disagree in either direction.
+    pub(crate) const OBSERVED_ARMS: &[(&str, &[u32])] = &[
+        ("resolve_schema_pointer", &[3, 4, 5, 6, 7]),
+        ("prop_type_ref", &[1, 2, 3, 4, 5, 13]),
+        ("hoist_union_variant", &[4, 6]),
+        ("nested_array_element", &[2]),
+    ];
+
+    /// Every declared arm as one `function:case` name, the spelling a site
+    /// records and a test asks about.
+    pub(crate) fn declared_arms() -> Vec<String> {
+        OBSERVED_ARMS
+            .iter()
+            .flat_map(|(function, cases)| {
+                cases.iter().map(move |case| format!("{function}:{case}"))
+            })
+            .collect()
+    }
+
+    fn is_declared(arm: &str) -> bool {
+        declared_arms().iter().any(|declared| declared == arm)
+    }
+
+    thread_local! {
+        /// The arms entered since [`observe`] began, or `None` when nothing is
+        /// recording — so an arm entered by any other test costs one `is_none`
+        /// check and nothing else.
+        static ENTERED: RefCell<Option<BTreeSet<&'static str>>> = const { RefCell::new(None) };
+    }
+
+    /// Record that `arm` was entered. Called only through [`observed_arm!`].
+    pub(crate) fn enter(arm: &'static str) {
+        assert!(
+            is_declared(arm),
+            "{arm} records at a site but is not one of the arms OBSERVED_ARMS declares"
+        );
+        ENTERED.with(|entered| {
+            if let Some(set) = entered.borrow_mut().as_mut() {
+                set.insert(arm);
+            }
+        });
+    }
+
+    /// The answer for one run of the generator: which declared arms it entered.
+    pub(crate) struct Observed(BTreeSet<&'static str>);
+
+    impl Observed {
+        /// Whether `arm` — a `function:case` name [`OBSERVED_ARMS`] declares —
+        /// executed during the observed run. Panics on a name it does not
+        /// declare, so a typo cannot read as "the arm did not run".
+        pub(crate) fn ran(&self, arm: &str) -> bool {
+            assert!(
+                is_declared(arm),
+                "{arm} is not one of the arms OBSERVED_ARMS declares"
+            );
+            self.0.contains(arm)
+        }
+    }
+
+    /// Run `generate` with recording on and answer which declared arms it
+    /// entered. Recording is thread-local, so tests observing in parallel do not
+    /// see each other's arms; nesting is refused rather than silently merged.
+    pub(crate) fn observe<T>(generate: impl FnOnce() -> T) -> (T, Observed) {
+        ENTERED.with(|entered| {
+            assert!(
+                entered.borrow().is_none(),
+                "an observation is already recording on this thread"
+            );
+            *entered.borrow_mut() = Some(BTreeSet::new());
+        });
+        let produced = generate();
+        let recorded = ENTERED.with(|entered| entered.borrow_mut().take());
+        (
+            produced,
+            Observed(recorded.expect("the observation this call began is still recording")),
+        )
+    }
+}
+
+/// Record that the arm named `function:case` was entered, for
+/// [`arm_trace::observe`] to answer with. Nothing at all outside a test build.
+macro_rules! observed_arm {
+    ($arm:literal) => {
+        #[cfg(test)]
+        crate::ir::arm_trace::enter($arm);
+    };
+}
+
 /// A fully-resolved SDK model ready to emit.
 #[derive(Debug)]
 pub struct Ir {
@@ -4482,6 +4599,7 @@ impl InlineHoister<'_> {
                         item,
                         clean_doc(item.description.as_deref()),
                     ) {
+                        observed_arm!("hoist_union_variant:4");
                         return TypeRef::List(Box::new(item));
                     }
                     let variants = members
@@ -4512,6 +4630,7 @@ impl InlineHoister<'_> {
                     })
                     .cloned()
                 {
+                    observed_arm!("hoist_union_variant:6");
                     let variant_name = variant_class_name(parent, index, variant, siblings);
                     let item_name = format!("{variant_name}Item");
                     if let Some(element) = self.hoist_named_copy(&item_name, &target) {
@@ -4585,9 +4704,19 @@ impl InlineHoister<'_> {
         if let (Some(schemas), Some((reference, description))) =
             (self.schemas, described_all_of_ref(prop_schema))
         {
+            observed_arm!("prop_type_ref:1");
+            // The case analysis derives case 1 as this gate and cases 2 to 5 as
+            // the arms inside it, and the code tests one thing more than either:
+            // the annotated `$ref` must also *resolve*. A property whose gate
+            // holds over a reference naming no component takes none of cases 2
+            // to 5 and falls through to case 6 and beyond, which is why case 1
+            // is recorded at the gate and the four inside it are recorded within
+            // this block. The disagreement is noted beside case 1 in
+            // `docs/openapi-surface-coverage.md`.
             if let Some(target) = resolve_ref_from_schemas(schemas, reference).cloned() {
                 let name = naming::child_class_name(parent, prop);
                 if let Some(values) = string_enum_values(&target) {
+                    observed_arm!("prop_type_ref:2");
                     self.out.push(TypeDecl::Enum(build_enum(
                         &target,
                         &name,
@@ -4597,6 +4726,7 @@ impl InlineHoister<'_> {
                     return TypeRef::Named(name);
                 }
                 if target.one_of.is_some() || target.any_of.is_some() {
+                    observed_arm!("prop_type_ref:3");
                     if let Some(copy) = self.hoist_named_copy(&name, &target) {
                         return copy;
                     }
@@ -4607,9 +4737,11 @@ impl InlineHoister<'_> {
                         || target.all_of.is_some()
                         || is_object_type(&target))
                 {
+                    observed_arm!("prop_type_ref:4");
                     self.hoist_object_with_doc(&name, &target, clean_doc(description));
                     return TypeRef::Named(name);
                 }
+                observed_arm!("prop_type_ref:5");
                 return full_type_ref_resolved(&target, schemas);
             }
         }
@@ -4684,6 +4816,7 @@ impl InlineHoister<'_> {
                     prop_schema,
                     clean_doc(prop_schema.description.as_deref()),
                 ) {
+                    observed_arm!("prop_type_ref:13");
                     return union;
                 }
                 // A `null` alternative states the field's nullability rather than
@@ -7190,6 +7323,7 @@ impl Builder<'_> {
             items,
             clean_doc(items.description.as_deref()),
         ) {
+            observed_arm!("nested_array_element:2");
             self.types.push(TypeDecl::DiscriminatedUnion(decl));
             return Some(sequence_of(array, TypeRef::Named(name)));
         }
@@ -8737,21 +8871,39 @@ fn resolve_schema_pointer<'a>(
     let mut schema = schemas.get(parts.next()?)?;
     let mut next = Some(parts.next()?);
     while let Some(part) = next {
+        // Each arm is recorded where it is *selected* — on the segment its
+        // pattern names — because that is the arm's own condition; whether the
+        // schema at that position declares the field is the arm's body.
         schema = match part {
-            "allOf" => schema
-                .all_of
-                .as_ref()?
-                .get(parts.next()?.parse::<usize>().ok()?)?,
-            "oneOf" => schema
-                .one_of
-                .as_ref()?
-                .get(parts.next()?.parse::<usize>().ok()?)?,
-            "anyOf" => schema
-                .any_of
-                .as_ref()?
-                .get(parts.next()?.parse::<usize>().ok()?)?,
-            "properties" => schema.properties.get(parts.next()?)?,
-            "items" => schema.items.as_deref()?,
+            "allOf" => {
+                observed_arm!("resolve_schema_pointer:3");
+                schema
+                    .all_of
+                    .as_ref()?
+                    .get(parts.next()?.parse::<usize>().ok()?)?
+            }
+            "oneOf" => {
+                observed_arm!("resolve_schema_pointer:4");
+                schema
+                    .one_of
+                    .as_ref()?
+                    .get(parts.next()?.parse::<usize>().ok()?)?
+            }
+            "anyOf" => {
+                observed_arm!("resolve_schema_pointer:5");
+                schema
+                    .any_of
+                    .as_ref()?
+                    .get(parts.next()?.parse::<usize>().ok()?)?
+            }
+            "properties" => {
+                observed_arm!("resolve_schema_pointer:6");
+                schema.properties.get(parts.next()?)?
+            }
+            "items" => {
+                observed_arm!("resolve_schema_pointer:7");
+                schema.items.as_deref()?
+            }
             _ => return None,
         };
         next = parts.next();
@@ -14040,5 +14192,435 @@ mod tests {
         // which is what keeps `openapi.paths:templated-key` and these three apart:
         // a key with an expression inside a segment has no templated segment at all.
         assert_eq!(path_group("/v{version}/widgets"), "v{version}");
+    }
+
+    // ---------------------------------------------------------------------
+    // The arm-observation surface
+    // ---------------------------------------------------------------------
+    //
+    // Each case below is one arm of [`arm_trace::OBSERVED_ARMS`] shown answering
+    // *both* ways over the real generator: a document under which the arm runs,
+    // and one whose node enters the same function — the entry gate the case
+    // analysis states for it — and takes a different arm of it. The second half
+    // is what a surface wiring every arm of a function to one observation of its
+    // entry cannot pass.
+
+    use super::arm_trace;
+
+    /// How a negative document shows it entered the arm's own function rather
+    /// than missing the function altogether.
+    enum Entered {
+        /// Another arm of the same function that this surface answers for ran.
+        Arm(&'static str),
+        /// A declaration only that function's other arm coins, for the one
+        /// function whose other arms this surface does not answer for.
+        Declaration(&'static str),
+    }
+
+    fn generate(document: serde_json::Value) -> (super::Ir, arm_trace::Observed) {
+        let doc: OpenApi = serde_json::from_value(document).expect("document deserializes");
+        let config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("api".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Observed",
+        )
+        .expect("the config is well formed");
+        arm_trace::observe(|| super::build(&doc, &config))
+    }
+
+    /// Every declaration one run of the generator coins, as `Kind(Name)`.
+    fn declarations(ir: &super::Ir) -> Vec<String> {
+        ir.types
+            .iter()
+            .chain(ir.tag_types.iter().map(|tag| &tag.decl))
+            .map(decl_label)
+            .collect()
+    }
+
+    /// A whole document: named components, plus one operation whose inline JSON
+    /// request body declares `body`'s properties. The body is what carries a
+    /// property through `prop_type_ref` and `hoist_union_variant`, which the
+    /// named-schema path does not reach.
+    fn observed_document(schemas: serde_json::Value, body: serde_json::Value) -> serde_json::Value {
+        serde_json::json!({
+            "openapi": "3.0.3",
+            "info": { "title": "observed", "version": "1" },
+            "paths": { "/thing": { "post": {
+                "operationId": "makeThing",
+                "requestBody": { "content": { "application/json": { "schema": {
+                    "type": "object",
+                    "properties": body
+                } } } },
+                "responses": { "200": { "description": "ok", "content": {
+                    "application/json": { "schema": { "type": "string" } }
+                } } }
+            } } },
+            "components": { "schemas": schemas }
+        })
+    }
+
+    /// The one call site `resolve_schema_pointer` has: an array `items` whose
+    /// `$ref` is a `#/components/schemas/` pointer. `root` declares the nesting
+    /// the pointer addresses and `suffix` is the segment sequence after the head,
+    /// which is the whole of what selects one of the function's arms.
+    fn pointer_document(root: serde_json::Value, suffix: &str) -> serde_json::Value {
+        observed_document(
+            serde_json::json!({
+                "Root": root,
+                "Holder": { "type": "object", "properties": { "list": {
+                    "type": "array",
+                    "items": { "$ref": format!("#/components/schemas/Root/{suffix}") }
+                } } }
+            }),
+            serde_json::json!({}),
+        )
+    }
+
+    /// The 3.0 idiom for annotating a reference, and the shape
+    /// `described_all_of_ref` reads: an `allOf` of exactly one `$ref` beside a
+    /// member declaring nothing but a description.
+    fn annotated_ref(target: &str) -> serde_json::Value {
+        serde_json::json!({ "allOf": [{ "$ref": target }, { "description": "annotated" }] })
+    }
+
+    /// A body whose one property annotates a `$ref` to `name`, which `target`
+    /// declares — the gate every one of `prop_type_ref`'s cases 1 to 5 sits
+    /// behind, with `target`'s own shape choosing which of 2 to 5 runs.
+    fn annotated_property_document(name: &str, target: serde_json::Value) -> serde_json::Value {
+        let mut schemas = serde_json::Map::new();
+        schemas.insert(name.to_string(), target);
+        observed_document(
+            serde_json::Value::Object(schemas),
+            serde_json::json!({
+                "annotated": annotated_ref(&format!("#/components/schemas/{name}"))
+            }),
+        )
+    }
+
+    /// Two components discriminated by a one-member string `enum` on `kind`, and
+    /// the `oneOf` over them that `discriminated_union` reads.
+    fn discriminated_members() -> serde_json::Value {
+        serde_json::json!({
+            "Cat": { "type": "object", "properties": {
+                "kind": { "type": "string", "enum": ["cat"] }, "meow": { "type": "string" } } },
+            "Dog": { "type": "object", "properties": {
+                "kind": { "type": "string", "enum": ["dog"] }, "woof": { "type": "string" } } }
+        })
+    }
+
+    fn discriminated_union_schema() -> serde_json::Value {
+        serde_json::json!({
+            "oneOf": [
+                { "$ref": "#/components/schemas/Cat" },
+                { "$ref": "#/components/schemas/Dog" }
+            ],
+            "discriminator": { "propertyName": "kind", "mapping": {
+                "cat": "#/components/schemas/Cat",
+                "dog": "#/components/schemas/Dog"
+            } }
+        })
+    }
+
+    /// `Matrix` is an array of arrays, which is the only way into
+    /// `nested_array_element`; `leaf` is the innermost `items`, and the whole of
+    /// what chooses the arm its entry gate then reaches.
+    fn nested_array_document(leaf: serde_json::Value) -> serde_json::Value {
+        let mut schemas = discriminated_members();
+        schemas["Matrix"] = serde_json::json!({
+            "type": "array",
+            "items": { "type": "array", "items": leaf }
+        });
+        observed_document(schemas, serde_json::json!({}))
+    }
+
+    /// A union one of whose variants is an array of `item`: the guard every one
+    /// of `hoist_union_variant`'s array cases sits inside.
+    fn array_variant_document(item: serde_json::Value) -> serde_json::Value {
+        let mut schemas = discriminated_members();
+        schemas["Thing"] = serde_json::json!({
+            "type": "object", "properties": { "a": { "type": "string" } }
+        });
+        observed_document(
+            schemas,
+            serde_json::json!({ "choice": { "oneOf": [
+                { "type": "string" },
+                { "type": "array", "items": item }
+            ] } }),
+        )
+    }
+
+    /// One arm, a document that runs it, a document that does not, and how the
+    /// second shows it entered the arm's own function all the same.
+    fn struct_member() -> serde_json::Value {
+        serde_json::json!({ "properties": { "a": { "type": "string" } } })
+    }
+
+    fn observed_arm_cases() -> Vec<(&'static str, serde_json::Value, serde_json::Value, Entered)> {
+        let all_of =
+            || pointer_document(serde_json::json!({ "allOf": [struct_member()] }), "allOf/0");
+        let one_of =
+            || pointer_document(serde_json::json!({ "oneOf": [struct_member()] }), "oneOf/0");
+        let any_of =
+            || pointer_document(serde_json::json!({ "anyOf": [struct_member()] }), "anyOf/0");
+        let properties = || {
+            pointer_document(
+                serde_json::json!({ "properties": { "field": struct_member() } }),
+                "properties/field",
+            )
+        };
+        let items = || pointer_document(serde_json::json!({ "items": struct_member() }), "items");
+        let to_enum = || {
+            annotated_property_document(
+                "Colour",
+                serde_json::json!({ "type": "string", "enum": ["red", "green"] }),
+            )
+        };
+        let to_union = || {
+            annotated_property_document(
+                "Choice",
+                serde_json::json!({ "oneOf": [{ "type": "string" }, { "type": "integer" }] }),
+            )
+        };
+        let to_object = || {
+            annotated_property_document(
+                "Thing",
+                serde_json::json!({ "type": "object", "properties": { "a": { "type": "string" } } }),
+            )
+        };
+        let to_scalar =
+            || annotated_property_document("Count", serde_json::json!({ "type": "integer" }));
+        let discriminated_property = || {
+            let mut schemas = discriminated_members();
+            schemas["Ignored"] = serde_json::json!({ "type": "string" });
+            observed_document(
+                schemas,
+                serde_json::json!({ "pet": discriminated_union_schema() }),
+            )
+        };
+        vec![
+            (
+                "resolve_schema_pointer:3",
+                all_of(),
+                properties(),
+                Entered::Arm("resolve_schema_pointer:6"),
+            ),
+            (
+                "resolve_schema_pointer:4",
+                one_of(),
+                all_of(),
+                Entered::Arm("resolve_schema_pointer:3"),
+            ),
+            (
+                "resolve_schema_pointer:5",
+                any_of(),
+                all_of(),
+                Entered::Arm("resolve_schema_pointer:3"),
+            ),
+            (
+                "resolve_schema_pointer:6",
+                properties(),
+                items(),
+                Entered::Arm("resolve_schema_pointer:7"),
+            ),
+            (
+                "resolve_schema_pointer:7",
+                items(),
+                properties(),
+                Entered::Arm("resolve_schema_pointer:6"),
+            ),
+            (
+                "prop_type_ref:1",
+                to_enum(),
+                discriminated_property(),
+                Entered::Arm("prop_type_ref:13"),
+            ),
+            (
+                "prop_type_ref:2",
+                to_enum(),
+                to_union(),
+                Entered::Arm("prop_type_ref:3"),
+            ),
+            (
+                "prop_type_ref:3",
+                to_union(),
+                to_enum(),
+                Entered::Arm("prop_type_ref:2"),
+            ),
+            (
+                "prop_type_ref:4",
+                to_object(),
+                to_scalar(),
+                Entered::Arm("prop_type_ref:5"),
+            ),
+            (
+                "prop_type_ref:5",
+                to_scalar(),
+                to_object(),
+                Entered::Arm("prop_type_ref:4"),
+            ),
+            (
+                "prop_type_ref:13",
+                discriminated_property(),
+                to_enum(),
+                Entered::Arm("prop_type_ref:2"),
+            ),
+            (
+                "hoist_union_variant:4",
+                array_variant_document(discriminated_union_schema()),
+                array_variant_document(annotated_ref("#/components/schemas/Thing")),
+                Entered::Arm("hoist_union_variant:6"),
+            ),
+            (
+                "hoist_union_variant:6",
+                array_variant_document(annotated_ref("#/components/schemas/Thing")),
+                array_variant_document(discriminated_union_schema()),
+                Entered::Arm("hoist_union_variant:4"),
+            ),
+            (
+                "nested_array_element:2",
+                nested_array_document(discriminated_union_schema()),
+                // The one negative whose other arm this surface does not answer
+                // for: an `items` that is an inline struct takes the function's
+                // case 4, whose `{ctx}Item` object no other function coins.
+                nested_array_document(serde_json::json!({
+                    "properties": { "a": { "type": "string" } }
+                })),
+                Entered::Declaration("Object(MatrixItemItem)"),
+            ),
+        ]
+    }
+
+    #[test]
+    fn every_observed_arm_answers_both_ways_over_the_real_generator() {
+        let cases = observed_arm_cases();
+        assert_eq!(
+            arm_trace::declared_arms(),
+            cases
+                .iter()
+                .map(|(arm, ..)| (*arm).to_string())
+                .collect::<Vec<_>>(),
+            "every declared arm is answered for, in the order it is declared"
+        );
+        for (arm, positive, negative, entered) in cases {
+            let (_, observed) = generate(positive);
+            assert!(
+                observed.ran(arm),
+                "{arm} did not run over its positive document"
+            );
+            let (ir, observed) = generate(negative);
+            assert!(!observed.ran(arm), "{arm} ran over its negative document");
+            match entered {
+                Entered::Arm(other) => assert!(
+                    observed.ran(other),
+                    "{arm}'s negative document did not reach {other}, so it may never have \
+                     entered the function at all"
+                ),
+                Entered::Declaration(label) => assert!(
+                    declarations(&ir).contains(&label.to_string()),
+                    "{arm}'s negative document coined no {label}, so it may never have \
+                     entered the function at all"
+                ),
+            }
+        }
+    }
+
+    #[test]
+    fn the_surface_tells_two_listed_arms_of_one_function_apart() {
+        // For each function with more than one arm on the list: a document under
+        // which the surface reports one of them ran and the other did not, and
+        // one reversing which is which. A surface answering per *function* would
+        // report both arms on both documents.
+        let pairs: Vec<(&str, &str, serde_json::Value, serde_json::Value)> = vec![
+            (
+                "resolve_schema_pointer:3",
+                "resolve_schema_pointer:6",
+                pointer_document(serde_json::json!({ "allOf": [struct_member()] }), "allOf/0"),
+                pointer_document(
+                    serde_json::json!({ "properties": { "field": struct_member() } }),
+                    "properties/field",
+                ),
+            ),
+            (
+                "prop_type_ref:2",
+                "prop_type_ref:3",
+                annotated_property_document(
+                    "Colour",
+                    serde_json::json!({ "type": "string", "enum": ["red", "green"] }),
+                ),
+                annotated_property_document(
+                    "Choice",
+                    serde_json::json!({ "oneOf": [{ "type": "string" }, { "type": "integer" }] }),
+                ),
+            ),
+            (
+                "hoist_union_variant:4",
+                "hoist_union_variant:6",
+                array_variant_document(discriminated_union_schema()),
+                array_variant_document(annotated_ref("#/components/schemas/Thing")),
+            ),
+        ];
+        for (one, other, runs_one, runs_other) in pairs {
+            let (_, observed) = generate(runs_one);
+            assert!(observed.ran(one), "{one} did not run");
+            assert!(!observed.ran(other), "{other} ran beside {one}");
+            let (_, observed) = generate(runs_other);
+            assert!(observed.ran(other), "{other} did not run");
+            assert!(!observed.ran(one), "{one} ran beside {other}");
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "is not one of the arms OBSERVED_ARMS declares")]
+    fn an_arm_the_surface_does_not_answer_for_is_refused_rather_than_reported_absent() {
+        let (_, observed) = generate(observed_document(
+            serde_json::json!({}),
+            serde_json::json!({ "id": { "type": "string" } }),
+        ));
+        let _ = observed.ran("prop_type_ref:16");
+    }
+
+    /// The arm list is declared in [`arm_trace::OBSERVED_ARMS`] and restated in
+    /// the coverage document; a case added to one and not the other fails here,
+    /// in either direction.
+    #[test]
+    fn the_documented_observed_arms_are_the_ones_this_module_declares() {
+        let doc = std::fs::read_to_string(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/docs/openapi-surface-coverage.md"
+        ))
+        .expect("the coverage document is readable");
+        const HEADING: &str = "#### The arms an observation surface answers for";
+        let body = doc
+            .split_once(HEADING)
+            .expect("the coverage document restates no observed-arm list")
+            .1;
+        let mut documented: Vec<(String, Vec<u32>)> = Vec::new();
+        for line in body.lines() {
+            if line.starts_with('#') {
+                break;
+            }
+            let Some(row) = line.strip_prefix("| `") else {
+                continue;
+            };
+            let (function, rest) = row.split_once("` | ").expect("a row names its function");
+            let cases = rest.split(" |").next().expect("a row lists its cases");
+            documented.push((
+                function.to_string(),
+                cases
+                    .split(',')
+                    .filter(|case| !case.trim().is_empty())
+                    .map(|case| case.trim().parse().expect("a case number"))
+                    .collect(),
+            ));
+        }
+        let declared: Vec<(String, Vec<u32>)> = arm_trace::OBSERVED_ARMS
+            .iter()
+            .map(|(function, cases)| ((*function).to_string(), cases.to_vec()))
+            .collect();
+        assert_eq!(declared, documented);
     }
 }

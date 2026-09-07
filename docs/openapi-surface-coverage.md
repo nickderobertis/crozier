@@ -1535,7 +1535,7 @@ composition, so the gate below fires — which is the chain overlap
 | 5b | the item's `anyOf` spelling, `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf` |
 | 5c | the item's `oneOf` spelling, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf` |
 | 5d | the item's `anyOf` spelling, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf` |
-| 6 | `described_all_of_ref(item)` resolving → `hoist_named_copy` of the annotated `$ref` | **H-annotated-ref** |
+| 6 | `described_all_of_ref(item)` resolving → `hoist_named_copy` of the annotated `$ref`. **The same continuation `prop_type_ref`'s case 3 carries:** a `hoist_named_copy` returning `None` falls through to case 7 rather than returning | **H-annotated-ref** |
 | 7a | `item.reference.is_none() && is_inline_struct(item)` → `hoist_object`, on an item whose `properties` are non-empty; `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty` |
 | 7b | the same, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty` |
 | 7c | the same arm on an item writing `additionalProperties: false`; `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false` |
@@ -1558,9 +1558,9 @@ helper read again, inside the one-member arity its own arm tests.
 
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
-| 1 | the outer `if let (Some(schemas), Some((reference, description))) = (self.schemas, described_all_of_ref(prop_schema))` gate | **H-annotated-ref** |
+| 1 | the outer `if let (Some(schemas), Some((reference, description))) = (self.schemas, described_all_of_ref(prop_schema))` gate. **The code tests one thing more than this row states:** inside the gate it also requires `resolve_ref_from_schemas(schemas, reference)` to return `Some`, and a property whose gate holds over a reference naming no component of this document takes none of cases 2 to 5 at all — it falls through to case 6 and beyond. The arm-observation surface reports exactly that, case 1 without any of 2 to 5, which is how the disagreement was found | **H-annotated-ref** |
 | 2 | inside it, `if let Some(values) = string_enum_values(&target)` → a hoisted enum | **H-ref-target** |
-| 3 | inside it, `if target.one_of.is_some() \|\| target.any_of.is_some()` → `hoist_named_copy` | **H-ref-target** |
+| 3 | inside it, `if target.one_of.is_some() \|\| target.any_of.is_some()` → `hoist_named_copy`. **The code has one continuation this row does not derive:** `hoist_named_copy` returning `None` — a target whose copy declares nothing — falls through to cases 4 and 5 rather than returning, so entering this arm is not the same as taking its product | **H-ref-target** |
 | 4 | inside it, `!is_map(&target) && !is_bare_object(&target) && …` → `hoist_object_with_doc` | **H-ref-target** |
 | 5 | inside it, the closing `full_type_ref_resolved(&target, schemas)` | **H-ref-target** |
 | 6 | `if let Some(member) = sole_inline_all_of(prop_schema)` — one inline `allOf` member and nothing else declared. The arity half is `schema.allOf:sole-member`; what remains is nine sibling-absence tests, and without them the selector counts VolView's `TaskSpec.id`, a `type: string` beside a one-member `allOf`, which this function sends to its closing `base_type_ref` | **H-negated-value** |
@@ -1941,6 +1941,60 @@ count `src/settings.rs`, `src/cli.rs`, `src/refs.rs`, `src/schema.rs`,
 `src/lib.rs`, `src/naming.rs`, `src/config.rs`, `src/pyfmt.rs` and `src/main.rs`
 already publish, digit for digit and with no cell edited — so where a count did
 move, it moved because the measurement did.
+
+#### The arms an observation surface answers for
+
+Fourteen of the cases above are reached *through* a reference: the arm stops
+reading the document in front of it and reads the one it points at. That is where
+"the document a selector counts" and "the document the arm enters" come apart, so
+a selector read off a **misreading** of one of these arms would be confirmed by
+fixtures chosen under the same misreading, and nothing in the tree would say so.
+
+`src/ir.rs`'s `arm_trace` module closes that circle. It answers, for one run of
+the real generator over one document, **which of these arms executed** — recorded
+at each arm's own site rather than read back off the emitted Python, so an arm
+that was misread fails a test instead of agreeing with one. It is `#[cfg(test)]`
+throughout and every site records through the `observed_arm!` macro, which
+expands to nothing outside a test build: the generated Python cannot move because
+of it.
+
+The list of arms it answers for is declared once, in that module's
+`OBSERVED_ARMS`, and restated below;
+`the_documented_observed_arms_are_the_ones_this_module_declares` fails when the
+two disagree in either direction, and
+`every_observed_arm_answers_both_ways_over_the_real_generator` drives
+`ir::build` over two documents per arm — one under which it runs and one whose
+node enters the same function, through the entry gate this section states for it,
+and takes a different arm.
+
+**The third column is the finding that separates these fourteen from each
+other.** `src/ir.rs` resolves a reference two ways, and they are not
+interchangeable:
+
+- **the last-segment lookup** — `resolve_ref_from_schemas`, which is
+  `schemas.get(reference.rsplit('/').next()?)`: it takes the reference's last
+  `/`-separated segment and looks that name up in the document's own
+  `components.schemas`, traversing nothing;
+- **the prefixed pointer walk** — `resolve_schema_pointer`, which requires the
+  `#/components/schemas/` prefix, takes the component its head segment names, and
+  then walks the reference's remaining segments structurally through `allOf`,
+  `oneOf`, `anyOf`, `properties` and `items`.
+
+[The selector grammar](#the-selector-grammar) states what each yields for a
+reference value the two answer differently. A selector mirroring the wrong one
+would count documents its arm never reaches, so each row below says which
+resolution the arm's own condition performs — and every case the row lists
+performs that one.
+
+| function | cases | which resolution the arm's own condition performs |
+|---|---|---|
+| `resolve_schema_pointer` | 3, 4, 5, 6, 7 | the prefixed pointer walk — these five arms *are* its segment loop, one per segment spelling it reads |
+| `prop_type_ref` | 1, 2, 3, 4, 5, 13 | the last-segment lookup: cases 1 to 5 through `resolve_ref_from_schemas` on the annotated `$ref` case 1's gate finds, case 13 through `discriminated_union`, which resolves each `oneOf` member's `$ref` — and each `mapping` target, by the same last segment — that way |
+| `hoist_union_variant` | 4, 6 | the last-segment lookup: case 4 through `discriminated_union` as above, case 6 through `resolve_ref_from_schemas` on the item's annotated `$ref` |
+| `nested_array_element` | 2 | the last-segment lookup, through the same `discriminated_union` |
+
+Neither `ref_to_class` nor `path_group` appears: the first reads a reference
+*string* and resolves nothing, and the second reads a Paths Object key.
 
 ### Refreshing the coverage snapshot
 
