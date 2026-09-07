@@ -2224,6 +2224,75 @@ class PointerFormSelectorDiscriminationTests(unittest.TestCase):
         self.assertNotIn("schema.$ref:cross-document", counts)
         self.assertNotIn("schema.$ref:unnamed-segment", counts)
 
+    def test_a_pointer_repeating_a_segment_kind_counts_once_for_that_node(self) -> None:
+        """The count rule the predicate sentences publish: one per node, not per segment.
+
+        `ref_to_class` takes the same arm twice for a pointer carrying two `items`
+        segments, and the census records one — a Schema Object is one place the
+        shape is written, however deep the pointer that writes it. The second
+        source is the control that keeps the de-duplication node-scoped rather than
+        source-scoped: two Schema Objects each writing one `items` pointer count
+        two. Driven through the real script, so a `sorted(set(...))` turned into a
+        list fails here.
+        """
+        def source(title: str, schemas: dict) -> dict:
+            return {
+                "openapi": "3.0.3",
+                "info": {"title": title, "version": "1"},
+                "paths": {},
+                "components": {"schemas": {"Other": {"type": "string"}, **schemas}},
+            }
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_json_fixture(
+                root,
+                "repeated-segments",
+                source(
+                    "repeated-segments",
+                    {
+                        "TwiceItems": {
+                            "$ref": "#/components/schemas/Other/items/items"
+                        },
+                        "TwiceProperties": {
+                            "$ref": "#/components/schemas/Other/properties/a/properties/b"
+                        },
+                    },
+                ),
+            )
+            write_json_fixture(
+                root,
+                "two-nodes-one-segment-each",
+                source(
+                    "two-nodes-one-segment-each",
+                    {
+                        "First": {"$ref": "#/components/schemas/Other/items"},
+                        "Second": {"$ref": "#/components/schemas/Other/items"},
+                    },
+                ),
+            )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        counted = {
+            (row["selector"], row["fixture"]): row["count"]
+            for row in json.loads(completed.stdout)["rows"]
+        }
+        self.assertEqual(
+            1,
+            counted.get(("schema.$ref:nested-items", "repeated-segments")),
+            "a pointer carrying two `items` segments is counted more than once",
+        )
+        self.assertEqual(
+            1,
+            counted.get(("schema.$ref:nested-properties", "repeated-segments")),
+            "a pointer carrying two `properties` segments is counted more than once",
+        )
+        self.assertEqual(
+            2,
+            counted.get(("schema.$ref:nested-items", "two-nodes-one-segment-each")),
+            "the de-duplication is source-scoped rather than node-scoped",
+        )
+
     def test_no_vendored_source_declares_a_pointer_form_selector(self) -> None:
         """Why every document above is constructed, asserted rather than assumed.
 
